@@ -1,0 +1,11 @@
+{
+  "name": "Quickblox.js",
+  "description": "Quickblox Javascript SDK",
+  "author": "Dan Murphy <dan@quickblox.com>",
+  "dependencies": {
+    "jquery": ">= 1.9.x"
+  },
+  "devDependencies": {
+    "jslint": ">= 0.1.x"
+  }
+}
