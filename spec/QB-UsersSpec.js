@@ -3,9 +3,7 @@ describe('QuickBlox SDK - User functions', function() {
   var session, result, done;
 
   beforeEach(function(){
-    var done;
     quickBlox.init(CONFIG);
-    // create a session
     runs(function(){
       done = false;
       quickBlox.createSession(function (err, result){
@@ -35,9 +33,9 @@ describe('QuickBlox SDK - User functions', function() {
     runs(function(){
       expect(result).not.toBeNull();
       expect(result.items.length).toBeGreaterThan(0);
+      expect(result.total_entries).toBeGreaterThan(0);
     });
   });
-
 
   it('should be able to filter users away (email nobody@nowhere.org)', function() {
     expect(session).not.toBeNull();
@@ -57,6 +55,6 @@ describe('QuickBlox SDK - User functions', function() {
       expect(result).not.toBeNull();
       expect(result.items.length).toBe(0);
     });
-
   });
+
 });
