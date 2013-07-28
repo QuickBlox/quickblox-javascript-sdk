@@ -5,7 +5,7 @@ var QB = (function(){
 }());
 
 function QuickBlox() {
-  console.debug('Quickblox instanciated');
+  console.debug('Quickblox instantiate');
   this.config = {
     appId: '',
     authKey: '',
