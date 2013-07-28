@@ -20,7 +20,7 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug) {
-  console.debug("QuickBlox.init(", appIdOrObj, authKey, (authSecret ? '*****' : 'null'), debug);
+  console.debug('QuickBlox.init(', appIdOrObj, authKey, (authSecret ? '*****' : 'null'), debug);
   if (typeof appIdOrObj === 'object') {
     debug = appIdOrObj.debug;
     authSecret = appIdOrObj.authSecret;
@@ -33,10 +33,10 @@ QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug)
   this.session = null;
   if (typeof debug === 'undefined' || debug === null) {
     this.config.debug = false;
-    console.debug("Debug is OFF");
+    console.debug('Debug is OFF');
   } else {
     this.config.debug = debug;
-    console.debug("Debug is ON");
+    console.debug('Debug is ON');
   }
 };
 
@@ -139,7 +139,7 @@ QuickBlox.prototype.listUsers = function(params, callback){
   message = {
     token: this.session.token
   };
-  if (params.filter) {
+  if (params && params.filter) {
     switch (params.filter.type){
       case 'id':
         filter = 'number id in';
@@ -163,8 +163,8 @@ QuickBlox.prototype.listUsers = function(params, callback){
     filter = filter + ' ' + params.filter.value;
     jQuery.extend(message, {'filter[]': filter});
   }
-  if (params.perPage) { message.per_page = params.perPage;}
-  if (params.pageNo) {message.page = params.pageNo;}
+  if (params && params.perPage) { message.per_page = params.perPage;}
+  if (params && params.pageNo) {message.page = params.pageNo;}
 
   if (this.config.debug) {console.debug('Retrieve users using', message, jQuery.param(message));}
   // Call API

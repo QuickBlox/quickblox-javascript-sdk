@@ -1,41 +1,41 @@
-describe("QuickBlox SDK - Basic functions", function() {
+describe('QuickBlox SDK - Basic functions', function() {
   var quickBlox;
 
   beforeEach(function (){
     quickBlox = new QuickBlox();
   });
 
-  it("can be instantiate", function(){
+  it('can be instantiate', function(){
     expect(new QuickBlox()).not.toBe(null);
   });
 
-  describe("Default settings", function(){
-    it("should know api endpoints and paths", function(){
+  describe('Default settings', function(){
+    it('should know api endpoints and paths', function(){
       expect(quickBlox.urls).toEqual(DEFAULTS.urls);
     });
   
-    it("should have the correct default config", function(){
+    it('should have the correct default config', function(){
       expect(quickBlox.config).toEqual(DEFAULTS.config);
     });
   });
 
-  describe("Configuration values", function(){
+  describe('Configuration values', function(){
     beforeEach(function (){
       quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
     });
 
-    it("should load a config", function(){
+    it('should load a config', function(){
       expect(quickBlox.config).toEqual(CONFIG);
     });
   });
 
-  describe("Session functions", function(){
+  describe('Session functions', function(){
 
     beforeEach(function (){
       quickBlox.init(CONFIG);
     });
 
-    it("should be able to create a session", function(){
+    it('should be able to create a session', function(){
       var done = false, session, error;
 
       runs(function(){
@@ -48,7 +48,7 @@ describe("QuickBlox SDK - Basic functions", function() {
 
       waitsFor(function(){
         return done;
-      },"waiting failed", TIMEOUT);
+      },'create session', TIMEOUT);
 
       runs(function(){
         expect(error).toBe(null);
@@ -56,7 +56,7 @@ describe("QuickBlox SDK - Basic functions", function() {
       });
     });
 
-    it("should be able to delete a session", function(){
+    it('should be able to delete a session', function(){
       var done = false, session, error;
 
       runs(function(){
@@ -71,7 +71,7 @@ describe("QuickBlox SDK - Basic functions", function() {
 
       waitsFor(function(){
         return done;
-      },"waiting failed", TIMEOUT);
+      },'delete session', TIMEOUT);
 
       runs(function(){
         expect(error).toBe(null);
