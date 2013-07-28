@@ -1,8 +1,9 @@
 describe('QuickBlox SDK - User functions', function() {
   var quickBlox = new QuickBlox();
-  var session, done;
+  var session, result, done;
 
   beforeEach(function(){
+    var done;
     quickBlox.init(CONFIG);
     // create a session
     runs(function(){
@@ -19,7 +20,6 @@ describe('QuickBlox SDK - User functions', function() {
   });
 
   it('should be able to list users', function(){
-    var result, done;
     expect(session).not.toBeNull();
     runs(function(){
       done = false;
@@ -32,34 +32,31 @@ describe('QuickBlox SDK - User functions', function() {
     waitsFor(function(){
       return done;
     },'list users', TIMEOUT);
-
     runs(function(){
       expect(result).not.toBeNull();
       expect(result.items.length).toBeGreaterThan(0);
     });
   });
 
-  it('should be able to filter users away!', function() {
-    var result, done;
+
+  it('should be able to filter users away (email nobody@nowhere.org)', function() {
     expect(session).not.toBeNull();
+    params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
     runs(function(){
       done = false;
-      filter = { type: 'email', value: 'nobody@nowhere.org' };
-      quickBlox.listUsers({filter: filter}, function(err, res){
+      quickBlox.listUsers(params, function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
       });
     });
-    waitsFor(function(){
+    waitsFor(function isDone(){
       return done;
-    },'filter users', TIMEOUT);
-
+      }, 'filter users', TIMEOUT);
     runs(function(){
       expect(result).not.toBeNull();
       expect(result.items.length).toBe(0);
     });
 
   });
-
 });
