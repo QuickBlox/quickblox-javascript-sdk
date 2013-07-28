@@ -1,14 +1,15 @@
 describe('QuickBlox SDK - User functions', function() {
-  var quickBlox = new QuickBlox();
-  var session, result, done;
+  var quickBlox = new QuickBlox(), session;
 
   beforeEach(function(){
+    var done;
     quickBlox.init(CONFIG);
     runs(function(){
       done = false;
       quickBlox.createSession(function (err, result){
           expect(err).toBeNull();
           session = result;
+          expect(session).not.toBeNull();
           done = true;
       });
     });
@@ -18,7 +19,7 @@ describe('QuickBlox SDK - User functions', function() {
   });
 
   it('should be able to list users', function(){
-    expect(session).not.toBeNull();
+    var done, result;
     runs(function(){
       done = false;
       quickBlox.listUsers(function(err, res){
@@ -38,7 +39,7 @@ describe('QuickBlox SDK - User functions', function() {
   });
 
   it('should be able to filter users away (email nobody@nowhere.org)', function() {
-    expect(session).not.toBeNull();
+    var done, result;
     params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
     runs(function(){
       done = false;
