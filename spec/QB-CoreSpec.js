@@ -6,7 +6,7 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   it('can be instantiate', function(){
-    expect(new QuickBlox()).not.toBe(null);
+    expect(new QuickBlox()).not.toBeNull();
   });
 
   describe('Default settings', function(){
@@ -51,8 +51,8 @@ describe('QuickBlox SDK - Basic functions', function() {
       },'create session', TIMEOUT);
 
       runs(function(){
-        expect(error).toBe(null);
-        expect(session).not.toBe(null);
+        expect(error).toBeNull();
+        expect(session).not.toBeNull();
       });
     });
 
@@ -63,7 +63,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         quickBlox.createSession(function (err, result){
           expect(err).toBe(null);
           quickBlox.destroySession(function (err, result){
-            expect(err).toBe(null);
+            expect(err).toBeNull();
             done = true;
           });
         });
@@ -74,8 +74,8 @@ describe('QuickBlox SDK - Basic functions', function() {
       },'delete session', TIMEOUT);
 
       runs(function(){
-        expect(error).toBe(null);
-        expect(session).not.toBe(null);
+        expect(error).toBeNull();
+        expect(session).not.toBeNull();
       });
     });
 
