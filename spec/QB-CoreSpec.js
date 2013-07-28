@@ -1,4 +1,4 @@
-describe("QuickBlox SDK", function() {
+describe("QuickBlox SDK - Basic functions", function() {
   var quickBlox;
 
   beforeEach(function (){
@@ -14,7 +14,7 @@ describe("QuickBlox SDK", function() {
       expect(quickBlox.urls).toEqual(DEFAULTS.urls);
     });
   
-    it("should have the default config", function(){
+    it("should have the correct default config", function(){
       expect(quickBlox.config).toEqual(DEFAULTS.config);
     });
   });
@@ -24,7 +24,7 @@ describe("QuickBlox SDK", function() {
       quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
     });
 
-    it("should load the config", function(){
+    it("should load a config", function(){
       expect(quickBlox.config).toEqual(CONFIG);
     });
   });
@@ -32,7 +32,7 @@ describe("QuickBlox SDK", function() {
   describe("Session functions", function(){
 
     beforeEach(function (){
-      quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
+      quickBlox.init(CONFIG);
     });
 
     it("should be able to create a session", function(){
@@ -48,7 +48,7 @@ describe("QuickBlox SDK", function() {
 
       waitsFor(function(){
         return done;
-      },"waiting failed", 5000);
+      },"waiting failed", TIMEOUT);
 
       runs(function(){
         expect(error).toBe(null);
@@ -71,7 +71,7 @@ describe("QuickBlox SDK", function() {
 
       waitsFor(function(){
         return done;
-      },"waiting failed", 5000);
+      },"waiting failed", TIMEOUT);
 
       runs(function(){
         expect(error).toBe(null);

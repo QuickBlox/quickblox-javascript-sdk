@@ -18,3 +18,6 @@ var DEFAULTS =  {
     }
 };
 
+// Default timeout for calls to the API
+var TIMEOUT = 2000;
+

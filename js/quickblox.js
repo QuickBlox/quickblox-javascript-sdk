@@ -19,9 +19,15 @@ function QuickBlox() {
   };
 }
 
-QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  console.debug("QuickBlox.init(", appId, authKey, (authSecret ? '*****' : 'null'), debug);
-  this.config.appId = appId;
+QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug) {
+  console.debug("QuickBlox.init(", appIdOrObj, authKey, (authSecret ? '*****' : 'null'), debug);
+  if (typeof appIdOrObj === 'object') {
+    debug = appIdOrObj.debug;
+    authSecret = appIdOrObj.authSecret;
+    authKey = appIdOrObj.authKey;
+    appIdOrObj = appIdOrObj.appId;
+  }
+  this.config.appId = appIdOrObj;
   this.config.authKey = authKey;
   this.config.authSecret = authSecret;
   this.session = null;
