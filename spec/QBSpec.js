@@ -55,6 +55,30 @@ describe("QuickBlox SDK", function() {
         expect(session).not.toBe(null);
       });
     });
+
+    it("should be able to delete a session", function(){
+      var done = false, session, error;
+
+      runs(function(){
+        quickBlox.createSession(function (err, result){
+          expect(err).toBe(null);
+          quickBlox.destroySession(function (err, result){
+            expect(err).toBe(null);
+            done = true;
+          });
+        });
+      });
+
+      waitsFor(function(){
+        return done;
+      },"waiting failed", 5000);
+
+      runs(function(){
+        expect(error).toBe(null);
+        expect(session).not.toBe(null);
+      });
+    });
+
   });
 
 });
