@@ -9,7 +9,7 @@ var DEFAULTS =  {
       appId: '',
       authKey: '',
       authSecret: '',
-      debug: true
+      debug: false
     },
     urls:  {
       base: 'https://api.quickblox.com/',

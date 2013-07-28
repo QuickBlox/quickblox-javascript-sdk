@@ -5,12 +5,12 @@ var QB = (function(){
 }());
 
 function QuickBlox() {
-  console.debug('Quickblox instantiate');
+  console.debug('Quickblox instantiated');
   this.config = {
     appId: '',
     authKey: '',
     authSecret: '',
-    debug: true
+    debug: false
   };
   this.urls =  {
       base: 'https://api.quickblox.com/',
@@ -20,15 +20,18 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+  console.debug("QuickBlox.init(", appId, authKey, (authSecret ? '*****' : 'null'), debug);
   this.config.appId = appId;
   this.config.authKey = authKey;
   this.config.authSecret = authSecret;
   this.session = null;
-  /* if (typeof debug === 'undefined' || debug === null) {
+  if (typeof debug === 'undefined' || debug === null) {
     this.config.debug = false;
+    console.debug("Debug is OFF");
   } else {
     this.config.debug = debug;
-  }*/
+    console.debug("Debug is ON");
+  }
 };
 
 QuickBlox.prototype.createSession = function createSession(params, callback) {
