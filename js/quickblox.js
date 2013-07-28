@@ -5,12 +5,12 @@ var QB = (function(){
 }());
 
 function QuickBlox() {
-  console.debug('Quickblox instanciated');
+  console.debug('Quickblox instantiated');
   this.config = {
     appId: '',
     authKey: '',
     authSecret: '',
-    debug: true
+    debug: false
   };
   this.urls =  {
       base: 'https://api.quickblox.com/',
@@ -19,16 +19,25 @@ function QuickBlox() {
   };
 }
 
-QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  this.config.appId = appId;
+QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug) {
+  console.debug('QuickBlox.init(', appIdOrObj, authKey, (authSecret ? '*****' : 'null'), debug);
+  if (typeof appIdOrObj === 'object') {
+    debug = appIdOrObj.debug;
+    authSecret = appIdOrObj.authSecret;
+    authKey = appIdOrObj.authKey;
+    appIdOrObj = appIdOrObj.appId;
+  }
+  this.config.appId = appIdOrObj;
   this.config.authKey = authKey;
   this.config.authSecret = authSecret;
   this.session = null;
-  /* if (typeof debug === 'undefined' || debug === null) {
+  if (typeof debug === 'undefined' || debug === null) {
     this.config.debug = false;
+    console.debug('Debug is OFF');
   } else {
     this.config.debug = debug;
-  }*/
+    console.debug('Debug is ON');
+  }
 };
 
 QuickBlox.prototype.createSession = function createSession(params, callback) {
@@ -130,7 +139,7 @@ QuickBlox.prototype.listUsers = function(params, callback){
   message = {
     token: this.session.token
   };
-  if (params.filter) {
+  if (params && params.filter) {
     switch (params.filter.type){
       case 'id':
         filter = 'number id in';
@@ -154,8 +163,8 @@ QuickBlox.prototype.listUsers = function(params, callback){
     filter = filter + ' ' + params.filter.value;
     jQuery.extend(message, {'filter[]': filter});
   }
-  if (params.perPage) { message.per_page = params.perPage;}
-  if (params.pageNo) {message.page = params.pageNo;}
+  if (params && params.perPage) { message.per_page = params.perPage;}
+  if (params && params.pageNo) {message.page = params.pageNo;}
 
   if (this.config.debug) {console.debug('Retrieve users using', message, jQuery.param(message));}
   // Call API
