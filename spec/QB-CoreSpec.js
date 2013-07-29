@@ -26,12 +26,12 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   describe('Session functions', function(){
-    var done = false, session, error;
     beforeEach(function (){
       quickBlox.init(CONFIG);
     });
 
     it('should be able to create a session', function(){
+      var done = false, session, error;
       runs(function(){
         quickBlox.createSession(function (err, result){
           error = err;
@@ -49,6 +49,7 @@ describe('QuickBlox SDK - Basic functions', function() {
     });
 
     it('should be able to delete a session', function(){
+      var done = false, session, error;
       runs(function(){
         quickBlox.createSession(function (err, result){
           expect(err).toBe(null);
