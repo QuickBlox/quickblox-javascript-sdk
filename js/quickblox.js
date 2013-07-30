@@ -20,7 +20,7 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug) {
-  console.debug('QuickBlox.init(', appIdOrObj, authKey, (authSecret ? '*****' : 'null'), debug);
+  console.debug('QuickBlox.init', appIdOrObj, authKey, authSecret, debug);
   if (typeof appIdOrObj === 'object') {
     debug = appIdOrObj.debug;
     authSecret = appIdOrObj.authSecret;
@@ -100,15 +100,19 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
     });
 };
 
+QuickBlox.prototype.signMessage= function(message, secret){
+  var data = jQuery.param(message);
+  signature = QB.Utils.sign(data, secret);
+  jQuery.extend(message, {signature: signature});
+};
+
+// Currently fails due a CORS issue
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this, url, message;
   message = {
     token: this.session.token
   };
-
   if (this.config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
-
-  // Call API
   jQuery.ajax(
     {
       url: this.urls.base+this.urls.session,
@@ -165,9 +169,7 @@ QuickBlox.prototype.listUsers = function(params, callback){
   }
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
-
   if (this.config.debug) {console.debug('Retrieve users using', message, jQuery.param(message));}
-  // Call API
   jQuery.ajax({
     url: url,
     async: true,
@@ -184,12 +186,6 @@ QuickBlox.prototype.listUsers = function(params, callback){
       callback({status:status, message:error}, null);
     }
   });
-};
-
-QuickBlox.prototype.signMessage= function(message, secret){
-  var data = jQuery.param(message);
-  signature = QB.Utils.sign(data, secret);
-  jQuery.extend(message, {signature: signature});
 };
 
 
@@ -226,7 +222,6 @@ Utils.prototype.unixtime = function unixtime(){
 
 Utils.prototype.sign = function sign(message, secret) {
   return CryptoJS.HmacSHA1(message, secret).toString();
- // return Crypto.HMAC(Crypto.SHA1, message, secret);
 };
 
 Utils.prototype.morphParams = function morphParams(params, callback){
