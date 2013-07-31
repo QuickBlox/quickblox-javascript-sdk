@@ -18,7 +18,7 @@ describe('QuickBlox SDK - User functions', function() {
     },'create session', TIMEOUT);
   });
 
-  it('should be able to list users', function(){
+  it('can list users', function(){
     var done, result;
     runs(function(){
       done = false;
@@ -38,7 +38,7 @@ describe('QuickBlox SDK - User functions', function() {
     });
   });
 
-  it('should be able to filter users away (email nobody@nowhere.org)', function() {
+  it('can filter users by email (nobody@nowhere.org)', function() {
     var done, result;
     params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
     runs(function(){
@@ -51,11 +51,33 @@ describe('QuickBlox SDK - User functions', function() {
     });
     waitsFor(function isDone(){
       return done;
-      }, 'filter users', TIMEOUT);
+      }, 'filter users by email', TIMEOUT);
     runs(function(){
       expect(result).not.toBeNull();
       expect(result.items.length).toBe(0);
     });
   });
+
+  it('can filter users by login (qb-dan)', function() {
+    var done, result;
+    params = {filter: { type: 'login', value: 'qb-dan' }};
+    runs(function(){
+      done = false;
+      quickBlox.listUsers(params, function(err, res){
+        expect(err).toBeNull();
+        result = res;
+        done = true;
+      });
+    });
+    waitsFor(function isDone(){
+      return done;
+      }, 'filter users by email', TIMEOUT);
+    runs(function(){
+      expect(result).not.toBeNull();
+      expect(result.items.length).toBe(1);
+      expect(result.items[0].user.id).toBe(239647);
+    });
+  });
+
 
 });
