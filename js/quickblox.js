@@ -90,7 +90,7 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
       success: function(data, status, jqHXR) {
         if (_this.config.debug) {console.debug(status,data);}
         _this.session = data.session;
-        callback(null, data);
+        callback(null, data.session);
       },
       error: function(jqHXR, status, error){
         if (_this.config.debug) {console.debug(status, error);}

@@ -10,16 +10,16 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   describe('Default settings', function(){
-    it('should know api endpoints and paths', function(){
+    it('knows api endpoints and paths', function(){
       expect(quickBlox.urls).toEqual(DEFAULTS.urls);
     });
-    it('should have the correct default config', function(){
+    it('has the correct default config', function(){
       expect(quickBlox.config).toEqual(DEFAULTS.config);
     });
   });
 
   describe('Configuration values', function(){
-    it('should load a config', function(){
+    it('can load a config', function(){
       quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
       expect(quickBlox.config).toEqual(CONFIG);
     });
@@ -30,12 +30,12 @@ describe('QuickBlox SDK - Basic functions', function() {
       quickBlox.init(CONFIG);
     });
 
-    it('should be able to create a session', function(){
+    it('can create a session', function(){
       var done = false, session, error;
       runs(function(){
         quickBlox.createSession(function (err, result){
           error = err;
-          sesison = result;
+          session = result;
           done = true;
         });
       });
@@ -45,10 +45,11 @@ describe('QuickBlox SDK - Basic functions', function() {
       runs(function(){
         expect(error).toBeNull();
         expect(session).not.toBeNull();
+        expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
       });
     });
 
-    it('should be able to delete a session', function(){
+    it('can destroy a session', function(){
       var done = false, session, error;
       runs(function(){
         quickBlox.createSession(function (err, result){
