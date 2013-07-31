@@ -223,7 +223,3 @@ Utils.prototype.unixtime = function unixtime(){
 Utils.prototype.sign = function sign(message, secret) {
   return CryptoJS.HmacSHA1(message, secret).toString();
 };
-
-Utils.prototype.morphParams = function morphParams(params, callback){
-};
-
