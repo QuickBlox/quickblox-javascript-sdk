@@ -1,8 +1,9 @@
-var QB = (function(){
+(function(){
   QB = new QuickBlox();
-  shims();
-  return QB;
-}());
+  //require ('./qbUtils').shims();
+  console.debug (require ('./qbUtils'));
+  window.QB = QB;
+}(window));
 
 function QuickBlox() {
   this.config = {
@@ -43,7 +44,7 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
 };
 
 QuickBlox.prototype.createSession = function createSession(params, callback) {
-  var message, signedMessage, _this = this;
+  var message, signedMessage, _this = this, now;
 
   // Allow first param to be a hash of arguments used to override those set in init
   // could also include (future) user credentials
@@ -52,13 +53,13 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
     params = {};
   }
 
+  now = require('./qbUtils').unixTime();
   // Allow params to override config
   message = {
     application_id : params.appId || this.config.appId,
     auth_key : params.authKey || this.config.authKey,
     nonce: this.nonce().toString(),
-    timestamp: unixtime()
-  };
+    timestamp: now };
 
   // Optionally permit a user session to be created
   if (params.user && params.user.password) {
@@ -189,31 +190,4 @@ QuickBlox.prototype.listUsers = function(params, callback){
     }
   });
 };
-
-
-// Utilities 
-function shims() {
-  // Shim for Date.now function (IE < 9)
-  if (!Date.now) {
-    Date.now = function now() {
-      return new Date().getTime();
-      };
-  }
-  // Shim for console log on IE
-  // (http://stackoverflow.com/questions/1423267/are-there-any-logging-frameworks-for-javascript#answer-10816237)
-  if (typeof console === 'undefined' || !console.log) {
-    window.console = {
-      debug: function() {},
-      trace: function() {},
-      log: function() {},
-      info: function() {},
-      warn: function() {},
-      error: function() {}
-    };
-  }
-}
-
-function unixtime(){
-  return Math.floor(Date.now() / 1000).toString();
-}
 
