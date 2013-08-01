@@ -1,11 +1,10 @@
 var QB = (function(){
   QB = new QuickBlox();
-  QB.Utils = new Utils();
+  shims();
   return QB;
 }());
 
 function QuickBlox() {
-  console.debug('Quickblox instantiated');
   this.config = {
     appId: '',
     authKey: '',
@@ -17,26 +16,29 @@ function QuickBlox() {
       session: 'session.json',
       users: 'users.json'
   };
+  this._nonce = Math.floor(Math.random() * 10000);
+  if (this.config.debug) {console.debug('Quickblox instantiated', this);}
 }
 
-QuickBlox.prototype.init = function init(appIdOrObj, authKey, authSecret, debug) {
-  console.debug('QuickBlox.init', appIdOrObj, authKey, authSecret, debug);
-  if (typeof appIdOrObj === 'object') {
-    debug = appIdOrObj.debug;
-    authSecret = appIdOrObj.authSecret;
-    authKey = appIdOrObj.authKey;
-    appIdOrObj = appIdOrObj.appId;
+QuickBlox.prototype.nonce = function nonce(){
+  return this._nonce++;
+};
+
+QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+  if (debug || this.config.debug) {console.debug('QuickBlox.init', appId, authKey, authSecret, debug);}
+  if (typeof appId === 'object') {
+    debug = appId.debug;
+    authSecret = appId.authSecret;
+    authKey = appId.authKey;
+    appId = appId.appId;
   }
-  this.config.appId = appIdOrObj;
+  this.config.appId = appId;
   this.config.authKey = authKey;
   this.config.authSecret = authSecret;
   this.session = null;
-  if (typeof debug === 'undefined' || debug === null) {
-    this.config.debug = false;
-    console.debug('Debug is OFF');
-  } else {
+  if (debug) {
     this.config.debug = debug;
-    console.debug('Debug is ON');
+    console.debug('Debug is OFF');
   }
 };
 
@@ -54,8 +56,8 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
   message = {
     application_id : params.appId || this.config.appId,
     auth_key : params.authKey || this.config.authKey,
-    nonce: QB.Utils.nonce().toString(),
-    timestamp: QB.Utils.unixtime()
+    nonce: this.nonce().toString(),
+    timestamp: unixtime()
   };
 
   // Optionally permit a user session to be created
@@ -102,7 +104,7 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
 
 QuickBlox.prototype.signMessage= function(message, secret){
   var data = jQuery.param(message);
-  signature = QB.Utils.sign(data, secret);
+  signature =  CryptoJS.HmacSHA1(data, secret).toString();
   jQuery.extend(message, {signature: signature});
 };
 
@@ -190,8 +192,7 @@ QuickBlox.prototype.listUsers = function(params, callback){
 
 
 // Utilities 
-function Utils() {
-  this._nonce = Math.floor(Math.random() * 10000);
+function shims() {
   // Shim for Date.now function (IE < 9)
   if (!Date.now) {
     Date.now = function now() {
@@ -212,14 +213,7 @@ function Utils() {
   }
 }
 
-Utils.prototype.nonce = function nonce(){
-  return this._nonce++;
-};
-
-Utils.prototype.unixtime = function unixtime(){
+function unixtime(){
   return Math.floor(Date.now() / 1000).toString();
-};
+}
 
-Utils.prototype.sign = function sign(message, secret) {
-  return CryptoJS.HmacSHA1(message, secret).toString();
-};
