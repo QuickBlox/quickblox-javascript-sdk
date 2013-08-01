@@ -6,7 +6,7 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   it('can be instantiate', function(){
-    expect(new QuickBlox()).not.toBeNull();
+    expect(quickBlox).not.toBeNull();
   });
 
   describe('Default settings', function(){

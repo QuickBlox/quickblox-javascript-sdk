@@ -1,7 +1,6 @@
 (function(){
   QB = new QuickBlox();
-  //require ('./qbUtils').shims();
-  console.debug (require ('./qbUtils'));
+  require ('./qbUtils').shims();
   window.QB = QB;
 }(window));
 
