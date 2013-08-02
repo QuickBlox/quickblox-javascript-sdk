@@ -1,8 +1,28 @@
-(function(){
-  QB = new QuickBlox();
-  require ('./qbUtils').shims();
-  window.QB = QB;
-}(window));
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * Author: dan@quickblox.com
+ *
+ */
+
+// Browserify export and dependencies
+exports.QuickBlox = QuickBlox();
+
+var crypto = require('crypto-js/hmac-sha1');
+var utils = require('./qbUtils');
+var jQuery = require('../lib/jquery-1.10.2');
+
+
+// IIEF to create a window scoped QB instance
+var QB = (function(QB, window){
+  utils.shims();
+  if (typeof QB.config === 'undefined') {
+    QB = new QuickBlox();
+  }
+  if (window && typeof window.QB === 'undefined'){
+    window.QB= QB;
+  }
+}(QB || {}, window));
 
 function QuickBlox() {
   this.config = {
@@ -52,13 +72,13 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
     params = {};
   }
 
-  now = require('./qbUtils').unixTime();
   // Allow params to override config
   message = {
     application_id : params.appId || this.config.appId,
     auth_key : params.authKey || this.config.authKey,
     nonce: this.nonce().toString(),
-    timestamp: now };
+    timestamp: utils.unixTime()
+  };
 
   // Optionally permit a user session to be created
   if (params.user && params.user.password) {
@@ -104,7 +124,8 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
 
 QuickBlox.prototype.signMessage= function(message, secret){
   var data = jQuery.param(message);
-  signature =  CryptoJS.HmacSHA1(data, secret).toString();
+  console.debug (crypto);
+  signature =  crypto(data, secret).toString();
   jQuery.extend(message, {signature: signature});
 };
 
@@ -189,4 +210,3 @@ QuickBlox.prototype.listUsers = function(params, callback){
     }
   });
 };
-
