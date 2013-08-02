@@ -1,9 +1,5 @@
 describe('QuickBlox SDK - Basic functions', function() {
-  var quickBlox, done;
-
-  beforeEach(function (){
-    quickBlox = new QuickBlox();
-  });
+  var quickBlox = QB, done;
 
   it('can be instantiate', function(){
     expect(quickBlox).not.toBeNull();

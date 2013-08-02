@@ -1,5 +1,5 @@
 describe('QuickBlox SDK - User functions', function() {
-  var quickBlox = new QuickBlox(), session;
+  var quickBlox = QB, session;
 
   beforeEach(function(){
     var done;
