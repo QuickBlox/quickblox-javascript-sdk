@@ -47,7 +47,6 @@ var crypto = require('crypto-js/hmac-sha1');
 var utils = require('./qbUtils');
 var jQuery = require('../lib/jquery-1.10.2');
 
-
 // IIEF to create a window scoped QB instance
 var QB = (function(QB, window){
   utils.shims();
