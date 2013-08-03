@@ -26,7 +26,7 @@ describe('QuickBlox SDK - Basic functions', function() {
       quickBlox.init(CONFIG);
     });
 
-    it('can create a session', function(){
+    it('can create an API session', function(){
       var done = false, session, error;
       runs(function(){
         quickBlox.createSession(function (err, result){
@@ -45,6 +45,27 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
       });
     });
+
+    it('can create an User session', function(){
+      var done = false, session, error;
+      runs(function(){
+        quickBlox.createSession(function (err, result){
+          error = err;
+          session = result;
+          done = true;
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'create session', TIMEOUT);
+      runs(function(){
+        expect(error).toBeNull();
+        expect(session).not.toBeNull();
+        console.debug('session',session);
+        expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
+      });
+    });
+
 
     it('can destroy a session', function(){
       var done = false;

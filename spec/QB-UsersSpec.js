@@ -1,4 +1,4 @@
-describe('quickblox.js - Users - ', function() {
+describe('QuickBlox SDK - Users', function() {
   var quickBlox = QB, session;
 
   beforeEach(function(){
@@ -79,12 +79,12 @@ describe('quickblox.js - Users - ', function() {
     });
   });
 
-  describe('Create, update & delete - ', function(){
-    var user;
+  describe('Create, update & delete Users', function(){
+    var user, login = 'qb-temp' + Math.floor(Math.random()*1000);
 
-    it('can create a user (qb-temp)', function() {
+    it('can create a user (' + login + ')', function() {
       var done;
-      params = { 'login': 'qb-temp', 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
+      params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
       runs(function(){
         done = false;
         quickBlox.users().create(params, function(err, res){
@@ -103,7 +103,7 @@ describe('quickblox.js - Users - ', function() {
       });
     });
 
-    it('can update a user (qb-temp)', function() {
+    it('can update a user (' + login + ')', function() {
       var done;
       user.full_name = 'Updated QuickBlox Test';
       runs(function(){
@@ -124,7 +124,7 @@ describe('quickblox.js - Users - ', function() {
       });
     });
 
-    it('can delete a user (qb-temp)', function() {
+    it('can delete a user (' + login + ')', function() {
       var done;
       runs(function(){
         done = false;
@@ -145,7 +145,7 @@ describe('quickblox.js - Users - ', function() {
   });
 
 
-  describe('Get users api', function(){
+  describe('Get Users', function(){
       var quickBlox = QB, session;
 
     beforeEach(function(){
