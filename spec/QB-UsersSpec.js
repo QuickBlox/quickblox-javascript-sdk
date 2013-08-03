@@ -22,7 +22,7 @@ describe('QuickBlox SDK - User functions', function() {
     var done, result;
     runs(function(){
       done = false;
-      quickBlox.listUsers(function(err, res){
+      quickBlox.users().listUsers(function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
@@ -43,7 +43,7 @@ describe('QuickBlox SDK - User functions', function() {
     params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
     runs(function(){
       done = false;
-      quickBlox.listUsers(params, function(err, res){
+      quickBlox.users().listUsers(params, function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
@@ -63,7 +63,7 @@ describe('QuickBlox SDK - User functions', function() {
     params = {filter: { type: 'login', value: 'qb-dan' }};
     runs(function(){
       done = false;
-      quickBlox.listUsers(params, function(err, res){
+      quickBlox.users().listUsers(params, function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;

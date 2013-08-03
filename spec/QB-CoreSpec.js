@@ -41,12 +41,13 @@ describe('QuickBlox SDK - Basic functions', function() {
       runs(function(){
         expect(error).toBeNull();
         expect(session).not.toBeNull();
+        console.debug('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
       });
     });
 
     it('can destroy a session', function(){
-      var done = false, session, error;
+      var done = false;
       runs(function(){
         quickBlox.createSession(function (err, result){
           expect(err).toBe(null);
@@ -60,8 +61,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         return done;
       },'delete session', TIMEOUT);
       runs(function(){
-        expect(error).toBeNull();
-        expect(session).not.toBeNull();
+        expect(quickBlox.session).toBeNull();
       });
     });
   });

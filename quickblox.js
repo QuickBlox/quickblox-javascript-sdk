@@ -2,195 +2,67 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * qbUtils.js - QuickBlox utilities
- *
+ * Proxy module
  *
  */
 
-function shims() {
-  // Shim for Date.now function (IE < 9)
-  if (!Date.now) {
-    Date.now = function now() {
-      return new Date().getTime();
-      };
-  }
-  // Shim for console log on IE
-  // (http://stackoverflow.com/questions/1423267/are-there-any-logging-frameworks-for-javascript#answer-10816237)
-  if (typeof console === 'undefined' || !console.log) {
-    window.console = {
-      debug: function() {},
-      trace: function() {},
-      log: function() {},
-      info: function() {},
-      warn: function() {},
-      error: function() {}
-    };
-  }
+// Browserify exports and dependencies
+module.exports = ServiceProxy;
+var jQuery = require('../lib/jquery-1.10.2');
+
+function ServiceProxy(qb){
+  this.config = qb.config;
+  this.session = qb.session;
+  this.urls = qb.urls;
+  if (this.config.debug) { console.debug("ServiceProxy", qb); }
+}
+
+var p = ServiceProxy.prototype;
+
+p.ajax = function(params, callback) {
+  var _this = this;
+  jQuery.ajax({
+    url: params.url,
+    async: params.async || true,
+    type: params.type || 'GET',
+    cache: params.cache || false,
+    crossDomain: params.crossDomain || true,
+    data: params.data,
+    // Currently can't do this as it causes CORS issue
+    // beforeSend: function(jqXHR, settings){
+    //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+    success: function (data, status, jqHXR) {
+      if (_this.config.debug) {console.debug(status,data);}
+      callback(null,data);
+    },
+    error: function(jqHXR, status, error) {
+      if (_this.config.debug) {console.debug(status, error);}
+      callback({status:status, message:error}, null);
+    }
+  });
 }
 
 
-exports.shims = function() {shims();};
-exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
-
-},{}],2:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":5}],2:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
- * Author: dan@quickblox.com
+ * Users resource module
  *
  */
 
-// Browserify export and dependencies
-exports.QuickBlox = QuickBlox();
+// Browserify exports and dependencies
+module.exports = UsersProxy;
+var Proxy = require('./qbProxy');
 
-var crypto = require('crypto-js/hmac-sha1');
-var utils = require('./qbUtils');
-var jQuery = require('../lib/jquery-1.10.2');
-
-// IIEF to create a window scoped QB instance
-var QB = (function(QB, window){
-  utils.shims();
-  if (typeof QB.config === 'undefined') {
-    QB = new QuickBlox();
-  }
-  if (window && typeof window.QB === 'undefined'){
-    window.QB= QB;
-  }
-}(QB || {}, window));
-
-function QuickBlox() {
-  this.config = {
-    appId: '',
-    authKey: '',
-    authSecret: '',
-    debug: false
-  };
-  this.urls =  {
-      base: 'https://api.quickblox.com/',
-      session: 'session.json',
-      users: 'users.json'
-  };
-  this._nonce = Math.floor(Math.random() * 10000);
-  if (this.config.debug) {console.debug('Quickblox instantiated', this);}
+function UsersProxy(qb) {
+  this.config = qb.config;
+  this.urls = qb.urls;
+  this.session = qb.session;
+  this.service = new Proxy(qb);
 }
 
-QuickBlox.prototype.nonce = function nonce(){
-  return this._nonce++;
-};
-
-QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  if (debug || this.config.debug) {console.debug('QuickBlox.init', appId, authKey, authSecret, debug);}
-  if (typeof appId === 'object') {
-    debug = appId.debug;
-    authSecret = appId.authSecret;
-    authKey = appId.authKey;
-    appId = appId.appId;
-  }
-  this.config.appId = appId;
-  this.config.authKey = authKey;
-  this.config.authSecret = authSecret;
-  this.session = null;
-  if (debug) {
-    this.config.debug = debug;
-    console.debug('Debug is OFF');
-  }
-};
-
-QuickBlox.prototype.createSession = function createSession(params, callback) {
-  var message, signedMessage, _this = this, now;
-
-  // Allow first param to be a hash of arguments used to override those set in init
-  // could also include (future) user credentials
-  if (typeof params === 'function'){
-    callback = params;
-    params = {};
-  }
-
-  // Allow params to override config
-  message = {
-    application_id : params.appId || this.config.appId,
-    auth_key : params.authKey || this.config.authKey,
-    nonce: this.nonce().toString(),
-    timestamp: utils.unixTime()
-  };
-
-  // Optionally permit a user session to be created
-  if (params.user && params.user.password) {
-    message.user = params.user;
-  }
-  if (params.social && params.social.provider) {
-    message.provider = social.provider;
-    message.scope = params.social.scope;
-    message.keys = { token: params.social.token, secret: params.social.secret };
-  }
-  // Sign message with SHA-1 using secret key and add to payload
-  this.signMessage(message,  params.authSecret || this.config.authSecret);
-
-  if (this.config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
-
-  // Call API
-  jQuery.ajax( 
-    {
-      url: this.urls.base+this.urls.session, 
-      async: true,
-		  type: 'POST',
-      crossDomain: true,
-      cache: false,
-		  dateType: 'application/json',
-		  data: message,
-      /* Currently can't do this as it causes CORS issue
-       * beforeSend: function(jqXHR, settings){
-        //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-        return true;
-      },*/
-      success: function(data, status, jqHXR) {
-        if (_this.config.debug) {console.debug(status,data);}
-        _this.session = data.session;
-        callback(null, data.session);
-      },
-      error: function(jqHXR, status, error){
-        if (_this.config.debug) {console.debug(status, error);}
-        _this.session = null;
-        callback({status: status, message: error}, null);
-      }
-    });
-};
-
-QuickBlox.prototype.signMessage= function(message, secret){
-  var data = jQuery.param(message);
-  console.debug (crypto);
-  signature =  crypto(data, secret).toString();
-  jQuery.extend(message, {signature: signature});
-};
-
-// Currently fails due a CORS issue
-QuickBlox.prototype.destroySession = function(callback){
-  var _this = this, url, message;
-  message = {
-    token: this.session.token
-  };
-  if (this.config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
-  jQuery.ajax(
-    {
-      url: this.urls.base+this.urls.session,
-      async: true,
-      type: 'DELETE',
-      cache: false,
-      crossDomain: true,
-      data: message,
-      success: function(data, status, error){
-        if (_this.config.debug) {console.debug(status, data);}
-        _this.session = null;
-        callback(null, data);
-      },
-      error: function(jqHXR, status, error){
-        if (_this.config.debug) {console.debug(status, error);}
-        callback({status: status, message: error}, null);
-      }
-    });
-};
-
-QuickBlox.prototype.listUsers = function(params, callback){
+UsersProxy.prototype.listUsers = function(params, callback){
   var _this = this, url, message, filter;
   if (typeof params === 'function') {
     callback = params;
@@ -222,30 +94,189 @@ QuickBlox.prototype.listUsers = function(params, callback){
         break;
     }
     filter = filter + ' ' + params.filter.value;
-    jQuery.extend(message, {'filter[]': filter});
+    message['filter[]'] = filter;
   }
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
-  if (this.config.debug) {console.debug('Retrieve users using', message, jQuery.param(message));}
-  jQuery.ajax({
-    url: url,
-    async: true,
-    type: 'GET',
-    cache: false,
-    crossDomain: true,
-    data: message,
-    success: function (data, status, jqHXR) {
-      if (_this.config.debug) {console.debug(status,data);}
-      callback(null,data);
-    },
-    error: function(jqHXR, status, error) {
-      if (_this.config.debug) {console.debug(status, error);}
-      callback({status:status, message:error}, null);
-    }
-  });
+  if (this.config.debug) {console.debug('Retrieve users using', message);}
+  this.service.ajax({url: url, data: message}, callback);
 };
 
-},{"../lib/jquery-1.10.2":3,"./qbUtils":1,"crypto-js/hmac-sha1":5}],3:[function(require,module,exports){
+},{"./qbProxy":1}],3:[function(require,module,exports){
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * qbUtils.js - QuickBlox utilities
+ *
+ *
+ */
+
+function shims() {
+  // Shim for Date.now function (IE < 9)
+  if (!Date.now) {
+    Date.now = function now() {
+      return new Date().getTime();
+      };
+  }
+  // Shim for console log on IE
+  // (http://stackoverflow.com/questions/1423267/are-there-any-logging-frameworks-for-javascript#answer-10816237)
+  if (typeof console === 'undefined' || !console.log) {
+    window.console = {
+      debug: function() {},
+      trace: function() {},
+      log: function() {},
+      info: function() {},
+      warn: function() {},
+      error: function() {}
+    };
+  }
+}
+
+
+exports.shims = function() {shims();};
+exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
+
+},{}],4:[function(require,module,exports){
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * Main module
+ *
+ */
+
+// Browserify exports and dependencies
+module.exports = QuickBlox;
+var utils = require('./qbUtils');
+var Users = require('./qbUsers');
+var Proxy = require('./qbProxy');
+var crypto = require('crypto-js/hmac-sha1');
+var jQuery = require('../lib/jquery-1.10.2');
+
+// IIEF to create a window scoped QB instance
+var QB = (function(QB, window){
+  utils.shims();
+  if (typeof QB.config === 'undefined') {
+    QB = new QuickBlox();
+  }
+  if (window && typeof window.QB === 'undefined'){
+    window.QB= QB;
+  }
+}(QB || {}, window));
+
+function QuickBlox() {
+  this.config = {
+    appId: '',
+    authKey: '',
+    authSecret: '',
+    debug: false
+  };
+  this.urls =  {
+      base: 'https://api.quickblox.com/',
+      session: 'session.json',
+      users: 'users.json'
+  };
+  this.proxies = {};
+  this._nonce = Math.floor(Math.random() * 10000);
+  this.service = new Proxy(this);
+  if (this.config.debug) {console.debug('Quickblox instantiated', this);}
+}
+
+QuickBlox.prototype.nonce = function nonce(){
+  return this._nonce++;
+};
+
+QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+  if (debug || this.config.debug) {console.debug('QuickBlox.init', appId, authKey, authSecret, debug);}
+  if (typeof appId === 'object') {
+    debug = appId.debug;
+    authSecret = appId.authSecret;
+    authKey = appId.authKey;
+    appId = appId.appId;
+  }
+  this.config.appId = appId;
+  this.config.authKey = authKey;
+  this.config.authSecret = authSecret;
+  this.session = null;
+  if (debug) {
+    this.config.debug = debug;
+    console.debug('Debug is', (debug?'ON':'OFF'));
+  }
+};
+
+QuickBlox.prototype.createSession = function createSession(params, callback) {
+  var message, signedMessage, _this = this;
+
+  // Allow first param to be a hash of arguments used to override those set in init
+  // could also include (future) user credentials
+  if (typeof params === 'function'){
+    callback = params;
+    params = {};
+  }
+
+  // Allow params to override config
+  message = {
+    application_id : params.appId || this.config.appId,
+    auth_key : params.authKey || this.config.authKey,
+    nonce: this.nonce().toString(),
+    timestamp: utils.unixTime()
+  };
+
+  // Optionally permit a user session to be created
+  if (params.user && params.user.password) {
+    message.user = params.user;
+  }
+  if (params.social && params.social.provider) {
+    message.provider = social.provider;
+    message.scope = params.social.scope;
+    message.keys = { token: params.social.token, secret: params.social.secret };
+  }
+  // Sign message with SHA-1 using secret key and add to payload
+  this.signMessage(message,  params.authSecret || this.config.authSecret);
+
+  if (this.config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
+  this.service.ajax({url: this.urls.base+this.urls.session, data: message, type: 'POST'}, 
+                    function(err,data){
+                      var session;
+                      if (data) {
+                        session = data.session;
+                        _this.session = session;
+                      }
+                      if (_this.config.debug) { console.debug('data', session); }
+                      callback(err,session);
+                    });
+};
+
+QuickBlox.prototype.signMessage= function(message, secret){
+  var data = jQuery.param(message);
+  signature =  crypto(data, secret).toString();
+  jQuery.extend(message, {signature: signature});
+};
+
+// Currently fails due a CORS issue
+QuickBlox.prototype.destroySession = function(callback){
+  var _this = this, url, message;
+  message = {
+    token: this.session.token
+  };
+  if (this.config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
+  this.service.ajax({url: this.urls.base+this.urls.session, type: 'DELETE'},
+                    function(err,data){
+                      if (typeof err ==='undefined'){
+                        _this.session = null;
+                      }
+                      callback(err,data);
+                    });
+};
+
+QuickBlox.prototype.users = function(){
+  if (typeof this.proxies.users === 'undefined') {
+    this.proxies.users = new Users(this);
+  }
+  if (this.config.debug) { console.debug('proxies.users',this.proxies.users); }
+  return this.proxies.users;
+}
+
+},{"../lib/jquery-1.10.2":5,"./qbProxy":1,"./qbUsers":2,"./qbUtils":3,"crypto-js/hmac-sha1":7}],5:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v1.10.2
  * http://jquery.com/
@@ -10037,13 +10068,13 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 })( window );
 
 })()
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core"),require("./sha1"),require("./hmac")):"function"==typeof define&&define.amd?define(["./core","./sha1","./hmac"],r):r(e.CryptoJS)})(this,function(e){return e.HmacSHA1});
-},{"./core":4,"./hmac":6,"./sha1":7}],6:[function(require,module,exports){
+},{"./core":6,"./hmac":8,"./sha1":9}],8:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,i=t.Base,n=r.enc,o=n.Utf8,c=r.algo;c.HMAC=i.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,i=4*t;r.sigBytes>i&&(r=e.finalize(r)),r.clamp();for(var n=this._oKey=r.clone(),c=this._iKey=r.clone(),s=n.words,a=c.words,f=0;t>f;f++)s[f]^=1549556828,a[f]^=909522486;n.sigBytes=c.sigBytes=i,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var i=r.finalize(this._oKey.clone().concat(t));return i}})})()});
-},{"./core":4}],7:[function(require,module,exports){
+},{"./core":6}],9:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":4}]},{},[2])
+},{"./core":6}]},{},[4])
 ;
