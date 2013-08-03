@@ -1,8 +1,33 @@
-var QB = (function(){
-  QB = new QuickBlox();
-  shims();
-  return QB;
-}());
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * Main SDK module
+ *
+ * For use in browser provides a convient QB window scoped var.
+ * Also exports QuickBlox for using with node.js, browserify, etc. 
+ *
+ * Token/login service and resource proxy stub factories
+ *
+ */
+
+// Browserify exports and dependencies
+module.exports = QuickBlox;
+var utils = require('./qbUtils');
+var Users = require('./qbUsers');
+var Proxy = require('./qbProxy');
+var crypto = require('crypto-js/hmac-sha1');
+var jQuery = require('../lib/jquery-1.10.2');
+
+// IIEF to create a window scoped QB instance
+var QB = (function(QB, window){
+  utils.shims();
+  if (typeof QB.config === 'undefined') {
+    QB = new QuickBlox();
+  }
+  if (window && typeof window.QB === 'undefined'){
+    window.QB= QB;
+  }
+}(QB || {}, window));
 
 function QuickBlox() {
   this.config = {
@@ -13,10 +38,13 @@ function QuickBlox() {
   };
   this.urls =  {
       base: 'https://api.quickblox.com/',
-      session: 'session.json',
-      users: 'users.json'
+      session: 'session',
+      users: 'users',
+      type: '.json'
   };
+  this.proxies = {};
   this._nonce = Math.floor(Math.random() * 10000);
+  this.service = new Proxy(this);
   if (this.config.debug) {console.debug('Quickblox instantiated', this);}
 }
 
@@ -38,12 +66,12 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
   this.session = null;
   if (debug) {
     this.config.debug = debug;
-    console.debug('Debug is OFF');
+    console.debug('Debug is', (debug?'ON':'OFF'));
   }
 };
 
 QuickBlox.prototype.createSession = function createSession(params, callback) {
-  var message, signedMessage, _this = this;
+  var message, _this = this;
 
   // Allow first param to be a hash of arguments used to override those set in init
   // could also include (future) user credentials
@@ -57,7 +85,7 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
     application_id : params.appId || this.config.appId,
     auth_key : params.authKey || this.config.authKey,
     nonce: this.nonce().toString(),
-    timestamp: unixtime()
+    timestamp: utils.unixTime()
   };
 
   // Optionally permit a user session to be created
@@ -73,38 +101,22 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
   this.signMessage(message,  params.authSecret || this.config.authSecret);
 
   if (this.config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
-
-  // Call API
-  jQuery.ajax( 
-    {
-      url: this.urls.base+this.urls.session, 
-      async: true,
-		  type: 'POST',
-      crossDomain: true,
-      cache: false,
-		  dateType: 'application/json',
-		  data: message,
-      /* Currently can't do this as it causes CORS issue
-       * beforeSend: function(jqXHR, settings){
-        //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-        return true;
-      },*/
-      success: function(data, status, jqHXR) {
-        if (_this.config.debug) {console.debug(status,data);}
-        _this.session = data.session;
-        callback(null, data.session);
-      },
-      error: function(jqHXR, status, error){
-        if (_this.config.debug) {console.debug(status, error);}
-        _this.session = null;
-        callback({status: status, message: error}, null);
-      }
-    });
+  this.service.ajax({url: this.urls.base + this.urls.session + this.urls.type, data: message, type: 'POST'}, 
+                    function(err,data){
+                      var session;
+                      if (data) {
+                        session = data.session;
+                        _this.session = session;
+                        _this.sessionChanged(_this);
+                      }
+                      if (_this.config.debug) { console.debug('QuickBlox.createSession', session); }
+                      callback(err,session);
+                    });
 };
 
 QuickBlox.prototype.signMessage= function(message, secret){
   var data = jQuery.param(message);
-  signature =  CryptoJS.HmacSHA1(data, secret).toString();
+  signature =  crypto(data, secret).toString();
   jQuery.extend(message, {signature: signature});
 };
 
@@ -115,105 +127,32 @@ QuickBlox.prototype.destroySession = function(callback){
     token: this.session.token
   };
   if (this.config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
-  jQuery.ajax(
-    {
-      url: this.urls.base+this.urls.session,
-      async: true,
-      type: 'DELETE',
-      cache: false,
-      crossDomain: true,
-      data: message,
-      success: function(data, status, error){
-        if (_this.config.debug) {console.debug(status, data);}
-        _this.session = null;
-        callback(null, data);
-      },
-      error: function(jqHXR, status, error){
-        if (_this.config.debug) {console.debug(status, error);}
-        callback({status: status, message: error}, null);
-      }
-    });
+  this.service.ajax({url: this.urls.base+this.urls.session, type: 'DELETE'},
+                    function(err,data){
+                      if (typeof err ==='undefined'){
+                        _this.session = null;
+                      }
+                      callback(err,data);
+                    });
 };
 
-QuickBlox.prototype.listUsers = function(params, callback){
-  var _this = this, url, message, filter;
-  if (typeof params === 'function') {
-    callback = params;
-    params = undefined;
-  }
-  url = this.urls.base+this.urls.users;
-  message = {
-    token: this.session.token
-  };
-  if (params && params.filter) {
-    switch (params.filter.type){
-      case 'id':
-        filter = 'number id in';
-        break;
-      case 'email':
-        filter = 'string email in';
-        break;
-      case 'login':
-        filter = 'string login in';
-        break;
-      case 'facebook_id':
-        filter = 'number facebook_id in';
-        break;
-      case 'twitter_id':
-        filter = 'number twitter_id in';
-        break;
-      case 'phone':
-        filter = 'string phone in';
-        break;
+QuickBlox.prototype.sessionChanged= function(qb){
+  var name, proxy, proxies = this.proxies;
+  for (name in proxies){
+    if (proxies.hasOwnProperty(name)){
+      if (qb.config.debug) {console.debug('Changing session for proxy', name, qb.session);}
+      proxy = proxies[name];
+      proxy.config = qb.config;
+      proxy.session = qb.session;
     }
-    filter = filter + ' ' + params.filter.value;
-    jQuery.extend(message, {'filter[]': filter});
   }
-  if (params && params.perPage) { message.per_page = params.perPage;}
-  if (params && params.pageNo) {message.page = params.pageNo;}
-  if (this.config.debug) {console.debug('Retrieve users using', message, jQuery.param(message));}
-  jQuery.ajax({
-    url: url,
-    async: true,
-    type: 'GET',
-    cache: false,
-    crossDomain: true,
-    data: message,
-    success: function (data, status, jqHXR) {
-      if (_this.config.debug) {console.debug(status,data);}
-      callback(null,data);
-    },
-    error: function(jqHXR, status, error) {
-      if (_this.config.debug) {console.debug(status, error);}
-      callback({status:status, message:error}, null);
-    }
-  });
 };
 
-
-// Utilities 
-function shims() {
-  // Shim for Date.now function (IE < 9)
-  if (!Date.now) {
-    Date.now = function now() {
-      return new Date().getTime();
-      };
+QuickBlox.prototype.users = function(){
+  if (typeof this.proxies.users === 'undefined') {
+    this.proxies.users = new Users(this);
+    if (this.config.debug) { console.debug('New QuickBlox.users', this.proxies.users); }
   }
-  // Shim for console log on IE
-  // (http://stackoverflow.com/questions/1423267/are-there-any-logging-frameworks-for-javascript#answer-10816237)
-  if (typeof console === 'undefined' || !console.log) {
-    window.console = {
-      debug: function() {},
-      trace: function() {},
-      log: function() {},
-      info: function() {},
-      warn: function() {},
-      error: function() {}
-    };
-  }
+  //if (this.config.debug) { console.debug('QuickBlox.users', this.proxies.users); }
+  return this.proxies.users;
 }
-
-function unixtime(){
-  return Math.floor(Date.now() / 1000).toString();
-}
-

@@ -3,10 +3,8 @@
   "description": "Quickblox Javascript SDK",
   "author": "Dan Murphy <dan@quickblox.com>",
   "dependencies": {
-    "jquery": ">= 1.9.x"
+    "crypto-js": ">= 3.1.x"
   },
   "devDependencies": {
-    "jslint": ">= 0.1.x",
-    "jasmine": ">=1.3.1"
   }
 }
