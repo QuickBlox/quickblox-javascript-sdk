@@ -13,8 +13,9 @@ var DEFAULTS =  {
     },
     urls:  {
       base: 'https://api.quickblox.com/',
-      session: 'session.json',
-      users: 'users.json'
+      session: 'session',
+      users: 'users',
+      type: '.json'
     }
 };
 

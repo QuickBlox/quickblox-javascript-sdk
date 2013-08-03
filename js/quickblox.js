@@ -1,7 +1,12 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * Main module
+ * Main SDK module
+ *
+ * For use in browser provides a convient QB window scoped var.
+ * Also exports QuickBlox for using with node.js, browserify, etc. 
+ *
+ * Token/login service and resource proxy stub factories
  *
  */
 
@@ -33,8 +38,9 @@ function QuickBlox() {
   };
   this.urls =  {
       base: 'https://api.quickblox.com/',
-      session: 'session.json',
-      users: 'users.json'
+      session: 'session',
+      users: 'users',
+      type: '.json'
   };
   this.proxies = {};
   this._nonce = Math.floor(Math.random() * 10000);
@@ -65,7 +71,7 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
 };
 
 QuickBlox.prototype.createSession = function createSession(params, callback) {
-  var message, signedMessage, _this = this;
+  var message, _this = this;
 
   // Allow first param to be a hash of arguments used to override those set in init
   // could also include (future) user credentials
@@ -95,14 +101,15 @@ QuickBlox.prototype.createSession = function createSession(params, callback) {
   this.signMessage(message,  params.authSecret || this.config.authSecret);
 
   if (this.config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
-  this.service.ajax({url: this.urls.base+this.urls.session, data: message, type: 'POST'}, 
+  this.service.ajax({url: this.urls.base + this.urls.session + this.urls.type, data: message, type: 'POST'}, 
                     function(err,data){
                       var session;
                       if (data) {
                         session = data.session;
                         _this.session = session;
+                        _this.sessionChanged(_this);
                       }
-                      if (_this.config.debug) { console.debug('data', session); }
+                      if (_this.config.debug) { console.debug('QuickBlox.createSession', session); }
                       callback(err,session);
                     });
 };
@@ -129,10 +136,23 @@ QuickBlox.prototype.destroySession = function(callback){
                     });
 };
 
+QuickBlox.prototype.sessionChanged= function(qb){
+  var name, proxy, proxies = this.proxies;
+  for (name in proxies){
+    if (proxies.hasOwnProperty(name)){
+      if (qb.config.debug) {console.debug('Changing session for proxy', name, qb.session);}
+      proxy = proxies[name];
+      proxy.config = qb.config;
+      proxy.session = qb.session;
+    }
+  }
+};
+
 QuickBlox.prototype.users = function(){
   if (typeof this.proxies.users === 'undefined') {
     this.proxies.users = new Users(this);
+    if (this.config.debug) { console.debug('New QuickBlox.users', this.proxies.users); }
   }
-  if (this.config.debug) { console.debug('proxies.users',this.proxies.users); }
+  //if (this.config.debug) { console.debug('QuickBlox.users', this.proxies.users); }
   return this.proxies.users;
 }

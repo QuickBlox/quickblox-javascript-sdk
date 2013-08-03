@@ -52,8 +52,8 @@ describe('QuickBlox SDK - Basic functions', function() {
         quickBlox.createSession(function (err, result){
           expect(err).toBe(null);
           quickBlox.destroySession(function (err, result){
-            expect(err).toBeNull();
             done = true;
+            expect(err).toBeNull();
           });
         });
       });

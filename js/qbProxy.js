@@ -16,10 +16,13 @@ function ServiceProxy(qb){
   if (this.config.debug) { console.debug("ServiceProxy", qb); }
 }
 
-var p = ServiceProxy.prototype;
-
-p.ajax = function(params, callback) {
+ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
+  if (this.session && this.session.token){
+    if (params.data) {params.data.token = this.session.token;}
+    else { params.data = {token:this.session.token}; }
+  }
+  if (this.config.debug) { console.debug('ServiceProxy.ajax calling',params.url, params); }
   jQuery.ajax({
     url: params.url,
     async: params.async || true,
@@ -31,7 +34,7 @@ p.ajax = function(params, callback) {
     // beforeSend: function(jqXHR, settings){
     //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
     success: function (data, status, jqHXR) {
-      if (_this.config.debug) {console.debug(status,data);}
+      if (_this.config.debug) {console.debug("ServiceProxy.ajax", status,data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {

@@ -1,4 +1,4 @@
-describe('QuickBlox SDK - User functions', function() {
+describe('quickblox.js - Users - ', function() {
   var quickBlox = QB, session;
 
   beforeEach(function(){
@@ -79,5 +79,114 @@ describe('QuickBlox SDK - User functions', function() {
     });
   });
 
+  describe('Create, update & delete - ', function(){
+    var user;
+
+    it('can create a user (qb-temp)', function() {
+      var done;
+      params = { 'login': 'qb-temp', 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
+      runs(function(){
+        done = false;
+        quickBlox.users().create(params, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          user = res;
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'create user', TIMEOUT);
+      runs(function(){
+        console.debug('User is',user);
+        expect(user).not.toBeNull();
+        expect(user.full_name).toBe('QuickBlox Test');
+      });
+    });
+
+    it('can update a user (qb-temp)', function() {
+      var done;
+      user.full_name = 'Updated QuickBlox Test';
+      runs(function(){
+        done = false;
+        quickBlox.users().update(user, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          if (res) {user = res;}
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'update user', TIMEOUT);
+      runs(function(){
+        console.debug('User is',user);
+        expect(user).not.toBeNull();
+        expect(user.full_name).toBe('Updated QuickBlox Test');
+      });
+    });
+
+    it('can delete a user (qb-temp)', function() {
+      var done;
+      runs(function(){
+        done = false;
+        quickBlox.users().delete(user.id, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          user = res;
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'delete user', TIMEOUT);
+      runs(function(){
+        console.debug('User is', user);
+        expect(user).toBeNull();
+      });
+    });
+  });
+
+
+  describe('Get users api', function(){
+      var quickBlox = QB, session;
+
+    beforeEach(function(){
+      var done;
+      quickBlox.init(CONFIG);
+      runs(function(){
+        done = false;
+        quickBlox.createSession(function (err, result){
+            expect(err).toBeNull();
+            session = result;
+            expect(session).not.toBeNull();
+            done = true;
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'create session', TIMEOUT);
+    });
+
+    it('can get users by login (qb-dan)', function() {
+      var done, user;
+      params = { 'login': 'qb-dan' };
+      runs(function(){
+        done = false;
+        quickBlox.users().get(params, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          user = res;
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'filter users by email', TIMEOUT);
+      runs(function(){
+        console.debug('User is',user);
+        expect(user).not.toBeNull();
+        expect(user.id).toBe(239647);
+      });
+    });
+
+
+  });
 
 });
