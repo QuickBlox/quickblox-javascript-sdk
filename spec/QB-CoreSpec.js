@@ -7,17 +7,23 @@ describe('QuickBlox SDK - Basic functions', function() {
 
   describe('Default settings', function(){
     it('knows api endpoints and paths', function(){
-      expect(quickBlox.urls).toEqual(DEFAULTS.urls);
+      expect(quickBlox.config.urls).toEqual(DEFAULTS.urls);
     });
     it('has the correct default config', function(){
-      expect(quickBlox.config).toEqual(DEFAULTS.config);
+      expect(quickBlox.config.creds).toEqual(DEFAULTS.creds);
+    });
+    it('has debug off by default', function(){
+      expect(quickBlox.config.debug).toBe(DEFAULTS.debug);
     });
   });
 
   describe('Configuration values', function(){
     it('can load a config', function(){
       quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      expect(quickBlox.config).toEqual(CONFIG);
+      expect(quickBlox.config.creds.appId).toEqual(CONFIG.appId);
+      expect(quickBlox.config.creds.authKey).toEqual(CONFIG.authKey);
+      expect(quickBlox.config.creds.authSecret).toEqual(CONFIG.authSecret);
+      expect(quickBlox.config.debug).toBe(CONFIG.debug);
     });
   });
 
@@ -49,7 +55,7 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can create an User session', function(){
       var done = false, session, error;
       runs(function(){
-        quickBlox.createSession(function (err, result){
+        quickBlox.createSession({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
           error = err;
           session = result;
           done = true;
@@ -63,6 +69,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(session).not.toBeNull();
         console.debug('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
+        expect(session.user_id).toBe(parseInt(CONFIG.appId,10));
       });
     });
 
@@ -85,6 +92,50 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(quickBlox.session).toBeNull();
       });
     });
+
+    it('can login a user', function(){
+      var done = false, user, error;
+      runs(function(){
+        quickBlox.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+          error = err;
+          user = result;
+          done = true;
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'login user', TIMEOUT);
+      runs(function(){
+        expect(error).toBeNull();
+        expect(user).not.toBeNull();
+        expect(user.login).toBe(VALID_USER);
+        expect(user.website).toBe('http://quickblox.com');
+      });
+    });
+
+    it('can logout a user', function(){
+      var done = false, user, error;
+      runs(function(){
+        quickBlox.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+          quickBlox.logout(function(err, result){
+            error = err;
+            user = result;
+            done = true;
+          });
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'logout user', TIMEOUT);
+      runs(function(){
+        expect(error).toBeNull();
+        expect(user).not.toBeNull();
+        expect(user.login).toBe(VALID_USER);
+        expect(user.website).toBe('http://quickblox.com');
+      });
+    });
+
+
   });
 
 });

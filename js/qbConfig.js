@@ -1,10 +1,13 @@
-
-/*
- *  Contains the default expected settings etc
+/* 
+ * QuickBlox JavaScript SDK
+ *
+ * Configuration Module
  *
  */
 
-var DEFAULTS = {
+// Browserify exports
+
+var config = {
   creds:{
     appId: '',
     authKey: '',
@@ -21,7 +24,4 @@ var DEFAULTS = {
   debug: false
 };
 
-// Default timeout for calls to the API
-var TIMEOUT = 5000;
-
-var VALID_USER='qb-temp', VALID_PASSWORD = 'someSecret';
+module.exports = config;

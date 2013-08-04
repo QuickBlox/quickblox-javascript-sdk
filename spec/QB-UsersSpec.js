@@ -105,20 +105,21 @@ describe('QuickBlox SDK - Users', function() {
 
     it('can update a user (' + login + ')', function() {
       var done;
-      user.full_name = 'Updated QuickBlox Test';
       runs(function(){
         done = false;
-        quickBlox.users().update(user, function(err, res){
-          done = true;
-          expect(err).toBeNull();
-          if (res) {user = res;}
+        quickBlox.login({login: login, password: 'someSecret'}, function(err, user){
+          user.full_name = 'Updated QuickBlox Test';
+          quickBlox.users().update(user, function(err, res){
+            done = true;
+            expect(err).toBeNull();
+            if (res) {user = res;}
+          });
         });
       });
       waitsFor(function isDone(){
         return done;
         }, 'update user', TIMEOUT);
       runs(function(){
-        console.debug('User is',user);
         expect(user).not.toBeNull();
         expect(user.full_name).toBe('Updated QuickBlox Test');
       });
@@ -178,13 +179,54 @@ describe('QuickBlox SDK - Users', function() {
       });
       waitsFor(function isDone(){
         return done;
-        }, 'filter users by email', TIMEOUT);
+        }, 'get users by login', TIMEOUT);
       runs(function(){
-        console.debug('User is',user);
         expect(user).not.toBeNull();
         expect(user.id).toBe(239647);
       });
     });
+
+    it('can get users by email (dan@quickblox.com)', function() {
+      var done, user;
+      params = { 'email': 'dan@quickblox.com' };
+      runs(function(){
+        done = false;
+        quickBlox.users().get(params, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          user = res;
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'get users by email', TIMEOUT);
+      runs(function(){
+        expect(user).not.toBeNull();
+        expect(user.id).toBe(239647);
+      });
+    });
+
+    it('can get users by id (239647)', function() {
+      var done, user;
+      params = 239647;
+      runs(function(){
+        done = false;
+        quickBlox.users().get(params, function(err, res){
+          done = true;
+          expect(err).toBeNull();
+          user = res;
+        });
+      });
+      waitsFor(function isDone(){
+        return done;
+        }, 'get users by email', TIMEOUT);
+      runs(function(){
+        expect(user).not.toBeNull();
+        expect(user.login).toBe('qb-dan');
+      });
+    });
+
+
 
 
   });
