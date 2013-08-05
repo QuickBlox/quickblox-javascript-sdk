@@ -80,7 +80,7 @@ describe('QuickBlox SDK - Users', function() {
   });
 
   describe('Create, update & delete Users', function(){
-    var user, login = 'qb-temp' + Math.floor(Math.random()*1000);
+    var user, login = 'qb-temp' + Math.floor(Math.random()*9999999);
 
     it('can create a user (' + login + ')', function() {
       var done;

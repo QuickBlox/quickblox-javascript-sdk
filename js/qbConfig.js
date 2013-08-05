@@ -18,6 +18,10 @@ var config = {
     session: 'session',
     login: 'login',
     users: 'users',
+    pushtokens: 'push_tokens',
+    subscriptions: 'subscriptions',
+    events: 'events',
+    pullevents: 'pull_events',
     chat: 'chat',
     type: '.json'
     },

@@ -21,7 +21,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     if (params.data) {params.data.token = this.session.token;}
     else { params.data = {token:this.session.token}; }
   }
-  if (config.debug) { console.debug('ServiceProxy', params.url, params); }
+  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
   jQuery.ajax({
     url: params.url,
     async: params.async || true,
@@ -37,8 +37,10 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.debug(status, error);}
-      callback({status:status, message:error}, null);
+      if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      var errorMsg = {status: status, message:error};
+      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
+      callback(errorMsg, null);
     }
   });
 }

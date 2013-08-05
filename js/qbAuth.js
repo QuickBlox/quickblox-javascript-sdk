@@ -42,7 +42,8 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 
   // Optionally permit a user session to be created
   if (params.login && params.password) {
-    message.user = { login : params.login, password : params.password};
+    //message.user = { login : params.login, password : params.password};
+    message.user = {login : params.login, password: params.password};
   } else if (params.email && params.password) {
     message.user = {email: params.email, password: params.password};
   }
@@ -54,7 +55,7 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
   // Sign message with SHA-1 using secret key and add to payload
   this.signMessage(message,  params.authSecret || config.creds.authSecret);
 
-  if (config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
+  //if (config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
   this.service.ajax({url: sessionUrl, data: message, type: 'POST'},
                     function handleProxy(err,data){
                       var session;
@@ -67,15 +68,13 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
                     });
 };
 
-
-
 // Currently fails due a CORS issue
 AuthProxy.prototype.destroySession = function(callback){
   var _this = this, message;
   message = {
     token: this.session.token
   };
-  if (config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
+  //if (config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
   this.service.ajax({url: sessionUrl, type: 'DELETE'},
                     function(err,data){
                       if (typeof err ==='undefined'){
@@ -111,7 +110,7 @@ AuthProxy.prototype.logout = function(callback){
   message = {
     token: this.session.token
   };
-  if (config.debug) {console.debug('Logout', message, jQuery.param(message));}
+  //if (config.debug) {console.debug('Logout', message, jQuery.param(message));}
   this.service.ajax({url: loginUrl, type: 'DELETE'}, callback);
 };
 
@@ -121,7 +120,9 @@ AuthProxy.prototype.nonce = function nonce(){
 
 AuthProxy.prototype.signMessage= function(message, secret){
   var data = jQuery.param(message);
-  signature =  crypto(data, secret).toString();
-  if (config.debug) { console.debug ('Signature of', data, 'is', signature); }
+  var toSign = data.replace(/%5B/g, '[');
+  toSign = toSign.replace(/%5D/g ,']');
+  signature =  crypto(toSign, secret).toString();
+  //if (config.debug) { console.debug ('Signature of', toSign, 'is', signature); }
   jQuery.extend(message, {signature: signature});
 };

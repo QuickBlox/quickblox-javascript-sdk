@@ -69,7 +69,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(session).not.toBeNull();
         console.debug('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
-        expect(session.user_id).toBe(parseInt(CONFIG.appId,10));
+        expect(session.user_id).toBe(245530);
       });
     });
 
@@ -113,6 +113,24 @@ describe('QuickBlox SDK - Basic functions', function() {
       });
     });
 
+    it('cannot login an invalid user', function(){
+      var done = false, result, error;
+      runs(function(){
+        quickBlox.login({login: INVALID_USER, password: INVALID_PASSWORD}, function (err, res){
+          error = err;
+          result = res;
+          done = true;
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'invalid login user', TIMEOUT);
+      runs(function(){
+        expect(error).not.toBeNull();
+        expect(error.message).toBe('Unauthorized');
+      });
+    });
+
     it('can logout a user', function(){
       var done = false, user, error;
       runs(function(){
@@ -134,7 +152,6 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(user.website).toBe('http://quickblox.com');
       });
     });
-
 
   });
 

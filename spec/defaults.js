@@ -15,9 +15,13 @@ var DEFAULTS = {
     session: 'session',
     login: 'login',
     users: 'users',
+    pushtokens: 'push_tokens',
+    subscriptions: 'subscriptions',
+    events: 'events',
+    pullevents: 'pull_events',
     chat: 'chat',
     type: '.json'
-    },
+  },
   debug: false
 };
 
@@ -25,3 +29,4 @@ var DEFAULTS = {
 var TIMEOUT = 5000;
 
 var VALID_USER='qb-temp', VALID_PASSWORD = 'someSecret';
+var INVALID_USER='notRegistered', INVALID_PASSWORD = 'doNotCare';

@@ -16,6 +16,7 @@ var config = require('./qbConfig');
 var utils = require('./qbUtils');
 var Auth = require('./qbAuth');
 var Users = require('./qbUsers');
+var Messages = require('./qbMessages');
 var Proxy = require('./qbProxy');
 
 // IIEF to create a window scoped QB instance
@@ -120,5 +121,15 @@ QuickBlox.prototype.users = function(){
   }
   return this.proxies.users;
 };
+
+QuickBlox.prototype.messages = function(){
+  if (typeof this.proxies.messages === 'undefined') {
+    this.proxies.messages = new Messages(this);
+    if (this.config.debug) { console.debug('New proxies.messages', this.proxies.messages); }
+  }
+  return this.proxies.messages;
+};
+
+
 
 
