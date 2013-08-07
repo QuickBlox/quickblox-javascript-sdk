@@ -11,15 +11,15 @@ var config = require('./qbConfig');
 var jQuery = require('../lib/jquery-1.10.2');
 
 function ServiceProxy(qb){
-  this.session = qb.session;
+  this.qbInst = qb;
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
-  if (this.session && this.session.token){
-    if (params.data) {params.data.token = this.session.token;}
-    else { params.data = {token:this.session.token}; }
+  if (this.qbInst.session && this.qbInst.session.token){
+    if (params.data) {params.data.token = this.qbInst.session.token;}
+    else { params.data = {token:this.qbInst.session.token}; }
   }
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
   jQuery.ajax({
@@ -37,7 +37,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      //if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
       var errorMsg = {status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
       callback(errorMsg, null);

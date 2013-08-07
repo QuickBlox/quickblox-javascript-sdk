@@ -22,6 +22,8 @@ var config = {
     subscriptions: 'subscriptions',
     events: 'events',
     pullevents: 'pull_events',
+    geo: 'geodata',
+    places: 'places',
     chat: 'chat',
     type: '.json'
     },

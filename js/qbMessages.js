@@ -13,14 +13,14 @@ var config = require('./qbConfig');
 var Proxy = require('./qbProxy');
 var jQuery = require('../lib/jquery-1.10.2');
 
-
+// Url variables
 var tokenUrl = config.urls.base + config.urls.pushtokens;
 var subsUrl = config.urls.base + config.urls.subscriptions;
 var eventUrl = config.urls.base + config.urls.events;
 var pullUrl = config.urls.base + config.urls.pullevents;
 
-function MessagesProxy(qb) {
-  this.service = new Proxy(qb);
+function MessagesProxy(service) {
+  this.service = service;
 }
 
 // Push Tokens

@@ -17,10 +17,10 @@ var crypto = require('crypto-js/hmac-sha1');
 var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
 var loginUrl = config.urls.base + config.urls.login + config.urls.type;
 
-function AuthProxy(qb) {
-  this.session = qb.session;
+function AuthProxy(service) {
+  //this.session = qb.session;
   this._nonce = Math.floor(Math.random() * 10000);
-  this.service = new Proxy(qb);
+  this.service = service;
 }
 
 AuthProxy.prototype.createSession = function createSession(params, callback) {
@@ -128,7 +128,7 @@ AuthProxy.prototype.signMessage= function(message, secret){
   jQuery.extend(message, {signature: signature});
 };
 
-},{"../lib/jquery-1.10.2":8,"./qbConfig":2,"./qbProxy":4,"./qbUtils":6,"crypto-js/hmac-sha1":10}],2:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":9,"./qbConfig":2,"./qbProxy":5,"./qbUtils":7,"crypto-js/hmac-sha1":11}],2:[function(require,module,exports){
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -153,6 +153,8 @@ var config = {
     subscriptions: 'subscriptions',
     events: 'events',
     pullevents: 'pull_events',
+    geo: 'geodata',
+    places: 'places',
     chat: 'chat',
     type: '.json'
     },
@@ -162,6 +164,97 @@ var config = {
 module.exports = config;
 
 },{}],3:[function(require,module,exports){
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * Location module
+ *
+ */
+
+// Browserify exports and dependencies
+module.exports = LocationProxy;
+var config = require('./qbConfig');
+
+var geoUrl = config.urls.base + config.urls.geo;
+var geoFindUrl = config.urls.base + 'find' + config.urls.geo;
+var placesUrl = config.urls.base + config.urls.places;
+
+
+function LocationProxy(service){
+  this.service = service;
+  this.geodata = new GeoProxy(service);
+  this.places = new PlacesProxy(service);
+  if (config.debug) { console.debug("LocationProxy", service); }
+}
+
+
+function GeoProxy(service){
+  this.service = service;
+}
+
+GeoProxy.prototype.create = function(params, callback){
+  if (config.debug) { console.debug('GeoProxy.create', {geo_data: params});}
+  this.service.ajax({url: geoUrl + config.urls.type, data: {geo_data: params}, type: 'POST'}, function(err,result){
+    if (err){ callback(err, null); }
+    else { callback (err, result.geo_datum); }
+  });
+};
+
+GeoProxy.prototype.update = function(params, callback){
+  if (config.debug) { console.debug('GeoProxy.create', params);}
+  this.service.ajax({url: geoUrl + params.id + config.urls.type, data: {geodata:params}, type: 'PUT'}, callback);
+};
+
+GeoProxy.prototype.get = function(id, callback){
+  if (config.debug) { console.debug('GeoProxy.get', params);}
+  this.service.ajax({url: geoUrl + params.id + config.urls.type}, callback);
+};
+
+GeoProxy.prototype.search = function(params, callback){
+  if (config.debug) { console.debug('GeoProxy.get', params);}
+  this.service.ajax({url: geoFindUrl, data: params}, callback);
+};
+
+GeoProxy.prototype.delete = function(id, callback){
+  if (config.debug) { console.debug('GeoProxy.delete', id); }
+  this.service.ajax({url: geoUrl + id + config.urls.type, type: 'DELETE'}, callback);
+};
+
+GeoProxy.prototype.purge = function(days, callback){
+  if (config.debug) { console.debug('GeoProxy.purge', id); }
+  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE'}, callback);
+};
+
+function PlacesProxy(service) {
+  this.service = service;
+}
+
+PlacesProxy.prototype.list = function(params, callback){
+  if (config.debug) { console.debug('PlacesProxy.list', params);}
+  this.service.ajax({url: placesUrl + config.urls.type}, callback);
+};
+
+PlacesProxy.prototype.create = function(params, callback){
+  if (config.debug) { console.debug('PlacesProxy.create', params);}
+  this.service.ajax({url: placesUrl + config.urls.type, data: {place:params}, type: 'POST'}, callback);
+};
+
+PlacesProxy.prototype.get = function(id, callback){
+  if (config.debug) { console.debug('PlacesProxy.get', params);}
+  this.service.ajax({url: placesUrl + id + config.urls.type}, callback);
+};
+
+PlacesProxy.prototype.update = function(place, callback){
+  if (config.debug) { console.debug('PlacesProxy.update', place);}
+  this.service.ajax({url: placesUrl + place.id + config.urls.type, data: {place: place}}, callback);
+};
+
+PlacesProxy.prototype.delete = function(id, callback){
+  if (config.debug) { console.debug('PlacesProxy.delete', params);}
+  this.service.ajax({url: placesUrl + id + config.urls.type, type: 'DELETE'}, callback);
+};
+
+},{"./qbConfig":2}],4:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -177,14 +270,14 @@ var config = require('./qbConfig');
 var Proxy = require('./qbProxy');
 var jQuery = require('../lib/jquery-1.10.2');
 
-
+// Url variables
 var tokenUrl = config.urls.base + config.urls.pushtokens;
 var subsUrl = config.urls.base + config.urls.subscriptions;
 var eventUrl = config.urls.base + config.urls.events;
 var pullUrl = config.urls.base + config.urls.pullevents;
 
-function MessagesProxy(qb) {
-  this.service = new Proxy(qb);
+function MessagesProxy(service) {
+  this.service = service;
 }
 
 // Push Tokens
@@ -260,7 +353,7 @@ MessagesProxy.prototype.listPullEvents = function(callback) {
 
 
 
-},{"../lib/jquery-1.10.2":8,"./qbConfig":2,"./qbProxy":4}],4:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":9,"./qbConfig":2,"./qbProxy":5}],5:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -274,15 +367,15 @@ var config = require('./qbConfig');
 var jQuery = require('../lib/jquery-1.10.2');
 
 function ServiceProxy(qb){
-  this.session = qb.session;
+  this.qbInst = qb;
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
-  if (this.session && this.session.token){
-    if (params.data) {params.data.token = this.session.token;}
-    else { params.data = {token:this.session.token}; }
+  if (this.qbInst.session && this.qbInst.session.token){
+    if (params.data) {params.data.token = this.qbInst.session.token;}
+    else { params.data = {token:this.qbInst.session.token}; }
   }
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
   jQuery.ajax({
@@ -300,7 +393,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      //if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
       var errorMsg = {status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
       callback(errorMsg, null);
@@ -309,7 +402,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
 }
 
 
-},{"../lib/jquery-1.10.2":8,"./qbConfig":2}],5:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":9,"./qbConfig":2}],6:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -324,8 +417,8 @@ var Proxy = require('./qbProxy');
 
 var baseUrl = config.urls.base+ config.urls.users;
 
-function UsersProxy(qb) {
-  this.service = new Proxy(qb);
+function UsersProxy(service) {
+  this.service = service;
 }
 
 UsersProxy.prototype.listUsers = function(params, callback){
@@ -361,7 +454,7 @@ UsersProxy.prototype.listUsers = function(params, callback){
   }
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
-  if (config.debug) {console.debug('Retrieve users using', message);}
+  if (config.debug) {console.debug('UsersProxy.list', message);}
   this.service.ajax({url: url, data: message}, callback);
 };
 
@@ -411,7 +504,7 @@ UsersProxy.prototype.get = function(params, callback){
       url += '/by_tags' + config.urls.type + '?tag=' + params.tags;
     }
   }
-  if (config.debug) {console.debug('Get users using', url);}
+  if (config.debug) {console.debug('UsersProxy.get', url);}
   this.service.ajax({url:url}, function(err,data){
                     var user;
                     if (data.user) {
@@ -422,7 +515,7 @@ UsersProxy.prototype.get = function(params, callback){
                     });
 } 
 
-},{"./qbConfig":2,"./qbProxy":4}],6:[function(require,module,exports){
+},{"./qbConfig":2,"./qbProxy":5}],7:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -456,7 +549,7 @@ function shims() {
 exports.shims = function() {shims();};
 exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -473,10 +566,11 @@ exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString();
 module.exports = QuickBlox;
 var config = require('./qbConfig');
 var utils = require('./qbUtils');
+var Proxy = require('./qbProxy');
 var Auth = require('./qbAuth');
 var Users = require('./qbUsers');
 var Messages = require('./qbMessages');
-var Proxy = require('./qbProxy');
+var Location = require('./qbLocation');
 
 // IIEF to create a window scoped QB instance
 var QB = (function(QB, window){
@@ -492,11 +586,13 @@ var QB = (function(QB, window){
 
 // Actual QuickBlox API starts here
 function QuickBlox() {
-  this.proxies = {};
   if (config.debug) {console.debug('Quickblox instantiated', this);}
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+  this.proxies = {};
+  this.service = new Proxy(this);
+  this.session =  null;
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -521,7 +617,7 @@ QuickBlox.prototype.createSession = function (params, callback){
     params = {};
   }
   if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this);
+    this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
   this.proxies.auth.createSession(params,
@@ -548,7 +644,7 @@ QuickBlox.prototype.destroySession = function(callback){
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
   if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this);
+    this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
   this.proxies.auth.login(params,
@@ -575,7 +671,7 @@ QuickBlox.prototype.logout = function(callback){
 
 QuickBlox.prototype.users = function(){
   if (typeof this.proxies.users === 'undefined') {
-    this.proxies.users = new Users(this);
+    this.proxies.users = new Users(this.service);
     if (this.config.debug) { console.debug('New proxies.users', this.proxies.users); }
   }
   return this.proxies.users;
@@ -583,17 +679,26 @@ QuickBlox.prototype.users = function(){
 
 QuickBlox.prototype.messages = function(){
   if (typeof this.proxies.messages === 'undefined') {
-    this.proxies.messages = new Messages(this);
+    this.proxies.messages = new Messages(this.service);
     if (this.config.debug) { console.debug('New proxies.messages', this.proxies.messages); }
   }
   return this.proxies.messages;
+};
+
+QuickBlox.prototype.location = function(){
+  if (typeof this.proxies.location === 'undefined') {
+    this.proxies.location = new Location(this.service);
+    if (this.config.debug) { console.debug('New proxies.location', this.proxies.location); }
+  }
+  return this.proxies.location;
 };
 
 
 
 
 
-},{"./qbAuth":1,"./qbConfig":2,"./qbMessages":3,"./qbProxy":4,"./qbUsers":5,"./qbUtils":6}],8:[function(require,module,exports){
+
+},{"./qbAuth":1,"./qbConfig":2,"./qbLocation":3,"./qbMessages":4,"./qbProxy":5,"./qbUsers":6,"./qbUtils":7}],9:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v1.10.2
  * http://jquery.com/
@@ -10385,13 +10490,13 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 })( window );
 
 })()
-},{}],9:[function(require,module,exports){
-(function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
 },{}],10:[function(require,module,exports){
+(function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
+},{}],11:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core"),require("./sha1"),require("./hmac")):"function"==typeof define&&define.amd?define(["./core","./sha1","./hmac"],r):r(e.CryptoJS)})(this,function(e){return e.HmacSHA1});
-},{"./core":9,"./hmac":11,"./sha1":12}],11:[function(require,module,exports){
+},{"./core":10,"./hmac":12,"./sha1":13}],12:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,i=t.Base,n=r.enc,o=n.Utf8,c=r.algo;c.HMAC=i.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,i=4*t;r.sigBytes>i&&(r=e.finalize(r)),r.clamp();for(var n=this._oKey=r.clone(),c=this._iKey=r.clone(),s=n.words,a=c.words,f=0;t>f;f++)s[f]^=1549556828,a[f]^=909522486;n.sigBytes=c.sigBytes=i,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var i=r.finalize(this._oKey.clone().concat(t));return i}})})()});
-},{"./core":9}],12:[function(require,module,exports){
+},{"./core":10}],13:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":9}]},{},[7])
+},{"./core":10}]},{},[8])
 ;

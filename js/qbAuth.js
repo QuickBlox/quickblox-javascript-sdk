@@ -16,10 +16,10 @@ var crypto = require('crypto-js/hmac-sha1');
 var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
 var loginUrl = config.urls.base + config.urls.login + config.urls.type;
 
-function AuthProxy(qb) {
-  this.session = qb.session;
+function AuthProxy(service) {
+  //this.session = qb.session;
   this._nonce = Math.floor(Math.random() * 10000);
-  this.service = new Proxy(qb);
+  this.service = service;
 }
 
 AuthProxy.prototype.createSession = function createSession(params, callback) {

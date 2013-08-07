@@ -1,21 +1,24 @@
 describe('QuickBlox SDK - Users', function() {
-  var quickBlox = QB, session;
+  var quickBlox = QB, session, needsInit = true;
 
   beforeEach(function(){
     var done;
-    quickBlox.init(CONFIG);
-    runs(function(){
-      done = false;
-      quickBlox.createSession(function (err, result){
-          expect(err).toBeNull();
-          session = result;
-          expect(session).not.toBeNull();
-          done = true;
+    if (needsInit){
+      quickBlox.init(CONFIG);
+      runs(function(){
+        done = false;
+        quickBlox.createSession(function (err, result){
+            expect(err).toBeNull();
+            session = result;
+            expect(session).not.toBeNull();
+            needsInit = false;
+            done = true;
+        });
       });
-    });
-    waitsFor(function(){
-      return done;
-    },'create session', TIMEOUT);
+      waitsFor(function(){
+        return done;
+      },'create session', TIMEOUT);
+    }
   });
 
   it('can list users', function(){

@@ -14,10 +14,11 @@
 module.exports = QuickBlox;
 var config = require('./qbConfig');
 var utils = require('./qbUtils');
+var Proxy = require('./qbProxy');
 var Auth = require('./qbAuth');
 var Users = require('./qbUsers');
 var Messages = require('./qbMessages');
-var Proxy = require('./qbProxy');
+var Location = require('./qbLocation');
 
 // IIEF to create a window scoped QB instance
 var QB = (function(QB, window){
@@ -33,11 +34,13 @@ var QB = (function(QB, window){
 
 // Actual QuickBlox API starts here
 function QuickBlox() {
-  this.proxies = {};
   if (config.debug) {console.debug('Quickblox instantiated', this);}
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+  this.proxies = {};
+  this.service = new Proxy(this);
+  this.session =  null;
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -62,7 +65,7 @@ QuickBlox.prototype.createSession = function (params, callback){
     params = {};
   }
   if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this);
+    this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
   this.proxies.auth.createSession(params,
@@ -89,7 +92,7 @@ QuickBlox.prototype.destroySession = function(callback){
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
   if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this);
+    this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
   this.proxies.auth.login(params,
@@ -116,7 +119,7 @@ QuickBlox.prototype.logout = function(callback){
 
 QuickBlox.prototype.users = function(){
   if (typeof this.proxies.users === 'undefined') {
-    this.proxies.users = new Users(this);
+    this.proxies.users = new Users(this.service);
     if (this.config.debug) { console.debug('New proxies.users', this.proxies.users); }
   }
   return this.proxies.users;
@@ -124,11 +127,20 @@ QuickBlox.prototype.users = function(){
 
 QuickBlox.prototype.messages = function(){
   if (typeof this.proxies.messages === 'undefined') {
-    this.proxies.messages = new Messages(this);
+    this.proxies.messages = new Messages(this.service);
     if (this.config.debug) { console.debug('New proxies.messages', this.proxies.messages); }
   }
   return this.proxies.messages;
 };
+
+QuickBlox.prototype.location = function(){
+  if (typeof this.proxies.location === 'undefined') {
+    this.proxies.location = new Location(this.service);
+    if (this.config.debug) { console.debug('New proxies.location', this.proxies.location); }
+  }
+  return this.proxies.location;
+};
+
 
 
 

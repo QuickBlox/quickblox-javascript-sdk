@@ -12,8 +12,8 @@ var Proxy = require('./qbProxy');
 
 var baseUrl = config.urls.base+ config.urls.users;
 
-function UsersProxy(qb) {
-  this.service = new Proxy(qb);
+function UsersProxy(service) {
+  this.service = service;
 }
 
 UsersProxy.prototype.listUsers = function(params, callback){
@@ -49,7 +49,7 @@ UsersProxy.prototype.listUsers = function(params, callback){
   }
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
-  if (config.debug) {console.debug('Retrieve users using', message);}
+  if (config.debug) {console.debug('UsersProxy.list', message);}
   this.service.ajax({url: url, data: message}, callback);
 };
 
@@ -99,7 +99,7 @@ UsersProxy.prototype.get = function(params, callback){
       url += '/by_tags' + config.urls.type + '?tag=' + params.tags;
     }
   }
-  if (config.debug) {console.debug('Get users using', url);}
+  if (config.debug) {console.debug('UsersProxy.get', url);}
   this.service.ajax({url:url}, function(err,data){
                     var user;
                     if (data.user) {
