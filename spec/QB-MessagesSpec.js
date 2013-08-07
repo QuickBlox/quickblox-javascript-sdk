@@ -1,20 +1,24 @@
 describe('QuickBlox SDK - Messages', function() {
-  var quickBlox = QB;
+  var session, needsInit = true;
 
   beforeEach(function(){
     var done;
-    runs(function(){
-      quickBlox.init(CONFIG);
-      done = false;
-      quickBlox.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-        expect(err).toBeNull();
-        expect(result).not.toBeNull();
-        done = true;
+    if (needsInit){
+      QB.init(CONFIG);
+      runs(function(){
+        done = false;
+        QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
+            expect(err).toBeNull();
+            session = result;
+            expect(session).not.toBeNull();
+            needsInit = false;
+            done = true;
+        });
       });
-    });
-    waitsFor(function(){
-      return done;
+      waitsFor(function(){
+        return done;
       },'create session', TIMEOUT);
+    }
   });
 
   describe('Tokens', function(){
@@ -24,7 +28,7 @@ describe('QuickBlox SDK - Messages', function() {
       runs(function(){
         done = false;
         params = {environment: 'production', client_identification_sequence: 'aa557232bc237245ba67686484efab', platform: 'iOS', udid: '5f5930e927660e6e7d8ff0548b3c404a4d16c04f'};
-        quickBlox.messages().createPushToken(params, function(err, res){
+        QB.messages.tokens.create(params, function(err, res){
           pushToken = res;
           done = true;
           expect(err).toBeNull();
@@ -44,7 +48,7 @@ describe('QuickBlox SDK - Messages', function() {
       runs(function(){
         done = false;
         expect(pushToken).not.toBeNull();
-        quickBlox.messages().deletePushToken(pushToken.id, function(err, res){
+        QB.messages.tokens.delete(pushToken.id, function(err, res){
           expect(err).toBeNull();
           done = true;
         });
@@ -62,7 +66,7 @@ describe('QuickBlox SDK - Messages', function() {
       runs(function(){
       done = false;
         params = { notification_channels : 'pull ', url: 'http://example.com/notify_me'};
-        quickBlox.messages().createSubscription(params, function(err, res){
+        QB.messages.subscriptions.create(params, function(err, res){
           subscription = res;
           done = true;
           expect(err).toBeNull();
@@ -81,7 +85,7 @@ describe('QuickBlox SDK - Messages', function() {
       var done, result;
       runs(function(){
       done = false;
-        quickBlox.messages().listSubscriptions(function(err, res){
+        QB.messages.subscriptions.list(function(err, res){
           result = res;
           done = true;
           expect(err).toBeNull();
@@ -101,7 +105,7 @@ describe('QuickBlox SDK - Messages', function() {
       var done, error;
       runs(function(){
       done = false;
-        quickBlox.messages().deleteSubscription(subscription.id, function(err, res){
+        QB.messages.subscriptions.delete(subscription.id, function(err, res){
           error = err;
           done = true;
         });
@@ -124,7 +128,7 @@ describe('QuickBlox SDK - Messages', function() {
         params = {notification_type: 'pull', environment:'production', message: window.btoa('QuickBlox JavaScript SDK Spec Event'),
             user: { id : [239647, 245530]},
             end_date:  Math.floor((Date.now() / 1000) +(24*60*60)).toString()};
-        quickBlox.messages().createEvent(params, function(err, res){
+        QB.messages.events.create(params, function(err, res){
           result = res;
           done = true;
           expect(err).toBeNull();
@@ -143,7 +147,7 @@ describe('QuickBlox SDK - Messages', function() {
       var done, result;
       runs(function(){
       done = false;
-        quickBlox.messages().listPullEvents(function(err, res){
+        QB.messages.events.pullEvents(function(err, res){
           result = res;
           done = true;
           expect(err).toBeNull();

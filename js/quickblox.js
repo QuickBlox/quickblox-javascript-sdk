@@ -38,9 +38,12 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  this.proxies = {};
-  this.service = new Proxy(this);
   this.session =  null;
+  this.service = new Proxy(this);
+  this.auth = new Auth(this.service);
+  this.users = new Users(this.service);
+  this.messages = new Messages(this.service);
+  this.location = new Location(this.service);
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -64,11 +67,13 @@ QuickBlox.prototype.createSession = function (params, callback){
     callback = params;
     params = {};
   }
+  /*
   if (typeof this.proxies.auth === 'undefined'){
     this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
-  this.proxies.auth.createSession(params,
+ */
+  this.auth.createSession(params,
                                   function(err,session) {
                                     if (session) {
                                       _this.session = session;
@@ -79,8 +84,8 @@ QuickBlox.prototype.createSession = function (params, callback){
 
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.destroySession(function(err, result){
+  if (this.session) {
+    this.auth.destroySession(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -91,11 +96,7 @@ QuickBlox.prototype.destroySession = function(callback){
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this.service);
-    if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
-  }
-  this.proxies.auth.login(params,
+  this.auth.login(params,
                           function (err,session) {
                                     if (session) {
                                       _this.session = session;
@@ -106,8 +107,8 @@ QuickBlox.prototype.login = function (params, callback){
 
 QuickBlox.prototype.logout = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.logout(function(err, result){
+  if (this.session) {
+    this.auth.logout(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -116,7 +117,11 @@ QuickBlox.prototype.logout = function(callback){
   }
 };
 
-
+/*
+ * For now just going to assign properties so you can do
+ * quickblox.users.get(...) rather than
+ * quickblox.users().get(...)
+ *
 QuickBlox.prototype.users = function(){
   if (typeof this.proxies.users === 'undefined') {
     this.proxies.users = new Users(this.service);
@@ -140,6 +145,7 @@ QuickBlox.prototype.location = function(){
   }
   return this.proxies.location;
 };
+*/
 
 
 

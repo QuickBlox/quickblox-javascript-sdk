@@ -1,13 +1,13 @@
 describe('QuickBlox SDK - Users', function() {
-  var quickBlox = QB, session, needsInit = true;
+  var session, needsInit = true;
 
   beforeEach(function(){
     var done;
     if (needsInit){
-      quickBlox.init(CONFIG);
+      QB.init(CONFIG);
       runs(function(){
         done = false;
-        quickBlox.createSession(function (err, result){
+        QB.createSession(function (err, result){
             expect(err).toBeNull();
             session = result;
             expect(session).not.toBeNull();
@@ -25,7 +25,7 @@ describe('QuickBlox SDK - Users', function() {
     var done, result;
     runs(function(){
       done = false;
-      quickBlox.users().listUsers(function(err, res){
+      QB.users.listUsers(function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
@@ -46,13 +46,13 @@ describe('QuickBlox SDK - Users', function() {
     params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
     runs(function(){
       done = false;
-      quickBlox.users().listUsers(params, function(err, res){
+      QB.users.listUsers(params, function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
       });
     });
-    waitsFor(function isDone(){
+    waitsFor(function(){
       return done;
       }, 'filter users by email', TIMEOUT);
     runs(function(){
@@ -66,13 +66,13 @@ describe('QuickBlox SDK - Users', function() {
     params = {filter: { type: 'login', value: 'qb-dan' }};
     runs(function(){
       done = false;
-      quickBlox.users().listUsers(params, function(err, res){
+      QB.users.listUsers(params, function(err, res){
         expect(err).toBeNull();
         result = res;
         done = true;
       });
     });
-    waitsFor(function isDone(){
+    waitsFor(function(){
       return done;
       }, 'filter users by email', TIMEOUT);
     runs(function(){
@@ -90,7 +90,7 @@ describe('QuickBlox SDK - Users', function() {
       params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
       runs(function(){
         done = false;
-        quickBlox.users().create(params, function(err, res){
+        QB.users.create(params, function(err, res){
           done = true;
           expect(err).toBeNull();
           user = res;
@@ -110,16 +110,16 @@ describe('QuickBlox SDK - Users', function() {
       var done;
       runs(function(){
         done = false;
-        quickBlox.login({login: login, password: 'someSecret'}, function(err, user){
+        QB.login({login: login, password: 'someSecret'}, function(err, user){
           user.full_name = 'Updated QuickBlox Test';
-          quickBlox.users().update(user, function(err, res){
+          QB.users.update(user, function(err, res){
             done = true;
             expect(err).toBeNull();
             if (res) {user = res;}
           });
         });
       });
-      waitsFor(function isDone(){
+      waitsFor(function(){
         return done;
         }, 'update user', TIMEOUT);
       runs(function(){
@@ -132,13 +132,13 @@ describe('QuickBlox SDK - Users', function() {
       var done;
       runs(function(){
         done = false;
-        quickBlox.users().delete(user.id, function(err, res){
+        QB.users.delete(user.id, function(err, res){
           done = true;
           expect(err).toBeNull();
           user = res;
         });
       });
-      waitsFor(function isDone(){
+      waitsFor(function(){
         return done;
         }, 'delete user', TIMEOUT);
       runs(function(){
@@ -150,23 +150,25 @@ describe('QuickBlox SDK - Users', function() {
 
 
   describe('Get Users', function(){
-      var quickBlox = QB, session;
+    var needsInit = true;
 
     beforeEach(function(){
       var done;
-      quickBlox.init(CONFIG);
-      runs(function(){
-        done = false;
-        quickBlox.createSession(function (err, result){
-            expect(err).toBeNull();
-            session = result;
-            expect(session).not.toBeNull();
-            done = true;
+      if (needsInit){
+        QB.init(CONFIG);
+        runs(function(){
+          done = false;
+          QB.createSession(function (err, result){
+              expect(err).toBeNull();
+              expect(result).not.toBeNull();
+              done = true;
+              needsInit = false;
+          });
         });
-      });
-      waitsFor(function(){
-        return done;
-      },'create session', TIMEOUT);
+        waitsFor(function(){
+          return done;
+       },'create session', TIMEOUT);
+      }
     });
 
     it('can get users by login (qb-dan)', function() {
@@ -174,13 +176,13 @@ describe('QuickBlox SDK - Users', function() {
       params = { 'login': 'qb-dan' };
       runs(function(){
         done = false;
-        quickBlox.users().get(params, function(err, res){
+        QB.users.get(params, function(err, res){
           done = true;
           expect(err).toBeNull();
           user = res;
         });
       });
-      waitsFor(function isDone(){
+      waitsFor(function(){
         return done;
         }, 'get users by login', TIMEOUT);
       runs(function(){
@@ -194,13 +196,13 @@ describe('QuickBlox SDK - Users', function() {
       params = { 'email': 'dan@quickblox.com' };
       runs(function(){
         done = false;
-        quickBlox.users().get(params, function(err, res){
+        QB.users.get(params, function(err, res){
           done = true;
           expect(err).toBeNull();
           user = res;
         });
       });
-      waitsFor(function isDone(){
+      waitsFor(function(){
         return done;
         }, 'get users by email', TIMEOUT);
       runs(function(){
@@ -214,24 +216,19 @@ describe('QuickBlox SDK - Users', function() {
       params = 239647;
       runs(function(){
         done = false;
-        quickBlox.users().get(params, function(err, res){
+        QB.users.get(params, function(err, res){
           done = true;
           expect(err).toBeNull();
           user = res;
         });
       });
-      waitsFor(function isDone(){
+      waitsFor(function(){
         return done;
-        }, 'get users by email', TIMEOUT);
+        }, 'get users by id', TIMEOUT);
       runs(function(){
         expect(user).not.toBeNull();
         expect(user.login).toBe('qb-dan');
       });
     });
-
-
-
-
   });
-
 });

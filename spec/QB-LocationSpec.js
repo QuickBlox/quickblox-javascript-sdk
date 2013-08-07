@@ -1,12 +1,11 @@
 describe('QuickBlox SDK - Location', function() {
-  var quickBlox = QB;
 
   beforeEach(function(){
     var done;
     runs(function(){
-      quickBlox.init(CONFIG);
+      QB.init(CONFIG);
       done = false;
-      quickBlox.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
+      QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
         expect(err).toBeNull();
         expect(result).not.toBeNull();
         done = true;
@@ -19,12 +18,12 @@ describe('QuickBlox SDK - Location', function() {
 
   describe('GeoData', function(){
     var geoData;
-    it('can create a geodata', function(){
-      //http://www.openstreetmap.org/?way=123557148#map=18/51.50065/-0.12525
+    it('can create geodata', function(){
+      //coordinates of Big Ben from http://www.openstreetmap.org/?way=123557148#map=18/51.50065/-0.12525
       runs(function(){
         done = false;
-        var params = {latitude: 51.50065, longitude:-0.12525, status: 'Big Ben'};
-        quickBlox.location().geodata.create(params, function(err,result){
+        var params = {latitude: 51.50065, longitude:-0.12525, status: 'Under the clocktower'};
+        QB.location.geodata.create(params, function(err,result){
           done = true;
           expect(err).toBeNull();
           geoData = result;
@@ -38,7 +37,6 @@ describe('QuickBlox SDK - Location', function() {
         expect(geoData.id).toBeGreaterThan(0);
       });
     });
-  
   });
 
 });

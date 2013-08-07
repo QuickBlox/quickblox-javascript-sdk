@@ -1,41 +1,41 @@
 describe('QuickBlox SDK - Basic functions', function() {
-  var quickBlox = QB, done;
+  var done;
 
   it('can be instantiate', function(){
-    expect(quickBlox).not.toBeNull();
+    expect(QB).not.toBeNull();
   });
 
   describe('Default settings', function(){
     it('knows api endpoints and paths', function(){
-      expect(quickBlox.config.urls).toEqual(DEFAULTS.urls);
+      expect(QB.config.urls).toEqual(DEFAULTS.urls);
     });
     it('has the correct default config', function(){
-      expect(quickBlox.config.creds).toEqual(DEFAULTS.creds);
+      expect(QB.config.creds).toEqual(DEFAULTS.creds);
     });
     it('has debug off by default', function(){
-      expect(quickBlox.config.debug).toBe(DEFAULTS.debug);
+      expect(QB.config.debug).toBe(DEFAULTS.debug);
     });
   });
 
   describe('Configuration values', function(){
     it('can load a config', function(){
-      quickBlox.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      expect(quickBlox.config.creds.appId).toEqual(CONFIG.appId);
-      expect(quickBlox.config.creds.authKey).toEqual(CONFIG.authKey);
-      expect(quickBlox.config.creds.authSecret).toEqual(CONFIG.authSecret);
-      expect(quickBlox.config.debug).toBe(CONFIG.debug);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
+      expect(QB.config.creds.appId).toEqual(CONFIG.appId);
+      expect(QB.config.creds.authKey).toEqual(CONFIG.authKey);
+      expect(QB.config.creds.authSecret).toEqual(CONFIG.authSecret);
+      expect(QB.config.debug).toBe(CONFIG.debug);
     });
   });
 
   describe('Session functions', function(){
     beforeEach(function (){
-      quickBlox.init(CONFIG);
+      QB.init(CONFIG);
     });
 
     it('can create an API session', function(){
       var done = false, session, error;
       runs(function(){
-        quickBlox.createSession(function (err, result){
+        QB.createSession(function (err, result){
           error = err;
           session = result;
           done = true;
@@ -55,7 +55,7 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can create an User session', function(){
       var done = false, session, error;
       runs(function(){
-        quickBlox.createSession({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+        QB.createSession({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
           error = err;
           session = result;
           done = true;
@@ -77,9 +77,9 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can destroy a session', function(){
       var done = false;
       runs(function(){
-        quickBlox.createSession(function (err, result){
+        QB.createSession(function (err, result){
           expect(err).toBe(null);
-          quickBlox.destroySession(function (err, result){
+          QB.destroySession(function (err, result){
             done = true;
             expect(err).toBeNull();
           });
@@ -89,14 +89,14 @@ describe('QuickBlox SDK - Basic functions', function() {
         return done;
       },'delete session', TIMEOUT);
       runs(function(){
-        expect(quickBlox.session).toBeNull();
+        expect(QB.session).toBeNull();
       });
     });
 
     it('can login a user', function(){
       var done = false, user, error;
       runs(function(){
-        quickBlox.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+        QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
           error = err;
           user = result;
           done = true;
@@ -116,7 +116,7 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('cannot login an invalid user', function(){
       var done = false, result, error;
       runs(function(){
-        quickBlox.login({login: INVALID_USER, password: INVALID_PASSWORD}, function (err, res){
+        QB.login({login: INVALID_USER, password: INVALID_PASSWORD}, function (err, res){
           error = err;
           result = res;
           done = true;
@@ -134,8 +134,8 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can logout a user', function(){
       var done = false, user, error;
       runs(function(){
-        quickBlox.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-          quickBlox.logout(function(err, result){
+        QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+          QB.logout(function(err, result){
             error = err;
             user = result;
             done = true;

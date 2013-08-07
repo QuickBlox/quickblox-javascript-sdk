@@ -278,10 +278,18 @@ var pullUrl = config.urls.base + config.urls.pullevents;
 
 function MessagesProxy(service) {
   this.service = service;
+  this.tokens = new TokensProxy(service);
+  this.subscriptions = new SubscriptionsProxy(service);
+  this.events = new EventsProxy(service);
 }
 
 // Push Tokens
-MessagesProxy.prototype.createPushToken = function(params, callback){
+
+function TokensProxy(service){
+  this.service = service;
+}
+
+TokensProxy.prototype.create = function(params, callback){
   var message = {
     push_token: {
       environment: params.environment,
@@ -289,7 +297,7 @@ MessagesProxy.prototype.createPushToken = function(params, callback){
     },
     device: { platform: params.platform, udid: params.udid}
   };
-  if (config.debug) { console.debug('MessagesProxy.createPushToken', message);}
+  if (config.debug) { console.debug('TokensProxy.create', message);}
   this.service.ajax({url: tokenUrl + config.urls.type, type: 'POST', data: message},
                     function(err, data){
                       if (err) { callback(err, null);}
@@ -297,56 +305,65 @@ MessagesProxy.prototype.createPushToken = function(params, callback){
                     });
 };
 
-MessagesProxy.prototype.deletePushToken = function(id, callback) {
+TokensProxy.prototype.delete = function(id, callback) {
  if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
   this.service.ajax({url: tokenUrl + id + config.urls.type, type: 'DELETE'}, callback);
 };
 
 // Subscriptions
-MessagesProxy.prototype.createSubscription = function (params, callback){
+
+function SubscriptionsProxy(service){
+  this.service = service;
+}
+
+SubscriptionsProxy.prototype.create = function (params, callback){
   if (config.debug) { console.debug('MessageProxy.createSubscription', params); }
   this.service.ajax({url: subsUrl + config.urls.type, type: 'POST', data : params}, callback);
 };
 
-MessagesProxy.prototype.listSubscriptions = function (callback) {
+SubscriptionsProxy.prototype.list = function (callback) {
   if (config.debug) { console.debug('MessageProxy.listSubscription', params); }
   this.service.ajax({url: subsUrl + config.urls.type}, callback);
 };
 
-MessagesProxy.prototype.deleteSubscription = function(id, callback) {
+SubscriptionsProxy.prototype.delete = function(id, callback) {
  if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
   this.service.ajax({url: subsUrl + id + config.urls.type, type: 'DELETE'}, callback);
 };
 
 // Events
-MessagesProxy.prototype.createEvent = function(params, callback) {
+function EventsProxy(service){
+  this.service = service;
+}
+
+EventsProxy.prototype.create = function(params, callback) {
   if (config.debug) { console.debug('MessageProxy.createEvent', params); }
   var message = {event: params};
   this.service.ajax({url: eventUrl + config.urls.type, type: 'POST', data: message}, callback);
 };
 
-MessagesProxy.prototype.listEvents = function(callback) {
+EventsProxy.prototype.list = function(callback) {
  if (config.debug) { console.debug('MessageProxy.listEvents'); }
   this.service.ajax({url: eventUrl + config.urls.type}, callback);
 };
 
-MessagesProxy.prototype.getEvent = function(id, callback) {
+EventsProxy.prototype.get = function(id, callback) {
  if (config.debug) { console.debug('MessageProxy.getEvents', id); }
   this.service.ajax({url: eventUrl + id + config.urls.type}, callback);
 };
 
-MessagesProxy.prototype.updateEvent = function(params, callback) {
+EventsProxy.prototype.update = function(params, callback) {
   if (config.debug) { console.debug('MessageProxy.createEvent', params); }
   var message = {event: params};
   this.service.ajax({url: eventUrl + params.id + config.urls.type, type: 'PUT', data: message}, callback);
 };
 
-MessagesProxy.prototype.deleteEvent = function(id, callback) {
+EventsProxy.prototype.delete = function(id, callback) {
  if (config.debug) { console.debug('MessageProxy.deleteEvent', id); }
   this.service.ajax({url: eventUrl + id + config.urls.type, type: 'DELETE'}, callback);
 };
 
-MessagesProxy.prototype.listPullEvents = function(callback) {
+EventsProxy.prototype.pullEvents = function(callback) {
   if (config.debug) { console.debug('MessageProxy.getPullEvents', params); }
   this.service.ajax({url: pullUrl + config.urls.type}, callback);
 };
@@ -507,13 +524,13 @@ UsersProxy.prototype.get = function(params, callback){
   if (config.debug) {console.debug('UsersProxy.get', url);}
   this.service.ajax({url:url}, function(err,data){
                     var user;
-                    if (data.user) {
+                    if (data && data.user) {
                       user = data.user;
                     }
                     if (config.debug) { console.debug('UserProxy.get', user); }
                       callback(err,user);
                     });
-} 
+}
 
 },{"./qbConfig":2,"./qbProxy":5}],7:[function(require,module,exports){
 /*
@@ -590,9 +607,12 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  this.proxies = {};
-  this.service = new Proxy(this);
   this.session =  null;
+  this.service = new Proxy(this);
+  this.auth = new Auth(this.service);
+  this.users = new Users(this.service);
+  this.messages = new Messages(this.service);
+  this.location = new Location(this.service);
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -616,11 +636,13 @@ QuickBlox.prototype.createSession = function (params, callback){
     callback = params;
     params = {};
   }
+  /*
   if (typeof this.proxies.auth === 'undefined'){
     this.proxies.auth = new Auth(this.service);
     if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
   }
-  this.proxies.auth.createSession(params,
+ */
+  this.auth.createSession(params,
                                   function(err,session) {
                                     if (session) {
                                       _this.session = session;
@@ -631,8 +653,8 @@ QuickBlox.prototype.createSession = function (params, callback){
 
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.destroySession(function(err, result){
+  if (this.session) {
+    this.auth.destroySession(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -643,11 +665,7 @@ QuickBlox.prototype.destroySession = function(callback){
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this.service);
-    if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
-  }
-  this.proxies.auth.login(params,
+  this.auth.login(params,
                           function (err,session) {
                                     if (session) {
                                       _this.session = session;
@@ -658,8 +676,8 @@ QuickBlox.prototype.login = function (params, callback){
 
 QuickBlox.prototype.logout = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.logout(function(err, result){
+  if (this.session) {
+    this.auth.logout(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -668,7 +686,11 @@ QuickBlox.prototype.logout = function(callback){
   }
 };
 
-
+/*
+ * For now just going to assign properties so you can do
+ * quickblox.users.get(...) rather than
+ * quickblox.users().get(...)
+ *
 QuickBlox.prototype.users = function(){
   if (typeof this.proxies.users === 'undefined') {
     this.proxies.users = new Users(this.service);
@@ -692,6 +714,7 @@ QuickBlox.prototype.location = function(){
   }
   return this.proxies.location;
 };
+*/
 
 
 
