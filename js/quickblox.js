@@ -29,6 +29,7 @@ var QB = (function(QB, window){
   if (window && typeof window.QB === 'undefined'){
     window.QB= QB;
   }
+  return QB;
 }(QB || {}, window));
 
 
@@ -38,9 +39,12 @@ function QuickBlox() {
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  this.proxies = {};
-  this.service = new Proxy(this);
   this.session =  null;
+  this.service = new Proxy(this);
+  this.auth = new Auth(this.service);
+  this.users = new Users(this.service);
+  this.messages = new Messages(this.service);
+  this.location = new Location(this.service);
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -64,23 +68,18 @@ QuickBlox.prototype.createSession = function (params, callback){
     callback = params;
     params = {};
   }
-  if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this.service);
-    if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
-  }
-  this.proxies.auth.createSession(params,
-                                  function(err,session) {
-                                    if (session) {
-                                      _this.session = session;
-                                    }
-                                  callback(err, session);
-                                  });
+  this.auth.createSession(params, function(err,session) {
+    if (session) {
+      _this.session = session;
+    }
+    callback(err, session);
+    });
 };
 
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.destroySession(function(err, result){
+  if (this.session) {
+    this.auth.destroySession(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -91,23 +90,18 @@ QuickBlox.prototype.destroySession = function(callback){
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this.service);
-    if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
-  }
-  this.proxies.auth.login(params,
-                          function (err,session) {
-                                    if (session) {
-                                      _this.session = session;
-                                    }
-                                    callback(err, session);
-                           });
+  this.auth.login(params, function (err,session) {
+    if (session) {
+      _this.session = session;
+    }
+    callback(err, session);
+  });
 };
 
 QuickBlox.prototype.logout = function(callback){
   var _this = this;
-  if (this.proxies.auth) {
-    this.proxies.auth.logout(function(err, result){
+  if (this.session) {
+    this.auth.logout(function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
@@ -115,33 +109,4 @@ QuickBlox.prototype.logout = function(callback){
     });
   }
 };
-
-
-QuickBlox.prototype.users = function(){
-  if (typeof this.proxies.users === 'undefined') {
-    this.proxies.users = new Users(this.service);
-    if (this.config.debug) { console.debug('New proxies.users', this.proxies.users); }
-  }
-  return this.proxies.users;
-};
-
-QuickBlox.prototype.messages = function(){
-  if (typeof this.proxies.messages === 'undefined') {
-    this.proxies.messages = new Messages(this.service);
-    if (this.config.debug) { console.debug('New proxies.messages', this.proxies.messages); }
-  }
-  return this.proxies.messages;
-};
-
-QuickBlox.prototype.location = function(){
-  if (typeof this.proxies.location === 'undefined') {
-    this.proxies.location = new Location(this.service);
-    if (this.config.debug) { console.debug('New proxies.location', this.proxies.location); }
-  }
-  return this.proxies.location;
-};
-
-
-
-
 

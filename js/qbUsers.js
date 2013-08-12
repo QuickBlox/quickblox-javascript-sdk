@@ -102,10 +102,10 @@ UsersProxy.prototype.get = function(params, callback){
   if (config.debug) {console.debug('UsersProxy.get', url);}
   this.service.ajax({url:url}, function(err,data){
                     var user;
-                    if (data.user) {
+                    if (data && data.user) {
                       user = data.user;
                     }
                     if (config.debug) { console.debug('UserProxy.get', user); }
                       callback(err,user);
                     });
-} 
+}
