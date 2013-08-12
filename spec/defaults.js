@@ -12,6 +12,7 @@ var DEFAULTS = {
   },
   urls:{
     base: 'https://api.quickblox.com/',
+    find: 'find',
     session: 'session',
     login: 'login',
     users: 'users',

@@ -49,8 +49,9 @@ TokensProxy.prototype.create = function(params, callback){
 };
 
 TokensProxy.prototype.delete = function(id, callback) {
- if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: tokenUrl + id + config.urls.type, type: 'DELETE'}, callback);
+  var url = tokenUrl + '/' + id + config.urls.type;
+  if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
+  this.service.ajax({url: url, type: 'DELETE'}, callback);
 };
 
 // Subscriptions
@@ -70,8 +71,9 @@ SubscriptionsProxy.prototype.list = function (callback) {
 };
 
 SubscriptionsProxy.prototype.delete = function(id, callback) {
- if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: subsUrl + id + config.urls.type, type: 'DELETE'}, callback);
+  var url = subsUrl + '/'+ id + config.urls.type;
+  if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
+  this.service.ajax({url: url, type: 'DELETE'}, callback);
 };
 
 // Events
@@ -91,19 +93,22 @@ EventsProxy.prototype.list = function(callback) {
 };
 
 EventsProxy.prototype.get = function(id, callback) {
- if (config.debug) { console.debug('MessageProxy.getEvents', id); }
-  this.service.ajax({url: eventUrl + id + config.urls.type}, callback);
+  var url = eventUrl + '/' + params.id + config.urls.type;
+  if (config.debug) { console.debug('MessageProxy.getEvents', id); }
+  this.service.ajax({url: url}, callback);
 };
 
 EventsProxy.prototype.update = function(params, callback) {
+  var url = eventUrl + '/' + params.id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.createEvent', params); }
   var message = {event: params};
-  this.service.ajax({url: eventUrl + params.id + config.urls.type, type: 'PUT', data: message}, callback);
+  this.service.ajax({url: url, type: 'PUT', data: message}, callback);
 };
 
 EventsProxy.prototype.delete = function(id, callback) {
+  var url = eventUrl + '/' + params.id + config.urls.type;
  if (config.debug) { console.debug('MessageProxy.deleteEvent', id); }
-  this.service.ajax({url: eventUrl + id + config.urls.type, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE'}, callback);
 };
 
 EventsProxy.prototype.pullEvents = function(callback) {

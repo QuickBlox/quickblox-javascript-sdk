@@ -6,6 +6,8 @@
  *
  */
 
+var config = require('./qbConfig');
+
 function shims() {
   // Shim for Date.now function (IE < 9)
   if (!Date.now) {
@@ -30,3 +32,4 @@ function shims() {
 
 exports.shims = function() {shims();};
 exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
+exports.resourceUrl = function(base, id, type) { return base + '/' + id + (typeof type === 'undefined'? config.urls.type : type); };

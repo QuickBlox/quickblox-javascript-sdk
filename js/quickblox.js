@@ -29,6 +29,7 @@ var QB = (function(QB, window){
   if (window && typeof window.QB === 'undefined'){
     window.QB= QB;
   }
+  return QB;
 }(QB || {}, window));
 
 
@@ -67,19 +68,12 @@ QuickBlox.prototype.createSession = function (params, callback){
     callback = params;
     params = {};
   }
-  /*
-  if (typeof this.proxies.auth === 'undefined'){
-    this.proxies.auth = new Auth(this.service);
-    if (this.config.debug) { console.debug('New proxies.auth', this.proxies.auth); }
-  }
- */
-  this.auth.createSession(params,
-                                  function(err,session) {
-                                    if (session) {
-                                      _this.session = session;
-                                    }
-                                  callback(err, session);
-                                  });
+  this.auth.createSession(params, function(err,session) {
+    if (session) {
+      _this.session = session;
+    }
+    callback(err, session);
+    });
 };
 
 QuickBlox.prototype.destroySession = function(callback){
@@ -96,13 +90,12 @@ QuickBlox.prototype.destroySession = function(callback){
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  this.auth.login(params,
-                          function (err,session) {
-                                    if (session) {
-                                      _this.session = session;
-                                    }
-                                    callback(err, session);
-                           });
+  this.auth.login(params, function (err,session) {
+    if (session) {
+      _this.session = session;
+    }
+    callback(err, session);
+  });
 };
 
 QuickBlox.prototype.logout = function(callback){
@@ -116,38 +109,4 @@ QuickBlox.prototype.logout = function(callback){
     });
   }
 };
-
-/*
- * For now just going to assign properties so you can do
- * quickblox.users.get(...) rather than
- * quickblox.users().get(...)
- *
-QuickBlox.prototype.users = function(){
-  if (typeof this.proxies.users === 'undefined') {
-    this.proxies.users = new Users(this.service);
-    if (this.config.debug) { console.debug('New proxies.users', this.proxies.users); }
-  }
-  return this.proxies.users;
-};
-
-QuickBlox.prototype.messages = function(){
-  if (typeof this.proxies.messages === 'undefined') {
-    this.proxies.messages = new Messages(this.service);
-    if (this.config.debug) { console.debug('New proxies.messages', this.proxies.messages); }
-  }
-  return this.proxies.messages;
-};
-
-QuickBlox.prototype.location = function(){
-  if (typeof this.proxies.location === 'undefined') {
-    this.proxies.location = new Location(this.service);
-    if (this.config.debug) { console.debug('New proxies.location', this.proxies.location); }
-  }
-  return this.proxies.location;
-};
-*/
-
-
-
-
 
