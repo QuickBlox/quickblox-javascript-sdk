@@ -17,8 +17,7 @@ A simple example
 ----------------
 
 ```javascript
-// initalise the environmenet with my application id, authentication key
-and authentication secret
+// initalise the environmenet with my application id, authentication key and authentication secret
 QB.init(3477,'ChRnwEJ3WzxH9O4','AS546kpUQ2tfbvv');
 
 // create an API session (user is not authenticated)
