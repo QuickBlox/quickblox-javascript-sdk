@@ -15,7 +15,7 @@ parameter will give you a description of what the problem was.
 
 A simple example
 ----------------
-<code>
+''''javascript
 // initalise the environmenet with my application id, authentication key
 and authentication secret
 QB.init(3477,'ChRnwEJ3WzxH9O4','AS546kpUQ2tfbvv');
@@ -37,7 +37,7 @@ QB.users.find( function(err,result){
     console.log('User ' + result.items[i].login + ' is registered');
   }
 });
-</code>
+''''
 
 In time we'll be adding examples of using the API in the samples
 directory, in the meantime take a look at the specs.
