@@ -43,9 +43,9 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     error: function(jqHXR, status, error) {
       if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
-      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
+      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.respoonseXML; }
+      if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }
   });
 }
-
