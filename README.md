@@ -15,7 +15,7 @@ parameter will give you a description of what the problem was.
 
 A simple example
 ----------------
-<code lang='javascript'>
+<code>
 // initalise the environmenet with my application id, authentication key
 and authentication secret
 QB.init(3477,'ChRnwEJ3WzxH9O4','AS546kpUQ2tfbvv');
