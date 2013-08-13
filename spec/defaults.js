@@ -21,6 +21,7 @@ var DEFAULTS = {
     events: 'events',
     pullevents: 'pull_events',
     geo: 'geodata',
+    data: 'data',
     places: 'places',
     chat: 'chat',
     type: '.json'

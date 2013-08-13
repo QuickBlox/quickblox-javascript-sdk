@@ -25,6 +25,7 @@ var config = {
     pullevents: 'pull_events',
     geo: 'geodata',
     places: 'places',
+    data: 'data',
     chat: 'chat',
     type: '.json'
     },
