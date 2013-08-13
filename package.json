@@ -1,0 +1,10 @@
+{
+  "name": "Quickblox.js",
+  "description": "Quickblox Javascript SDK",
+  "author": "Dan Murphy <dan@quickblox.com>",
+  "dependencies": {
+    "crypto-js": ">= 3.1.x"
+  },
+  "devDependencies": {
+  }
+}
