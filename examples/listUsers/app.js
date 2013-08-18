@@ -67,7 +67,7 @@ App.prototype.listUsers= function(e){
   if (typeof pageNo === 'number') {params.pageNo = pageNo;}
   $('#users').find('h4').remove();
   $('#users').find('p').remove();
-  QB.users().listUsers(params, function(err,result){
+  QB.users.listUsers(params, function(err,result){
     console.debug('Users callback', err, result);
     if (result) {
       $('#users').append('<h4>Retrieved users:</h4>' + '<p>' + JSON.stringify(result) + '</p>');
