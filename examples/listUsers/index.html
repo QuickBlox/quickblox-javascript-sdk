@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>QuickBlox API client</title>
+    <script src="app.js"></script>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
+    <script src="../lib/jquery-1.10.2.js"></script>
+  </head>
+  <body>
+    <div id="session">
+      <h2>Session Management</h2>
+      <form id="apiSession" action="">
+        <label>Application id:<input type="text" id="appId" value="3477"/></label>
+        <label>Authorization key:<input type="text" id="authKey" value="ChRnwEJ3WzxH9O4"/></label>
+        <label>Authorization secret:<input type="text" id="secret" value="AS546kpUQ2tfbvv"/></label>
+        <button type="submit" onclick="APP.createSession(event)" id="sessionButton">Create Session</button>
+        <button type="submit" onclick="APP.deleteSession(event)" id="sessionDeleteButton" disabled>Delete Session</button>
+      </form>
+    </div>
+    <div id="users">
+      <h2>Users</h2>
+      <form id="listUsers" action="">
+        <label>User filter:<input type="text" id="userFilter"/></label>
+        <label>User type:
+          <select id="userType">
+            <option value="" selected>Choose one, or none</option>
+            <option value="email">Email address</option>
+            <option value="login">Quickblox username</option>
+            <option value="id">Quickblox ID</option>
+            <option value="facebook_id">Facebook ID</option>
+            <option value="twitter_id">Twitter ID</option>
+            <option value="phone">Phone number</option>
+          </select>
+        </label>
+        <label>Users per page:<input type="text" id="per_page"/></label>
+        <label>Page number:<input type="text" id="page"/></label>
+        <button type="submit" onclick="APP.listUsers(event)">List Users</button>
+      </form>
+    </div>
+  </body>
+</html>
