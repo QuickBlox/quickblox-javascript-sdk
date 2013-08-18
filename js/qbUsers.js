@@ -86,13 +86,13 @@ UsersProxy.prototype.get = function(params, callback){
     if (params.id) {
       url += '/' + params + config.urls.type;
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebook_id;
+      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
       url += '/by_login' + config.urls.type + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.full_mame;
+      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitter_id;
+      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
       url += '/by_email' + config.urls.type + '?email=' + params.email;
     } else if (params.tags) {

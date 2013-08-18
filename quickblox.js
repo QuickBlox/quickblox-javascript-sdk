@@ -48,10 +48,11 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
   } else if (params.email && params.password) {
     message.user = {email: params.email, password: params.password};
   }
-  if (params.social && params.social.provider) {
-    message.provider = social.provider;
-    message.scope = params.social.scope;
-    message.keys = { token: params.social.token, secret: params.social.secret };
+  if (params.provider) {
+    message.provider = params.provider;
+    if (params.scope) {message.scope = params.scope;}
+    message.keys = { token: params.token };
+    if (params.keys.secret) { messages.keys.secret = params.keys.secret; }
   }
   // Sign message with SHA-1 using secret key and add to payload
   this.signMessage(message,  params.authSecret || config.creds.authSecret);
@@ -584,13 +585,13 @@ UsersProxy.prototype.get = function(params, callback){
     if (params.id) {
       url += '/' + params + config.urls.type;
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebook_id;
+      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
       url += '/by_login' + config.urls.type + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.full_mame;
+      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitter_id;
+      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
       url += '/by_email' + config.urls.type + '?email=' + params.email;
     } else if (params.tags) {
@@ -714,10 +715,11 @@ QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function (params, callback){
   var _this = this;
-  if (typeof params === 'function') {
+  if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
     params = {};
   }
+  if (config.debug) {console.log('createSession', params);}
   this.auth.createSession(params, function(err,session) {
     if (session) {
       _this.session = session;

@@ -47,10 +47,11 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
   } else if (params.email && params.password) {
     message.user = {email: params.email, password: params.password};
   }
-  if (params.social && params.social.provider) {
-    message.provider = social.provider;
-    message.scope = params.social.scope;
-    message.keys = { token: params.social.token, secret: params.social.secret };
+  if (params.provider) {
+    message.provider = params.provider;
+    if (params.scope) {message.scope = params.scope;}
+    message.keys = { token: params.token };
+    if (params.keys.secret) { messages.keys.secret = params.keys.secret; }
   }
   // Sign message with SHA-1 using secret key and add to payload
   this.signMessage(message,  params.authSecret || config.creds.authSecret);
