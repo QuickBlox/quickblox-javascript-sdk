@@ -7,11 +7,25 @@
 
 (function () {
   APP = new App();
+  $(document).ready(function(){APP.init();});
 }());
 
 function App(){
   console.debug('App constructed');
 }
+
+App.prototype.init = function(){
+  var _this= this;
+  this.compileTemplates();
+  $('#sessionButton').click(function(e){_this.createSession(e); return false;});
+  $('#sessionDeleteButton').click(function(e){_this.deleteSession(e); return false;});
+  $('#listUsersButton').click(function(e){_this.listUsers(e); return false;});
+};
+
+App.prototype.compileTemplates = function(){
+  var template = $('#users-template').html();
+  this.usersTemplate = Handlebars.compile(template);
+};
 
 App.prototype.createSession = function(e){
   var form, appId, authKey, secret;
@@ -50,7 +64,7 @@ App.prototype.deleteSession = function(e){
 };
 
 App.prototype.listUsers= function(e){
-  var form, filterType, filterValue, perPage, pageNo, params = {};
+  var form, filterType, filterValue, perPage, pageNo, params = {}, _this= this;
   console.debug('listUsers');
   e.preventDefault();
   form = $('#listUsers');
@@ -70,7 +84,8 @@ App.prototype.listUsers= function(e){
   QB.users.listUsers(params, function(err,result){
     console.debug('Users callback', err, result);
     if (result) {
-      $('#users').append('<h4>Retrieved users:</h4>' + '<p>' + JSON.stringify(result) + '</p>');
+      //$('#users').append('<h4>Retrieved users:</h4>' + '<p>' + JSON.stringify(result) + '</p>');
+      $('#users').append(_this.usersTemplate(result));
     } else {
       $('#users').append('<h4>Error retrieving users' + JSON.stringify(err) + '</h4>');
     }

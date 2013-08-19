@@ -3,9 +3,18 @@
   <head>
     <meta charset="utf-8">
     <title>QuickBlox API client</title>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/jquery-1.10.2.js"></script>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/handlebars.js"></script>
     <script src="app.js"></script>
     <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
-    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/jquery-1.10.2.js"></script>
+    <script id="users-template" type="text/x-handlebars-template">
+      <div class="items"><p>page number {{current_page}} total {{total_entries}}</p></div>
+      {{#each items}}
+        <div class="item">
+          <p><b>Name:</b> {{user.full_name}} (login: {{user.login}} id: {{user.id}})</p>
+        </div>
+      {{/each}}
+    </script>
   </head>
   <body>
     <div id="session">
@@ -14,8 +23,8 @@
         <label>Application id:<input type="text" id="appId" value="3477"/></label>
         <label>Authorization key:<input type="text" id="authKey" value="ChRnwEJ3WzxH9O4"/></label>
         <label>Authorization secret:<input type="text" id="secret" value="AS546kpUQ2tfbvv"/></label>
-        <button type="submit" onclick="APP.createSession(event)" id="sessionButton">Create Session</button>
-        <button type="submit" onclick="APP.deleteSession(event)" id="sessionDeleteButton" disabled>Delete Session</button>
+        <button type="submit" id="sessionButton">Create Session</button>
+        <button type="submit" id="sessionDeleteButton" disabled>Delete Session</button>
       </form>
     </div>
     <div id="users">
@@ -35,7 +44,7 @@
         </label>
         <label>Users per page:<input type="text" id="per_page"/></label>
         <label>Page number:<input type="text" id="page"/></label>
-        <button type="submit" onclick="APP.listUsers(event)">List Users</button>
+        <button type="submit" id="listUsersButton">List Users</button>
       </form>
     </div>
   </body>
