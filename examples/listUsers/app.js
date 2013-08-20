@@ -29,8 +29,7 @@ App.prototype.compileTemplates = function(){
 
 App.prototype.createSession = function(e){
   var form, appId, authKey, secret;
-  console.debug('CreateApiSession');
-  e.preventDefault();
+  console.debug('createSession', e);
   form = $('#apiSession');
   appId = form.find('#appId')[0].value;
   authKey = form.find('#authKey')[0].value;
@@ -40,33 +39,31 @@ App.prototype.createSession = function(e){
   QB.createSession(function(err,result){
     console.debug('Session create callback', err, result);
     if (result){
-      $('#session').append('<h4>Created session token ' + result.token + '</h4>');
+      $('#session').append('<p><em>Created session token<em>: ' + result.token + '</p>');
       $('#sessionDeleteButton').removeAttr('disabled');
     } else {
-      $('#session').append('<h4>Error creating session token ' + JSON.stringify(err) + '</h4>');
+      $('#session').append('<p><em>Error creating session token<em>: ' + JSON.stringify(err)+'</p>');
     }
   });
 };
 
 App.prototype.deleteSession = function(e){
   var token = QB.session.token;
-  console.debug('DeleteApiSession');
-  e.preventDefault();
+  console.debug('deleteSession', e);
   QB.destroySession(function(err, result){
     console.debug('Session destroy callback', err, result);
     if (result) {
-      $('#session').append('<h4>Deleted session token ' + token + '</h4>');
+      $('#session').append('<p><em>Deleted session token</em>: ' + token + '</p>');
       $('#sessionDeleteButton').attr('disabled', true);
     } else {
-      $('#session').append('<h4>Error occured deleting session token ' + JSON.stringify(err) + '</h4>');
+      $('#session').append('<p><em>Error occured deleting session token</em>: ' + JSON.stringify(err) + '</p>');
     }
   });
 };
 
 App.prototype.listUsers= function(e){
   var form, filterType, filterValue, perPage, pageNo, params = {}, _this= this;
-  console.debug('listUsers');
-  e.preventDefault();
+  console.debug('listUsers', e);
   form = $('#listUsers');
   filterType = form.find('#userType')[0].value;
   filterValue = form.find('#userFilter')[0].value;
@@ -84,10 +81,10 @@ App.prototype.listUsers= function(e){
   QB.users.listUsers(params, function(err,result){
     console.debug('Users callback', err, result);
     if (result) {
-      //$('#users').append('<h4>Retrieved users:</h4>' + '<p>' + JSON.stringify(result) + '</p>');
-      $('#users').append(_this.usersTemplate(result));
+      $('#userList').empty();
+      $('#userList').append(_this.usersTemplate(result));
     } else {
-      $('#users').append('<h4>Error retrieving users' + JSON.stringify(err) + '</h4>');
+      $('#usersList').append('<em>Error retrieving users</em>:' + JSON.stringify(err));
     }
   });
 }

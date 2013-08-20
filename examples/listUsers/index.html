@@ -9,11 +9,14 @@
     <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
     <script id="users-template" type="text/x-handlebars-template">
       <div class="items"><p>page number {{current_page}} total {{total_entries}}</p></div>
-      {{#each items}}
-        <div class="item">
-          <p><b>Name:</b> {{user.full_name}} (login: {{user.login}} id: {{user.id}})</p>
-        </div>
-      {{/each}}
+        <table class="items">
+          <tr><th>Name</th><th>email</th><th>login</th><th>id</th><th>facebook id</th><th>twitter id</th></tr>
+          {{#each items}}
+            <tr><td>{{user.full_name}}</td><td>{{user.email}}</td><td>{{user.login}}</td><td>{{user.id}}</td>
+                <td>{{user.facebook_id}}</td><td>{{user.twitter_id}}</td></tr>
+          {{/each}}
+        </table>
+      </div>
     </script>
   </head>
   <body>
@@ -46,6 +49,8 @@
         <label>Page number:<input type="text" id="page"/></label>
         <button type="submit" id="listUsersButton">List Users</button>
       </form>
+      <div id='userList'>
+      </div>
     </div>
   </body>
 </html>
