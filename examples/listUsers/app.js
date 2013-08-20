@@ -76,12 +76,10 @@ App.prototype.listUsers= function(e){
   pageNo = parseInt(form.find('#page')[0].value, 10);
   if (typeof perPage === 'number') {params.perPage = perPage;}
   if (typeof pageNo === 'number') {params.pageNo = pageNo;}
-  $('#users').find('h4').remove();
-  $('#users').find('p').remove();
   QB.users.listUsers(params, function(err,result){
     console.debug('Users callback', err, result);
+    $('#userList').empty();
     if (result) {
-      $('#userList').empty();
       $('#userList').append(_this.usersTemplate(result));
     } else {
       $('#usersList').append('<em>Error retrieving users</em>:' + JSON.stringify(err));

@@ -8,7 +8,7 @@
     <script src="app.js"></script>
     <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
     <script id="users-template" type="text/x-handlebars-template">
-      <div class="items"><p>page number {{current_page}} total {{total_entries}}</p></div>
+      <div class="items">
         <table class="items">
           <tr><th>Name</th><th>email</th><th>login</th><th>id</th><th>facebook id</th><th>twitter id</th></tr>
           {{#each items}}
@@ -16,6 +16,7 @@
                 <td>{{user.facebook_id}}</td><td>{{user.twitter_id}}</td></tr>
           {{/each}}
         </table>
+        <p><strong>Page:</strong> {{current_page}} <strong></p><p>Total items</strong>: {{total_entries}}</p>
       </div>
     </script>
   </head>
