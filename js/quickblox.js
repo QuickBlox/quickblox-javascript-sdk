@@ -66,10 +66,11 @@ QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function (params, callback){
   var _this = this;
-  if (typeof params === 'function') {
+  if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
     params = {};
   }
+  if (config.debug) {console.log('createSession', params);}
   this.auth.createSession(params, function(err,session) {
     if (session) {
       _this.session = session;

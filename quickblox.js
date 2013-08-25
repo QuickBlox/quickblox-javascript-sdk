@@ -18,53 +18,31 @@ var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
 var loginUrl = config.urls.base + config.urls.login + config.urls.type;
 
 function AuthProxy(service) {
-  //this.session = qb.session;
-  this._nonce = Math.floor(Math.random() * 10000);
   this.service = service;
 }
 
 AuthProxy.prototype.createSession = function createSession(params, callback) {
   var message, _this = this;
 
-  // Allow first param to be a hash of arguments used to override those set in init
-  // or
   if (typeof params === 'function' && typeof callback === 'undefined'){
     callback = params;
     params = {};
   }
+  
+  message = generateAuthMsg(params);
 
-  // Allow params to override config
-  message = {
-    application_id : params.appId || config.creds.appId,
-    auth_key : params.authKey || config.creds.authKey,
-    nonce: this.nonce().toString(),
-    timestamp: utils.unixTime()
-  };
-
-  // Optionally permit a user session to be created
-  if (params.login && params.password) {
-    //message.user = { login : params.login, password : params.password};
-    message.user = {login : params.login, password: params.password};
-  } else if (params.email && params.password) {
-    message.user = {email: params.email, password: params.password};
-  }
-  if (params.social && params.social.provider) {
-    message.provider = social.provider;
-    message.scope = params.social.scope;
-    message.keys = { token: params.social.token, secret: params.social.secret };
-  }
   // Sign message with SHA-1 using secret key and add to payload
-  this.signMessage(message,  params.authSecret || config.creds.authSecret);
+  message = signMessage(message,  params.authSecret || config.creds.authSecret);
 
   //if (config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
-  this.service.ajax({url: sessionUrl, data: message, type: 'POST'},
+  this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
+                      if (config.debug) { console.debug('AuthProxy.createSession', err, data); }
                       var session;
-                      if (data) {
+                      if (data && data.session) {
                         session = data.session;
                         _this.session = session;
                       }
-                      if (config.debug) { console.debug('AuthProxy.createSession', session); }
                       callback(err,session);
                     });
 };
@@ -75,9 +53,9 @@ AuthProxy.prototype.destroySession = function(callback){
   message = {
     token: this.session.token
   };
-  //if (config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
   this.service.ajax({url: sessionUrl, type: 'DELETE'},
                     function(err,data){
+                      if (config.debug) {console.debug('AuthProxy destroySession callback', err, data);}
                       if (typeof err ==='undefined'){
                         _this.session = null;
                       }
@@ -119,14 +97,47 @@ AuthProxy.prototype.nonce = function nonce(){
   return this._nonce++;
 };
 
-AuthProxy.prototype.signMessage= function(message, secret){
-  var data = jQuery.param(message);
-  var toSign = data.replace(/%5B/g, '[');
-  toSign = toSign.replace(/%5D/g ,']');
-  signature =  crypto(toSign, secret).toString();
-  //if (config.debug) { console.debug ('Signature of', toSign, 'is', signature); }
-  jQuery.extend(message, {signature: signature});
-};
+function signMessage(message, secret){
+  signature =  crypto(message, secret).toString();
+  //if (config.debug) { console.debug ('AuthProxy signature of', message, 'is', signature); }
+  return message + '&signature=' + signature;
+}
+
+function generateAuthMsg(params){
+   // Allow params to override config
+  var message = {
+    application_id : params.appId || config.creds.appId,
+    auth_key : params.authKey || config.creds.authKey,
+    nonce: Math.floor(Math.random() * 10000),
+    timestamp: utils.unixTime()
+  };
+  // Optionally permit a user session to be created
+  if (params.login && params.password) {
+    message.user = {login : params.login, password: params.password};
+  } else if (params.email && params.password) {
+    message.user = {email: params.email, password: params.password};
+  } else if (params.provider) {
+    // With social networking (eg. facebook, twitter etc) provider
+    message.provider = params.provider;
+    if (params.scope) {message.scope = params.scope;}
+    message.keys = { token: params.keys.token };
+    if (params.keys.secret) { messages.keys.secret = params.keys.secret; }
+  }
+
+  var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
+  if (message.keys && message.keys.token) {sessionMsg+= '&keys[token]=' + message.keys.token;}
+  sessionMsg += '&nonce=' + message.nonce;
+  if (message.provider) { sessionMsg += '&provider=' + message.provider;}
+  sessionMsg += '&timestamp=' + message.timestamp;
+  if (message.user) {
+    if (message.user.login) { sessionMsg += '&user[login]=' + message.user.login; }
+    if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
+    if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
+  }
+  //if (config.debug) { console.debug ('AuthProxy authMsg', sessionMsg); }
+  return sessionMsg;
+}
+
 
 },{"../lib/jquery-1.10.2":10,"./qbConfig":2,"./qbProxy":6,"./qbUtils":8,"crypto-js/hmac-sha1":12}],2:[function(require,module,exports){
 /* 
@@ -476,17 +487,20 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     cache: params.cache || false,
     crossDomain: params.crossDomain || true,
+    dataType: params.dataType || 'json',
+    processData: params.processData || true,
     data: params.data,
     // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
-    //beforeSend: function(jqXHR, settings){
+    beforeSend: function(jqXHR, settings){
+      if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-    //},
+    },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug("ServiceProxy.ajax", status,data);}
+      if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      //if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
       callback(errorMsg, null);
@@ -584,13 +598,13 @@ UsersProxy.prototype.get = function(params, callback){
     if (params.id) {
       url += '/' + params + config.urls.type;
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebook_id;
+      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
       url += '/by_login' + config.urls.type + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.full_mame;
+      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitter_id;
+      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
       url += '/by_email' + config.urls.type + '?email=' + params.email;
     } else if (params.tags) {
@@ -714,10 +728,11 @@ QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function (params, callback){
   var _this = this;
-  if (typeof params === 'function') {
+  if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
     params = {};
   }
+  if (config.debug) {console.log('createSession', params);}
   this.auth.createSession(params, function(err,session) {
     if (session) {
       _this.session = session;
