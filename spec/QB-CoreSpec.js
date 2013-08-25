@@ -28,8 +28,13 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   describe('Session functions', function(){
+    var needsInit = true;
+
     beforeEach(function (){
-      QB.init(CONFIG);
+      if (needsInit){
+        QB.init(CONFIG);
+        needsInit = false;
+      }
     });
 
     it('can create an API session', function(){
@@ -150,6 +155,55 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(user).not.toBeNull();
         expect(user.login).toBe(VALID_USER);
         expect(user.website).toBe('http://quickblox.com');
+      });
+    });
+
+  });
+
+  describe('Social Integration', function(){
+    var needsInit = true;
+
+    beforeEach(function(){
+      if (needsInit){
+        QB.init(CONFIG);
+        needsInit= false;
+      }
+    });
+
+    it('Can create a session for a facebook user', function(){
+      var done = false, accessToken, result, error;
+      runs(function() {
+        FB.init({
+          appId: '143947239147878',
+          status: true,
+          cookie: true,
+        });
+        FB.getLoginStatus(function(response) {
+          if (response.status === 'connected') {
+            accessToken = response.authResponse.accessToken;
+            QB.createSession({provider:'facebook', keys: {token: accessToken}}, function(e,r){error = e; result = r; done = true;});
+          } else {
+            FB.Event.subscribe('auth.authResponseChange', function(response) {
+              if (response.status === 'connected'){
+                accessToken = response.authResponse.accessToken;
+                QB.createSession({provider:'facebook', keys: {token: accessToken}}, function(e,r){error = e; result = r; done = true;});
+              }
+            });
+            FB.login();
+          }
+        });
+      });
+
+      waitsFor(function(){
+        return done;
+      },'facebook user', TIMEOUT);
+
+      runs(function(){
+        expect(error).toBeNull();
+        expect(result).not.toBeNull();
+        expect(result.token.length).toBeGreaterThan(0);
+        expect(result.id).toBeGreaterThan(0);
+        expect(result.nonce).toBeGreaterThan(0);
       });
     });
 

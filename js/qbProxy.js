@@ -28,17 +28,20 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     cache: params.cache || false,
     crossDomain: params.crossDomain || true,
+    dataType: params.dataType || 'json',
+    processData: params.processData || true,
     data: params.data,
     // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
-    //beforeSend: function(jqXHR, settings){
+    beforeSend: function(jqXHR, settings){
+      if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-    //},
+    },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug("ServiceProxy.ajax", status,data);}
+      if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      //if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
       callback(errorMsg, null);
