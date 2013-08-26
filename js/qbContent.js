@@ -21,7 +21,7 @@ function ContentProxy(service) {
   this.service = service;
 }
 
-ContentProxy.prototype.create= function(params, callback){
+ContentProxy.prototype.create = function(params, callback){
  if (config.debug) { console.debug('ContentProxy.create', params);}
   this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
@@ -29,7 +29,7 @@ ContentProxy.prototype.create= function(params, callback){
   });
 };
 
-ContentProxy.prototype.list= function(params, callback){
+ContentProxy.prototype.list = function(params, callback){
   if (typeof params === 'function' && typeof callback ==='undefined') {
     callback = params;
     params = null;
@@ -38,6 +38,17 @@ ContentProxy.prototype.list= function(params, callback){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
+};
+
+ContentProxy.prototype.delete = function(id, callback){
+  this.service.ajax({url: contentUrl + id + config.urls.type}, function(err, result) {
+    if (err) { callback(err,null); }
+    else { callback(null, result); }
+  });
+};
+
+ContentProxy.prototype.upload = function(params, callback){
+  
 };
 
 
