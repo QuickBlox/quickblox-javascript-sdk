@@ -23,6 +23,7 @@ var DEFAULTS = {
     geo: 'geodata',
     data: 'data',
     places: 'places',
+    content: 'blobs',
     chat: 'chat',
     type: '.json'
   },
