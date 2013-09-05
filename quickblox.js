@@ -196,12 +196,17 @@ var config = require('./qbConfig');
 var utils = require('./qbUtils');
 
 var contentUrl = config.urls.base + config.urls.content;
+var taggedForUserUrl = contentUrl + '/tagged';
+
+function contentIdUrl(id) {
+  return contentUrl + '/' + id;
+}
 
 function ContentProxy(service) {
   this.service = service;
 }
 
-ContentProxy.prototype.create= function(params, callback){
+ContentProxy.prototype.create = function(params, callback){
  if (config.debug) { console.debug('ContentProxy.create', params);}
   this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
@@ -209,7 +214,7 @@ ContentProxy.prototype.create= function(params, callback){
   });
 };
 
-ContentProxy.prototype.list= function(params, callback){
+ContentProxy.prototype.list = function(params, callback){
   if (typeof params === 'function' && typeof callback ==='undefined') {
     callback = params;
     params = null;
@@ -220,6 +225,64 @@ ContentProxy.prototype.list= function(params, callback){
   });
 };
 
+ContentProxy.prototype.delete = function(id, callback){
+  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE'}, function(err, result) {
+    if (err) { callback(err,null); }
+    else { callback(null, result); }
+  });
+};
+
+ContentProxy.prototype.upload = function(params, callback){
+  this.service.ajax({url: params.url, data: params.data, contentType: false, processData: false, type: 'POST'}, function(err,result){
+    if (err) { callback (err, null); }
+    else { callback (null, err); }
+  });
+};
+
+ContentProxy.prototype.taggedForCurrentUser = function(callback) {
+  this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
+    if (err) { callback(err, null); }
+    else { callback(null, result); }
+  });
+};
+
+ContentProxy.prototype.markUploaded = function (params, callback) {
+  this.service.ajax({url: contentIdUrl(id) + '/complete' + config.urls.type, type: 'PUT', data: {blob: {size: params.size}}}, function(err, res){
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getInfo = function (id, callback) {
+  this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getFile = function (uid, callback) {
+ this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getBlobObjectById = function (id, callback) {
+ this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.update = function (params, callback) {
+  var data = {};
+  data.blob = {};
+  if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
+  this.service.ajax({url: contentIdUrl(param.id), data: data}, function(err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); } 
+  });
+}
 
 
 },{"./qbConfig":2,"./qbUtils":9}],4:[function(require,module,exports){
@@ -523,18 +586,21 @@ function ServiceProxy(qb){
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
   if (this.qbInst.session && this.qbInst.session.token){
-    if (params.data) {params.data.token = this.qbInst.session.token;}
-    else { params.data = {token:this.qbInst.session.token}; }
+    if (params.data) {
+      if (params.data instanceof FormData) {
+        params.data.append('token', this.qbInst.session.token);
+      } else {
+        params.data.token = this.qbInst.session.token;
+      }
+    } else { 
+      params.data = {token:this.qbInst.session.token}; 
+    }
   }
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
-  jQuery.ajax({
+  var ajaxCall =   {
     url: params.url,
-    async: params.async || true,
     type: params.type || 'GET',
-    cache: params.cache || false,
-    crossDomain: params.crossDomain || true,
     dataType: params.dataType || 'json',
-    processData: params.processData || true,
     data: params.data,
     // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
@@ -546,18 +612,23 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-<<<<<<< HEAD
       if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
-=======
->>>>>>> create and list for content
       var errorMsg = {status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.respoonseXML; }
       if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }
-  });
+  };
+  // Optional - for example 'multipart/form-data' when sending a file.
+  // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
+  if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
+  if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
+  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  if (typeof params.async === 'boolean') { ajaxCall.async = params.async; }
+  if (typeof params.cache === 'boolean') { ajaxCall.cache = params.cache; }
+  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  jQuery.ajax( ajaxCall );
 }
-
 
 },{"../lib/jquery-1.10.2":11,"./qbConfig":2}],8:[function(require,module,exports){
 /*
@@ -715,10 +786,8 @@ exports.resourceUrl = function(base, id, type) { return base + '/' + id + (typeo
  *
  * Main SDK module
  *
- * For use in browser provides a convient QB window scoped var.
+ * Provides a window scoped variable (QB) for use in browsers.
  * Also exports QuickBlox for using with node.js, browserify, etc. 
- *
- * Token/login service and resource proxy stub factories
  *
  */
 
