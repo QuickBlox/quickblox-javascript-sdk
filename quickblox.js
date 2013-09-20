@@ -237,6 +237,8 @@ ContentProxy.prototype.upload = function(params, callback){
                      contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
     if (err) { callback (err, null); }
     else {
+      // AWS S3 doesn't respond with a JSON structure
+      // so parse the xml and return a JSON structure ourselves
       var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
       for (i = 0, m = children.length; i < m ; i++){
         result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
@@ -246,22 +248,6 @@ ContentProxy.prototype.upload = function(params, callback){
     }
   });
 };
-
-function xmlToJson(xml, json){
-  var i, c = xml.children, m = c.length;
-  if (m > 0) {
-    for (i = 0; i < m; i++){
-      if (c[i].nodeType === 1 ) {
-        json[c[i].nodeName] = xmlToJson(c[i], {});
-      } else if (c[i].nodeType === 9) {
-        json = xmlToJson(c[i], {});
-      } else if (c[i].nodeType === 3) {
-        json = c[i].nodeValue;
-      }
-    }
-  }
- return json; 
-}
 
 ContentProxy.prototype.taggedForCurrentUser = function(callback) {
   this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
