@@ -90,27 +90,28 @@ App.prototype.createContent= function(e){
     console.debug('create content callback', err, result);
     $('#contentList').empty();
     if (result) {
-      $('#contentList').append('<p>' + JSON.stringify(result) + '</p>');
+      $('#contentList').append('<p><em>Content created</em>:' + JSON.stringify(result) + '</p>');
       var file = form.find('#file')[0].files[0];
-      //var formData = new FormData($('#createContent')[0]);
-      //console.log(formData);
       var uri = parseUri(result.blob_object_access.params);
       console.log(uri);
       var params = { url: uri.protocol + '://' + uri.host };
       var data = new FormData();
-      data.append('AWSAccessKeyId', uri.queryKey.AWSAccessKeyId);
-      data.append('Signature', uri.queryKey.Signature);
-      data.append('acl', uri.queryKey.acl);
       data.append('key', uri.queryKey.key);
+      data.append('acl', uri.queryKey.acl);
       data.append('success_action_status', uri.queryKey.success_action_status);
-      data.append('Filename',  result.name);
-      data.append('Policy', uri.queryKey.Policy);
+      data.append('AWSAccessKeyId', uri.queryKey.AWSAccessKeyId);
+      data.append('Policy', decodeURIComponent(uri.queryKey.Policy));
+      data.append('Signature', decodeURIComponent(uri.queryKey.Signature));
       data.append('Content-Type', uri.queryKey['Content-Type']);
-      data.append('file', file);
+      data.append('file', file, result.name);
       params.data = data;
       QB.content.upload(params, function(err,res){
-        $('#contentList').append(JSON.stringify(res));
-        $('#contentList').append(JSON.stringify(err));
+        if (err) {
+          $('#contentList').append('<p><em>Error uploading content</em' + err + '</p>');
+        }
+        else {
+          $('#contentList').append('<p><em>Content Uploaded</em>:' + JSON.stringify(res) + '</p>');
+        }
       });
     } else {
       $('#usersList').append('<p><em>Error creating content</em>:' + JSON.stringify(err) + '</p>');

@@ -233,11 +233,35 @@ ContentProxy.prototype.delete = function(id, callback){
 };
 
 ContentProxy.prototype.upload = function(params, callback){
-  this.service.ajax({url: params.url, data: params.data, contentType: false, processData: false, type: 'POST'}, function(err,result){
+  this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
+                     contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
     if (err) { callback (err, null); }
-    else { callback (null, err); }
+    else {
+      var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
+      for (i = 0, m = children.length; i < m ; i++){
+        result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+      } 
+      if (config.debug) { console.debug('result', result); }
+      callback (null, result);
+    }
   });
 };
+
+function xmlToJson(xml, json){
+  var i, c = xml.children, m = c.length;
+  if (m > 0) {
+    for (i = 0; i < m; i++){
+      if (c[i].nodeType === 1 ) {
+        json[c[i].nodeName] = xmlToJson(c[i], {});
+      } else if (c[i].nodeType === 9) {
+        json = xmlToJson(c[i], {});
+      } else if (c[i].nodeType === 3) {
+        json = c[i].nodeValue;
+      }
+    }
+  }
+ return json; 
+}
 
 ContentProxy.prototype.taggedForCurrentUser = function(callback) {
   this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
@@ -580,6 +604,7 @@ var jQuery = require('../lib/jquery-1.10.2');
 
 function ServiceProxy(qb){
   this.qbInst = qb;
+  jQuery.support.cors = true;
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
@@ -596,7 +621,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       params.data = {token:this.qbInst.session.token}; 
     }
   }
-  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
+  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
     type: params.type || 'GET',
@@ -614,7 +639,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     error: function(jqHXR, status, error) {
       if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
-      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.respoonseXML; }
+      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
       if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }

@@ -12,6 +12,7 @@ var jQuery = require('../lib/jquery-1.10.2');
 
 function ServiceProxy(qb){
   this.qbInst = qb;
+  jQuery.support.cors = true;
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
@@ -28,7 +29,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       params.data = {token:this.qbInst.session.token}; 
     }
   }
-  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
+  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
     type: params.type || 'GET',
@@ -46,7 +47,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     error: function(jqHXR, status, error) {
       if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
-      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.respoonseXML; }
+      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
       if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }

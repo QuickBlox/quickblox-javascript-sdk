@@ -53,9 +53,19 @@ ContentProxy.prototype.delete = function(id, callback){
 };
 
 ContentProxy.prototype.upload = function(params, callback){
-  this.service.ajax({url: params.url, data: params.data, contentType: false, processData: false, type: 'POST'}, function(err,result){
+  this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
+                     contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
     if (err) { callback (err, null); }
-    else { callback (null, err); }
+    else {
+      // AWS S3 doesn't respond with a JSON structure
+      // so parse the xml and return a JSON structure ourselves
+      var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
+      for (i = 0, m = children.length; i < m ; i++){
+        result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+      } 
+      if (config.debug) { console.debug('result', result); }
+      callback (null, result);
+    }
   });
 };
 
