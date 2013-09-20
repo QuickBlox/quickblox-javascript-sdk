@@ -74,7 +74,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         expect(session).not.toBeNull();
         console.debug('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
-        expect(session.user_id).toBe(245530);
+        expect(session.user_id).toBe(548154);
       });
     });
 
