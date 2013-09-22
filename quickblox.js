@@ -28,22 +28,18 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
     callback = params;
     params = {};
   }
-  
-  message = generateAuthMsg(params);
 
   // Sign message with SHA-1 using secret key and add to payload
+  message = generateAuthMsg(params);
   message = signMessage(message,  params.authSecret || config.creds.authSecret);
 
-  //if (config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
   this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
-                      if (config.debug) { console.debug('AuthProxy.createSession', err, data); }
-                      var session;
+                      if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
-                        session = data.session;
-                        _this.session = session;
+                        _this.service.setSession(data.session);
                       }
-                      callback(err,session);
+                      callback(err,data.session);
                     });
 };
 
@@ -51,22 +47,22 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 AuthProxy.prototype.destroySession = function(callback){
   var _this = this, message;
   message = {
-    token: this.session.token
+    token: this.service.getSession().token
   };
-  this.service.ajax({url: sessionUrl, type: 'DELETE'},
+  this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
                     function(err,data){
-                      if (config.debug) {console.debug('AuthProxy destroySession callback', err, data);}
-                      if (typeof err ==='undefined'){
-                        _this.session = null;
+                      if (config.debug) {console.debug('AuthProxy.destroySession callback', err, data);}
+                      if (err === null){
+                        _this.service.setSession(null);
                       }
-                      callback(err,data);
+                      callback(err,true);
                     });
 };
 
 AuthProxy.prototype.login = function(params, callback){
   var _this = this;
-  if (this.session) {
-    params.token = this.session.token;
+  if (this.service.getSession() !== null) {
+    params.token = this.service.getSession().token;
     this.service.ajax({url: loginUrl, type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
@@ -87,10 +83,10 @@ AuthProxy.prototype.login = function(params, callback){
 AuthProxy.prototype.logout = function(callback){
   var _this = this, message;
   message = {
-    token: this.session.token
+    token: this.service.getSession().token
   };
   //if (config.debug) {console.debug('Logout', message, jQuery.param(message));}
-  this.service.ajax({url: loginUrl, type: 'DELETE'}, callback);
+  this.service.ajax({url: loginUrl, dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 
 AuthProxy.prototype.nonce = function nonce(){
@@ -594,6 +590,16 @@ function ServiceProxy(qb){
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
+ServiceProxy.prototype.setSession= function(session){
+  console.debug('**', session);
+  this.qbInst.session = session;
+};
+
+ServiceProxy.prototype.getSession = function(){
+  console.debug('qbInst.session', this.qbInst.session);
+  return this.qbInst.session;
+};
+
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
   if (this.qbInst.session && this.qbInst.session.token){
@@ -604,7 +610,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
         params.data.token = this.qbInst.session.token;
       }
     } else { 
-      params.data = {token:this.qbInst.session.token}; 
+      params.data = {token: this.qbInst.session.token}; 
     }
   }
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
@@ -616,7 +622,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
-      //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+      jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
     },
     success: function (data, status, jqHXR) {
       if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
@@ -865,45 +871,53 @@ QuickBlox.prototype.createSession = function (params, callback){
     params = {};
   }
   if (config.debug) {console.log('createSession', params);}
-  this.auth.createSession(params, function(err,session) {
+  this.auth.createSession(params, callback);
+  /*
+  function(err,session) {
     if (session) {
       _this.session = session;
     }
     callback(err, session);
     });
+  */
 };
 
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this;
   if (this.session) {
-    this.auth.destroySession(function(err, result){
+    this.auth.destroySession(callback);
+    /*
+      function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
       callback(err,result);
     });
+   */
   }
 };
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  this.auth.login(params, function (err,session) {
+  this.auth.login(params, callback);
+  /*function (err,session) {
     if (session) {
       _this.session = session;
     }
     callback(err, session);
-  });
+  });*/
 };
 
 QuickBlox.prototype.logout = function(callback){
   var _this = this;
   if (this.session) {
-    this.auth.logout(function(err, result){
+    this.auth.logout(callback);
+    /*function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
       callback(err,result);
-    });
+    });*/
   }
 };
 

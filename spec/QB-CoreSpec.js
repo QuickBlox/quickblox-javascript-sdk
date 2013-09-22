@@ -152,9 +152,6 @@ describe('QuickBlox SDK - Basic functions', function() {
       },'logout user', TIMEOUT);
       runs(function(){
         expect(error).toBeNull();
-        expect(user).not.toBeNull();
-        expect(user.login).toBe(VALID_USER);
-        expect(user.website).toBe('http://quickblox.com');
       });
     });
 

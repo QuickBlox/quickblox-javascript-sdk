@@ -71,45 +71,53 @@ QuickBlox.prototype.createSession = function (params, callback){
     params = {};
   }
   if (config.debug) {console.log('createSession', params);}
-  this.auth.createSession(params, function(err,session) {
+  this.auth.createSession(params, callback);
+  /*
+  function(err,session) {
     if (session) {
       _this.session = session;
     }
     callback(err, session);
     });
+  */
 };
 
 QuickBlox.prototype.destroySession = function(callback){
   var _this = this;
   if (this.session) {
-    this.auth.destroySession(function(err, result){
+    this.auth.destroySession(callback);
+    /*
+      function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
       callback(err,result);
     });
+   */
   }
 };
 
 QuickBlox.prototype.login = function (params, callback){
   var _this = this;
-  this.auth.login(params, function (err,session) {
+  this.auth.login(params, callback);
+  /*function (err,session) {
     if (session) {
       _this.session = session;
     }
     callback(err, session);
-  });
+  });*/
 };
 
 QuickBlox.prototype.logout = function(callback){
   var _this = this;
   if (this.session) {
-    this.auth.logout(function(err, result){
+    this.auth.logout(callback);
+    /*function(err, result){
       if (typeof err === 'undefined'){
         _this.session = null;
       }
       callback(err,result);
-    });
+    });*/
   }
 };
 
