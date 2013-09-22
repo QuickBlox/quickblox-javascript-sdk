@@ -69,9 +69,24 @@ UsersProxy.prototype.delete = function(id, callback){
 };
 
 UsersProxy.prototype.update = function(user, callback){
-  var url = baseUrl + '/' + user.id + config.urls.type;
+  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
+      'phone', 'website', 'tag_list', 'password', 'old_password'];
+  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  for (prop in user) {
+    if (user.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = user[prop];
+      } 
+    }
+  }
   if (config.debug) { console.debug('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: user}}, callback);
+  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, function(err,data){
+      if (err) {callback(err, null);}
+      else { 
+        console.debug (data.user);
+        callback (null, data.user);
+      }
+  });
 };
 
 UsersProxy.prototype.get = function(params, callback){

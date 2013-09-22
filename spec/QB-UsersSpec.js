@@ -107,7 +107,7 @@ describe('QuickBlox SDK - Users', function() {
     });
 
     it('can update a user (' + login + ')', function() {
-      var done;
+      var done, updatedUser;
       runs(function(){
         done = false;
         QB.login({login: login, password: 'someSecret'}, function(err, user){
@@ -115,7 +115,7 @@ describe('QuickBlox SDK - Users', function() {
           QB.users.update(user, function(err, res){
             done = true;
             expect(err).toBeNull();
-            if (res) {user = res;}
+            updatedUser = res;
           });
         });
       });
@@ -123,8 +123,8 @@ describe('QuickBlox SDK - Users', function() {
         return done;
         }, 'update user', TIMEOUT);
       runs(function(){
-        expect(user).not.toBeNull();
-        expect(user.full_name).toBe('Updated QuickBlox Test');
+        expect(updatedUser).not.toBeNull();
+        expect(updatedUser.full_name).toBe('Updated QuickBlox Test');
       });
     });
 
