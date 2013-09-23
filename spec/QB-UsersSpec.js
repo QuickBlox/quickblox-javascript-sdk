@@ -100,7 +100,6 @@ describe('QuickBlox SDK - Users', function() {
         return done;
         }, 'create user', TIMEOUT);
       runs(function(){
-        console.debug('User is',user);
         expect(user).not.toBeNull();
         expect(user.full_name).toBe('QuickBlox Test');
       });
@@ -129,13 +128,13 @@ describe('QuickBlox SDK - Users', function() {
     });
 
     it('can delete a user (' + login + ')', function() {
-      var done;
+      var done, result;
       runs(function(){
         done = false;
         QB.users.delete(user.id, function(err, res){
           done = true;
           expect(err).toBeNull();
-          user = res;
+          result = res;
         });
       });
       waitsFor(function(){
@@ -143,7 +142,7 @@ describe('QuickBlox SDK - Users', function() {
         }, 'delete user', TIMEOUT);
       runs(function(){
         console.debug('User is', user);
-        expect(user).toBeNull();
+        expect(result).toBe(true);
       });
     });
   });

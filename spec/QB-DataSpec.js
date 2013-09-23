@@ -52,8 +52,7 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
       waitsFor(function(){return done;}, 'deleting a custom object', TIMEOUT);
       runs(function(){
         expect(error).toBeNull();
-        expect(result._id).not.toBeNull();
-        expect(result.make).toBe('Ford');
+        expect(result).toBe(true);
       });
     });
 

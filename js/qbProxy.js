@@ -17,12 +17,10 @@ function ServiceProxy(qb){
 }
 
 ServiceProxy.prototype.setSession= function(session){
-  console.debug('**', session);
   this.qbInst.session = session;
 };
 
 ServiceProxy.prototype.getSession = function(){
-  console.debug('qbInst.session', this.qbInst.session);
   return this.qbInst.session;
 };
 

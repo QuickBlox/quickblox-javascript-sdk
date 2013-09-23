@@ -343,10 +343,11 @@ DataProxy.prototype.update= function(className, data, callback) {
 
 DataProxy.prototype.delete= function(className, id, callback) {
   if (config.debug) { console.debug('DataProxy.delete', className, id);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'delete'}, function(err,result){
-    if (err){ callback(err, null); }
-    else { callback (err, result); }
-  });
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
+                    function(err,result){
+                      if (err){ callback(err, null); }
+                      else { callback (err, true); }
+                    });
 };
 
 
@@ -390,8 +391,20 @@ GeoProxy.prototype.create = function(params, callback){
 };
 
 GeoProxy.prototype.update = function(params, callback){
+  var allowedProps = ['longitude', 'latitude', 'status'], prop, msg = {};
+  for (prop in params) {
+    if (params.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = params[prop];
+      } 
+    }
+  }
   if (config.debug) { console.debug('GeoProxy.create', params);}
-  this.service.ajax({url: utils.resourceUrl(geoUrl, params.id), data: {geodata:params}, type: 'PUT'}, callback);
+  this.service.ajax({url: utils.resourceUrl(geoUrl, params.id), data: {geo_data:msg}, type: 'PUT'},
+                   function(err,res){
+                    if (err) { callback(err,null);}
+                    else { callback(err, res.geo_datum);}
+                   });
 };
 
 GeoProxy.prototype.get = function(id, callback){
@@ -413,12 +426,20 @@ GeoProxy.prototype.list = function(params, callback){
 
 GeoProxy.prototype.delete = function(id, callback){
   if (config.debug) { console.debug('GeoProxy.delete', id); }
-  this.service.ajax({url: utils.resourceUrl(geoUrl, id), type: 'DELETE'}, callback);
+  this.service.ajax({url: utils.resourceUrl(geoUrl, id), type: 'DELETE', dataType: 'text'},
+                   function(err,res){
+                    if (err) { callback(err, null);}
+                    else { callback(null, true);}
+                   });
 };
 
 GeoProxy.prototype.purge = function(days, callback){
   if (config.debug) { console.debug('GeoProxy.purge', days); }
-  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE'}, callback);
+  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE', dataType: 'text'},
+                   function(err, res){
+                    if (err) { callback(err, null);}
+                    else { callback(null, true);}
+                   });
 };
 
 function PlacesProxy(service) {
@@ -442,7 +463,7 @@ PlacesProxy.prototype.get = function(id, callback){
 
 PlacesProxy.prototype.update = function(place, callback){
   if (config.debug) { console.debug('PlacesProxy.update', place);}
-  this.service.ajax({url: utils.resourceUrl(placesUrl, id), data: {place: place}}, callback);
+  this.service.ajax({url: utils.resourceUrl(placesUrl, id), data: {place: place}, type: 'PUT'} , callback);
 };
 
 PlacesProxy.prototype.delete = function(id, callback){
@@ -504,7 +525,11 @@ TokensProxy.prototype.create = function(params, callback){
 TokensProxy.prototype.delete = function(id, callback) {
   var url = tokenUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
+                    function (err, res) {
+                      if (err) {callback(err, null);}
+                      else {callback(null, true);}
+                      });
 };
 
 // Subscriptions
@@ -526,7 +551,11 @@ SubscriptionsProxy.prototype.list = function (callback) {
 SubscriptionsProxy.prototype.delete = function(id, callback) {
   var url = subsUrl + '/'+ id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE'}, 
+                    function(err, res){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true);}
+                    });
 };
 
 // Events
@@ -591,12 +620,10 @@ function ServiceProxy(qb){
 }
 
 ServiceProxy.prototype.setSession= function(session){
-  console.debug('**', session);
   this.qbInst.session = session;
 };
 
 ServiceProxy.prototype.getSession = function(){
-  console.debug('qbInst.session', this.qbInst.session);
   return this.qbInst.session;
 };
 
@@ -719,7 +746,7 @@ UsersProxy.prototype.delete = function(id, callback){
   this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
                     function(err,data){
                       if (err) { callback(err, null);}
-                      else { callback(null, data); }
+                      else { callback(null, true); }
                      });
 };
 

@@ -83,13 +83,13 @@ describe('QuickBlox SDK - Location', function() {
     });
 
     it('can delete existing geodata', function(){
-      var error, result;
+      var error, deleted;
       runs(function(){
         done = false;
         QB.location.geodata.list(function(err,result){
           QB.location.geodata.delete(result.items[0].geo_datum.id, function(err,res){
             error = err;
-            result = res;
+            deleted = res;
             done = true;
           });
         });
@@ -99,7 +99,7 @@ describe('QuickBlox SDK - Location', function() {
       },'delete geodata', TIMEOUT);
       runs(function(){
         expect(error).toBeNull();
-        expect(result).toBeNull();
+        expect(deleted).toBe(true);
       });
     });
 
@@ -124,11 +124,13 @@ describe('QuickBlox SDK - Location', function() {
     });
 
     it('can purge geodata', function(){
-      var error, result;
+      var error, purged;
       runs(function(){
         done = false;
-        QB.location.geodata.purge(7,function(error,result){
+        QB.location.geodata.purge(7,function(err,result){
           done = true;
+          error = err;
+          purged = result;
         });
       });
       waitsFor(function(){
@@ -136,7 +138,7 @@ describe('QuickBlox SDK - Location', function() {
       },'list geodata', TIMEOUT);
       runs(function(){
         expect(error).toBeNull();
-        expect(result).toBeNull();
+        expect(purged).toBe(true);
       });
     });
 
