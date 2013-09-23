@@ -51,7 +51,11 @@ TokensProxy.prototype.create = function(params, callback){
 TokensProxy.prototype.delete = function(id, callback) {
   var url = tokenUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE'}, 
+                    function (err, res) {
+                      if (err) {callback(err, null);}
+                      else {callback(null, true);}
+                      });
 };
 
 // Subscriptions
@@ -73,7 +77,11 @@ SubscriptionsProxy.prototype.list = function (callback) {
 SubscriptionsProxy.prototype.delete = function(id, callback) {
   var url = subsUrl + '/'+ id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE'}, 
+                    function(err, res){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true);}
+                    });
 };
 
 // Events
