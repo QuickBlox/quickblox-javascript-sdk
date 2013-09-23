@@ -56,16 +56,21 @@ UsersProxy.prototype.listUsers = function(params, callback){
 UsersProxy.prototype.create = function(params, callback){
   var url = baseUrl + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, function(err, data){
-          if (err) { callback(err, null);}
-          else { callback(null, data.user); }
-  });
+  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+                    function(err, data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, data.user); }
+                    });
 };
 
 UsersProxy.prototype.delete = function(id, callback){
   var url = baseUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', data: {}}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+                    function(err,data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true); }
+                     });
 };
 
 UsersProxy.prototype.update = function(user, callback){
@@ -80,13 +85,14 @@ UsersProxy.prototype.update = function(user, callback){
     }
   }
   if (config.debug) { console.debug('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, function(err,data){
-      if (err) {callback(err, null);}
-      else { 
-        console.debug (data.user);
-        callback (null, data.user);
-      }
-  });
+  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+                    function(err,data){
+                      if (err) {callback(err, null);}
+                      else { 
+                        console.debug (data.user);
+                        callback (null, data.user);
+                      }
+                    });
 };
 
 UsersProxy.prototype.get = function(params, callback){
@@ -115,12 +121,13 @@ UsersProxy.prototype.get = function(params, callback){
     }
   }
   if (config.debug) {console.debug('UsersProxy.get', url);}
-  this.service.ajax({url:url}, function(err,data){
-                    var user;
-                    if (data && data.user) {
-                      user = data.user;
-                    }
-                    if (config.debug) { console.debug('UserProxy.get', user); }
-                      callback(err,user);
+  this.service.ajax({url:url},
+                    function(err,data){
+                      var user;
+                      if (data && data.user) {
+                        user = data.user;
+                      }
+                      if (config.debug) { console.debug('UserProxy.get', user); }
+                        callback(err,user);
                     });
 }
