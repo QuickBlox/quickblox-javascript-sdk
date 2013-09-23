@@ -49,10 +49,11 @@ DataProxy.prototype.update= function(className, data, callback) {
 
 DataProxy.prototype.delete= function(className, id, callback) {
   if (config.debug) { console.debug('DataProxy.delete', className, id);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'delete'}, function(err,result){
-    if (err){ callback(err, null); }
-    else { callback (err, result); }
-  });
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
+                    function(err,result){
+                      if (err){ callback(err, null); }
+                      else { callback (err, true); }
+                    });
 };
 
 

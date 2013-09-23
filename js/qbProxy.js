@@ -16,6 +16,14 @@ function ServiceProxy(qb){
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
+ServiceProxy.prototype.setSession= function(session){
+  this.qbInst.session = session;
+};
+
+ServiceProxy.prototype.getSession = function(){
+  return this.qbInst.session;
+};
+
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
   if (this.qbInst.session && this.qbInst.session.token){
@@ -26,7 +34,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
         params.data.token = this.qbInst.session.token;
       }
     } else { 
-      params.data = {token:this.qbInst.session.token}; 
+      params.data = {token: this.qbInst.session.token}; 
     }
   }
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
@@ -38,7 +46,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
-      //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+      jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
     },
     success: function (data, status, jqHXR) {
       if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
