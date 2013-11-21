@@ -77,7 +77,7 @@ SubscriptionsProxy.prototype.list = function (callback) {
 SubscriptionsProxy.prototype.delete = function(id, callback) {
   var url = subsUrl + '/'+ id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, 
+  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
                     function(err, res){
                       if (err) { callback(err, null);}
                       else { callback(null, true);}
