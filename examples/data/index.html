@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>QuickBlox API client - Content</title>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/jquery-1.10.2.js"></script>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/handlebars.js"></script>
+    <script src="app.js"></script>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
+    <script id="users-template" type="text/x-handlebars-template">
+      <div class="items">
+        <table class="items">
+          <tr><th>Name</th><th>email</th><th>login</th><th>id</th><th>facebook id</th><th>twitter id</th></tr>
+          {{#each items}}
+            <tr><td>{{user.full_name}}</td><td>{{user.email}}</td><td>{{user.login}}</td><td>{{user.id}}</td>
+                <td>{{user.facebook_id}}</td><td>{{user.twitter_id}}</td></tr>
+          {{/each}}
+        </table>
+        <p><strong>Page:</strong> {{current_page}} <strong></p><p>Total items</strong>: {{total_entries}}</p>
+      </div>
+    </script>
+  </head>
+  <body>
+    <div id="session">
+      <h2>Sign in</h2>
+      <form id="apiSession" action="">
+        <p>
+          <label>Username<input type="text" id="user"/></label>
+          <label>Password<input type="password" id="password"/></label>
+          <button type="submit" id="facebookButton">or login with Facebook</button>
+        </p>
+        <label>Application id:<input type="text" id="appId" value="3477"/></label>
+        <label>Authorization key:<input type="text" id="authKey" value="ChRnwEJ3WzxH9O4"/></label>
+        <label>Authorization secret:<input type="text" id="secret" value="AS546kpUQ2tfbvv"/></label>
+        <p>
+          <button type="submit" id="sessionButton">Create Session</button>
+          <button type="submit" id="sessionDeleteButton" disabled>Delete Session</button>
+        </p>
+      </form>
+    </div>
+    <div id="customObject">
+      <h2>Add file to an existing Car instance</h2>
+      <form id="uploadFile" action="" enctype="multipart/form-data">
+        <label>Class <input type="text" id="className" value="Cars"/></label>
+        <label>Record ID<input type="text" id="recId" value=""/></label>
+        <label>File<input type="file" id="file"/></label>
+        <label>Field name</label> <input type="text" id="field_name" value="image"/></label>
+        <button type="submit" id="uploadFileButton">Create content</button>
+        <button type="submit" id="downloadFileButton">Download content</button>
+      </form>
+      <div id="customObjectResponse">
+      </div>
+    </div>
+  </body>
+</html>

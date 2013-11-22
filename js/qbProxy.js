@@ -13,6 +13,16 @@ var jQuery = require('../lib/jquery-1.10.2');
 function ServiceProxy(qb){
   this.qbInst = qb;
   jQuery.support.cors = true;
+  jQuery.ajaxSetup({
+    accepts: {
+      binary: "text/plain; charset=x-user-defined"
+    },
+    contents: {
+    },
+    converters: {
+      "text binary": true // Nothing to convert
+    }
+  });
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
@@ -26,17 +36,17 @@ ServiceProxy.prototype.getSession = function(){
 
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
-  if (this.qbInst.session && this.qbInst.session.token){
-    if (params.data) {
-      if (params.data instanceof FormData) {
-        params.data.append('token', this.qbInst.session.token);
-      } else {
-        params.data.token = this.qbInst.session.token;
-      }
-    } else { 
-      params.data = {token: this.qbInst.session.token}; 
-    }
-  }
+  //if (this.qbInst.session && this.qbInst.session.token){
+    //if (params.data) {
+      //if (params.data instanceof FormData) {
+        //params.data.append('token', this.qbInst.session.token);
+      //} else {
+        //params.data.token = this.qbInst.session.token;
+      //}
+    //} else { 
+      //params.data = {token: this.qbInst.session.token}; 
+    //}
+  //}
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
@@ -47,9 +57,12 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+      if (_this.qbInst.session && _this.qbInst.session.token) {
+        jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+      }
     },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
+      if (config.debug) {console.debug('ServiceProxy.ajax success', status, data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
@@ -68,5 +81,6 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if (typeof params.async === 'boolean') { ajaxCall.async = params.async; }
   if (typeof params.cache === 'boolean') { ajaxCall.cache = params.cache; }
   if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
   jQuery.ajax( ajaxCall );
 }
