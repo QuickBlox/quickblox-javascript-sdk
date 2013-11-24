@@ -38,8 +38,10 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
                       if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
+                        callback(err,data.session);
+                      } else {
+                        callback(err, null);
                       }
-                      callback(err,data.session);
                     });
 };
 
@@ -350,6 +352,51 @@ DataProxy.prototype.delete= function(className, id, callback) {
                     });
 };
 
+DataProxy.prototype.uploadFile= function(className, params, callback){
+  var formData;
+  if (config.debug) { console.debug('DataProxy.uploadFile', className, params);}
+  formData = new FormData();
+  formData.append('field_name', params.field_name);
+  formData.append('file', params.file);
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type:'POST'}, function(err, result){
+                      if (err) { callback(err, null);}
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.updateFile= function(className, params, callback){
+  var formData;
+  if (config.debug) { console.debug('DataProxy.updateFile', className, params);}
+  formData = new FormData();
+  formData.append('field_name', params.field_name);
+  formData.append('file', params.file);
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type: 'POST'}, function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.downloadFile= function(className, params, callback){
+  if (config.debug) { console.debug('DataProxy.downloadFile', className, params);}
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
+                    type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
+                    function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.deleteFile= function(className, params, callback){
+  if (config.debug) { console.debug('DataProxy.deleteFile', className, params);}
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
+                    dataType: 'text', type: 'DELETE'}, function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, true); }
+                    });
+};
+
 
 
 },{"./qbConfig":2,"./qbUtils":9}],5:[function(require,module,exports){
@@ -616,6 +663,16 @@ var jQuery = require('../lib/jquery-1.10.2');
 function ServiceProxy(qb){
   this.qbInst = qb;
   jQuery.support.cors = true;
+  jQuery.ajaxSetup({
+    accepts: {
+      binary: "text/plain; charset=x-user-defined"
+    },
+    contents: {
+    },
+    converters: {
+      "text binary": true // Nothing to convert
+    }
+  });
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
@@ -629,30 +686,32 @@ ServiceProxy.prototype.getSession = function(){
 
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
-  if (this.qbInst.session && this.qbInst.session.token){
-    if (params.data) {
-      if (params.data instanceof FormData) {
-        params.data.append('token', this.qbInst.session.token);
-      } else {
-        params.data.token = this.qbInst.session.token;
-      }
-    } else { 
-      params.data = {token: this.qbInst.session.token}; 
-    }
-  }
+  //if (this.qbInst.session && this.qbInst.session.token){
+    //if (params.data) {
+      //if (params.data instanceof FormData) {
+        //params.data.append('token', this.qbInst.session.token);
+      //} else {
+        //params.data.token = this.qbInst.session.token;
+      //}
+    //} else { 
+      //params.data = {token: this.qbInst.session.token}; 
+    //}
+  //}
   if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data,
-    // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+      if (_this.qbInst.session && _this.qbInst.session.token) {
+        jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+      }
     },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug('ServiceProxy.ajax success', status,data);}
+      if (config.debug) {console.debug('ServiceProxy.ajax success', status, data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
@@ -671,6 +730,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if (typeof params.async === 'boolean') { ajaxCall.async = params.async; }
   if (typeof params.cache === 'boolean') { ajaxCall.cache = params.cache; }
   if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
   jQuery.ajax( ajaxCall );
 }
 

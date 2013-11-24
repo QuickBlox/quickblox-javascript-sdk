@@ -37,8 +37,10 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
                       if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
+                        callback(err,data.session);
+                      } else {
+                        callback(err, null);
                       }
-                      callback(err,data.session);
                     });
 };
 
