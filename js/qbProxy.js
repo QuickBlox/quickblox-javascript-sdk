@@ -55,9 +55,12 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     data: params.data,
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
-      jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-      if (_this.qbInst.session && _this.qbInst.session.token) {
-        jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+      if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
+        console.debug('setting headers on request to ' + settings.url);
+        jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+        if (_this.qbInst.session && _this.qbInst.session.token) {
+          jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+        }
       }
     },
     success: function (data, status, jqHXR) {

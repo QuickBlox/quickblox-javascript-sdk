@@ -39,18 +39,24 @@ App.prototype.compileTemplates = function(){
 };
 
 App.prototype.createSession = function(e){
-  var form, appId, authKey, secret, _this = this;
+  var form, appId, authKey, secret, user, password, _this = this;
   console.debug('createSession', e);
   form = $('#apiSession');
   appId = form.find('#appId')[0].value;
   authKey = form.find('#authKey')[0].value;
   secret = form.find('#secret')[0].value;
   console.debug(form, appId, authKey, secret);
+  user = form.find('#user')[0].value;
+  password = form.find('#password')[0].value;
   QB.init(appId,authKey,secret, true);
   if (this.facebook) {
     QB.createSession({provider:'facebook', keys: {token: this.facebook.accessToken}}, function(e,r){_this.sessionCallback(e,r);});
   } else {
-    QB.createSession(function(e,r){_this.sessionCallback(e,r);});
+    if (user && password) {
+      QB.createSession({login: user, password: password}, function(e,r){_this.sessionCallback(e,r);});
+    } else {
+      QB.createSession(function(e,r){_this.sessionCallback(e,r);});
+    }
   }
 };
 
@@ -79,23 +85,30 @@ App.prototype.deleteSession = function(e){
 };
 
 App.prototype.createContent= function(e){
-  var form, name, type, isPublic, tags, _this= this;
+  var form, params={}, name, type, isPublic, tags, _this= this;
   console.debug('createContent', e);
   form = $('#createContent');
   name = form.find('#name')[0].value;
   isPublic = form.find('#public')[0].value === 'true';
   type = form.find('#type')[0].value;
   tags = form.find('#tags')[0].value;
-  QB.content.create({name: name, public: isPublic, content_type: type, tag_list: tags}, function(err,result){
+  if (name) {params.name = name;}
+  if (isPublic) {params.public = isPublic;}
+  if (tags) {params.tag_list = tags;}
+  params.file = form.find('#file')[0].files[0];
+  /* 
+   * The longwinded way (aka old)
+   *
+    QB.content.create({name: name, public: isPublic, content_type: type, tag_list: tags}, function(err,result){
     console.debug('create content callback', err, result);
     $('#contentList').empty();
     if (result) {
       $('#contentList').append('<p><em>Content created</em>:' + JSON.stringify(result) + '</p>');
       var file = form.find('#file')[0].files[0];
       var uri = parseUri(result.blob_object_access.params);
-      console.log(uri);
       var params = { url: uri.protocol + '://' + uri.host };
       var data = new FormData();
+      console.debug(uri);
       data.append('key', uri.queryKey.key);
       data.append('acl', uri.queryKey.acl);
       data.append('success_action_status', uri.queryKey.success_action_status);
@@ -111,11 +124,23 @@ App.prototype.createContent= function(e){
         }
         else {
           $('#contentList').append('<p><em>Content Uploaded</em>:' + JSON.stringify(res) + '</p>');
+          QB.content.markUploaded(result.id, function(e,r) {
+            QB.content.getFileUrl(result.id, function (err, res) {
+              $('#contentList').append('<p><em>File URL</em>:' + res + '</p>');
+              $('#contentList').append('<img src="' + res + '"/>' );
+            });
+          });
         }
-      });
-    } else {
-      $('#usersList').append('<p><em>Error creating content</em>:' + JSON.stringify(err) + '</p>');
-    }
+      });*/
+    QB.content.createAndUpload(params, function (err, result){
+      if (err) {
+        $('#usersList').append('<p><em>Error creating content</em>:' + JSON.stringify(err) + '</p>');
+      } else {
+        QB.content.getFileUrl(result.id, function (err, res) {
+          $('#contentList').append('<p><em>File URL</em>:' + res + '</p>');
+          $('#contentList').append('<img src="' + res + '"/>' );
+          });
+      }
   });
 };
 
@@ -153,15 +178,15 @@ function parseUri (str) {
 		uri = {},
 		i   = 14;
 
-	while (i--) uri[o.key[i]] = m[i] || "";
+	while (i--) {uri[o.key[i]] = m[i] || "";}
 
 	uri[o.q.name] = {};
 	uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
-		if ($1) uri[o.q.name][$1] = $2;
+		if ($1) {uri[o.q.name][$1] = $2;}
 	});
 
 	return uri;
-};
+}
 
 parseUri.options = {
 	strictMode: false,
