@@ -254,8 +254,8 @@ ContentProxy.prototype.taggedForCurrentUser = function(callback) {
   });
 };
 
-ContentProxy.prototype.markUploaded = function (params, callback) {
-  this.service.ajax({url: contentIdUrl(id) + '/complete' + config.urls.type, type: 'PUT', data: {blob: {size: params.size}}}, function(err, res){
+ContentProxy.prototype.markUploaded = function (id, callback) {
+  this.service.ajax({url: contentIdUrl(id) + '/complete' + config.urls.type, type: 'PUT', data: {size: 1024}, dataType: 'text' }, function(err, res){
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
@@ -275,10 +275,10 @@ ContentProxy.prototype.getFile = function (uid, callback) {
   });
 };
 
-ContentProxy.prototype.getBlobObjectById = function (id, callback) {
- this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type}, function (err, res) {
+ContentProxy.prototype.getFileUrl = function (id, callback) {
+ this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type, type: 'POST'}, function (err, res) {
     if (err) { callback (err, null); }
-    else { callback (null, res); }
+    else { callback (null, res.blob_object_access.params); }
   });
 };
 
@@ -705,9 +705,12 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     data: params.data,
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
-      jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-      if (_this.qbInst.session && _this.qbInst.session.token) {
-        jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+      if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
+        console.debug('setting headers on request to ' + settings.url);
+        jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+        if (_this.qbInst.session && _this.qbInst.session.token) {
+          jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+        }
       }
     },
     success: function (data, status, jqHXR) {

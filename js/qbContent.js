@@ -52,6 +52,8 @@ ContentProxy.prototype.delete = function(id, callback){
   });
 };
 
+
+
 ContentProxy.prototype.upload = function(params, callback){
   this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
                      contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
@@ -76,8 +78,8 @@ ContentProxy.prototype.taggedForCurrentUser = function(callback) {
   });
 };
 
-ContentProxy.prototype.markUploaded = function (params, callback) {
-  this.service.ajax({url: contentIdUrl(id) + '/complete' + config.urls.type, type: 'PUT', data: {blob: {size: params.size}}}, function(err, res){
+ContentProxy.prototype.markUploaded = function (id, callback) {
+  this.service.ajax({url: contentIdUrl(id) + '/complete' + config.urls.type, type: 'PUT', data: {size: 1024}, dataType: 'text' }, function(err, res){
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
@@ -97,10 +99,10 @@ ContentProxy.prototype.getFile = function (uid, callback) {
   });
 };
 
-ContentProxy.prototype.getBlobObjectById = function (id, callback) {
- this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type}, function (err, res) {
+ContentProxy.prototype.getFileUrl = function (id, callback) {
+ this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type, type: 'POST'}, function (err, res) {
     if (err) { callback (err, null); }
-    else { callback (null, res); }
+    else { callback (null, res.blob_object_access.params); }
   });
 };
 

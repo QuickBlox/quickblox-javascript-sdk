@@ -4,21 +4,8 @@
     <meta charset="utf-8">
     <title>QuickBlox API client - Content</title>
     <script src="http://quickblox.github.io/quickblox-web-sdk/lib/jquery-1.10.2.js"></script>
-    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/handlebars.js"></script>
     <script src="app.js"></script>
     <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
-    <script id="users-template" type="text/x-handlebars-template">
-      <div class="items">
-        <table class="items">
-          <tr><th>Name</th><th>email</th><th>login</th><th>id</th><th>facebook id</th><th>twitter id</th></tr>
-          {{#each items}}
-            <tr><td>{{user.full_name}}</td><td>{{user.email}}</td><td>{{user.login}}</td><td>{{user.id}}</td>
-                <td>{{user.facebook_id}}</td><td>{{user.twitter_id}}</td></tr>
-          {{/each}}
-        </table>
-        <p><strong>Page:</strong> {{current_page}} <strong></p><p>Total items</strong>: {{total_entries}}</p>
-      </div>
-    </script>
   </head>
   <body>
     <div id="session">
