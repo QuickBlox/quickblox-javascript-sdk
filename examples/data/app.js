@@ -32,6 +32,8 @@ App.prototype.init = function(){
   $('#sessionButton').click(function(e){e.preventDefault(); _this.createSession(e); return false;});
   $('#sessionDeleteButton').click(function(e){e.preventDefault(); _this.deleteSession(e); return false;});
   $('#uploadFileButton').click(function(e){e.preventDefault(); _this.uploadFile(e); return false;});
+  $('#updateFileButton').click(function(e){e.preventDefault(); _this.updateFile(e); return false;});
+  $('#deleteFileButton').click(function(e){e.preventDefault(); _this.deleteFile(e); return false;});
   $('#downloadFileButton').click(function(e){e.preventDefault(); _this.downloadFile(e); return false;});
 };
 
@@ -41,18 +43,24 @@ App.prototype.compileTemplates = function(){
 };
 
 App.prototype.createSession = function(e){
-  var form, appId, authKey, secret, _this = this;
+  var form, appId, authKey, secret, user, password, params, _this = this;
   console.debug('createSession', e);
   form = $('#apiSession');
   appId = form.find('#appId')[0].value;
   authKey = form.find('#authKey')[0].value;
   secret = form.find('#secret')[0].value;
-  console.debug(form, appId, authKey, secret);
+  user = form.find('#user')[0].value;
+  password = form.find('#password')[0].value;
+  console.debug(appId, authKey, secret, user);
   QB.init(appId,authKey,secret, true);
   if (this.facebook) {
     QB.createSession({provider:'facebook', keys: {token: this.facebook.accessToken}}, function(e,r){_this.sessionCallback(e,r);});
   } else {
-    QB.createSession(function(e,r){_this.sessionCallback(e,r);});
+    if (user && password) {
+      QB.createSession({login: user, password: password}, function(e,r) {_this.sessionCallback(e,r);});
+    } else {
+      QB.createSession(function(e,r){_this.sessionCallback(e,r);});
+    }
   }
 };
 
@@ -80,14 +88,19 @@ App.prototype.deleteSession = function(e){
   });
 };
 
+App.prototype.formData= function(){
+  return {
+    className : document.getElementById('className').value,
+    recId : document.getElementById('recId').value,
+    field_name : document.getElementById('field_name').value,
+    file : document.getElementById('file').files[0]
+  };
+};
+
 App.prototype.uploadFile= function(e){
-  var className, recId, field_name, file;
-  console.debug('uploadFile', e);
-  className = document.getElementById('className').value;
-  recId = document.getElementById('recId').value;
-  field_name = document.getElementById('field_name').value;
-  file = document.getElementById('file').files[0];
-  QB.data.uploadFile(className, {id: recId, field_name: field_name, file: file},
+  data = this.formData();
+  console.debug('uploadFile', data);
+  QB.data.uploadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
                     function(err, result){
                       console.debug('upload file callback');
                       if (err) {
@@ -95,17 +108,27 @@ App.prototype.uploadFile= function(e){
                       } else {
                          $('#customObjectResponse').append('<p><em>Uploaded file</em>:' + result.name + ' type ' + result.content_type + ' size ' + result.size);
                       }
-                 });
+  });
+};
+
+App.prototype.updateFile= function(e){
+  var data = this.formData();
+  console.debug('updateFile', data);
+  QB.data.updateFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
+                    function(err, result){
+                      console.debug('upload file callback');
+                      if (err) {
+                        $('#customObjectResponse').append('<p><em>Error occured updating file</em>: ' + JSON.stringify(err) + '</p>');
+                      } else {
+                         $('#customObjectResponse').append('<p><em>Uploaded file</em>:' + result.name + ' type ' + result.content_type + ' size ' + result.size);
+                      }
+   });
 };
 
 App.prototype.downloadFile= function(e){
-  var className, recId, field_name, file;
-  console.debug('downloadFile', e);
-  className = document.getElementById('className').value;
-  recId = document.getElementById('recId').value;
-  field_name = document.getElementById('field_name').value;
-  file = document.getElementById('file').files[0];
-  QB.data.downloadFile(className, {id: recId, field_name: field_name, file: file},
+  var data = this.formData();
+  console.debug('downloadFile', data);
+  QB.data.downloadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
                     function(err, result){
                       var buffer, bufferView, i, l, blob, objectUrl, image;
                       console.debug('upload file callback', err, result);
@@ -126,7 +149,19 @@ App.prototype.downloadFile= function(e){
                          image.src = objectURL;
                          document.getElementById('customObjectResponse').appendChild(image);
                       }
-                 });
+   });
+};
+
+App.prototype.deleteFile= function(){
+  var data= this.formData();
+  console.debug('deleteFile', data);
+  QB.data.deleteFile(data.className, {id: data.recId, field_name: data.field_name}, function(err,res){
+                    if (err) {
+                      $('#customObjectResponse').append('<p><em>Error occured deleting file</em>: ' + JSON.stringify(err) + '</p>');
+                    } else {
+                      $('#customObjectResponse').append('<p><em>File deleted</em>');
+                    }
+  });
 };
 
 

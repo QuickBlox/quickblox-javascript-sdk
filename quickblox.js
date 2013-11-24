@@ -38,8 +38,10 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
                       if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
+                        callback(err,data.session);
+                      } else {
+                        callback(err, null);
                       }
-                      callback(err,data.session);
                     });
 };
 
@@ -356,26 +358,30 @@ DataProxy.prototype.uploadFile= function(className, params, callback){
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData, contentType: false, processData: false, type:'POST'},
-                    function(err, result){
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type:'POST'}, function(err, result){
                       if (err) { callback(err, null);}
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.updateFile= function(className, params, callback){
+  var formData;
+  if (config.debug) { console.debug('DataProxy.updateFile', className, params);}
+  formData = new FormData();
+  formData.append('field_name', params.field_name);
+  formData.append('file', params.file);
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type: 'POST'}, function(err, result) {
+                      if (err) { callback (err, null); }
                       else { callback (err, result); }
                     });
 };
 
 DataProxy.prototype.downloadFile= function(className, params, callback){
   if (config.debug) { console.debug('DataProxy.downloadFile', className, params);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name, type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
-                    function(err, result) {
-                      if (err) { callback (err, null); }
-                      else { callback (err, result); }
-                    });
-};
-
-
-DataProxy.prototype.updateFile= function(className, params, callback){
-  if (config.debug) { console.debug('DataProxy.updateFile', className, params);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name} , processData: false, type:'PUT'},
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
+                    type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
                     function(err, result) {
                       if (err) { callback (err, null); }
                       else { callback (err, result); }
@@ -384,10 +390,10 @@ DataProxy.prototype.updateFile= function(className, params, callback){
 
 DataProxy.prototype.deleteFile= function(className, params, callback){
   if (config.debug) { console.debug('DataProxy.deleteFile', className, params);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name} , processData: false, type:'DELETE'},
-                    function(err, result) {
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
+                    dataType: 'text', type: 'DELETE'}, function(err, result) {
                       if (err) { callback (err, null); }
-                      else { callback (err, result); }
+                      else { callback (err, true); }
                     });
 };
 
@@ -697,7 +703,6 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data,
-    // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
@@ -933,16 +938,6 @@ var QB = (function(QB, window){
   if (window && typeof window.QB === 'undefined'){
     window.QB= QB;
   }
-  jQuery.ajaxSetup({
-    accepts: {
-      binary: "text/plain; charset=x-user-defined"
-    },
-    contents: {
-    },
-    converters: {
-      "text binary": true // Nothing to convert
-    }
-  });
   return QB;
 }(QB || {}, window));
 

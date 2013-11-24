@@ -53,7 +53,6 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data,
-    // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');

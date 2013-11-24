@@ -29,16 +29,6 @@ var QB = (function(QB, window){
   if (window && typeof window.QB === 'undefined'){
     window.QB= QB;
   }
-  jQuery.ajaxSetup({
-    accepts: {
-      binary: "text/plain; charset=x-user-defined"
-    },
-    contents: {
-    },
-    converters: {
-      "text binary": true // Nothing to convert
-    }
-  });
   return QB;
 }(QB || {}, window));
 
