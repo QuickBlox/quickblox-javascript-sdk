@@ -45,9 +45,9 @@ Feedback and suggestions for improvement always welcome :)
 
 The APIs in more detail
 -----------------------
-```javascript
-QB.createSession(options, callback)
 ```
+QB.createSession(options, callback)
+
 options: A map of additional options to pass to the method
   appId - your application's id (overrides the value passed to QB.init)
   authKey - your application's authorization key (overrides the value passed to QB.init)
@@ -60,6 +60,6 @@ options: A map of additional options to pass to the method
   keys - a map of :
           token - social network access token
           secret - social network access token secret (only required for twitter)
-
+```
 
 
