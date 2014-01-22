@@ -18,54 +18,30 @@ var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
 var loginUrl = config.urls.base + config.urls.login + config.urls.type;
 
 function AuthProxy(service) {
-  //this.session = qb.session;
-  this._nonce = Math.floor(Math.random() * 10000);
   this.service = service;
 }
 
 AuthProxy.prototype.createSession = function createSession(params, callback) {
   var message, _this = this;
 
-  // Allow first param to be a hash of arguments used to override those set in init
-  // or
   if (typeof params === 'function' && typeof callback === 'undefined'){
     callback = params;
     params = {};
   }
 
-  // Allow params to override config
-  message = {
-    application_id : params.appId || config.creds.appId,
-    auth_key : params.authKey || config.creds.authKey,
-    nonce: this.nonce().toString(),
-    timestamp: utils.unixTime()
-  };
-
-  // Optionally permit a user session to be created
-  if (params.login && params.password) {
-    //message.user = { login : params.login, password : params.password};
-    message.user = {login : params.login, password: params.password};
-  } else if (params.email && params.password) {
-    message.user = {email: params.email, password: params.password};
-  }
-  if (params.social && params.social.provider) {
-    message.provider = social.provider;
-    message.scope = params.social.scope;
-    message.keys = { token: params.social.token, secret: params.social.secret };
-  }
   // Sign message with SHA-1 using secret key and add to payload
-  this.signMessage(message,  params.authSecret || config.creds.authSecret);
+  message = generateAuthMsg(params);
+  message = signMessage(message,  params.authSecret || config.creds.authSecret);
 
-  //if (config.debug) {console.debug('Creating session using', message, jQuery.param(message));}
-  this.service.ajax({url: sessionUrl, data: message, type: 'POST'},
+  this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
-                      var session;
-                      if (data) {
-                        session = data.session;
-                        _this.session = session;
+                      if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
+                      if (data && data.session) {
+                        _this.service.setSession(data.session);
+                        callback(err,data.session);
+                      } else {
+                        callback(err, null);
                       }
-                      if (config.debug) { console.debug('AuthProxy.createSession', session); }
-                      callback(err,session);
                     });
 };
 
@@ -73,22 +49,22 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 AuthProxy.prototype.destroySession = function(callback){
   var _this = this, message;
   message = {
-    token: this.session.token
+    token: this.service.getSession().token
   };
-  //if (config.debug) {console.debug('Destroy session using', message, jQuery.param(message));}
-  this.service.ajax({url: sessionUrl, type: 'DELETE'},
+  this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
                     function(err,data){
-                      if (typeof err ==='undefined'){
-                        _this.session = null;
+                      if (config.debug) {console.debug('AuthProxy.destroySession callback', err, data);}
+                      if (err === null){
+                        _this.service.setSession(null);
                       }
-                      callback(err,data);
+                      callback(err,true);
                     });
 };
 
 AuthProxy.prototype.login = function(params, callback){
   var _this = this;
-  if (this.session) {
-    params.token = this.session.token;
+  if (this.service.getSession() !== null) {
+    params.token = this.service.getSession().token;
     this.service.ajax({url: loginUrl, type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
@@ -109,26 +85,59 @@ AuthProxy.prototype.login = function(params, callback){
 AuthProxy.prototype.logout = function(callback){
   var _this = this, message;
   message = {
-    token: this.session.token
+    token: this.service.getSession().token
   };
   //if (config.debug) {console.debug('Logout', message, jQuery.param(message));}
-  this.service.ajax({url: loginUrl, type: 'DELETE'}, callback);
+  this.service.ajax({url: loginUrl, dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 
 AuthProxy.prototype.nonce = function nonce(){
   return this._nonce++;
 };
 
-AuthProxy.prototype.signMessage= function(message, secret){
-  var data = jQuery.param(message);
-  var toSign = data.replace(/%5B/g, '[');
-  toSign = toSign.replace(/%5D/g ,']');
-  signature =  crypto(toSign, secret).toString();
-  //if (config.debug) { console.debug ('Signature of', toSign, 'is', signature); }
-  jQuery.extend(message, {signature: signature});
-};
+function signMessage(message, secret){
+  signature =  crypto(message, secret).toString();
+  //if (config.debug) { console.debug ('AuthProxy signature of', message, 'is', signature); }
+  return message + '&signature=' + signature;
+}
 
-},{"../lib/jquery-1.10.2":10,"./qbConfig":2,"./qbProxy":6,"./qbUtils":8,"crypto-js/hmac-sha1":12}],2:[function(require,module,exports){
+function generateAuthMsg(params){
+   // Allow params to override config
+  var message = {
+    application_id : params.appId || config.creds.appId,
+    auth_key : params.authKey || config.creds.authKey,
+    nonce: Math.floor(Math.random() * 10000),
+    timestamp: utils.unixTime()
+  };
+  // Optionally permit a user session to be created
+  if (params.login && params.password) {
+    message.user = {login : params.login, password: params.password};
+  } else if (params.email && params.password) {
+    message.user = {email: params.email, password: params.password};
+  } else if (params.provider) {
+    // With social networking (eg. facebook, twitter etc) provider
+    message.provider = params.provider;
+    if (params.scope) {message.scope = params.scope;}
+    message.keys = { token: params.keys.token };
+    if (params.keys.secret) { messages.keys.secret = params.keys.secret; }
+  }
+
+  var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
+  if (message.keys && message.keys.token) {sessionMsg+= '&keys[token]=' + message.keys.token;}
+  sessionMsg += '&nonce=' + message.nonce;
+  if (message.provider) { sessionMsg += '&provider=' + message.provider;}
+  sessionMsg += '&timestamp=' + message.timestamp;
+  if (message.user) {
+    if (message.user.login) { sessionMsg += '&user[login]=' + message.user.login; }
+    if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
+    if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
+  }
+  //if (config.debug) { console.debug ('AuthProxy authMsg', sessionMsg); }
+  return sessionMsg;
+}
+
+
+},{"../lib/jquery-1.10.2":11,"./qbConfig":2,"./qbProxy":7,"./qbUtils":9,"crypto-js/hmac-sha1":13}],2:[function(require,module,exports){
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -157,6 +166,7 @@ var config = {
     geo: 'geodata',
     places: 'places',
     data: 'data',
+    content: 'blobs',
     chat: 'chat',
     type: '.json'
     },
@@ -166,6 +176,199 @@ var config = {
 module.exports = config;
 
 },{}],3:[function(require,module,exports){
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * Content module
+ *
+ * For an overview of this module and what it can be used for
+ * see http://quickblox.com/modules/content
+ *
+ * The API itself is described at http://quickblox.com/developers/Content
+ *
+ */
+
+// Browserify exports and dependencies
+module.exports = ContentProxy;
+var config = require('./qbConfig');
+var utils = require('./qbUtils');
+
+var contentUrl = config.urls.base + config.urls.content;
+var taggedForUserUrl = contentUrl + '/tagged';
+
+function contentIdUrl(id) {
+  return contentUrl + '/' + id;
+}
+
+function ContentProxy(service) {
+  this.service = service;
+}
+
+ContentProxy.prototype.create = function(params, callback){
+ if (config.debug) { console.debug('ContentProxy.create', params);}
+  this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
+    if (err){ callback(err, null); }
+    else { callback (err, result.blob); }
+  });
+};
+
+ContentProxy.prototype.list = function(params, callback){
+  if (typeof params === 'function' && typeof callback ==='undefined') {
+    callback = params;
+    params = null;
+  }
+  this.service.ajax({url: contentUrl + config.urls.type}, function(err,result){
+    if (err){ callback(err, null); }
+    else { callback (err, result); }
+  });
+};
+
+ContentProxy.prototype.delete = function(id, callback){
+  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE'}, function(err, result) {
+    if (err) { callback(err,null); }
+    else { callback(null, result); }
+  });
+};
+
+ContentProxy.prototype.createAndUpload = function(params, callback){
+  var createParams= {}, file, name, type, size, fileId, _this = this;
+  if (config.debug) { console.debug('ContentProxy.createAndUpload', params);}
+  file = params.file;
+  name = params.name || file.name;
+  type = params.type || file.type;
+  size = file.size;
+  createParams.name = name;
+  createParams.content_type = type;
+  if (params.public) { createParams.public = params.public; }
+  if (params.tag_list) { createParams.tag_list = params.tag_list; }
+  this.create(createParams, function(err,createResult){
+    if (err){ callback(err, null); }
+    else {
+      var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: uri.protocol + '://' + uri.host }, data = new FormData();
+      fileId = createResult.id;
+      data.append('key', uri.queryKey.key);
+      data.append('acl', uri.queryKey.acl);
+      data.append('success_action_status', uri.queryKey.success_action_status);
+      data.append('AWSAccessKeyId', uri.queryKey.AWSAccessKeyId);
+      data.append('Policy', decodeURIComponent(uri.queryKey.Policy));
+      data.append('Signature', decodeURIComponent(uri.queryKey.Signature));
+      data.append('Content-Type', uri.queryKey['Content-Type']);
+      data.append('file', file, createResult.name);
+      uploadParams.data = data;
+      _this.upload(uploadParams, function(err, result) {
+        if (err) { callback(err, null); }
+        else {
+          _this.markUploaded({id: fileId, size: size}, function(err, result){
+            if (err) { callback(err, null);}
+            else {
+              callback(null, createResult);
+            }
+          });
+        }
+      });
+    }
+  });
+};
+
+
+ContentProxy.prototype.upload = function(params, callback){
+  this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
+                     contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
+    if (err) { callback (err, null); }
+    else {
+      // AWS S3 doesn't respond with a JSON structure
+      // so parse the xml and return a JSON structure ourselves
+      var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
+      for (i = 0, m = children.length; i < m ; i++){
+        result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+      } 
+      if (config.debug) { console.debug('result', result); }
+      callback (null, result);
+    }
+  });
+};
+
+ContentProxy.prototype.taggedForCurrentUser = function(callback) {
+  this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
+    if (err) { callback(err, null); }
+    else { callback(null, result); }
+  });
+};
+
+ContentProxy.prototype.markUploaded = function (params, callback) {
+  this.service.ajax({url: contentIdUrl(params.id) + '/complete' + config.urls.type, type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getInfo = function (id, callback) {
+  this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getFile = function (uid, callback) {
+ this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); }
+  });
+};
+
+ContentProxy.prototype.getFileUrl = function (id, callback) {
+ this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type, type: 'POST'}, function (err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res.blob_object_access.params); }
+  });
+};
+
+ContentProxy.prototype.update = function (params, callback) {
+  var data = {};
+  data.blob = {};
+  if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
+  this.service.ajax({url: contentIdUrl(param.id), data: data}, function(err, res) {
+    if (err) { callback (err, null); }
+    else { callback (null, res); } 
+  });
+}
+
+
+// parseUri 1.2.2
+// (c) Steven Levithan <stevenlevithan.com>
+// MIT License
+// http://blog.stevenlevithan.com/archives/parseuri
+
+function parseUri (str) {
+	var	o   = parseUri.options,
+		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+		uri = {},
+		i   = 14;
+
+	while (i--) {uri[o.key[i]] = m[i] || "";}
+
+	uri[o.q.name] = {};
+	uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+		if ($1) {uri[o.q.name][$1] = $2;}
+	});
+
+	return uri;
+}
+
+parseUri.options = {
+	strictMode: false,
+	key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+	q:   {
+		name:   "queryKey",
+		parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+	},
+	parser: {
+		strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+		loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+	}
+};
+
+},{"./qbConfig":2,"./qbUtils":9}],4:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -217,15 +420,61 @@ DataProxy.prototype.update= function(className, data, callback) {
 
 DataProxy.prototype.delete= function(className, id, callback) {
   if (config.debug) { console.debug('DataProxy.delete', className, id);}
-  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'delete'}, function(err,result){
-    if (err){ callback(err, null); }
-    else { callback (err, result); }
-  });
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
+                    function(err,result){
+                      if (err){ callback(err, null); }
+                      else { callback (err, true); }
+                    });
+};
+
+DataProxy.prototype.uploadFile= function(className, params, callback){
+  var formData;
+  if (config.debug) { console.debug('DataProxy.uploadFile', className, params);}
+  formData = new FormData();
+  formData.append('field_name', params.field_name);
+  formData.append('file', params.file);
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type:'POST'}, function(err, result){
+                      if (err) { callback(err, null);}
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.updateFile= function(className, params, callback){
+  var formData;
+  if (config.debug) { console.debug('DataProxy.updateFile', className, params);}
+  formData = new FormData();
+  formData.append('field_name', params.field_name);
+  formData.append('file', params.file);
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+                    contentType: false, processData: false, type: 'POST'}, function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.downloadFile= function(className, params, callback){
+  if (config.debug) { console.debug('DataProxy.downloadFile', className, params);}
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
+                    type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
+                    function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, result); }
+                    });
+};
+
+DataProxy.prototype.deleteFile= function(className, params, callback){
+  if (config.debug) { console.debug('DataProxy.deleteFile', className, params);}
+  this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
+                    dataType: 'text', type: 'DELETE'}, function(err, result) {
+                      if (err) { callback (err, null); }
+                      else { callback (err, true); }
+                    });
 };
 
 
 
-},{"./qbConfig":2,"./qbUtils":8}],4:[function(require,module,exports){
+},{"./qbConfig":2,"./qbUtils":9}],5:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -264,8 +513,20 @@ GeoProxy.prototype.create = function(params, callback){
 };
 
 GeoProxy.prototype.update = function(params, callback){
+  var allowedProps = ['longitude', 'latitude', 'status'], prop, msg = {};
+  for (prop in params) {
+    if (params.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = params[prop];
+      } 
+    }
+  }
   if (config.debug) { console.debug('GeoProxy.create', params);}
-  this.service.ajax({url: utils.resourceUrl(geoUrl, params.id), data: {geodata:params}, type: 'PUT'}, callback);
+  this.service.ajax({url: utils.resourceUrl(geoUrl, params.id), data: {geo_data:msg}, type: 'PUT'},
+                   function(err,res){
+                    if (err) { callback(err,null);}
+                    else { callback(err, res.geo_datum);}
+                   });
 };
 
 GeoProxy.prototype.get = function(id, callback){
@@ -287,12 +548,20 @@ GeoProxy.prototype.list = function(params, callback){
 
 GeoProxy.prototype.delete = function(id, callback){
   if (config.debug) { console.debug('GeoProxy.delete', id); }
-  this.service.ajax({url: utils.resourceUrl(geoUrl, id), type: 'DELETE'}, callback);
+  this.service.ajax({url: utils.resourceUrl(geoUrl, id), type: 'DELETE', dataType: 'text'},
+                   function(err,res){
+                    if (err) { callback(err, null);}
+                    else { callback(null, true);}
+                   });
 };
 
 GeoProxy.prototype.purge = function(days, callback){
   if (config.debug) { console.debug('GeoProxy.purge', days); }
-  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE'}, callback);
+  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE', dataType: 'text'},
+                   function(err, res){
+                    if (err) { callback(err, null);}
+                    else { callback(null, true);}
+                   });
 };
 
 function PlacesProxy(service) {
@@ -316,7 +585,7 @@ PlacesProxy.prototype.get = function(id, callback){
 
 PlacesProxy.prototype.update = function(place, callback){
   if (config.debug) { console.debug('PlacesProxy.update', place);}
-  this.service.ajax({url: utils.resourceUrl(placesUrl, id), data: {place: place}}, callback);
+  this.service.ajax({url: utils.resourceUrl(placesUrl, id), data: {place: place}, type: 'PUT'} , callback);
 };
 
 PlacesProxy.prototype.delete = function(id, callback){
@@ -324,7 +593,7 @@ PlacesProxy.prototype.delete = function(id, callback){
   this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE'}, callback);
 };
 
-},{"./qbConfig":2,"./qbUtils":8}],5:[function(require,module,exports){
+},{"./qbConfig":2,"./qbUtils":9}],6:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -378,7 +647,11 @@ TokensProxy.prototype.create = function(params, callback){
 TokensProxy.prototype.delete = function(id, callback) {
   var url = tokenUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
+                    function (err, res) {
+                      if (err) {callback(err, null);}
+                      else {callback(null, true);}
+                      });
 };
 
 // Subscriptions
@@ -400,7 +673,11 @@ SubscriptionsProxy.prototype.list = function (callback) {
 SubscriptionsProxy.prototype.delete = function(id, callback) {
   var url = subsUrl + '/'+ id + config.urls.type;
   if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
+                    function(err, res){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true);}
+                    });
 };
 
 // Events
@@ -445,7 +722,7 @@ EventsProxy.prototype.pullEvents = function(callback) {
 
 
 
-},{"../lib/jquery-1.10.2":10,"./qbConfig":2,"./qbProxy":6}],6:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":11,"./qbConfig":2,"./qbProxy":7}],7:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -460,42 +737,82 @@ var jQuery = require('../lib/jquery-1.10.2');
 
 function ServiceProxy(qb){
   this.qbInst = qb;
+  jQuery.support.cors = true;
+  jQuery.ajaxSetup({
+    accepts: {
+      binary: "text/plain; charset=x-user-defined"
+    },
+    contents: {
+    },
+    converters: {
+      "text binary": true // Nothing to convert
+    }
+  });
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
+ServiceProxy.prototype.setSession= function(session){
+  this.qbInst.session = session;
+};
+
+ServiceProxy.prototype.getSession = function(){
+  return this.qbInst.session;
+};
+
 ServiceProxy.prototype.ajax = function(params, callback) {
   var _this = this;
-  if (this.qbInst.session && this.qbInst.session.token){
-    if (params.data) {params.data.token = this.qbInst.session.token;}
-    else { params.data = {token:this.qbInst.session.token}; }
-  }
-  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params.url, params.data); }
-  jQuery.ajax({
+  //if (this.qbInst.session && this.qbInst.session.token){
+    //if (params.data) {
+      //if (params.data instanceof FormData) {
+        //params.data.append('token', this.qbInst.session.token);
+      //} else {
+        //params.data.token = this.qbInst.session.token;
+      //}
+    //} else { 
+      //params.data = {token: this.qbInst.session.token}; 
+    //}
+  //}
+  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
+  var ajaxCall =   {
     url: params.url,
-    async: params.async || true,
     type: params.type || 'GET',
-    cache: params.cache || false,
-    crossDomain: params.crossDomain || true,
+    dataType: params.dataType || 'json',
     data: params.data,
-    // Currently can't do this as it causes CORS issue (OPTIONS preflight check returns 404)
-    //beforeSend: function(jqXHR, settings){
-      //jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
-    //},
+    beforeSend: function(jqXHR, settings){
+      if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
+      if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
+        console.debug('setting headers on request to ' + settings.url);
+        jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
+        if (_this.qbInst.session && _this.qbInst.session.token) {
+          jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+        }
+      }
+    },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug("ServiceProxy.ajax", status,data);}
+      if (config.debug) {console.debug('ServiceProxy.ajax success', status, data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      //if (config.debug) {console.debug(status, error, (jqHXR ? (jqHXR.responseText || jqHXR.responseXML):''));}
+      if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {status: status, message:error};
-      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText; }
+      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
+      if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }
-  });
+  };
+  // Optional - for example 'multipart/form-data' when sending a file.
+  // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
+  if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
+  if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
+  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  if (typeof params.async === 'boolean') { ajaxCall.async = params.async; }
+  if (typeof params.cache === 'boolean') { ajaxCall.cache = params.cache; }
+  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
+  if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
+  jQuery.ajax( ajaxCall );
 }
 
-
-},{"../lib/jquery-1.10.2":10,"./qbConfig":2}],7:[function(require,module,exports){
+},{"../lib/jquery-1.10.2":11,"./qbConfig":2}],8:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -554,22 +871,43 @@ UsersProxy.prototype.listUsers = function(params, callback){
 UsersProxy.prototype.create = function(params, callback){
   var url = baseUrl + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, function(err, data){
-          if (err) { callback(err, null);}
-          else { callback(null, data.user); }
-  });
+  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+                    function(err, data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, data.user); }
+                    });
 };
 
 UsersProxy.prototype.delete = function(id, callback){
   var url = baseUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', data: {}}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+                    function(err,data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true); }
+                     });
 };
 
 UsersProxy.prototype.update = function(user, callback){
-  var url = baseUrl + '/' + user.id + config.urls.type;
+  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
+      'phone', 'website', 'tag_list', 'password', 'old_password'];
+  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  for (prop in user) {
+    if (user.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = user[prop];
+      } 
+    }
+  }
   if (config.debug) { console.debug('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: user}}, callback);
+  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+                    function(err,data){
+                      if (err) {callback(err, null);}
+                      else { 
+                        console.debug (data.user);
+                        callback (null, data.user);
+                      }
+                    });
 };
 
 UsersProxy.prototype.get = function(params, callback){
@@ -582,15 +920,15 @@ UsersProxy.prototype.get = function(params, callback){
     url += '/' + params + config.urls.type;
   } else if (typeof params === 'object') {
     if (params.id) {
-      url += '/' + params + config.urls.type;
+      url += '/' + params.id + config.urls.type;
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebook_id;
+      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
       url += '/by_login' + config.urls.type + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.full_mame;
+      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitter_id;
+      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
       url += '/by_email' + config.urls.type + '?email=' + params.email;
     } else if (params.tags) {
@@ -598,17 +936,18 @@ UsersProxy.prototype.get = function(params, callback){
     }
   }
   if (config.debug) {console.debug('UsersProxy.get', url);}
-  this.service.ajax({url:url}, function(err,data){
-                    var user;
-                    if (data && data.user) {
-                      user = data.user;
-                    }
-                    if (config.debug) { console.debug('UserProxy.get', user); }
-                      callback(err,user);
+  this.service.ajax({url:url},
+                    function(err,data){
+                      var user;
+                      if (data && data.user) {
+                        user = data.user;
+                      }
+                      if (config.debug) { console.debug('UserProxy.get', user); }
+                        callback(err,user);
                     });
 }
 
-},{"./qbConfig":2,"./qbProxy":6}],8:[function(require,module,exports){
+},{"./qbConfig":2,"./qbProxy":7}],9:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -645,16 +984,14 @@ exports.shims = function() {shims();};
 exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
 exports.resourceUrl = function(base, id, type) { return base + '/' + id + (typeof type === 'undefined'? config.urls.type : type); };
 
-},{"./qbConfig":2}],9:[function(require,module,exports){
+},{"./qbConfig":2}],10:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
  * Main SDK module
  *
- * For use in browser provides a convient QB window scoped var.
+ * Provides a window scoped variable (QB) for use in browsers.
  * Also exports QuickBlox for using with node.js, browserify, etc. 
- *
- * Token/login service and resource proxy stub factories
  *
  */
 
@@ -668,6 +1005,7 @@ var Users = require('./qbUsers');
 var Messages = require('./qbMessages');
 var Location = require('./qbLocation');
 var Data = require('./qbData');
+var Content = require('./qbContent');
 
 // IIEF to create a window scoped QB instance
 var QB = (function(QB, window){
@@ -695,6 +1033,7 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
   this.messages = new Messages(this.service);
   this.location = new Location(this.service);
   this.data = new Data(this.service);
+  this.content = new Content(this.service);
   if (typeof appId === 'object') {
     debug = appId.debug;
     authSecret = appId.authSecret;
@@ -713,55 +1052,27 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
 QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function (params, callback){
-  var _this = this;
-  if (typeof params === 'function') {
-    callback = params;
-    params = {};
-  }
-  this.auth.createSession(params, function(err,session) {
-    if (session) {
-      _this.session = session;
-    }
-    callback(err, session);
-    });
+  this.auth.createSession(params, callback);
 };
 
 QuickBlox.prototype.destroySession = function(callback){
-  var _this = this;
   if (this.session) {
-    this.auth.destroySession(function(err, result){
-      if (typeof err === 'undefined'){
-        _this.session = null;
-      }
-      callback(err,result);
-    });
+    this.auth.destroySession(callback);
   }
 };
 
 QuickBlox.prototype.login = function (params, callback){
-  var _this = this;
-  this.auth.login(params, function (err,session) {
-    if (session) {
-      _this.session = session;
-    }
-    callback(err, session);
-  });
+  this.auth.login(params, callback);
 };
 
 QuickBlox.prototype.logout = function(callback){
-  var _this = this;
   if (this.session) {
-    this.auth.logout(function(err, result){
-      if (typeof err === 'undefined'){
-        _this.session = null;
-      }
-      callback(err,result);
-    });
+    this.auth.logout(callback);
   }
 };
 
 
-},{"./qbAuth":1,"./qbConfig":2,"./qbData":3,"./qbLocation":4,"./qbMessages":5,"./qbProxy":6,"./qbUsers":7,"./qbUtils":8}],10:[function(require,module,exports){
+},{"./qbAuth":1,"./qbConfig":2,"./qbContent":3,"./qbData":4,"./qbLocation":5,"./qbMessages":6,"./qbProxy":7,"./qbUsers":8,"./qbUtils":9}],11:[function(require,module,exports){
 (function(){/*!
  * jQuery JavaScript Library v1.10.2
  * http://jquery.com/
@@ -10553,13 +10864,13 @@ if ( typeof module === "object" && module && typeof module.exports === "object" 
 })( window );
 
 })()
-},{}],11:[function(require,module,exports){
-(function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
 },{}],12:[function(require,module,exports){
+(function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
+},{}],13:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core"),require("./sha1"),require("./hmac")):"function"==typeof define&&define.amd?define(["./core","./sha1","./hmac"],r):r(e.CryptoJS)})(this,function(e){return e.HmacSHA1});
-},{"./core":11,"./hmac":13,"./sha1":14}],13:[function(require,module,exports){
+},{"./core":12,"./hmac":14,"./sha1":15}],14:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,i=t.Base,n=r.enc,o=n.Utf8,c=r.algo;c.HMAC=i.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,i=4*t;r.sigBytes>i&&(r=e.finalize(r)),r.clamp();for(var n=this._oKey=r.clone(),c=this._iKey=r.clone(),s=n.words,a=c.words,f=0;t>f;f++)s[f]^=1549556828,a[f]^=909522486;n.sigBytes=c.sigBytes=i,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var i=r.finalize(this._oKey.clone().concat(t));return i}})})()});
-},{"./core":11}],14:[function(require,module,exports){
+},{"./core":12}],15:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":11}]},{},[9])
+},{"./core":12}]},{},[10])
 ;

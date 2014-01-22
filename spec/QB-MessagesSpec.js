@@ -60,11 +60,10 @@ describe('QuickBlox SDK - Messages', function() {
   });
 
   describe('Subscriptions', function(){
-    var subscription;
     it('can create a subscription', function(){
-      var done;
+      var subscription, done;
       runs(function(){
-      done = false;
+        done = false;
         params = { notification_channels : 'pull ', url: 'http://example.com/notify_me'};
         QB.messages.subscriptions.create(params, function(err, res){
           subscription = res;
@@ -84,7 +83,7 @@ describe('QuickBlox SDK - Messages', function() {
     it('can list subscriptions', function(){
       var done, result;
       runs(function(){
-      done = false;
+        done = false;
         QB.messages.subscriptions.list(function(err, res){
           result = res;
           done = true;
@@ -102,12 +101,18 @@ describe('QuickBlox SDK - Messages', function() {
     });
 
     it('can delete subscription', function(){
-      var done, error;
+      var done, error, subscription, id;
       runs(function(){
-      done = false;
-        QB.messages.subscriptions.delete(subscription.id, function(err, res){
-          error = err;
-          done = true;
+        done = false;
+        QB.messages.subscriptions.list(function(err, res) {
+          if (res && !err) {
+            id = res[0].subscription.id;
+            console.debug(res[0], id);
+            QB.messages.subscriptions.delete(id, function(err, res){
+              error = err;
+              done = true;
+            });
+          }
         });
       });
       waitsFor(function(){
@@ -117,8 +122,8 @@ describe('QuickBlox SDK - Messages', function() {
         expect(error).toBeNull();
       });
     });
-  });
 
+  });
 
   describe('Events', function(){
     it('can create a pull event', function(){

@@ -52,8 +52,7 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
       waitsFor(function(){return done;}, 'deleting a custom object', TIMEOUT);
       runs(function(){
         expect(error).toBeNull();
-        expect(result._id).not.toBeNull();
-        expect(result.make).toBe('Ford');
+        expect(result).toBe(true);
       });
     });
 
@@ -95,7 +94,50 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
     });
   });
 
- describe('Some more complex searching', function() {
+  /*
+   * Can't get this working so will do a sample as per Content API file upload
+   * (not permitted to create a new File object due to security limitations
+   * tried to work around this by creating a dynamic form but so far just
+   * triggers an inifinite loop running the spec runner :(
+  describe('Custom Objects with files', function() {
+
+    it ('can upload a file to an existing record', function(){
+      var done, result, error, id, file;
+      runs(function() {
+        QB.data.list('Cars', function(err, res) {
+          var form, file, fileList;
+          id = res.items[0].id;
+          form = document.createElement('form');
+          file = document.createElement('input');
+          file.value = 'http://quickblox.github.io/quickblox-web-sdk/spec/logo.png';
+          file.type = 'file';
+          file.id = 'uploadFile';
+          form.appendChild(file);
+          form.addEventListener("submit", function(){
+            console.debug(this, arguments);
+            fileList = document.getElementById('uploadFile').files;
+            console.debug(fileList);
+          }, false);
+          form.onsubmit = function(e){
+            console.debug('asd');
+            e.preventDefault();
+            return false;
+          };
+          document.body.appendChild(form);
+          form.submit();
+        });
+      });
+      waitsFor(function(){return done;}, 'uploading file', TIMEOUT);
+      runs(function(){
+        expect(error).toBeNull();
+        expect(result).toBeNotNull();
+      });
+    });
+
+  });
+  */
+
+  describe('Some more complex searching', function() {
 
     it('can find instances of Cars with a value over 50', function(){
       var done, error, result;

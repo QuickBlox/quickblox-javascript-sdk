@@ -56,22 +56,43 @@ UsersProxy.prototype.listUsers = function(params, callback){
 UsersProxy.prototype.create = function(params, callback){
   var url = baseUrl + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, function(err, data){
-          if (err) { callback(err, null);}
-          else { callback(null, data.user); }
-  });
+  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+                    function(err, data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, data.user); }
+                    });
 };
 
 UsersProxy.prototype.delete = function(id, callback){
   var url = baseUrl + '/' + id + config.urls.type;
   if (config.debug) { console.debug('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', data: {}}, callback);
+  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+                    function(err,data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true); }
+                     });
 };
 
 UsersProxy.prototype.update = function(user, callback){
-  var url = baseUrl + '/' + user.id + config.urls.type;
+  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
+      'phone', 'website', 'tag_list', 'password', 'old_password'];
+  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  for (prop in user) {
+    if (user.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = user[prop];
+      } 
+    }
+  }
   if (config.debug) { console.debug('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: user}}, callback);
+  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+                    function(err,data){
+                      if (err) {callback(err, null);}
+                      else { 
+                        console.debug (data.user);
+                        callback (null, data.user);
+                      }
+                    });
 };
 
 UsersProxy.prototype.get = function(params, callback){
@@ -86,13 +107,13 @@ UsersProxy.prototype.get = function(params, callback){
     if (params.id) {
       url += '/' + params + config.urls.type;
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebook_id;
+      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
       url += '/by_login' + config.urls.type + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.full_mame;
+      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitter_id;
+      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
       url += '/by_email' + config.urls.type + '?email=' + params.email;
     } else if (params.tags) {
@@ -100,12 +121,13 @@ UsersProxy.prototype.get = function(params, callback){
     }
   }
   if (config.debug) {console.debug('UsersProxy.get', url);}
-  this.service.ajax({url:url}, function(err,data){
-                    var user;
-                    if (data && data.user) {
-                      user = data.user;
-                    }
-                    if (config.debug) { console.debug('UserProxy.get', user); }
-                      callback(err,user);
+  this.service.ajax({url:url},
+                    function(err,data){
+                      var user;
+                      if (data && data.user) {
+                        user = data.user;
+                      }
+                      if (config.debug) { console.debug('UserProxy.get', user); }
+                        callback(err,user);
                     });
 }

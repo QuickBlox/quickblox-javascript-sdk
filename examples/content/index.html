@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>QuickBlox API client - Content</title>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/lib/jquery-1.10.2.js"></script>
+    <script src="app.js"></script>
+    <script src="http://quickblox.github.io/quickblox-web-sdk/quickblox.js"></script>
+  </head>
+  <body>
+    <div id="session">
+      <h2>Sign in</h2>
+      <form id="apiSession" action="">
+        <p>
+          <label>Username<input type="text" id="user"/></label>
+          <label>Password<input type="password" id="password"/></label>
+          <button type="submit" id="facebookButton">or login with Facebook</button>
+        </p>
+        <label>Application id:<input type="text" id="appId" value="3477"/></label>
+        <label>Authorization key:<input type="text" id="authKey" value="ChRnwEJ3WzxH9O4"/></label>
+        <label>Authorization secret:<input type="text" id="secret" value="AS546kpUQ2tfbvv"/></label>
+        <p>
+          <button type="submit" id="sessionButton">Create Session</button>
+          <button type="submit" id="sessionDeleteButton" disabled>Delete Session</button>
+        </p>
+      </form>
+    </div>
+    <div id="content">
+      <h2>Content</h2>
+      <form id="createContent" action="" enctype="multipart/form-data">
+        <label>File<input type="file" id="file"/></label>
+        <label>Name<input type="text" id="name"/></label>
+        <label>Public
+          <select id="public">
+            <option value="false" selected>No public visibility</option>
+            <option value="true">Visiable to all</option>
+          </select>
+        </label>
+        <label>Type<input type="text" id="type" value="image/png"/></label>
+        <label>Tags<input type="text" id="tags"/></label>
+        <button type="submit" id="createContentButton">Create content</button>
+      </form>
+      <div id="contentList">
+      </div>
+    </div>
+  </body>
+</html>
