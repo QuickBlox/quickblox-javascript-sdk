@@ -52,6 +52,10 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
     authSecret = appId.authSecret;
     authKey = appId.authKey;
     appId = appId.appId;
+  } else if (typeof appId === 'string' && typeof authKey === 'undefined' && typeof authSecret === 'undefined') {
+    this.session = { token: appId };
+    appId = null;
+    debug = true;
   }
   config.creds.appId = appId;
   config.creds.authKey = authKey;

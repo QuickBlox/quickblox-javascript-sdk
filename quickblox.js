@@ -224,9 +224,9 @@ ContentProxy.prototype.list = function(params, callback){
 };
 
 ContentProxy.prototype.delete = function(id, callback){
-  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE'}, function(err, result) {
+  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE', dataType: 'text'}, function(err, result) {
     if (err) { callback(err,null); }
-    else { callback(null, result); }
+    else { callback(null, true); }
   });
 };
 
@@ -920,7 +920,7 @@ UsersProxy.prototype.get = function(params, callback){
     url += '/' + params + config.urls.type;
   } else if (typeof params === 'object') {
     if (params.id) {
-      url += '/' + params.id + config.urls.type;
+      url += '/' + params + config.urls.type;
     } else if (params.facebookId) {
       url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
@@ -1039,6 +1039,10 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
     authSecret = appId.authSecret;
     authKey = appId.authKey;
     appId = appId.appId;
+  } else if (typeof appId === 'string' && typeof authKey === 'undefined' && typeof authSecret === 'undefined') {
+    this.session = { token: appId };
+    appId = null;
+    debug = true;
   }
   config.creds.appId = appId;
   config.creds.authKey = authKey;
