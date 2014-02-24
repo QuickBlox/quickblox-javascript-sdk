@@ -1,10 +1,19 @@
 {
-  "name": "Quickblox.js",
+  "name": "Quickblox",
   "description": "Quickblox Javascript SDK",
+  "version": "0.0.1",
   "author": "Dan Murphy <dan@quickblox.com>",
+  "repository": {
+	  "type": "git",
+	  "url": "https://github.com/QuickBlox/quickblox-web-sdk.git"
+  },
+  "bugs":{
+	  "url": "https://github.com/QuickBlox/quickblox-web-sdk/issues"
+  },
   "dependencies": {
-    "crypto-js": ">= 3.1.x"
+    "crypto-js": "^3.1.2-2"
   },
   "devDependencies": {
+    "browserify": "^3.30.2"
   }
 }
