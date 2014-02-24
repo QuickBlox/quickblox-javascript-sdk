@@ -105,7 +105,7 @@ UsersProxy.prototype.get = function(params, callback){
     url += '/' + params + config.urls.type;
   } else if (typeof params === 'object') {
     if (params.id) {
-      url += '/' + params + config.urls.type;
+      url += '/' + params.id + config.urls.type;
     } else if (params.facebookId) {
       url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
