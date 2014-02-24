@@ -190,9 +190,9 @@ describe('QuickBlox SDK - Users', function() {
       });
     });
 
-    it('can get users by email (dan@quickblox.com)', function() {
+    it('can get users by email (dan.murphy@quickblox.com)', function() {
       var done, user;
-      params = { 'email': 'dan@quickblox.com' };
+      params = { 'email': 'dan.murphy@quickblox.com' };
       runs(function(){
         done = false;
         QB.users.get(params, function(err, res){
