@@ -84,3 +84,15 @@ options: A map of additional options to pass to the method
 ```
 
 Please take a look at the specs for examples of how to use the APIs. In essence the Web SDK is a thin facade to the REST API, so reading the docs [http://quickblox.com/developers/Overview] is strongly recommended :)
+
+
+Modifying and building the library
+----------------------------------
+The quickblox.js library is build from a number of modules contained in the `js` folder. For example the `js/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+
+These modules are combined into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [browserify](http://browserify.org/) tool:
+```
+browserify -o quickblox.js js/quickblox.js
+```
+
+You will also need to have the dependencies listed in the package.json available, use `npm install` to load them.
