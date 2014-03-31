@@ -2,7 +2,7 @@
 /* 
  * QuickBlox JavaScript SDK / XMPP Chat plugin
  *
- * Configuration Module
+ * Configuration module
  *
  */
 
@@ -15,17 +15,20 @@ var config = {
 module.exports = config;
 
 },{}],2:[function(require,module,exports){
-/**
+/*
  * QuickBlox JavaScript SDK / XMPP Chat plugin
  *
  * Chat module
  *
  */
 
+// Browerify exports and dependencies
+require('../libs/strophe');
+require('../libs/strophe.muc');
+require('../libs/strophe.chatstates');
 var config = require('./config');
-var strophe = require('../libs/strophe');
-var stropheMUC = require('../libs/strophe.muc');
-var stropheSTATE = require('../libs/strophe.chatstates');
+
+window.QBChat = QBChat;
 
 function QBChat(params) {
 	var _this = this;

@@ -1,7 +1,7 @@
 /* 
  * QuickBlox JavaScript SDK / XMPP Chat plugin
  *
- * Configuration Module
+ * Configuration module
  *
  */
 
