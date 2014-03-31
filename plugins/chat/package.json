@@ -1,0 +1,6 @@
+{
+  "name": "quickblox.chat",
+  "description": "Quickblox Javascript SDK / XMPP Chat plugin",
+  "version": "0.5.0",
+  "author": "Andrey Povelichenko <andrey.povelichenko@quickblox.com>"
+}
