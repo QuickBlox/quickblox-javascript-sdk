@@ -1,4 +1,4 @@
-// Browerify exports start
+// Browserify exports start
 module.exports = (function() {
 
 // This code was written by Tyler Akins and has been placed in the
@@ -5160,5 +5160,5 @@ Strophe.Websocket.prototype = {
     }
 };
 
-// Browerify exports end
+// Browserify exports end
 })();

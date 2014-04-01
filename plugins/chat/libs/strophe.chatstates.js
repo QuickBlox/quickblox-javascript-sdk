@@ -1,4 +1,4 @@
-// Browerify exports start
+// Browserify exports start
 module.exports = (function() {
 
 /**
@@ -82,5 +82,5 @@ Strophe.addConnectionPlugin('chatstates',
 	}
 });
 
-// Browerify exports end
+// Browserify exports end
 })();

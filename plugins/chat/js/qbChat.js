@@ -5,7 +5,7 @@
  *
  */
 
-// Browerify exports and dependencies
+// Browserify dependencies
 require('../libs/strophe');
 require('../libs/strophe.muc');
 require('../libs/strophe.chatstates');
@@ -38,22 +38,22 @@ function QBChat(params) {
 	}
 	
 	this.onMessage = function(stanza, room) {
-		var jid, type, time, message, nick;
+		var senderJID, type, time, message, nick;
 		
 		if (params && params.debug) {
 			traceChat('Message');
 			console.log(stanza);
 		}
 		
-		jid = $(stanza).attr('from');
+		senderJID = $(stanza).attr('from');
 		type = $(stanza).attr('type');
 		time = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
 		message = $(stanza).find('body').context.textContent;
 		
 		if (type == 'groupchat')
-			nick = _this.getNickFromResource(jid);
+			nick = _this.getNickFromResource(senderJID);
 		else
-			nick = _this.getNickFromNode(jid);
+			nick = _this.getNickFromNode(senderJID);
 		
 		_this.onChatMessage(nick, type, time, message);
 		return true;
@@ -115,7 +115,7 @@ function traceChat(text) {
 	console.log("[qb_chat]: " + text);
 }
 
-/* One to One Chat methods
+/* One to One chat methods
 ----------------------------------------------------------*/
 QBChat.prototype.connect = function(userID, userPass) {
 	var _this = this;
@@ -142,7 +142,7 @@ QBChat.prototype.connect = function(userID, userPass) {
 			break;
 		case Strophe.Status.CONNECTED:
 			traceChat('Connected');
-			_this.connection.addHandler(_this.onMessage, null, 'message', 'chat', null, null);
+			_this.connection.addHandler(_this.onMessage, null, 'message', 'chat', null, null, null);
 			_this.onConnectSuccess();
 			break;
 		case Strophe.Status.DISCONNECTING:
@@ -159,11 +159,12 @@ QBChat.prototype.connect = function(userID, userPass) {
 	});
 };
 
-QBChat.prototype.send = function(jid, body, type) {
+QBChat.prototype.send = function(userID, body, type) {
 	var params, msg;
+	var userJID = this.getJID(userID);
 	
 	params = {
-		to: jid,
+		to: userJID,
 		from: this.connection.jid,
 		type: type
 	};
@@ -227,6 +228,12 @@ QBChat.prototype.createRoom = function(roomName, nick) {
 	}
 };
 
+QBChat.prototype.invite = function(receiver) {
+	console.log('invite');
+	var userJID = this.getJID(receiver);
+	this.connection.muc.invite(this.newRoom, userJID);
+};
+
 QBChat.prototype.destroy = function(roomName) {
 	console.log('destroy');
 	var roomJid = QB.session.application_id + '_' + roomName + '@' + config.muc;
@@ -237,10 +244,4 @@ QBChat.prototype.destroy = function(roomName) {
 	}).c('query', {xmlns: Strophe.NS.MUC_OWNER})
 	  .c('destroy').c('reason').t('Sorry, this room was removed');
 	this.connection.send(iq);
-};
-
-QBChat.prototype.invite = function(receiver) {
-	console.log('invite');
-	var userJID = this.getJID(receiver);
-	this.connection.muc.invite(this.newRoom, userJID);
 };
