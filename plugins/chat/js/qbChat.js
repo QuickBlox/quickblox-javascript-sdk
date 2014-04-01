@@ -10,8 +10,10 @@ require('../libs/strophe');
 require('../libs/strophe.muc');
 require('../libs/strophe.chatstates');
 var config = require('./config');
+var QBChatHelpers = require('./qbChatHelpers');
 
 window.QBChat = QBChat;
+window.QBChatHelpers = QBChatHelpers;
 
 function QBChat(params) {
 	var _this = this;
@@ -51,9 +53,9 @@ function QBChat(params) {
 		message = $(stanza).find('body').context.textContent;
 		
 		if (type == 'groupchat')
-			nick = _this.getNickFromResource(senderJID);
+			nick = QBChatHelpers.getNickFromResource(senderJID);
 		else
-			nick = _this.getNickFromNode(senderJID);
+			nick = QBChatHelpers.getNickFromNode(senderJID);
 		
 		_this.onChatMessage(nick, type, time, message);
 		return true;
@@ -71,7 +73,7 @@ function QBChat(params) {
 		type = $(stanza).attr('type');
 		time = new Date().toISOString();
 		
-		nick = _this.getNickFromResource(jid);
+		nick = QBChatHelpers.getNickFromResource(jid);
 		
 		_this.onMUCPresence(nick, type, time);
 		return true;
@@ -80,34 +82,6 @@ function QBChat(params) {
 	this.onRoster = function(users, room) {
 		_this.onMUCRoster(users, room);
 		return true;
-	};
-	
-	// helpers
-	this.getJID = function(id) {
-		return id + "-" + QB.session.application_id + "@" + config.server;
-	};
-	
-	this.getNickFromNode = function(jid) {
-		return Strophe.getNodeFromJid(jid).split('-')[0];
-	};
-	
-	this.getNickFromResource = function(jid) {
-		return Strophe.getResourceFromJid(jid);
-	};
-	
-	this.parser = function(str) {
-		var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
-		str = escapeHTML(str);
-		
-		return str.replace(URL_REGEXP, function(match) {
-			url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
-			url_text = match;
-			return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
-		});
-		
-		function escapeHTML(s) {
-			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-		}
 	};
 }
 
@@ -119,7 +93,7 @@ function traceChat(text) {
 ----------------------------------------------------------*/
 QBChat.prototype.connect = function(userID, userPass) {
 	var _this = this;
-	var userJID = this.getJID(userID);
+	var userJID = QBChatHelpers.getJID(userID);
 	
 	this.connection.connect(userJID, userPass, function(status) {
 		switch (status) {
@@ -161,7 +135,7 @@ QBChat.prototype.connect = function(userID, userPass) {
 
 QBChat.prototype.send = function(userID, body, type) {
 	var params, msg;
-	var userJID = this.getJID(userID);
+	var userJID = QBChatHelpers.getJID(userID);
 	
 	params = {
 		to: userJID,
@@ -230,7 +204,7 @@ QBChat.prototype.createRoom = function(roomName, nick) {
 
 QBChat.prototype.invite = function(receiver) {
 	console.log('invite');
-	var userJID = this.getJID(receiver);
+	var userJID = QBChatHelpers.getJID(receiver);
 	this.connection.muc.invite(this.newRoom, userJID);
 };
 
