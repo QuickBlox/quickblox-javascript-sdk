@@ -72,7 +72,7 @@ function QBChat(params) {
 		else
 			nick = _this.getNickFromNode(jid);
 		
-		_this.onChatMessage(nick, type, time, _parser(message));
+		_this.onChatMessage(nick, type, time, message);
 		return true;
 	};
 	
@@ -112,9 +112,10 @@ function QBChat(params) {
 		return Strophe.getResourceFromJid(jid);
 	};
 	
-	// private methods
-	function _parser(str) {
+	this.parser = function(str) {
 		var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+		str = escapeHTML(str);
+		
 		return str.replace(URL_REGEXP, function(match) {
 			url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
 			url_text = match;
@@ -124,7 +125,7 @@ function QBChat(params) {
 		function escapeHTML(s) {
 			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 		}
-	}
+	};
 }
 
 function traceChat(text) {
@@ -189,6 +190,7 @@ QBChat.prototype.send = function(jid, body, type) {
 };
 
 QBChat.prototype.disconnect = function() {
+	this.connection.send($pres());
 	this.connection.flush();
 	this.connection.disconnect();
 };
