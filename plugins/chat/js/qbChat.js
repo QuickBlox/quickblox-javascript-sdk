@@ -91,11 +91,11 @@ function traceChat(text) {
 
 /* One to One chat methods
 ----------------------------------------------------------*/
-QBChat.prototype.connect = function(userID, userPass) {
+QBChat.prototype.connect = function(user) {
 	var _this = this;
-	var userJID = QBChatHelpers.getJID(userID);
+	var userJID = QBChatHelpers.getJID(user.id);
 	
-	this.connection.connect(userJID, userPass, function(status) {
+	this.connection.connect(userJID, user.pass, function(status) {
 		switch (status) {
 		case Strophe.Status.ERROR:
 			traceChat('Error');
