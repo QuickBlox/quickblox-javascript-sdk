@@ -53,9 +53,9 @@ function QBChat(params) {
 		message = $(stanza).find('body').context.textContent;
 		
 		if (type == 'groupchat')
-			nick = QBChatHelpers.getNickFromResource(senderJID);
+			nick = QBChatHelpers.getIDFromResource(senderJID);
 		else
-			nick = QBChatHelpers.getNickFromNode(senderJID);
+			nick = QBChatHelpers.getIDFromNode(senderJID);
 		
 		_this.onChatMessage(nick, type, time, message);
 		return true;
@@ -73,7 +73,7 @@ function QBChat(params) {
 		type = $(stanza).attr('type');
 		time = new Date().toISOString();
 		
-		nick = QBChatHelpers.getNickFromResource(jid);
+		nick = QBChatHelpers.getIDFromResource(jid);
 		
 		_this.onMUCPresence(nick, type, time);
 		return true;

@@ -14,11 +14,11 @@ var QBChatHelpers = {
 		return id + "-" + QB.session.application_id + "@" + config.server;
 	},
 	
-	getNickFromNode: function(jid) {
+	getIDFromNode: function(jid) {
 		return Strophe.getNodeFromJid(jid).split('-')[0];
 	},
 	
-	getNickFromResource: function(jid) {
+	getIDFromResource: function(jid) {
 		return Strophe.getResourceFromJid(jid);
 	},
 	
