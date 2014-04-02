@@ -83,6 +83,14 @@ function QBChat(params) {
 		_this.onMUCRoster(users, room);
 		return true;
 	};
+	
+	this.startAutoSendPresence = function(timeout) {
+		setTimeout(sendPresence, timeout * 1000);
+		
+		function sendPresence() {
+			_this.connection.send($pres());
+		}
+	};
 }
 
 function traceChat(text) {
@@ -117,6 +125,7 @@ QBChat.prototype.connect = function(user) {
 		case Strophe.Status.CONNECTED:
 			traceChat('Connected');
 			_this.connection.addHandler(_this.onMessage, null, 'message', 'chat', null, null, null);
+			_this.connection.send($pres());
 			_this.onConnectSuccess();
 			break;
 		case Strophe.Status.DISCONNECTING:
