@@ -57,7 +57,7 @@ function QBChat(params) {
 	}
 	
 	this.onMessage = function(stanza, room) {
-		var senderJID, type, time, message, nick;
+		var senderJID, senderID, type, time, message;
 		
 		if (params && params.debug) {
 			traceChat('Message');
@@ -70,11 +70,11 @@ function QBChat(params) {
 		message = $(stanza).find('body').context.textContent;
 		
 		if (type == 'groupchat')
-			nick = QBChatHelpers.getIDFromResource(senderJID);
+			senderID = QBChatHelpers.getIDFromResource(senderJID);
 		else
-			nick = QBChatHelpers.getIDFromNode(senderJID);
+			senderID = QBChatHelpers.getIDFromNode(senderJID);
 		
-		_this.onChatMessage(nick, type, time, message);
+		_this.onChatMessage(senderID, type, time, message);
 		return true;
 	};
 	
@@ -159,7 +159,7 @@ QBChat.prototype.connect = function(user) {
 	});
 };
 
-QBChat.prototype.send = function(userID, body, type) {
+QBChat.prototype.sendMessage = function(userID, body, type) {
 	var params, msg;
 	var userJID = QBChatHelpers.getJID(userID);
 	
