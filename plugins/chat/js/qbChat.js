@@ -18,6 +18,7 @@ window.QBChatHelpers = QBChatHelpers;
 function QBChat(params) {
 	var _this = this;
 	
+	this.version = '0.5.9';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -40,7 +41,7 @@ function QBChat(params) {
 	}
 	
 	this.onMessage = function(stanza, room) {
-		var senderJID, senderID, type, time, message;
+		var senderJID, senderID, type, time, message, extension, extensionObj = {};
 		
 		if (params && params.debug) {
 			traceChat('Message');
@@ -51,13 +52,20 @@ function QBChat(params) {
 		type = $(stanza).attr('type');
 		time = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
 		message = $(stanza).find('body').context.textContent;
+		extension = $(stanza).find('extraParams')[0] || $(stanza).find('extraParams');
 		
 		if (type == 'groupchat')
 			senderID = QBChatHelpers.getIDFromResource(senderJID);
 		else
 			senderID = QBChatHelpers.getIDFromNode(senderJID);
+			
+		if (extension) {
+			$(extension.childNodes).each(function() {
+				extensionObj[$(this).context.tagName] = $(this).context.textContent;
+			});
+		}
 		
-		_this.onChatMessage(senderID, type, time, message);
+		_this.onChatMessage(senderID, type, time, message, extensionObj);
 		return true;
 	};
 	
@@ -142,7 +150,7 @@ QBChat.prototype.connect = function(user) {
 	});
 };
 
-QBChat.prototype.sendMessage = function(userID, body, type) {
+QBChat.prototype.sendMessage = function(userID, body, type, extension) {
 	var params, msg;
 	var userJID = QBChatHelpers.getJID(userID);
 	
@@ -153,6 +161,15 @@ QBChat.prototype.sendMessage = function(userID, body, type) {
 	};
 	
 	msg = $msg(params).c('body').t(body);
+	
+	// custom parameters
+	if (extension) {
+		msg.up().c('extraParams');
+		$(Object.keys(extension)).each(function() {
+			msg.c(this).t(extension[this]).up();
+		});
+	}
+	
 	this.connection.send(msg);
 };
 
