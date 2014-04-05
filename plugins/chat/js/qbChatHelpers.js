@@ -15,11 +15,12 @@ var QBChatHelpers = {
 	},
 	
 	getIDFromNode: function(jid) {
-		return Strophe.getNodeFromJid(jid).split('-')[0];
+		return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
 	},
 	
 	getIDFromResource: function(jid) {
-		return Strophe.getResourceFromJid(jid);
+		var resource = Strophe.getResourceFromJid(jid);
+		return parseInt(resource) || resource;
 	},
 	
 	parser: function(str) {
