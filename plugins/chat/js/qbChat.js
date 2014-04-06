@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.0';
+	this.version = '0.6.1';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -66,7 +66,7 @@ function QBChat(params) {
 		
 		if (body) {
 			message = {
-				text: $(stanza).find('body').context.textContent,
+				body: $(stanza).find('body').context.textContent,
 				time: $(stanza).find('delay').attr('stamp') || new Date().toISOString(),
 				type: type,
 				extension: extension
@@ -177,10 +177,10 @@ QBChat.prototype.sendMessage = function(userID, message) {
 		type: message.type
 	});
 	
-	if (message.text) {
+	if (message.body) {
 		msg.c('body', {
 			xmlns: Strophe.NS.CLIENT
-		}).t(message.text);
+		}).t(message.body);
 	}
 	
 	// Chat State Notifications (XEP 0085)
