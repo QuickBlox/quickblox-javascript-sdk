@@ -9,7 +9,8 @@
 var config = {
 	server: 'chat.quickblox.com',
 	muc: 'muc.chat.quickblox.com',
-	bosh: 'http://chat.quickblox.com:5280'
+	bosh: 'http://chat.quickblox.com:5280',
+	amazon: 'https://qbprod.s3.amazonaws.com/'
 };
 
 module.exports = config;
@@ -37,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.3';
+	this.version = '0.6.4';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -342,6 +343,10 @@ var QBChatHelpers = {
 	removeTypingMessage: function(obj, nick) {
 		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
 		if (obj.text().length == 0) obj.remove();
+	},
+	
+	getLinkOnFile: function(uid) {
+		return config.amazon + uid;
 	}
 };
 
