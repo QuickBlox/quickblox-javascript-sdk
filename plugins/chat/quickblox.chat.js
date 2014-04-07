@@ -37,7 +37,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.2';
+	this.version = '0.6.3';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -333,6 +333,15 @@ var QBChatHelpers = {
 		function escapeHTML(s) {
 			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 		}
+	},
+	
+	addTypingMessage: function(obj, nick) {
+		obj.text(obj.text().split(' ...')[0].concat(', ').concat(nick).concat(' ...'));
+	},
+	
+	removeTypingMessage: function(obj, nick) {
+		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
+		if (obj.text().length == 0) obj.remove();
 	}
 };
 

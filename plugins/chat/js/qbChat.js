@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.2';
+	this.version = '0.6.3';
 	this.config = config;
 	
 	// create Strophe Connection object

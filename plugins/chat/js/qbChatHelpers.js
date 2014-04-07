@@ -36,6 +36,15 @@ var QBChatHelpers = {
 		function escapeHTML(s) {
 			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 		}
+	},
+	
+	addTypingMessage: function(obj, nick) {
+		obj.text(obj.text().split(' ...')[0].concat(', ').concat(nick).concat(' ...'));
+	},
+	
+	removeTypingMessage: function(obj, nick) {
+		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
+		if (obj.text().length == 0) obj.remove();
 	}
 };
 
