@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.1';
+	this.version = '0.6.2';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -66,7 +66,7 @@ function QBChat(params) {
 		
 		if (body) {
 			message = {
-				body: $(stanza).find('body').context.textContent,
+				body: $(body).context.textContent,
 				time: $(stanza).find('delay').attr('stamp') || new Date().toISOString(),
 				type: type,
 				extension: extension
