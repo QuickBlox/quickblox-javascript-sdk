@@ -14,6 +14,10 @@ var QBChatHelpers = {
 		return id + "-" + QB.session.application_id + "@" + config.server;
 	},
 	
+	getRoom: function(name) {
+		return QB.session.application_id + "_" + name + "@" + config.muc;
+	},
+	
 	getIDFromNode: function(jid) {
 		return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
 	},
@@ -21,6 +25,10 @@ var QBChatHelpers = {
 	getIDFromResource: function(jid) {
 		var resource = Strophe.getResourceFromJid(jid);
 		return parseInt(resource) || resource;
+	},
+	
+	getLinkOnFile: function(uid) {
+		return config.amazon + uid;
 	},
 	
 	parser: function(str) {
@@ -45,10 +53,6 @@ var QBChatHelpers = {
 	removeTypingMessage: function(obj, nick) {
 		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
 		if (obj.text().length == 0) obj.remove();
-	},
-	
-	getLinkOnFile: function(uid) {
-		return config.amazon + uid;
 	}
 };
 

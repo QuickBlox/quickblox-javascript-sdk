@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.4';
+	this.version = '0.7.0';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -76,7 +76,7 @@ function QBChat(params) {
 			trace(body ? 'Message' : 'Chat state notification');
 		}
 		
-		senderID = (type == 'groupchat') ? QBChatHelpers.getIDFromResource(from) : QBChatHelpers.getIDFromNode(from);
+		senderID = (type === 'groupchat') ? QBChatHelpers.getIDFromResource(from) : QBChatHelpers.getIDFromNode(from);
 		
 		$(extraParams && extraParams.childNodes).each(function() {
 			extension[$(this).context.tagName] = $(this).context.textContent;
@@ -188,10 +188,12 @@ QBChat.prototype.connect = function(user) {
 };
 
 QBChat.prototype.sendMessage = function(userID, message) {
-	var msg, userJID = QBChatHelpers.getJID(userID);
+	var msg, jid;
+	
+	jid = (message.type === 'groupchat') ? QBChatHelpers.getRoom(userID) : QBChatHelpers.getJID(userID);
 	
 	msg = $msg({
-		to: userJID,
+		to: jid,
 		type: message.type
 	});
 	
@@ -232,12 +234,14 @@ QBChat.prototype.disconnect = function() {
 // Multi-User Chat (XEP 0045)
 // http://xmpp.org/extensions/xep-0045.html
 
-QBChat.prototype.join = function(roomJid, nick) {
-	this._connection.muc.join(roomJid, nick, this._onMessage, this._onPresence, this._onRoster);
+QBChat.prototype.join = function(roomName, nick) {
+	var roomJID = QBChatHelpers.getRoom(roomName);
+	this._connection.muc.join(roomJID, nick, this._onMessage, this._onPresence, this._onRoster);
 };
 
-QBChat.prototype.leave = function(roomJid, nick) {
-	this._connection.muc.leave(roomJid, nick);
+QBChat.prototype.leave = function(roomName, nick) {
+	var roomJID = QBChatHelpers.getRoom(roomName);
+	this._connection.muc.leave(roomJID, nick);
 };
 
 QBChat.prototype.createRoom = function(roomName, nick) {
@@ -312,6 +316,10 @@ var QBChatHelpers = {
 		return id + "-" + QB.session.application_id + "@" + config.server;
 	},
 	
+	getRoom: function(name) {
+		return QB.session.application_id + "_" + name + "@" + config.muc;
+	},
+	
 	getIDFromNode: function(jid) {
 		return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
 	},
@@ -319,6 +327,10 @@ var QBChatHelpers = {
 	getIDFromResource: function(jid) {
 		var resource = Strophe.getResourceFromJid(jid);
 		return parseInt(resource) || resource;
+	},
+	
+	getLinkOnFile: function(uid) {
+		return config.amazon + uid;
 	},
 	
 	parser: function(str) {
@@ -343,10 +355,6 @@ var QBChatHelpers = {
 	removeTypingMessage: function(obj, nick) {
 		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
 		if (obj.text().length == 0) obj.remove();
-	},
-	
-	getLinkOnFile: function(uid) {
-		return config.amazon + uid;
 	}
 };
 

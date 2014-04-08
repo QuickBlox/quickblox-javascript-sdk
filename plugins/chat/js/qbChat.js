@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.6.4';
+	this.version = '0.7.0';
 	this.config = config;
 	
 	// create Strophe Connection object
@@ -58,7 +58,7 @@ function QBChat(params) {
 			trace(body ? 'Message' : 'Chat state notification');
 		}
 		
-		senderID = (type == 'groupchat') ? QBChatHelpers.getIDFromResource(from) : QBChatHelpers.getIDFromNode(from);
+		senderID = (type === 'groupchat') ? QBChatHelpers.getIDFromResource(from) : QBChatHelpers.getIDFromNode(from);
 		
 		$(extraParams && extraParams.childNodes).each(function() {
 			extension[$(this).context.tagName] = $(this).context.textContent;
@@ -170,10 +170,12 @@ QBChat.prototype.connect = function(user) {
 };
 
 QBChat.prototype.sendMessage = function(userID, message) {
-	var msg, userJID = QBChatHelpers.getJID(userID);
+	var msg, jid;
+	
+	jid = (message.type === 'groupchat') ? QBChatHelpers.getRoom(userID) : QBChatHelpers.getJID(userID);
 	
 	msg = $msg({
-		to: userJID,
+		to: jid,
 		type: message.type
 	});
 	
@@ -214,12 +216,14 @@ QBChat.prototype.disconnect = function() {
 // Multi-User Chat (XEP 0045)
 // http://xmpp.org/extensions/xep-0045.html
 
-QBChat.prototype.join = function(roomJid, nick) {
-	this._connection.muc.join(roomJid, nick, this._onMessage, this._onPresence, this._onRoster);
+QBChat.prototype.join = function(roomName, nick) {
+	var roomJID = QBChatHelpers.getRoom(roomName);
+	this._connection.muc.join(roomJID, nick, this._onMessage, this._onPresence, this._onRoster);
 };
 
-QBChat.prototype.leave = function(roomJid, nick) {
-	this._connection.muc.leave(roomJid, nick);
+QBChat.prototype.leave = function(roomName, nick) {
+	var roomJID = QBChatHelpers.getRoom(roomName);
+	this._connection.muc.leave(roomJID, nick);
 };
 
 QBChat.prototype.createRoom = function(roomName, nick) {
