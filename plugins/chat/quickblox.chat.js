@@ -38,11 +38,13 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.7.0';
+	this.version = '0.7.1';
 	this.config = config;
 	
 	// create Strophe Connection object
 	this._connection = new Strophe.Connection(config.bosh);
+	// Storage of joined rooms and user nicknames
+	this._rooms = {};
 	
 	if (params) {
 		if (params.debug) {
@@ -236,11 +238,14 @@ QBChat.prototype.disconnect = function() {
 
 QBChat.prototype.join = function(roomName, nick) {
 	var roomJID = QBChatHelpers.getRoom(roomName);
+	this._rooms[roomName] = nick;
 	this._connection.muc.join(roomJID, nick, this._onMessage, this._onPresence, this._onRoster);
 };
 
-QBChat.prototype.leave = function(roomName, nick) {
+QBChat.prototype.leave = function(roomName) {
 	var roomJID = QBChatHelpers.getRoom(roomName);
+	var nick = this._rooms[roomName];
+	delete this._rooms[roomName];
 	this._connection.muc.leave(roomJID, nick);
 };
 
