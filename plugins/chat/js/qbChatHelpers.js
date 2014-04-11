@@ -15,6 +15,7 @@ var QBChatHelpers = {
 	},
 	
 	getRoom: function(name) {
+		name = name.replace(/\s+/g, '_').toLowerCase();
 		return QB.session.application_id + "_" + name + "@" + config.muc;
 	},
 	
