@@ -4454,6 +4454,18 @@ Strophe.Bosh.prototype = {
                         }
                     }
                 }
+                
+                /* This is a webkit CORS fix,
+                 * Safari and old Chrome changes the request method from POST to
+                 * OPTIONS thus not carriying the initial xml stanza.
+                 * this keeps the http request pending for random time
+                 * period before restarting it.
+                 * Setting content type of the request to text/plain avoids
+                 * this problem
+                 * 
+                 * https://groups.google.com/forum/#!topic/strophe/kzDYjPo4LQY
+                */
+                req.xhr.setRequestHeader('Content-Type', 'text/plain');
                 req.xhr.send(req.data);
             };
 
