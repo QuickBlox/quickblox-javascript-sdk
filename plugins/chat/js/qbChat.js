@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.1';
+	this.version = '0.8.2';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -92,7 +92,7 @@ function QBChat(params) {
 			};
 		}
 		
-		invite || body ? self._callbacks.onChatMessage(senderID, message) :
+		invite || body ? self._callbacks.onChatMessage && self._callbacks.onChatMessage(senderID, message) :
 		                 self._callbacks.onChatState && self._callbacks.onChatState(senderID, message);
 		return true;
 	};
@@ -274,7 +274,7 @@ QBChat.prototype.createRoom = function(params, callback) {
 		      
 		      function onError() {
 		        trace('Room created error');
-		        callback(true, null);
+		        callback('Room created error', null);
 		      }
 		);
 	}
@@ -303,7 +303,7 @@ QBChat.prototype.createRoom = function(params, callback) {
 		      
 		      function onError() {
 		        trace('Room config error');
-		        callback(true, null);
+		        callback('Room config error', null);
 		      }
 		);
 	}
@@ -319,7 +319,7 @@ QBChat.prototype.createRoom = function(params, callback) {
 		      
 		      function onError() {
 		        trace('Room created error');
-		        callback(true, null);
+		        callback('Room created error', null);
 		      }
 		);
 	}
@@ -444,7 +444,7 @@ QBChat.prototype.listRooms = function(callback) {
 	this._connection.muc.invite(this.newRoom, userJID);
 };*/
 
-/*QBChat.prototype.destroy = function(roomName) {
+QBChat.prototype.destroy = function(roomName) {
 	console.log('destroy');
 	var roomJid = QB.session.application_id + '_' + roomName + '@' + config.muc;
 	var iq = $iq({
@@ -453,4 +453,4 @@ QBChat.prototype.listRooms = function(callback) {
 	}).c('query', {xmlns: Strophe.NS.MUC_OWNER})
 	  .c('destroy').c('reason').t('Sorry, this room was removed');
 	this._connection.send(iq);
-};*/
+};
