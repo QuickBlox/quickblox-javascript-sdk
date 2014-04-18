@@ -1,0 +1,6 @@
+{
+  "name": "quickblox.webrtc",
+  "description": "Quickblox Javascript SDK / WebRTC Videochat plugin",
+  "version": "0.3.0",
+  "author": "Andrey Povelichenko <andrey.povelichenko@quickblox.com>"
+}
