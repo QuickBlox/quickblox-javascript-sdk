@@ -54,6 +54,10 @@ var QBChatHelpers = {
 	removeTypingMessage: function(obj, nick) {
 		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
 		if (obj.text().length == 0) obj.remove();
+	},
+	
+	xmlunescape: function(data) {
+		return Strophe.xmlunescape(data);
 	}
 };
 
