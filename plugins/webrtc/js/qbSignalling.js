@@ -1,14 +1,7 @@
 /**
  * QuickBlox VideoChat WebRTC signaling library
- * version 0.2.1
- *
- * Authors: Igor Khomenko (igor@quickblox.com), Andrey Povelichenko (andrey.povelichenko@quickblox.com)
- *
+ * 
  */
-
-// Browserify dependencies
-require('../libs/strophe');
-var config = require('./config');
 
 /*
   Public methods:
@@ -27,6 +20,9 @@ var config = require('./config');
     - onCandidate(candidate)
  */
 
+// Browserify exports
+module.exports = QBVideoChatSignaling;
+
 var QBSignalingType = {
 	CALL: 'qbvideochat_call',
 	ACCEPT: 'qbvideochat_acceptCall',
@@ -40,22 +36,24 @@ var QBCallType = {
     AUDIO: 'AUDIO'
 };
 
-function QBVideoChatSignaling(appID, chatServer, connection) {
-	var _this = this;
+function QBVideoChatSignaling(chatService, params) {
+	var self = this;
 	
-	this.onCallCallback = null;
- 	this.onAcceptCallback = null;
- 	this.onRejectCallback = null;
-	this.onStopCallback = null;
-	
-	this.onInnerAcceptCallback = null;
- 	this.onCandidateCallback = null;
+	if (params) {
+		this._debug = params.debug || null;
+		
+		// set user callbacks
+		this._callbacks = {
+			onCallCallback: params.onCallCallback || null,
+			onAcceptCallback: params.onAcceptCallback || null,
+			onRejectCallback: params.onRejectCallback || null,
+			onStopCallback: params.onStopCallback || null,
+			onInnerAcceptCallback: null,
+			onCandidateCallback: null
+		};
+	}
  	
- 	this.appID = appID;
- 	this.chatServer = chatServer;
- 	this.connection = connection;
- 	
-	this.onMessage = function(msg) {
+	this._onMessage = function(msg) {
 		var author, type, body;
 		var qbID, sessionID, name, avatar;
 		
@@ -66,40 +64,40 @@ function QBVideoChatSignaling(appID, chatServer, connection) {
 		name = $(msg).find('full_name')[0].textContent;
 		avatar = $(msg).find('avatar')[0] && $(msg).find('avatar')[0].textContent;
 		
-		qbID = _this.getIDFromNode(author);
+		qbID = QBChatHelpers.getIDFromNode(author);
 		
 		switch (type) {
 		case QBSignalingType.CALL:
 			traceS('onCall from ' + qbID);
-			_this.onCallCallback(qbID, body, sessionID, name, avatar);
+			self._callbacks.onCallCallback(qbID, body, sessionID, name, avatar);
 			break;
 		case QBSignalingType.ACCEPT:
 			traceS('onAccept from ' + qbID);
-			_this.onAcceptCallback(qbID);
-			_this.onInnerAcceptCallback(body);
+			self._callbacks.onAcceptCallback(qbID);
+			self._callbacks.onInnerAcceptCallback(body);
 			break;
 		case QBSignalingType.REJECT:
 			traceS('onReject from ' + qbID);
-			_this.onRejectCallback(qbID);
+			self._callbacks.onRejectCallback(qbID);
 			break;
 		case QBSignalingType.STOP:
 			traceS('onStop from ' + qbID);
-			_this.onStopCallback(qbID, body);
+			self._callbacks.onStopCallback(qbID, body);
 			break;
 		case QBSignalingType.CANDIDATE:
-			_this.onCandidateCallback(body);
+			self._callbacks.onCandidateCallback(body);
 			break;
 		}
 		
 		return true;
 	};
 	
-	this.sendMessage = function(userID, signalingType, data, sessionID, userName, userAvatar, callType) {
-		var reply, params, opponentJID = _this.getJID(userID);
+	this._sendMessage = function(userID, signalingType, data, sessionID, userName, userAvatar, callType) {
+		var reply, params, opponentJID = QBChatHelpers.getJID(userID);
 		
 		params = {
 			to: opponentJID,
-			from: _this.connection.jid,
+			from: chatService._connection.jid,
 			type: signalingType
 		};
 		
@@ -110,60 +108,42 @@ function QBVideoChatSignaling(appID, chatServer, connection) {
 			reply.c('avatar').t(userAvatar).up();
 		if (callType)
 			reply.c('callType').t(callType);
-		_this.connection.send(reply);
+			
+		chatService._connection.send(reply);
 	};
 	
 	// set WebRTC callbacks
 	$(Object.keys(QBSignalingType)).each(function() {
-		_this.connection.addHandler(_this.onMessage, null, 'message', QBSignalingType[this], null, null);
+		chatService._connection.addHandler(self._onMessage, null, 'message', QBSignalingType[this]);
 	});
-	
-	// helpers
-	this.getJID = function(id) {
-		return id + "-" + _this.appID + "@" + _this.chatServer;
-	};
-	
-	this.getIDFromNode = function(jid) {
-		return Strophe.getNodeFromJid(jid).split('-')[0];
-	};
-	
-	this.xmppTextToDictionary = function(data) {
-		//return $.parseJSON(Strophe.unescapeNode(data));
-		return $.parseJSON(Strophe.xmlunescape(data));
-	};
-	
-	this.xmppDictionaryToText = function(data) {
-		//return Strophe.escapeNode(JSON.stringify(data));
-		return JSON.stringify(data);
-	};
 }
-
-QBVideoChatSignaling.prototype.call = function(userID, sessionDescription, sessionID, userName, userAvatar) {
-	traceS('call to ' + userID);
-	this.sendMessage(userID, QBSignalingType.CALL, sessionDescription, sessionID, userName, userAvatar, QBCallType.VIDEO_AUDIO);
-};
-
-QBVideoChatSignaling.prototype.accept = function(userID, sessionDescription, sessionID, userName) {
-	traceS('accept ' + userID);
-	this.sendMessage(userID, QBSignalingType.ACCEPT, sessionDescription, sessionID, userName);
-};
-
-QBVideoChatSignaling.prototype.reject = function(userID, sessionID, userName) {
-	traceS('reject ' + userID);
-	this.sendMessage(userID, QBSignalingType.REJECT, null, sessionID, userName);
-};
-
-QBVideoChatSignaling.prototype.stop = function(userID, reason, sessionID, userName) {
-	traceS('stop ' + userID);
-	this.sendMessage(userID, QBSignalingType.STOP, reason, sessionID, userName);
-};
-
-QBVideoChatSignaling.prototype.sendCandidate = function(userID, candidate, sessionID, userName) {
-	this.sendMessage(userID, QBSignalingType.CANDIDATE, candidate, sessionID, userName);
-};
 
 function traceS(text) {
 	console.log("[qb_videochat_signalling]: " + text);
 }
 
-module.exports = QBVideoChatSignaling;
+/* Public methods
+----------------------------------------------------------*/
+QBVideoChatSignaling.prototype.call = function(userID, sessionDescription, sessionID, userName, userAvatar) {
+	traceS('call to ' + userID);
+	this._sendMessage(userID, QBSignalingType.CALL, sessionDescription, sessionID, userName, userAvatar, QBCallType.VIDEO_AUDIO);
+};
+
+QBVideoChatSignaling.prototype.accept = function(userID, sessionDescription, sessionID, userName) {
+	traceS('accept ' + userID);
+	this._sendMessage(userID, QBSignalingType.ACCEPT, sessionDescription, sessionID, userName);
+};
+
+QBVideoChatSignaling.prototype.reject = function(userID, sessionID, userName) {
+	traceS('reject ' + userID);
+	this._sendMessage(userID, QBSignalingType.REJECT, null, sessionID, userName);
+};
+
+QBVideoChatSignaling.prototype.stop = function(userID, reason, sessionID, userName) {
+	traceS('stop ' + userID);
+	this._sendMessage(userID, QBSignalingType.STOP, reason, sessionID, userName);
+};
+
+QBVideoChatSignaling.prototype.sendCandidate = function(userID, candidate, sessionID, userName) {
+	this._sendMessage(userID, QBSignalingType.CANDIDATE, candidate, sessionID, userName);
+};
