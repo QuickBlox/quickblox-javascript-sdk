@@ -1,6 +1,3 @@
-// Browserify exports start
-module.exports = (function() {
-
 var RTCPeerConnection = null;
 var getUserMedia = null;
 var attachMediaStream = null;
@@ -200,5 +197,11 @@ if (navigator.mozGetUserMedia) {
   console.log("Browser does not appear to be WebRTC-capable");
 }
 
-// Browserify exports end
-})();
+// Browserify exports
+module.exports.RTCPeerConnection = RTCPeerConnection;
+module.exports.getUserMedia = getUserMedia;
+module.exports.attachMediaStream = attachMediaStream;
+module.exports.reattachMediaStream = reattachMediaStream;
+module.exports.RTCSessionDescription = RTCSessionDescription;
+module.exports.RTCIceCandidate = RTCIceCandidate;
+module.exports.createIceServers = createIceServers;

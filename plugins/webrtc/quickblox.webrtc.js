@@ -223,8 +223,8 @@ QBVideoChatSignaling.prototype.sendCandidate = function(userID, candidate, sessi
  */
 
 // Browserify dependencies
-require('../libs/adapter');
 var config = require('./config');
+var adapter = require('../libs/adapter');
 var QBVideoChatSignaling = require('./qbSignalling');
 
 window.QBVideoChat = QBVideoChat;
@@ -250,7 +250,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.0';
+ 	this.version = '0.4.1';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -282,7 +282,7 @@ function QBVideoChat(signaling, params) {
 		var jsonCandidate, candidate;
 		
 		jsonCandidate = self._xmppTextToDictionary(data);
-		candidate = new RTCIceCandidate(jsonCandidate);
+		candidate = new adapter.RTCIceCandidate(jsonCandidate);
 		
 		self.pc.addIceCandidate(candidate);
 	};
@@ -295,7 +295,7 @@ function QBVideoChat(signaling, params) {
 	this.getUserMedia = function() {
 		traceVC("getUserMedia...");
 		
-		getUserMedia(self.constraints, successCallback, errorCallback);
+		adapter.getUserMedia(self.constraints, successCallback, errorCallback);
 		
 		function successCallback(localMediaStream) {
 			traceVC("getUserMedia success");
@@ -312,22 +312,22 @@ function QBVideoChat(signaling, params) {
 	
 	// MediaStream attachMedia
 	this.attachMediaStream = function(elem, stream) {
-		attachMediaStream(elem, stream);
+		adapter.attachMediaStream(elem, stream);
 	}
 	
 	// MediaStream reattachMedia
 	this.reattachMediaStream = function(to, from) {
-		reattachMediaStream(to, from);
+		adapter.reattachMediaStream(to, from);
 	}
 	
 	// RTCPeerConnection creation
 	this.createRTCPeerConnection = function() {
 		traceVC("RTCPeerConnection...");
 		var pcConfig = {
-			'iceServers': createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
+			'iceServers': adapter.createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
 		};
 		try {
-			self.pc = new RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
+			self.pc = new adapter.RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
 			self.pc.addStream(self.localStream);
 			self.pc.onicecandidate = self.onIceCandidateCallback;
 			self.pc.onaddstream = self.onRemoteStreamAddedCallback;
@@ -400,7 +400,7 @@ function QBVideoChat(signaling, params) {
 		var sessionDescription, candidate;
 		
 		self._state = QBVideoChatState.ESTABLISHING;
-		sessionDescription = new RTCSessionDescription({sdp: descriptionSDP, type: descriptionType});
+		sessionDescription = new adapter.RTCSessionDescription({sdp: descriptionSDP, type: descriptionType});
 		
 		self.pc.setRemoteDescription(sessionDescription,
                                  
@@ -496,9 +496,6 @@ QBVideoChat.prototype.stop = function(userID, userName) {
 };
 
 },{"../libs/adapter":4,"./config":1,"./qbSignalling":2}],4:[function(require,module,exports){
-// Browserify exports start
-module.exports = (function() {
-
 var RTCPeerConnection = null;
 var getUserMedia = null;
 var attachMediaStream = null;
@@ -698,7 +695,13 @@ if (navigator.mozGetUserMedia) {
   console.log("Browser does not appear to be WebRTC-capable");
 }
 
-// Browserify exports end
-})();
+// Browserify exports
+module.exports.RTCPeerConnection = RTCPeerConnection;
+module.exports.getUserMedia = getUserMedia;
+module.exports.attachMediaStream = attachMediaStream;
+module.exports.reattachMediaStream = reattachMediaStream;
+module.exports.RTCSessionDescription = RTCSessionDescription;
+module.exports.RTCIceCandidate = RTCIceCandidate;
+module.exports.createIceServers = createIceServers;
 
 },{}]},{},[3])

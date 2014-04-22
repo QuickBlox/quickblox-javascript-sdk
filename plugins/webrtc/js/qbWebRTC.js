@@ -12,8 +12,8 @@
  */
 
 // Browserify dependencies
-require('../libs/adapter');
 var config = require('./config');
+var adapter = require('../libs/adapter');
 var QBVideoChatSignaling = require('./qbSignalling');
 
 window.QBVideoChat = QBVideoChat;
@@ -39,7 +39,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.0';
+ 	this.version = '0.4.1';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -71,7 +71,7 @@ function QBVideoChat(signaling, params) {
 		var jsonCandidate, candidate;
 		
 		jsonCandidate = self._xmppTextToDictionary(data);
-		candidate = new RTCIceCandidate(jsonCandidate);
+		candidate = new adapter.RTCIceCandidate(jsonCandidate);
 		
 		self.pc.addIceCandidate(candidate);
 	};
@@ -84,7 +84,7 @@ function QBVideoChat(signaling, params) {
 	this.getUserMedia = function() {
 		traceVC("getUserMedia...");
 		
-		getUserMedia(self.constraints, successCallback, errorCallback);
+		adapter.getUserMedia(self.constraints, successCallback, errorCallback);
 		
 		function successCallback(localMediaStream) {
 			traceVC("getUserMedia success");
@@ -101,22 +101,22 @@ function QBVideoChat(signaling, params) {
 	
 	// MediaStream attachMedia
 	this.attachMediaStream = function(elem, stream) {
-		attachMediaStream(elem, stream);
+		adapter.attachMediaStream(elem, stream);
 	}
 	
 	// MediaStream reattachMedia
 	this.reattachMediaStream = function(to, from) {
-		reattachMediaStream(to, from);
+		adapter.reattachMediaStream(to, from);
 	}
 	
 	// RTCPeerConnection creation
 	this.createRTCPeerConnection = function() {
 		traceVC("RTCPeerConnection...");
 		var pcConfig = {
-			'iceServers': createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
+			'iceServers': adapter.createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
 		};
 		try {
-			self.pc = new RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
+			self.pc = new adapter.RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
 			self.pc.addStream(self.localStream);
 			self.pc.onicecandidate = self.onIceCandidateCallback;
 			self.pc.onaddstream = self.onRemoteStreamAddedCallback;
@@ -189,7 +189,7 @@ function QBVideoChat(signaling, params) {
 		var sessionDescription, candidate;
 		
 		self._state = QBVideoChatState.ESTABLISHING;
-		sessionDescription = new RTCSessionDescription({sdp: descriptionSDP, type: descriptionType});
+		sessionDescription = new adapter.RTCSessionDescription({sdp: descriptionSDP, type: descriptionType});
 		
 		self.pc.setRemoteDescription(sessionDescription,
                                  
