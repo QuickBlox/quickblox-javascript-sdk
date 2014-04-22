@@ -6,15 +6,11 @@
  */
 
 var config = {
-	iceServers: {
-		urls: [
-			'stun:stun.l.google.com:19302',
-			'turn:turnserver.quickblox.com:3478?transport=udp',
-			'turn:turnserver.quickblox.com:3478?transport=tcp'
-		],
-		username: 'user',
-		password: 'user'
-	}
+	iceServers: [
+		{urls: "stun:stun.l.google.com:19302"},
+		{urls: "turn:turnserver.quickblox.com:3478?transport=udp", username: "", credential: ""},
+		{urls: "turn:turnserver.quickblox.com:3478?transport=tcp", username: "", credential: ""}
+	]
 };
 
 // Other public ICE Servers

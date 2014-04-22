@@ -7,15 +7,11 @@
  */
 
 var config = {
-	iceServers: {
-		urls: [
-			'stun:stun.l.google.com:19302',
-			'turn:turnserver.quickblox.com:3478?transport=udp',
-			'turn:turnserver.quickblox.com:3478?transport=tcp'
-		],
-		username: 'user',
-		password: 'user'
-	}
+	iceServers: [
+		{urls: "stun:stun.l.google.com:19302"},
+		{urls: "turn:turnserver.quickblox.com:3478?transport=udp", username: "", credential: ""},
+		{urls: "turn:turnserver.quickblox.com:3478?transport=tcp", username: "", credential: ""}
+	]
 };
 
 // Other public ICE Servers
@@ -223,8 +219,8 @@ QBVideoChatSignaling.prototype.sendCandidate = function(userID, candidate, sessi
  */
 
 // Browserify dependencies
-var config = require('./config');
 var adapter = require('../libs/adapter');
+var pcConfig = require('./config');
 var QBVideoChatSignaling = require('./qbSignalling');
 
 window.QBVideoChat = QBVideoChat;
@@ -250,7 +246,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.1';
+ 	this.version = '0.4.2';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -323,9 +319,6 @@ function QBVideoChat(signaling, params) {
 	// RTCPeerConnection creation
 	this.createRTCPeerConnection = function() {
 		traceVC("RTCPeerConnection...");
-		var pcConfig = {
-			'iceServers': adapter.createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
-		};
 		try {
 			self.pc = new adapter.RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
 			self.pc.addStream(self.localStream);
@@ -702,6 +695,5 @@ module.exports.attachMediaStream = attachMediaStream;
 module.exports.reattachMediaStream = reattachMediaStream;
 module.exports.RTCSessionDescription = RTCSessionDescription;
 module.exports.RTCIceCandidate = RTCIceCandidate;
-module.exports.createIceServers = createIceServers;
 
 },{}]},{},[3])

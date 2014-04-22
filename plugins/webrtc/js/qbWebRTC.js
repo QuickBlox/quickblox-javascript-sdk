@@ -12,8 +12,8 @@
  */
 
 // Browserify dependencies
-var config = require('./config');
 var adapter = require('../libs/adapter');
+var pcConfig = require('./config');
 var QBVideoChatSignaling = require('./qbSignalling');
 
 window.QBVideoChat = QBVideoChat;
@@ -39,7 +39,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.1';
+ 	this.version = '0.4.2';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -112,9 +112,6 @@ function QBVideoChat(signaling, params) {
 	// RTCPeerConnection creation
 	this.createRTCPeerConnection = function() {
 		traceVC("RTCPeerConnection...");
-		var pcConfig = {
-			'iceServers': adapter.createIceServers(config.iceServers.urls, config.iceServers.username, config.iceServers.password)
-		};
 		try {
 			self.pc = new adapter.RTCPeerConnection(pcConfig, PC_CONSTRAINTS);
 			self.pc.addStream(self.localStream);

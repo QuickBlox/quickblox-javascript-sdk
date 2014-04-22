@@ -204,4 +204,3 @@ module.exports.attachMediaStream = attachMediaStream;
 module.exports.reattachMediaStream = reattachMediaStream;
 module.exports.RTCSessionDescription = RTCSessionDescription;
 module.exports.RTCIceCandidate = RTCIceCandidate;
-module.exports.createIceServers = createIceServers;
