@@ -246,7 +246,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.3';
+ 	this.version = '0.4.4';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -296,8 +296,8 @@ function QBVideoChat(signaling, params) {
 		function successCallback(localMediaStream) {
 			traceVC("getUserMedia success");
 			self.localStream = localMediaStream;
-			self._callbacks.onGetUserMediaSuccess();
 			self.createRTCPeerConnection();
+			self._callbacks.onGetUserMediaSuccess();
 		}
 		
 		function errorCallback(error) {
