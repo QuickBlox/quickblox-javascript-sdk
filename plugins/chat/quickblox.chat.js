@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.2';
+	this.version = '0.8.3';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -133,7 +133,9 @@ function QBChat(params) {
 			type: type
 		};
 		
-		self._callbacks.onMUCPresence(senderID, presence);
+		if (snderID.indexOf('tigase') != 0)
+			self._callbacks.onMUCPresence(senderID, presence);
+		
 		return true;
 	};
 	
