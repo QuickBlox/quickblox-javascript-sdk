@@ -133,7 +133,7 @@ function QBChat(params) {
 			type: type
 		};
 		
-		if (snderID.indexOf('tigase') != 0)
+		if (senderID.indexOf('tigase') != 0)
 			self._callbacks.onMUCPresence(senderID, presence);
 		
 		return true;
