@@ -246,7 +246,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.4';
+ 	this.version = '0.4.5';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -284,8 +284,8 @@ function QBVideoChat(signaling, params) {
 	};
 	
 	this.signaling = signaling;
-	this.signaling.onInnerAcceptCallback = this.onAcceptSignalingCallback;
-	this.signaling.onCandidateCallback = this.addCandidate;
+	this.signaling._callbacks.onInnerAcceptCallback = this.onAcceptSignalingCallback;
+	this.signaling._callbacks.onCandidateCallback = this.addCandidate;
 	
 	// MediaStream getUserMedia
 	this.getUserMedia = function() {
@@ -437,6 +437,7 @@ function QBVideoChat(signaling, params) {
 	// Cleanup 
 	this.hangup = function() {
 		self._state = QBVideoChatState.INACTIVE;
+		self.signaling = null;
 		self.localStream.stop();
 		self.pc.close();
 		self.pc = null;
