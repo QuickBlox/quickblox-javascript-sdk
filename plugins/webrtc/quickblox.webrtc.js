@@ -258,28 +258,12 @@ QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) 
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID, userName) {
+QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
 	var extraParams = {
 		opponentID: opponentID,
 		signalingType: QBSignalingType.CANDIDATE,
 		sessionID: sessionID,
 		candidate: candidate,
-		
-		// custom parameters
-		userName: userName
-	};
-	this._sendMessage(extraParams);
-};
-
-QBVideoChatSignaling.prototype.parametersChanged = function(opponentID, orientation, sessionID, userName) {
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.PARAMETERS_CHANGED,
-		sessionID: sessionID,
-		deviceOrientation: orientation,
-		
-		// custom parameters
-		userName: userName
 	};
 	this._sendMessage(extraParams);
 };
@@ -318,7 +302,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.0';
+ 	this.version = '0.5.1';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -409,7 +393,7 @@ function QBVideoChat(signaling, params) {
 				self._candidatesQueue.push(candidate);
 			else {
 				// Send ICE candidate to opponent
-				self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
+				self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID);
 			}
 		}
 	};
@@ -473,7 +457,7 @@ function QBVideoChat(signaling, params) {
 		// send candidates
 		for (var i = 0; i < self._candidatesQueue.length; i++) {
 			candidate = self._candidatesQueue.pop();
-			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
+			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID);
 		}
 	};
 	

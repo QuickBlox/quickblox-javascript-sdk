@@ -31,7 +31,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.0';
+ 	this.version = '0.5.1';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -122,7 +122,7 @@ function QBVideoChat(signaling, params) {
 				self._candidatesQueue.push(candidate);
 			else {
 				// Send ICE candidate to opponent
-				self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
+				self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID);
 			}
 		}
 	};
@@ -186,7 +186,7 @@ function QBVideoChat(signaling, params) {
 		// send candidates
 		for (var i = 0; i < self._candidatesQueue.length; i++) {
 			candidate = self._candidatesQueue.pop();
-			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
+			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID);
 		}
 	};
 	

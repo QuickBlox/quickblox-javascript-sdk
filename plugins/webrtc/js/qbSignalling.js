@@ -202,28 +202,12 @@ QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) 
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID, userName) {
+QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
 	var extraParams = {
 		opponentID: opponentID,
 		signalingType: QBSignalingType.CANDIDATE,
 		sessionID: sessionID,
 		candidate: candidate,
-		
-		// custom parameters
-		userName: userName
-	};
-	this._sendMessage(extraParams);
-};
-
-QBVideoChatSignaling.prototype.parametersChanged = function(opponentID, orientation, sessionID, userName) {
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.PARAMETERS_CHANGED,
-		sessionID: sessionID,
-		deviceOrientation: orientation,
-		
-		// custom parameters
-		userName: userName
 	};
 	this._sendMessage(extraParams);
 };
