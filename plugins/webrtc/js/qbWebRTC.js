@@ -3,14 +3,6 @@
  *
  */
 
-/*
-  Public methods:
-    - call(userID, userName, userAvatar)
-    - accept(userID, userName)
-    - reject(userID, userName)
-    - stop(userID, userName)
- */
-
 // Browserify dependencies
 var adapter = require('../libs/adapter');
 var pcConfig = require('./config');
@@ -39,7 +31,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.4.5';
+ 	this.version = '0.5.0';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -68,11 +60,9 @@ function QBVideoChat(signaling, params) {
 	};
 	
 	this.addCandidate = function(data) {
-		var jsonCandidate, candidate;
+		var candidate;
 		
-		jsonCandidate = self._xmppTextToDictionary(data);
-		candidate = new adapter.RTCIceCandidate(jsonCandidate);
-		
+		candidate = new adapter.RTCIceCandidate(data);
 		self.pc.addIceCandidate(candidate);
 	};
 	
@@ -125,23 +115,14 @@ function QBVideoChat(signaling, params) {
 	
 	// onIceCandidate callback
 	this.onIceCandidateCallback = function(event) {
-		var iceData, iceDataAsmessage, candidate = event.candidate;
+		var candidate = event.candidate;
 		
 		if (candidate) {
-			iceData = {
-				sdpMLineIndex: candidate.sdpMLineIndex,
-				candidate: candidate.candidate,
-				sdpMid: candidate.sdpMid
-			};
-			
-			iceDataAsmessage = self._xmppDictionaryToText(iceData);
-			console.log(iceDataAsmessage);
-			
 			if (self._state == QBVideoChatState.INACTIVE)
-				self._candidatesQueue.push(iceDataAsmessage);
+				self._candidatesQueue.push(candidate);
 			else {
 				// Send ICE candidate to opponent
-				self.signaling.sendCandidate(self.opponentID, iceDataAsmessage, self.sessionID, self.opponentUsername);
+				self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
 			}
 		}
 	};
@@ -205,7 +186,7 @@ function QBVideoChat(signaling, params) {
 		// send candidates
 		for (var i = 0; i < self._candidatesQueue.length; i++) {
 			candidate = self._candidatesQueue.pop();
-			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.opponentUsername);
+			self.signaling.sendCandidate(self.opponentID, candidate, self.sessionID, self.myUsername);
 		}
 	};
 	
@@ -217,14 +198,14 @@ function QBVideoChat(signaling, params) {
 		// Send only string representation of sdp
 		// http://www.w3.org/TR/webrtc/#rtcsessiondescription-class
 	
-		self.signaling.call(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.opponentUsername, self.opponentAvatar);
+		self.signaling.call(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.myUsername, self.myAvatar);
 	};
 	
 	this.sendAceptRequest = function() {
 		// Send only string representation of sdp
 		// http://www.w3.org/TR/webrtc/#rtcsessiondescription-class
 	
-		self.signaling.accept(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.opponentUsername);
+		self.signaling.accept(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.myUsername);
 	};
 
 	// Cleanup 
@@ -234,15 +215,6 @@ function QBVideoChat(signaling, params) {
 		self.localStream.stop();
 		self.pc.close();
 		self.pc = null;
-	};
-	
-	// helpers
-	this._xmppTextToDictionary = function(data) {
-		return $.parseJSON(QBChatHelpers.xmlunescape(data));
-	};
-	
-	this._xmppDictionaryToText = function(data) {
-		return JSON.stringify(data);
 	};
 }
 
@@ -258,8 +230,8 @@ QBVideoChat.prototype.call = function(userID, userName, userAvatar) {
 		this.sendCallRequest();
 	} else {
 		this.opponentID = userID;
-		this.opponentUsername = userName;
-		this.opponentAvatar = userAvatar;
+		this.myUsername = userName;
+		this.myAvatar = userAvatar;
 		this.pc.createOffer(this.onGetSessionDescriptionSuccessCallback, this.onCreateOfferFailureCallback, SDP_CONSTRAINTS);
 	}
 };
@@ -267,7 +239,7 @@ QBVideoChat.prototype.call = function(userID, userName, userAvatar) {
 // Accept call from user 
 QBVideoChat.prototype.accept = function(userID, userName) {
 	this.opponentID = userID;
-	this.opponentUsername = userName;
+	this.myUsername = userName;
 	this.setRemoteDescription(this.remoteSessionDescription, "offer");
 };
 
@@ -278,5 +250,5 @@ QBVideoChat.prototype.reject = function(userID, userName) {
 
 // Stop call with user
 QBVideoChat.prototype.stop = function(userID, userName) {
-	this.signaling.stop(userID, "manual", this.sessionID, userName);
+	this.signaling.stop(userID, this.sessionID, userName);
 };
