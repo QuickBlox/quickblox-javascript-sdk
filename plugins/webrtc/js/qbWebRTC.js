@@ -31,7 +31,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.1';
+ 	this.version = '0.5.2';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -41,7 +41,7 @@ function QBVideoChat(signaling, params) {
 	if (params) {
 		this._debug = params.debug || null;
 		
-		this.sessionID = parseInt(params.sessionID || new Date().getTime());
+		this.sessionID = params.sessionID || new Date().getTime();
 		this.remoteSessionDescription = params.sessionDescription || null;
 		this.constraints = params.constraints || null;
 		
