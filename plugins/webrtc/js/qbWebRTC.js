@@ -6,10 +6,10 @@
 // Browserify dependencies
 var adapter = require('../libs/adapter');
 var pcConfig = require('./config');
-var QBVideoChatSignaling = require('./qbSignalling');
+var QBSignaling = require('./qbSignaling');
 
+window.QBSignaling = QBSignaling;
 window.QBVideoChat = QBVideoChat;
-window.QBVideoChatSignaling = QBVideoChatSignaling;
 
 var PC_CONSTRAINTS = {
 	'optional': []
@@ -31,7 +31,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.2';
+ 	this.version = '0.5.3';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];

@@ -4,7 +4,7 @@
  */
 
 // Browserify exports
-module.exports = QBVideoChatSignaling;
+module.exports = QBSignaling;
 
 var QBSignalingType = {
 	CALL: 'qbvideochat_call',
@@ -27,7 +27,7 @@ var QBStopReason = {
 	NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
 };
 
-function QBVideoChatSignaling(chatService, params) {
+function QBSignaling(chatService, params) {
 	var self = this;
 	
 	if (params) {
@@ -141,7 +141,7 @@ function traceS(text) {
 
 /* Public methods
 ----------------------------------------------------------*/
-QBVideoChatSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, userName, userAvatar) {
+QBSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, userName, userAvatar) {
 	traceS('call to ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -159,7 +159,7 @@ QBVideoChatSignaling.prototype.call = function(opponentID, sessionDescription, s
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, userName) {
+QBSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, userName) {
 	traceS('accept ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -175,7 +175,7 @@ QBVideoChatSignaling.prototype.accept = function(opponentID, sessionDescription,
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.reject = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.reject = function(opponentID, sessionID, userName) {
 	traceS('reject ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -188,7 +188,7 @@ QBVideoChatSignaling.prototype.reject = function(opponentID, sessionID, userName
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.stop = function(opponentID, sessionID, userName) {
 	traceS('stop ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -202,7 +202,7 @@ QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) 
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
+QBSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
 	var extraParams = {
 		opponentID: opponentID,
 		signalingType: QBSignalingType.CANDIDATE,

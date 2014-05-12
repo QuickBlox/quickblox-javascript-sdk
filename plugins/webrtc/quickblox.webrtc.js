@@ -60,7 +60,7 @@ module.exports = config;
  */
 
 // Browserify exports
-module.exports = QBVideoChatSignaling;
+module.exports = QBSignaling;
 
 var QBSignalingType = {
 	CALL: 'qbvideochat_call',
@@ -83,7 +83,7 @@ var QBStopReason = {
 	NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
 };
 
-function QBVideoChatSignaling(chatService, params) {
+function QBSignaling(chatService, params) {
 	var self = this;
 	
 	if (params) {
@@ -197,7 +197,7 @@ function traceS(text) {
 
 /* Public methods
 ----------------------------------------------------------*/
-QBVideoChatSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, userName, userAvatar) {
+QBSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, userName, userAvatar) {
 	traceS('call to ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -215,7 +215,7 @@ QBVideoChatSignaling.prototype.call = function(opponentID, sessionDescription, s
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, userName) {
+QBSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, userName) {
 	traceS('accept ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -231,7 +231,7 @@ QBVideoChatSignaling.prototype.accept = function(opponentID, sessionDescription,
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.reject = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.reject = function(opponentID, sessionID, userName) {
 	traceS('reject ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -244,7 +244,7 @@ QBVideoChatSignaling.prototype.reject = function(opponentID, sessionID, userName
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.stop = function(opponentID, sessionID, userName) {
 	traceS('stop ' + opponentID);
 	var extraParams = {
 		opponentID: opponentID,
@@ -258,7 +258,7 @@ QBVideoChatSignaling.prototype.stop = function(opponentID, sessionID, userName) 
 	this._sendMessage(extraParams);
 };
 
-QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
+QBSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
 	var extraParams = {
 		opponentID: opponentID,
 		signalingType: QBSignalingType.CANDIDATE,
@@ -277,10 +277,10 @@ QBVideoChatSignaling.prototype.sendCandidate = function(opponentID, candidate, s
 // Browserify dependencies
 var adapter = require('../libs/adapter');
 var pcConfig = require('./config');
-var QBVideoChatSignaling = require('./qbSignalling');
+var QBSignaling = require('./qbSignaling');
 
+window.QBSignaling = QBSignaling;
 window.QBVideoChat = QBVideoChat;
-window.QBVideoChatSignaling = QBVideoChatSignaling;
 
 var PC_CONSTRAINTS = {
 	'optional': []
@@ -302,7 +302,7 @@ var QBVideoChatState = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.2';
+ 	this.version = '0.5.3';
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -524,7 +524,7 @@ QBVideoChat.prototype.stop = function(userID, userName) {
 	this.signaling.stop(userID, this.sessionID, userName);
 };
 
-},{"../libs/adapter":4,"./config":1,"./qbSignalling":2}],4:[function(require,module,exports){
+},{"../libs/adapter":4,"./config":1,"./qbSignaling":2}],4:[function(require,module,exports){
 var RTCPeerConnection = null;
 var getUserMedia = null;
 var attachMediaStream = null;
