@@ -15,18 +15,6 @@ var QBSignalingType = {
 	PARAMETERS_CHANGED: 'qbvideochat_callParametersChanged'
 };
 
-var QBCallType = {
-	VIDEO: '1',
-	AUDIO: '2'
-};
-
-var QBStopReason = {
-	MANUALLY: 'kStopVideoChatCallStatus_Manually',
-	BAD_CONNECTION: 'kStopVideoChatCallStatus_BadConnection',
-	CANCEL: 'kStopVideoChatCallStatus_Cancel',
-	NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
-};
-
 function QBSignaling(chatService, params) {
 	var self = this;
 	
@@ -45,88 +33,65 @@ function QBSignaling(chatService, params) {
 	}
  	
 	this._onMessage = function(msg) {
-		var author, signalingType, sessionID;
-		var sessionDescription, candidate = {};
-		var qbID, name, avatar;
+		var author, qbID;
+		var extraParams, extension = {};
 		
 		author = $(msg).attr('from');
-		signalingType = $(msg).find('videochat_signaling_type')[0].textContent;
-		sessionID = $(msg).find('sessionID')[0].textContent;
-		
-		sessionDescription = $(msg).find('sdp')[0] && $(msg).find('sdp')[0].textContent;
-		candidate.sdpMLineIndex = $(msg).find('sdpMLineIndex')[0] && $(msg).find('sdpMLineIndex')[0].textContent;
-		candidate.candidate = $(msg).find('candidate')[0] && $(msg).find('candidate')[0].textContent;
-		candidate.sdpMid = $(msg).find('sdpMid')[0] && $(msg).find('sdpMid')[0].textContent;
-		
-		// custom parameters
-		name = $(msg).find('full_name')[0] && $(msg).find('full_name')[0].textContent;
-		avatar = $(msg).find('avatar')[0] && $(msg).find('avatar')[0].textContent;
-		
 		qbID = QBChatHelpers.getIDFromNode(author);
 		
-		switch (signalingType) {
+		extraParams = $(stanza).find('extraParams')[0];
+		$(extraParams.childNodes).each(function() {
+			extension[$(this).context.tagName] = $(this).context.textContent;
+		});
+		
+		switch (extension.videochat_signaling_type) {
 		case QBSignalingType.CALL:
 			traceS('onCall from ' + qbID);
-			self._callbacks.onCallCallback(qbID, sessionDescription, sessionID, name, avatar);
+			self._callbacks.onCallCallback(qbID, extension);
 			break;
 		case QBSignalingType.ACCEPT:
 			traceS('onAccept from ' + qbID);
-			self._callbacks.onAcceptCallback(qbID);
-			self._callbacks.onInnerAcceptCallback(sessionDescription);
+			self._callbacks.onAcceptCallback(qbID, extension);
+			self._callbacks.onInnerAcceptCallback(extension.sdp);
 			break;
 		case QBSignalingType.REJECT:
 			traceS('onReject from ' + qbID);
-			self._callbacks.onRejectCallback(qbID);
+			self._callbacks.onRejectCallback(qbID, extension);
 			break;
 		case QBSignalingType.STOP:
 			traceS('onStop from ' + qbID);
-			self._callbacks.onStopCallback(qbID);
+			self._callbacks.onStopCallback(qbID, extension);
 			break;
 		case QBSignalingType.CANDIDATE:
-			self._callbacks.onCandidateCallback(candidate);
+			self._callbacks.onCandidateCallback({
+				sdpMLineIndex: extension.sdpMLineIndex,
+				candidate: extension.candidate,
+				sdpMid: extension.sdpMid
+			});
 			break;
 		case QBSignalingType.PARAMETERS_CHANGED:
-			//self._callbacks.onCandidateCallback(body);
 			break;
 		}
 		
 		return true;
 	};
 	
-	this._sendMessage = function(extraParams) {
+	this._sendMessage = function(opponentID, extraParams) {
 		var reply, params;
 		
 		params = {
-			to: QBChatHelpers.getJID(extraParams.opponentID),
+			to: QBChatHelpers.getJID(opponentID),
 			from: chatService._connection.jid,
 			type: 'headline'
 		};
 		
-		reply = $msg(params).c('extraParams', {xmlns: Strophe.NS.CLIENT})
-		                    .c('videochat_signaling_type').t(extraParams.signalingType).up()
-		                    .c('sessionID').t(extraParams.sessionID).up();
+		reply = $msg(params).c('extraParams', {
+			xmlns: Strophe.NS.CLIENT
+		});
 		
-		if (extraParams.callType)
-			reply.c('callType').t(extraParams.callType).up();
-		if (extraParams.sdp)
-			reply.c('sdp').t(extraParams.sdp).up();
-		if (extraParams.platform)
-			reply.c('platform').t(extraParams.platform).up();
-		if (extraParams.deviceOrientation)
-			reply.c('device_orientation').t(extraParams.deviceOrientation).up();
-		if (extraParams.status)
-			reply.c('status').t(extraParams.status).up();
-		if (extraParams.candidate) {
-			reply.c('sdpMLineIndex').t(extraParams.candidate.sdpMLineIndex).up();
-			reply.c('candidate').t(extraParams.candidate.candidate).up();
-			reply.c('sdpMid').t(extraParams.candidate.sdpMid).up();
-		}
-		
-		// custom parameters
-		if (extraParams.userName)
-			reply.c('full_name').t(extraParams.userName).up();
-		if (extraParams.userAvatar)
-			reply.c('avatar').t(extraParams.userAvatar).up();
+		$(Object.keys(extraParams)).each(function() {
+			reply.c(this).t(extraParams[this]).up();
+		});
 		
 		chatService._connection.send(reply);
 	};
@@ -141,73 +106,60 @@ function traceS(text) {
 
 /* Public methods
 ----------------------------------------------------------*/
-QBSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, userName, userAvatar) {
+QBSignaling.prototype.call = function(opponentID, sessionDescription, sessionID, extraParams) {
 	traceS('call to ' + opponentID);
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.CALL,
-		sessionID: sessionID,
-		callType: QBCallType.VIDEO,
-		sdp: sessionDescription,
-		platform: 'web',
-		deviceOrientation: 'portrait',
-		
-		// custom parameters
-		userName: userName,
-		userAvatar: userAvatar
-	};
-	this._sendMessage(extraParams);
+	extraParams = extraParams || {};
+	
+	extraParams.videochat_signaling_type = QBSignalingType.CALL;
+	extraParams.sessionID = sessionID;
+	extraParams.sdp = sessionDescription;
+	extraParams.platform = 'web';
+	extraParams.device_orientation = 'portrait';
+	
+	this._sendMessage(opponentID, extraParams);
 };
 
-QBSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, userName) {
+QBSignaling.prototype.accept = function(opponentID, sessionDescription, sessionID, extraParams) {
 	traceS('accept ' + opponentID);
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.ACCEPT,
-		sessionID: sessionID,
-		sdp: sessionDescription,
-		platform: 'web',
-		deviceOrientation: 'portrait',
-		
-		// custom parameters
-		userName: userName
-	};
-	this._sendMessage(extraParams);
+	extraParams = extraParams || {};
+	
+	extraParams.videochat_signaling_type = QBSignalingType.ACCEPT;
+	extraParams.sessionID = sessionID;
+	extraParams.sdp = sessionDescription;
+	extraParams.platform = 'web';
+	extraParams.device_orientation = 'portrait';
+	
+	this._sendMessage(opponentID, extraParams);
 };
 
-QBSignaling.prototype.reject = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.reject = function(opponentID, sessionID, extraParams) {
 	traceS('reject ' + opponentID);
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.REJECT,
-		sessionID: sessionID,
-		
-		// custom parameters
-		userName: userName
-	};
-	this._sendMessage(extraParams);
+	extraParams = extraParams || {};
+	
+	extraParams.videochat_signaling_type = QBSignalingType.REJECT;
+	extraParams.sessionID = sessionID;
+	
+	this._sendMessage(opponentID, extraParams);
 };
 
-QBSignaling.prototype.stop = function(opponentID, sessionID, userName) {
+QBSignaling.prototype.stop = function(opponentID, sessionID, extraParams) {
 	traceS('stop ' + opponentID);
-	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.STOP,
-		sessionID: sessionID,
-		status: QBStopReason.MANUALLY,
-		
-		// custom parameters
-		userName: userName
-	};
-	this._sendMessage(extraParams);
+	extraParams = extraParams || {};
+	
+	extraParams.videochat_signaling_type = QBSignalingType.STOP;
+	extraParams.sessionID = sessionID;
+	
+	this._sendMessage(opponentID, extraParams);
 };
 
 QBSignaling.prototype.sendCandidate = function(opponentID, candidate, sessionID) {
 	var extraParams = {
-		opponentID: opponentID,
-		signalingType: QBSignalingType.CANDIDATE,
+		videochat_signaling_type: QBSignalingType.CANDIDATE,
 		sessionID: sessionID,
-		candidate: candidate,
+		sdpMLineIndex: candidate.sdpMLineIndex,
+		candidate: candidate.candidate,
+		sdpMid: candidate.sdpMid
 	};
-	this._sendMessage(extraParams);
+	
+	this._sendMessage(opponentID, extraParams);
 };

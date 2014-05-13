@@ -28,10 +28,18 @@ var QBVideoChatState = {
 	ESTABLISHING: 'establishing'
 };
 
+var QBStopReason = {
+	MANUALLY: 'kStopVideoChatCallStatus_Manually',
+	BAD_CONNECTION: 'kStopVideoChatCallStatus_BadConnection',
+	CANCEL: 'kStopVideoChatCallStatus_Cancel',
+	NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
+};
+
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.5.3';
+ 	this.version = '0.6.0';
+ 	this.stopReason = QBStopReason;
  	
 	this._state = QBVideoChatState.INACTIVE;
 	this._candidatesQueue = [];
@@ -198,14 +206,14 @@ function QBVideoChat(signaling, params) {
 		// Send only string representation of sdp
 		// http://www.w3.org/TR/webrtc/#rtcsessiondescription-class
 	
-		self.signaling.call(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.myUsername, self.myAvatar);
+		self.signaling.call(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.extraParams);
 	};
 	
 	this.sendAceptRequest = function() {
 		// Send only string representation of sdp
 		// http://www.w3.org/TR/webrtc/#rtcsessiondescription-class
 	
-		self.signaling.accept(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.myUsername);
+		self.signaling.accept(self.opponentID, self.localSessionDescription.sdp, self.sessionID, self.extraParams);
 	};
 
 	// Cleanup 
@@ -225,30 +233,30 @@ function traceVC(text) {
 /* Public methods
 ----------------------------------------------------------*/
 // Call to user
-QBVideoChat.prototype.call = function(userID, userName, userAvatar) {
+QBVideoChat.prototype.call = function(userID, extraParams) {
 	if (this.localSessionDescription) {
 		this.sendCallRequest();
 	} else {
 		this.opponentID = userID;
-		this.myUsername = userName;
-		this.myAvatar = userAvatar;
+		this.extraParams = extraParams;
+		
 		this.pc.createOffer(this.onGetSessionDescriptionSuccessCallback, this.onCreateOfferFailureCallback, SDP_CONSTRAINTS);
 	}
 };
 
 // Accept call from user 
-QBVideoChat.prototype.accept = function(userID, userName) {
+QBVideoChat.prototype.accept = function(userID, extraParams) {
 	this.opponentID = userID;
-	this.myUsername = userName;
+	this.extraParams = extraParams;
 	this.setRemoteDescription(this.remoteSessionDescription, "offer");
 };
 
 // Reject call from user
-QBVideoChat.prototype.reject = function(userID, userName) {
-	this.signaling.reject(userID, this.sessionID, userName);
+QBVideoChat.prototype.reject = function(userID, extraParams) {
+	this.signaling.reject(userID, this.sessionID, extraParams);
 };
 
 // Stop call with user
-QBVideoChat.prototype.stop = function(userID, userName) {
-	this.signaling.stop(userID, this.sessionID, userName);
+QBVideoChat.prototype.stop = function(userID, extraParams) {
+	this.signaling.stop(userID, this.sessionID, extraParams);
 };
