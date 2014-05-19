@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.3';
+	this.version = '0.8.4';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -188,7 +188,8 @@ QBChat.prototype.connect = function(user) {
 			break;
 		case Strophe.Status.CONNECTED:
 			trace('Connected');
-			self._connection.addHandler(self._onMessage, null, 'message');
+			self._connection.addHandler(self._onMessage, null, 'message', 'chat');
+			self._connection.addHandler(self._onMessage, null, 'message', 'groupchat');
 			if (self._callbacks.onMUCPresence)
 				self._connection.addHandler(self._onPresence, null, 'presence');
 			
@@ -235,7 +236,9 @@ QBChat.prototype.sendMessage = function(userID, message) {
 	
 	// custom parameters
 	if (message.extension) {
-		msg.up().c('extraParams', { xmlns: '' });
+		msg.up().c('extraParams', {
+			xmlns: Strophe.NS.CLIENT
+		});
 		
 		$(Object.keys(message.extension)).each(function() {
 			msg.c(this).t(message.extension[this]).up();

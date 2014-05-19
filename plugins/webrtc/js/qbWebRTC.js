@@ -38,7 +38,7 @@ var QBStopReason = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.6.0';
+ 	this.version = '0.6.1';
  	this.stopReason = QBStopReason;
  	
 	this._state = QBVideoChatState.INACTIVE;

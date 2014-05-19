@@ -95,7 +95,7 @@ function QBSignaling(chatService, params) {
 		author = $(msg).attr('from');
 		qbID = QBChatHelpers.getIDFromNode(author);
 		
-		extraParams = $(stanza).find('extraParams')[0];
+		extraParams = $(msg).find('extraParams')[0];
 		$(extraParams.childNodes).each(function() {
 			extension[$(this).context.tagName] = $(this).context.textContent;
 		});
@@ -261,7 +261,7 @@ var QBStopReason = {
 function QBVideoChat(signaling, params) {
  	var self = this;
  	
- 	this.version = '0.6.0';
+ 	this.version = '0.6.1';
  	this.stopReason = QBStopReason;
  	
 	this._state = QBVideoChatState.INACTIVE;

@@ -39,7 +39,7 @@ function QBSignaling(chatService, params) {
 		author = $(msg).attr('from');
 		qbID = QBChatHelpers.getIDFromNode(author);
 		
-		extraParams = $(stanza).find('extraParams')[0];
+		extraParams = $(msg).find('extraParams')[0];
 		$(extraParams.childNodes).each(function() {
 			extension[$(this).context.tagName] = $(this).context.textContent;
 		});
