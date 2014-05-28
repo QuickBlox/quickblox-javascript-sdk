@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.4';
+	this.version = '0.8.5';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -434,6 +434,7 @@ QBChat.prototype.getRoomMembers = function(room, callback) {
 
 QBChat.prototype.getOnlineUsers = function(room, callback) {
 	console.log('getOnlineUsers');
+	var self = this;
 	var roomJID = QBChatHelpers.getRoom(room);
 	self._connection.muc.queryOccupants(roomJID,
 	      
@@ -447,8 +448,34 @@ QBChat.prototype.getOnlineUsers = function(room, callback) {
 	);
 };
 
+QBChat.prototype.getRoomInfo = function(room, callback) {
+	console.log('getRoomInfo');
+	var roomJID, iq, self = this;
+	
+	roomJID = QBChatHelpers.getRoom(room);
+	
+	iq = $iq({
+		to: roomJID,
+		type: "get"
+	}).c("query", {
+		xmlns: Strophe.NS.DISCO_INFO
+	});
+	
+	self._connection.sendIQ(iq.tree(),
+	      
+	      function onSuccess() {
+	        callback(null, true);
+	      },
+	      
+	      function onError() {
+	        callback(true, null);
+	      }
+	);
+};
+
 QBChat.prototype.listRooms = function(callback) {
 	console.log('listRooms');
+	var self = this;
 	self._connection.muc.listRooms(config.muc,
 	      
 	      function onSuccess() {
