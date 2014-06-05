@@ -21,7 +21,8 @@ var Data = require('./qbData');
 var Content = require('./qbContent');
 
 // IIEF to create a window scoped QB instance
-var QB = (function(QB, window){
+// For server-side applications through using npm module 'quickblox' you should comment the following block
+/*var QB = (function(QB, window){
   utils.shims();
   if (typeof QB.config === 'undefined') {
     QB = new QuickBlox();
@@ -30,7 +31,7 @@ var QB = (function(QB, window){
     window.QB= QB;
   }
   return QB;
-}(QB || {}, window));
+}(QB || {}, window));*/
 
 
 // Actual QuickBlox API starts here
