@@ -9,7 +9,7 @@
  */
 
 // Browserify exports and dependencies
-module.exports = QuickBlox;
+module.exports = new QuickBlox();
 var config = require('./qbConfig');
 var utils = require('./qbUtils');
 var Proxy = require('./qbProxy');
