@@ -118,6 +118,36 @@ describe('QuickBlox SDK - Basic functions', function() {
       });
     });
 
+    it('can login a user when initialised with just a valid token', function(){
+      var done = false, session, error;
+      needsInit = true;
+      runs(function(){
+        QB.createSession(function (err, result){
+          error = err;
+          if (err) {
+            done = true;
+          } else {
+            QB.init(result.token);
+            console.log(JSON.stringify(result));
+            QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+              error = err;
+              user = result;
+              done = true;
+            });
+          }
+        });
+      });
+      waitsFor(function(){
+        return done;
+      },'create session', TIMEOUT);
+      runs(function(){
+        expect(error).toBeNull();
+        expect(user).not.toBeNull();
+        expect(user.login).toBe(VALID_USER);
+        expect(user.website).toBe('http://quickblox.com');
+      });
+    });
+
     it('cannot login an invalid user', function(){
       var done = false, result, error;
       runs(function(){

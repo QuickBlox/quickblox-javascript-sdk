@@ -2,3 +2,4 @@ npm-debug.log
 .DS_Store
 ignore
 node_modules
+.project

@@ -10,7 +10,6 @@ module.exports = AuthProxy;
 var utils = require('./qbUtils');
 var config = require('./qbConfig');
 var Proxy = require('./qbProxy');
-var jQuery = require('../lib/jquery-1.10.2');
 var crypto = require('crypto-js/hmac-sha1');
 
 var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
@@ -86,7 +85,6 @@ AuthProxy.prototype.logout = function(callback){
   message = {
     token: this.service.getSession().token
   };
-  //if (config.debug) {console.debug('Logout', message, jQuery.param(message));}
   this.service.ajax({url: loginUrl, dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 

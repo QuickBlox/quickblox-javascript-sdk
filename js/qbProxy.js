@@ -8,7 +8,8 @@
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
-var jQuery = require('../lib/jquery-1.10.2');
+// For server-side applications through using npm module 'quickblox' you should include follow string
+//var jQuery = require('jquery/dist/jquery.min');
 
 function ServiceProxy(qb){
   this.qbInst = qb;
@@ -69,7 +70,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     },
     error: function(jqHXR, status, error) {
       if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
-      var errorMsg = {status: status, message:error};
+      var errorMsg = {code: jqHXR.status, status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
       if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
