@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.1.2-2",
-    "jquery": "^2.1.1"
+    "jquery": "2.1.1"
   },
   "devDependencies": {
     "browserify": "^3.30.2",
