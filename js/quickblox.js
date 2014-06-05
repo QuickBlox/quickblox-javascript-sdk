@@ -9,7 +9,6 @@
  */
 
 // Browserify exports and dependencies
-module.exports = new QuickBlox();
 var config = require('./qbConfig');
 var utils = require('./qbUtils');
 var Proxy = require('./qbProxy');
@@ -19,6 +18,7 @@ var Messages = require('./qbMessages');
 var Location = require('./qbLocation');
 var Data = require('./qbData');
 var Content = require('./qbContent');
+module.exports = new QuickBlox();
 
 // IIEF to create a window scoped QB instance
 // For server-side applications through using npm module 'quickblox' you should comment the following block
