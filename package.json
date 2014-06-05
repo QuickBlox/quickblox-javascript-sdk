@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "homepage": "http://quickblox.com",
   "main": "js/quickblox.js",
   "keywords": [
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.1.2-2",
-    "jquery": "^2.1.1"
+    "jquery": "2.1.1"
   },
   "devDependencies": {
     "browserify": "^3.30.2",
