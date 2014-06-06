@@ -22,7 +22,7 @@
 }());
 
 function App(){
-  console.debug('App constructed');
+  console.log('App constructed');
 }
 
 App.prototype.init = function(){
@@ -44,14 +44,14 @@ App.prototype.compileTemplates = function(){
 
 App.prototype.createSession = function(e){
   var form, appId, authKey, secret, user, password, params, _this = this;
-  console.debug('createSession', e);
+  console.log('createSession', e);
   form = $('#apiSession');
   appId = form.find('#appId')[0].value;
   authKey = form.find('#authKey')[0].value;
   secret = form.find('#secret')[0].value;
   user = form.find('#user')[0].value;
   password = form.find('#password')[0].value;
-  console.debug(appId, authKey, secret, user);
+  console.log(appId, authKey, secret, user);
   QB.init(appId,authKey,secret, true);
   if (this.facebook) {
     QB.createSession({provider:'facebook', keys: {token: this.facebook.accessToken}}, function(e,r){_this.sessionCallback(e,r);});
@@ -65,7 +65,7 @@ App.prototype.createSession = function(e){
 };
 
 App.prototype.sessionCallback= function(err, result){
-  console.debug('Session create callback', err, result);
+  console.log('Session create callback', err, result);
   if (result){
     $('#session').append('<p><em>Created session</em>: ' + JSON.stringify(result) + '</p>');
     $('#sessionDeleteButton').removeAttr('disabled');
@@ -76,9 +76,9 @@ App.prototype.sessionCallback= function(err, result){
 
 App.prototype.deleteSession = function(e){
   var token = QB.session.token;
-  console.debug('deleteSession', e);
+  console.log('deleteSession', e);
   QB.destroySession(function(err, result){
-    console.debug('Session destroy callback', err, result);
+    console.log('Session destroy callback', err, result);
     if (result) {
       $('#session').append('<p><em>Deleted session token</em>: ' + token + '</p>');
       $('#sessionDeleteButton').attr('disabled', true);
@@ -99,10 +99,10 @@ App.prototype.formData= function(){
 
 App.prototype.uploadFile= function(e){
   data = this.formData();
-  console.debug('uploadFile', data);
+  console.log('uploadFile', data);
   QB.data.uploadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
                     function(err, result){
-                      console.debug('upload file callback');
+                      console.log('upload file callback');
                       if (err) {
                         $('#customObjectResponse').append('<p><em>Error occured uploading file</em>: ' + JSON.stringify(err) + '</p>');
                       } else {
@@ -113,10 +113,10 @@ App.prototype.uploadFile= function(e){
 
 App.prototype.updateFile= function(e){
   var data = this.formData();
-  console.debug('updateFile', data);
+  console.log('updateFile', data);
   QB.data.updateFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
                     function(err, result){
-                      console.debug('upload file callback');
+                      console.log('upload file callback');
                       if (err) {
                         $('#customObjectResponse').append('<p><em>Error occured updating file</em>: ' + JSON.stringify(err) + '</p>');
                       } else {
@@ -127,11 +127,11 @@ App.prototype.updateFile= function(e){
 
 App.prototype.downloadFile= function(e){
   var data = this.formData();
-  console.debug('downloadFile', data);
+  console.log('downloadFile', data);
   QB.data.downloadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
                     function(err, result){
                       var buffer, bufferView, i, l, blob, objectUrl, image;
-                      console.debug('upload file callback', err, result);
+                      console.log('upload file callback', err, result);
                       if (err) {
                         $('#customObjectResponse').append('<p><em>Error occured downloading file</em>: ' + JSON.stringify(err) + '</p>');
                       } else {
@@ -154,7 +154,7 @@ App.prototype.downloadFile= function(e){
 
 App.prototype.deleteFile= function(){
   var data= this.formData();
-  console.debug('deleteFile', data);
+  console.log('deleteFile', data);
   QB.data.deleteFile(data.className, {id: data.recId, field_name: data.field_name}, function(err,res){
                     if (err) {
                       $('#customObjectResponse').append('<p><em>Error occured deleting file</em>: ' + JSON.stringify(err) + '</p>');
@@ -167,14 +167,14 @@ App.prototype.deleteFile= function(){
 
 App.prototype.facebookLogin = function (e){
   var _this = this;
-  console.debug('facebookLogin', e);
+  console.log('facebookLogin', e);
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
         $('#session').append('<p><em>Facebook: ' + JSON.stringify(response) + '</p>');
       _this.facebook = response.authResponse;
     } else {
       FB.Event.subscribe('auth.authResponseChange', function(response) {
-        console.debug('FB Auth change', response);
+        console.log('FB Auth change', response);
         $('#session').append('<p><em>Facebook: ' + JSON.stringify(response) + '</p>');
         if (response.status === 'connected'){
           _this.facebook = response.authResponse;

@@ -52,7 +52,7 @@ describe('QuickBlox SDK - Basic functions', function() {
       runs(function(){
         expect(error).toBeNull();
         expect(session).not.toBeNull();
-        console.debug('session',session);
+        console.log('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
       });
     });
@@ -72,7 +72,7 @@ describe('QuickBlox SDK - Basic functions', function() {
       runs(function(){
         expect(error).toBeNull();
         expect(session).not.toBeNull();
-        console.debug('session',session);
+        console.log('session',session);
         expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
         expect(session.user_id).toBe(548154);
       });

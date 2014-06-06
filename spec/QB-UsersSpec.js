@@ -141,7 +141,7 @@ describe('QuickBlox SDK - Users', function() {
         return done;
         }, 'delete user', TIMEOUT);
       runs(function(){
-        console.debug('User is', user);
+        console.log('User is', user);
         expect(result).toBe(true);
       });
     });
