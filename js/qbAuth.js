@@ -33,7 +33,7 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 
   this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
-                      if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
+                      if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
                         callback(err,data.session);
@@ -51,7 +51,7 @@ AuthProxy.prototype.destroySession = function(callback){
   };
   this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
                     function(err,data){
-                      if (config.debug) {console.debug('AuthProxy.destroySession callback', err, data);}
+                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
                       if (err === null){
                         _this.service.setSession(null);
                       }
@@ -94,7 +94,7 @@ AuthProxy.prototype.nonce = function nonce(){
 
 function signMessage(message, secret){
   signature =  crypto(message, secret).toString();
-  //if (config.debug) { console.debug ('AuthProxy signature of', message, 'is', signature); }
+  //if (config.debug) { console.log ('AuthProxy signature of', message, 'is', signature); }
   return message + '&signature=' + signature;
 }
 
@@ -129,7 +129,7 @@ function generateAuthMsg(params){
     if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
     if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
   }
-  //if (config.debug) { console.debug ('AuthProxy authMsg', sessionMsg); }
+  //if (config.debug) { console.log ('AuthProxy authMsg', sessionMsg); }
   return sessionMsg;
 }
 

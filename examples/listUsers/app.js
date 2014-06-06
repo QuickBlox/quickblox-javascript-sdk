@@ -11,7 +11,7 @@
 }());
 
 function App(){
-  console.debug('App constructed');
+  console.log('App constructed');
 }
 
 App.prototype.init = function(){
@@ -29,15 +29,15 @@ App.prototype.compileTemplates = function(){
 
 App.prototype.createSession = function(e){
   var form, appId, authKey, secret;
-  console.debug('createSession', e);
+  console.log('createSession', e);
   form = $('#apiSession');
   appId = form.find('#appId')[0].value;
   authKey = form.find('#authKey')[0].value;
   secret = form.find('#secret')[0].value;
-  console.debug(form, appId, authKey, secret);
+  console.log(form, appId, authKey, secret);
   QB.init(appId,authKey,secret, true);
   QB.createSession(function(err,result){
-    console.debug('Session create callback', err, result);
+    console.log('Session create callback', err, result);
     if (result){
       $('#session').append('<p><em>Created session token<em>: ' + result.token + '</p>');
       $('#sessionDeleteButton').removeAttr('disabled');
@@ -49,9 +49,9 @@ App.prototype.createSession = function(e){
 
 App.prototype.deleteSession = function(e){
   var token = QB.session.token;
-  console.debug('deleteSession', e);
+  console.log('deleteSession', e);
   QB.destroySession(function(err, result){
-    console.debug('Session destroy callback', err, result);
+    console.log('Session destroy callback', err, result);
     if (result) {
       $('#session').append('<p><em>Deleted session token</em>: ' + token + '</p>');
       $('#sessionDeleteButton').attr('disabled', true);
@@ -63,7 +63,7 @@ App.prototype.deleteSession = function(e){
 
 App.prototype.listUsers= function(e){
   var form, filterType, filterValue, perPage, pageNo, params = {}, _this= this;
-  console.debug('listUsers', e);
+  console.log('listUsers', e);
   form = $('#listUsers');
   filterType = form.find('#userType')[0].value;
   filterValue = form.find('#userFilter')[0].value;
@@ -77,7 +77,7 @@ App.prototype.listUsers= function(e){
   if (typeof perPage === 'number') {params.perPage = perPage;}
   if (typeof pageNo === 'number') {params.pageNo = pageNo;}
   QB.users.listUsers(params, function(err,result){
-    console.debug('Users callback', err, result);
+    console.log('Users callback', err, result);
     $('#userList').empty();
     if (result) {
       $('#userList').append(_this.usersTemplate(result));

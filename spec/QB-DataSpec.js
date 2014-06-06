@@ -114,12 +114,12 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
           file.id = 'uploadFile';
           form.appendChild(file);
           form.addEventListener("submit", function(){
-            console.debug(this, arguments);
+            console.log(this, arguments);
             fileList = document.getElementById('uploadFile').files;
-            console.debug(fileList);
+            console.log(fileList);
           }, false);
           form.onsubmit = function(e){
-            console.debug('asd');
+            console.log('asd');
             e.preventDefault();
             return false;
           };

@@ -37,7 +37,7 @@ var QB;
 
 // Actual QuickBlox API starts here
 function QuickBlox() {
-  if (config.debug) {console.debug('Quickblox instantiated', this);}
+  if (config.debug) {console.log('Quickblox instantiated', this);}
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
@@ -64,7 +64,7 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
   config.creds.authSecret = authSecret;
   if (debug) {
     config.debug = debug;
-    console.debug('QuickBlox.init', this);
+    console.log('QuickBlox.init', this);
   }
 };
 
