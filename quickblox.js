@@ -730,10 +730,11 @@ EventsProxy.prototype.pullEvents = function(callback) {
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
-// For server-side applications through using npm module 'quickblox' you should include follow string
-//var jQuery = require('jquery/dist/jquery.min');
+// For server-side applications through using npm package 'quickblox' you should include the following block
+/*var jsdom = require('jsdom');
+var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
 
-function ServiceProxy(qb){
+function ServiceProxy(qb) {
   this.qbInst = qb;
   jQuery.support.cors = true;
   jQuery.ajaxSetup({
@@ -749,11 +750,11 @@ function ServiceProxy(qb){
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
-ServiceProxy.prototype.setSession= function(session){
+ServiceProxy.prototype.setSession= function(session) {
   this.qbInst.session = session;
 };
 
-ServiceProxy.prototype.getSession = function(){
+ServiceProxy.prototype.getSession = function() {
   return this.qbInst.session;
 };
 
@@ -993,8 +994,7 @@ exports.resourceUrl = function(base, id, type) { return base + '/' + id + (typeo
  *
  */
 
-// Browserify exports and dependencies
-module.exports = QuickBlox;
+// Browserify dependencies
 var config = require('./qbConfig');
 var utils = require('./qbUtils');
 var Proxy = require('./qbProxy');
@@ -1005,14 +1005,17 @@ var Location = require('./qbLocation');
 var Data = require('./qbData');
 var Content = require('./qbContent');
 
+var QB;
+
+// For server-side applications through using npm package 'quickblox' you should comment the following block
 // IIEF to create a window scoped QB instance
-var QB = (function(QB, window){
+QB = (function(QB, window) {
   utils.shims();
   if (typeof QB.config === 'undefined') {
     QB = new QuickBlox();
   }
-  if (window && typeof window.QB === 'undefined'){
-    window.QB= QB;
+  if (window && typeof window.QB === 'undefined') {
+    window.QB = QB;
   }
   return QB;
 }(QB || {}, window));
@@ -1053,26 +1056,28 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
 
 QuickBlox.prototype.config = config;
 
-QuickBlox.prototype.createSession = function (params, callback){
+QuickBlox.prototype.createSession = function (params, callback) {
   this.auth.createSession(params, callback);
 };
 
-QuickBlox.prototype.destroySession = function(callback){
+QuickBlox.prototype.destroySession = function(callback) {
   if (this.session) {
     this.auth.destroySession(callback);
   }
 };
 
-QuickBlox.prototype.login = function (params, callback){
+QuickBlox.prototype.login = function (params, callback) {
   this.auth.login(params, callback);
 };
 
-QuickBlox.prototype.logout = function(callback){
+QuickBlox.prototype.logout = function(callback) {
   if (this.session) {
     this.auth.logout(callback);
   }
 };
 
+// Browserify exports
+module.exports = (typeof QB === 'undefined') ? new QuickBlox() : QuickBlox;
 
 },{"./qbAuth":1,"./qbConfig":2,"./qbContent":3,"./qbData":4,"./qbLocation":5,"./qbMessages":6,"./qbProxy":7,"./qbUsers":8,"./qbUtils":9}],11:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});
