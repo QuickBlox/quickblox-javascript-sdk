@@ -23,7 +23,7 @@ var QB;
 
 // For server-side applications through using npm package 'quickblox' you should comment the following block
 // IIEF to create a window scoped QB instance
-QB = (function(QB, window) {
+/*QB = (function(QB, window) {
   utils.shims();
   if (typeof QB.config === 'undefined') {
     QB = new QuickBlox();
@@ -32,7 +32,7 @@ QB = (function(QB, window) {
     window.QB = QB;
   }
   return QB;
-}(QB || {}, window));
+}(QB || {}, window));*/
 
 
 // Actual QuickBlox API starts here

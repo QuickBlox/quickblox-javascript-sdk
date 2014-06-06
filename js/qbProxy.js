@@ -9,8 +9,8 @@
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
 // For server-side applications through using npm package 'quickblox' you should include the following block
-/*var jsdom = require('jsdom');
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
+var jsdom = require('jsdom');
+var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
 
 function ServiceProxy(qb) {
   this.qbInst = qb;
