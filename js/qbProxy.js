@@ -8,11 +8,11 @@
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
-// For server-side applications through using npm module 'quickblox' you should include follow string
-var jsdom = require('jsdom');
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
+// For server-side applications through using npm package 'quickblox' you should include the following block
+/*var jsdom = require('jsdom');
+var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
 
-function ServiceProxy(qb){
+function ServiceProxy(qb) {
   this.qbInst = qb;
   jQuery.support.cors = true;
   jQuery.ajaxSetup({
@@ -28,11 +28,11 @@ function ServiceProxy(qb){
   if (config.debug) { console.debug("ServiceProxy", qb); }
 }
 
-ServiceProxy.prototype.setSession= function(session){
+ServiceProxy.prototype.setSession= function(session) {
   this.qbInst.session = session;
 };
 
-ServiceProxy.prototype.getSession = function(){
+ServiceProxy.prototype.getSession = function() {
   return this.qbInst.session;
 };
 
