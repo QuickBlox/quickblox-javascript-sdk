@@ -25,7 +25,7 @@ function ServiceProxy(qb) {
       "text binary": true // Nothing to convert
     }
   });
-  if (config.debug) { console.debug("ServiceProxy", qb); }
+  if (config.debug) { console.log("ServiceProxy", qb); }
 }
 
 ServiceProxy.prototype.setSession= function(session) {
@@ -49,16 +49,16 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       //params.data = {token: this.qbInst.session.token}; 
     //}
   //}
-  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
+  if (config.debug) { console.log('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data,
     beforeSend: function(jqXHR, settings){
-      if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
+      if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
-        console.debug('setting headers on request to ' + settings.url);
+        console.log('setting headers on request to ' + settings.url);
         jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
         if (_this.qbInst.session && _this.qbInst.session.token) {
           jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
@@ -66,14 +66,14 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       }
     },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug('ServiceProxy.ajax success', status, data);}
+      if (config.debug) {console.log('ServiceProxy.ajax success', status, data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
+      if (config.debug) {console.log('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {code: jqHXR.status, status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
-      if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
+      if (config.debug) {console.log("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }
   };

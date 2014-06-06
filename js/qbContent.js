@@ -27,7 +27,7 @@ function ContentProxy(service) {
 }
 
 ContentProxy.prototype.create = function(params, callback){
- if (config.debug) { console.debug('ContentProxy.create', params);}
+ if (config.debug) { console.log('ContentProxy.create', params);}
   this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.blob); }
@@ -54,7 +54,7 @@ ContentProxy.prototype.delete = function(id, callback){
 
 ContentProxy.prototype.createAndUpload = function(params, callback){
   var createParams= {}, file, name, type, size, fileId, _this = this;
-  if (config.debug) { console.debug('ContentProxy.createAndUpload', params);}
+  if (config.debug) { console.log('ContentProxy.createAndUpload', params);}
   file = params.file;
   name = params.name || file.name;
   type = params.type || file.type;
@@ -104,7 +104,7 @@ ContentProxy.prototype.upload = function(params, callback){
       for (i = 0, m = children.length; i < m ; i++){
         result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
       } 
-      if (config.debug) { console.debug('result', result); }
+      if (config.debug) { console.log('result', result); }
       callback (null, result);
     }
   });
