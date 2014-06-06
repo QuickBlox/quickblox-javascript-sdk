@@ -34,7 +34,7 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 
   this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
-                      if (config.debug) { console.debug('AuthProxy.createSession callback', err, data); }
+                      if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
                         callback(err,data.session);
@@ -52,7 +52,7 @@ AuthProxy.prototype.destroySession = function(callback){
   };
   this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
                     function(err,data){
-                      if (config.debug) {console.debug('AuthProxy.destroySession callback', err, data);}
+                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
                       if (err === null){
                         _this.service.setSession(null);
                       }
@@ -95,7 +95,7 @@ AuthProxy.prototype.nonce = function nonce(){
 
 function signMessage(message, secret){
   signature =  crypto(message, secret).toString();
-  //if (config.debug) { console.debug ('AuthProxy signature of', message, 'is', signature); }
+  //if (config.debug) { console.log ('AuthProxy signature of', message, 'is', signature); }
   return message + '&signature=' + signature;
 }
 
@@ -130,7 +130,7 @@ function generateAuthMsg(params){
     if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
     if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
   }
-  //if (config.debug) { console.debug ('AuthProxy authMsg', sessionMsg); }
+  //if (config.debug) { console.log ('AuthProxy authMsg', sessionMsg); }
   return sessionMsg;
 }
 
@@ -203,7 +203,7 @@ function ContentProxy(service) {
 }
 
 ContentProxy.prototype.create = function(params, callback){
- if (config.debug) { console.debug('ContentProxy.create', params);}
+ if (config.debug) { console.log('ContentProxy.create', params);}
   this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.blob); }
@@ -230,7 +230,7 @@ ContentProxy.prototype.delete = function(id, callback){
 
 ContentProxy.prototype.createAndUpload = function(params, callback){
   var createParams= {}, file, name, type, size, fileId, _this = this;
-  if (config.debug) { console.debug('ContentProxy.createAndUpload', params);}
+  if (config.debug) { console.log('ContentProxy.createAndUpload', params);}
   file = params.file;
   name = params.name || file.name;
   type = params.type || file.type;
@@ -280,7 +280,7 @@ ContentProxy.prototype.upload = function(params, callback){
       for (i = 0, m = children.length; i < m ; i++){
         result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
       } 
-      if (config.debug) { console.debug('result', result); }
+      if (config.debug) { console.log('result', result); }
       callback (null, result);
     }
   });
@@ -384,11 +384,11 @@ var dataUrl = config.urls.base + config.urls.data;
 
 function DataProxy(service){
   this.service = service;
-  if (config.debug) { console.debug("LocationProxy", service); }
+  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 DataProxy.prototype.create = function(className, data, callback){
-  if (config.debug) { console.debug('DataProxy.create', className, data);}
+  if (config.debug) { console.log('DataProxy.create', className, data);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className), data: data, type: 'POST'}, function(err,res){
     if (err){ callback(err, null); }
     else { callback (err, res); }
@@ -401,7 +401,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
     callback = filters;
     filters = null;
   }
-  if (config.debug) { console.debug('DataProxy.list', className, filters);}
+  if (config.debug) { console.log('DataProxy.list', className, filters);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className), data: filters}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
@@ -409,7 +409,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
 };
 
 DataProxy.prototype.update= function(className, data, callback) {
-  if (config.debug) { console.debug('DataProxy.update', className, data);}
+  if (config.debug) { console.log('DataProxy.update', className, data);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
@@ -417,7 +417,7 @@ DataProxy.prototype.update= function(className, data, callback) {
 };
 
 DataProxy.prototype.delete= function(className, id, callback) {
-  if (config.debug) { console.debug('DataProxy.delete', className, id);}
+  if (config.debug) { console.log('DataProxy.delete', className, id);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
                     function(err,result){
                       if (err){ callback(err, null); }
@@ -427,7 +427,7 @@ DataProxy.prototype.delete= function(className, id, callback) {
 
 DataProxy.prototype.uploadFile= function(className, params, callback){
   var formData;
-  if (config.debug) { console.debug('DataProxy.uploadFile', className, params);}
+  if (config.debug) { console.log('DataProxy.uploadFile', className, params);}
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
@@ -440,7 +440,7 @@ DataProxy.prototype.uploadFile= function(className, params, callback){
 
 DataProxy.prototype.updateFile= function(className, params, callback){
   var formData;
-  if (config.debug) { console.debug('DataProxy.updateFile', className, params);}
+  if (config.debug) { console.log('DataProxy.updateFile', className, params);}
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
@@ -452,7 +452,7 @@ DataProxy.prototype.updateFile= function(className, params, callback){
 };
 
 DataProxy.prototype.downloadFile= function(className, params, callback){
-  if (config.debug) { console.debug('DataProxy.downloadFile', className, params);}
+  if (config.debug) { console.log('DataProxy.downloadFile', className, params);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
                     type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
                     function(err, result) {
@@ -462,7 +462,7 @@ DataProxy.prototype.downloadFile= function(className, params, callback){
 };
 
 DataProxy.prototype.deleteFile= function(className, params, callback){
-  if (config.debug) { console.debug('DataProxy.deleteFile', className, params);}
+  if (config.debug) { console.log('DataProxy.deleteFile', className, params);}
   this.service.ajax({url: utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
                     dataType: 'text', type: 'DELETE'}, function(err, result) {
                       if (err) { callback (err, null); }
@@ -494,7 +494,7 @@ function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
   this.places = new PlacesProxy(service);
-  if (config.debug) { console.debug("LocationProxy", service); }
+  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 
@@ -503,7 +503,7 @@ function GeoProxy(service){
 }
 
 GeoProxy.prototype.create = function(params, callback){
-  if (config.debug) { console.debug('GeoProxy.create', {geo_data: params});}
+  if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
   this.service.ajax({url: geoUrl + config.urls.type, data: {geo_data: params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.geo_datum); }
@@ -519,7 +519,7 @@ GeoProxy.prototype.update = function(params, callback){
       } 
     }
   }
-  if (config.debug) { console.debug('GeoProxy.create', params);}
+  if (config.debug) { console.log('GeoProxy.create', params);}
   this.service.ajax({url: utils.resourceUrl(geoUrl, params.id), data: {geo_data:msg}, type: 'PUT'},
                    function(err,res){
                     if (err) { callback(err,null);}
@@ -528,7 +528,7 @@ GeoProxy.prototype.update = function(params, callback){
 };
 
 GeoProxy.prototype.get = function(id, callback){
-  if (config.debug) { console.debug('GeoProxy.get', id);}
+  if (config.debug) { console.log('GeoProxy.get', id);}
   this.service.ajax({url: utils.resourceUrl(geoUrl, id)}, function(err,result){
      if (err) { callback (err, null); }
      else { callback(null, result.geo_datum); }
@@ -540,12 +540,12 @@ GeoProxy.prototype.list = function(params, callback){
     callback = params;
     params = undefined;
   }
-  if (config.debug) { console.debug('GeoProxy.find', params);}
+  if (config.debug) { console.log('GeoProxy.find', params);}
   this.service.ajax({url: geoFindUrl, data: params}, callback);
 };
 
 GeoProxy.prototype.delete = function(id, callback){
-  if (config.debug) { console.debug('GeoProxy.delete', id); }
+  if (config.debug) { console.log('GeoProxy.delete', id); }
   this.service.ajax({url: utils.resourceUrl(geoUrl, id), type: 'DELETE', dataType: 'text'},
                    function(err,res){
                     if (err) { callback(err, null);}
@@ -554,7 +554,7 @@ GeoProxy.prototype.delete = function(id, callback){
 };
 
 GeoProxy.prototype.purge = function(days, callback){
-  if (config.debug) { console.debug('GeoProxy.purge', days); }
+  if (config.debug) { console.log('GeoProxy.purge', days); }
   this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE', dataType: 'text'},
                    function(err, res){
                     if (err) { callback(err, null);}
@@ -567,27 +567,27 @@ function PlacesProxy(service) {
 }
 
 PlacesProxy.prototype.list = function(params, callback){
-  if (config.debug) { console.debug('PlacesProxy.list', params);}
+  if (config.debug) { console.log('PlacesProxy.list', params);}
   this.service.ajax({url: placesUrl + config.urls.type}, callback);
 };
 
 PlacesProxy.prototype.create = function(params, callback){
-  if (config.debug) { console.debug('PlacesProxy.create', params);}
+  if (config.debug) { console.log('PlacesProxy.create', params);}
   this.service.ajax({url: placesUrl + config.urls.type, data: {place:params}, type: 'POST'}, callback);
 };
 
 PlacesProxy.prototype.get = function(id, callback){
-  if (config.debug) { console.debug('PlacesProxy.get', params);}
+  if (config.debug) { console.log('PlacesProxy.get', params);}
   this.service.ajax({url: utils.resourceUrl(placesUrl, id)}, callback);
 };
 
 PlacesProxy.prototype.update = function(place, callback){
-  if (config.debug) { console.debug('PlacesProxy.update', place);}
+  if (config.debug) { console.log('PlacesProxy.update', place);}
   this.service.ajax({url: utils.resourceUrl(placesUrl, id), data: {place: place}, type: 'PUT'} , callback);
 };
 
 PlacesProxy.prototype.delete = function(id, callback){
-  if (config.debug) { console.debug('PlacesProxy.delete', params);}
+  if (config.debug) { console.log('PlacesProxy.delete', params);}
   this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE'}, callback);
 };
 
@@ -633,7 +633,7 @@ TokensProxy.prototype.create = function(params, callback){
     },
     device: { platform: params.platform, udid: params.udid}
   };
-  if (config.debug) { console.debug('TokensProxy.create', message);}
+  if (config.debug) { console.log('TokensProxy.create', message);}
   this.service.ajax({url: tokenUrl + config.urls.type, type: 'POST', data: message},
                     function(err, data){
                       if (err) { callback(err, null);}
@@ -643,7 +643,7 @@ TokensProxy.prototype.create = function(params, callback){
 
 TokensProxy.prototype.delete = function(id, callback) {
   var url = tokenUrl + '/' + id + config.urls.type;
-  if (config.debug) { console.debug('MessageProxy.deletePushToken', id); }
+  if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
   this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
                     function (err, res) {
                       if (err) {callback(err, null);}
@@ -658,18 +658,18 @@ function SubscriptionsProxy(service){
 }
 
 SubscriptionsProxy.prototype.create = function (params, callback){
-  if (config.debug) { console.debug('MessageProxy.createSubscription', params); }
+  if (config.debug) { console.log('MessageProxy.createSubscription', params); }
   this.service.ajax({url: subsUrl + config.urls.type, type: 'POST', data : params}, callback);
 };
 
 SubscriptionsProxy.prototype.list = function (callback) {
-  if (config.debug) { console.debug('MessageProxy.listSubscription', params); }
+  if (config.debug) { console.log('MessageProxy.listSubscription', params); }
   this.service.ajax({url: subsUrl + config.urls.type}, callback);
 };
 
 SubscriptionsProxy.prototype.delete = function(id, callback) {
   var url = subsUrl + '/'+ id + config.urls.type;
-  if (config.debug) { console.debug('MessageProxy.deleteSubscription', id); }
+  if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
   this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
                     function(err, res){
                       if (err) { callback(err, null);}
@@ -683,37 +683,37 @@ function EventsProxy(service){
 }
 
 EventsProxy.prototype.create = function(params, callback) {
-  if (config.debug) { console.debug('MessageProxy.createEvent', params); }
+  if (config.debug) { console.log('MessageProxy.createEvent', params); }
   var message = {event: params};
   this.service.ajax({url: eventUrl + config.urls.type, type: 'POST', data: message}, callback);
 };
 
 EventsProxy.prototype.list = function(callback) {
- if (config.debug) { console.debug('MessageProxy.listEvents'); }
+ if (config.debug) { console.log('MessageProxy.listEvents'); }
   this.service.ajax({url: eventUrl + config.urls.type}, callback);
 };
 
 EventsProxy.prototype.get = function(id, callback) {
   var url = eventUrl + '/' + params.id + config.urls.type;
-  if (config.debug) { console.debug('MessageProxy.getEvents', id); }
+  if (config.debug) { console.log('MessageProxy.getEvents', id); }
   this.service.ajax({url: url}, callback);
 };
 
 EventsProxy.prototype.update = function(params, callback) {
   var url = eventUrl + '/' + params.id + config.urls.type;
-  if (config.debug) { console.debug('MessageProxy.createEvent', params); }
+  if (config.debug) { console.log('MessageProxy.createEvent', params); }
   var message = {event: params};
   this.service.ajax({url: url, type: 'PUT', data: message}, callback);
 };
 
 EventsProxy.prototype.delete = function(id, callback) {
   var url = eventUrl + '/' + params.id + config.urls.type;
- if (config.debug) { console.debug('MessageProxy.deleteEvent', id); }
+ if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
   this.service.ajax({url: url, type: 'DELETE'}, callback);
 };
 
 EventsProxy.prototype.pullEvents = function(callback) {
-  if (config.debug) { console.debug('MessageProxy.getPullEvents', params); }
+  if (config.debug) { console.log('MessageProxy.getPullEvents', params); }
   this.service.ajax({url: pullUrl + config.urls.type}, callback);
 };
 
@@ -747,7 +747,7 @@ function ServiceProxy(qb) {
       "text binary": true // Nothing to convert
     }
   });
-  if (config.debug) { console.debug("ServiceProxy", qb); }
+  if (config.debug) { console.log("ServiceProxy", qb); }
 }
 
 ServiceProxy.prototype.setSession= function(session) {
@@ -771,16 +771,16 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       //params.data = {token: this.qbInst.session.token}; 
     //}
   //}
-  if (config.debug) { console.debug('ServiceProxy',  params.type || 'GET', params); }
+  if (config.debug) { console.log('ServiceProxy',  params.type || 'GET', params); }
   var ajaxCall =   {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data,
     beforeSend: function(jqXHR, settings){
-      if (config.debug) {console.debug('ServiceProxy.ajax beforeSend', jqXHR, settings);}
+      if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
-        console.debug('setting headers on request to ' + settings.url);
+        console.log('setting headers on request to ' + settings.url);
         jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
         if (_this.qbInst.session && _this.qbInst.session.token) {
           jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
@@ -788,14 +788,14 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       }
     },
     success: function (data, status, jqHXR) {
-      if (config.debug) {console.debug('ServiceProxy.ajax success', status, data);}
+      if (config.debug) {console.log('ServiceProxy.ajax success', status, data);}
       callback(null,data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.debug('ServiceProxy.ajax error', jqHXR, status, error);}
+      if (config.debug) {console.log('ServiceProxy.ajax error', jqHXR, status, error);}
       var errorMsg = {code: jqHXR.status, status: status, message:error};
       if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
-      if (config.debug) {console.debug("ServiceProxy.ajax error", error);}
+      if (config.debug) {console.log("ServiceProxy.ajax error", error);}
       callback(errorMsg, null);
     }
   };
@@ -863,13 +863,13 @@ UsersProxy.prototype.listUsers = function(params, callback){
   }
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
-  if (config.debug) {console.debug('UsersProxy.list', message);}
+  if (config.debug) {console.log('UsersProxy.list', message);}
   this.service.ajax({url: url, data: message}, callback);
 };
 
 UsersProxy.prototype.create = function(params, callback){
   var url = baseUrl + config.urls.type;
-  if (config.debug) { console.debug('UsersProxy.create', params);}
+  if (config.debug) { console.log('UsersProxy.create', params);}
   this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
                     function(err, data){
                       if (err) { callback(err, null);}
@@ -879,7 +879,7 @@ UsersProxy.prototype.create = function(params, callback){
 
 UsersProxy.prototype.delete = function(id, callback){
   var url = baseUrl + '/' + id + config.urls.type;
-  if (config.debug) { console.debug('UsersProxy.delete', url); }
+  if (config.debug) { console.log('UsersProxy.delete', url); }
   this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
                     function(err,data){
                       if (err) { callback(err, null);}
@@ -898,12 +898,12 @@ UsersProxy.prototype.update = function(user, callback){
       } 
     }
   }
-  if (config.debug) { console.debug('UsersProxy.update', url, user); }
+  if (config.debug) { console.log('UsersProxy.update', url, user); }
   this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
                     function(err,data){
                       if (err) {callback(err, null);}
                       else { 
-                        console.debug (data.user);
+                        console.log (data.user);
                         callback (null, data.user);
                       }
                     });
@@ -934,14 +934,14 @@ UsersProxy.prototype.get = function(params, callback){
       url += '/by_tags' + config.urls.type + '?tag=' + params.tags;
     }
   }
-  if (config.debug) {console.debug('UsersProxy.get', url);}
+  if (config.debug) {console.log('UsersProxy.get', url);}
   this.service.ajax({url:url},
                     function(err,data){
                       var user;
                       if (data && data.user) {
                         user = data.user;
                       }
-                      if (config.debug) { console.debug('UserProxy.get', user); }
+                      if (config.debug) { console.log('UserProxy.get', user); }
                         callback(err,user);
                     });
 }
@@ -1023,7 +1023,7 @@ QB = (function(QB, window) {
 
 // Actual QuickBlox API starts here
 function QuickBlox() {
-  if (config.debug) {console.debug('Quickblox instantiated', this);}
+  if (config.debug) {console.log('Quickblox instantiated', this);}
 }
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
@@ -1050,7 +1050,7 @@ QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
   config.creds.authSecret = authSecret;
   if (debug) {
     config.debug = debug;
-    console.debug('QuickBlox.init', this);
+    console.log('QuickBlox.init', this);
   }
 };
 

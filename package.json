@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "homepage": "http://quickblox.com",
   "main": "js/quickblox.js",
   "keywords": [
@@ -28,8 +28,8 @@
     "email": "web@quickblox.com"
   },
   "dependencies": {
-    "crypto-js": "^3.1.2-2",
-    "jsdom": "^0.10.6",
+    "crypto-js": "3.1.2-2",
+    "jsdom": "0.10.6",
     "jquery": "2.1.1"
   },
   "devDependencies": {
