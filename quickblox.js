@@ -588,7 +588,7 @@ PlacesProxy.prototype.update = function(place, callback){
 
 PlacesProxy.prototype.delete = function(id, callback){
   if (config.debug) { console.log('PlacesProxy.delete', params);}
-  this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE'}, callback);
+  this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 },{"./qbConfig":2,"./qbUtils":9}],6:[function(require,module,exports){
@@ -783,7 +783,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
-    data: params.data || {},
+    data: params.data || ' ',
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
