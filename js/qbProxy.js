@@ -1,7 +1,7 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * Proxy module
+ * Proxy Module
  *
  */
 

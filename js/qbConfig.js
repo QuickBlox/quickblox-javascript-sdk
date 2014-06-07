@@ -5,15 +5,13 @@
  *
  */
 
-// Browserify exports
-
 var config = {
-  creds:{
+  creds: {
     appId: '',
     authKey: '',
     authSecret: ''
   },
-  urls:{
+  urls: {
     base: 'https://api.quickblox.com/',
     find: 'find',
     session: 'session',
@@ -29,8 +27,9 @@ var config = {
     content: 'blobs',
     chat: 'chat',
     type: '.json'
-    },
+  },
   debug: false
 };
 
+// Browserify exports
 module.exports = config;

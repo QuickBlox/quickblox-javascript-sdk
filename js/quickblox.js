@@ -1,7 +1,7 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * Main SDK module
+ * Main SDK Module
  *
  * Provides a window scoped variable (QB) for use in browsers.
  * Also exports QuickBlox for using with node.js, browserify, etc. 
@@ -10,14 +10,15 @@
 
 // Browserify dependencies
 var config = require('./qbConfig');
-var utils = require('./qbUtils');
 var Proxy = require('./qbProxy');
-var Auth = require('./qbAuth');
-var Users = require('./qbUsers');
-var Messages = require('./qbMessages');
-var Location = require('./qbLocation');
-var Data = require('./qbData');
-var Content = require('./qbContent');
+var Utils = require('./qbUtils');
+
+var Auth = require('./modules/qbAuth');
+var Users = require('./modules/qbUsers');
+var Messages = require('./modules/qbMessages');
+var Location = require('./modules/qbLocation');
+var Data = require('./modules/qbData');
+var Content = require('./modules/qbContent');
 
 var QB;
 

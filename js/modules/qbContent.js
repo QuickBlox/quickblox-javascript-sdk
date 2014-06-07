@@ -12,8 +12,8 @@
 
 // Browserify exports and dependencies
 module.exports = ContentProxy;
-var config = require('./qbConfig');
-var utils = require('./qbUtils');
+var config = require('../qbConfig');
+var utils = require('../qbUtils');
 
 var contentUrl = config.urls.base + config.urls.content;
 var taggedForUserUrl = contentUrl + '/tagged';

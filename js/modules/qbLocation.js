@@ -7,8 +7,8 @@
 
 // Browserify exports and dependencies
 module.exports = LocationProxy;
-var config = require('./qbConfig');
-var utils = require('./qbUtils');
+var config = require('../qbConfig');
+var utils = require('../qbUtils');
 
 var geoUrl = config.urls.base + config.urls.geo;
 var geoFindUrl = geoUrl + '/' + config.urls.find + config.urls.type;

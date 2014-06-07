@@ -7,9 +7,9 @@
 
 // Browerify exports and dependencies
 module.exports = AuthProxy;
-var utils = require('./qbUtils');
-var config = require('./qbConfig');
-var Proxy = require('./qbProxy');
+var utils = require('../qbUtils');
+var config = require('../qbConfig');
+var Proxy = require('../qbProxy');
 var crypto = require('crypto-js/hmac-sha1');
 
 var sessionUrl = config.urls.base + config.urls.session + config.urls.type;

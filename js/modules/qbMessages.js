@@ -9,8 +9,8 @@
 
 // Browserify exports and dependencies
 module.exports = MessagesProxy;
-var config = require('./qbConfig');
-var Proxy = require('./qbProxy');
+var config = require('../qbConfig');
+var Proxy = require('../qbProxy');
 
 // Url variables
 var tokenUrl = config.urls.base + config.urls.pushtokens;

@@ -7,8 +7,8 @@
 
 // Browserify exports and dependencies
 module.exports = DataProxy;
-var config = require('./qbConfig');
-var utils = require('./qbUtils');
+var config = require('../qbConfig');
+var utils = require('../qbUtils');
 
 var dataUrl = config.urls.base + config.urls.data;
 

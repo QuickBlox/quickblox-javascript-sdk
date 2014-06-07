@@ -1,8 +1,7 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * qbUtils.js - QuickBlox utilities
- *
+ * QuickBlox Utilities
  *
  */
 

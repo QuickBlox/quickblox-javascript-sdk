@@ -7,16 +7,16 @@
 
 // Browserify exports and dependencies
 module.exports = UsersProxy;
-var config = require('./qbConfig');
-var Proxy = require('./qbProxy');
+var config = require('../qbConfig');
+var Proxy = require('../qbProxy');
 
-var baseUrl = config.urls.base+ config.urls.users;
+var baseUrl = config.urls.base + config.urls.users;
 
 function UsersProxy(service) {
   this.service = service;
 }
 
-UsersProxy.prototype.listUsers = function(params, callback){
+UsersProxy.prototype.listUsers = function(params, callback) {
   var _this = this, url, message = {}, filter;
   url = config.urls.base + config.urls.users + config.urls.type;
   if (typeof params === 'function') {
@@ -53,49 +53,7 @@ UsersProxy.prototype.listUsers = function(params, callback){
   this.service.ajax({url: url, data: message}, callback);
 };
 
-UsersProxy.prototype.create = function(params, callback){
-  var url = baseUrl + config.urls.type;
-  if (config.debug) { console.log('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
-                    function(err, data){
-                      if (err) { callback(err, null);}
-                      else { callback(null, data.user); }
-                    });
-};
-
-UsersProxy.prototype.delete = function(id, callback){
-  var url = baseUrl + '/' + id + config.urls.type;
-  if (config.debug) { console.log('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
-                    function(err,data){
-                      if (err) { callback(err, null);}
-                      else { callback(null, true); }
-                     });
-};
-
-UsersProxy.prototype.update = function(user, callback){
-  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
-      'phone', 'website', 'tag_list', 'password', 'old_password'];
-  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
-  for (prop in user) {
-    if (user.hasOwnProperty(prop)) {
-      if (allowedProps.indexOf(prop)>0) {
-        msg[prop] = user[prop];
-      } 
-    }
-  }
-  if (config.debug) { console.log('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
-                    function(err,data){
-                      if (err) {callback(err, null);}
-                      else { 
-                        console.log (data.user);
-                        callback (null, data.user);
-                      }
-                    });
-};
-
-UsersProxy.prototype.get = function(params, callback){
+UsersProxy.prototype.get = function(params, callback) {
   var _this = this, url = baseUrl;
   if (typeof params === 'function') {
     callback = params;
@@ -130,4 +88,46 @@ UsersProxy.prototype.get = function(params, callback){
                       if (config.debug) { console.log('UserProxy.get', user); }
                         callback(err,user);
                     });
-}
+};
+
+UsersProxy.prototype.create = function(params, callback) {
+  var url = baseUrl + config.urls.type;
+  if (config.debug) { console.log('UsersProxy.create', params);}
+  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+                    function(err, data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, data.user); }
+                    });
+};
+
+UsersProxy.prototype.update = function(user, callback) {
+  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
+      'phone', 'website', 'tag_list', 'password', 'old_password'];
+  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  for (prop in user) {
+    if (user.hasOwnProperty(prop)) {
+      if (allowedProps.indexOf(prop)>0) {
+        msg[prop] = user[prop];
+      } 
+    }
+  }
+  if (config.debug) { console.log('UsersProxy.update', url, user); }
+  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+                    function(err,data){
+                      if (err) {callback(err, null);}
+                      else { 
+                        console.log (data.user);
+                        callback (null, data.user);
+                      }
+                    });
+};
+
+UsersProxy.prototype.delete = function(id, callback) {
+  var url = baseUrl + '/' + id + config.urls.type;
+  if (config.debug) { console.log('UsersProxy.delete', url); }
+  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+                    function(err,data){
+                      if (err) { callback(err, null);}
+                      else { callback(null, true); }
+                     });
+};
