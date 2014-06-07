@@ -10,11 +10,18 @@ module.exports = ServiceProxy;
 var config = require('./qbConfig');
 // For server-side applications through using npm package 'quickblox' you should include the following block
 /*var jsdom = require('jsdom');
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
 
 function ServiceProxy(qb) {
   this.qbInst = qb;
   jQuery.support.cors = true;
+  
+  // For server-side applications through using npm package 'quickblox' you should include the following block
+  /*jQuery.ajaxSettings.xhr = function() {
+    return new XMLHttpRequest;
+  };*/
+  
   jQuery.ajaxSetup({
     accepts: {
       binary: "text/plain; charset=x-user-defined"
@@ -28,7 +35,7 @@ function ServiceProxy(qb) {
   if (config.debug) { console.log("ServiceProxy", qb); }
 }
 
-ServiceProxy.prototype.setSession= function(session) {
+ServiceProxy.prototype.setSession = function(session) {
   this.qbInst.session = session;
 };
 
@@ -54,7 +61,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
-    data: params.data,
+    data: params.data || ' ',
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {

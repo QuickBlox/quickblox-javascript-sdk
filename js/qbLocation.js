@@ -113,5 +113,5 @@ PlacesProxy.prototype.update = function(place, callback){
 
 PlacesProxy.prototype.delete = function(id, callback){
   if (config.debug) { console.log('PlacesProxy.delete', params);}
-  this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE'}, callback);
+  this.service.ajax({url: utils.resourceUrl(placesUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
