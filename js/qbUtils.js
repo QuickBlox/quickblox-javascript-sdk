@@ -5,30 +5,29 @@
  *
  */
 
+// Browserify exports and dependencies
 var config = require('./qbConfig');
 
-function shims() {
-  // Shim for Date.now function (IE < 9)
-  if (!Date.now) {
-    Date.now = function now() {
-      return new Date().getTime();
-      };
-  }
-  // Shim for console log on IE
-  // (http://stackoverflow.com/questions/1423267/are-there-any-logging-frameworks-for-javascript#answer-10816237)
+// Shim for console.log on IE 9
+exports.shim = function() {
   if (typeof console === 'undefined' || !console.log) {
     window.console = {
-      debug: function() {},
-      trace: function() {},
       log: function() {},
       info: function() {},
       warn: function() {},
       error: function() {}
     };
   }
-}
+};
 
+exports.getRandomNonce = function() {
+  return Math.floor(Math.random() * 10000);
+};
 
-exports.shims = function() {shims();};
-exports.unixTime = function() { return Math.floor(Date.now() / 1000).toString(); };
-exports.resourceUrl = function(base, id, type) { return base + '/' + id + (typeof type === 'undefined'? config.urls.type : type); };
+exports.unixTime = function() {
+  return Math.floor(Date.now() / 1000);
+};
+
+exports.resourceUrl = function(base, id) {
+  return base + '/' + id + config.urls.type;
+};

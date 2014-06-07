@@ -7,7 +7,7 @@
 
 // Browerify exports and dependencies
 module.exports = AuthProxy;
-var utils = require('../qbUtils');
+var Utils = require('../qbUtils');
 var config = require('../qbConfig');
 var Proxy = require('../qbProxy');
 var crypto = require('crypto-js/hmac-sha1');
@@ -103,8 +103,8 @@ function generateAuthMsg(params){
   var message = {
     application_id : params.appId || config.creds.appId,
     auth_key : params.authKey || config.creds.authKey,
-    nonce: Math.floor(Math.random() * 10000),
-    timestamp: utils.unixTime()
+    nonce: Utils.getRandomNonce(),
+    timestamp: Utils.unixTime()
   };
   // Optionally permit a user session to be created
   if (params.login && params.password) {

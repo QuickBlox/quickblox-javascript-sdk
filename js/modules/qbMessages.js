@@ -16,7 +16,6 @@ var Proxy = require('../qbProxy');
 var tokenUrl = config.urls.base + config.urls.pushtokens;
 var subsUrl = config.urls.base + config.urls.subscriptions;
 var eventUrl = config.urls.base + config.urls.events;
-var pullUrl = config.urls.base + config.urls.pullevents;
 
 function MessagesProxy(service) {
   this.service = service;
@@ -117,10 +116,3 @@ EventsProxy.prototype.delete = function(id, callback) {
  if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
   this.service.ajax({url: url, type: 'DELETE'}, callback);
 };
-
-EventsProxy.prototype.pullEvents = function(callback) {
-  if (config.debug) { console.log('MessageProxy.getPullEvents', params); }
-  this.service.ajax({url: pullUrl + config.urls.type}, callback);
-};
-
-
