@@ -61,7 +61,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
-    data: params.data,
+    data: params.data || {},
     beforeSend: function(jqXHR, settings){
       if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
       if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
