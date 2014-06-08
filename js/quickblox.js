@@ -35,31 +35,24 @@ QB = (function(QB) {
 
 
 // Actual QuickBlox API starts here
-function QuickBlox() {
-  if (config.debug) {
-    console.log('Quickblox instantiated', this);
-  }
-}
+function QuickBlox() {}
 
 QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
-  this.session =  null;
+  this.session = null;
   this.service = new Proxy(this);
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
-  this.messages = new Messages(this.service);
-  this.location = new Location(this.service);
-  this.data = new Data(this.service);
   this.content = new Content(this.service);
-  if (typeof appId === 'object') {
-    debug = appId.debug;
-    authSecret = appId.authSecret;
-    authKey = appId.authKey;
-    appId = appId.appId;
-  } else if (typeof appId === 'string' && typeof authKey === 'undefined' && typeof authSecret === 'undefined') {
+  this.location = new Location(this.service);
+  this.messages = new Messages(this.service);
+  this.data = new Data(this.service);
+  
+  // Initialization by outside token
+  if (typeof appId === 'string' && !authKey && !authSecret) {
     this.session = { token: appId };
     appId = null;
-    debug = true;
   }
+  
   config.creds.appId = appId;
   config.creds.authKey = authKey;
   config.creds.authSecret = authSecret;
