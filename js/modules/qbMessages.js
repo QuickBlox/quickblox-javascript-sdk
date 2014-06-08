@@ -13,9 +13,9 @@ var config = require('../qbConfig');
 var Proxy = require('../qbProxy');
 
 // Url variables
-var tokenUrl = config.urls.base + config.urls.pushtokens;
-var subsUrl = config.urls.base + config.urls.subscriptions;
-var eventUrl = config.urls.base + config.urls.events;
+var tokenUrl = config.endpoints.api + '/' + config.urls.pushtokens;
+var subsUrl = config.endpoints.api + '/' + config.urls.subscriptions;
+var eventUrl = config.endpoints.api + '/' + config.urls.events;
 
 function MessagesProxy(service) {
   this.service = service;

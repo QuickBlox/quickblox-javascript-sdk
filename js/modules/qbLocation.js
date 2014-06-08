@@ -10,9 +10,9 @@ module.exports = LocationProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
-var geoUrl = config.urls.base + config.urls.geodata;
+var geoUrl = config.endpoints.api + '/' + config.urls.geodata;
 var geoFindUrl = geoUrl + '/find' + config.urls.type;
-var placesUrl = config.urls.base + config.urls.places;
+var placesUrl = config.endpoints.api + '/' + config.urls.places;
 
 
 function LocationProxy(service){

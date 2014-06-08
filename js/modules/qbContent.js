@@ -14,7 +14,7 @@
 module.exports = ContentProxy;
 var config = require('../qbConfig');
 
-var contentUrl = config.urls.base + config.urls.blobs;
+var contentUrl = config.endpoints.api + '/' + config.urls.blobs;
 var taggedForUserUrl = contentUrl + '/tagged';
 
 function contentIdUrl(id) {

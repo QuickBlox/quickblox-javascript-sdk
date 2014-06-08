@@ -32,7 +32,7 @@ describe('QuickBlox SDK - Basic functions', function() {
 
     beforeEach(function (){
       if (needsInit){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         needsInit = false;
       }
     });
@@ -192,7 +192,7 @@ describe('QuickBlox SDK - Basic functions', function() {
 
     beforeEach(function(){
       if (needsInit){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         needsInit= false;
       }
     });

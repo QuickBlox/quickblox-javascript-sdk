@@ -10,7 +10,7 @@ module.exports = DataProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
-var dataUrl = config.urls.base + config.urls.data;
+var dataUrl = config.endpoints.api + '/' + config.urls.data;
 
 
 function DataProxy(service){

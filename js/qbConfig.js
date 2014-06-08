@@ -6,13 +6,20 @@
  */
 
 var config = {
+  version: '1.2.0',
   creds: {
     appId: '',
     authKey: '',
     authSecret: ''
   },
+  endpoints: {
+    accountId: '',
+    api: 'https://api.quickblox.com',
+    chat: 'chat.quickblox.com',
+    turn: 'turnserver.quickblox.com',
+    s3Bucket: 'qbprod'
+  },
   urls: {
-    base: 'https://api.quickblox.com/',
     session: 'session',
     login: 'login',
     users: 'users',
@@ -25,7 +32,6 @@ var config = {
     data: 'data',
     type: '.json'
   },
-  version: '1.1.14',
   debug: false
 };
 

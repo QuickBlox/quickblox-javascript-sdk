@@ -10,7 +10,7 @@ module.exports = UsersProxy;
 var config = require('../qbConfig');
 var Proxy = require('../qbProxy');
 
-var baseUrl = config.urls.base + config.urls.users;
+var baseUrl = config.endpoints.api + '/' + config.urls.users;
 
 function UsersProxy(service) {
   this.service = service;
@@ -18,7 +18,7 @@ function UsersProxy(service) {
 
 UsersProxy.prototype.listUsers = function(params, callback) {
   var _this = this, url, message = {}, filter;
-  url = config.urls.base + config.urls.users + config.urls.type;
+  url = config.endpoints.api + '/' + config.urls.users + config.urls.type;
   if (typeof params === 'function') {
     callback = params;
     params = undefined;

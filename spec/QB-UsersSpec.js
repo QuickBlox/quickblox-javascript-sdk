@@ -4,7 +4,7 @@ describe('QuickBlox SDK - Users', function() {
   beforeEach(function(){
     var done;
     if (needsInit){
-      QB.init(CONFIG);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
       runs(function(){
         done = false;
         QB.createSession(function (err, result){
@@ -154,7 +154,7 @@ describe('QuickBlox SDK - Users', function() {
     beforeEach(function(){
       var done;
       if (needsInit){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         runs(function(){
           done = false;
           QB.createSession(function (err, result){

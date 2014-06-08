@@ -12,8 +12,8 @@ var config = require('../qbConfig');
 var Proxy = require('../qbProxy');
 var crypto = require('crypto-js/hmac-sha1');
 
-var sessionUrl = config.urls.base + config.urls.session + config.urls.type;
-var loginUrl = config.urls.base + config.urls.login + config.urls.type;
+var sessionUrl = config.endpoints.api + '/' + config.urls.session + config.urls.type;
+var loginUrl = config.endpoints.api + '/' + config.urls.login + config.urls.type;
 
 function AuthProxy(service) {
   this.service = service;
