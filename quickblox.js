@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
- * AuthProxy JavaScript SDK
+ * QuickBlox JavaScript SDK
  *
  * Authentication Module
  *
@@ -205,14 +205,12 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
     else {
       var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: uri.protocol + '://' + uri.host }, data = new FormData();
       fileId = createResult.id;
-      data.append('key', uri.queryKey.key);
-      data.append('acl', uri.queryKey.acl);
-      data.append('success_action_status', uri.queryKey.success_action_status);
-      data.append('AWSAccessKeyId', uri.queryKey.AWSAccessKeyId);
-      data.append('Policy', decodeURIComponent(uri.queryKey.Policy));
-      data.append('Signature', decodeURIComponent(uri.queryKey.Signature));
-      data.append('Content-Type', uri.queryKey['Content-Type']);
+      
+      Object.keys(uri.queryKey).forEach(function(el) {
+        data.append(el, decodeURIComponent(uri.queryKey[el]));
+      });
       data.append('file', file, createResult.name);
+      
       uploadParams.data = data;
       _this.upload(uploadParams, function(err, result) {
         if (err) { callback(err, null); }

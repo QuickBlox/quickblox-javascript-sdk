@@ -1,5 +1,5 @@
 /*
- * AuthProxy JavaScript SDK
+ * QuickBlox JavaScript SDK
  *
  * Authentication Module
  *

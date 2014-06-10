@@ -67,14 +67,12 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
     else {
       var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: uri.protocol + '://' + uri.host }, data = new FormData();
       fileId = createResult.id;
-      data.append('key', uri.queryKey.key);
-      data.append('acl', uri.queryKey.acl);
-      data.append('success_action_status', uri.queryKey.success_action_status);
-      data.append('AWSAccessKeyId', uri.queryKey.AWSAccessKeyId);
-      data.append('Policy', decodeURIComponent(uri.queryKey.Policy));
-      data.append('Signature', decodeURIComponent(uri.queryKey.Signature));
-      data.append('Content-Type', uri.queryKey['Content-Type']);
+      
+      Object.keys(uri.queryKey).forEach(function(el) {
+        data.append(el, decodeURIComponent(uri.queryKey[el]));
+      });
       data.append('file', file, createResult.name);
+      
       uploadParams.data = data;
       _this.upload(uploadParams, function(err, result) {
         if (err) { callback(err, null); }
