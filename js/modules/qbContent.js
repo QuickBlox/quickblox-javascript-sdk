@@ -13,13 +13,9 @@
 // Browserify exports and dependencies
 module.exports = ContentProxy;
 var config = require('../qbConfig');
+var Utils = require('../qbUtils');
 
-var contentUrl = config.endpoints.api + '/' + config.urls.blobs;
-var taggedForUserUrl = contentUrl + '/tagged';
-
-function contentIdUrl(id) {
-  return contentUrl + '/' + id;
-}
+var taggedForUserUrl = config.urls.blobs + '/tagged';
 
 function ContentProxy(service) {
   this.service = service;
@@ -27,7 +23,7 @@ function ContentProxy(service) {
 
 ContentProxy.prototype.create = function(params, callback){
  if (config.debug) { console.log('ContentProxy.create', params);}
-  this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.blob); }
   });
@@ -38,14 +34,14 @@ ContentProxy.prototype.list = function(params, callback){
     callback = params;
     params = null;
   }
-  this.service.ajax({url: contentUrl + config.urls.type}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs)}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
 };
 
 ContentProxy.prototype.delete = function(id, callback){
-  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE', dataType: 'text'}, function(err, result) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
     if (err) { callback(err,null); }
     else { callback(null, true); }
   });
@@ -108,35 +104,35 @@ ContentProxy.prototype.upload = function(params, callback){
 };
 
 ContentProxy.prototype.taggedForCurrentUser = function(callback) {
-  this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
+  this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
     if (err) { callback(err, null); }
     else { callback(null, result); }
   });
 };
 
 ContentProxy.prototype.markUploaded = function (params, callback) {
-  this.service.ajax({url: contentIdUrl(params.id) + '/complete' + config.urls.type, type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getInfo = function (id, callback) {
-  this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getFile = function (uid, callback) {
- this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+ this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getFileUrl = function (id, callback) {
- this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type, type: 'POST'}, function (err, res) {
+ this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res.blob_object_access.params); }
   });
@@ -146,7 +142,7 @@ ContentProxy.prototype.update = function (params, callback) {
   var data = {};
   data.blob = {};
   if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
-  this.service.ajax({url: contentIdUrl(param.id), data: data}, function(err, res) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); } 
   });

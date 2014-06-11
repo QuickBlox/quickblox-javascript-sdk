@@ -7,19 +7,15 @@
 
 // Browerify exports and dependencies
 module.exports = AuthProxy;
-var Utils = require('../qbUtils');
 var config = require('../qbConfig');
-var Proxy = require('../qbProxy');
+var Utils = require('../qbUtils');
 var crypto = require('crypto-js/hmac-sha1');
-
-var sessionUrl = config.endpoints.api + '/' + config.urls.session + config.urls.type;
-var loginUrl = config.endpoints.api + '/' + config.urls.login + config.urls.type;
 
 function AuthProxy(service) {
   this.service = service;
 }
 
-AuthProxy.prototype.createSession = function createSession(params, callback) {
+AuthProxy.prototype.createSession = function(params, callback) {
   var message, _this = this;
 
   if (typeof params === 'function' && typeof callback === 'undefined'){
@@ -31,7 +27,7 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
   message = generateAuthMsg(params);
   message = signMessage(message,  params.authSecret || config.creds.authSecret);
 
-  this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
+  this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
                       if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
@@ -44,12 +40,12 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 };
 
 // Currently fails due a CORS issue
-AuthProxy.prototype.destroySession = function(callback){
+AuthProxy.prototype.destroySession = function(callback) {
   var _this = this, message;
   message = {
     token: this.service.getSession().token
   };
-  this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                     function(err,data){
                       if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
                       if (err === null){
@@ -59,11 +55,11 @@ AuthProxy.prototype.destroySession = function(callback){
                     });
 };
 
-AuthProxy.prototype.login = function(params, callback){
+AuthProxy.prototype.login = function(params, callback) {
   var _this = this;
   if (this.service.getSession() !== null) {
     params.token = this.service.getSession().token;
-    this.service.ajax({url: loginUrl, type: 'POST', data: params},
+    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
                         else { callback(err,data.user);}
@@ -71,7 +67,7 @@ AuthProxy.prototype.login = function(params, callback){
   } else {
     this.createSession(function(err,session){
       params.token = session.token;
-      _this.service.ajax({url: loginUrl, type: 'POST', data: params},
+      _this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
                         else { callback(err,data.user);}
@@ -80,30 +76,30 @@ AuthProxy.prototype.login = function(params, callback){
   }
 };
 
-AuthProxy.prototype.logout = function(callback){
+AuthProxy.prototype.logout = function(callback) {
   var _this = this, message;
   message = {
     token: this.service.getSession().token
   };
-  this.service.ajax({url: loginUrl, dataType:'text', data:message, type: 'DELETE'}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.login), dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 
-AuthProxy.prototype.nonce = function nonce(){
+AuthProxy.prototype.nonce = function() {
   return this._nonce++;
 };
 
-function signMessage(message, secret){
+function signMessage(message, secret) {
   signature =  crypto(message, secret).toString();
   //if (config.debug) { console.log ('AuthProxy signature of', message, 'is', signature); }
   return message + '&signature=' + signature;
 }
 
-function generateAuthMsg(params){
+function generateAuthMsg(params) {
    // Allow params to override config
   var message = {
     application_id : params.appId || config.creds.appId,
     auth_key : params.authKey || config.creds.authKey,
-    nonce: Utils.getRandomNonce(),
+    nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
   // Optionally permit a user session to be created
@@ -132,4 +128,3 @@ function generateAuthMsg(params){
   //if (config.debug) { console.log ('AuthProxy authMsg', sessionMsg); }
   return sessionMsg;
 }
-

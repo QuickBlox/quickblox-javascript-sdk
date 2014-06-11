@@ -8,19 +8,15 @@
 
 // Browerify exports and dependencies
 module.exports = AuthProxy;
-var Utils = require('../qbUtils');
 var config = require('../qbConfig');
-var Proxy = require('../qbProxy');
+var Utils = require('../qbUtils');
 var crypto = require('crypto-js/hmac-sha1');
-
-var sessionUrl = config.endpoints.api + '/' + config.urls.session + config.urls.type;
-var loginUrl = config.endpoints.api + '/' + config.urls.login + config.urls.type;
 
 function AuthProxy(service) {
   this.service = service;
 }
 
-AuthProxy.prototype.createSession = function createSession(params, callback) {
+AuthProxy.prototype.createSession = function(params, callback) {
   var message, _this = this;
 
   if (typeof params === 'function' && typeof callback === 'undefined'){
@@ -32,7 +28,7 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
   message = generateAuthMsg(params);
   message = signMessage(message,  params.authSecret || config.creds.authSecret);
 
-  this.service.ajax({url: sessionUrl, data: message, type: 'POST', processData: false},
+  this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST', processData: false},
                     function handleProxy(err,data){
                       if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
@@ -45,12 +41,12 @@ AuthProxy.prototype.createSession = function createSession(params, callback) {
 };
 
 // Currently fails due a CORS issue
-AuthProxy.prototype.destroySession = function(callback){
+AuthProxy.prototype.destroySession = function(callback) {
   var _this = this, message;
   message = {
     token: this.service.getSession().token
   };
-  this.service.ajax({url: sessionUrl, type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                     function(err,data){
                       if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
                       if (err === null){
@@ -60,11 +56,11 @@ AuthProxy.prototype.destroySession = function(callback){
                     });
 };
 
-AuthProxy.prototype.login = function(params, callback){
+AuthProxy.prototype.login = function(params, callback) {
   var _this = this;
   if (this.service.getSession() !== null) {
     params.token = this.service.getSession().token;
-    this.service.ajax({url: loginUrl, type: 'POST', data: params},
+    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
                         else { callback(err,data.user);}
@@ -72,7 +68,7 @@ AuthProxy.prototype.login = function(params, callback){
   } else {
     this.createSession(function(err,session){
       params.token = session.token;
-      _this.service.ajax({url: loginUrl, type: 'POST', data: params},
+      _this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, data) {
                         if (err) { callback(err, data);}
                         else { callback(err,data.user);}
@@ -81,30 +77,30 @@ AuthProxy.prototype.login = function(params, callback){
   }
 };
 
-AuthProxy.prototype.logout = function(callback){
+AuthProxy.prototype.logout = function(callback) {
   var _this = this, message;
   message = {
     token: this.service.getSession().token
   };
-  this.service.ajax({url: loginUrl, dataType:'text', data:message, type: 'DELETE'}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.login), dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 
-AuthProxy.prototype.nonce = function nonce(){
+AuthProxy.prototype.nonce = function() {
   return this._nonce++;
 };
 
-function signMessage(message, secret){
+function signMessage(message, secret) {
   signature =  crypto(message, secret).toString();
   //if (config.debug) { console.log ('AuthProxy signature of', message, 'is', signature); }
   return message + '&signature=' + signature;
 }
 
-function generateAuthMsg(params){
+function generateAuthMsg(params) {
    // Allow params to override config
   var message = {
     application_id : params.appId || config.creds.appId,
     auth_key : params.authKey || config.creds.authKey,
-    nonce: Utils.getRandomNonce(),
+    nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
   // Optionally permit a user session to be created
@@ -134,8 +130,7 @@ function generateAuthMsg(params){
   return sessionMsg;
 }
 
-
-},{"../qbConfig":7,"../qbProxy":8,"../qbUtils":9,"crypto-js/hmac-sha1":12}],2:[function(require,module,exports){
+},{"../qbConfig":7,"../qbUtils":9,"crypto-js/hmac-sha1":12}],2:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -151,13 +146,9 @@ function generateAuthMsg(params){
 // Browserify exports and dependencies
 module.exports = ContentProxy;
 var config = require('../qbConfig');
+var Utils = require('../qbUtils');
 
-var contentUrl = config.endpoints.api + '/' + config.urls.blobs;
-var taggedForUserUrl = contentUrl + '/tagged';
-
-function contentIdUrl(id) {
-  return contentUrl + '/' + id;
-}
+var taggedForUserUrl = config.urls.blobs + '/tagged';
 
 function ContentProxy(service) {
   this.service = service;
@@ -165,7 +156,7 @@ function ContentProxy(service) {
 
 ContentProxy.prototype.create = function(params, callback){
  if (config.debug) { console.log('ContentProxy.create', params);}
-  this.service.ajax({url: contentUrl + config.urls.type, data: {blob:params}, type: 'POST'}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: {blob:params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.blob); }
   });
@@ -176,14 +167,14 @@ ContentProxy.prototype.list = function(params, callback){
     callback = params;
     params = null;
   }
-  this.service.ajax({url: contentUrl + config.urls.type}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs)}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
 };
 
 ContentProxy.prototype.delete = function(id, callback){
-  this.service.ajax({url: contentIdUrl(id) + config.urls.type, type: 'DELETE', dataType: 'text'}, function(err, result) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
     if (err) { callback(err,null); }
     else { callback(null, true); }
   });
@@ -246,35 +237,35 @@ ContentProxy.prototype.upload = function(params, callback){
 };
 
 ContentProxy.prototype.taggedForCurrentUser = function(callback) {
-  this.service.ajax({url: taggedForUserUrl + config.urls.type}, function(err, result) {
+  this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
     if (err) { callback(err, null); }
     else { callback(null, result); }
   });
 };
 
 ContentProxy.prototype.markUploaded = function (params, callback) {
-  this.service.ajax({url: contentIdUrl(params.id) + '/complete' + config.urls.type, type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getInfo = function (id, callback) {
-  this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getFile = function (uid, callback) {
- this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+ this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
 };
 
 ContentProxy.prototype.getFileUrl = function (id, callback) {
- this.service.ajax({url: contentIdUrl(id) + '/getblobobjectbyid' + config.urls.type, type: 'POST'}, function (err, res) {
+ this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res.blob_object_access.params); }
   });
@@ -284,7 +275,7 @@ ContentProxy.prototype.update = function (params, callback) {
   var data = {};
   data.blob = {};
   if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
-  this.service.ajax({url: contentIdUrl(param.id), data: data}, function(err, res) {
+  this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); } 
   });
@@ -325,7 +316,7 @@ parseUri.options = {
   }
 };
 
-},{"../qbConfig":7}],3:[function(require,module,exports){
+},{"../qbConfig":7,"../qbUtils":9}],3:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -338,9 +329,6 @@ module.exports = DataProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
-var dataUrl = config.endpoints.api + '/' + config.urls.data;
-
-
 function DataProxy(service){
   this.service = service;
   if (config.debug) { console.log("LocationProxy", service); }
@@ -348,7 +336,7 @@ function DataProxy(service){
 
 DataProxy.prototype.create = function(className, data, callback){
   if (config.debug) { console.log('DataProxy.create', className, data);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className), data: data, type: 'POST'}, function(err,res){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: data, type: 'POST'}, function(err,res){
     if (err){ callback(err, null); }
     else { callback (err, res); }
   });
@@ -361,7 +349,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
     filters = null;
   }
   if (config.debug) { console.log('DataProxy.list', className, filters);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className), data: filters}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: filters}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
@@ -369,7 +357,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
 
 DataProxy.prototype.update= function(className, data, callback) {
   if (config.debug) { console.log('DataProxy.update', className, data);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
@@ -377,7 +365,7 @@ DataProxy.prototype.update= function(className, data, callback) {
 
 DataProxy.prototype.delete= function(className, id, callback) {
   if (config.debug) { console.log('DataProxy.delete', className, id);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + id), type: 'DELETE', dataType: 'text'},
                     function(err,result){
                       if (err){ callback(err, null); }
                       else { callback (err, true); }
@@ -390,7 +378,7 @@ DataProxy.prototype.uploadFile= function(className, params, callback){
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
                     contentType: false, processData: false, type:'POST'}, function(err, result){
                       if (err) { callback(err, null);}
                       else { callback (err, result); }
@@ -403,7 +391,7 @@ DataProxy.prototype.updateFile= function(className, params, callback){
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
                     contentType: false, processData: false, type: 'POST'}, function(err, result) {
                       if (err) { callback (err, null); }
                       else { callback (err, result); }
@@ -412,7 +400,7 @@ DataProxy.prototype.updateFile= function(className, params, callback){
 
 DataProxy.prototype.downloadFile= function(className, params, callback){
   if (config.debug) { console.log('DataProxy.downloadFile', className, params);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
                     type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
                     function(err, result) {
                       if (err) { callback (err, null); }
@@ -422,7 +410,7 @@ DataProxy.prototype.downloadFile= function(className, params, callback){
 
 DataProxy.prototype.deleteFile= function(className, params, callback){
   if (config.debug) { console.log('DataProxy.deleteFile', className, params);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
                     dataType: 'text', type: 'DELETE'}, function(err, result) {
                       if (err) { callback (err, null); }
                       else { callback (err, true); }
@@ -444,10 +432,7 @@ module.exports = LocationProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
-var geoUrl = config.endpoints.api + '/' + config.urls.geodata;
-var geoFindUrl = geoUrl + '/find' + config.urls.type;
-var placesUrl = config.endpoints.api + '/' + config.urls.places;
-
+var geoFindUrl = config.urls.geodata + '/find';
 
 function LocationProxy(service){
   this.service = service;
@@ -456,14 +441,13 @@ function LocationProxy(service){
   if (config.debug) { console.log("LocationProxy", service); }
 }
 
-
 function GeoProxy(service){
   this.service = service;
 }
 
 GeoProxy.prototype.create = function(params, callback){
   if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
-  this.service.ajax({url: geoUrl + config.urls.type, data: {geo_data: params}, type: 'POST'}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result.geo_datum); }
   });
@@ -479,7 +463,7 @@ GeoProxy.prototype.update = function(params, callback){
     }
   }
   if (config.debug) { console.log('GeoProxy.create', params);}
-  this.service.ajax({url: Utils.resourceUrl(geoUrl, params.id), data: {geo_data:msg}, type: 'PUT'},
+  this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
                    function(err,res){
                     if (err) { callback(err,null);}
                     else { callback(err, res.geo_datum);}
@@ -488,7 +472,7 @@ GeoProxy.prototype.update = function(params, callback){
 
 GeoProxy.prototype.get = function(id, callback){
   if (config.debug) { console.log('GeoProxy.get', id);}
-  this.service.ajax({url: Utils.resourceUrl(geoUrl, id)}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
      if (err) { callback (err, null); }
      else { callback(null, result.geo_datum); }
   });
@@ -500,12 +484,12 @@ GeoProxy.prototype.list = function(params, callback){
     params = undefined;
   }
   if (config.debug) { console.log('GeoProxy.find', params);}
-  this.service.ajax({url: geoFindUrl, data: params}, callback);
+  this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
 };
 
 GeoProxy.prototype.delete = function(id, callback){
   if (config.debug) { console.log('GeoProxy.delete', id); }
-  this.service.ajax({url: Utils.resourceUrl(geoUrl, id), type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
                    function(err,res){
                     if (err) { callback(err, null);}
                     else { callback(null, true);}
@@ -514,7 +498,7 @@ GeoProxy.prototype.delete = function(id, callback){
 
 GeoProxy.prototype.purge = function(days, callback){
   if (config.debug) { console.log('GeoProxy.purge', days); }
-  this.service.ajax({url: geoUrl + config.urls.type, data: {days: days}, type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
                    function(err, res){
                     if (err) { callback(err, null);}
                     else { callback(null, true);}
@@ -527,27 +511,27 @@ function PlacesProxy(service) {
 
 PlacesProxy.prototype.list = function(params, callback){
   if (config.debug) { console.log('PlacesProxy.list', params);}
-  this.service.ajax({url: placesUrl + config.urls.type}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
 };
 
 PlacesProxy.prototype.create = function(params, callback){
   if (config.debug) { console.log('PlacesProxy.create', params);}
-  this.service.ajax({url: placesUrl + config.urls.type, data: {place:params}, type: 'POST'}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
 };
 
 PlacesProxy.prototype.get = function(id, callback){
-  if (config.debug) { console.log('PlacesProxy.get', params);}
-  this.service.ajax({url: Utils.resourceUrl(placesUrl, id)}, callback);
+  if (config.debug) { console.log('PlacesProxy.get', id);}
+  this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
 };
 
 PlacesProxy.prototype.update = function(place, callback){
   if (config.debug) { console.log('PlacesProxy.update', place);}
-  this.service.ajax({url: Utils.resourceUrl(placesUrl, id), data: {place: place}, type: 'PUT'} , callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
 };
 
 PlacesProxy.prototype.delete = function(id, callback){
-  if (config.debug) { console.log('PlacesProxy.delete', params);}
-  this.service.ajax({url: Utils.resourceUrl(placesUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  if (config.debug) { console.log('PlacesProxy.delete', id);}
+  this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 },{"../qbConfig":7,"../qbUtils":9}],5:[function(require,module,exports){
@@ -563,12 +547,7 @@ PlacesProxy.prototype.delete = function(id, callback){
 // Browserify exports and dependencies
 module.exports = MessagesProxy;
 var config = require('../qbConfig');
-var Proxy = require('../qbProxy');
-
-// Url variables
-var tokenUrl = config.endpoints.api + '/' + config.urls.pushtokens;
-var subsUrl = config.endpoints.api + '/' + config.urls.subscriptions;
-var eventUrl = config.endpoints.api + '/' + config.urls.events;
+var Utils = require('../qbUtils');
 
 function MessagesProxy(service) {
   this.service = service;
@@ -592,7 +571,7 @@ TokensProxy.prototype.create = function(params, callback){
     device: { platform: params.platform, udid: params.udid}
   };
   if (config.debug) { console.log('TokensProxy.create', message);}
-  this.service.ajax({url: tokenUrl + config.urls.type, type: 'POST', data: message},
+  this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
                     function(err, data){
                       if (err) { callback(err, null);}
                       else { callback(null, data.push_token); }
@@ -600,9 +579,8 @@ TokensProxy.prototype.create = function(params, callback){
 };
 
 TokensProxy.prototype.delete = function(id, callback) {
-  var url = tokenUrl + '/' + id + config.urls.type;
   if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
+  this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'}, 
                     function (err, res) {
                       if (err) {callback(err, null);}
                       else {callback(null, true);}
@@ -617,18 +595,17 @@ function SubscriptionsProxy(service){
 
 SubscriptionsProxy.prototype.create = function (params, callback){
   if (config.debug) { console.log('MessageProxy.createSubscription', params); }
-  this.service.ajax({url: subsUrl + config.urls.type, type: 'POST', data : params}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data : params}, callback);
 };
 
 SubscriptionsProxy.prototype.list = function (callback) {
   if (config.debug) { console.log('MessageProxy.listSubscription', params); }
-  this.service.ajax({url: subsUrl + config.urls.type}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
 };
 
 SubscriptionsProxy.prototype.delete = function(id, callback) {
-  var url = subsUrl + '/'+ id + config.urls.type;
   if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: url, type: 'DELETE', dataType:'text'}, 
+  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'}, 
                     function(err, res){
                       if (err) { callback(err, null);}
                       else { callback(null, true);}
@@ -643,34 +620,31 @@ function EventsProxy(service){
 EventsProxy.prototype.create = function(params, callback) {
   if (config.debug) { console.log('MessageProxy.createEvent', params); }
   var message = {event: params};
-  this.service.ajax({url: eventUrl + config.urls.type, type: 'POST', data: message}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
 };
 
 EventsProxy.prototype.list = function(callback) {
  if (config.debug) { console.log('MessageProxy.listEvents'); }
-  this.service.ajax({url: eventUrl + config.urls.type}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
 };
 
 EventsProxy.prototype.get = function(id, callback) {
-  var url = eventUrl + '/' + params.id + config.urls.type;
   if (config.debug) { console.log('MessageProxy.getEvents', id); }
-  this.service.ajax({url: url}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
 };
 
 EventsProxy.prototype.update = function(params, callback) {
-  var url = eventUrl + '/' + params.id + config.urls.type;
   if (config.debug) { console.log('MessageProxy.createEvent', params); }
   var message = {event: params};
-  this.service.ajax({url: url, type: 'PUT', data: message}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
 };
 
 EventsProxy.prototype.delete = function(id, callback) {
-  var url = eventUrl + '/' + params.id + config.urls.type;
- if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
-  this.service.ajax({url: url, type: 'DELETE'}, callback);
+  if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
+  this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
 };
 
-},{"../qbConfig":7,"../qbProxy":8}],6:[function(require,module,exports){
+},{"../qbConfig":7,"../qbUtils":9}],6:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -681,17 +655,14 @@ EventsProxy.prototype.delete = function(id, callback) {
 // Browserify exports and dependencies
 module.exports = UsersProxy;
 var config = require('../qbConfig');
-var Proxy = require('../qbProxy');
-
-var baseUrl = config.endpoints.api + '/' + config.urls.users;
+var Utils = require('../qbUtils');
 
 function UsersProxy(service) {
   this.service = service;
 }
 
 UsersProxy.prototype.listUsers = function(params, callback) {
-  var _this = this, url, message = {}, filter;
-  url = config.endpoints.api + '/' + config.urls.users + config.urls.type;
+  var _this = this, message = {}, filter;
   if (typeof params === 'function') {
     callback = params;
     params = undefined;
@@ -723,36 +694,36 @@ UsersProxy.prototype.listUsers = function(params, callback) {
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
   if (config.debug) {console.log('UsersProxy.list', message);}
-  this.service.ajax({url: url, data: message}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
 };
 
 UsersProxy.prototype.get = function(params, callback) {
-  var _this = this, url = baseUrl;
+  var _this = this, url;
   if (typeof params === 'function') {
     callback = params;
     params = {};
   }
   if (typeof params === 'number'){
-    url += '/' + params + config.urls.type;
+    url = Utils.getUrl(config.urls.users, params);
   } else if (typeof params === 'object') {
     if (params.id) {
-      url += '/' + params.id + config.urls.type;
+      url = Utils.getUrl(config.urls.users, params.id);
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
+      url = Utils.getUrl(config.urls.users, '/by_facebook_id') + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
-      url += '/by_login' + config.urls.type + '?login=' + params.login;
+      url = Utils.getUrl(config.urls.users, '/by_login') + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
+      url = Utils.getUrl(config.urls.users, '/by_full_name') + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
+      url = Utils.getUrl(config.urls.users, '/by_twitter_id') + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
-      url += '/by_email' + config.urls.type + '?email=' + params.email;
+      url = Utils.getUrl(config.urls.users, '/by_email') + '?email=' + params.email;
     } else if (params.tags) {
-      url += '/by_tags' + config.urls.type + '?tag=' + params.tags;
+      url = Utils.getUrl(config.urls.users, '/by_tags') + '?tag=' + params.tags;
     }
   }
   if (config.debug) {console.log('UsersProxy.get', url);}
-  this.service.ajax({url:url},
+  this.service.ajax({url: url},
                     function(err,data){
                       var user;
                       if (data && data.user) {
@@ -764,9 +735,8 @@ UsersProxy.prototype.get = function(params, callback) {
 };
 
 UsersProxy.prototype.create = function(params, callback) {
-  var url = baseUrl + config.urls.type;
   if (config.debug) { console.log('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+  this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}}, 
                     function(err, data){
                       if (err) { callback(err, null);}
                       else { callback(null, data.user); }
@@ -776,7 +746,7 @@ UsersProxy.prototype.create = function(params, callback) {
 UsersProxy.prototype.update = function(user, callback) {
   var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
       'phone', 'website', 'tag_list', 'password', 'old_password'];
-  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  var msg = {}, prop;
   for (prop in user) {
     if (user.hasOwnProperty(prop)) {
       if (allowedProps.indexOf(prop)>0) {
@@ -784,8 +754,8 @@ UsersProxy.prototype.update = function(user, callback) {
       } 
     }
   }
-  if (config.debug) { console.log('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+  if (config.debug) { console.log('UsersProxy.update', user); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, user.id), type: 'PUT', data: {user: msg}}, 
                     function(err,data){
                       if (err) {callback(err, null);}
                       else { 
@@ -796,16 +766,15 @@ UsersProxy.prototype.update = function(user, callback) {
 };
 
 UsersProxy.prototype.delete = function(id, callback) {
-  var url = baseUrl + '/' + id + config.urls.type;
-  if (config.debug) { console.log('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+  if (config.debug) { console.log('UsersProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'DELETE', dataType: 'text' },
                     function(err,data){
                       if (err) { callback(err, null);}
                       else { callback(null, true); }
                      });
 };
 
-},{"../qbConfig":7,"../qbProxy":8}],7:[function(require,module,exports){
+},{"../qbConfig":7,"../qbUtils":9}],7:[function(require,module,exports){
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -821,8 +790,7 @@ var config = {
     authSecret: ''
   },
   endpoints: {
-    accountId: '',
-    api: 'https://api.quickblox.com',
+    api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
     turn: 'turnserver.quickblox.com',
     s3Bucket: 'qbprod'
@@ -840,6 +808,7 @@ var config = {
     data: 'data',
     type: '.json'
   },
+  ssl: true,
   debug: false
 };
 
@@ -943,7 +912,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
   if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
   jQuery.ajax( ajaxCall );
-}
+};
 
 },{"./qbConfig":7}],9:[function(require,module,exports){
 /*
@@ -968,7 +937,7 @@ exports.shim = function() {
   }
 };
 
-exports.getRandomNonce = function() {
+exports.randomNonce = function() {
   return Math.floor(Math.random() * 10000);
 };
 
@@ -976,8 +945,10 @@ exports.unixTime = function() {
   return Math.floor(Date.now() / 1000);
 };
 
-exports.resourceUrl = function(base, id) {
-  return base + '/' + id + config.urls.type;
+exports.getUrl = function(base, id) {
+  var protocol = config.ssl ? 'https://' : 'http://';
+  var resource = id ? '/' + id : '';
+  return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
 };
 
 },{"./qbConfig":7}],10:[function(require,module,exports){
@@ -1020,7 +991,7 @@ QB = (function(QB) {
 // Actual QuickBlox API starts here
 function QuickBlox() {}
 
-QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   this.session = null;
   this.service = new Proxy(this);
   this.auth = new Auth(this.service);

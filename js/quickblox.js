@@ -37,7 +37,7 @@ QB = (function(QB) {
 // Actual QuickBlox API starts here
 function QuickBlox() {}
 
-QuickBlox.prototype.init = function init(appId, authKey, authSecret, debug) {
+QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   this.session = null;
   this.service = new Proxy(this);
   this.auth = new Auth(this.service);

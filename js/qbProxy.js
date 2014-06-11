@@ -94,4 +94,4 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
   if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
   jQuery.ajax( ajaxCall );
-}
+};

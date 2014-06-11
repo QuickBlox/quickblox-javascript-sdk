@@ -12,8 +12,7 @@ var DEFAULTS = {
     authSecret: ''
   },
   endpoints: {
-    accountId: '',
-    api: 'https://api.quickblox.com',
+    api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
     turn: 'turnserver.quickblox.com',
     s3Bucket: 'qbprod'
@@ -31,6 +30,7 @@ var DEFAULTS = {
     data: 'data',
     type: '.json'
   },
+  ssl: true,
   debug: false
 };
 

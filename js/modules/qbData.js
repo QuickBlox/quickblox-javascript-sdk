@@ -10,9 +10,6 @@ module.exports = DataProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
-var dataUrl = config.endpoints.api + '/' + config.urls.data;
-
-
 function DataProxy(service){
   this.service = service;
   if (config.debug) { console.log("LocationProxy", service); }
@@ -20,7 +17,7 @@ function DataProxy(service){
 
 DataProxy.prototype.create = function(className, data, callback){
   if (config.debug) { console.log('DataProxy.create', className, data);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className), data: data, type: 'POST'}, function(err,res){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: data, type: 'POST'}, function(err,res){
     if (err){ callback(err, null); }
     else { callback (err, res); }
   });
@@ -33,7 +30,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
     filters = null;
   }
   if (config.debug) { console.log('DataProxy.list', className, filters);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className), data: filters}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: filters}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
@@ -41,7 +38,7 @@ DataProxy.prototype.list= function(className, filters, callback) {
 
 DataProxy.prototype.update= function(className, data, callback) {
   if (config.debug) { console.log('DataProxy.update', className, data);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
     if (err){ callback(err, null); }
     else { callback (err, result); }
   });
@@ -49,7 +46,7 @@ DataProxy.prototype.update= function(className, data, callback) {
 
 DataProxy.prototype.delete= function(className, id, callback) {
   if (config.debug) { console.log('DataProxy.delete', className, id);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + id), type: 'DELETE', dataType: 'text'},
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + id), type: 'DELETE', dataType: 'text'},
                     function(err,result){
                       if (err){ callback(err, null); }
                       else { callback (err, true); }
@@ -62,7 +59,7 @@ DataProxy.prototype.uploadFile= function(className, params, callback){
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
                     contentType: false, processData: false, type:'POST'}, function(err, result){
                       if (err) { callback(err, null);}
                       else { callback (err, result); }
@@ -75,7 +72,7 @@ DataProxy.prototype.updateFile= function(className, params, callback){
   formData = new FormData();
   formData.append('field_name', params.field_name);
   formData.append('file', params.file);
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: formData,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
                     contentType: false, processData: false, type: 'POST'}, function(err, result) {
                       if (err) { callback (err, null); }
                       else { callback (err, result); }
@@ -84,7 +81,7 @@ DataProxy.prototype.updateFile= function(className, params, callback){
 
 DataProxy.prototype.downloadFile= function(className, params, callback){
   if (config.debug) { console.log('DataProxy.downloadFile', className, params);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: 'field_name=' + params.field_name,
                     type:'GET', contentType: false, processData:false, mimeType: 'text/plain; charset=x-user-defined', dataType: 'binary'},
                     function(err, result) {
                       if (err) { callback (err, null); }
@@ -94,7 +91,7 @@ DataProxy.prototype.downloadFile= function(className, params, callback){
 
 DataProxy.prototype.deleteFile= function(className, params, callback){
   if (config.debug) { console.log('DataProxy.deleteFile', className, params);}
-  this.service.ajax({url: Utils.resourceUrl(dataUrl, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
+  this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
                     dataType: 'text', type: 'DELETE'}, function(err, result) {
                       if (err) { callback (err, null); }
                       else { callback (err, true); }

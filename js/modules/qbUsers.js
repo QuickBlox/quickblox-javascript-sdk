@@ -8,17 +8,14 @@
 // Browserify exports and dependencies
 module.exports = UsersProxy;
 var config = require('../qbConfig');
-var Proxy = require('../qbProxy');
-
-var baseUrl = config.endpoints.api + '/' + config.urls.users;
+var Utils = require('../qbUtils');
 
 function UsersProxy(service) {
   this.service = service;
 }
 
 UsersProxy.prototype.listUsers = function(params, callback) {
-  var _this = this, url, message = {}, filter;
-  url = config.endpoints.api + '/' + config.urls.users + config.urls.type;
+  var _this = this, message = {}, filter;
   if (typeof params === 'function') {
     callback = params;
     params = undefined;
@@ -50,36 +47,36 @@ UsersProxy.prototype.listUsers = function(params, callback) {
   if (params && params.perPage) { message.per_page = params.perPage;}
   if (params && params.pageNo) {message.page = params.pageNo;}
   if (config.debug) {console.log('UsersProxy.list', message);}
-  this.service.ajax({url: url, data: message}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
 };
 
 UsersProxy.prototype.get = function(params, callback) {
-  var _this = this, url = baseUrl;
+  var _this = this, url;
   if (typeof params === 'function') {
     callback = params;
     params = {};
   }
   if (typeof params === 'number'){
-    url += '/' + params + config.urls.type;
+    url = Utils.getUrl(config.urls.users, params);
   } else if (typeof params === 'object') {
     if (params.id) {
-      url += '/' + params.id + config.urls.type;
+      url = Utils.getUrl(config.urls.users, params.id);
     } else if (params.facebookId) {
-      url += '/by_facebook_id' + config.urls.type + '?facebook_id=' + params.facebookId;
+      url = Utils.getUrl(config.urls.users, '/by_facebook_id') + '?facebook_id=' + params.facebookId;
     } else if (params.login) {
-      url += '/by_login' + config.urls.type + '?login=' + params.login;
+      url = Utils.getUrl(config.urls.users, '/by_login') + '?login=' + params.login;
     } else if (params.fullName) {
-      url += '/by_full_name' + config.urls.type + '?full_name=' + params.fullName;
+      url = Utils.getUrl(config.urls.users, '/by_full_name') + '?full_name=' + params.fullName;
     } else if (params.twitterId) {
-      url += '/by_twitter_id' + config.urls.type + '?twitter_id=' + params.twitterId;
+      url = Utils.getUrl(config.urls.users, '/by_twitter_id') + '?twitter_id=' + params.twitterId;
     } else if (params.email) {
-      url += '/by_email' + config.urls.type + '?email=' + params.email;
+      url = Utils.getUrl(config.urls.users, '/by_email') + '?email=' + params.email;
     } else if (params.tags) {
-      url += '/by_tags' + config.urls.type + '?tag=' + params.tags;
+      url = Utils.getUrl(config.urls.users, '/by_tags') + '?tag=' + params.tags;
     }
   }
   if (config.debug) {console.log('UsersProxy.get', url);}
-  this.service.ajax({url:url},
+  this.service.ajax({url: url},
                     function(err,data){
                       var user;
                       if (data && data.user) {
@@ -91,9 +88,8 @@ UsersProxy.prototype.get = function(params, callback) {
 };
 
 UsersProxy.prototype.create = function(params, callback) {
-  var url = baseUrl + config.urls.type;
   if (config.debug) { console.log('UsersProxy.create', params);}
-  this.service.ajax({url: url, type: 'POST', data: {user: params}}, 
+  this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}}, 
                     function(err, data){
                       if (err) { callback(err, null);}
                       else { callback(null, data.user); }
@@ -103,7 +99,7 @@ UsersProxy.prototype.create = function(params, callback) {
 UsersProxy.prototype.update = function(user, callback) {
   var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
       'phone', 'website', 'tag_list', 'password', 'old_password'];
-  var url = baseUrl + '/' + user.id + config.urls.type, msg = {}, prop;
+  var msg = {}, prop;
   for (prop in user) {
     if (user.hasOwnProperty(prop)) {
       if (allowedProps.indexOf(prop)>0) {
@@ -111,8 +107,8 @@ UsersProxy.prototype.update = function(user, callback) {
       } 
     }
   }
-  if (config.debug) { console.log('UsersProxy.update', url, user); }
-  this.service.ajax({url: url, type: 'PUT', data: {user: msg}}, 
+  if (config.debug) { console.log('UsersProxy.update', user); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, user.id), type: 'PUT', data: {user: msg}}, 
                     function(err,data){
                       if (err) {callback(err, null);}
                       else { 
@@ -123,9 +119,8 @@ UsersProxy.prototype.update = function(user, callback) {
 };
 
 UsersProxy.prototype.delete = function(id, callback) {
-  var url = baseUrl + '/' + id + config.urls.type;
-  if (config.debug) { console.log('UsersProxy.delete', url); }
-  this.service.ajax({url: url, type: 'DELETE', dataType: 'text' },
+  if (config.debug) { console.log('UsersProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'DELETE', dataType: 'text' },
                     function(err,data){
                       if (err) { callback(err, null);}
                       else { callback(null, true); }
