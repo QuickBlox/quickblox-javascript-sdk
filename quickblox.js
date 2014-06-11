@@ -593,13 +593,13 @@ function SubscriptionsProxy(service){
   this.service = service;
 }
 
-SubscriptionsProxy.prototype.create = function (params, callback){
+SubscriptionsProxy.prototype.create = function(params, callback) {
   if (config.debug) { console.log('MessageProxy.createSubscription', params); }
-  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data : params}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
 };
 
-SubscriptionsProxy.prototype.list = function (callback) {
-  if (config.debug) { console.log('MessageProxy.listSubscription', params); }
+SubscriptionsProxy.prototype.list = function(callback) {
+  if (config.debug) { console.log('MessageProxy.listSubscription'); }
   this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
 };
 

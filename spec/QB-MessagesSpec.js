@@ -64,7 +64,7 @@ describe('QuickBlox SDK - Messages', function() {
       var subscription, done;
       runs(function(){
         done = false;
-        params = { notification_channels : 'pull ', url: 'http://example.com/notify_me'};
+        params = {notification_channels: 'apns'};
         QB.messages.subscriptions.create(params, function(err, res){
           subscription = res;
           done = true;
