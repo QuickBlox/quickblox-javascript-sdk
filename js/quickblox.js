@@ -28,8 +28,7 @@ if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
-  //this.session = null;
-  this.service = new Proxy(this);
+  this.service = new Proxy();
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
   this.content = new Content(this.service);
@@ -40,7 +39,6 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
     this.service.setSession({ token: appId });
-    //this.session = { token: appId };
     appId = '';
   }
   
@@ -51,10 +49,7 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
     config.debug = debug;
     console.log('QuickBlox.init', this);
   }
-  //this.service.qbInst.config = config;
 };
-
-//QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function(params, callback) {
   this.auth.createSession(params, callback);

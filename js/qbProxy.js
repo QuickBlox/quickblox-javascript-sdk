@@ -17,12 +17,12 @@ jQuery.ajaxSettings.xhr = function() {
   return new XMLHttpRequest;
 };*/
 
-function ServiceProxy(qb) {
-  //this.qbInst = qb;
+function ServiceProxy() {
   this.qbInst = {
-    config: config
+    config: config,
+    session: null
   };
-  if (config.debug) { console.log("ServiceProxy", qb); }
+  if (config.debug) { console.log("ServiceProxy", this.qbInst); }
 }
 
 ServiceProxy.prototype.setSession = function(session) {

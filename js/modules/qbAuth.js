@@ -27,60 +27,42 @@ AuthProxy.prototype.createSession = function(params, callback) {
   message = generateAuthMsg(params);
   message.signature = signMessage(message, config.creds.authSecret);
 
-  this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST'},
+  this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                     function(err, res) {
                       if (config.debug) { console.log('AuthProxy.createSession callback', err, res); }
                       if (err) {
                         callback(err, null);
                       } else {
                         _this.service.setSession(res.session);
-                        callback(err, res.session);
+                        callback(null, res.session);
                       }
                     });
 };
 
 AuthProxy.prototype.destroySession = function(callback) {
-  var _this = this, message;
-  message = {
-    token: this.service.getSession().token
-  };
+  var _this = this;
   this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
-                    function(err,res){
-                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, res);}
-                      if (err === null){
+                    function(err, res) {
+                      if (config.debug) { console.log('AuthProxy.destroySession callback', err, res); }
+                      if (err) {
+                        callback(err, null);
+                      } else {
                         _this.service.setSession(null);
+                        callback(null, res);
                       }
-                      callback(err,true);
                     });
 };
 
 AuthProxy.prototype.login = function(params, callback) {
-  var _this = this;
-  if (this.service.getSession()) {
-    params.token = this.service.getSession().token;
-    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, res) {
-                        if (err) { callback(err, res);}
-                        else { callback(err,res.user);}
-                      });
-  } else {
-    this.createSession(function(err,session){
-      params.token = session.token;
-      _this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, res) {
-                        if (err) { callback(err, res);}
-                        else { callback(err,res.user);}
-                      });
-    });
-  }
+  this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
+                    function(err, res) {
+                      if (err) { callback(err, null); }
+                      else { callback(null, res.user); }
+                    });
 };
 
 AuthProxy.prototype.logout = function(callback) {
-  var message;
-  message = {
-    token: this.service.getSession().token
-  };
-  this.service.ajax({url: Utils.getUrl(config.urls.login), dataType:'text', data:message, type: 'DELETE'}, callback);
+  this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
 };
 
 function generateAuthMsg(params) {
