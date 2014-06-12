@@ -48,7 +48,7 @@ App.prototype.createSession = function(e){
 };
 
 App.prototype.deleteSession = function(e){
-  var token = QB.session.token;
+  var token = QB.service.qbInst.session.token;
   console.log('deleteSession', e);
   QB.destroySession(function(err, result){
     console.log('Session destroy callback', err, result);

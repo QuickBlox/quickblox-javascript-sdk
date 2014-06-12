@@ -26,20 +26,16 @@ AuthProxy.prototype.createSession = function(params, callback) {
 
   // Signature of message with SHA-1 using secret key
   message = generateAuthMsg(params);
-  console.log(message);
-  signature = signMessage(message, config.creds.authSecret);
-  console.log(signature);
-  message.signature = signature;
-  console.log(message);
+  message.signature = signMessage(message, config.creds.authSecret);
 
   this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST'},
-                    function(err, data) {
-                      if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
-                      if (data && data.session) {
-                        _this.service.setSession(data.session);
-                        callback(err,data.session);
-                      } else {
+                    function(err, res) {
+                      if (config.debug) { console.log('AuthProxy.createSession callback', err, res); }
+                      if (err) {
                         callback(err, null);
+                      } else {
+                        _this.service.setSession(res.session);
+                        callback(err, res.session);
                       }
                     });
 };
@@ -50,8 +46,8 @@ AuthProxy.prototype.destroySession = function(callback) {
     token: this.service.getSession().token
   };
   this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
-                    function(err,data){
-                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
+                    function(err,res){
+                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, res);}
                       if (err === null){
                         _this.service.setSession(null);
                       }
@@ -61,20 +57,20 @@ AuthProxy.prototype.destroySession = function(callback) {
 
 AuthProxy.prototype.login = function(params, callback) {
   var _this = this;
-  if (this.service.getSession() !== null) {
+  if (this.service.getSession()) {
     params.token = this.service.getSession().token;
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, data) {
-                        if (err) { callback(err, data);}
-                        else { callback(err,data.user);}
+                      function(err, res) {
+                        if (err) { callback(err, res);}
+                        else { callback(err,res.user);}
                       });
   } else {
     this.createSession(function(err,session){
       params.token = session.token;
       _this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, data) {
-                        if (err) { callback(err, data);}
-                        else { callback(err,data.user);}
+                      function(err, res) {
+                        if (err) { callback(err, res);}
+                        else { callback(err,res.user);}
                       });
     });
   }
@@ -104,11 +100,13 @@ function generateAuthMsg(params) {
   } else if (params.provider) {
     // Via social networking provider (e.g. facebook, twitter etc.)
     message.provider = params.provider;
-    message.keys = {token: params.keys.token};
     if (params.scope) {
       message.scope = params.scope;
     }
-    if (params.keys.secret) {
+    if (params.keys && params.keys.token) {
+      message.keys = {token: params.keys.token};
+    }
+    if (params.keys && params.keys.secret) {
       messages.keys.secret = params.keys.secret;
     }
   }
@@ -117,19 +115,17 @@ function generateAuthMsg(params) {
 }
 
 function signMessage(message, secret) {
-	var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
-  if (message.keys && message.keys.token) {sessionMsg+= '&keys[token]=' + message.keys.token;}
-  sessionMsg += '&nonce=' + message.nonce;
-  if (message.provider) { sessionMsg += '&provider=' + message.provider;}
-  sessionMsg += '&timestamp=' + message.timestamp;
-  if (message.user) {
-    if (message.user.login) { sessionMsg += '&user[login]=' + message.user.login; }
-    if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
-    if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
-  }
+  var sessionMsg = Object.keys(message).map(function(val) {
+    if (typeof message[val] === 'object') {
+      return Object.keys(message[val]).map(function(val1) {
+        return val + '[' + val1 + ']=' + message[val][val1];
+      }).sort().join('&');
+    } else {
+      return val + '=' + message[val];
+    }
+  }).sort().join('&');
   
-  var signature =  crypto(sessionMsg, secret).toString();
-  return signature;
+  return crypto(sessionMsg, secret).toString();
 }
 
 },{"../qbConfig":7,"../qbUtils":9,"crypto-js/hmac-sha1":12}],2:[function(require,module,exports){
@@ -199,8 +195,8 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
       var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: uri.protocol + '://' + uri.host }, data = new FormData();
       fileId = createResult.id;
       
-      Object.keys(uri.queryKey).forEach(function(el) {
-        data.append(el, decodeURIComponent(uri.queryKey[el]));
+      Object.keys(uri.queryKey).forEach(function(val) {
+        data.append(val, decodeURIComponent(uri.queryKey[val]));
       });
       data.append('file', file, createResult.name);
       
@@ -403,7 +399,7 @@ DataProxy.prototype.updateFile = function(className, params, callback) {
 DataProxy.prototype.downloadFile = function(className, params, callback) {
   if (config.debug) { console.log('DataProxy.downloadFile', className, params); }
   var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
-  result += '?field_name=' + params.field_name + '&token=' + this.service.qbInst.session.token;
+  result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
   callback(null, result);
 };
 
@@ -823,19 +819,20 @@ module.exports = config;
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
+
 // For server-side applications through using npm package 'quickblox' you should include the following block
 /*var jsdom = require('jsdom');
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
+var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
+jQuery.ajaxSettings.xhr = function() {
+  return new XMLHttpRequest;
+};*/
 
 function ServiceProxy(qb) {
-  this.qbInst = qb;
-  
-  // For server-side applications through using npm package 'quickblox' you should include the following block
-  /*jQuery.ajaxSettings.xhr = function() {
-    return new XMLHttpRequest;
-  };*/
-  
+  //this.qbInst = qb;
+  this.qbInst = {
+  	config: config
+  };
   if (config.debug) { console.log("ServiceProxy", qb); }
 }
 
@@ -848,43 +845,34 @@ ServiceProxy.prototype.getSession = function() {
 };
 
 ServiceProxy.prototype.ajax = function(params, callback) {
+  if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
   var _this = this;
-  //if (this.qbInst.session && this.qbInst.session.token){
-    //if (params.data) {
-      //if (params.data instanceof FormData) {
-        //params.data.append('token', this.qbInst.session.token);
-      //} else {
-        //params.data.token = this.qbInst.session.token;
-      //}
-    //} else { 
-      //params.data = {token: this.qbInst.session.token}; 
-    //}
-  //}
-  if (config.debug) { console.log('ServiceProxy',  params.type || 'GET', params); }
-  var ajaxCall =   {
+  var ajaxCall = {
     url: params.url,
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
-    beforeSend: function(jqXHR, settings){
-      if (config.debug) {console.log('ServiceProxy.ajax beforeSend', jqXHR, settings);}
-      if (settings.url.indexOf('://qbprod.s3.amazonaws.com') === -1) {
+    beforeSend: function(jqXHR, settings) {
+      if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
+      if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
         console.log('setting headers on request to ' + settings.url);
-        jqXHR.setRequestHeader('QuickBlox-REST-API-Version', '0.1.1');
         if (_this.qbInst.session && _this.qbInst.session.token) {
           jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
         }
       }
     },
-    success: function (data, status, jqHXR) {
-      if (config.debug) {console.log('ServiceProxy.ajax success', status, data);}
-      callback(null,data);
+    success: function(data, status, jqHXR) {
+      if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+      callback(null, data);
     },
     error: function(jqHXR, status, error) {
-      if (config.debug) {console.log('ServiceProxy.ajax error', jqHXR, status, error);}
-      var errorMsg = {code: jqHXR.status, status: status, message:error};
-      if (jqHXR && jqHXR.responseText){ errorMsg.detail = jqHXR.responseText || jqHXR.responseXML; }
-      if (config.debug) {console.log("ServiceProxy.ajax error", error);}
+      if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
+      var errorMsg = {
+        code: jqHXR.status,
+        status: status,
+        message: error,
+        detail: jqHXR.responseText
+      };
       callback(errorMsg, null);
     }
   };
@@ -944,24 +932,16 @@ var Location = require('./modules/qbLocation');
 var Messages = require('./modules/qbMessages');
 var Data = require('./modules/qbData');
 
-var QB;
-
-// For server-side applications through using npm package 'quickblox' you should comment the following block
-// IIFE to create a window scoped QB instance
-QB = (function(QB) {
-  QB = new QuickBlox();
-  if (typeof window.QB === 'undefined') {
-    window.QB = QB;
-  }
-  return QB;
-}({}));
-
+// Creating a window scoped QB instance
+if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
+  window.QB = new QuickBlox();
+}
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
-  this.session = null;
+  //this.session = null;
   this.service = new Proxy(this);
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
@@ -972,8 +952,9 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
-    this.session = { token: appId };
-    appId = null;
+    this.service.setSession({ token: appId });
+    //this.session = { token: appId };
+    appId = '';
   }
   
   config.creds.appId = appId;
@@ -983,18 +964,17 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
     config.debug = debug;
     console.log('QuickBlox.init', this);
   }
+  //this.service.qbInst.config = config;
 };
 
-QuickBlox.prototype.config = config;
+//QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function(params, callback) {
   this.auth.createSession(params, callback);
 };
 
 QuickBlox.prototype.destroySession = function(callback) {
-  if (this.session) {
-    this.auth.destroySession(callback);
-  }
+  this.auth.destroySession(callback);
 };
 
 QuickBlox.prototype.login = function(params, callback) {
@@ -1002,13 +982,11 @@ QuickBlox.prototype.login = function(params, callback) {
 };
 
 QuickBlox.prototype.logout = function(callback) {
-  if (this.session) {
-    this.auth.logout(callback);
-  }
+  this.auth.logout(callback);
 };
 
 // Browserify exports
-module.exports = (typeof QB === 'undefined') ? new QuickBlox() : QuickBlox;
+module.exports = (typeof window === 'undefined') ? new QuickBlox() : QuickBlox;
 
 },{"./modules/qbAuth":1,"./modules/qbContent":2,"./modules/qbData":3,"./modules/qbLocation":4,"./modules/qbMessages":5,"./modules/qbUsers":6,"./qbConfig":7,"./qbProxy":8}],11:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r():"function"==typeof define&&define.amd?define([],r):e.CryptoJS=r()})(this,function(){var e=e||function(e,r){var t={},i=t.lib={},n=i.Base=function(){function e(){}return{extend:function(r){e.prototype=this;var t=new e;return r&&t.mixIn(r),t.hasOwnProperty("init")||(t.init=function(){t.$super.init.apply(this,arguments)}),t.init.prototype=t,t.$super=this,t},create:function(){var e=this.extend();return e.init.apply(e,arguments),e},init:function(){},mixIn:function(e){for(var r in e)e.hasOwnProperty(r)&&(this[r]=e[r]);e.hasOwnProperty("toString")&&(this.toString=e.toString)},clone:function(){return this.init.prototype.extend(this)}}}(),o=i.WordArray=n.extend({init:function(e,t){e=this.words=e||[],this.sigBytes=t!=r?t:4*e.length},toString:function(e){return(e||s).stringify(this)},concat:function(e){var r=this.words,t=e.words,i=this.sigBytes,n=e.sigBytes;if(this.clamp(),i%4)for(var o=0;n>o;o++){var c=255&t[o>>>2]>>>24-8*(o%4);r[i+o>>>2]|=c<<24-8*((i+o)%4)}else if(t.length>65535)for(var o=0;n>o;o+=4)r[i+o>>>2]=t[o>>>2];else r.push.apply(r,t);return this.sigBytes+=n,this},clamp:function(){var r=this.words,t=this.sigBytes;r[t>>>2]&=4294967295<<32-8*(t%4),r.length=e.ceil(t/4)},clone:function(){var e=n.clone.call(this);return e.words=this.words.slice(0),e},random:function(r){for(var t=[],i=0;r>i;i+=4)t.push(0|4294967296*e.random());return new o.init(t,r)}}),c=t.enc={},s=c.Hex={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push((o>>>4).toString(16)),i.push((15&o).toString(16))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i+=2)t[i>>>3]|=parseInt(e.substr(i,2),16)<<24-4*(i%8);return new o.init(t,r/2)}},u=c.Latin1={stringify:function(e){for(var r=e.words,t=e.sigBytes,i=[],n=0;t>n;n++){var o=255&r[n>>>2]>>>24-8*(n%4);i.push(String.fromCharCode(o))}return i.join("")},parse:function(e){for(var r=e.length,t=[],i=0;r>i;i++)t[i>>>2]|=(255&e.charCodeAt(i))<<24-8*(i%4);return new o.init(t,r)}},f=c.Utf8={stringify:function(e){try{return decodeURIComponent(escape(u.stringify(e)))}catch(r){throw Error("Malformed UTF-8 data")}},parse:function(e){return u.parse(unescape(encodeURIComponent(e)))}},a=i.BufferedBlockAlgorithm=n.extend({reset:function(){this._data=new o.init,this._nDataBytes=0},_append:function(e){"string"==typeof e&&(e=f.parse(e)),this._data.concat(e),this._nDataBytes+=e.sigBytes},_process:function(r){var t=this._data,i=t.words,n=t.sigBytes,c=this.blockSize,s=4*c,u=n/s;u=r?e.ceil(u):e.max((0|u)-this._minBufferSize,0);var f=u*c,a=e.min(4*f,n);if(f){for(var p=0;f>p;p+=c)this._doProcessBlock(i,p);var d=i.splice(0,f);t.sigBytes-=a}return new o.init(d,a)},clone:function(){var e=n.clone.call(this);return e._data=this._data.clone(),e},_minBufferSize:0});i.Hasher=a.extend({cfg:n.extend(),init:function(e){this.cfg=this.cfg.extend(e),this.reset()},reset:function(){a.reset.call(this),this._doReset()},update:function(e){return this._append(e),this._process(),this},finalize:function(e){e&&this._append(e);var r=this._doFinalize();return r},blockSize:16,_createHelper:function(e){return function(r,t){return new e.init(t).finalize(r)}},_createHmacHelper:function(e){return function(r,t){return new p.HMAC.init(e,t).finalize(r)}}});var p=t.algo={};return t}(Math);return e});

@@ -6,24 +6,32 @@ describe('QuickBlox SDK - Basic functions', function() {
   });
 
   describe('Default settings', function(){
+    var needsInit = true;
+
+    beforeEach(function (){
+      if (needsInit){
+        QB.init(DEFAULTS.creds.appId, DEFAULTS.creds.authKey, DEFAULTS.creds.authSecret, DEFAULTS.debug);
+        needsInit = false;
+      }
+    });
     it('knows api endpoints and paths', function(){
-      expect(QB.config.urls).toEqual(DEFAULTS.urls);
+      expect(QB.service.qbInst.config.urls).toEqual(DEFAULTS.urls);
     });
     it('has the correct default config', function(){
-      expect(QB.config.creds).toEqual(DEFAULTS.creds);
+      expect(QB.service.qbInst.config.creds).toEqual(DEFAULTS.creds);
     });
     it('has debug off by default', function(){
-      expect(QB.config.debug).toBe(DEFAULTS.debug);
+      expect(QB.service.qbInst.config.debug).toBe(DEFAULTS.debug);
     });
   });
 
   describe('Configuration values', function(){
     it('can load a config', function(){
       QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      expect(QB.config.creds.appId).toEqual(CONFIG.appId);
-      expect(QB.config.creds.authKey).toEqual(CONFIG.authKey);
-      expect(QB.config.creds.authSecret).toEqual(CONFIG.authSecret);
-      expect(QB.config.debug).toBe(CONFIG.debug);
+      expect(QB.service.qbInst.config.creds.appId).toEqual(CONFIG.appId);
+      expect(QB.service.qbInst.config.creds.authKey).toEqual(CONFIG.authKey);
+      expect(QB.service.qbInst.config.creds.authSecret).toEqual(CONFIG.authSecret);
+      expect(QB.service.qbInst.config.debug).toBe(CONFIG.debug);
     });
   });
 
@@ -94,7 +102,7 @@ describe('QuickBlox SDK - Basic functions', function() {
         return done;
       },'delete session', TIMEOUT);
       runs(function(){
-        expect(QB.session).toBeNull();
+        expect(QB.service.qbInst.session).toBeNull();
       });
     });
 

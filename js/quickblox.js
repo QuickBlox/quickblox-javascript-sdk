@@ -19,24 +19,16 @@ var Location = require('./modules/qbLocation');
 var Messages = require('./modules/qbMessages');
 var Data = require('./modules/qbData');
 
-var QB;
-
-// For server-side applications through using npm package 'quickblox' you should comment the following block
-// IIFE to create a window scoped QB instance
-QB = (function(QB) {
-  QB = new QuickBlox();
-  if (typeof window.QB === 'undefined') {
-    window.QB = QB;
-  }
-  return QB;
-}({}));
-
+// Creating a window scoped QB instance
+if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
+  window.QB = new QuickBlox();
+}
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
-  this.session = null;
+  //this.session = null;
   this.service = new Proxy(this);
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
@@ -47,8 +39,9 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
-    this.session = { token: appId };
-    appId = null;
+    this.service.setSession({ token: appId });
+    //this.session = { token: appId };
+    appId = '';
   }
   
   config.creds.appId = appId;
@@ -58,18 +51,17 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
     config.debug = debug;
     console.log('QuickBlox.init', this);
   }
+  //this.service.qbInst.config = config;
 };
 
-QuickBlox.prototype.config = config;
+//QuickBlox.prototype.config = config;
 
 QuickBlox.prototype.createSession = function(params, callback) {
   this.auth.createSession(params, callback);
 };
 
 QuickBlox.prototype.destroySession = function(callback) {
-  if (this.session) {
-    this.auth.destroySession(callback);
-  }
+  this.auth.destroySession(callback);
 };
 
 QuickBlox.prototype.login = function(params, callback) {
@@ -77,10 +69,8 @@ QuickBlox.prototype.login = function(params, callback) {
 };
 
 QuickBlox.prototype.logout = function(callback) {
-  if (this.session) {
-    this.auth.logout(callback);
-  }
+  this.auth.logout(callback);
 };
 
 // Browserify exports
-module.exports = (typeof QB === 'undefined') ? new QuickBlox() : QuickBlox;
+module.exports = (typeof window === 'undefined') ? new QuickBlox() : QuickBlox;

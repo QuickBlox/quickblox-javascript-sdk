@@ -82,7 +82,7 @@ DataProxy.prototype.updateFile = function(className, params, callback) {
 DataProxy.prototype.downloadFile = function(className, params, callback) {
   if (config.debug) { console.log('DataProxy.downloadFile', className, params); }
   var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
-  result += '?field_name=' + params.field_name + '&token=' + this.service.qbInst.session.token;
+  result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
   callback(null, result);
 };
 

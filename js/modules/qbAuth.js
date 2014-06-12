@@ -25,20 +25,16 @@ AuthProxy.prototype.createSession = function(params, callback) {
 
   // Signature of message with SHA-1 using secret key
   message = generateAuthMsg(params);
-  console.log(message);
-  signature = signMessage(message, config.creds.authSecret);
-  console.log(signature);
-  message.signature = signature;
-  console.log(message);
+  message.signature = signMessage(message, config.creds.authSecret);
 
   this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST'},
-                    function(err, data) {
-                      if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
-                      if (data && data.session) {
-                        _this.service.setSession(data.session);
-                        callback(err,data.session);
-                      } else {
+                    function(err, res) {
+                      if (config.debug) { console.log('AuthProxy.createSession callback', err, res); }
+                      if (err) {
                         callback(err, null);
+                      } else {
+                        _this.service.setSession(res.session);
+                        callback(err, res.session);
                       }
                     });
 };
@@ -49,8 +45,8 @@ AuthProxy.prototype.destroySession = function(callback) {
     token: this.service.getSession().token
   };
   this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
-                    function(err,data){
-                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, data);}
+                    function(err,res){
+                      if (config.debug) {console.log('AuthProxy.destroySession callback', err, res);}
                       if (err === null){
                         _this.service.setSession(null);
                       }
@@ -60,20 +56,20 @@ AuthProxy.prototype.destroySession = function(callback) {
 
 AuthProxy.prototype.login = function(params, callback) {
   var _this = this;
-  if (this.service.getSession() !== null) {
+  if (this.service.getSession()) {
     params.token = this.service.getSession().token;
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, data) {
-                        if (err) { callback(err, data);}
-                        else { callback(err,data.user);}
+                      function(err, res) {
+                        if (err) { callback(err, res);}
+                        else { callback(err,res.user);}
                       });
   } else {
     this.createSession(function(err,session){
       params.token = session.token;
       _this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, data) {
-                        if (err) { callback(err, data);}
-                        else { callback(err,data.user);}
+                      function(err, res) {
+                        if (err) { callback(err, res);}
+                        else { callback(err,res.user);}
                       });
     });
   }
@@ -103,11 +99,13 @@ function generateAuthMsg(params) {
   } else if (params.provider) {
     // Via social networking provider (e.g. facebook, twitter etc.)
     message.provider = params.provider;
-    message.keys = {token: params.keys.token};
     if (params.scope) {
       message.scope = params.scope;
     }
-    if (params.keys.secret) {
+    if (params.keys && params.keys.token) {
+      message.keys = {token: params.keys.token};
+    }
+    if (params.keys && params.keys.secret) {
       messages.keys.secret = params.keys.secret;
     }
   }
@@ -116,17 +114,15 @@ function generateAuthMsg(params) {
 }
 
 function signMessage(message, secret) {
-	var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
-  if (message.keys && message.keys.token) {sessionMsg+= '&keys[token]=' + message.keys.token;}
-  sessionMsg += '&nonce=' + message.nonce;
-  if (message.provider) { sessionMsg += '&provider=' + message.provider;}
-  sessionMsg += '&timestamp=' + message.timestamp;
-  if (message.user) {
-    if (message.user.login) { sessionMsg += '&user[login]=' + message.user.login; }
-    if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
-    if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
-  }
+  var sessionMsg = Object.keys(message).map(function(val) {
+    if (typeof message[val] === 'object') {
+      return Object.keys(message[val]).map(function(val1) {
+        return val + '[' + val1 + ']=' + message[val][val1];
+      }).sort().join('&');
+    } else {
+      return val + '=' + message[val];
+    }
+  }).sort().join('&');
   
-  var signature =  crypto(sessionMsg, secret).toString();
-  return signature;
+  return crypto(sessionMsg, secret).toString();
 }
