@@ -11,7 +11,6 @@
 // Browserify dependencies
 var config = require('./qbConfig');
 var Proxy = require('./qbProxy');
-var Utils = require('./qbUtils');
 
 var Auth = require('./modules/qbAuth');
 var Users = require('./modules/qbUsers');
@@ -25,7 +24,6 @@ var QB;
 // For server-side applications through using npm package 'quickblox' you should comment the following block
 // IIFE to create a window scoped QB instance
 QB = (function(QB) {
-  Utils.shim();
   QB = new QuickBlox();
   if (typeof window.QB === 'undefined') {
     window.QB = QB;

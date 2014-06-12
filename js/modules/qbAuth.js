@@ -16,19 +16,23 @@ function AuthProxy(service) {
 }
 
 AuthProxy.prototype.createSession = function(params, callback) {
-  var message, _this = this;
+  var _this = this, message;
 
-  if (typeof params === 'function' && typeof callback === 'undefined'){
+  if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
     params = {};
   }
 
-  // Sign message with SHA-1 using secret key and add to payload
+  // Signature of message with SHA-1 using secret key
   message = generateAuthMsg(params);
-  message = signMessage(message,  params.authSecret || config.creds.authSecret);
+  console.log(message);
+  signature = signMessage(message, config.creds.authSecret);
+  console.log(signature);
+  message.signature = signature;
+  console.log(message);
 
-  this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST', processData: false},
-                    function handleProxy(err,data){
+  this.service.ajax({url: Utils.getUrl(config.urls.session), data: message, type: 'POST'},
+                    function(err, data) {
                       if (config.debug) { console.log('AuthProxy.createSession callback', err, data); }
                       if (data && data.session) {
                         _this.service.setSession(data.session);
@@ -39,7 +43,6 @@ AuthProxy.prototype.createSession = function(params, callback) {
                     });
 };
 
-// Currently fails due a CORS issue
 AuthProxy.prototype.destroySession = function(callback) {
   var _this = this, message;
   message = {
@@ -77,45 +80,43 @@ AuthProxy.prototype.login = function(params, callback) {
 };
 
 AuthProxy.prototype.logout = function(callback) {
-  var _this = this, message;
+  var message;
   message = {
     token: this.service.getSession().token
   };
   this.service.ajax({url: Utils.getUrl(config.urls.login), dataType:'text', data:message, type: 'DELETE'}, callback);
 };
 
-AuthProxy.prototype.nonce = function() {
-  return this._nonce++;
-};
-
-function signMessage(message, secret) {
-  signature =  crypto(message, secret).toString();
-  //if (config.debug) { console.log ('AuthProxy signature of', message, 'is', signature); }
-  return message + '&signature=' + signature;
-}
-
 function generateAuthMsg(params) {
-   // Allow params to override config
   var message = {
-    application_id : params.appId || config.creds.appId,
-    auth_key : params.authKey || config.creds.authKey,
+    application_id: config.creds.appId,
+    auth_key: config.creds.authKey,
     nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
-  // Optionally permit a user session to be created
+  
+  // With user authorization
   if (params.login && params.password) {
-    message.user = {login : params.login, password: params.password};
+    message.user = {login: params.login, password: params.password};
   } else if (params.email && params.password) {
     message.user = {email: params.email, password: params.password};
   } else if (params.provider) {
-    // With social networking (eg. facebook, twitter etc) provider
+    // Via social networking provider (e.g. facebook, twitter etc.)
     message.provider = params.provider;
-    if (params.scope) {message.scope = params.scope;}
-    message.keys = { token: params.keys.token };
-    if (params.keys.secret) { messages.keys.secret = params.keys.secret; }
+    message.keys = {token: params.keys.token};
+    if (params.scope) {
+      message.scope = params.scope;
+    }
+    if (params.keys.secret) {
+      messages.keys.secret = params.keys.secret;
+    }
   }
+  
+  return message;
+}
 
-  var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
+function signMessage(message, secret) {
+	var sessionMsg = 'application_id=' + message.application_id + '&auth_key=' + message.auth_key;
   if (message.keys && message.keys.token) {sessionMsg+= '&keys[token]=' + message.keys.token;}
   sessionMsg += '&nonce=' + message.nonce;
   if (message.provider) { sessionMsg += '&provider=' + message.provider;}
@@ -125,6 +126,7 @@ function generateAuthMsg(params) {
     if (message.user.email) { sessionMsg += '&user[email]=' + message.user.email; }
     if (message.user.password) { sessionMsg += '&user[password]=' + message.user.password; }
   }
-  //if (config.debug) { console.log ('AuthProxy authMsg', sessionMsg); }
-  return sessionMsg;
+  
+  var signature =  crypto(sessionMsg, secret).toString();
+  return signature;
 }

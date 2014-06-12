@@ -7,7 +7,7 @@
 
 (function () {
   APP = new App();
-  $(document).ready(function(){
+  $(document).ready(function() {
 
     APP.init();
     $.ajaxSetup({cache:true});
@@ -21,11 +21,11 @@
   });
 }());
 
-function App(){
+function App() {
   console.log('App constructed');
 }
 
-App.prototype.init = function(){
+App.prototype.init = function() {
   var _this= this;
   //this.compileTemplates();
   $('#facebookButton').click(function(e){e.preventDefault(); _this.facebookLogin(e); return false;});
@@ -37,12 +37,12 @@ App.prototype.init = function(){
   $('#downloadFileButton').click(function(e){e.preventDefault(); _this.downloadFile(e); return false;});
 };
 
-App.prototype.compileTemplates = function(){
+App.prototype.compileTemplates = function() {
   var template = $('#content-template').html();
   this.template = Handlebars.compile(template);
 };
 
-App.prototype.createSession = function(e){
+App.prototype.createSession = function(e) {
   var form, appId, authKey, secret, user, password, params, _this = this;
   console.log('createSession', e);
   form = $('#apiSession');
@@ -64,7 +64,7 @@ App.prototype.createSession = function(e){
   }
 };
 
-App.prototype.sessionCallback= function(err, result){
+App.prototype.sessionCallback = function(err, result) {
   console.log('Session create callback', err, result);
   if (result){
     $('#session').append('<p><em>Created session</em>: ' + JSON.stringify(result) + '</p>');
@@ -74,7 +74,7 @@ App.prototype.sessionCallback= function(err, result){
   }
 };
 
-App.prototype.deleteSession = function(e){
+App.prototype.deleteSession = function(e) {
   var token = QB.session.token;
   console.log('deleteSession', e);
   QB.destroySession(function(err, result){
@@ -88,7 +88,7 @@ App.prototype.deleteSession = function(e){
   });
 };
 
-App.prototype.formData= function(){
+App.prototype.formData = function() {
   return {
     className : document.getElementById('className').value,
     recId : document.getElementById('recId').value,
@@ -97,7 +97,7 @@ App.prototype.formData= function(){
   };
 };
 
-App.prototype.uploadFile= function(e){
+App.prototype.uploadFile = function(e) {
   data = this.formData();
   console.log('uploadFile', data);
   QB.data.uploadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
@@ -111,7 +111,7 @@ App.prototype.uploadFile= function(e){
   });
 };
 
-App.prototype.updateFile= function(e){
+App.prototype.updateFile = function(e) {
   var data = this.formData();
   console.log('updateFile', data);
   QB.data.updateFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
@@ -125,34 +125,28 @@ App.prototype.updateFile= function(e){
    });
 };
 
-App.prototype.downloadFile= function(e){
+App.prototype.downloadFile = function() {
   var data = this.formData();
   console.log('downloadFile', data);
-  QB.data.downloadFile(data.className, {id: data.recId, field_name: data.field_name, file: data.file},
-                    function(err, result){
-                      var buffer, bufferView, i, l, blob, objectUrl, image;
+  QB.data.downloadFile(data.className, {id: data.recId, field_name: data.field_name},
+                    function(err, result) {
+                      var link, image;
                       console.log('upload file callback', err, result);
                       if (err) {
                         $('#customObjectResponse').append('<p><em>Error occured downloading file</em>: ' + JSON.stringify(err) + '</p>');
                       } else {
-                         $('#customObjectResponse').append('<p><em>Downloaded size ' + result.length + ' bytes');
-                         // NB this uses experimental code to display the file in browser
-                         // see https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL
-                         buffer = new ArrayBuffer(result.length);
-                         bufferView = new Uint8Array(buffer);
-                         for (i=0,l=result.length; i<l; i++){
-                           bufferView[i] = result.charAt(i);
-                         }
-                         blob = new Blob([bufferView],{type:'image/jpeg'});
-                         objectURL = window.URL.createObjectURL(blob);
-                         image = document.createElement('img');
-                         image.src = objectURL;
-                         document.getElementById('customObjectResponse').appendChild(image);
+                        link = document.createElement('a');
+                        link.href = result;
+                        link.target = '_blank';
+                        image = document.createElement('img');
+                        image.src = result;
+                        document.getElementById('customObjectResponse').appendChild(link).appendChild(document.createTextNode("Download file"));
+                        document.getElementById('customObjectResponse').appendChild(image);
                       }
-   });
+  });
 };
 
-App.prototype.deleteFile= function(){
+App.prototype.deleteFile = function() {
   var data= this.formData();
   console.log('deleteFile', data);
   QB.data.deleteFile(data.className, {id: data.recId, field_name: data.field_name}, function(err,res){
@@ -165,7 +159,7 @@ App.prototype.deleteFile= function(){
 };
 
 
-App.prototype.facebookLogin = function (e){
+App.prototype.facebookLogin = function(e) {
   var _this = this;
   console.log('facebookLogin', e);
   FB.getLoginStatus(function(response) {

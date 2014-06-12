@@ -15,23 +15,12 @@ var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());*/
 
 function ServiceProxy(qb) {
   this.qbInst = qb;
-  jQuery.support.cors = true;
   
   // For server-side applications through using npm package 'quickblox' you should include the following block
   /*jQuery.ajaxSettings.xhr = function() {
     return new XMLHttpRequest;
   };*/
   
-  jQuery.ajaxSetup({
-    accepts: {
-      binary: "text/plain; charset=x-user-defined"
-    },
-    contents: {
-    },
-    converters: {
-      "text binary": true // Nothing to convert
-    }
-  });
   if (config.debug) { console.log("ServiceProxy", qb); }
 }
 
@@ -84,14 +73,11 @@ ServiceProxy.prototype.ajax = function(params, callback) {
       callback(errorMsg, null);
     }
   };
+  
   // Optional - for example 'multipart/form-data' when sending a file.
   // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
   if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
   if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
-  if (typeof params.async === 'boolean') { ajaxCall.async = params.async; }
-  if (typeof params.cache === 'boolean') { ajaxCall.cache = params.cache; }
-  if (typeof params.crossDomain === 'boolean') { ajaxCall.crossDomain = params.crossDomain; }
-  if (typeof params.mimeType === 'string') { ajaxCall.mimeType = params.mimeType; }
+
   jQuery.ajax( ajaxCall );
 };
