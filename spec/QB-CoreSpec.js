@@ -109,10 +109,13 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can login a user', function(){
       var done = false, user, error;
       runs(function(){
-        QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-          error = err;
-          user = result;
-          done = true;
+        QB.createSession(function (err, result){
+          expect(err).toBe(null);
+          QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+            error = err;
+            user = result;
+            done = true;
+          });
         });
       });
       waitsFor(function(){
@@ -177,11 +180,14 @@ describe('QuickBlox SDK - Basic functions', function() {
     it('can logout a user', function(){
       var done = false, user, error;
       runs(function(){
-        QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-          QB.logout(function(err, result){
-            error = err;
-            user = result;
-            done = true;
+        QB.createSession(function (err, result){
+          expect(err).toBe(null);
+          QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
+            QB.logout(function(err, result){
+              error = err;
+              user = result;
+              done = true;
+            });
           });
         });
       });
