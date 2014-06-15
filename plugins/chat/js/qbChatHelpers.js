@@ -11,12 +11,12 @@ var config = require('./config');
 
 var QBChatHelpers = {
 	getJID: function(id) {
-		return id + "-" + QB.session.application_id + "@" + config.server;
+		return id + "-" + QB.service.qbInst.session.application_id + "@" + config.server;
 	},
 	
 	getRoom: function(name) {
 		name = name.replace(/\s+/g, '_').toLowerCase();
-		return QB.session.application_id + "_" + name + "@" + config.muc;
+		return QB.service.qbInst.session.application_id + "_" + name + "@" + config.muc;
 	},
 	
 	getIDFromNode: function(jid) {
