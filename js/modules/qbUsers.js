@@ -13,6 +13,8 @@ var Utils = require('../qbUtils');
 var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
 var NUMBER_FIELDS = ['id', 'external_user_id'];
 
+var resetPasswordUrl = config.urls.users + '/password/reset';
+
 function UsersProxy(service) {
   this.service = service;
 }
@@ -47,85 +49,79 @@ UsersProxy.prototype.listUsers = function(params, callback) {
     message.per_page = params.per_page;
   }
   
-  if (config.debug) { console.log('UsersProxy.list', message); }
+  if (config.debug) { console.log('UsersProxy.listUsers', message); }
   this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
 };
 
 UsersProxy.prototype.get = function(params, callback) {
   var url;
-  if (typeof params === 'function') {
-    callback = params;
+  
+  if (typeof params === 'number') {
+    url = params;
     params = {};
-  }
-  if (typeof params === 'number'){
-    url = Utils.getUrl(config.urls.users, params);
-  } else if (typeof params === 'object') {
-    if (params.id) {
-      url = Utils.getUrl(config.urls.users, params.id);
-    } else if (params.facebookId) {
-      url = Utils.getUrl(config.urls.users, '/by_facebook_id') + '?facebook_id=' + params.facebookId;
-    } else if (params.login) {
-      url = Utils.getUrl(config.urls.users, '/by_login') + '?login=' + params.login;
-    } else if (params.fullName) {
-      url = Utils.getUrl(config.urls.users, '/by_full_name') + '?full_name=' + params.fullName;
-    } else if (params.twitterId) {
-      url = Utils.getUrl(config.urls.users, '/by_twitter_id') + '?twitter_id=' + params.twitterId;
+  } else {
+    if (params.login) {
+      url = 'by_login';
+    } else if (params.full_name) {
+      url = 'by_full_name';
+    } else if (params.facebook_id) {
+      url = 'by_facebook_id';
+    } else if (params.twitter_id) {
+      url = 'by_twitter_id';
     } else if (params.email) {
-      url = Utils.getUrl(config.urls.users, '/by_email') + '?email=' + params.email;
+      url = 'by_email';
     } else if (params.tags) {
-      url = Utils.getUrl(config.urls.users, '/by_tags') + '?tag=' + params.tags;
+      url = 'by_tags';
+    } else if (params.external) {
+      url = 'external/' + params.external;
+      params = {};
     }
   }
-  if (config.debug) {console.log('UsersProxy.get', url);}
-  this.service.ajax({url: url},
-                    function(err,res){
-                      var user;
-                      if (res && res.user) {
-                        user = res.user;
-                      }
-                      if (config.debug) { console.log('UserProxy.get', user); }
-                        callback(err,user);
+  
+  if (config.debug) { console.log('UsersProxy.get', params); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, url), data: params},
+                    function(err, res) {
+                      if (err) { callback(err, null); }
+                      else { callback(null, res.user || res); }
                     });
 };
 
 UsersProxy.prototype.create = function(params, callback) {
   if (config.debug) { console.log('UsersProxy.create', params); }
-  this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}}, 
+  this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}},
                     function(err, res) {
                       if (err) { callback(err, null); }
                       else { callback(null, res.user); }
                     });
 };
 
-UsersProxy.prototype.update = function(user, callback) {
-  var allowedProps = ['login', 'blob_id', 'email', 'external_user_id', 'facebook_id', 'twitter_id', 'full_name',
-      'phone', 'website', 'tag_list', 'password', 'old_password'];
-  var msg = {}, prop;
-  for (prop in user) {
-    if (user.hasOwnProperty(prop)) {
-      if (allowedProps.indexOf(prop)>0) {
-        msg[prop] = user[prop];
-      } 
-    }
-  }
-  if (config.debug) { console.log('UsersProxy.update', user); }
-  this.service.ajax({url: Utils.getUrl(config.urls.users, user.id), type: 'PUT', data: {user: msg}}, 
-                    function(err,res){
-                      if (err) {callback(err, null);}
-                      else { 
-                        console.log (res.user);
-                        callback (null, res.user);
-                      }
+UsersProxy.prototype.update = function(id, params, callback) {
+  if (config.debug) { console.log('UsersProxy.update', id, params); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'PUT', data: {user: params}},
+                    function(err, res) {
+                      if (err) { callback(err, null); }
+                      else { callback(null, res.user); }
                     });
 };
 
-UsersProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('UsersProxy.delete', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'DELETE', dataType: 'text' },
-                    function(err,res){
-                      if (err) { callback(err, null);}
-                      else { callback(null, true); }
-                     });
+UsersProxy.prototype.delete = function(params, callback) {
+	var url;
+  
+  if (typeof params === 'number') {
+    url = params;
+  } else {
+    if (params.external) {
+      url = 'external/' + params.external;
+    }
+  }
+  
+  if (config.debug) { console.log('UsersProxy.delete', url); }
+  this.service.ajax({url: Utils.getUrl(config.urls.users, url), type: 'DELETE', dataType: 'text'}, callback);
+};
+
+UsersProxy.prototype.resetPassword = function(email, callback) {
+  if (config.debug) { console.log('UsersProxy.resetPassword', email); }
+  this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}}, callback);
 };
 
 

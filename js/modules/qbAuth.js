@@ -26,10 +26,10 @@ AuthProxy.prototype.createSession = function(params, callback) {
   // Signature of message with SHA-1 using secret key
   message = generateAuthMsg(params);
   message.signature = signMessage(message, config.creds.authSecret);
-
+  
+  if (config.debug) { console.log('AuthProxy.createSession', message); }
   this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                     function(err, res) {
-                      if (config.debug) { console.log('AuthProxy.createSession callback', err, res); }
                       if (err) {
                         callback(err, null);
                       } else {
@@ -41,9 +41,9 @@ AuthProxy.prototype.createSession = function(params, callback) {
 
 AuthProxy.prototype.destroySession = function(callback) {
   var _this = this;
+  if (config.debug) { console.log('AuthProxy.destroySession'); }
   this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                     function(err, res) {
-                      if (config.debug) { console.log('AuthProxy.destroySession callback', err, res); }
                       if (err) {
                         callback(err, null);
                       } else {
@@ -54,6 +54,7 @@ AuthProxy.prototype.destroySession = function(callback) {
 };
 
 AuthProxy.prototype.login = function(params, callback) {
+  if (config.debug) { console.log('AuthProxy.login', params); }
   this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                     function(err, res) {
                       if (err) { callback(err, null); }
@@ -62,6 +63,7 @@ AuthProxy.prototype.login = function(params, callback) {
 };
 
 AuthProxy.prototype.logout = function(callback) {
+  if (config.debug) { console.log('AuthProxy.logout'); }
   this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
 };
 
