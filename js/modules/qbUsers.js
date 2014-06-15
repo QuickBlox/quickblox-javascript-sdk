@@ -105,7 +105,7 @@ UsersProxy.prototype.update = function(id, params, callback) {
 };
 
 UsersProxy.prototype.delete = function(params, callback) {
-	var url;
+  var url;
   
   if (typeof params === 'number') {
     url = params;
