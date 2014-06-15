@@ -1,7 +1,7 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * Users Resource Module
+ * Users Module
  *
  */
 
@@ -10,48 +10,49 @@ module.exports = UsersProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 
+var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
+var NUMBER_FIELDS = ['id', 'external_user_id'];
+
 function UsersProxy(service) {
   this.service = service;
 }
 
 UsersProxy.prototype.listUsers = function(params, callback) {
-  var _this = this, message = {}, filter;
-  if (typeof params === 'function') {
+  var message = {}, filters = [], item;
+  
+  if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
-    params = undefined;
+    params = {};
   }
-  if (params && params.filter) {
-    switch (params.filter.type){
-      case 'id':
-        filter = 'number id in';
-        break;
-      case 'email':
-        filter = 'string email in';
-        break;
-      case 'login':
-        filter = 'string login in';
-        break;
-      case 'facebook_id':
-        filter = 'number facebook_id in';
-        break;
-      case 'twitter_id':
-        filter = 'number twitter_id in';
-        break;
-      case 'phone':
-        filter = 'string phone in';
-        break;
+  
+  if (params.filter) {
+    if (params.filter instanceof Array) {
+      params.filter.forEach(function(el) {
+        item = generateFilter(el);
+        filters.push(item);
+      });
+    } else {
+      item = generateFilter(params.filter);
+      filters.push(item);
     }
-    filter = filter + ' ' + params.filter.value;
-    message['filter[]'] = filter;
+    message.filter = filters;
   }
-  if (params && params.perPage) { message.per_page = params.perPage;}
-  if (params && params.pageNo) {message.page = params.pageNo;}
-  if (config.debug) {console.log('UsersProxy.list', message);}
+  if (params.order) {
+    message.order = generateOrder(params.order);
+  }
+  if (params.page) {
+    message.page = params.page;
+  }
+  if (params.per_page) {
+    message.per_page = params.per_page;
+  }
+  
+  if (config.debug) { console.log('UsersProxy.list', message); }
   this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
 };
 
 UsersProxy.prototype.get = function(params, callback) {
-  var _this = this, url;
+  var url;
   if (typeof params === 'function') {
     callback = params;
     params = {};
@@ -77,10 +78,10 @@ UsersProxy.prototype.get = function(params, callback) {
   }
   if (config.debug) {console.log('UsersProxy.get', url);}
   this.service.ajax({url: url},
-                    function(err,data){
+                    function(err,res){
                       var user;
-                      if (data && data.user) {
-                        user = data.user;
+                      if (res && res.user) {
+                        user = res.user;
                       }
                       if (config.debug) { console.log('UserProxy.get', user); }
                         callback(err,user);
@@ -88,11 +89,11 @@ UsersProxy.prototype.get = function(params, callback) {
 };
 
 UsersProxy.prototype.create = function(params, callback) {
-  if (config.debug) { console.log('UsersProxy.create', params);}
+  if (config.debug) { console.log('UsersProxy.create', params); }
   this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}}, 
-                    function(err, data){
-                      if (err) { callback(err, null);}
-                      else { callback(null, data.user); }
+                    function(err, res) {
+                      if (err) { callback(err, null); }
+                      else { callback(null, res.user); }
                     });
 };
 
@@ -109,11 +110,11 @@ UsersProxy.prototype.update = function(user, callback) {
   }
   if (config.debug) { console.log('UsersProxy.update', user); }
   this.service.ajax({url: Utils.getUrl(config.urls.users, user.id), type: 'PUT', data: {user: msg}}, 
-                    function(err,data){
+                    function(err,res){
                       if (err) {callback(err, null);}
                       else { 
-                        console.log (data.user);
-                        callback (null, data.user);
+                        console.log (res.user);
+                        callback (null, res.user);
                       }
                     });
 };
@@ -121,8 +122,29 @@ UsersProxy.prototype.update = function(user, callback) {
 UsersProxy.prototype.delete = function(id, callback) {
   if (config.debug) { console.log('UsersProxy.delete', id); }
   this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'DELETE', dataType: 'text' },
-                    function(err,data){
+                    function(err,res){
                       if (err) { callback(err, null);}
                       else { callback(null, true); }
                      });
 };
+
+
+/* Private
+---------------------------------------------------------------------- */
+function generateFilter(obj) {
+  var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
+  
+  if (obj.value instanceof Array) {
+    if (type == 'object') {
+      type = typeof obj.value[0];
+    }
+    obj.value = obj.value.toString();
+  }
+  
+  return [type, obj.field, obj.param, obj.value].join(' ');
+}
+
+function generateOrder(obj) {
+  var type = obj.field in DATE_FIELDS ? 'date' : obj.field in NUMBER_FIELDS ? 'number' : 'string';
+  return [obj.sort, type, obj.field].join(' ');
+}

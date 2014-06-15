@@ -65,6 +65,9 @@ AuthProxy.prototype.logout = function(callback) {
   this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
 };
 
+
+/* Private
+---------------------------------------------------------------------- */
 function generateAuthMsg(params) {
   var message = {
     application_id: config.creds.appId,
