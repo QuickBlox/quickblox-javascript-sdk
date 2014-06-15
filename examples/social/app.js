@@ -86,13 +86,14 @@ App.prototype.listUsers= function(e){
   filterValue = form.find('#userFilter')[0].value;
   if (filterType && filterValue) {
     params.filter = {};
-    params.filter.type = filterType;
+    params.filter.field = filterType;
+    params.filter.param = 'eq';
     params.filter.value = filterValue;
   }
   perPage = parseInt(form.find('#per_page')[0].value, 10);
   pageNo = parseInt(form.find('#page')[0].value, 10);
-  if (typeof perPage === 'number') {params.perPage = perPage;}
-  if (typeof pageNo === 'number') {params.pageNo = pageNo;}
+  if (typeof perPage === 'number') {params.per_page = perPage;}
+  if (typeof pageNo === 'number') {params.page = pageNo;}
   QB.users.listUsers(params, function(err,result){
     console.log('Users callback', err, result);
     $('#userList').empty();
