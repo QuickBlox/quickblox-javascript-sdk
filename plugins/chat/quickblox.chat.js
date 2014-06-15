@@ -9,7 +9,7 @@
 var config = {
 	server: 'chat.quickblox.com',
 	muc: 'muc.chat.quickblox.com',
-	bosh: 'http://chat.quickblox.com:5280',
+	bosh: 'http://chat.quickblox.com:8080',
 	amazon: 'https://qbprod.s3.amazonaws.com/'
 };
 
@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.5';
+	this.version = '0.8.6';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -496,7 +496,7 @@ QBChat.prototype.listRooms = function(callback) {
 
 QBChat.prototype.destroy = function(roomName) {
 	console.log('destroy');
-	var roomJid = QB.session.application_id + '_' + roomName + '@' + config.muc;
+	var roomJid = QB.service.qbInst.session.application_id + '_' + roomName + '@' + config.muc;
 	var iq = $iq({
 		to: roomJid,
 		type: 'set'
@@ -519,12 +519,12 @@ var config = require('./config');
 
 var QBChatHelpers = {
 	getJID: function(id) {
-		return id + "-" + QB.session.application_id + "@" + config.server;
+		return id + "-" + QB.service.qbInst.session.application_id + "@" + config.server;
 	},
 	
 	getRoom: function(name) {
 		name = name.replace(/\s+/g, '_').toLowerCase();
-		return QB.session.application_id + "_" + name + "@" + config.muc;
+		return QB.service.qbInst.session.application_id + "_" + name + "@" + config.muc;
 	},
 	
 	getIDFromNode: function(jid) {
