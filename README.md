@@ -1,10 +1,10 @@
-QuickBlox Web SDK
+QuickBlox JavaScript SDK
 =================
 
-The QuickBlox Web SDK provides a JavaScript library making it even
+The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud backend platform.
 
-For use inside browers, a window scoped variable called QB is created.
+For use inside browsers, a window scoped variable called QB is created.
 
 Most functions, with the notable exception of init, take a callback
 parameter which gets called with an error and result parameter (ala node.js).
@@ -21,7 +21,7 @@ A simple example
 QB.init(3477,'ChRnwEJ3WzxH9O4','AS546kpUQ2tfbvv');
 
 // create an API session (user is not authenticated)
-QB.createSession(function(err, result){
+QB.createSession(function(err, result) {
   if (err) { 
     console.log('Something went wrong: ' + err);
   } else {
@@ -30,7 +30,7 @@ QB.createSession(function(err, result){
 });
 
 // list the users currently enrolled
-QB.users.find( function(err,result){
+QB.users.listUsers(function(err, result) {
   for (var i=0; i < result.items.length; i++) {
     console.log('User ' + result.items[i].login + ' is registered');
   }
@@ -49,12 +49,16 @@ The above simple example can then be coded as shown bellow:
 QB.init('1b785b603a9ae88d9dfbd1fc0cca0335086927f1');
 
 // list the users currently enrolled
-QB.users.find( function(err,result){
+QB.users.listUsers(function(err, result) {
   for (var i=0; i < result.items.length; i++) {
     console.log('User ' + result.items[i].login + ' is registered');
   }
 });
 ````
+Documentation
+----------------------
+
+You can look at it here http://quickblox.com/developers/Javascript
 
 Questions and feedback
 ----------------------
@@ -83,7 +87,7 @@ options: A map of additional options to pass to the method
           secret - social network access token secret (only required for twitter)
 ```
 
-Please take a look at the specs for examples of how to use the APIs. In essence the Web SDK is a thin facade to the REST API, so reading the docs [http://quickblox.com/developers/Overview] is strongly recommended :)
+Please take a look at the specs for examples of how to use the APIs. In essence the JavaScript SDK is a thin facade to the REST API, so reading the docs [http://quickblox.com/developers/Overview] is strongly recommended :)
 
 
 Modifying and building the library

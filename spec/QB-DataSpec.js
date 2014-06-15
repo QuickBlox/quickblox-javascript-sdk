@@ -5,7 +5,7 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
     var done;
     if (needsInit) {
       runs(function(){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         done = false;
         QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
           expect(err).toBeNull();
@@ -114,12 +114,12 @@ describe('QuickBlox SDK - Data (custom objects)', function() {
           file.id = 'uploadFile';
           form.appendChild(file);
           form.addEventListener("submit", function(){
-            console.debug(this, arguments);
+            console.log(this, arguments);
             fileList = document.getElementById('uploadFile').files;
-            console.debug(fileList);
+            console.log(fileList);
           }, false);
           form.onsubmit = function(e){
-            console.debug('asd');
+            console.log('asd');
             e.preventDefault();
             return false;
           };

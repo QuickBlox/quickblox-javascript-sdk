@@ -3,7 +3,7 @@ describe('QuickBlox SDK - Location', function() {
   beforeEach(function(){
     var done;
     runs(function(){
-      QB.init(CONFIG);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
       done = false;
       QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
         expect(err).toBeNull();

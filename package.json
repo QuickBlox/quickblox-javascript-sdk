@@ -1,19 +1,38 @@
 {
-  "name": "Quickblox",
-  "description": "Quickblox Javascript SDK",
-  "version": "0.0.1",
-  "author": "Dan Murphy <dan@quickblox.com>",
+  "name": "quickblox",
+  "description": "QuickBlox JavaScript SDK",
+  "version": "1.2.0",
+  "homepage": "http://quickblox.com",
+  "main": "js/quickblox.js",
+  "keywords": [
+    "quickblox",
+    "javascript",
+    "sdk",
+    "baas",
+    "cloud",
+    "api"
+  ],
+  "maintainers": [
+    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>"
+  ],
+  "contributors": [
+    "Dan Murphy <dan@quickblox.com>",
+    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>"
+  ],
   "repository": {
-	  "type": "git",
-	  "url": "https://github.com/QuickBlox/quickblox-web-sdk.git"
+    "type": "git",
+    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk.git"
   },
-  "bugs":{
-	  "url": "https://github.com/QuickBlox/quickblox-web-sdk/issues"
+  "bugs": {
+    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/issues",
+    "email": "web@quickblox.com"
   },
   "dependencies": {
-    "crypto-js": "^3.1.2-2"
+    "crypto-js": "3.1.2-2",
+    "jsdom": "0.10.6",
+    "xmlhttprequest": "1.6.0",
+    "jquery": "2.1.1"
   },
-  "devDependencies": {
-    "browserify": "^3.30.2"
-  }
+  "devDependencies": {},
+  "license": "MIT"
 }

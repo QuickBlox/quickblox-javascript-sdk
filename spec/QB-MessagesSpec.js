@@ -4,7 +4,7 @@ describe('QuickBlox SDK - Messages', function() {
   beforeEach(function(){
     var done;
     if (needsInit){
-      QB.init(CONFIG);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
       runs(function(){
         done = false;
         QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
@@ -64,7 +64,7 @@ describe('QuickBlox SDK - Messages', function() {
       var subscription, done;
       runs(function(){
         done = false;
-        params = { notification_channels : 'pull ', url: 'http://example.com/notify_me'};
+        params = {notification_channels: 'apns'};
         QB.messages.subscriptions.create(params, function(err, res){
           subscription = res;
           done = true;
@@ -94,7 +94,7 @@ describe('QuickBlox SDK - Messages', function() {
         return done;
       },'list subscriptions', TIMEOUT);
       runs(function(){
-        console.debug('subscriptions',result);
+        console.log('subscriptions',result);
         expect(result).not.toBeNull();
         expect(result.length).not.toBeNull();
       });
@@ -107,7 +107,7 @@ describe('QuickBlox SDK - Messages', function() {
         QB.messages.subscriptions.list(function(err, res) {
           if (res && !err) {
             id = res[0].subscription.id;
-            console.debug(res[0], id);
+            console.log(res[0], id);
             QB.messages.subscriptions.delete(id, function(err, res){
               error = err;
               done = true;
@@ -125,7 +125,7 @@ describe('QuickBlox SDK - Messages', function() {
 
   });
 
-  describe('Events', function(){
+  /*describe('Events', function(){
     it('can create a pull event', function(){
       var done, result;
       runs(function(){
@@ -166,7 +166,7 @@ describe('QuickBlox SDK - Messages', function() {
         expect(result.length).not.toBeNull();
       });
     });
-  });
+  });*/
 
 });
 
