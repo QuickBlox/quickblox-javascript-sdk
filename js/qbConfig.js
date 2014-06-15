@@ -5,32 +5,35 @@
  *
  */
 
-// Browserify exports
-
 var config = {
-  creds:{
+  version: '1.2.0',
+  creds: {
     appId: '',
     authKey: '',
     authSecret: ''
   },
-  urls:{
-    base: 'https://api.quickblox.com/',
-    find: 'find',
+  endpoints: {
+    api: 'api.quickblox.com',
+    chat: 'chat.quickblox.com',
+    turn: 'turnserver.quickblox.com',
+    s3Bucket: 'qbprod'
+  },
+  urls: {
     session: 'session',
     login: 'login',
     users: 'users',
+    blobs: 'blobs',
+    geodata: 'geodata',
+    places: 'places',
     pushtokens: 'push_tokens',
     subscriptions: 'subscriptions',
     events: 'events',
-    pullevents: 'pull_events',
-    geo: 'geodata',
-    places: 'places',
     data: 'data',
-    content: 'blobs',
-    chat: 'chat',
     type: '.json'
-    },
+  },
+  ssl: true,
   debug: false
 };
 
+// Browserify exports
 module.exports = config;
