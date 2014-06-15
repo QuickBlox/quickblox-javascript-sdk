@@ -20,7 +20,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.6';
+	this.version = '0.9.0';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -125,6 +125,31 @@ function QBChat(params) {
 		self._callbacks.onMUCRoster && self._callbacks.onMUCRoster(users, room);
 		return true;
 	};
+	
+	// JSON response for groupchat methods
+	this._IQResult = [];
+	this._onIQstanza = function(stanza) {
+		var query, item;
+		var childElem = $(stanza).find('item')[0] || $(stanza).find('identity')[0];
+		
+		if (childElem) {
+			if (params && params.debug) {
+				console.log(stanza);
+				trace('IQ result');
+			}
+			
+			query = $(stanza).find('query')[0];
+			$(query.childNodes).each(function() {
+				item = {};
+				$(this.attributes).each(function() {
+					item[this.name] = this.value;
+				});
+				self._IQResult.push(item);
+			});
+		}
+		
+		return true;
+	};
 }
 
 function trace(text) {
@@ -172,6 +197,7 @@ QBChat.prototype.connect = function(user) {
 			trace('Connected');
 			self._connection.addHandler(self._onMessage, null, 'message', 'chat');
 			self._connection.addHandler(self._onMessage, null, 'message', 'groupchat');
+			self._connection.addHandler(self._onIQstanza, null, 'iq', 'result');
 			if (self._callbacks.onMUCPresence)
 				self._connection.addHandler(self._onPresence, null, 'presence');
 			
@@ -387,6 +413,8 @@ QBChat.prototype.deleteMembers = function(params, callback) {
 	);
 };
 
+// Owner Requests Owner List
+// http://xmpp.org/extensions/xep-0045.html#modifyowner
 QBChat.prototype.getRoomMembers = function(room, callback) {
 	console.log('getRoomMembers');
 	var roomJID, iq, self = this;
@@ -405,7 +433,9 @@ QBChat.prototype.getRoomMembers = function(room, callback) {
 	self._connection.sendIQ(iq.tree(),
 	      
 	      function onSuccess() {
-	        callback(null, true);
+	      	var res = self._IQResult;
+	      	self._IQResult = [];
+	        callback(null, res);
 	      },
 	      
 	      function onError() {
@@ -414,6 +444,8 @@ QBChat.prototype.getRoomMembers = function(room, callback) {
 	);
 };
 
+// Querying for Room Items
+// http://xmpp.org/extensions/xep-0045.html#disco-roomitems
 QBChat.prototype.getOnlineUsers = function(room, callback) {
 	console.log('getOnlineUsers');
 	var self = this;
@@ -421,7 +453,9 @@ QBChat.prototype.getOnlineUsers = function(room, callback) {
 	self._connection.muc.queryOccupants(roomJID,
 	      
 	      function onSuccess() {
-	        callback(null, true);
+	        var res = self._IQResult;
+	      	self._IQResult = [];
+	        callback(null, res);
 	      },
 	      
 	      function onError() {
@@ -430,6 +464,8 @@ QBChat.prototype.getOnlineUsers = function(room, callback) {
 	);
 };
 
+// Querying for Room Information
+// http://xmpp.org/extensions/xep-0045.html#disco-roominfo
 QBChat.prototype.getRoomInfo = function(room, callback) {
 	console.log('getRoomInfo');
 	var roomJID, iq, self = this;
@@ -446,7 +482,9 @@ QBChat.prototype.getRoomInfo = function(room, callback) {
 	self._connection.sendIQ(iq.tree(),
 	      
 	      function onSuccess() {
-	        callback(null, true);
+	        var res = self._IQResult;
+	      	self._IQResult = [];
+	        callback(null, res);
 	      },
 	      
 	      function onError() {
@@ -455,13 +493,17 @@ QBChat.prototype.getRoomInfo = function(room, callback) {
 	);
 };
 
+// Discovering Rooms
+// http://xmpp.org/extensions/xep-0045.html#disco-rooms
 QBChat.prototype.listRooms = function(callback) {
 	console.log('listRooms');
 	var self = this;
 	self._connection.muc.listRooms(config.muc,
 	      
 	      function onSuccess() {
-	        callback(null, true);
+	        var res = self._IQResult;
+	      	self._IQResult = [];
+	        callback(null, res);
 	      },
 	      
 	      function onError() {
@@ -469,12 +511,6 @@ QBChat.prototype.listRooms = function(callback) {
 	      }
 	);
 };
-
-/*QBChat.prototype.invite = function(receiver) {
-	console.log('invite');
-	var userJID = QBChatHelpers.getJID(receiver);
-	this._connection.muc.invite(this.newRoom, userJID);
-};*/
 
 QBChat.prototype.destroy = function(roomName) {
 	console.log('destroy');
