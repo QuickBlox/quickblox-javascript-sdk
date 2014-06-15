@@ -781,7 +781,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.2.0',
+  version: '1.2.1',
   creds: {
     appId: '',
     authKey: '',
@@ -829,6 +829,7 @@ var config = require('./qbConfig');
 /*var jsdom = require('jsdom');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
+jQuery.support.cors = true;
 jQuery.ajaxSettings.xhr = function() {
   return new XMLHttpRequest;
 };*/
