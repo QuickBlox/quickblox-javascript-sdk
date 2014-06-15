@@ -4,7 +4,7 @@ describe('QuickBlox SDK - Users', function() {
   beforeEach(function(){
     var done;
     if (needsInit){
-      QB.init(CONFIG);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
       runs(function(){
         done = false;
         QB.createSession(function (err, result){
@@ -43,7 +43,7 @@ describe('QuickBlox SDK - Users', function() {
 
   it('can filter users by email (nobody@nowhere.org)', function() {
     var done, result;
-    params = {filter: { type: 'email', value: 'nobody@nowhere.org' }};
+    params = {filter: { field: 'email', param: 'eq', value: 'nobody@nowhere.org' }};
     runs(function(){
       done = false;
       QB.users.listUsers(params, function(err, res){
@@ -63,7 +63,7 @@ describe('QuickBlox SDK - Users', function() {
 
   it('can filter users by login (qb-dan)', function() {
     var done, result;
-    params = {filter: { type: 'login', value: 'qb-dan' }};
+    params = {filter: { field: 'login', param: 'eq', value: 'qb-dan' }};
     runs(function(){
       done = false;
       QB.users.listUsers(params, function(err, res){
@@ -110,8 +110,7 @@ describe('QuickBlox SDK - Users', function() {
       runs(function(){
         done = false;
         QB.login({login: login, password: 'someSecret'}, function(err, user){
-          user.full_name = 'Updated QuickBlox Test';
-          QB.users.update(user, function(err, res){
+          QB.users.update(user.id, {full_name: 'Updated QuickBlox Test'}, function(err, res){
             done = true;
             expect(err).toBeNull();
             updatedUser = res;
@@ -142,7 +141,7 @@ describe('QuickBlox SDK - Users', function() {
         }, 'delete user', TIMEOUT);
       runs(function(){
         console.log('User is', user);
-        expect(result).toBe(true);
+        expect(result).toBe(' ');
       });
     });
   });
@@ -154,7 +153,7 @@ describe('QuickBlox SDK - Users', function() {
     beforeEach(function(){
       var done;
       if (needsInit){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         runs(function(){
           done = false;
           QB.createSession(function (err, result){

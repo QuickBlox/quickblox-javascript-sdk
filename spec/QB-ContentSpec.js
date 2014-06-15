@@ -5,7 +5,7 @@ describe('QuickBlox SDK - Content', function() {
     var done;
     if (needsInit) {
       runs(function(){
-        QB.init(CONFIG);
+        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
         done = false;
         QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
           expect(err).toBeNull();
