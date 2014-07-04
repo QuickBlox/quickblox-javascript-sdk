@@ -191,6 +191,7 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
       _this.upload(uploadParams, function(err, result) {
         if (err) { callback(err, null); }
         else {
+          createResult.path = result.Location;
           _this.markUploaded({id: fileId, size: size}, function(err, result){
             if (err) { callback(err, null);}
             else {
