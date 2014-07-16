@@ -22,6 +22,8 @@ function ChatProxy(service) {
   this.service = service;
 }
 
+/* Chat module: Core
+---------------------------------------------------------------------- */
 ChatProxy.prototype.connect = function(params, callback) {
   var self = this, err;
   if (config.debug) { console.log('ChatProxy.connect', params); }
@@ -53,6 +55,11 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
       connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
       connection.addHandler(self.onPresenceListener, null, 'presence');
+
+      // chat server will close your connection if you are not active in chat during one minute
+      // initial presence and an automatic reminder of it each 55 seconds
+      connection.send($pres().tree());
+      connection.addTimedHandler(55 * 1000, self._autoSendPresence);
       
       callback(null, '');
       break;
@@ -69,6 +76,13 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     }
   });
+};
+
+ChatProxy.prototype._autoSendPresence = function() {
+  connection.send($pres().tree());
+  // we must return true to keep the handler alive
+  // returning false would remove it after it finishes
+  return true;
 };
 
 /* Helpers
