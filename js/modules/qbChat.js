@@ -70,6 +70,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED');
+      connection.reset();
       break;
     case Strophe.Status.ATTACHED:
       trace('Status.ATTACHED');
@@ -83,6 +84,11 @@ ChatProxy.prototype._autoSendPresence = function() {
   // we must return true to keep the handler alive
   // returning false would remove it after it finishes
   return true;
+};
+
+ChatProxy.prototype.disconnect = function() {
+  connection.flush();
+  connection.disconnect();
 };
 
 /* Helpers
