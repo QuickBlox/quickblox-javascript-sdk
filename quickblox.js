@@ -209,10 +209,19 @@ ChatProxy.prototype.disconnect = function() {
   connection.disconnect();
 };
 
+ChatProxy.prototype.sendSubscriptionPresence = function(params) {
+  connection.send($pres({
+    to: params.jid,
+    type: params.type
+  }).tree());
+};
+
+/* Roster
+---------------------------------------------------------------------- */
+
 /* Helpers
 ---------------------------------------------------------------------- */
-ChatProxy.prototype.getUserJid = function(id) {
-  var appId = this.service.getSession().application_id;
+ChatProxy.prototype.getUserJid = function(id, appId) {
   return id + '-' + appId + '@' + config.endpoints.chat;
 };
 
