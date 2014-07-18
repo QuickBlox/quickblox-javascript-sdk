@@ -75,7 +75,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       callback(err, null);
       break;
     case Strophe.Status.CONNECTED:
-      trace('Status.CONNECTED');
+      trace('Status.CONNECTED at ' + getLocalTime());
 
       connection.addHandler(self._onPresence, null, 'presence');
       // connection.addHandler(self.onMessageListener, null, 'message', 'chat');
@@ -95,7 +95,7 @@ ChatProxy.prototype.connect = function(params, callback) {
         self.onDisconnectingListener();
       break;
     case Strophe.Status.DISCONNECTED:
-      trace('Status.DISCONNECTED');
+      trace('Status.DISCONNECTED at ' + getLocalTime());
       connection.reset();
       break;
     case Strophe.Status.ATTACHED:
@@ -155,4 +155,8 @@ function getError(code, detail) {
 
   trace(detail);
   return errorMsg;
+}
+
+function getLocalTime() {
+  return (new Date).toTimeString().split(' ')[0];
 }
