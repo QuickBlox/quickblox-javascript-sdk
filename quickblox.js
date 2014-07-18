@@ -137,14 +137,40 @@ var connection = new Strophe.Connection(protocol);
 // }
 
 function ChatProxy(service) {
+  var self = this;
+
   this.service = service;
+  this.helpers = new Helpers;
+
+  this._onPresence = function(stanza) {
+    var from = stanza.getAttribute('from'),
+        type = stanza.getAttribute('type'),
+        userId = self.helpers.getIdFromNode(from);
+
+    switch (type) {
+    case 'subscribe':
+      self.onSubscribeListener(userId);
+      break;
+    }
+
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  };
 }
 
 /* Chat module: Core
 ---------------------------------------------------------------------- */
+ChatProxy.prototype._autoSendPresence = function() {
+  connection.send($pres().tree());
+  // we must return true to keep the handler alive
+  // returning false would remove it after it finishes
+  return true;
+};
+
 ChatProxy.prototype.connect = function(params, callback) {
-  var self = this, err;
   if (config.debug) { console.log('ChatProxy.connect', params); }
+  var self = this, err;
 
   connection.connect(params.jid, params.password, function(status) {
     switch (status) {
@@ -169,10 +195,10 @@ ChatProxy.prototype.connect = function(params, callback) {
     case Strophe.Status.CONNECTED:
       trace('Status.CONNECTED');
 
-      connection.addHandler(self.onMessageListener, null, 'message', 'chat');
-      connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
-      connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
-      connection.addHandler(self.onPresenceListener, null, 'presence');
+      connection.addHandler(self._onPresence, null, 'presence');
+      // connection.addHandler(self.onMessageListener, null, 'message', 'chat');
+      // connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
+      // connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
 
       // chat server will close your connection if you are not active in chat during one minute
       // initial presence and an automatic reminder of it each 55 seconds
@@ -197,32 +223,36 @@ ChatProxy.prototype.connect = function(params, callback) {
   });
 };
 
-ChatProxy.prototype._autoSendPresence = function() {
-  connection.send($pres().tree());
-  // we must return true to keep the handler alive
-  // returning false would remove it after it finishes
-  return true;
-};
-
 ChatProxy.prototype.disconnect = function() {
   connection.flush();
   connection.disconnect();
 };
 
+/* Chat module: Roster
+---------------------------------------------------------------------- */
 ChatProxy.prototype.sendSubscriptionPresence = function(params) {
+  if (config.debug) { console.log('ChatProxy.sendSubscriptionPresence', params); }
+
   connection.send($pres({
     to: params.jid,
     type: params.type
   }).tree());
 };
 
-/* Roster
----------------------------------------------------------------------- */
-
 /* Helpers
 ---------------------------------------------------------------------- */
-ChatProxy.prototype.getUserJid = function(id, appId) {
-  return id + '-' + appId + '@' + config.endpoints.chat;
+function Helpers() {}
+
+Helpers.prototype = {
+
+  getUserJid: function(id, appId) {
+    return id + '-' + appId + '@' + config.endpoints.chat;
+  },
+
+  getIdFromNode: function(jid) {
+    return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+  }
+
 };
 
 /* Private
