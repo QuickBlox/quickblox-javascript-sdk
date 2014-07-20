@@ -8,7 +8,11 @@
 // Browserify exports and dependencies
 require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
+var Utils = require('../qbUtils');
 module.exports = ChatProxy;
+
+var dialogUrl = config.urls.chat + '/Dialog';
+var messageUrl = config.urls.chat + '/Message';
 
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
@@ -31,7 +35,7 @@ function ChatProxy(service) {
 
     switch (type) {
     case 'subscribe':
-      self.onSubscribeListener(userId);
+      self.onSubscribeListener(from);
       break;
     }
 
@@ -82,10 +86,12 @@ ChatProxy.prototype.connect = function(params, callback) {
       // connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
       // connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
 
-      // chat server will close your connection if you are not active in chat during one minute
-      // initial presence and an automatic reminder of it each 55 seconds
-      connection.send($pres().tree());
-      connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+      self.getRoster(function() {
+        // chat server will close your connection if you are not active in chat during one minute
+        // initial presence and an automatic reminder of it each 55 seconds
+        connection.send($pres().tree());
+        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+      });
       
       callback(null, '');
       break;
@@ -114,11 +120,51 @@ ChatProxy.prototype.disconnect = function() {
 ---------------------------------------------------------------------- */
 ChatProxy.prototype.sendSubscriptionPresence = function(params) {
   if (config.debug) { console.log('ChatProxy.sendSubscriptionPresence', params); }
+  var pres;
 
-  connection.send($pres({
+  pres = $pres({
     to: params.jid,
     type: params.type
-  }).tree());
+  });
+
+  // custom parameters
+  if (params.extension) {
+    pres.c('x', {
+      xmlns: 'http://quickblox.com/extraParams'
+    });
+    
+    Object.keys(params.extension).forEach(function(key) {
+      pres.c(key).t(params.extension[key]).up();
+    });
+  }
+
+  connection.send(pres);
+};
+
+ChatProxy.prototype.sendRosterRequest = function(type, params) {
+  var iq = $iq({
+    type: type,
+    id: connection.getUniqueId('roster')
+  }).c('query', {
+    xmlns: Strophe.NS.ROSTER
+  });
+
+  if (params.jid)
+    iq.c('item', params);
+
+  connection.send(iq);
+};
+
+/* Chat module: History
+---------------------------------------------------------------------- */
+ChatProxy.prototype.listDialogs = function(params, callback) {
+  if (typeof params === 'function' && typeof callback === 'undefined') {
+    callback = params;
+    params = {};
+  }
+
+  if (config.debug) { console.log('ChatProxy.listDialogs', params); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
 };
 
 /* Helpers

@@ -29,6 +29,7 @@ var config = {
     session: 'session',
     login: 'login',
     users: 'users',
+    chat: 'chat',
     blobs: 'blobs',
     geodata: 'geodata',
     places: 'places',
