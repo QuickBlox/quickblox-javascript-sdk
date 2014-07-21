@@ -146,6 +146,7 @@ function ChatProxy(service) {
   var self = this;
 
   this.service = service;
+  this.roster = new RosterProxy;
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -173,7 +174,7 @@ function ChatProxy(service) {
       switch (type) {
       case 'subscribe':
         if (mutualSubscriptions[userId]) {
-          self._sendSubscriptionPresence({
+          self.roster._sendSubscriptionPresence({
             jid: from,
             type: 'subscribed'
           });
@@ -257,7 +258,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self._onIQ, null, 'iq');
 
       // get the roster
-      self.getContactList(function(contacts) {
+      self.roster.get(function(contacts) {
         mutualSubscriptions = contacts;
         callback(null, contacts);
       });
@@ -327,7 +328,9 @@ ChatProxy.prototype.disconnect = function() {
  * default - Mutual Subscription
  *
 ---------------------------------------------------------------------- */
-ChatProxy.prototype.getContactList = function(callback) {
+function RosterProxy() {}
+
+RosterProxy.prototype.get = function(callback) {
   var iq, self = this,
       items, userId, contacts = {};
 
@@ -348,28 +351,28 @@ ChatProxy.prototype.getContactList = function(callback) {
   });
 };
 
-ChatProxy.prototype.addToContactList = function(jid) {
+RosterProxy.prototype.add = function(jid) {
   this._sendRosterRequest({
     jid: jid,
     type: 'subscribe'
   });
 };
 
-ChatProxy.prototype.confirmContactRequest = function(jid) {
+RosterProxy.prototype.confirm = function(jid) {
   this._sendRosterRequest({
     jid: jid,
     type: 'subscribed'
   });
 };
 
-ChatProxy.prototype.rejectContactRequest = function(jid) {
+RosterProxy.prototype.reject = function(jid) {
   this._sendRosterRequest({
     jid: jid,
     type: 'unsubscribed'
   });
 };
 
-ChatProxy.prototype.removeFromContactList = function(jid) {
+RosterProxy.prototype.remove = function(jid) {
   this._sendSubscriptionPresence({
     jid: jid,
     type: 'unsubscribe'
@@ -385,7 +388,7 @@ ChatProxy.prototype.removeFromContactList = function(jid) {
   });
 };
 
-ChatProxy.prototype._sendRosterRequest = function(params) {
+RosterProxy.prototype._sendRosterRequest = function(params) {
   var iq, attr = {},
       userId, self = this;
 
@@ -429,7 +432,7 @@ ChatProxy.prototype._sendRosterRequest = function(params) {
   });
 };
 
-ChatProxy.prototype._sendSubscriptionPresence = function(params) {
+RosterProxy.prototype._sendSubscriptionPresence = function(params) {
   var pres, self = this;
 
   pres = $pres({
