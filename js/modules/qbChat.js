@@ -30,6 +30,15 @@ function ChatProxy(service) {
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
 
+  // stanza callbacks (Message, Presence, IQ)
+
+  this._onMessage = function(stanza) {
+
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  };
+
   this._onPresence = function(stanza) {
     var from = stanza.getAttribute('from'),
         type = stanza.getAttribute('type'),
@@ -40,6 +49,13 @@ function ChatProxy(service) {
       self.onSubscribeListener(from);
       break;
     }
+
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  };
+
+  this._onIQ = function(stanza) {
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -83,10 +99,9 @@ ChatProxy.prototype.connect = function(params, callback) {
     case Strophe.Status.CONNECTED:
       trace('Status.CONNECTED at ' + getLocalTime());
 
+      connection.addHandler(self._onMessage, null, 'message');
       connection.addHandler(self._onPresence, null, 'presence');
-      // connection.addHandler(self.onMessageListener, null, 'message', 'chat');
-      // connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
-      // connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
+      connection.addHandler(self._onIQ, null, 'iq');
 
       // self.sendRosterRequest('get');
       
@@ -98,12 +113,14 @@ ChatProxy.prototype.connect = function(params, callback) {
       callback(null, '');
       break;
     case Strophe.Status.DISCONNECTING:
-      trace('Status.DISCONNECTING');
-      if (typeof self.onDisconnectingListener === 'function')
-        self.onDisconnectingListener();
+      trace('Status.DISCONNECTING');      
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED at ' + getLocalTime());
+
+      if (typeof self.onDisconnectingListener === 'function')
+        self.onDisconnectingListener();
+
       connection.reset();
       break;
     case Strophe.Status.ATTACHED:
