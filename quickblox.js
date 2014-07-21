@@ -204,12 +204,12 @@ ChatProxy.prototype.connect = function(params, callback) {
       // connection.addHandler(self.onMessageListener, null, 'message', 'groupchat');
       // connection.addHandler(self.onIQstanzaListener, null, 'iq', 'result');
 
-      self.getRoster(function() {
-        // chat server will close your connection if you are not active in chat during one minute
-        // initial presence and an automatic reminder of it each 55 seconds
-        connection.send($pres().tree());
-        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
-      });
+      // self.sendRosterRequest('get');
+      
+      // chat server will close your connection if you are not active in chat during one minute
+      // initial presence and an automatic reminder of it each 55 seconds
+      connection.send($pres().tree());
+      connection.addTimedHandler(55 * 1000, self._autoSendPresence);
       
       callback(null, '');
       break;
