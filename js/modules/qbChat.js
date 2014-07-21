@@ -14,6 +14,8 @@ module.exports = ChatProxy;
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
+var mutualSubscriptions = {};
+
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
@@ -44,10 +46,43 @@ function ChatProxy(service) {
         type = stanza.getAttribute('type'),
         userId = self.helpers.getIdFromNode(from);
 
-    switch (type) {
-    case 'subscribe':
-      self.onSubscribeListener(from);
-      break;
+    if (!type) {
+      if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
+        self.onContactListListener(userId, type);
+    } else {
+
+      // subscriptions callbacks
+      switch (type) {
+      case 'subscribe':
+        if (mutualSubscriptions[userId]) {
+          self._sendSubscriptionPresence({
+            jid: from,
+            type: 'subscribed'
+          });
+        } else {
+          if (typeof self.onSubscribeListener === 'function')
+            self.onSubscribeListener(userId);
+        }
+        break;
+      case 'subscribed':
+        if (typeof self.onConfirmSubscribeListener === 'function')
+          self.onConfirmSubscribeListener(userId);
+        break;
+      case 'unsubscribed':
+        if (typeof self.onRejectSubscribeListener === 'function')
+          self.onRejectSubscribeListener(userId);
+        break;
+      case 'unsubscribe':
+        delete mutualSubscriptions[userId];
+        if (typeof self.onRejectSubscribeListener === 'function')
+          self.onRejectSubscribeListener(userId);
+        break;
+      case 'unavailable':
+        if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
+          self.onContactListListener(userId, type);
+        break;
+      }
+
     }
 
     // we must return true to keep the handler alive
@@ -103,14 +138,17 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self._onPresence, null, 'presence');
       connection.addHandler(self._onIQ, null, 'iq');
 
-      // self.sendRosterRequest('get');
+      // get the roster
+      self.getContactList(function(contacts) {
+        mutualSubscriptions = contacts;
+        callback(null, contacts);
+      });
       
       // chat server will close your connection if you are not active in chat during one minute
       // initial presence and an automatic reminder of it each 55 seconds
       connection.send($pres().tree());
       connection.addTimedHandler(55 * 1000, self._autoSendPresence);
-      
-      callback(null, '');
+
       break;
     case Strophe.Status.DISCONNECTING:
       trace('Status.DISCONNECTING');      
@@ -121,6 +159,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       if (typeof self.onDisconnectingListener === 'function')
         self.onDisconnectingListener();
 
+      mutualSubscriptions = {};
       connection.reset();
       break;
     case Strophe.Status.ATTACHED:
@@ -164,42 +203,123 @@ ChatProxy.prototype.disconnect = function() {
 };
 
 /* Chat module: Roster
+ *
+ * Integration of Roster Items and Presence Subscriptions
+ * http://xmpp.org/rfcs/rfc3921.html#int
+ * default - Mutual Subscription
+ *
 ---------------------------------------------------------------------- */
-ChatProxy.prototype.sendSubscriptionPresence = function(params) {
-  if (config.debug) { console.log('ChatProxy.sendSubscriptionPresence', params); }
-  var pres;
+ChatProxy.prototype.getContactList = function(callback) {
+  var iq, self = this,
+      items, userId, contacts = {};
 
-  pres = $pres({
-    to: params.jid,
-    type: params.type
+  iq = $iq({
+    type: 'get',
+    id: connection.getUniqueId('roster')
+  }).c('query', {
+    xmlns: Strophe.NS.ROSTER
   });
 
-  // custom parameters
-  if (params.extension) {
-    pres.c('x', {
-      xmlns: 'http://quickblox.com/extraParams'
-    });
-    
-    Object.keys(params.extension).forEach(function(key) {
-      pres.c(key).t(params.extension[key]).up();
-    });
-  }
-
-  connection.send(pres);
+  connection.sendIQ(iq, function(stanza) {
+    items = stansa.getElementsByTagName('item');
+    for (var i = 0, len = items.length; i < len; i++) {
+      userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
+      contacts[userId] = items[i].getAttribute('subscription');
+    }
+    callback(contacts);
+  });
 };
 
-ChatProxy.prototype.sendRosterRequest = function(type, params) {
-  var iq = $iq({
-    type: type,
+ChatProxy.prototype.addToContactList = function(jid) {
+  this._sendRosterRequest({
+    jid: jid,
+    type: 'subscribe'
+  });
+};
+
+ChatProxy.prototype.confirmContactRequest = function(jid) {
+  this._sendRosterRequest({
+    jid: jid,
+    type: 'subscribed'
+  });
+};
+
+ChatProxy.prototype.rejectContactRequest = function(jid) {
+  this._sendRosterRequest({
+    jid: jid,
+    type: 'unsubscribed'
+  });
+};
+
+ChatProxy.prototype.removeFromContactList = function(jid) {
+  this._sendSubscriptionPresence({
+    jid: jid,
+    type: 'unsubscribe'
+  });
+  this._sendSubscriptionPresence({
+    jid: jid,
+    type: 'unsubscribed'
+  });
+  this._sendRosterRequest({
+    jid: jid,
+    subscription: 'remove',
+    type: 'unsubscribe'
+  });
+};
+
+ChatProxy.prototype._sendRosterRequest = function(params) {
+  var iq, attr = {},
+      userId, self = this;
+
+  iq = $iq({
+    type: 'set',
     id: connection.getUniqueId('roster')
   }).c('query', {
     xmlns: Strophe.NS.ROSTER
   });
 
   if (params.jid)
-    iq.c('item', params);
+    attr.jid = params.jid;
+  if (params.subscription)
+    attr.subscription = params.subscription;
 
-  connection.send(iq);
+  iq.c('item', attr);
+
+  connection.sendIQ(iq, function() {
+
+    // subscriptions requests
+    switch (params.type) {
+    case 'subscribe':
+      self._sendSubscriptionPresence(params);
+      break;
+    case 'subscribed':
+      self._sendSubscriptionPresence(params);
+
+      userId = self.helpers.getIdFromNode(params.jid).toString();
+      mutualSubscriptions[userId] = true;
+
+      params.type = 'subscribe';
+      self._sendSubscriptionPresence(params);
+      break;
+    case 'unsubscribe':
+      delete mutualSubscriptions[userId];
+      params.type = 'unavailable';
+      self._sendSubscriptionPresence(params);
+      break;
+    }
+
+  });
+};
+
+ChatProxy.prototype._sendSubscriptionPresence = function(params) {
+  var pres, self = this;
+
+  pres = $pres({
+    to: params.jid,
+    type: params.type
+  });
+
+  connection.send(pres);
 };
 
 /* Chat module: History
