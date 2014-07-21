@@ -36,6 +36,28 @@ function ChatProxy(service) {
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
+    var from = stanza.getAttribute('from'),
+        type = stanza.getAttribute('type'),
+        body = stanza.querySelector('body'),
+        extraParams = stanza.querySelector('extraParams'),
+        userId = self.helpers.getIdFromNode(from),
+        message, extension;
+
+    // custom parameters
+    if (extraParams) {
+      extraParams.children.forEach(function(elem) {
+        extension[elem.tagName] = elem.textContent;
+      });
+    }
+
+    message = {
+      type: type,
+      body: (body && body.textContent) || null,
+      extension: extension || null
+    };
+
+    if (typeof self.onMessageListener === 'function')
+      self.onMessageListener(userId, message);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -171,9 +193,7 @@ ChatProxy.prototype.connect = function(params, callback) {
 };
 
 ChatProxy.prototype.sendMessage = function(jid, message) {
-  var msg;
-  
-  msg = $msg({
+  var msg = $msg({
     to: jid,
     type: message.type
   });
@@ -190,8 +210,8 @@ ChatProxy.prototype.sendMessage = function(jid, message) {
       xmlns: Strophe.NS.CLIENT
     });
     
-    $(Object.keys(message.extension)).each(function() {
-      msg.c(this).t(message.extension[this]).up();
+    Object.keys(message.extension).forEach(function(field) {
+      msg.c(field).t(message.extension[field]).up();
     });
   }
   
