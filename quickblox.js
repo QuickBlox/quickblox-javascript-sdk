@@ -339,7 +339,7 @@ ChatProxy.prototype.getContactList = function(callback) {
   });
 
   connection.sendIQ(iq, function(stanza) {
-    items = stansa.getElementsByTagName('item');
+    items = stanza.getElementsByTagName('item');
     for (var i = 0, len = items.length; i < len; i++) {
       userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
       contacts[userId] = items[i].getAttribute('subscription');
