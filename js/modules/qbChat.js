@@ -26,6 +26,8 @@ function ChatProxy(service) {
   var self = this;
 
   this.service = service;
+  this.dialog = new DialogProxy(service);
+  this.message = new MessageProxy(service);
   this.helpers = new Helpers;
 
   this._onPresence = function(stanza) {
@@ -111,6 +113,34 @@ ChatProxy.prototype.connect = function(params, callback) {
   });
 };
 
+ChatProxy.prototype.sendMessage = function(jid, message) {
+  var msg;
+  
+  msg = $msg({
+    to: jid,
+    type: message.type
+  });
+  
+  if (message.body) {
+    msg.c('body', {
+      xmlns: Strophe.NS.CLIENT
+    }).t(message.body);
+  }
+  
+  // custom parameters
+  if (message.extension) {
+    msg.up().c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    });
+    
+    $(Object.keys(message.extension)).each(function() {
+      msg.c(this).t(message.extension[this]).up();
+    });
+  }
+  
+  connection.send(msg);
+};
+
 ChatProxy.prototype.disconnect = function() {
   connection.flush();
   connection.disconnect();
@@ -157,14 +187,49 @@ ChatProxy.prototype.sendRosterRequest = function(type, params) {
 
 /* Chat module: History
 ---------------------------------------------------------------------- */
-ChatProxy.prototype.listDialogs = function(params, callback) {
+
+// Dialogs
+
+function DialogProxy(service) {
+  this.service = service;
+}
+
+DialogProxy.prototype.list = function(params, callback) {
   if (typeof params === 'function' && typeof callback === 'undefined') {
     callback = params;
     params = {};
   }
 
-  if (config.debug) { console.log('ChatProxy.listDialogs', params); }
+  if (config.debug) { console.log('DialogProxy.list', params); }
   this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
+};
+
+DialogProxy.prototype.create = function(params, callback) {
+  if (config.debug) { console.log('DialogProxy.create', params); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: {dialog: params}}, callback);
+};
+
+DialogProxy.prototype.update = function(id, params, callback) {
+  if (config.debug) { console.log('DialogProxy.update', id, params); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: {dialog: params}}, callback);
+};
+
+// Messages
+
+function MessageProxy(service) {
+  this.service = service;
+}
+
+MessageProxy.prototype.list = function(params, callback) {
+  
+};
+
+MessageProxy.prototype.update = function(params, callback) {
+  
+};
+
+MessageProxy.prototype.delete = function(params, callback) {
+  
 };
 
 /* Helpers
