@@ -221,15 +221,18 @@ function MessageProxy(service) {
 }
 
 MessageProxy.prototype.list = function(params, callback) {
-  
+  if (config.debug) { console.log('MessageProxy.list', params); }
+  this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
 };
 
-MessageProxy.prototype.update = function(params, callback) {
-  
+MessageProxy.prototype.update = function(id, params, callback) {
+  if (config.debug) { console.log('MessageProxy.update', id, params); }
+  this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
 };
 
-MessageProxy.prototype.delete = function(params, callback) {
-  
+MessageProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('MessageProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 /* Helpers
