@@ -192,7 +192,7 @@ ChatProxy.prototype.connect = function(params, callback) {
   });
 };
 
-ChatProxy.prototype.sendMessage = function(jid, message) {
+ChatProxy.prototype.send = function(jid, message) {
   var msg = $msg({
     to: jid,
     type: message.type
