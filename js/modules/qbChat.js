@@ -324,6 +324,9 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
       params.type = 'subscribe';
       self._sendSubscriptionPresence(params);
       break;
+    case 'unsubscribed':
+      self._sendSubscriptionPresence(params);
+      break;
     case 'unsubscribe':
       delete mutualSubscriptions[userId];
       params.type = 'unavailable';
