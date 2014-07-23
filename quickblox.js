@@ -330,12 +330,12 @@ ChatProxy.prototype.send = function(jid, message) {
   if (message.body) {
     msg.c('body', {
       xmlns: Strophe.NS.CLIENT
-    }).t(message.body);
+    }).t(message.body).up();
   }
   
   // custom parameters
   if (message.extension) {
-    msg.up().c('extraParams', {
+    msg.c('extraParams', {
       xmlns: Strophe.NS.CLIENT
     });
     
