@@ -220,6 +220,7 @@ function ChatProxy(service) {
           self.onConfirmSubscribeListener(userId);
         break;
       case 'unsubscribed':
+        delete mutualSubscriptions[userId];
         if (typeof self.onRejectSubscribeListener === 'function')
           self.onRejectSubscribeListener(userId);
         break;
@@ -297,7 +298,6 @@ ChatProxy.prototype.connect = function(params, callback) {
         connection.send($pres().tree());
         connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-        mutualSubscriptions = contacts;
         callback(null, contacts);
       });
 
@@ -380,6 +380,10 @@ RosterProxy.prototype.get = function(callback) {
     for (var i = 0, len = items.length; i < len; i++) {
       userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
       contacts[userId] = items[i].getAttribute('subscription');
+
+      // mutual subscription
+      if (items[i].getAttribute('ask') || items[i].getAttribute('subscription') !== 'none')
+        mutualSubscriptions[userId] = true;
     }
     callback(contacts);
   });
@@ -439,6 +443,7 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
     attr.subscription = params.subscription;
 
   iq.c('item', attr);
+  userId = self.helpers.getIdFromNode(params.jid).toString();
 
   connection.sendIQ(iq, function() {
 
@@ -446,11 +451,10 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
     switch (params.type) {
     case 'subscribe':
       self._sendSubscriptionPresence(params);
+      mutualSubscriptions[userId] = true;
       break;
     case 'subscribed':
       self._sendSubscriptionPresence(params);
-
-      userId = self.helpers.getIdFromNode(params.jid).toString();
       mutualSubscriptions[userId] = true;
 
       params.type = 'subscribe';
