@@ -28,7 +28,7 @@ function ChatProxy(service) {
   var self = this;
 
   this.service = service;
-  this.roster = new RosterProxy;
+  this.roster = new RosterProxy(service);
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -163,18 +163,19 @@ ChatProxy.prototype.connect = function(params, callback) {
 
       // get the roster
       self.roster.get(function(contacts) {
+
+        // chat server will close your connection if you are not active in chat during one minute
+        // initial presence and an automatic reminder of it each 55 seconds
+        connection.send($pres().tree());
+        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+
         mutualSubscriptions = contacts;
         callback(null, contacts);
       });
-      
-      // chat server will close your connection if you are not active in chat during one minute
-      // initial presence and an automatic reminder of it each 55 seconds
-      connection.send($pres().tree());
-      connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
       break;
     case Strophe.Status.DISCONNECTING:
-      trace('Status.DISCONNECTING');      
+      trace('Status.DISCONNECTING');
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED at ' + getLocalTime());
@@ -230,7 +231,10 @@ ChatProxy.prototype.disconnect = function() {
  * default - Mutual Subscription
  *
 ---------------------------------------------------------------------- */
-function RosterProxy() {}
+function RosterProxy(service) {
+  this.service = service;
+  this.helpers = new Helpers;
+}
 
 RosterProxy.prototype.get = function(callback) {
   var iq, self = this,
@@ -355,6 +359,7 @@ RosterProxy.prototype._sendSubscriptionPresence = function(params) {
 
 function DialogProxy(service) {
   this.service = service;
+  this.helpers = new Helpers;
 }
 
 DialogProxy.prototype.list = function(params, callback) {
@@ -369,18 +374,19 @@ DialogProxy.prototype.list = function(params, callback) {
 
 DialogProxy.prototype.create = function(params, callback) {
   if (config.debug) { console.log('DialogProxy.create', params); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: {dialog: params}}, callback);
+  this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
 };
 
 DialogProxy.prototype.update = function(id, params, callback) {
   if (config.debug) { console.log('DialogProxy.update', id, params); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: {dialog: params}}, callback);
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
 };
 
 // Messages
 
 function MessageProxy(service) {
   this.service = service;
+  this.helpers = new Helpers;
 }
 
 MessageProxy.prototype.list = function(params, callback) {
