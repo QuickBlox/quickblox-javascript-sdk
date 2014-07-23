@@ -123,6 +123,16 @@ function signMessage(message, secret) {
  *
  */
 
+/*
+ * User's callbacks (listener-functions):
+ * - onMessageListener
+ * - onContactListListener
+ * - onSubscribeListener
+ * - onConfirmSubscribeListener
+ * - onRejectSubscribeListener
+ * - onDisconnectingListener
+ */
+
 // Browserify exports and dependencies
 require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
