@@ -379,7 +379,10 @@ RosterProxy.prototype.get = function(callback) {
     items = stanza.getElementsByTagName('item');
     for (var i = 0, len = items.length; i < len; i++) {
       userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
-      contacts[userId] = items[i].getAttribute('subscription');
+      contacts[userId] = {
+        subscription: items[i].getAttribute('subscription'),
+        ask: items[i].getAttribute('ask') || null
+      };
 
       // mutual subscription
       if (items[i].getAttribute('ask') || items[i].getAttribute('subscription') !== 'none')
