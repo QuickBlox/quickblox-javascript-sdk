@@ -346,6 +346,11 @@ ChatProxy.prototype.send = function(jid, message) {
   connection.send(msg);
 };
 
+// helper function for ChatProxy.send()
+ChatProxy.prototype.sendPres = function(type) {
+  connection.send($pres({ type: type }));
+};
+
 ChatProxy.prototype.disconnect = function() {
   connection.flush();
   connection.disconnect();
