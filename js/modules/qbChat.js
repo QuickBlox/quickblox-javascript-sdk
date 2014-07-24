@@ -193,7 +193,6 @@ ChatProxy.prototype.connect = function(params, callback) {
       if (typeof self.onDisconnectingListener === 'function')
         self.onDisconnectingListener();
 
-      mutualSubscriptions = {};
       connection.reset();
       break;
     case Strophe.Status.ATTACHED:
