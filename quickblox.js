@@ -173,9 +173,10 @@ function ChatProxy(service) {
 
     // custom parameters
     if (extraParams) {
-      extraParams.children.forEach(function(elem) {
-        extension[elem.tagName] = elem.textContent;
-      });
+      extension = {};
+      for (var i = 0, len = extraParams.children.length; i < len; i++) {
+        extension[extraParams.children[i].tagName] = extraParams.children[i].textContent;
+      }
     }
 
     message = {
