@@ -39,6 +39,7 @@ function ChatProxy(service) {
 
   this.service = service;
   this.roster = new RosterProxy(service);
+  this.muc = new MucProxy(service);
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -374,6 +375,40 @@ RosterProxy.prototype._sendSubscriptionPresence = function(params) {
   connection.send(pres);
 };
 
+/* Chat module: Group Chat
+ *
+ * Multi-User Chat
+ * http://xmpp.org/extensions/xep-0045.html
+ *
+---------------------------------------------------------------------- */
+function MucProxy(service) {
+  this.service = service;
+  this.helpers = new Helpers;
+}
+
+MucProxy.prototype.join = function(jid, callback) {
+  var pres, self = this;
+
+  pres = $pres({
+    to: self.helpers.getRoomJid(jid)
+  }).c("x", {
+    xmlns: Strophe.NS.MUC
+  });
+
+  connection.send(pres);
+};
+
+MucProxy.prototype.leave = function(params, callback) {
+  var pres, self = this;
+
+  pres = $pres({
+    type: 'unavailable',
+    to: self.helpers.getRoomJid(jid)
+  });
+
+  connection.send(pres);
+};
+
 /* Chat module: History
 ---------------------------------------------------------------------- */
 
@@ -438,6 +473,14 @@ Helpers.prototype = {
 
   getIdFromNode: function(jid) {
     return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+  },
+
+  getRoomJid: function(jid) {
+    return jid + '/' + this.getIdFromNode(connection.jid);
+  },  
+
+  getIdFromResource: function(jid) {
+    return parseInt(Strophe.getResourceFromJid(jid));
   }
 
 };
