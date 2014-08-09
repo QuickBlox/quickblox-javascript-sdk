@@ -215,6 +215,7 @@ ChatProxy.prototype.connect = function(params, callback) {
 
 ChatProxy.prototype.send = function(jid, message) {
   var msg = $msg({
+    from: connection.jid,
     to: jid,
     type: message.type
   });
@@ -241,7 +242,10 @@ ChatProxy.prototype.send = function(jid, message) {
 
 // helper function for ChatProxy.send()
 ChatProxy.prototype.sendPres = function(type) {
-  connection.send($pres({ type: type }));
+  connection.send($pres({ 
+    from: connection.jid,
+    type: type
+  }));
 };
 
 ChatProxy.prototype.disconnect = function() {
@@ -266,6 +270,7 @@ RosterProxy.prototype.get = function(callback) {
       items, userId, contacts = {};
 
   iq = $iq({
+    from: connection.jid,
     type: 'get',
     id: connection.getUniqueId('roster')
   }).c('query', {
@@ -331,6 +336,7 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
       userId, self = this;
 
   iq = $iq({
+    from: connection.jid,
     type: 'set',
     id: connection.getUniqueId('roster')
   }).c('query', {
@@ -399,6 +405,7 @@ MucProxy.prototype.join = function(jid, callback) {
   var pres, self = this;
 
   pres = $pres({
+    from: connection.jid,
     to: self.helpers.getRoomJid(jid)
   }).c("x", {
     xmlns: Strophe.NS.MUC
@@ -411,8 +418,9 @@ MucProxy.prototype.leave = function(params, callback) {
   var pres, self = this;
 
   pres = $pres({
-    type: 'unavailable',
+    from: connection.jid,
     to: self.helpers.getRoomJid(jid)
+    type: 'unavailable',
   });
 
   connection.send(pres);
