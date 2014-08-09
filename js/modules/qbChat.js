@@ -217,7 +217,8 @@ ChatProxy.prototype.send = function(jid, message) {
   var msg = $msg({
     from: connection.jid,
     to: jid,
-    type: message.type
+    type: message.type,
+    id: message.id || connection.getUniqueId()
   });
   
   if (message.body) {
@@ -251,6 +252,20 @@ ChatProxy.prototype.sendPres = function(type) {
 ChatProxy.prototype.disconnect = function() {
   connection.flush();
   connection.disconnect();
+};
+
+ChatProxy.prototype.addListener = function(params, callback) {
+  return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
+
+  function handler() {
+    callback();
+    // if 'false' - a handler will be performed only once
+    return params.live !== false;
+  }
+};
+
+ChatProxy.prototype.deleteListener = function(ref) {
+  connection.deleteHandler(ref);
 };
 
 /* Chat module: Roster
@@ -414,7 +429,7 @@ MucProxy.prototype.join = function(jid, callback) {
   connection.send(pres);
 };
 
-MucProxy.prototype.leave = function(params, callback) {
+MucProxy.prototype.leave = function(jid, callback) {
   var pres, self = this;
 
   pres = $pres({
