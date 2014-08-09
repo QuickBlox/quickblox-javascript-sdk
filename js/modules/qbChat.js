@@ -417,27 +417,33 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype.join = function(jid, callback) {
-  var pres, self = this;
+  var pres, self = this,
+      id = connection.getUniqueId('join');
 
   pres = $pres({
     from: connection.jid,
-    to: self.helpers.getRoomJid(jid)
+    to: self.helpers.getRoomJid(jid),
+    id: id
   }).c("x", {
     xmlns: Strophe.NS.MUC
   });
 
+  connection.addHandler(callback, null, 'presence', null, id);
   connection.send(pres);
 };
 
 MucProxy.prototype.leave = function(jid, callback) {
-  var pres, self = this;
+  var pres, self = this,
+      id = connection.getUniqueId('leave');
 
   pres = $pres({
     from: connection.jid,
-    to: self.helpers.getRoomJid(jid)
+    to: self.helpers.getRoomJid(jid),
     type: 'unavailable',
+    id: id
   });
 
+  connection.addHandler(callback, null, 'presence', 'unavailable', id);
   connection.send(pres);
 };
 
@@ -513,6 +519,10 @@ Helpers.prototype = {
 
   getIdFromResource: function(jid) {
     return parseInt(Strophe.getResourceFromJid(jid));
+  },
+
+  getUniqueId: function(suffix) {
+    return connection.getUniqueId(suffix);
   }
 
 };
