@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -148,8 +148,13 @@ var mutualSubscriptions = {};
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
-  connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-  connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  if (config.chatProtocol.active === 1) {
+    connection.xmlInput = function(data) { data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+    connection.xmlOutput = function(data) { data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+  } else {
+    connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+    connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  }
 // }
 
 function ChatProxy(service) {
@@ -168,8 +173,9 @@ function ChatProxy(service) {
     var from = stanza.getAttribute('from'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
-        extraParams = stanza.querySelector('extraParams'),
-        userId = self.helpers.getIdFromNode(from),
+        extraParams = stanza.querySelector('extraParams'),        
+        delay = type === 'groupchat' && stanza.querySelector('delay'),
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         message, extension;
 
     // custom parameters
@@ -186,7 +192,9 @@ function ChatProxy(service) {
       extension: extension || null
     };
 
-    if (typeof self.onMessageListener === 'function')
+    // !delay - this needed to don't duplicate messages from chat 2.0 API history
+    // with typical XMPP behavior of history messages in group chat
+    if (typeof self.onMessageListener === 'function' && !delay)
       self.onMessageListener(userId, message);
 
     // we must return true to keep the handler alive
@@ -273,6 +281,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.CONNECTING:
       trace('Status.CONNECTING');
+      trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
       break;
     case Strophe.Status.CONNFAIL:
       err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
@@ -324,8 +333,10 @@ ChatProxy.prototype.connect = function(params, callback) {
 
 ChatProxy.prototype.send = function(jid, message) {
   var msg = $msg({
+    from: connection.jid,
     to: jid,
-    type: message.type
+    type: message.type,
+    id: message.id || connection.getUniqueId()
   });
   
   if (message.body) {
@@ -350,12 +361,29 @@ ChatProxy.prototype.send = function(jid, message) {
 
 // helper function for ChatProxy.send()
 ChatProxy.prototype.sendPres = function(type) {
-  connection.send($pres({ type: type }));
+  connection.send($pres({ 
+    from: connection.jid,
+    type: type
+  }));
 };
 
 ChatProxy.prototype.disconnect = function() {
   connection.flush();
   connection.disconnect();
+};
+
+ChatProxy.prototype.addListener = function(params, callback) {
+  return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
+
+  function handler() {
+    callback();
+    // if 'false' - a handler will be performed only once
+    return params.live !== false;
+  }
+};
+
+ChatProxy.prototype.deleteListener = function(ref) {
+  connection.deleteHandler(ref);
 };
 
 /* Chat module: Roster
@@ -375,6 +403,7 @@ RosterProxy.prototype.get = function(callback) {
       items, userId, contacts = {};
 
   iq = $iq({
+    from: connection.jid,
     type: 'get',
     id: connection.getUniqueId('roster')
   }).c('query', {
@@ -440,6 +469,7 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
       userId, self = this;
 
   iq = $iq({
+    from: connection.jid,
     type: 'set',
     id: connection.getUniqueId('roster')
   }).c('query', {
@@ -505,25 +535,33 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype.join = function(jid, callback) {
-  var pres, self = this;
+  var pres, self = this,
+      id = connection.getUniqueId('join');
 
   pres = $pres({
-    to: self.helpers.getRoomJid(jid)
+    from: connection.jid,
+    to: self.helpers.getRoomJid(jid),
+    id: id
   }).c("x", {
     xmlns: Strophe.NS.MUC
   });
 
+  connection.addHandler(callback, null, 'presence', null, id);
   connection.send(pres);
 };
 
-MucProxy.prototype.leave = function(params, callback) {
-  var pres, self = this;
+MucProxy.prototype.leave = function(jid, callback) {
+  var pres, self = this,
+      id = connection.getUniqueId('leave');
 
   pres = $pres({
+    from: connection.jid,
+    to: self.helpers.getRoomJid(jid),
     type: 'unavailable',
-    to: self.helpers.getRoomJid(jid)
+    id: id
   });
 
+  connection.addHandler(callback, null, 'presence', 'unavailable', id);
   connection.send(pres);
 };
 
@@ -599,6 +637,10 @@ Helpers.prototype = {
 
   getIdFromResource: function(jid) {
     return parseInt(Strophe.getResourceFromJid(jid));
+  },
+
+  getUniqueId: function(suffix) {
+    return connection.getUniqueId(suffix);
   }
 
 };
@@ -1311,7 +1353,7 @@ var config = {
     //bosh: 'http://chat.quickblox.com:8080',
     bosh: 'https://chat.quickblox.com:8081', // With SSL
     websocket: 'ws://chat.quickblox.com:5290',
-    active: 2
+    active: 1
   },
   urls: {
     session: 'session',
@@ -1524,4 +1566,4 @@ module.exports=function(){function b(a){return n(f(l(a),a.length*8))}function c(
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,n=t.Base,i=r.enc,o=i.Utf8,s=r.algo;s.HMAC=n.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,n=4*t;r.sigBytes>n&&(r=e.finalize(r)),r.clamp();for(var i=this._oKey=r.clone(),s=this._iKey=r.clone(),a=i.words,c=s.words,f=0;t>f;f++)a[f]^=1549556828,c[f]^=909522486;i.sigBytes=s.sigBytes=n,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var n=r.finalize(this._oKey.clone().concat(t));return n}})})()});
 },{"./core":13}],16:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":13}]},{},[11]);
+},{"./core":13}]},{},[11])
