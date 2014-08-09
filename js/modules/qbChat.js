@@ -55,7 +55,7 @@ function ChatProxy(service) {
     var from = stanza.getAttribute('from'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
-        extraParams = stanza.querySelector('extraParams'),
+        extraParams = stanza.querySelector('extraParams'),        
         delay = type === 'groupchat' && stanza.querySelector('delay'),
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         message, extension;
@@ -74,6 +74,8 @@ function ChatProxy(service) {
       extension: extension || null
     };
 
+    // !delay - this needed to don't duplicate messages from chat 2.0 API history
+    // with typical XMPP behavior of history messages in group chat
     if (typeof self.onMessageListener === 'function' && !delay)
       self.onMessageListener(userId, message);
 
@@ -161,6 +163,7 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.CONNECTING:
       trace('Status.CONNECTING');
+      trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
       break;
     case Strophe.Status.CONNFAIL:
       err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
