@@ -23,7 +23,7 @@ var config = {
     //bosh: 'http://chat.quickblox.com:8080',
     bosh: 'https://chat.quickblox.com:8081', // With SSL
     websocket: 'ws://chat.quickblox.com:5290',
-    active: 2
+    active: 1
   },
   urls: {
     session: 'session',

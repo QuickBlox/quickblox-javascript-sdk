@@ -30,8 +30,13 @@ var mutualSubscriptions = {};
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
-  connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-  connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  if (config.chatProtocol.active === 1) {
+    connection.xmlInput = function(data) { data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+    connection.xmlOutput = function(data) { data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+  } else {
+    connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+    connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  }
 // }
 
 function ChatProxy(service) {
