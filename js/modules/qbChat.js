@@ -56,7 +56,8 @@ function ChatProxy(service) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         extraParams = stanza.querySelector('extraParams'),
-        userId = self.helpers.getIdFromNode(from),
+        delay = type === 'groupchat' && stanza.querySelector('delay'),
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         message, extension;
 
     // custom parameters
@@ -73,7 +74,7 @@ function ChatProxy(service) {
       extension: extension || null
     };
 
-    if (typeof self.onMessageListener === 'function')
+    if (typeof self.onMessageListener === 'function' && !delay)
       self.onMessageListener(userId, message);
 
     // we must return true to keep the handler alive
