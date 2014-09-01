@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.2.1',
+  version: '1.3.0',
   creds: {
     appId: '',
     authKey: '',
@@ -15,13 +15,21 @@ var config = {
   endpoints: {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
+    muc: 'muc.chat.quickblox.com',
     turn: 'turnserver.quickblox.com',
     s3Bucket: 'qbprod'
+  },
+  chatProtocol: {
+    //bosh: 'http://chat.quickblox.com:8080',
+    bosh: 'https://chat.quickblox.com:8081', // With SSL
+    websocket: 'ws://chat.quickblox.com:5290',
+    active: 1
   },
   urls: {
     session: 'session',
     login: 'login',
     users: 'users',
+    chat: 'chat',
     blobs: 'blobs',
     geodata: 'geodata',
     places: 'places',
