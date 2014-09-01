@@ -31,8 +31,8 @@ var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : con
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
   if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-    connection.xmlOutput = function(data) { data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+    connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+    connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
   } else {
     connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
     connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
@@ -55,17 +55,39 @@ function ChatProxy(service) {
     var from = stanza.getAttribute('from'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
+        invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),        
         delay = type === 'groupchat' && stanza.querySelector('delay'),
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        message, extension;
+        message, extension, attachments, attach, attributes;
+
+    if (invite) return true;
 
     // custom parameters
     if (extraParams) {
       extension = {};
+      attachments = [];
       for (var i = 0, len = extraParams.children.length; i < len; i++) {
-        extension[extraParams.children[i].tagName] = extraParams.children[i].textContent;
+        if (extraParams.children[i].tagName === 'attachment') {
+          
+          // attachments
+          attach = {};
+          attributes = extraParams.children[i].attributes;
+          for (var j = 0, len2 = attributes.length; j < len2; j++) {
+            if (attributes[j].name === 'id' || attributes[j].name === 'size')
+              attach[attributes[j].name] = parseInt(attributes[j].value);
+            else
+              attach[attributes[j].name] = attributes[j].value;
+          }
+          attachments.push(attach);
+
+        } else {
+          extension[extraParams.children[i].tagName] = extraParams.children[i].textContent;
+        }
       }
+
+      if (attachments.length > 0)
+        extension.attachments = attachments;
     }
 
     message = {
@@ -234,7 +256,16 @@ ChatProxy.prototype.send = function(jid, message) {
     });
     
     Object.keys(message.extension).forEach(function(field) {
-      msg.c(field).t(message.extension[field]).up();
+      if (field === 'attachments') {
+
+        // attachments
+        message.extension[field].forEach(function(attach) {
+          msg.c('attachment', attach).up();
+        });
+
+      } else {
+        msg.c(field).t(message.extension[field]).up();
+      }
     });
   }
   
@@ -434,16 +465,15 @@ MucProxy.prototype.join = function(jid, callback) {
 
 MucProxy.prototype.leave = function(jid, callback) {
   var pres, self = this,
-      id = connection.getUniqueId('leave');
+      roomJid = self.helpers.getRoomJid(jid);
 
   pres = $pres({
     from: connection.jid,
-    to: self.helpers.getRoomJid(jid),
-    type: 'unavailable',
-    id: id
+    to: roomJid,
+    type: 'unavailable'
   });
 
-  connection.addHandler(callback, null, 'presence', 'unavailable', id);
+  connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
   connection.send(pres);
 };
 
