@@ -5,7 +5,7 @@
  *
  */
 
-// Browerify exports and dependencies
+// Browserify exports and dependencies
 module.exports = AuthProxy;
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
