@@ -14,7 +14,7 @@ var Proxy = require('./qbProxy');
 
 var Auth = require('./modules/qbAuth');
 var Users = require('./modules/qbUsers');
-var Chat = require('./modules/qbChat');
+// var Chat = require('./modules/qbChat'); // only for browsers
 var Content = require('./modules/qbContent');
 var Location = require('./modules/qbLocation');
 var Messages = require('./modules/qbMessages');
@@ -32,7 +32,7 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   this.service = new Proxy();
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
-  this.chat = new Chat(this.service);
+  // this.chat = new Chat(this.service); // only for browsers
   this.content = new Content(this.service);
   this.location = new Location(this.service);
   this.messages = new Messages(this.service);
