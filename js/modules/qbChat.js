@@ -340,28 +340,28 @@ RosterProxy.prototype.get = function(callback) {
   });
 };
 
-RosterProxy.prototype.add = function(jid) {
+RosterProxy.prototype.add = function(jid, callback) {
   this._sendRosterRequest({
     jid: jid,
     type: 'subscribe'
-  });
+  }, callback);
 };
 
-RosterProxy.prototype.confirm = function(jid) {
+RosterProxy.prototype.confirm = function(jid, callback) {
   this._sendRosterRequest({
     jid: jid,
     type: 'subscribed'
-  });
+  }, callback);
 };
 
-RosterProxy.prototype.reject = function(jid) {
+RosterProxy.prototype.reject = function(jid, callback) {
   this._sendRosterRequest({
     jid: jid,
     type: 'unsubscribed'
-  });
+  }, callback);
 };
 
-RosterProxy.prototype.remove = function(jid) {
+RosterProxy.prototype.remove = function(jid, callback) {
   this._sendSubscriptionPresence({
     jid: jid,
     type: 'unsubscribe'
@@ -374,10 +374,10 @@ RosterProxy.prototype.remove = function(jid) {
     jid: jid,
     subscription: 'remove',
     type: 'unsubscribe'
-  });
+  }, callback);
 };
 
-RosterProxy.prototype._sendRosterRequest = function(params) {
+RosterProxy.prototype._sendRosterRequest = function(params, callback) {
   var iq, attr = {},
       userId, self = this;
 
@@ -404,6 +404,7 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
     case 'subscribe':
       self._sendSubscriptionPresence(params);
       mutualSubscriptions[userId] = true;
+      if (typeof callback === 'function') callback();
       break;
     case 'subscribed':
       self._sendSubscriptionPresence(params);
@@ -411,14 +412,17 @@ RosterProxy.prototype._sendRosterRequest = function(params) {
 
       params.type = 'subscribe';
       self._sendSubscriptionPresence(params);
+      if (typeof callback === 'function') callback();
       break;
     case 'unsubscribed':
       self._sendSubscriptionPresence(params);
+      if (typeof callback === 'function') callback();
       break;
     case 'unsubscribe':
       delete mutualSubscriptions[userId];
       params.type = 'unavailable';
       self._sendSubscriptionPresence(params);
+      if (typeof callback === 'function') callback();
       break;
     }
 
