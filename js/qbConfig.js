@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.3.2',
+  version: '1.3.3',
   creds: {
     appId: '',
     authKey: '',
