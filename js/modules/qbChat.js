@@ -362,14 +362,6 @@ RosterProxy.prototype.reject = function(jid, callback) {
 };
 
 RosterProxy.prototype.remove = function(jid, callback) {
-  this._sendSubscriptionPresence({
-    jid: jid,
-    type: 'unsubscribe'
-  });
-  this._sendSubscriptionPresence({
-    jid: jid,
-    type: 'unsubscribed'
-  });
   this._sendRosterRequest({
     jid: jid,
     subscription: 'remove',
@@ -420,8 +412,6 @@ RosterProxy.prototype._sendRosterRequest = function(params, callback) {
       break;
     case 'unsubscribe':
       delete mutualSubscriptions[userId];
-      params.type = 'unavailable';
-      self._sendSubscriptionPresence(params);
       if (typeof callback === 'function') callback();
       break;
     }
