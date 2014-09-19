@@ -149,8 +149,8 @@ var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : con
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
   if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-    connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+    connection.xmlInput = function(data) { data.childNodes[0] && console.log('[QBChat RECV]:', data.childNodes[0]); };
+    connection.xmlOutput = function(data) { data.childNodes[0] && console.log('[QBChat SENT]:', data.childNodes[0]); };
   } else {
     connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
     connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
@@ -185,12 +185,12 @@ function ChatProxy(service) {
     if (extraParams) {
       extension = {};
       attachments = [];
-      for (var i = 0, len = extraParams.children.length; i < len; i++) {
-        if (extraParams.children[i].tagName === 'attachment') {
+      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+        if (extraParams.childNodes[i].tagName === 'attachment') {
           
           // attachments
           attach = {};
-          attributes = extraParams.children[i].attributes;
+          attributes = extraParams.childNodes[i].attributes;
           for (var j = 0, len2 = attributes.length; j < len2; j++) {
             if (attributes[j].name === 'id' || attributes[j].name === 'size')
               attach[attributes[j].name] = parseInt(attributes[j].value);
@@ -200,7 +200,7 @@ function ChatProxy(service) {
           attachments.push(attach);
 
         } else {
-          extension[extraParams.children[i].tagName] = extraParams.children[i].textContent;
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
         }
       }
 
@@ -1360,7 +1360,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.3.2',
+  version: '1.3.3',
   creds: {
     appId: '',
     authKey: '',
