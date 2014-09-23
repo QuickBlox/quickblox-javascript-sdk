@@ -571,7 +571,7 @@ MucProxy.prototype.join = function(jid, callback) {
     xmlns: Strophe.NS.MUC
   });
 
-  connection.addHandler(callback, null, 'presence', null, id);
+  if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
   connection.send(pres);
 };
 
@@ -585,7 +585,7 @@ MucProxy.prototype.leave = function(jid, callback) {
     type: 'unavailable'
   });
 
-  connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+  if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
   connection.send(pres);
 };
 
@@ -769,7 +769,7 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
       _this.upload(uploadParams, function(err, result) {
         if (err) { callback(err, null); }
         else {
-          createResult.path = result.Location;
+          createResult.path = config.ssl ? result.Location.replace('http://', 'https://') : result.Location;
           _this.markUploaded({id: fileId, size: size}, function(err, result){
             if (err) { callback(err, null);}
             else {
@@ -1360,7 +1360,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.3.3',
+  version: '1.3.4',
   creds: {
     appId: '',
     authKey: '',
