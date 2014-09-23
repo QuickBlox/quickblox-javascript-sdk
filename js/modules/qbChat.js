@@ -453,7 +453,7 @@ MucProxy.prototype.join = function(jid, callback) {
     xmlns: Strophe.NS.MUC
   });
 
-  connection.addHandler(callback, null, 'presence', null, id);
+  if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
   connection.send(pres);
 };
 
@@ -467,7 +467,7 @@ MucProxy.prototype.leave = function(jid, callback) {
     type: 'unavailable'
   });
 
-  connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+  if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
   connection.send(pres);
 };
 
