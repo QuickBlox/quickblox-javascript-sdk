@@ -509,6 +509,11 @@ DialogProxy.prototype.update = function(id, params, callback) {
   this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
 };
 
+DialogProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('DialogProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+};
+
 // Messages
 
 function MessageProxy(service) {
@@ -519,6 +524,11 @@ function MessageProxy(service) {
 MessageProxy.prototype.list = function(params, callback) {
   if (config.debug) { console.log('MessageProxy.list', params); }
   this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
+};
+
+MessageProxy.prototype.create = function(params, callback) {
+  if (config.debug) { console.log('MessageProxy.create', params); }
+  this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
 };
 
 MessageProxy.prototype.update = function(id, params, callback) {
