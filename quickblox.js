@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -143,6 +143,14 @@ var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
 var mutualSubscriptions = {};
+
+// The object for type MongoDB.Bson.ObjectId
+// http://docs.mongodb.org/manual/reference/object-id/
+var ObjectId = {
+  machine: Math.floor(Math.random() * 16777216).toString(16),
+  pid: Math.floor(Math.random() * 32767).toString(16),
+  increment: 0
+};
 
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
@@ -358,7 +366,7 @@ ChatProxy.prototype.send = function(jid, message) {
     from: connection.jid,
     to: jid,
     type: message.type,
-    id: message.id || connection.getUniqueId()
+    id: message.id || self.helpers.getBsonObjectId()
   });
   
   if (message.body) {
@@ -619,6 +627,11 @@ DialogProxy.prototype.update = function(id, params, callback) {
   this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
 };
 
+DialogProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('DialogProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+};
+
 // Messages
 
 function MessageProxy(service) {
@@ -629,6 +642,11 @@ function MessageProxy(service) {
 MessageProxy.prototype.list = function(params, callback) {
   if (config.debug) { console.log('MessageProxy.list', params); }
   this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
+};
+
+MessageProxy.prototype.create = function(params, callback) {
+  if (config.debug) { console.log('MessageProxy.create', params); }
+  this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
 };
 
 MessageProxy.prototype.update = function(id, params, callback) {
@@ -665,6 +683,20 @@ Helpers.prototype = {
 
   getUniqueId: function(suffix) {
     return connection.getUniqueId(suffix);
+  },
+
+  // Generating BSON ObjectId and converting it to a 24 character string representation
+  // Changed from https://github.com/justaprogrammer/ObjectId.js/blob/master/src/main/javascript/Objectid.js
+  getBsonObjectId: function() {
+    var timestamp = Utils.unixTime().toString(16),
+        increment = (ObjectId.increment++).toString(16);
+
+    if (increment > 0xffffff) ObjectId.increment = 0;
+
+    return '00000000'.substr(0, 8 - timestamp.length) + timestamp +
+           '000000'.substr(0, 6 - ObjectId.machine.length) + ObjectId.machine +
+           '0000'.substr(0, 4 - ObjectId.pid.length) + ObjectId.pid +
+           '000000'.substr(0, 6 - increment.length) + increment;
   }
 
 };
@@ -1360,7 +1392,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.3.4',
+  version: '1.3.5',
   creds: {
     appId: '',
     authKey: '',
@@ -1590,4 +1622,4 @@ module.exports=function(){function b(a){return n(f(l(a),a.length*8))}function c(
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,n=t.Base,i=r.enc,o=i.Utf8,s=r.algo;s.HMAC=n.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,n=4*t;r.sigBytes>n&&(r=e.finalize(r)),r.clamp();for(var i=this._oKey=r.clone(),s=this._iKey=r.clone(),a=i.words,c=s.words,f=0;t>f;f++)a[f]^=1549556828,c[f]^=909522486;i.sigBytes=s.sigBytes=n,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var n=r.finalize(this._oKey.clone().concat(t));return n}})})()});
 },{"./core":13}],16:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":13}]},{},[11])
+},{"./core":13}]},{},[11]);
