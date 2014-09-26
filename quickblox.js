@@ -362,12 +362,13 @@ ChatProxy.prototype.connect = function(params, callback) {
 };
 
 ChatProxy.prototype.send = function(jid, message) {
-  var msg = $msg({
-    from: connection.jid,
-    to: jid,
-    type: message.type,
-    id: message.id || self.helpers.getBsonObjectId()
-  });
+  var self = this,
+      msg = $msg({
+        from: connection.jid,
+        to: jid,
+        type: message.type,
+        id: message.id || self.helpers.getBsonObjectId()
+      });
   
   if (message.body) {
     msg.c('body', {
