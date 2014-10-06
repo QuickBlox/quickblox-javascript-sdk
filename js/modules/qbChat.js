@@ -499,6 +499,8 @@ MucProxy.prototype.join = function(jid, callback) {
     id: id
   }).c("x", {
     xmlns: Strophe.NS.MUC
+  }).c("history", {
+    maxstanzas: 0
   });
 
   if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
