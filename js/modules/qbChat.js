@@ -64,6 +64,7 @@ function ChatProxy(service) {
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         invite = stanza.querySelector('invite'),
@@ -110,7 +111,7 @@ function ChatProxy(service) {
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
     if (typeof self.onMessageListener === 'function' && !delay)
-      self.onMessageListener(userId, message);
+      self.onMessageListener(userId, message, to);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
