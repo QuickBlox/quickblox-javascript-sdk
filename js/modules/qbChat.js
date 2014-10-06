@@ -34,6 +34,9 @@ var ObjectId = {
   increment: 0
 };
 
+// add extra namespaces for Strophe
+Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
@@ -234,16 +237,19 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self._onPresence, null, 'presence');
       connection.addHandler(self._onIQ, null, 'iq');
 
-      // get the roster
-      self.roster.get(function(contacts) {
-        roster = contacts;
+      // enable carbons
+      self._enableCarbons(function() {
+        // get the roster
+        self.roster.get(function(contacts) {
+          roster = contacts;
 
-        // chat server will close your connection if you are not active in chat during one minute
-        // initial presence and an automatic reminder of it each 55 seconds
-        connection.send($pres().tree());
-        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+          // chat server will close your connection if you are not active in chat during one minute
+          // initial presence and an automatic reminder of it each 55 seconds
+          connection.send($pres().tree());
+          connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-        callback(null, roster);
+          callback(null, roster);
+        });
       });
 
       break;
@@ -328,6 +334,22 @@ ChatProxy.prototype.addListener = function(params, callback) {
 
 ChatProxy.prototype.deleteListener = function(ref) {
   connection.deleteHandler(ref);
+};
+
+ChatProxy.prototype._enableCarbons = function(callback) {
+  var iq;
+
+  iq = $iq({
+    from: connection.jid,
+    type: 'set',
+    id: connection.getUniqueId('enableCarbons')
+  }).c('enable', {
+    xmlns: Strophe.NS.CARBONS
+  });
+
+  connection.sendIQ(iq, function(stanza) {
+    callback();
+  });
 };
 
 /* Chat module: Roster
