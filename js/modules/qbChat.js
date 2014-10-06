@@ -172,8 +172,8 @@ function ChatProxy(service) {
           subscription: 'to',
           ask: null
         };
-        if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+        // if (typeof self.onRejectSubscribeListener === 'function')
+        //   self.onRejectSubscribeListener(userId);
         break;
       case 'unavailable':
         if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
