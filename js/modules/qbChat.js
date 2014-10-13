@@ -13,6 +13,7 @@
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectingListener
+ * - onReconnectListener
  */
 
 // Browserify exports and dependencies
@@ -24,7 +25,8 @@ module.exports = ChatProxy;
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
-var roster = {};
+var roster = {},
+    joinedRooms = {};
 
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
@@ -59,6 +61,9 @@ function ChatProxy(service) {
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
+
+  // reconnect to chat if it wasn't the logout method
+  this._isLogout = false;
 
   // stanza callbacks (Message, Presence, IQ)
 
@@ -208,13 +213,14 @@ ChatProxy.prototype._autoSendPresence = function() {
 
 ChatProxy.prototype.connect = function(params, callback) {
   if (config.debug) { console.log('ChatProxy.connect', params); }
-  var self = this, err;
+  var self = this,
+      err, rooms;
 
   connection.connect(params.jid, params.password, function(status) {
     switch (status) {
     case Strophe.Status.ERROR:
       err = getError(422, 'Status.ERROR - An error has occurred');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTING:
       trace('Status.CONNECTING');
@@ -222,14 +228,14 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.CONNFAIL:
       err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.AUTHENTICATING:
       trace('Status.AUTHENTICATING');
       break;
     case Strophe.Status.AUTHFAIL:
       err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTED:
       trace('Status.CONNECTED at ' + getLocalTime());
@@ -249,7 +255,20 @@ ChatProxy.prototype.connect = function(params, callback) {
           connection.send($pres().tree());
           connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-          callback(null, roster);
+          if (typeof callback === 'function') {
+            callback(null, roster);
+          } else {
+            self._isLogout = false;
+
+            // recover the joined rooms
+            rooms = Object.keys(joinedRooms);
+            for (var i = 0, len = rooms.length; i < len; i++) {
+              self.muc.join(rooms[i]);
+            }
+
+            if (typeof self.onReconnectListener === 'function')
+              self.onReconnectListener();
+          }
         });
       });
 
@@ -259,11 +278,13 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED at ' + getLocalTime());
+      connection.reset();
 
       if (typeof self.onDisconnectingListener === 'function')
         self.onDisconnectingListener();
 
-      connection.reset();
+      // reconnect to chat
+      if (!self._isLogout) self.connect(params);
       break;
     case Strophe.Status.ATTACHED:
       trace('Status.ATTACHED');
@@ -319,6 +340,8 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  joinedRooms = {};
+  this._isLogout = true;
   connection.flush();
   connection.disconnect();
 };
@@ -337,6 +360,8 @@ ChatProxy.prototype.deleteListener = function(ref) {
   connection.deleteHandler(ref);
 };
 
+// Carbons XEP
+// http://
 ChatProxy.prototype._enableCarbons = function(callback) {
   var iq;
 
@@ -494,6 +519,8 @@ MucProxy.prototype.join = function(jid, callback) {
   var pres, self = this,
       id = connection.getUniqueId('join');
 
+  joinedRooms[jid] = true;
+
   pres = $pres({
     from: connection.jid,
     to: self.helpers.getRoomJid(jid),
@@ -511,6 +538,8 @@ MucProxy.prototype.join = function(jid, callback) {
 MucProxy.prototype.leave = function(jid, callback) {
   var pres, self = this,
       roomJid = self.helpers.getRoomJid(jid);
+
+  delete joinedRooms[jid];
 
   pres = $pres({
     from: connection.jid,
