@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -131,6 +131,7 @@ function signMessage(message, secret) {
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectingListener
+ * - onReconnectListener
  */
 
 // Browserify exports and dependencies
@@ -142,7 +143,8 @@ module.exports = ChatProxy;
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
-var mutualSubscriptions = {};
+var roster = {},
+    joinedRooms = {};
 
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
@@ -152,13 +154,16 @@ var ObjectId = {
   increment: 0
 };
 
+// add extra namespaces for Strophe
+Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
   if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { data.childNodes[0] && console.log('[QBChat RECV]:', data.childNodes[0]); };
-    connection.xmlOutput = function(data) { data.childNodes[0] && console.log('[QBChat SENT]:', data.childNodes[0]); };
+    connection.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
+    connection.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
   } else {
     connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
     connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
@@ -175,10 +180,14 @@ function ChatProxy(service) {
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
 
+  // reconnect to chat if it wasn't the logout method
+  this._isLogout = false;
+
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         invite = stanza.querySelector('invite'),
@@ -225,7 +234,7 @@ function ChatProxy(service) {
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
     if (typeof self.onMessageListener === 'function' && !delay)
-      self.onMessageListener(userId, message);
+      self.onMessageListener(userId, message, to);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -238,14 +247,18 @@ function ChatProxy(service) {
         userId = self.helpers.getIdFromNode(from);
 
     if (!type) {
-      if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
-        self.onContactListListener(userId, type);
+      if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
+        self.onContactListListener(userId);
     } else {
 
       // subscriptions callbacks
       switch (type) {
       case 'subscribe':
-        if (mutualSubscriptions[userId]) {
+        if (roster[userId] && roster[userId].subscription === 'to') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };
           self.roster._sendSubscriptionPresence({
             jid: from,
             type: 'subscribed'
@@ -256,21 +269,38 @@ function ChatProxy(service) {
         }
         break;
       case 'subscribed':
-        if (typeof self.onConfirmSubscribeListener === 'function')
-          self.onConfirmSubscribeListener(userId);
+        if (roster[userId] && roster[userId].subscription === 'from') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };          
+        } else {
+          roster[userId] = {
+            subscription: 'to',
+            ask: null
+          };
+          if (typeof self.onConfirmSubscribeListener === 'function')
+            self.onConfirmSubscribeListener(userId);
+        }
         break;
       case 'unsubscribed':
-        delete mutualSubscriptions[userId];
+        roster[userId] = {
+          subscription: 'none',
+          ask: null
+        };
         if (typeof self.onRejectSubscribeListener === 'function')
           self.onRejectSubscribeListener(userId);
         break;
       case 'unsubscribe':
-        delete mutualSubscriptions[userId];
-        if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+        roster[userId] = {
+          subscription: 'to',
+          ask: null
+        };
+        // if (typeof self.onRejectSubscribeListener === 'function')
+        //   self.onRejectSubscribeListener(userId);
         break;
       case 'unavailable':
-        if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
+        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
           self.onContactListListener(userId, type);
         break;
       }
@@ -301,13 +331,14 @@ ChatProxy.prototype._autoSendPresence = function() {
 
 ChatProxy.prototype.connect = function(params, callback) {
   if (config.debug) { console.log('ChatProxy.connect', params); }
-  var self = this, err;
+  var self = this,
+      err, rooms;
 
   connection.connect(params.jid, params.password, function(status) {
     switch (status) {
     case Strophe.Status.ERROR:
       err = getError(422, 'Status.ERROR - An error has occurred');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTING:
       trace('Status.CONNECTING');
@@ -315,14 +346,14 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.CONNFAIL:
       err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.AUTHENTICATING:
       trace('Status.AUTHENTICATING');
       break;
     case Strophe.Status.AUTHFAIL:
       err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTED:
       trace('Status.CONNECTED at ' + getLocalTime());
@@ -331,15 +362,32 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self._onPresence, null, 'presence');
       connection.addHandler(self._onIQ, null, 'iq');
 
-      // get the roster
-      self.roster.get(function(contacts) {
+      // enable carbons
+      self._enableCarbons(function() {
+        // get the roster
+        self.roster.get(function(contacts) {
+          roster = contacts;
 
-        // chat server will close your connection if you are not active in chat during one minute
-        // initial presence and an automatic reminder of it each 55 seconds
-        connection.send($pres().tree());
-        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+          // chat server will close your connection if you are not active in chat during one minute
+          // initial presence and an automatic reminder of it each 55 seconds
+          connection.send($pres().tree());
+          connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-        callback(null, contacts);
+          if (typeof callback === 'function') {
+            callback(null, roster);
+          } else {
+            self._isLogout = false;
+
+            // recover the joined rooms
+            rooms = Object.keys(joinedRooms);
+            for (var i = 0, len = rooms.length; i < len; i++) {
+              self.muc.join(rooms[i]);
+            }
+
+            if (typeof self.onReconnectListener === 'function')
+              self.onReconnectListener();
+          }
+        });
       });
 
       break;
@@ -348,11 +396,13 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED at ' + getLocalTime());
+      connection.reset();
 
       if (typeof self.onDisconnectingListener === 'function')
         self.onDisconnectingListener();
 
-      connection.reset();
+      // reconnect to chat
+      if (!self._isLogout) self.connect(params);
       break;
     case Strophe.Status.ATTACHED:
       trace('Status.ATTACHED');
@@ -408,6 +458,8 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  joinedRooms = {};
+  this._isLogout = true;
   connection.flush();
   connection.disconnect();
 };
@@ -424,6 +476,24 @@ ChatProxy.prototype.addListener = function(params, callback) {
 
 ChatProxy.prototype.deleteListener = function(ref) {
   connection.deleteHandler(ref);
+};
+
+// Carbons XEP
+// http://
+ChatProxy.prototype._enableCarbons = function(callback) {
+  var iq;
+
+  iq = $iq({
+    from: connection.jid,
+    type: 'set',
+    id: connection.getUniqueId('enableCarbons')
+  }).c('enable', {
+    xmlns: Strophe.NS.CARBONS
+  });
+
+  connection.sendIQ(iq, function(stanza) {
+    callback();
+  });
 };
 
 /* Chat module: Roster
@@ -445,7 +515,7 @@ RosterProxy.prototype.get = function(callback) {
   iq = $iq({
     from: connection.jid,
     type: 'get',
-    id: connection.getUniqueId('roster')
+    id: connection.getUniqueId('getRoster')
   }).c('query', {
     xmlns: Strophe.NS.ROSTER
   });
@@ -458,96 +528,91 @@ RosterProxy.prototype.get = function(callback) {
         subscription: items[i].getAttribute('subscription'),
         ask: items[i].getAttribute('ask') || null
       };
-
-      // mutual subscription
-      if (items[i].getAttribute('ask') || items[i].getAttribute('subscription') !== 'none')
-        mutualSubscriptions[userId] = true;
     }
     callback(contacts);
   });
 };
 
 RosterProxy.prototype.add = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'none',
+    ask: 'subscribe'
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'subscribe'
-  }, callback);
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.confirm = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'from',
+    ask: 'subscribe'
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'subscribed'
-  }, callback);
+  });
+
+  self._sendSubscriptionPresence({
+    jid: jid,
+    type: 'subscribe'
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.reject = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'none',
+    ask: null
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'unsubscribed'
-  }, callback);
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.remove = function(jid, callback) {
-  this._sendRosterRequest({
-    jid: jid,
-    subscription: 'remove',
-    type: 'unsubscribe'
-  }, callback);
-};
-
-RosterProxy.prototype._sendRosterRequest = function(params, callback) {
-  var iq, attr = {},
-      userId, self = this;
+  var iq, userId, self = this;
 
   iq = $iq({
     from: connection.jid,
     type: 'set',
-    id: connection.getUniqueId('roster')
+    id: connection.getUniqueId('removeRosterItem')
   }).c('query', {
     xmlns: Strophe.NS.ROSTER
+  }).c('item', {
+    jid: jid,
+    subscription: 'remove'
   });
 
-  if (params.jid)
-    attr.jid = params.jid;
-  if (params.subscription)
-    attr.subscription = params.subscription;
-
-  iq.c('item', attr);
-  userId = self.helpers.getIdFromNode(params.jid).toString();
+  userId = self.helpers.getIdFromNode(jid).toString();
 
   connection.sendIQ(iq, function() {
-
-    // subscriptions requests
-    switch (params.type) {
-    case 'subscribe':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
-      if (typeof callback === 'function') callback();
-      break;
-    case 'subscribed':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
-
-      params.type = 'subscribe';
-      self._sendSubscriptionPresence(params);
-      if (typeof callback === 'function') callback();
-      break;
-    case 'unsubscribed':
-      self._sendSubscriptionPresence(params);
-      if (typeof callback === 'function') callback();
-      break;
-    case 'unsubscribe':
-      delete mutualSubscriptions[userId];
-      if (typeof callback === 'function') callback();
-      break;
-    }
-
+    delete roster[userId];
+    if (typeof callback === 'function') callback();
   });
 };
 
 RosterProxy.prototype._sendSubscriptionPresence = function(params) {
-  var pres, self = this;
+  var pres;
 
   pres = $pres({
     to: params.jid,
@@ -572,12 +637,16 @@ MucProxy.prototype.join = function(jid, callback) {
   var pres, self = this,
       id = connection.getUniqueId('join');
 
+  joinedRooms[jid] = true;
+
   pres = $pres({
     from: connection.jid,
     to: self.helpers.getRoomJid(jid),
     id: id
   }).c("x", {
     xmlns: Strophe.NS.MUC
+  }).c("history", {
+    maxstanzas: 0
   });
 
   if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
@@ -587,6 +656,8 @@ MucProxy.prototype.join = function(jid, callback) {
 MucProxy.prototype.leave = function(jid, callback) {
   var pres, self = this,
       roomJid = self.helpers.getRoomJid(jid);
+
+  delete joinedRooms[jid];
 
   pres = $pres({
     from: connection.jid,
@@ -1623,4 +1694,4 @@ module.exports=function(){function b(a){return n(f(l(a),a.length*8))}function c(
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,n=t.Base,i=r.enc,o=i.Utf8,s=r.algo;s.HMAC=n.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,n=4*t;r.sigBytes>n&&(r=e.finalize(r)),r.clamp();for(var i=this._oKey=r.clone(),s=this._iKey=r.clone(),a=i.words,c=s.words,f=0;t>f;f++)a[f]^=1549556828,c[f]^=909522486;i.sigBytes=s.sigBytes=n,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var n=r.finalize(this._oKey.clone().concat(t));return n}})})()});
 },{"./core":13}],16:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":13}]},{},[11]);
+},{"./core":13}]},{},[11])
