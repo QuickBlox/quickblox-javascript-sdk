@@ -13,6 +13,7 @@
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectingListener
+ * - onReconnectListener
  */
 
 // Browserify exports and dependencies
@@ -24,7 +25,8 @@ module.exports = ChatProxy;
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
-var mutualSubscriptions = {};
+var roster = {},
+    joinedRooms = {};
 
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
@@ -34,13 +36,16 @@ var ObjectId = {
   increment: 0
 };
 
+// add extra namespaces for Strophe
+Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+
 // create Strophe Connection object
 var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
 var connection = new Strophe.Connection(protocol);
 // if (config.debug) {
   if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { data.childNodes[0] && console.log('[QBChat RECV]:', data.childNodes[0]); };
-    connection.xmlOutput = function(data) { data.childNodes[0] && console.log('[QBChat SENT]:', data.childNodes[0]); };
+    connection.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
+    connection.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
   } else {
     connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
     connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
@@ -57,10 +62,14 @@ function ChatProxy(service) {
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
 
+  // reconnect to chat if it wasn't the logout method
+  this._isLogout = false;
+
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         invite = stanza.querySelector('invite'),
@@ -107,7 +116,7 @@ function ChatProxy(service) {
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
     if (typeof self.onMessageListener === 'function' && !delay)
-      self.onMessageListener(userId, message);
+      self.onMessageListener(userId, message, to);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -120,14 +129,18 @@ function ChatProxy(service) {
         userId = self.helpers.getIdFromNode(from);
 
     if (!type) {
-      if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
-        self.onContactListListener(userId, type);
+      if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
+        self.onContactListListener(userId);
     } else {
 
       // subscriptions callbacks
       switch (type) {
       case 'subscribe':
-        if (mutualSubscriptions[userId]) {
+        if (roster[userId] && roster[userId].subscription === 'to') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };
           self.roster._sendSubscriptionPresence({
             jid: from,
             type: 'subscribed'
@@ -138,21 +151,38 @@ function ChatProxy(service) {
         }
         break;
       case 'subscribed':
-        if (typeof self.onConfirmSubscribeListener === 'function')
-          self.onConfirmSubscribeListener(userId);
+        if (roster[userId] && roster[userId].subscription === 'from') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };          
+        } else {
+          roster[userId] = {
+            subscription: 'to',
+            ask: null
+          };
+          if (typeof self.onConfirmSubscribeListener === 'function')
+            self.onConfirmSubscribeListener(userId);
+        }
         break;
       case 'unsubscribed':
-        delete mutualSubscriptions[userId];
+        roster[userId] = {
+          subscription: 'none',
+          ask: null
+        };
         if (typeof self.onRejectSubscribeListener === 'function')
           self.onRejectSubscribeListener(userId);
         break;
       case 'unsubscribe':
-        delete mutualSubscriptions[userId];
-        if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+        roster[userId] = {
+          subscription: 'to',
+          ask: null
+        };
+        // if (typeof self.onRejectSubscribeListener === 'function')
+        //   self.onRejectSubscribeListener(userId);
         break;
       case 'unavailable':
-        if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
+        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
           self.onContactListListener(userId, type);
         break;
       }
@@ -183,13 +213,14 @@ ChatProxy.prototype._autoSendPresence = function() {
 
 ChatProxy.prototype.connect = function(params, callback) {
   if (config.debug) { console.log('ChatProxy.connect', params); }
-  var self = this, err;
+  var self = this,
+      err, rooms;
 
   connection.connect(params.jid, params.password, function(status) {
     switch (status) {
     case Strophe.Status.ERROR:
       err = getError(422, 'Status.ERROR - An error has occurred');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTING:
       trace('Status.CONNECTING');
@@ -197,14 +228,14 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.CONNFAIL:
       err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.AUTHENTICATING:
       trace('Status.AUTHENTICATING');
       break;
     case Strophe.Status.AUTHFAIL:
       err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-      callback(err, null);
+      if (typeof callback === 'function') callback(err, null);
       break;
     case Strophe.Status.CONNECTED:
       trace('Status.CONNECTED at ' + getLocalTime());
@@ -213,15 +244,32 @@ ChatProxy.prototype.connect = function(params, callback) {
       connection.addHandler(self._onPresence, null, 'presence');
       connection.addHandler(self._onIQ, null, 'iq');
 
-      // get the roster
-      self.roster.get(function(contacts) {
+      // enable carbons
+      self._enableCarbons(function() {
+        // get the roster
+        self.roster.get(function(contacts) {
+          roster = contacts;
 
-        // chat server will close your connection if you are not active in chat during one minute
-        // initial presence and an automatic reminder of it each 55 seconds
-        connection.send($pres().tree());
-        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+          // chat server will close your connection if you are not active in chat during one minute
+          // initial presence and an automatic reminder of it each 55 seconds
+          connection.send($pres().tree());
+          connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-        callback(null, contacts);
+          if (typeof callback === 'function') {
+            callback(null, roster);
+          } else {
+            self._isLogout = false;
+
+            // recover the joined rooms
+            rooms = Object.keys(joinedRooms);
+            for (var i = 0, len = rooms.length; i < len; i++) {
+              self.muc.join(rooms[i]);
+            }
+
+            if (typeof self.onReconnectListener === 'function')
+              self.onReconnectListener();
+          }
+        });
       });
 
       break;
@@ -230,11 +278,13 @@ ChatProxy.prototype.connect = function(params, callback) {
       break;
     case Strophe.Status.DISCONNECTED:
       trace('Status.DISCONNECTED at ' + getLocalTime());
+      connection.reset();
 
       if (typeof self.onDisconnectingListener === 'function')
         self.onDisconnectingListener();
 
-      connection.reset();
+      // reconnect to chat
+      if (!self._isLogout) self.connect(params);
       break;
     case Strophe.Status.ATTACHED:
       trace('Status.ATTACHED');
@@ -290,6 +340,8 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  joinedRooms = {};
+  this._isLogout = true;
   connection.flush();
   connection.disconnect();
 };
@@ -306,6 +358,24 @@ ChatProxy.prototype.addListener = function(params, callback) {
 
 ChatProxy.prototype.deleteListener = function(ref) {
   connection.deleteHandler(ref);
+};
+
+// Carbons XEP
+// http://
+ChatProxy.prototype._enableCarbons = function(callback) {
+  var iq;
+
+  iq = $iq({
+    from: connection.jid,
+    type: 'set',
+    id: connection.getUniqueId('enableCarbons')
+  }).c('enable', {
+    xmlns: Strophe.NS.CARBONS
+  });
+
+  connection.sendIQ(iq, function(stanza) {
+    callback();
+  });
 };
 
 /* Chat module: Roster
@@ -327,7 +397,7 @@ RosterProxy.prototype.get = function(callback) {
   iq = $iq({
     from: connection.jid,
     type: 'get',
-    id: connection.getUniqueId('roster')
+    id: connection.getUniqueId('getRoster')
   }).c('query', {
     xmlns: Strophe.NS.ROSTER
   });
@@ -340,96 +410,91 @@ RosterProxy.prototype.get = function(callback) {
         subscription: items[i].getAttribute('subscription'),
         ask: items[i].getAttribute('ask') || null
       };
-
-      // mutual subscription
-      if (items[i].getAttribute('ask') || items[i].getAttribute('subscription') !== 'none')
-        mutualSubscriptions[userId] = true;
     }
     callback(contacts);
   });
 };
 
 RosterProxy.prototype.add = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'none',
+    ask: 'subscribe'
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'subscribe'
-  }, callback);
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.confirm = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'from',
+    ask: 'subscribe'
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'subscribed'
-  }, callback);
+  });
+
+  self._sendSubscriptionPresence({
+    jid: jid,
+    type: 'subscribe'
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.reject = function(jid, callback) {
-  this._sendRosterRequest({
+  var self = this,
+      userId = self.helpers.getIdFromNode(jid).toString();
+
+  roster[userId] = {
+    subscription: 'none',
+    ask: null
+  };
+
+  self._sendSubscriptionPresence({
     jid: jid,
     type: 'unsubscribed'
-  }, callback);
+  });
+
+  if (typeof callback === 'function') callback();
 };
 
 RosterProxy.prototype.remove = function(jid, callback) {
-  this._sendRosterRequest({
-    jid: jid,
-    subscription: 'remove',
-    type: 'unsubscribe'
-  }, callback);
-};
-
-RosterProxy.prototype._sendRosterRequest = function(params, callback) {
-  var iq, attr = {},
-      userId, self = this;
+  var iq, userId, self = this;
 
   iq = $iq({
     from: connection.jid,
     type: 'set',
-    id: connection.getUniqueId('roster')
+    id: connection.getUniqueId('removeRosterItem')
   }).c('query', {
     xmlns: Strophe.NS.ROSTER
+  }).c('item', {
+    jid: jid,
+    subscription: 'remove'
   });
 
-  if (params.jid)
-    attr.jid = params.jid;
-  if (params.subscription)
-    attr.subscription = params.subscription;
-
-  iq.c('item', attr);
-  userId = self.helpers.getIdFromNode(params.jid).toString();
+  userId = self.helpers.getIdFromNode(jid).toString();
 
   connection.sendIQ(iq, function() {
-
-    // subscriptions requests
-    switch (params.type) {
-    case 'subscribe':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
-      if (typeof callback === 'function') callback();
-      break;
-    case 'subscribed':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
-
-      params.type = 'subscribe';
-      self._sendSubscriptionPresence(params);
-      if (typeof callback === 'function') callback();
-      break;
-    case 'unsubscribed':
-      self._sendSubscriptionPresence(params);
-      if (typeof callback === 'function') callback();
-      break;
-    case 'unsubscribe':
-      delete mutualSubscriptions[userId];
-      if (typeof callback === 'function') callback();
-      break;
-    }
-
+    delete roster[userId];
+    if (typeof callback === 'function') callback();
   });
 };
 
 RosterProxy.prototype._sendSubscriptionPresence = function(params) {
-  var pres, self = this;
+  var pres;
 
   pres = $pres({
     to: params.jid,
@@ -454,12 +519,16 @@ MucProxy.prototype.join = function(jid, callback) {
   var pres, self = this,
       id = connection.getUniqueId('join');
 
+  joinedRooms[jid] = true;
+
   pres = $pres({
     from: connection.jid,
     to: self.helpers.getRoomJid(jid),
     id: id
   }).c("x", {
     xmlns: Strophe.NS.MUC
+  }).c("history", {
+    maxstanzas: 0
   });
 
   if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
@@ -469,6 +538,8 @@ MucProxy.prototype.join = function(jid, callback) {
 MucProxy.prototype.leave = function(jid, callback) {
   var pres, self = this,
       roomJid = self.helpers.getRoomJid(jid);
+
+  delete joinedRooms[jid];
 
   pres = $pres({
     from: connection.jid,
