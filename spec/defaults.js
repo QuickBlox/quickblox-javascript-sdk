@@ -5,7 +5,7 @@
  */
 
 var DEFAULTS = {
-  version: '1.3.0',
+  version: '1.3.6',
   creds: {
     appId: '',
     authKey: '',
