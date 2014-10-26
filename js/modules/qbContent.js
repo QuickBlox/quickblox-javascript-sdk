@@ -61,7 +61,7 @@ ContentProxy.prototype.createAndUpload = function(params, callback){
   this.create(createParams, function(err,createResult){
     if (err){ callback(err, null); }
     else {
-      var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: uri.protocol + '://' + uri.host }, data = new FormData();
+      var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
       fileId = createResult.id;
       
       Object.keys(uri.queryKey).forEach(function(val) {
