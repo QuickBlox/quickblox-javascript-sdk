@@ -18,7 +18,7 @@
 var inBrowser = typeof window !== "undefined";
 
 // Browserify exports and dependencies
-//require('../../lib/strophe/strophe.min');
+if(inBrowser) require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 module.exports = ChatProxy;
@@ -49,7 +49,8 @@ function ChatProxy(service) {
   this.service = service;
   if(inBrowser) {
     this.roster = new RosterProxy(service);
-    this.muc = new MucProxy(service); }
+    this.muc = new MucProxy(service);
+  }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;

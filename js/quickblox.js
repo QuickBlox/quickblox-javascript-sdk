@@ -31,7 +31,7 @@ function QuickBlox() {}
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   
   if (debug && typeof debug === 'boolean') config.debug = debug;
-  else if (debug && typeof debug === 'object') config.set(authKey);
+  else if (debug && typeof debug === 'object') config.set(debug);
   
   this.service = new Proxy();
   this.auth = new Auth(this.service);
