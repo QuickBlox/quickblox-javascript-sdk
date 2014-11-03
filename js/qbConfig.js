@@ -40,6 +40,7 @@ var config = {
     type: '.json'
   },
   ssl: true,
+  timeout: null,
   debug: false
 };
 

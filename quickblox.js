@@ -1406,11 +1406,11 @@ var config = {
     type: '.json'
   },
   ssl: true,
+  timeout: null,
   debug: false
 };
 
 config.set = function(options) {
-  console.log(options);
   Object.keys(options).forEach(function(key) {
     if(key !== 'set' && config.hasOwnProperty(key)) {
       if(typeof options[key] !== 'object') {
@@ -1438,7 +1438,7 @@ module.exports = config;
 
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
-var isBrowser = (typeof window !== "undefined" && window.jQuery);
+var isBrowser = typeof window !== "undefined" && window.jQuery;
 
 var config = require('./qbConfig');
 
@@ -1469,6 +1469,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
+    timeout: config.timeout !== null ? config.timeout : null,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
