@@ -45,7 +45,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
         }
       }
     },
-    headers: (((settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1)
+    headers: (((params.url.indexOf('://' + config.endpoints.s3Bucket) === -1)
                 && (_this.qbInst.session && _this.qbInst.session.token)) ? { 'QB-Token' : _this.qbInst.session.token } : {}),
     success: function(data, status, jqHXR) {
       if (config.debug) { console.log('ServiceProxy.ajax success', data); }
