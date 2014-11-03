@@ -68,7 +68,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
   if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
   
-  if(window && jQuery) {
+  if(typeof window !== "undefined" && window.jQuery) {
     jQuery.ajax( ajaxCall );
   } else {
     request(ajaxCall, function(error, response, body) {
