@@ -14,9 +14,11 @@
  * - onRejectSubscribeListener
  * - onDisconnectingListener
  */
+ 
+var inBrowser = typeof window !== "undefined";
 
 // Browserify exports and dependencies
-require('../../lib/strophe/strophe.min');
+//require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 module.exports = ChatProxy;
@@ -26,25 +28,28 @@ var messageUrl = config.urls.chat + '/Message';
 
 var mutualSubscriptions = {};
 
+if(inBrowser) {
 // create Strophe Connection object
-var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-var connection = new Strophe.Connection(protocol);
-// if (config.debug) {
-  if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-    connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
-  } else {
-    connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-    connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
+  var connection = new Strophe.Connection(protocol);
+  if (config.debug) {
+    if (config.chatProtocol.active === 1) {
+      connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+      connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+    } else {
+      connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+      connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+    }
   }
-// }
+}
 
 function ChatProxy(service) {
   var self = this;
 
   this.service = service;
-  this.roster = new RosterProxy(service);
-  this.muc = new MucProxy(service);
+  if(inBrowser) {
+    this.roster = new RosterProxy(service);
+    this.muc = new MucProxy(service); }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;

@@ -9,14 +9,8 @@
 module.exports = ServiceProxy;
 var config = require('./qbConfig');
 
-// For server-side applications through using npm package 'quickblox' you should include the following block
-var jsdom = require('jsdom');
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
-jQuery.support.cors = true;
-jQuery.ajaxSettings.xhr = function() {
-  return new XMLHttpRequest;
-};
+// For server-side applications through using npm package 'quickblox' you should include the following line
+var request = require('request');
 
 function ServiceProxy() {
   this.qbInst = {
@@ -51,6 +45,8 @@ ServiceProxy.prototype.ajax = function(params, callback) {
         }
       }
     },
+    headers: (((settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1)
+                && (_this.qbInst.session && _this.qbInst.session.token)) ? { 'QB-Token' : _this.qbInst.session.token } : {}),
     success: function(data, status, jqHXR) {
       if (config.debug) { console.log('ServiceProxy.ajax success', data); }
       callback(null, data);
@@ -71,6 +67,16 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
   if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
   if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-
-  jQuery.ajax( ajaxCall );
+  
+  if(window && jQuery) {
+    jQuery.ajax( ajaxCall );
+  } else {
+    request(ajaxCall, function(error, response, body) {
+      if(!error) {
+        ajaxCall.success(body);
+      } else {
+        ajaxCall.error(error, response.statusCode, body)
+      }
+    });
+  }
 };
