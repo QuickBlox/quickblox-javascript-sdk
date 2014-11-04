@@ -9,11 +9,11 @@
 var config = require('./qbConfig');
 
 exports.randomNonce = function() {
-  return Math.round(Math.random() * 10000);
+  return Math.floor(Math.random() * 10000);
 };
 
 exports.unixTime = function() {
-  return Math.round(Date.now() / 1000);
+  return Math.floor(Date.now() / 1000);
 };
 
 exports.getUrl = function(base, id) {
