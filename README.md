@@ -80,7 +80,7 @@ QB.init(103, "89AO9Z2LobcegCG", “1Hs8XZpMxGRVPnD”, config);
 
 ```
 
-The code above would then make `QB` make API requests to `http://api.differenthost.com/` rather than `https://api.quickblox.com` and would give you full debugging to the console. It would also set a 5 second timeout for all your requests, triggering the `error` callback in requests.
+The code above would then make `QB` make API requests to `http://api.differenthost.com/` rather than `https://api.quickblox.com` and would give you full debugging to the console. It would also set a 5 second timeout for all your requests, triggering the `error` callback.
 
 Documentation
 ----------------------
