@@ -38,7 +38,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
-    timeout: config.timeout !== null ? config.timeout : null,
+    timeout: config.timeout,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
