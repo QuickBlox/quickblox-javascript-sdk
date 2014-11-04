@@ -76,7 +76,7 @@ var config = {
   ssl: false
 };
 
-QB.init(103, "89AO9Z2LobcegCG", “1Hs8XZpMxGRVPnD”, config);
+QB.init(103, "89AO9Z2LobcegCG", "1Hs8XZpMxGRVPnD", config);
 
 ```
 
