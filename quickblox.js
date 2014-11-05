@@ -133,10 +133,11 @@ function signMessage(message, secret) {
  * - onDisconnectingListener
  */
  
-var inBrowser = typeof window !== "undefined";
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
 
 // Browserify exports and dependencies
-if(inBrowser) require('../../lib/strophe/strophe.min');
+if(isBrowser) require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 module.exports = ChatProxy;
@@ -146,7 +147,7 @@ var messageUrl = config.urls.chat + '/Message';
 
 var mutualSubscriptions = {};
 
-if(inBrowser) {
+if(isBrowser) {
 // create Strophe Connection object
   var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
   var connection = new Strophe.Connection(protocol);
@@ -165,7 +166,7 @@ function ChatProxy(service) {
   var self = this;
 
   this.service = service;
-  if(inBrowser) {
+  if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
   }
@@ -291,6 +292,7 @@ function ChatProxy(service) {
 /* Chat module: Core
 ---------------------------------------------------------------------- */
 ChatProxy.prototype._autoSendPresence = function() {
+  if(!isBrowser) throw unsupported;
   connection.send($pres().tree());
   // we must return true to keep the handler alive
   // returning false would remove it after it finishes
@@ -298,6 +300,9 @@ ChatProxy.prototype._autoSendPresence = function() {
 };
 
 ChatProxy.prototype.connect = function(params, callback) {
+  
+  if(!isBrowser) throw unsupported;
+  
   if (config.debug) { console.log('ChatProxy.connect', params); }
   var self = this, err;
 
@@ -360,6 +365,9 @@ ChatProxy.prototype.connect = function(params, callback) {
 };
 
 ChatProxy.prototype.send = function(jid, message) {
+  
+  if(!isBrowser) throw unsupported;
+  
   var msg = $msg({
     from: connection.jid,
     to: jid,
@@ -398,6 +406,7 @@ ChatProxy.prototype.send = function(jid, message) {
 
 // helper function for ChatProxy.send()
 ChatProxy.prototype.sendPres = function(type) {
+  if(!isBrowser) throw unsupported;
   connection.send($pres({ 
     from: connection.jid,
     type: type
@@ -405,11 +414,13 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  if(!isBrowser) throw unsupported;
   connection.flush();
   connection.disconnect();
 };
 
 ChatProxy.prototype.addListener = function(params, callback) {
+  if(!isBrowser) throw unsupported;
   return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
   function handler() {
@@ -420,6 +431,7 @@ ChatProxy.prototype.addListener = function(params, callback) {
 };
 
 ChatProxy.prototype.deleteListener = function(ref) {
+  if(!isBrowser) throw unsupported;
   connection.deleteHandler(ref);
 };
 
@@ -629,6 +641,11 @@ DialogProxy.prototype.create = function(params, callback) {
 DialogProxy.prototype.update = function(id, params, callback) {
   if (config.debug) { console.log('DialogProxy.update', id, params); }
   this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
+};
+
+DialogProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('DialogProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 // Messages
@@ -1496,10 +1513,27 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   };
   
   if(!isBrowser) {
+
     if (ajaxCall.dataType === 'json') ajaxCall.json = ajaxCall.data;
     if (params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && _this.qbInst.session && _this.qbInst.session.token)
       ajaxCall.headers = { 'QB-Token' : _this.qbInst.session.token };
     ajaxCall.method = ajaxCall.type;
+    
+    var requestCallback = function(error, response, body) {
+      if(error || body.toString().indexOf("DOCTYPE") !== -1) {
+        var errorMsg = {
+          code: response.statusCode,
+          status: response.headers.status,
+          message: body,
+          detail: body.errors
+        };
+        callback(errorMsg, null);
+      } else {
+         if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+         callback(null, body);
+      }
+    };
+
   }
   
   // Optional - for example 'multipart/form-data' when sending a file.
@@ -1510,13 +1544,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if(isBrowser) {
     jQuery.ajax( ajaxCall );
   } else {
-    request(ajaxCall, function(error, response, body) {
-      if(!error) {
-        ajaxCall.success(body);
-      } else {
-        ajaxCall.error(error, response.statusCode, body)
-      }
-    });
+    request(ajaxCall, requestCallback);
   }
 };
 
@@ -1532,11 +1560,11 @@ ServiceProxy.prototype.ajax = function(params, callback) {
 var config = require('./qbConfig');
 
 exports.randomNonce = function() {
-  return ~~(Math.random() * 10000);
+  return Math.floor(Math.random() * 10000);
 };
 
 exports.unixTime = function() {
-  return ~~(Date.now() / 1000);
+  return Math.floor(Date.now() / 1000);
 };
 
 exports.getUrl = function(base, id) {
