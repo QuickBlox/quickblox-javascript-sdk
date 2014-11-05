@@ -38,7 +38,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
-    timeout: config.timeout,
+    timeout: config.timeout !== null ? config.timeout : null,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
@@ -65,10 +65,27 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   };
   
   if(!isBrowser) {
+
     if (ajaxCall.dataType === 'json') ajaxCall.json = ajaxCall.data;
     if (params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && _this.qbInst.session && _this.qbInst.session.token)
       ajaxCall.headers = { 'QB-Token' : _this.qbInst.session.token };
     ajaxCall.method = ajaxCall.type;
+    
+    var requestCallback = function(error, response, body) {
+      if(error || body.toString().indexOf("DOCTYPE") !== -1) {
+        var errorMsg = {
+          code: response.statusCode,
+          status: response.headers.status,
+          message: body,
+          detail: body.errors
+        };
+        callback(errorMsg, null);
+      } else {
+         if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+         callback(null, body);
+      }
+    };
+
   }
   
   // Optional - for example 'multipart/form-data' when sending a file.
@@ -79,12 +96,6 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if(isBrowser) {
     jQuery.ajax( ajaxCall );
   } else {
-    request(ajaxCall, function(error, response, body) {
-      if(!error) {
-        ajaxCall.success(body);
-      } else {
-        ajaxCall.error(error, response.statusCode, body)
-      }
-    });
+    request(ajaxCall, requestCallback);
   }
 };
