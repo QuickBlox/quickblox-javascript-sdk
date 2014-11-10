@@ -43,5 +43,20 @@ var config = {
   debug: false
 };
 
+config.set = function(options) {
+  Object.keys(options).forEach(function(key) {
+    if(key !== 'set' && config.hasOwnProperty(key)) {
+      if(typeof options[key] !== 'object') {
+        config[key] = options[key]
+      } else {
+        Object.keys(options[key]).forEach(function(nextkey) {
+          if(config.hasOwnProperty(key))
+            config[key][nextkey] = options[key][nextkey];
+        });
+      }
+    }
+  })
+};
+
 // Browserify exports
 module.exports = config;
