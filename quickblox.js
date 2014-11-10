@@ -1464,7 +1464,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.3.7',
+  version: '1.3.8',
   creds: {
     appId: '',
     authKey: '',
@@ -1478,9 +1478,10 @@ var config = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    //bosh: 'http://chat.quickblox.com:8080',
-    bosh: 'https://chat.quickblox.com:8081', // With SSL
-    websocket: 'ws://chat.quickblox.com:5290',
+    // bosh: 'http://chat.quickblox.com:5280',
+    bosh: 'https://chat.quickblox.com:5281', // With SSL
+    // websocket: 'ws://chat.quickblox.com:5290',
+    websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 1
   },
   urls: {
@@ -1499,6 +1500,21 @@ var config = {
   },
   ssl: true,
   debug: false
+};
+
+config.set = function(options) {
+  Object.keys(options).forEach(function(key) {
+    if(key !== 'set' && config.hasOwnProperty(key)) {
+      if(typeof options[key] !== 'object') {
+        config[key] = options[key]
+      } else {
+        Object.keys(options[key]).forEach(function(nextkey) {
+          if(config.hasOwnProperty(key))
+            config[key][nextkey] = options[key][nextkey];
+        });
+      }
+    }
+  })
 };
 
 // Browserify exports
@@ -1639,6 +1655,9 @@ if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
+  if (debug && typeof debug === 'boolean') config.debug = debug;
+  else if (debug && typeof debug === 'object') config.set(debug);
+  
   this.service = new Proxy();
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
@@ -1651,16 +1670,12 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
     this.service.setSession({ token: appId });
-    appId = '';
+  } else {
+    config.creds.appId = appId;
+    config.creds.authKey = authKey;
+    config.creds.authSecret = authSecret;
   }
-  
-  config.creds.appId = appId;
-  config.creds.authKey = authKey;
-  config.creds.authSecret = authSecret;
-  if (debug) {
-    config.debug = debug;
-    console.log('QuickBlox.init', this);
-  }
+  if(console && config.debug) console.log('QuickBlox.init', this);
 };
 
 QuickBlox.prototype.createSession = function(params, callback) {
