@@ -55,6 +55,32 @@ QB.users.listUsers(function(err, result) {
   }
 });
 ````
+
+Passing configuration options
+----------------------
+
+Sometimes you will want to pass some configuration options such as a different enterprise endpoint, to enable/disable SSL, or turn on debugging. You can do this by passing an `object` as a fourth parameter to `QB.init()`, like so:
+
+```javascript
+// Initialise with configuration options
+var config = {
+  endpoints: {
+    api: 'api.differenthost.com',
+    muc: 'chat.differenthost.com',
+  },
+  chatProtocol: {
+    bosh: 'https://chat.differenthost.com:8081'
+  },
+  debug: true,
+  ssl: false
+};
+
+QB.init(103, "89AO9Z2LobcegCG", "1Hs8XZpMxGRVPnD", config);
+
+```
+
+The code above would then make `QB` make API requests to `http://api.differenthost.com/` rather than `https://api.quickblox.com` and would give you full debugging to the console.
+
 Documentation
 ----------------------
 
