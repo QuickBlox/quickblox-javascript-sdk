@@ -28,10 +28,11 @@
     "email": "web@quickblox.com"
   },
   "dependencies": {
-    "crypto-js": "3.1.2-2",
-    "jsdom": "0.10.6",
-    "xmlhttprequest": "1.6.0",
-    "jquery": "2.1.1"
+    "crypto-js": "^3.1.2-2",
+    "jsdom": "^0.10.6",
+    "xmlhttprequest": "^1.6.0",
+    "jquery": "^2.1.1",
+    "requirejs": "^2.1.15"
   },
   "devDependencies": {},
   "license": "MIT"
