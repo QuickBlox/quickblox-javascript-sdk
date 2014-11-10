@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.3.7',
+  version: '1.3.8',
   creds: {
     appId: '',
     authKey: '',
@@ -20,9 +20,10 @@ var config = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    //bosh: 'http://chat.quickblox.com:8080',
-    bosh: 'https://chat.quickblox.com:8081', // With SSL
-    websocket: 'ws://chat.quickblox.com:5290',
+    // bosh: 'http://chat.quickblox.com:5280',
+    bosh: 'https://chat.quickblox.com:5281', // With SSL
+    // websocket: 'ws://chat.quickblox.com:5290',
+    websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 1
   },
   urls: {
