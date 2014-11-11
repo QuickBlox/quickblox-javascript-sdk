@@ -20,11 +20,12 @@ requirejs.config({
   ],
 
   paths: {
+    QuickBlox: 'quickblox',
+
     config: 'qbConfig',
     Utils: 'qbUtils',
     Proxy: 'qbProxy',
 
-    App: 'qbApp',
     Auth: 'modules/qbAuth',
     Users: 'modules/qbUsers',
     Chat: 'modules/qbChat',
@@ -35,9 +36,13 @@ requirejs.config({
   }
 });
 
-requirejs(['App'],
-function (App) {
-  
+var QuickBlox = requirejs('QuickBlox');
 
+// Window scoped variable (QB) for using in browsers
+if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
+  window.QB = new QuickBlox();
+}
 
-});
+// Node.js exports
+module.exports = new QuickBlox();
+module.exports.QuickBlox = QuickBlox;
