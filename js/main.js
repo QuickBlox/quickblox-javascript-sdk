@@ -17,10 +17,6 @@ requirejs.config({
     }
   },
 
-  packages: [
-    
-  ],
-
   paths: {
     // libs
     strophe: '../lib/strophe/strophe',
