@@ -12,7 +12,9 @@ requirejs.config({
   nodeRequire: require,
 
   shim: {
-    
+    strophe: {
+      exports: 'Strophe'
+    }
   },
 
   packages: [
@@ -20,12 +22,13 @@ requirejs.config({
   ],
 
   paths: {
-    QuickBlox: 'quickblox',
+    // libs
+    strophe: '../lib/strophe/strophe',
 
+    QuickBlox: 'quickblox',
     config: 'qbConfig',
     Utils: 'qbUtils',
     Proxy: 'qbProxy',
-
     Auth: 'modules/qbAuth',
     Users: 'modules/qbUsers',
     Chat: 'modules/qbChat',
