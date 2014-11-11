@@ -66,7 +66,8 @@ Sometimes you will want to pass some configuration options such as a different e
 var config = {
   endpoints: {
     api: 'api.differenthost.com',
-    muc: 'chat.differenthost.com',
+    chat: 'chat.differenthost.com',
+    muc: 'muc.chat.differenthost.com'
   },
   chatProtocol: {
     bosh: 'https://chat.differenthost.com:8081'
