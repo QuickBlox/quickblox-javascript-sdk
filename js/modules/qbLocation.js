@@ -1,3 +1,5 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -5,109 +7,118 @@
  *
  */
 
-// Browserify exports and dependencies
-module.exports = LocationProxy;
-var config = require('../qbConfig');
-var Utils = require('../qbUtils');
+define(['config', 'Utils'],
+function(config, Utils) {
 
-var geoFindUrl = config.urls.geodata + '/find';
+  var geoFindUrl = config.urls.geodata + '/find';
 
-function LocationProxy(service){
-  this.service = service;
-  this.geodata = new GeoProxy(service);
-  this.places = new PlacesProxy(service);
-  if (config.debug) { console.log("LocationProxy", service); }
-}
+  function LocationProxy(service){
+    this.service = service;
+    this.geodata = new GeoProxy(service);
+    this.places = new PlacesProxy(service);
+    if (config.debug) { console.log("LocationProxy", service); }
+  }
 
-function GeoProxy(service){
-  this.service = service;
-}
+  function GeoProxy(service){
+    this.service = service;
+  }
 
-GeoProxy.prototype.create = function(params, callback){
-  if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
-  this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
-    if (err){ callback(err, null); }
-    else { callback (err, result.geo_datum); }
-  });
-};
+  GeoProxy.prototype = {
 
-GeoProxy.prototype.update = function(params, callback){
-  var allowedProps = ['longitude', 'latitude', 'status'], prop, msg = {};
-  for (prop in params) {
-    if (params.hasOwnProperty(prop)) {
-      if (allowedProps.indexOf(prop)>0) {
-        msg[prop] = params[prop];
-      } 
+    create: function(params, callback){
+      if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
+      this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
+        if (err){ callback(err, null); }
+        else { callback (err, result.geo_datum); }
+      });
+    },
+
+    update: function(params, callback){
+      var allowedProps = ['longitude', 'latitude', 'status'], prop, msg = {};
+      for (prop in params) {
+        if (params.hasOwnProperty(prop)) {
+          if (allowedProps.indexOf(prop)>0) {
+            msg[prop] = params[prop];
+          } 
+        }
+      }
+      if (config.debug) { console.log('GeoProxy.create', params);}
+      this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
+                       function(err,res){
+                        if (err) { callback(err,null);}
+                        else { callback(err, res.geo_datum);}
+                       });
+    },
+
+    get: function(id, callback){
+      if (config.debug) { console.log('GeoProxy.get', id);}
+      this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
+         if (err) { callback (err, null); }
+         else { callback(null, result.geo_datum); }
+      });
+    },
+
+    list: function(params, callback){
+      if (typeof params === 'function') {
+        callback = params;
+        params = undefined;
+      }
+      if (config.debug) { console.log('GeoProxy.find', params);}
+      this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
+    },
+
+    delete: function(id, callback){
+      if (config.debug) { console.log('GeoProxy.delete', id); }
+      this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
+                       function(err,res){
+                        if (err) { callback(err, null);}
+                        else { callback(null, true);}
+                       });
+    },
+
+    purge: function(days, callback){
+      if (config.debug) { console.log('GeoProxy.purge', days); }
+      this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
+                       function(err, res){
+                        if (err) { callback(err, null);}
+                        else { callback(null, true);}
+                       });
     }
+
+  };
+
+  function PlacesProxy(service) {
+    this.service = service;
   }
-  if (config.debug) { console.log('GeoProxy.create', params);}
-  this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
-                   function(err,res){
-                    if (err) { callback(err,null);}
-                    else { callback(err, res.geo_datum);}
-                   });
-};
 
-GeoProxy.prototype.get = function(id, callback){
-  if (config.debug) { console.log('GeoProxy.get', id);}
-  this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
-     if (err) { callback (err, null); }
-     else { callback(null, result.geo_datum); }
-  });
-};
+  PlacesProxy.prototype = {
 
-GeoProxy.prototype.list = function(params, callback){
-  if (typeof params === 'function') {
-    callback = params;
-    params = undefined;
-  }
-  if (config.debug) { console.log('GeoProxy.find', params);}
-  this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
-};
+    list: function(params, callback){
+      if (config.debug) { console.log('PlacesProxy.list', params);}
+      this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
+    },
 
-GeoProxy.prototype.delete = function(id, callback){
-  if (config.debug) { console.log('GeoProxy.delete', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
-                   function(err,res){
-                    if (err) { callback(err, null);}
-                    else { callback(null, true);}
-                   });
-};
+    create: function(params, callback){
+      if (config.debug) { console.log('PlacesProxy.create', params);}
+      this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
+    },
 
-GeoProxy.prototype.purge = function(days, callback){
-  if (config.debug) { console.log('GeoProxy.purge', days); }
-  this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
-                   function(err, res){
-                    if (err) { callback(err, null);}
-                    else { callback(null, true);}
-                   });
-};
+    get: function(id, callback){
+      if (config.debug) { console.log('PlacesProxy.get', id);}
+      this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
+    },
 
-function PlacesProxy(service) {
-  this.service = service;
-}
+    update: function(place, callback){
+      if (config.debug) { console.log('PlacesProxy.update', place);}
+      this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
+    },
 
-PlacesProxy.prototype.list = function(params, callback){
-  if (config.debug) { console.log('PlacesProxy.list', params);}
-  this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
-};
+    delete: function(id, callback){
+      if (config.debug) { console.log('PlacesProxy.delete', id);}
+      this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
+    }
 
-PlacesProxy.prototype.create = function(params, callback){
-  if (config.debug) { console.log('PlacesProxy.create', params);}
-  this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
-};
+  };
 
-PlacesProxy.prototype.get = function(id, callback){
-  if (config.debug) { console.log('PlacesProxy.get', id);}
-  this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
-};
-
-PlacesProxy.prototype.update = function(place, callback){
-  if (config.debug) { console.log('PlacesProxy.update', place);}
-  this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
-};
-
-PlacesProxy.prototype.delete = function(id, callback){
-  if (config.debug) { console.log('PlacesProxy.delete', id);}
-  this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
-};
+  return LocationProxy;
+});
