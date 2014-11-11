@@ -1,3 +1,5 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -5,104 +7,109 @@
  *
  */
 
-// broserify export and dependencies
+define(['config', 'Utils'],
+function(config, Utils) {
 
-// Browserify exports and dependencies
-module.exports = MessagesProxy;
-var config = require('../qbConfig');
-var Utils = require('../qbUtils');
+  function MessagesProxy(service) {
+    this.service = service;
+    this.tokens = new TokensProxy(service);
+    this.subscriptions = new SubscriptionsProxy(service);
+    this.events = new EventsProxy(service);
+  }
 
-function MessagesProxy(service) {
-  this.service = service;
-  this.tokens = new TokensProxy(service);
-  this.subscriptions = new SubscriptionsProxy(service);
-  this.events = new EventsProxy(service);
-}
+  // Push Tokens
 
-// Push Tokens
+  function TokensProxy(service){
+    this.service = service;
+  }
 
-function TokensProxy(service){
-  this.service = service;
-}
-
-TokensProxy.prototype.create = function(params, callback){
-  var message = {
-    push_token: {
-      environment: params.environment,
-      client_identification_sequence: params.client_identification_sequence
+  TokensProxy.prototype = {
+    create: function(params, callback){
+      var message = {
+        push_token: {
+          environment: params.environment,
+          client_identification_sequence: params.client_identification_sequence
+        },
+        device: { platform: params.platform, udid: params.udid}
+      };
+      if (config.debug) { console.log('TokensProxy.create', message);}
+      this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
+                        function(err, data){
+                          if (err) { callback(err, null);}
+                          else { callback(null, data.push_token); }
+                        });
     },
-    device: { platform: params.platform, udid: params.udid}
+
+    delete: function(id, callback) {
+      if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
+      this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'}, 
+                        function (err, res) {
+                          if (err) {callback(err, null);}
+                          else {callback(null, true);}
+                          });
+    }
   };
-  if (config.debug) { console.log('TokensProxy.create', message);}
-  this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
-                    function(err, data){
-                      if (err) { callback(err, null);}
-                      else { callback(null, data.push_token); }
-                    });
-};
 
-TokensProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'}, 
-                    function (err, res) {
-                      if (err) {callback(err, null);}
-                      else {callback(null, true);}
-                      });
-};
+  // Subscriptions
 
-// Subscriptions
+  function SubscriptionsProxy(service){
+    this.service = service;
+  }
 
-function SubscriptionsProxy(service){
-  this.service = service;
-}
+  SubscriptionsProxy.prototype = {
+    create: function(params, callback) {
+      if (config.debug) { console.log('MessageProxy.createSubscription', params); }
+      this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
+    },
 
-SubscriptionsProxy.prototype.create = function(params, callback) {
-  if (config.debug) { console.log('MessageProxy.createSubscription', params); }
-  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
-};
+    list: function(callback) {
+      if (config.debug) { console.log('MessageProxy.listSubscription'); }
+      this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
+    },
 
-SubscriptionsProxy.prototype.list = function(callback) {
-  if (config.debug) { console.log('MessageProxy.listSubscription'); }
-  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
-};
+    delete: function(id, callback) {
+      if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
+      this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'}, 
+                        function(err, res){
+                          if (err) { callback(err, null);}
+                          else { callback(null, true);}
+                        });
+    }
+  };
 
-SubscriptionsProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'}, 
-                    function(err, res){
-                      if (err) { callback(err, null);}
-                      else { callback(null, true);}
-                    });
-};
+  // Events
+  function EventsProxy(service){
+    this.service = service;
+  }
 
-// Events
-function EventsProxy(service){
-  this.service = service;
-}
+  EventsProxy.prototype = {
+    create: function(params, callback) {
+      if (config.debug) { console.log('MessageProxy.createEvent', params); }
+      var message = {event: params};
+      this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
+    },
 
-EventsProxy.prototype.create = function(params, callback) {
-  if (config.debug) { console.log('MessageProxy.createEvent', params); }
-  var message = {event: params};
-  this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
-};
+    list: function(callback) {
+     if (config.debug) { console.log('MessageProxy.listEvents'); }
+      this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
+    },
 
-EventsProxy.prototype.list = function(callback) {
- if (config.debug) { console.log('MessageProxy.listEvents'); }
-  this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
-};
+    get: function(id, callback) {
+      if (config.debug) { console.log('MessageProxy.getEvents', id); }
+      this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
+    },
 
-EventsProxy.prototype.get = function(id, callback) {
-  if (config.debug) { console.log('MessageProxy.getEvents', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
-};
+    update: function(params, callback) {
+      if (config.debug) { console.log('MessageProxy.createEvent', params); }
+      var message = {event: params};
+      this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
+    },
 
-EventsProxy.prototype.update = function(params, callback) {
-  if (config.debug) { console.log('MessageProxy.createEvent', params); }
-  var message = {event: params};
-  this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
-};
+    delete: function(id, callback) {
+      if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
+      this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
+    }
+  };
 
-EventsProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
-  this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
-};
+  return MessagesProxy;
+});
