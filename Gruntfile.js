@@ -6,28 +6,27 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     requirejs: {
-      options: {
-        baseUrl: 'js',
-        mainConfigFile: "js/main.js",
-        name: 'main',
-        optimize: 'none',
-        out: "quickblox.js",
-        
-        paths: {
-          strophe: 'lib/strophe/strophe'
-        },
-        
-        almond: true,
-        preserveLicenseComments: false
+      compile: {
+        options: {
+          baseUrl: '.',
+          mainConfigFile: "js/main.js",
+          name: 'js/main',
+          out: "quickblox.js",
+          optimize: 'none',
+          almond: true,
+          wrap: true
+        }
       }
     },
 
     uglify: {
-      options: {
-        banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-      },
-      files: {
-        'quickblox.min.js': ['quickblox.js']
+      all: {
+        options: {
+          banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        },
+        files: {
+          'quickblox.min.js': ['quickblox.js']
+        }
       }
     }
 
