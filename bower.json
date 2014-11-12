@@ -1,0 +1,36 @@
+{
+  "name": "quickblox",
+  "description": "QuickBlox JavaScript SDK",
+  "version": "1.4.0",
+  "homepage": "http://quickblox.com/developers/Javascript",
+  "main": "quickblox.js",
+  "keywords": [
+    "quickblox",
+    "javascript",
+    "sdk",
+    "baas",
+    "cloud",
+    "api"
+  ],
+  "authors": [
+    "AndreyPovelichenko <andrey.povelichenko@quickblox.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk.git"
+  },
+  "moduleType": [
+    "amd"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "examples",
+    "js",
+    "lib",
+    "node_modules",
+    "npm-debug.log",
+    "plugins"
+    "spec"
+  ]
+}
