@@ -48,6 +48,6 @@ requirejs(['QuickBlox'], function(QuickBlox) {
   }
 
   // Node.js exports
-  module.exports = new QuickBlox();
-  module.exports.QuickBlox = QuickBlox;
+  // module.exports = new QuickBlox();
+  // module.exports.QuickBlox = QuickBlox;
 });
