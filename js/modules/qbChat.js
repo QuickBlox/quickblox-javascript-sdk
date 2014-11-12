@@ -644,6 +644,10 @@ function(config, Utils, Strophe) {
       return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
     },
 
+    getDialogIdFromNode: function(jid) {
+      return Strophe.getNodeFromJid(jid).split('_')[1];
+    },
+
     getRoomJid: function(jid) {
       return jid + '/' + this.getIdFromNode(connection.jid);
     },  
