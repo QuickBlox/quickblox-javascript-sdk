@@ -13,6 +13,17 @@ If the call was sucessful then result will contain the reply from the
 QuickBlox platform. Similarly, if something went wrong then the error
 parameter will give you a description of what the problem was.
 
+Install
+----------------
+**Bower**
+```
+bower install quickblox --save
+```
+**Node.js and NPM**
+```
+npm install quickblox --save
+```
+
 A simple example
 ----------------
 
@@ -119,11 +130,11 @@ Please take a look at the specs for examples of how to use the APIs. In essence 
 
 Modifying and building the library
 ----------------------------------
-The quickblox.js library is build from a number of modules contained in the `js` folder. For example the `js/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+The quickblox.js library is build from a number of **AMD modules** contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
 
-These modules are combined into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [browserify](http://browserify.org/) tool:
+These modules are combined through [RequireJS](http://requirejs.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 ```
-browserify -o quickblox.js js/quickblox.js
+grunt
 ```
 
 You will also need to have the dependencies listed in the package.json available, use `npm install` to load them.
