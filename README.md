@@ -15,11 +15,11 @@ parameter will give you a description of what the problem was.
 
 Install
 ----------------
-Bower
+**Bower**
 ```
 bower install quickblox --save
 ```
-Node.js and NPM
+**Node.js and NPM**
 ```
 npm install quickblox --save
 ```
@@ -130,7 +130,7 @@ Please take a look at the specs for examples of how to use the APIs. In essence 
 
 Modifying and building the library
 ----------------------------------
-The quickblox.js library is build from a number of *AMD modules* contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+The quickblox.js library is build from a number of **AMD modules** contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
 
 These modules are combined through [RequireJS](http://requirejs.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 ```
