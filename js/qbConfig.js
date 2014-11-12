@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -10,7 +9,6 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
 define(function() {
 
   var config = {
-    version: '1.3.8',
     creds: {
       appId: '',
       authKey: '',

@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -16,6 +15,7 @@ function(config, Proxy, Auth, Users, Chat,
   function QuickBlox() {}
 
   QuickBlox.prototype = {
+
     init: function(appId, authKey, authSecret, debug) {
       if (debug && typeof debug === 'boolean') config.debug = debug;
       else if (debug && typeof debug === 'object') config.set(debug);
@@ -55,6 +55,7 @@ function(config, Proxy, Auth, Users, Chat,
     logout: function(callback) {
       this.auth.logout(callback);
     }
+    
   };
 
   return QuickBlox;

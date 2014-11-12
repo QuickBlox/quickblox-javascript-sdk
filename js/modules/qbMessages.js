@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -24,6 +23,7 @@ function(config, Utils) {
   }
 
   TokensProxy.prototype = {
+    
     create: function(params, callback){
       var message = {
         push_token: {
@@ -48,6 +48,7 @@ function(config, Utils) {
                           else {callback(null, true);}
                           });
     }
+
   };
 
   // Subscriptions
@@ -57,6 +58,7 @@ function(config, Utils) {
   }
 
   SubscriptionsProxy.prototype = {
+
     create: function(params, callback) {
       if (config.debug) { console.log('MessageProxy.createSubscription', params); }
       this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
@@ -75,6 +77,7 @@ function(config, Utils) {
                           else { callback(null, true);}
                         });
     }
+
   };
 
   // Events
@@ -83,6 +86,7 @@ function(config, Utils) {
   }
 
   EventsProxy.prototype = {
+
     create: function(params, callback) {
       if (config.debug) { console.log('MessageProxy.createEvent', params); }
       var message = {event: params};
@@ -109,6 +113,7 @@ function(config, Utils) {
       if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
       this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
     }
+
   };
 
   return MessagesProxy;

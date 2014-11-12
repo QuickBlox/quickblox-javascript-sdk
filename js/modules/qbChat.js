@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -8,7 +7,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  */
 
 define(['config', 'Utils', 'strophe'],
-function(config, Utils) {
+function(config, Utils, Strophe) {
 
   /*
    * User's callbacks (listener-functions):

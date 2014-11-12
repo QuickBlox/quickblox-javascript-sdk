@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -7,14 +6,15 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config', 'Utils', 'crypto-js/hmac-sha1'],
-function(config, Utils, crypto) {
+define(['config', 'Utils', 'crypto-js'],
+function(config, Utils, CryptoJS) {
 
   function AuthProxy(service) {
     this.service = service;
   }
 
   AuthProxy.prototype = {
+
     createSession: function(params, callback) {
       var _this = this, message;
 
@@ -66,6 +66,7 @@ function(config, Utils, crypto) {
       if (config.debug) { console.log('AuthProxy.logout'); }
       this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
     }
+    
   };
 
   return AuthProxy;
@@ -113,7 +114,7 @@ function(config, Utils, crypto) {
       }
     }).sort().join('&');
     
-    return crypto(sessionMsg, secret).toString();
+    return CryptoJS(sessionMsg, secret).toString();
   }
 
 });

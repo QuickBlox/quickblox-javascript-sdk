@@ -1,5 +1,4 @@
 if (typeof define !== 'function') { var define = require('amdefine')(module) }
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -27,6 +26,7 @@ function(config) {
   }
 
   ServiceProxy.prototype = {
+
     setSession: function(session) {
       this.qbInst.session = session;
     },
@@ -75,6 +75,7 @@ function(config) {
 
       jQuery.ajax( ajaxCall );
     }
+    
   };
 
   return ServiceProxy;
