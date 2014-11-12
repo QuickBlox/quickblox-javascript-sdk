@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = require('amdefine')(module) }
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -5,59 +6,60 @@
  *
  */
 
-var config = {
-  version: '1.3.8',
-  creds: {
-    appId: '',
-    authKey: '',
-    authSecret: ''
-  },
-  endpoints: {
-    api: 'api.quickblox.com',
-    chat: 'chat.quickblox.com',
-    muc: 'muc.chat.quickblox.com',
-    turn: 'turnserver.quickblox.com',
-    s3Bucket: 'qbprod'
-  },
-  chatProtocol: {
-    // bosh: 'http://chat.quickblox.com:5280',
-    bosh: 'https://chat.quickblox.com:5281', // With SSL
-    // websocket: 'ws://chat.quickblox.com:5290',
-    websocket: 'wss://chat.quickblox.com:5291', // With SSL
-    active: 1
-  },
-  urls: {
-    session: 'session',
-    login: 'login',
-    users: 'users',
-    chat: 'chat',
-    blobs: 'blobs',
-    geodata: 'geodata',
-    places: 'places',
-    pushtokens: 'push_tokens',
-    subscriptions: 'subscriptions',
-    events: 'events',
-    data: 'data',
-    type: '.json'
-  },
-  ssl: true,
-  debug: false
-};
+define(function() {
 
-config.set = function(options) {
-  Object.keys(options).forEach(function(key) {
-    if(key !== 'set' && config.hasOwnProperty(key)) {
-      if(typeof options[key] !== 'object') {
-        config[key] = options[key]
-      } else {
-        Object.keys(options[key]).forEach(function(nextkey) {
-          if(config.hasOwnProperty(key))
-            config[key][nextkey] = options[key][nextkey];
-        });
+  var config = {
+    creds: {
+      appId: '',
+      authKey: '',
+      authSecret: ''
+    },
+    endpoints: {
+      api: 'api.quickblox.com',
+      chat: 'chat.quickblox.com',
+      muc: 'muc.chat.quickblox.com',
+      turn: 'turnserver.quickblox.com',
+      s3Bucket: 'qbprod'
+    },
+    chatProtocol: {
+      // bosh: 'http://chat.quickblox.com:5280',
+      bosh: 'https://chat.quickblox.com:5281', // With SSL
+      // websocket: 'ws://chat.quickblox.com:5290',
+      websocket: 'wss://chat.quickblox.com:5291', // With SSL
+      active: 1
+    },
+    urls: {
+      session: 'session',
+      login: 'login',
+      users: 'users',
+      chat: 'chat',
+      blobs: 'blobs',
+      geodata: 'geodata',
+      places: 'places',
+      pushtokens: 'push_tokens',
+      subscriptions: 'subscriptions',
+      events: 'events',
+      data: 'data',
+      type: '.json'
+    },
+    ssl: true,
+    debug: false
+  };
+
+  config.set = function(options) {
+    Object.keys(options).forEach(function(key) {
+      if(key !== 'set' && config.hasOwnProperty(key)) {
+        if(typeof options[key] !== 'object') {
+          config[key] = options[key]
+        } else {
+          Object.keys(options[key]).forEach(function(nextkey) {
+            if(config.hasOwnProperty(key))
+              config[key][nextkey] = options[key][nextkey];
+          });
+        }
       }
-    }
-  })
-};
+    })
+  };
 
-// Browserify exports
-module.exports = config;
+  return config;
+});
