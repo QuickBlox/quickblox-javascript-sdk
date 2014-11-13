@@ -4,7 +4,7 @@ QuickBlox JavaScript SDK
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud backend platform.
 
-For use inside browsers, a window scoped variable called QB is created.
+For use inside browsers, a window scoped variable called `QB` is created.
 
 Most functions, with the notable exception of init, take a callback
 parameter which gets called with an error and result parameter (ala node.js).
@@ -15,6 +15,12 @@ parameter will give you a description of what the problem was.
 
 Install
 ----------------
+**Dependencies for browser**
+For correct work of JS SDK you must include the [jQuery](http://jquery.com/) library in your html before `quickblox.js`, like so:
+```html
+<script src="jquery.min.js"></script>
+<script src="quickblox.js"></script>
+```
 **Bower**
 ```
 bower install quickblox --save
@@ -134,7 +140,7 @@ The quickblox.js library is build from a number of **AMD modules** contained in 
 
 These modules are combined through [RequireJS](http://requirejs.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 ```
-grunt
+$ grunt
 ```
 
 You will also need to have the dependencies listed in the package.json available, use `npm install` to load them.
