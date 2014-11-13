@@ -4,6 +4,7 @@
   "version": "1.4.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "quickblox.js",
+  "license": "MIT",
   "keywords": [
     "quickblox",
     "javascript",
@@ -13,24 +14,25 @@
     "api"
   ],
   "authors": [
-    "AndreyPovelichenko <andrey.povelichenko@quickblox.com>"
+    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk.git"
+    "url": "git://github.com/QuickBlox/quickblox-javascript-sdk.git"
   },
   "moduleType": [
     "amd"
   ],
-  "license": "MIT",
   "ignore": [
     "**/.*",
     "examples",
     "js",
     "lib",
     "node_modules",
+    "plugins",
+    "spec",
     "npm-debug.log",
-    "plugins"
-    "spec"
+    "Gruntfile.js",
+    "package.json"
   ]
 }

@@ -4,6 +4,7 @@
   "version": "1.4.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/main.js",
+  "license": "MIT",
   "keywords": [
     "quickblox",
     "javascript",
@@ -21,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk.git"
+    "url": "git://github.com/QuickBlox/quickblox-javascript-sdk.git"
   },
   "bugs": {
     "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/issues",
@@ -40,6 +41,5 @@
     "grunt-requirejs": "^0.4.2",
     "grunt-contrib-uglify": "^0.6.0",
     "load-grunt-tasks": "^1.0.0"
-  },
-  "license": "MIT"
+  }
 }
