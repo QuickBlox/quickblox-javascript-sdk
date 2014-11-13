@@ -16,16 +16,22 @@ parameter will give you a description of what the problem was.
 Install
 ----------------
 **Dependencies for browser**
+
 For correct work of JS SDK you must include the [jQuery](http://jquery.com/) library in your html before `quickblox.js`, like so:
+
 ```html
 <script src="jquery.min.js"></script>
 <script src="quickblox.js"></script>
 ```
+
 **Bower**
+
 ```
 bower install quickblox --save
 ```
+
 **Node.js and NPM**
+
 ```
 npm install quickblox --save
 ```
