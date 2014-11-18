@@ -38,7 +38,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
-    timeout: config.timeout !== null ? config.timeout : null,
+    timeout: config.timeout || null,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
@@ -65,24 +65,37 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   };
   
   if(!isBrowser) {
-
-    if (ajaxCall.dataType === 'json') ajaxCall.json = ajaxCall.data;
-    if (params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && _this.qbInst.session && _this.qbInst.session.token)
-      ajaxCall.headers = { 'QB-Token' : _this.qbInst.session.token };
-    ajaxCall.method = ajaxCall.type;
     
+    var isJSONRequest = ajaxCall.dataType === 'json';
+      makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
+                        _this.qbInst && 
+                        _this.qbInst.session && 
+                        _this.qbInst.session.token ||
+                        false;
+    
+    var qbRequest = {
+      url: ajaxCall.url,
+      method: ajaxCall.type,
+      json: isJSONRequest ? ajaxCall.data : null,
+      form: !isJSONRequest ? ajaxCall.data : null,
+      headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
+    };
+        
     var requestCallback = function(error, response, body) {
-      if(error || body.toString().indexOf("DOCTYPE") !== -1) {
-        var errorMsg = {
-          code: response.statusCode,
-          status: response.headers.status,
-          message: body,
-          detail: body.errors
-        };
+      if(error || response.statusCode > 300  || body.toString().indexOf("DOCTYPE") !== -1) {
+        try {
+          var errorMsg = {
+            code: response && response.statusCode || error.code,
+            status: response && response.headers.status || 'error',
+            message: body || error.errno,
+            detail: body && body.errors || error.syscall
+          };
+        } catch(e) {
+          var errorMsg = error;
+        }
         callback(errorMsg, null);
       } else {
-         if (config.debug) { console.log('ServiceProxy.ajax success', data); }
-         callback(null, body);
+        callback(null, body);
       }
     };
 
@@ -96,6 +109,6 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   if(isBrowser) {
     jQuery.ajax( ajaxCall );
   } else {
-    request(ajaxCall, requestCallback);
+    request(qbRequest, requestCallback);
   }
 };
