@@ -915,7 +915,9 @@ function(config, Utils, Strophe) {
   var dialogUrl = config.urls.chat + '/Dialog';
   var messageUrl = config.urls.chat + '/Message';
 
-  var roster = {},
+  var protocol,
+      connection,
+      roster = {},
       joinedRooms = {};
 
   // The object for type MongoDB.Bson.ObjectId
@@ -929,19 +931,6 @@ function(config, Utils, Strophe) {
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
 
-  // create Strophe Connection object
-  var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-  var connection = new Strophe.Connection(protocol);
-  // if (config.debug) {
-    if (config.chatProtocol.active === 1) {
-      connection.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
-      connection.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
-    } else {
-      connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-      connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
-    }
-  // }
-
   function ChatProxy(service) {
     var self = this;
 
@@ -954,6 +943,19 @@ function(config, Utils, Strophe) {
 
     // reconnect to chat if it wasn't the logout method
     this._isLogout = false;
+
+    // create Strophe Connection object
+    protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
+    connection = new Strophe.Connection(protocol);
+    if (config.debug) {
+      if (config.chatProtocol.active === 1) {
+        connection.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
+        connection.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
+      } else {
+        connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+        connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+      }
+    }
 
     // stanza callbacks (Message, Presence, IQ)
 
@@ -1573,9 +1575,9 @@ function(config, Utils, Strophe) {
   /* Private
   ---------------------------------------------------------------------- */
   function trace(text) {
-    // if (config.debug) {
+    if (config.debug) {
       console.log('[QBChat]:', text);
-    // }
+    }
   }
 
   function getError(code, detail) {
