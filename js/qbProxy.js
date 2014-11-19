@@ -7,16 +7,12 @@
 
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
+var isBrowser = typeof window !== "undefined" && window.jQuery;
+
 var config = require('./qbConfig');
 
-// For server-side applications through using npm package 'quickblox' you should include the following block
-var jsdom = require('jsdom');
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
-jQuery.support.cors = true;
-jQuery.ajaxSettings.xhr = function() {
-  return new XMLHttpRequest;
-};
+// For server-side applications through using npm package 'quickblox' you should include the following line
+if(!isBrowser) var request = require('request');
 
 function ServiceProxy() {
   this.qbInst = {
@@ -42,6 +38,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
+    timeout: config.timeout || null,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
@@ -67,10 +64,51 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     }
   };
   
+  if(!isBrowser) {
+    
+    var isJSONRequest = ajaxCall.dataType === 'json';
+      makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
+                        _this.qbInst && 
+                        _this.qbInst.session && 
+                        _this.qbInst.session.token ||
+                        false;
+    
+    var qbRequest = {
+      url: ajaxCall.url,
+      method: ajaxCall.type,
+      json: isJSONRequest ? ajaxCall.data : null,
+      form: !isJSONRequest ? ajaxCall.data : null,
+      headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
+    };
+        
+    var requestCallback = function(error, response, body) {
+      if(error || response.statusCode > 300  || body.toString().indexOf("DOCTYPE") !== -1) {
+        try {
+          var errorMsg = {
+            code: response && response.statusCode || error.code,
+            status: response && response.headers.status || 'error',
+            message: body || error.errno,
+            detail: body && body.errors || error.syscall
+          };
+        } catch(e) {
+          var errorMsg = error;
+        }
+        callback(errorMsg, null);
+      } else {
+        callback(null, body);
+      }
+    };
+
+  }
+  
   // Optional - for example 'multipart/form-data' when sending a file.
   // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
   if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
   if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-
-  jQuery.ajax( ajaxCall );
+  
+  if(isBrowser) {
+    jQuery.ajax( ajaxCall );
+  } else {
+    request(qbRequest, requestCallback);
+  }
 };

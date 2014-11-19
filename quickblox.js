@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -132,9 +132,12 @@ function signMessage(message, secret) {
  * - onRejectSubscribeListener
  * - onDisconnectingListener
  */
+ 
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
 
 // Browserify exports and dependencies
-require('../../lib/strophe/strophe.min');
+if(isBrowser) require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 module.exports = ChatProxy;
@@ -144,25 +147,29 @@ var messageUrl = config.urls.chat + '/Message';
 
 var mutualSubscriptions = {};
 
+if(isBrowser) {
 // create Strophe Connection object
-var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-var connection = new Strophe.Connection(protocol);
-// if (config.debug) {
-  if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-    connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
-  } else {
-    connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-    connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
+  var connection = new Strophe.Connection(protocol);
+  if (config.debug) {
+    if (config.chatProtocol.active === 1) {
+      connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+      connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+    } else {
+      connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+      connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+    }
   }
-// }
+}
 
 function ChatProxy(service) {
   var self = this;
 
   this.service = service;
-  this.roster = new RosterProxy(service);
-  this.muc = new MucProxy(service);
+  if(isBrowser) {
+    this.roster = new RosterProxy(service);
+    this.muc = new MucProxy(service);
+  }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -285,6 +292,7 @@ function ChatProxy(service) {
 /* Chat module: Core
 ---------------------------------------------------------------------- */
 ChatProxy.prototype._autoSendPresence = function() {
+  if(!isBrowser) throw unsupported;
   connection.send($pres().tree());
   // we must return true to keep the handler alive
   // returning false would remove it after it finishes
@@ -292,6 +300,9 @@ ChatProxy.prototype._autoSendPresence = function() {
 };
 
 ChatProxy.prototype.connect = function(params, callback) {
+  
+  if(!isBrowser) throw unsupported;
+  
   if (config.debug) { console.log('ChatProxy.connect', params); }
   var self = this, err;
 
@@ -354,6 +365,9 @@ ChatProxy.prototype.connect = function(params, callback) {
 };
 
 ChatProxy.prototype.send = function(jid, message) {
+  
+  if(!isBrowser) throw unsupported;
+  
   var msg = $msg({
     from: connection.jid,
     to: jid,
@@ -392,6 +406,7 @@ ChatProxy.prototype.send = function(jid, message) {
 
 // helper function for ChatProxy.send()
 ChatProxy.prototype.sendPres = function(type) {
+  if(!isBrowser) throw unsupported;
   connection.send($pres({ 
     from: connection.jid,
     type: type
@@ -399,11 +414,13 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  if(!isBrowser) throw unsupported;
   connection.flush();
   connection.disconnect();
 };
 
 ChatProxy.prototype.addListener = function(params, callback) {
+  if(!isBrowser) throw unsupported;
   return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
   function handler() {
@@ -414,6 +431,7 @@ ChatProxy.prototype.addListener = function(params, callback) {
 };
 
 ChatProxy.prototype.deleteListener = function(ref) {
+  if(!isBrowser) throw unsupported;
   connection.deleteHandler(ref);
 };
 
@@ -623,6 +641,11 @@ DialogProxy.prototype.create = function(params, callback) {
 DialogProxy.prototype.update = function(id, params, callback) {
   if (config.debug) { console.log('DialogProxy.update', id, params); }
   this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
+};
+
+DialogProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('DialogProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 // Messages
@@ -1366,7 +1389,7 @@ function generateOrder(obj) {
  */
 
 var config = {
-  version: '1.3.0',
+  version: '1.3.1',
   creds: {
     appId: '',
     authKey: '',
@@ -1380,7 +1403,7 @@ var config = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    //bosh: 'http://chat.quickblox.com:8080',
+    // bosh: 'http://chat.quickblox.com:8080',
     bosh: 'https://chat.quickblox.com:8081', // With SSL
     websocket: 'ws://chat.quickblox.com:5290',
     active: 1
@@ -1400,7 +1423,23 @@ var config = {
     type: '.json'
   },
   ssl: true,
+  timeout: null,
   debug: false
+};
+
+config.set = function(options) {
+  Object.keys(options).forEach(function(key) {
+    if(key !== 'set' && config.hasOwnProperty(key)) {
+      if(typeof options[key] !== 'object') {
+        config[key] = options[key]
+      } else {
+        Object.keys(options[key]).forEach(function(nextkey) {
+          if(config.hasOwnProperty(key))
+            config[key][nextkey] = options[key][nextkey];
+        });
+      }
+    }
+  })
 };
 
 // Browserify exports
@@ -1416,16 +1455,12 @@ module.exports = config;
 
 // Browserify exports and dependencies
 module.exports = ServiceProxy;
+var isBrowser = typeof window !== "undefined" && window.jQuery;
+
 var config = require('./qbConfig');
 
-// For server-side applications through using npm package 'quickblox' you should include the following block
-/*var jsdom = require('jsdom');
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-var jQuery = require('jquery/dist/jquery.min')(jsdom.jsdom().createWindow());
-jQuery.support.cors = true;
-jQuery.ajaxSettings.xhr = function() {
-  return new XMLHttpRequest;
-};*/
+// For server-side applications through using npm package 'quickblox' you should include the following line
+if(!isBrowser) var request = require('request');
 
 function ServiceProxy() {
   this.qbInst = {
@@ -1451,6 +1486,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     type: params.type || 'GET',
     dataType: params.dataType || 'json',
     data: params.data || ' ',
+    timeout: config.timeout || null,
     beforeSend: function(jqXHR, settings) {
       if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
       if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
@@ -1476,15 +1512,56 @@ ServiceProxy.prototype.ajax = function(params, callback) {
     }
   };
   
+  if(!isBrowser) {
+    
+    var isJSONRequest = ajaxCall.dataType === 'json';
+      makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
+                        _this.qbInst && 
+                        _this.qbInst.session && 
+                        _this.qbInst.session.token ||
+                        false;
+    
+    var qbRequest = {
+      url: ajaxCall.url,
+      method: ajaxCall.type,
+      json: isJSONRequest ? ajaxCall.data : null,
+      form: !isJSONRequest ? ajaxCall.data : null,
+      headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
+    };
+        
+    var requestCallback = function(error, response, body) {
+      if(error || response.statusCode > 300  || body.toString().indexOf("DOCTYPE") !== -1) {
+        try {
+          var errorMsg = {
+            code: response && response.statusCode || error.code,
+            status: response && response.headers.status || 'error',
+            message: body || error.errno,
+            detail: body && body.errors || error.syscall
+          };
+        } catch(e) {
+          var errorMsg = error;
+        }
+        callback(errorMsg, null);
+      } else {
+        callback(null, body);
+      }
+    };
+
+  }
+  
   // Optional - for example 'multipart/form-data' when sending a file.
   // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
   if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
   if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-
-  jQuery.ajax( ajaxCall );
+  
+  if(isBrowser) {
+    jQuery.ajax( ajaxCall );
+  } else {
+    request(qbRequest, requestCallback);
+  }
 };
 
-},{"./qbConfig":8}],10:[function(require,module,exports){
+},{"./qbConfig":8,"request":undefined}],10:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -1541,6 +1618,10 @@ if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
+  
+  if (debug && typeof debug === 'boolean') config.debug = debug;
+  else if (debug && typeof debug === 'object') config.set(debug);
+  
   this.service = new Proxy();
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
@@ -1553,16 +1634,12 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
     this.service.setSession({ token: appId });
-    appId = '';
+  } else {
+    config.creds.appId = appId;
+    config.creds.authKey = authKey;
+    config.creds.authSecret = authSecret;
   }
-  
-  config.creds.appId = appId;
-  config.creds.authKey = authKey;
-  config.creds.authSecret = authSecret;
-  if (debug) {
-    config.debug = debug;
-    console.log('QuickBlox.init', this);
-  }
+  if(console && config.debug) console.log('QuickBlox.init', this);
 };
 
 QuickBlox.prototype.createSession = function(params, callback) {
@@ -1582,7 +1659,8 @@ QuickBlox.prototype.logout = function(callback) {
 };
 
 // Browserify exports
-module.exports = (typeof window === 'undefined') ? new QuickBlox() : QuickBlox;
+module.exports = new QuickBlox();
+module.exports.QuickBlox = QuickBlox;
 
 },{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./qbConfig":8,"./qbProxy":9}],12:[function(require,module,exports){
 // Browserify exports start
@@ -1596,4 +1674,4 @@ module.exports=function(){function b(a){return n(f(l(a),a.length*8))}function c(
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){(function(){var r=e,t=r.lib,n=t.Base,i=r.enc,o=i.Utf8,s=r.algo;s.HMAC=n.extend({init:function(e,r){e=this._hasher=new e.init,"string"==typeof r&&(r=o.parse(r));var t=e.blockSize,n=4*t;r.sigBytes>n&&(r=e.finalize(r)),r.clamp();for(var i=this._oKey=r.clone(),s=this._iKey=r.clone(),a=i.words,c=s.words,f=0;t>f;f++)a[f]^=1549556828,c[f]^=909522486;i.sigBytes=s.sigBytes=n,this.reset()},reset:function(){var e=this._hasher;e.reset(),e.update(this._iKey)},update:function(e){return this._hasher.update(e),this},finalize:function(e){var r=this._hasher,t=r.finalize(e);r.reset();var n=r.finalize(this._oKey.clone().concat(t));return n}})})()});
 },{"./core":13}],16:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
-},{"./core":13}]},{},[11])
+},{"./core":13}]},{},[11]);

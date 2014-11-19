@@ -14,9 +14,12 @@
  * - onRejectSubscribeListener
  * - onDisconnectingListener
  */
+ 
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
 
 // Browserify exports and dependencies
-require('../../lib/strophe/strophe.min');
+if(isBrowser) require('../../lib/strophe/strophe.min');
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');
 module.exports = ChatProxy;
@@ -26,25 +29,29 @@ var messageUrl = config.urls.chat + '/Message';
 
 var mutualSubscriptions = {};
 
+if(isBrowser) {
 // create Strophe Connection object
-var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-var connection = new Strophe.Connection(protocol);
-// if (config.debug) {
-  if (config.chatProtocol.active === 1) {
-    connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-    connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
-  } else {
-    connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-    connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+  var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
+  var connection = new Strophe.Connection(protocol);
+  if (config.debug) {
+    if (config.chatProtocol.active === 1) {
+      connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
+      connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
+    } else {
+      connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
+      connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+    }
   }
-// }
+}
 
 function ChatProxy(service) {
   var self = this;
 
   this.service = service;
-  this.roster = new RosterProxy(service);
-  this.muc = new MucProxy(service);
+  if(isBrowser) {
+    this.roster = new RosterProxy(service);
+    this.muc = new MucProxy(service);
+  }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -167,6 +174,7 @@ function ChatProxy(service) {
 /* Chat module: Core
 ---------------------------------------------------------------------- */
 ChatProxy.prototype._autoSendPresence = function() {
+  if(!isBrowser) throw unsupported;
   connection.send($pres().tree());
   // we must return true to keep the handler alive
   // returning false would remove it after it finishes
@@ -174,6 +182,9 @@ ChatProxy.prototype._autoSendPresence = function() {
 };
 
 ChatProxy.prototype.connect = function(params, callback) {
+  
+  if(!isBrowser) throw unsupported;
+  
   if (config.debug) { console.log('ChatProxy.connect', params); }
   var self = this, err;
 
@@ -236,6 +247,9 @@ ChatProxy.prototype.connect = function(params, callback) {
 };
 
 ChatProxy.prototype.send = function(jid, message) {
+  
+  if(!isBrowser) throw unsupported;
+  
   var msg = $msg({
     from: connection.jid,
     to: jid,
@@ -274,6 +288,7 @@ ChatProxy.prototype.send = function(jid, message) {
 
 // helper function for ChatProxy.send()
 ChatProxy.prototype.sendPres = function(type) {
+  if(!isBrowser) throw unsupported;
   connection.send($pres({ 
     from: connection.jid,
     type: type
@@ -281,11 +296,13 @@ ChatProxy.prototype.sendPres = function(type) {
 };
 
 ChatProxy.prototype.disconnect = function() {
+  if(!isBrowser) throw unsupported;
   connection.flush();
   connection.disconnect();
 };
 
 ChatProxy.prototype.addListener = function(params, callback) {
+  if(!isBrowser) throw unsupported;
   return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
   function handler() {
@@ -296,6 +313,7 @@ ChatProxy.prototype.addListener = function(params, callback) {
 };
 
 ChatProxy.prototype.deleteListener = function(ref) {
+  if(!isBrowser) throw unsupported;
   connection.deleteHandler(ref);
 };
 
@@ -505,6 +523,11 @@ DialogProxy.prototype.create = function(params, callback) {
 DialogProxy.prototype.update = function(id, params, callback) {
   if (config.debug) { console.log('DialogProxy.update', id, params); }
   this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
+};
+
+DialogProxy.prototype.delete = function(id, callback) {
+  if (config.debug) { console.log('DialogProxy.delete', id); }
+  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 // Messages

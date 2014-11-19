@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.3.0',
+  version: '1.3.1',
   creds: {
     appId: '',
     authKey: '',
@@ -20,7 +20,7 @@ var config = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    //bosh: 'http://chat.quickblox.com:8080',
+    // bosh: 'http://chat.quickblox.com:8080',
     bosh: 'https://chat.quickblox.com:8081', // With SSL
     websocket: 'ws://chat.quickblox.com:5290',
     active: 1
@@ -40,7 +40,23 @@ var config = {
     type: '.json'
   },
   ssl: true,
+  timeout: null,
   debug: false
+};
+
+config.set = function(options) {
+  Object.keys(options).forEach(function(key) {
+    if(key !== 'set' && config.hasOwnProperty(key)) {
+      if(typeof options[key] !== 'object') {
+        config[key] = options[key]
+      } else {
+        Object.keys(options[key]).forEach(function(nextkey) {
+          if(config.hasOwnProperty(key))
+            config[key][nextkey] = options[key][nextkey];
+        });
+      }
+    }
+  })
 };
 
 // Browserify exports

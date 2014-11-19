@@ -14,7 +14,7 @@ var Proxy = require('./qbProxy');
 
 var Auth = require('./modules/qbAuth');
 var Users = require('./modules/qbUsers');
-// var Chat = require('./modules/qbChat'); // only for browsers
+var Chat = require('./modules/qbChat');
 var Content = require('./modules/qbContent');
 var Location = require('./modules/qbLocation');
 var Messages = require('./modules/qbMessages');
@@ -29,10 +29,14 @@ if (typeof window !== 'undefined' && typeof window.QB === 'undefined') {
 function QuickBlox() {}
 
 QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
+  
+  if (debug && typeof debug === 'boolean') config.debug = debug;
+  else if (debug && typeof debug === 'object') config.set(debug);
+  
   this.service = new Proxy();
   this.auth = new Auth(this.service);
   this.users = new Users(this.service);
-  // this.chat = new Chat(this.service); // only for browsers
+  this.chat = new Chat(this.service);
   this.content = new Content(this.service);
   this.location = new Location(this.service);
   this.messages = new Messages(this.service);
@@ -41,16 +45,12 @@ QuickBlox.prototype.init = function(appId, authKey, authSecret, debug) {
   // Initialization by outside token
   if (typeof appId === 'string' && !authKey && !authSecret) {
     this.service.setSession({ token: appId });
-    appId = '';
+  } else {
+    config.creds.appId = appId;
+    config.creds.authKey = authKey;
+    config.creds.authSecret = authSecret;
   }
-  
-  config.creds.appId = appId;
-  config.creds.authKey = authKey;
-  config.creds.authSecret = authSecret;
-  if (debug) {
-    config.debug = debug;
-    console.log('QuickBlox.init', this);
-  }
+  if(console && config.debug) console.log('QuickBlox.init', this);
 };
 
 QuickBlox.prototype.createSession = function(params, callback) {
@@ -70,4 +70,5 @@ QuickBlox.prototype.logout = function(callback) {
 };
 
 // Browserify exports
-module.exports = (typeof window === 'undefined') ? new QuickBlox() : QuickBlox;
+module.exports = new QuickBlox();
+module.exports.QuickBlox = QuickBlox;
