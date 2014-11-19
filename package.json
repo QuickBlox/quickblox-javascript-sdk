@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.2.2",
+  "version": "1.4.1",
   "homepage": "http://quickblox.com",
   "main": "js/quickblox.js",
   "keywords": [
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "crypto-js": "3.1.2-2",
-    "request": "^2.47.0"
+    "request": "2.47.0"
   },
   "devDependencies": {},
   "license": "MIT"
