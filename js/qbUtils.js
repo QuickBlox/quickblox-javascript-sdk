@@ -2,7 +2,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
 /*
  * QuickBlox JavaScript SDK
  *
- * QuickBlox Utilities
+ * Utilities
  *
  */
 
