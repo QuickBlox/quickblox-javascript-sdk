@@ -6,15 +6,27 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     requirejs: {
-      compile: {
+      options: {
+        baseUrl: 'js',
+        mainConfigFile: 'js/main.js',
+        optimize: 'none',
+        wrap: true
+      },
+      browser: {
         options: {
-          baseUrl: '.',
-          mainConfigFile: "js/main.js",
-          name: 'js/main',
-          out: "quickblox.js",
-          optimize: 'none',
-          almond: true,
-          wrap: true
+          name: 'main',
+          out: 'quickblox.js',
+          almond: true
+        }
+      },
+      amd: {
+        options: {
+          name: 'qbMain',
+          out: 'quickblox-amd.js',
+          onModuleBundleComplete: function(data) {
+            var file = grunt.file.read(data.path);
+            grunt.file.write(data.path, file.replace("'"+data.name+"',", ''));
+          }
         }
       }
     },
