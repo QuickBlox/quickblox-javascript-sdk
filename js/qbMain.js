@@ -58,5 +58,17 @@ function(config, Proxy, Auth, Users, Chat,
     
   };
 
-  return QuickBlox;
+  var QB = new QuickBlox();
+
+  // Node.js exports
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = QB;
+    module.exports.QuickBlox = QuickBlox;
+
+  // Window scoped variable (QB) for using in browsers
+  } else {
+    window.QB = QB;
+    return QB;
+  }
+
 });
