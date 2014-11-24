@@ -66,7 +66,7 @@ ServiceProxy.prototype.ajax = function(params, callback) {
   
   if(!isBrowser) {
     
-    var isJSONRequest = ajaxCall.dataType === 'json';
+    var isJSONRequest = ajaxCall.dataType === 'json',
       makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
                         _this.qbInst && 
                         _this.qbInst.session && 
