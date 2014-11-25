@@ -31,16 +31,16 @@ requirejs.config({
     strophe: '../lib/strophe/strophe.min',
 
     quickblox: 'qbMain',
-    config: 'qbConfig',
-    Utils: 'qbUtils',
-    Proxy: 'qbProxy',
-    Auth: 'modules/qbAuth',
-    Users: 'modules/qbUsers',
-    Chat: 'modules/qbChat',
-    Content: 'modules/qbContent',
-    Location: 'modules/qbLocation',
-    Messages: 'modules/qbMessages',
-    Data: 'modules/qbData'
+    qbConfig: 'qbConfig',
+    qbUtils: 'qbUtils',
+    qbProxy: 'qbProxy',
+    qbAuth: 'modules/qbAuth',
+    qbUsers: 'modules/qbUsers',
+    qbChat: 'modules/qbChat',
+    qbContent: 'modules/qbContent',
+    qbLocation: 'modules/qbLocation',
+    qbMessages: 'modules/qbMessages',
+    qbData: 'modules/qbData'
   }
 });
 

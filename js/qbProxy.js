@@ -6,7 +6,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config'],
+define(['qbConfig'],
 function(config) {
   // For server-side applications through using npm package 'quickblox' you should include the following block
   /*var jsdom = require('jsdom');
