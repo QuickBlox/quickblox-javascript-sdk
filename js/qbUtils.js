@@ -6,7 +6,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config'],
+define(['qbConfig'],
 function(config) {
 
   var Utils = {
