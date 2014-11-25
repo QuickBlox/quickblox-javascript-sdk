@@ -6,7 +6,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config', 'Utils'],
+define(['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   var geoFindUrl = config.urls.geodata + '/find';

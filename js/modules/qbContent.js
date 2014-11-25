@@ -11,7 +11,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config', 'Utils'],
+define(['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   var taggedForUserUrl = config.urls.blobs + '/tagged';

@@ -6,7 +6,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config', 'Utils', 'crypto-js'],
+define(['qbConfig', 'qbUtils', 'crypto-js'],
 function(config, Utils, CryptoJS) {
 
   function AuthProxy(service) {
