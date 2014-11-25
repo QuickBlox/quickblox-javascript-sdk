@@ -6,10 +6,8 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['qbConfig', 'qbProxy', 'qbAuth', 'qbUsers', 'qbChat',
-        'qbContent', 'qbLocation', 'qbMessages', 'qbData'],
-function(config, Proxy, Auth, Users, Chat,
-         Content, Location, Messages, Data) {
+define(function(require) {
+  var config = require('qbConfig');
 
   // Actual QuickBlox API starts here
   function QuickBlox() {}
@@ -19,11 +17,23 @@ function(config, Proxy, Auth, Users, Chat,
     init: function(appId, authKey, authSecret, debug) {
       if (debug && typeof debug === 'boolean') config.debug = debug;
       else if (debug && typeof debug === 'object') config.set(debug);
+
+      // create Strophe Connection object
+      // and include dependencies
+      var conn = require('qbStrophe'),
+          Proxy = require('qbProxy'),
+          Auth = require('qbAuth'),
+          Users = require('qbUsers'),
+          Chat = require('qbChat'),
+          Content = require('qbContent'),
+          Location = require('qbLocation'),
+          Messages = require('qbMessages'),
+          Data = require('qbData');
       
       this.service = new Proxy();
       this.auth = new Auth(this.service);
       this.users = new Users(this.service);
-      this.chat = new Chat(this.service);
+      this.chat = new Chat(this.service, conn);
       this.content = new Content(this.service);
       this.location = new Location(this.service);
       this.messages = new Messages(this.service);

@@ -34,6 +34,7 @@ requirejs.config({
     qbConfig: 'qbConfig',
     qbUtils: 'qbUtils',
     qbProxy: 'qbProxy',
+    qbStrophe: 'qbStrophe',
     qbAuth: 'modules/qbAuth',
     qbUsers: 'modules/qbUsers',
     qbChat: 'modules/qbChat',
