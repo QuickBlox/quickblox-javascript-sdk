@@ -6,7 +6,7 @@
  *
  */
 
-define('config',[],function() {
+define('qbConfig',[],function() {
 
   var config = {
     creds: {
@@ -72,7 +72,7 @@ define('config',[],function() {
  *
  */
 
-define('Proxy',['config'],
+define('qbProxy',['qbConfig'],
 function(config) {
   // For server-side applications through using npm package 'quickblox' you should include the following block
   /*var jsdom = require('jsdom');
@@ -155,7 +155,7 @@ function(config) {
  *
  */
 
-define('Utils',['config'],
+define('qbUtils',['qbConfig'],
 function(config) {
 
   var Utils = {
@@ -191,7 +191,7 @@ define('crypto-js', ['crypto-js/hmac-sha1'], function (main) { return main; });
  *
  */
 
-define('Auth',['config', 'Utils', 'crypto-js'],
+define('qbAuth',['qbConfig', 'qbUtils', 'crypto-js'],
 function(config, Utils, CryptoJS) {
 
   function AuthProxy(service) {
@@ -312,7 +312,7 @@ function(config, Utils, CryptoJS) {
  *
  */
 
-define('Users',['config', 'Utils'],
+define('qbUsers',['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
@@ -474,7 +474,7 @@ define("strophe", (function (global) {
  *
  */
 
-define('Chat',['config', 'Utils', 'strophe'],
+define('qbChat',['qbConfig', 'qbUtils', 'strophe'],
 function(config, Utils, Strophe) {
 
   /*
@@ -1187,7 +1187,7 @@ function(config, Utils, Strophe) {
  *
  */
 
-define('Content',['config', 'Utils'],
+define('qbContent',['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   var taggedForUserUrl = config.urls.blobs + '/tagged';
@@ -1371,7 +1371,7 @@ function(config, Utils) {
  *
  */
 
-define('Location',['config', 'Utils'],
+define('qbLocation',['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   var geoFindUrl = config.urls.geodata + '/find';
@@ -1495,7 +1495,7 @@ function(config, Utils) {
  *
  */
 
-define('Messages',['config', 'Utils'],
+define('qbMessages',['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   function MessagesProxy(service) {
@@ -1616,7 +1616,7 @@ function(config, Utils) {
  *
  */
 
-define('Data',['config', 'Utils'],
+define('qbData',['qbConfig', 'qbUtils'],
 function(config, Utils) {
 
   function DataProxy(service){
@@ -1719,8 +1719,8 @@ function(config, Utils) {
  *
  */
 
-define(['config', 'Proxy', 'Auth', 'Users', 'Chat',
-        'Content', 'Location', 'Messages', 'Data'],
+define(['qbConfig', 'qbProxy', 'qbAuth', 'qbUsers', 'qbChat',
+        'qbContent', 'qbLocation', 'qbMessages', 'qbData'],
 function(config, Proxy, Auth, Users, Chat,
          Content, Location, Messages, Data) {
 
