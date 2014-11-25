@@ -6,8 +6,8 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['config', 'Proxy', 'Auth', 'Users', 'Chat',
-        'Content', 'Location', 'Messages', 'Data'],
+define(['qbConfig', 'qbProxy', 'qbAuth', 'qbUsers', 'qbChat',
+        'qbContent', 'qbLocation', 'qbMessages', 'qbData'],
 function(config, Proxy, Auth, Users, Chat,
          Content, Location, Messages, Data) {
 
