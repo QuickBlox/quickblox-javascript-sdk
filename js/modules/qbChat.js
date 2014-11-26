@@ -23,8 +23,7 @@ function(config, Utils, Strophe) {
   var dialogUrl = config.urls.chat + '/Dialog';
   var messageUrl = config.urls.chat + '/Message';
 
-  var protocol,
-      connection,
+  var connection,
       roster = {},
       joinedRooms = {};
 
@@ -39,8 +38,9 @@ function(config, Utils, Strophe) {
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
 
-  function ChatProxy(service) {
+  function ChatProxy(service, conn) {
     var self = this;
+    connection = conn;
 
     this.service = service;
     this.roster = new RosterProxy(service);
@@ -51,19 +51,6 @@ function(config, Utils, Strophe) {
 
     // reconnect to chat if it wasn't the logout method
     this._isLogout = false;
-
-    // create Strophe Connection object
-    protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-    connection = new Strophe.Connection(protocol);
-    if (config.debug) {
-      if (config.chatProtocol.active === 1) {
-        connection.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
-        connection.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
-      } else {
-        connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-        connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
-      }
-    }
 
     // stanza callbacks (Message, Presence, IQ)
 
