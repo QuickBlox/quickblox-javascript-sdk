@@ -13,6 +13,7 @@ define(function(require) {
       Auth = require('qbAuth'),
       Users = require('qbUsers'),
       Chat = require('qbChat'),
+      WebRTC = require('qbWebRTC'),
       Content = require('qbContent'),
       Location = require('qbLocation'),
       Messages = require('qbMessages'),
@@ -34,6 +35,7 @@ define(function(require) {
       this.auth = new Auth(this.service);
       this.users = new Users(this.service);
       this.chat = new Chat(this.service, conn);
+      this.webrtc = new WebRTC(this.service, conn);
       this.content = new Content(this.service);
       this.location = new Location(this.service);
       this.messages = new Messages(this.service);

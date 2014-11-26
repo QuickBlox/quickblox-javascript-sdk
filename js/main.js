@@ -38,6 +38,7 @@ requirejs.config({
     qbAuth: 'modules/qbAuth',
     qbUsers: 'modules/qbUsers',
     qbChat: 'modules/qbChat',
+    qbWebRTC: 'modules/qbWebRTC',
     qbContent: 'modules/qbContent',
     qbLocation: 'modules/qbLocation',
     qbMessages: 'modules/qbMessages',
