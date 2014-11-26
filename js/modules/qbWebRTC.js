@@ -6,7 +6,7 @@ if (typeof define !== 'function') { var define = require('amdefine')(module) }
  *
  */
 
-define(['qbConfig', 'strophe'],
+define(['qbConfig', 'strophe', 'webRTCAdapter'],
 function(config, Strophe) {
 
   var connection;

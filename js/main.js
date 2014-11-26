@@ -29,6 +29,7 @@ requirejs.config({
   paths: {
     // libs
     strophe: '../lib/strophe/strophe.min',
+    webRTCAdapter: '../lib/adapter',
 
     quickblox: 'qbMain',
     qbConfig: 'qbConfig',
