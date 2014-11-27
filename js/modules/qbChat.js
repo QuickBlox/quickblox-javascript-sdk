@@ -222,7 +222,8 @@ function(config, Utils, Strophe) {
         case Strophe.Status.CONNECTED:
           trace('Status.CONNECTED at ' + getLocalTime());
 
-          connection.addHandler(self._onMessage, null, 'message');
+          connection.addHandler(self._onMessage, null, 'message', 'chat');
+          connection.addHandler(self._onMessage, null, 'message', 'groupchat');
           connection.addHandler(self._onPresence, null, 'presence');
           connection.addHandler(self._onIQ, null, 'iq');
 
