@@ -30,7 +30,7 @@ QuickBlox.prototype = {
 
     if (isBrowser) {
       // create Strophe Connection object
-      var Connection = require('./qbStrophe'),
+      var Connection = require('./qbStrophe');
       var conn = new Connection();
     }
     
