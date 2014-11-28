@@ -5,31 +5,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    requirejs: {
-      options: {
-        baseUrl: 'js',
-        mainConfigFile: 'js/main.js',
-        optimize: 'none',
-        wrap: true
-      },
-      browser: {
-        options: {
-          name: 'main',
-          out: 'quickblox.js',
-          almond: true
-        }
-      },
-      amd: {
-        options: {
-          name: 'qbMain',
-          out: 'quickblox-amd.js',
-          onModuleBundleComplete: function(data) {
-            var file = grunt.file.read(data.path);
-            grunt.file.write(data.path, file.replace("'"+data.name+"',", ''));
-          }
-        }
-      }
-    },
+    
 
     uglify: {
       all: {
@@ -45,7 +21,6 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('default', [
-    'requirejs',
     'uglify'
   ]);
 };
