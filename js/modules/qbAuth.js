@@ -116,14 +116,3 @@ function signMessage(message, secret) {
   
   return CryptoJS(sessionMsg, secret).toString();
 }
-val + '[' + val1 + ']=' + message[val][val1];
-        }).sort().join('&');
-      } else {
-        return val + '=' + message[val];
-      }
-    }).sort().join('&');
-    
-    return CryptoJS(sessionMsg, secret).toString();
-  }
-
-});
