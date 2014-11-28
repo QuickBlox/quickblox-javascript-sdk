@@ -5,13 +5,6 @@
  *
  */
 
-var isBrowser = typeof window !== "undefined";
-var unsupported = "This function isn't supported outside of the browser (...yet)";
-
-if(isBrowser) require('../../lib/strophe/strophe.min');
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
-
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
@@ -22,6 +15,18 @@ var config = require('../qbConfig'),
  * - onDisconnectingListener
  * - onReconnectListener
  */
+
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils');
+
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
+
+if (isBrowser) {
+  require('../../lib/strophe/strophe.min');
+  // add extra namespaces for Strophe
+  Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+}
  
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
@@ -37,9 +42,6 @@ var ObjectId = {
   pid: Math.floor(Math.random() * 32767).toString(16),
   increment: 0
 };
-
-// add extra namespaces for Strophe
-Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
 
 function ChatProxy(service, conn) {
   var self = this;
@@ -652,22 +654,29 @@ Helpers.prototype = {
   },
 
   getIdFromNode: function(jid) {
-    return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+    if (jid.indexOf('@') < 0) return null;
+    return parseInt(jid.split('@')[0].split('-')[0]);
   },
 
   getDialogIdFromNode: function(jid) {
-    return Strophe.getNodeFromJid(jid).split('_')[1];
+    if (jid.indexOf('@') < 0) return null;
+    return jid.split('@')[0].split('_')[1];
   },
 
   getRoomJid: function(jid) {
+    if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
   },  
 
   getIdFromResource: function(jid) {
-    return parseInt(Strophe.getResourceFromJid(jid));
+    var s = jid.split('/');
+    if (s.length < 2) return null;
+    s.splice(0, 1);
+    return parseInt(s.join('/'));
   },
 
   getUniqueId: function(suffix) {
+    if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
   },
 
@@ -692,9 +701,9 @@ module.exports = ChatProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  if (config.debug) {
+  // if (config.debug) {
     console.log('[QBChat]:', text);
-  }
+  // }
 }
 
 function getError(code, detail) {
