@@ -1,9 +1,9 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "homepage": "http://quickblox.com/developers/Javascript",
-  "main": "js/main.js",
+  "main": "quickblox.js",
   "license": "MIT",
   "keywords": [
     "quickblox",
@@ -32,15 +32,11 @@
   },
   "dependencies": {
     "crypto-js": "^3.1.2-2",
-    "jsdom": "^0.10.6",
-    "xmlhttprequest": "^1.6.0",
-    "jquery": "^2.1.1",
-    "requirejs": "^2.1.15",
-    "amdefine": "^0.1.0"
+    "request": "^2.48.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
-    "grunt-requirejs": "^0.4.2",
+    "grunt-browserify": "^3.2.1",
     "grunt-contrib-uglify": "^0.6.0",
     "load-grunt-tasks": "^1.0.0"
   }
