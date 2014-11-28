@@ -24,6 +24,11 @@ var DEFAULTS = {
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 1
   },
+  iceServers: [
+    {urls: "stun:stun.l.google.com:19302"},
+    {urls: "turn:turnserver.quickblox.com:3478?transport=udp", username: "", credential: ""},
+    {urls: "turn:turnserver.quickblox.com:3478?transport=tcp", username: "", credential: ""}
+  ],
   urls: {
     session: 'session',
     login: 'login',
