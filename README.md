@@ -4,7 +4,7 @@ QuickBlox JavaScript SDK
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud backend platform.
 
-For use inside browsers, a window scoped variable called QB is created.
+For use inside browsers, a window scoped variable called `QB` is created.
 
 Most functions, with the notable exception of init, take a callback
 parameter which gets called with an error and result parameter (ala node.js).
@@ -12,6 +12,38 @@ parameter which gets called with an error and result parameter (ala node.js).
 If the call was sucessful then result will contain the reply from the
 QuickBlox platform. Similarly, if something went wrong then the error
 parameter will give you a description of what the problem was.
+
+Install
+----------------
+**Dependencies for browser**
+
+For correct work of JS SDK you must include the [jQuery](http://jquery.com/) library in your html before `quickblox.js`, like so:
+
+```html
+<script src="jquery.min.js"></script>
+<script src="quickblox.js"></script>
+```
+
+**Bower**
+
+```
+bower install quickblox --save
+```
+
+**Node.js and NPM**
+
+```
+npm install quickblox --save
+```
+
+```javascript
+var QB = require('quickblox');
+
+// OR to create many QB instances
+var QuickBlox = require('quickblox').QuickBlox;
+var QB1 = new QuickBlox();
+var QB2 = new QuickBlox();
+```
 
 A simple example
 ----------------
@@ -66,10 +98,11 @@ Sometimes you will want to pass some configuration options such as a different e
 var config = {
   endpoints: {
     api: 'api.differenthost.com',
-    muc: 'chat.differenthost.com',
+    chat: 'chat.differenthost.com',
+    muc: 'muc.chat.differenthost.com'
   },
   chatProtocol: {
-    bosh: 'https://chat.differenthost.com:8081'
+    bosh: 'https://chat.differenthost.com:5281'
   },
   debug: true,
   timeout: 5000,
@@ -119,11 +152,11 @@ Please take a look at the specs for examples of how to use the APIs. In essence 
 
 Modifying and building the library
 ----------------------------------
-The quickblox.js library is build from a number of modules contained in the `js` folder. For example the `js/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+The quickblox.js library is build from a number of **CommonJS modules** contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
 
-These modules are combined into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [browserify](http://browserify.org/) tool:
+These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere). To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 ```
-browserify -o quickblox.js js/quickblox.js
+$ grunt
 ```
 
 You will also need to have the dependencies listed in the package.json available, use `npm install` to load them.
