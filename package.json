@@ -3,7 +3,7 @@
   "description": "QuickBlox JavaScript SDK",
   "version": "1.4.3",
   "homepage": "http://quickblox.com/developers/Javascript",
-  "main": "js/main.js",
+  "main": "quickblox.js",
   "license": "MIT",
   "keywords": [
     "quickblox",

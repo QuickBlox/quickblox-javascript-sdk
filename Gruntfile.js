@@ -5,13 +5,25 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    
+    browserify: {
+      options: {
+        banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        browserifyOptions: {
+          standalone: 'QB'
+        }
+      },
+      all: {
+        files: {
+          'quickblox.js': ['js/qbMain.js']
+        }
+      }
+    },
 
     uglify: {
+      options: {
+        banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+      },
       all: {
-        options: {
-          banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-        },
         files: {
           'quickblox.min.js': ['quickblox.js']
         }
@@ -21,6 +33,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('default', [
+    'browserify',
     'uglify'
   ]);
 };
