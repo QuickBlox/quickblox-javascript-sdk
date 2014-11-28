@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "quickblox.js",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "url": "git://github.com/QuickBlox/quickblox-javascript-sdk.git"
   },
   "moduleType": [
-    "amd"
+    "node"
   ],
   "ignore": [
     "**/.*",

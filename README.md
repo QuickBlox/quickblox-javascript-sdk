@@ -36,6 +36,15 @@ bower install quickblox --save
 npm install quickblox --save
 ```
 
+```javascript
+var QB = require('quickblox');
+
+// OR to create many QB instances
+var QuickBlox = require('quickblox').QuickBlox;
+var QB1 = new QuickBlox();
+var QB2 = new QuickBlox();
+```
+
 A simple example
 ----------------
 
@@ -142,9 +151,9 @@ Please take a look at the specs for examples of how to use the APIs. In essence 
 
 Modifying and building the library
 ----------------------------------
-The quickblox.js library is build from a number of **AMD modules** contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+The quickblox.js library is build from a number of **CommonJS modules** contained in the `js` folder. For example the `js/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
 
-These modules are combined through [RequireJS](http://requirejs.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag. To build the library, use the [Grunt](http://gruntjs.com/) task runner:
+These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere). To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 ```
 $ grunt
 ```

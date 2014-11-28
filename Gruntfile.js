@@ -5,37 +5,25 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    requirejs: {
+    browserify: {
       options: {
-        baseUrl: 'js',
-        mainConfigFile: 'js/main.js',
-        optimize: 'none',
-        wrap: true
-      },
-      browser: {
-        options: {
-          name: 'main',
-          out: 'quickblox.js',
-          almond: true
+        banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        browserifyOptions: {
+          standalone: 'QB'
         }
       },
-      amd: {
-        options: {
-          name: 'qbMain',
-          out: 'quickblox-amd.js',
-          onModuleBundleComplete: function(data) {
-            var file = grunt.file.read(data.path);
-            grunt.file.write(data.path, file.replace("'"+data.name+"',", ''));
-          }
+      all: {
+        files: {
+          'quickblox.js': ['js/qbMain.js']
         }
       }
     },
 
     uglify: {
+      options: {
+        banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+      },
       all: {
-        options: {
-          banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
-        },
         files: {
           'quickblox.min.js': ['quickblox.js']
         }
@@ -45,7 +33,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('default', [
-    'requirejs',
+    'browserify',
     'uglify'
   ]);
 };
