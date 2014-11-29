@@ -5,10 +5,6 @@
  *
  */
 
-require('../../lib/strophe/strophe.min');
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
-
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
@@ -20,6 +16,18 @@ var config = require('../qbConfig'),
  * - onReconnectListener
  */
 
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils');
+
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
+
+if (isBrowser) {
+  require('../../lib/strophe/strophe.min');
+  // add extra namespaces for Strophe
+  Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+}
+ 
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
@@ -35,16 +43,15 @@ var ObjectId = {
   increment: 0
 };
 
-// add extra namespaces for Strophe
-Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
-
 function ChatProxy(service, conn) {
   var self = this;
   connection = conn;
 
   this.service = service;
-  this.roster = new RosterProxy(service);
-  this.muc = new MucProxy(service);
+  if(isBrowser) {
+    this.roster = new RosterProxy(service);
+    this.muc = new MucProxy(service);
+  }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
@@ -194,6 +201,8 @@ function ChatProxy(service, conn) {
 ChatProxy.prototype = {
 
   connect: function(params, callback) {
+    if(!isBrowser) throw unsupported;
+
     if (config.debug) { console.log('ChatProxy.connect', params); }
     var self = this,
         err, rooms;
@@ -277,6 +286,8 @@ ChatProxy.prototype = {
   },
 
   send: function(jid, message) {
+    if(!isBrowser) throw unsupported;
+
     var self = this,
         msg = $msg({
           from: connection.jid,
@@ -316,6 +327,8 @@ ChatProxy.prototype = {
 
   // helper function for ChatProxy.send()
   sendPres: function(type) {
+    if(!isBrowser) throw unsupported;
+
     connection.send($pres({ 
       from: connection.jid,
       type: type
@@ -323,6 +336,8 @@ ChatProxy.prototype = {
   },
 
   disconnect: function() {
+    if(!isBrowser) throw unsupported;
+
     joinedRooms = {};
     this._isLogout = true;
     connection.flush();
@@ -330,6 +345,8 @@ ChatProxy.prototype = {
   },
 
   addListener: function(params, callback) {
+    if(!isBrowser) throw unsupported;
+
     return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
     function handler() {
@@ -340,10 +357,14 @@ ChatProxy.prototype = {
   },
 
   deleteListener: function(ref) {
+    if(!isBrowser) throw unsupported;
+
     connection.deleteHandler(ref);
   },
 
   _autoSendPresence: function() {
+    if(!isBrowser) throw unsupported;
+
     connection.send($pres().tree());
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -352,6 +373,8 @@ ChatProxy.prototype = {
 
   // Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
   _enableCarbons: function(callback) {
+    if(!isBrowser) throw unsupported;
+
     var iq;
 
     iq = $iq({
@@ -631,22 +654,29 @@ Helpers.prototype = {
   },
 
   getIdFromNode: function(jid) {
-    return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+    if (jid.indexOf('@') < 0) return null;
+    return parseInt(jid.split('@')[0].split('-')[0]);
   },
 
   getDialogIdFromNode: function(jid) {
-    return Strophe.getNodeFromJid(jid).split('_')[1];
+    if (jid.indexOf('@') < 0) return null;
+    return jid.split('@')[0].split('_')[1];
   },
 
   getRoomJid: function(jid) {
+    if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
   },  
 
   getIdFromResource: function(jid) {
-    return parseInt(Strophe.getResourceFromJid(jid));
+    var s = jid.split('/');
+    if (s.length < 2) return null;
+    s.splice(0, 1);
+    return parseInt(s.join('/'));
   },
 
   getUniqueId: function(suffix) {
+    if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
   },
 
@@ -671,9 +701,9 @@ module.exports = ChatProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  if (config.debug) {
+  // if (config.debug) {
     console.log('[QBChat]:', text);
-  }
+  // }
 }
 
 function getError(code, detail) {
