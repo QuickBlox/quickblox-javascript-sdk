@@ -8,6 +8,7 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        ignore: ['request'],
         browserifyOptions: {
           standalone: 'QB'
         }
