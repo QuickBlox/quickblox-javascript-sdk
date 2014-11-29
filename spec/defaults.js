@@ -5,7 +5,6 @@
  */
 
 var DEFAULTS = {
-  version: '1.3.0',
   creds: {
     appId: '',
     authKey: '',
@@ -19,11 +18,17 @@ var DEFAULTS = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    //bosh: 'http://chat.quickblox.com:8080',
-    bosh: 'https://chat.quickblox.com:8081', // With SSL
-    websocket: 'ws://chat.quickblox.com:5290',
+    // bosh: 'http://chat.quickblox.com:5280',
+    bosh: 'https://chat.quickblox.com:5281', // With SSL
+    // websocket: 'ws://chat.quickblox.com:5290',
+    websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 1
   },
+  iceServers: [
+    {urls: "stun:stun.l.google.com:19302"},
+    {urls: "turn:turnserver.quickblox.com:3478?transport=udp", username: "", credential: ""},
+    {urls: "turn:turnserver.quickblox.com:3478?transport=tcp", username: "", credential: ""}
+  ],
   urls: {
     session: 'session',
     login: 'login',

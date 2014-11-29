@@ -1,23 +1,26 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * QuickBlox Utilities
+ * Utilities
  *
  */
 
-// Browserify exports and dependencies
 var config = require('./qbConfig');
 
-exports.randomNonce = function() {
-  return Math.floor(Math.random() * 10000);
+var Utils = {
+  randomNonce: function() {
+    return Math.floor(Math.random() * 10000);
+  },
+
+  unixTime: function() {
+    return Math.floor(Date.now() / 1000);
+  },
+
+  getUrl: function(base, id) {
+    var protocol = config.ssl ? 'https://' : 'http://';
+    var resource = id ? '/' + id : '';
+    return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
+  }
 };
 
-exports.unixTime = function() {
-  return Math.floor(Date.now() / 1000);
-};
-
-exports.getUrl = function(base, id) {
-  var protocol = config.ssl ? 'https://' : 'http://';
-  var resource = id ? '/' + id : '';
-  return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
-};
+module.exports = Utils;

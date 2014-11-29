@@ -5,68 +5,71 @@
  *
  */
 
-// Browserify exports and dependencies
-module.exports = AuthProxy;
-var config = require('../qbConfig');
-var Utils = require('../qbUtils');
-var crypto = require('crypto-js/hmac-sha1');
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils'),
+    CryptoJS = require('crypto-js/hmac-sha1');
 
 function AuthProxy(service) {
   this.service = service;
 }
 
-AuthProxy.prototype.createSession = function(params, callback) {
-  var _this = this, message;
+AuthProxy.prototype = {
 
-  if (typeof params === 'function' && typeof callback === 'undefined') {
-    callback = params;
-    params = {};
+  createSession: function(params, callback) {
+    var _this = this, message;
+
+    if (typeof params === 'function' && typeof callback === 'undefined') {
+      callback = params;
+      params = {};
+    }
+
+    // Signature of message with SHA-1 using secret key
+    message = generateAuthMsg(params);
+    message.signature = signMessage(message, config.creds.authSecret);
+    
+    if (config.debug) { console.log('AuthProxy.createSession', message); }
+    this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
+                      function(err, res) {
+                        if (err) {
+                          callback(err, null);
+                        } else {
+                          _this.service.setSession(res.session);
+                          callback(null, res.session);
+                        }
+                      });
+  },
+
+  destroySession: function(callback) {
+    var _this = this;
+    if (config.debug) { console.log('AuthProxy.destroySession'); }
+    this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
+                      function(err, res) {
+                        if (err) {
+                          callback(err, null);
+                        } else {
+                          _this.service.setSession(null);
+                          callback(null, res);
+                        }
+                      });
+  },
+
+  login: function(params, callback) {
+    if (config.debug) { console.log('AuthProxy.login', params); }
+    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
+                      function(err, res) {
+                        if (err) { callback(err, null); }
+                        else { callback(null, res.user); }
+                      });
+  },
+
+  logout: function(callback) {
+    if (config.debug) { console.log('AuthProxy.logout'); }
+    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
-
-  // Signature of message with SHA-1 using secret key
-  message = generateAuthMsg(params);
-  message.signature = signMessage(message, config.creds.authSecret);
   
-  if (config.debug) { console.log('AuthProxy.createSession', message); }
-  this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
-                    function(err, res) {
-                      if (err) {
-                        callback(err, null);
-                      } else {
-                        _this.service.setSession(res.session);
-                        callback(null, res.session);
-                      }
-                    });
 };
 
-AuthProxy.prototype.destroySession = function(callback) {
-  var _this = this;
-  if (config.debug) { console.log('AuthProxy.destroySession'); }
-  this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
-                    function(err, res) {
-                      if (err) {
-                        callback(err, null);
-                      } else {
-                        _this.service.setSession(null);
-                        callback(null, res);
-                      }
-                    });
-};
-
-AuthProxy.prototype.login = function(params, callback) {
-  if (config.debug) { console.log('AuthProxy.login', params); }
-  this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                    function(err, res) {
-                      if (err) { callback(err, null); }
-                      else { callback(null, res.user); }
-                    });
-};
-
-AuthProxy.prototype.logout = function(callback) {
-  if (config.debug) { console.log('AuthProxy.logout'); }
-  this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
-};
-
+module.exports = AuthProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
@@ -111,5 +114,5 @@ function signMessage(message, secret) {
     }
   }).sort().join('&');
   
-  return crypto(sessionMsg, secret).toString();
+  return CryptoJS(sessionMsg, secret).toString();
 }

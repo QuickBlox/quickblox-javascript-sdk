@@ -13,39 +13,39 @@
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectingListener
+ * - onReconnectListener
  */
- 
+
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils');
+
 var isBrowser = typeof window !== "undefined";
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
-// Browserify exports and dependencies
-if(isBrowser) require('../../lib/strophe/strophe.min');
-var config = require('../qbConfig');
-var Utils = require('../qbUtils');
-module.exports = ChatProxy;
-
+if (isBrowser) {
+  require('../../lib/strophe/strophe.min');
+  // add extra namespaces for Strophe
+  Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+}
+ 
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
-var mutualSubscriptions = {};
+var connection,
+    roster = {},
+    joinedRooms = {};
 
-if(isBrowser) {
-// create Strophe Connection object
-  var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
-  var connection = new Strophe.Connection(protocol);
-  if (config.debug) {
-    if (config.chatProtocol.active === 1) {
-      connection.xmlInput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat RECV]:', data.children[0]); };
-      connection.xmlOutput = function(data) { if (typeof data.children !== 'undefined') data.children[0] && console.log('[QBChat SENT]:', data.children[0]); };
-    } else {
-      connection.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-      connection.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
-    }
-  }
-}
+// The object for type MongoDB.Bson.ObjectId
+// http://docs.mongodb.org/manual/reference/object-id/
+var ObjectId = {
+  machine: Math.floor(Math.random() * 16777216).toString(16),
+  pid: Math.floor(Math.random() * 32767).toString(16),
+  increment: 0
+};
 
-function ChatProxy(service) {
+function ChatProxy(service, conn) {
   var self = this;
+  connection = conn;
 
   this.service = service;
   if(isBrowser) {
@@ -56,15 +56,19 @@ function ChatProxy(service) {
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
 
+  // reconnect to chat if it wasn't the logout method
+  this._isLogout = false;
+
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),        
-        delay = type === 'groupchat' && stanza.querySelector('delay'),
+        delay = stanza.querySelector('delay'),
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         message, extension, attachments, attach, attributes;
 
@@ -74,12 +78,12 @@ function ChatProxy(service) {
     if (extraParams) {
       extension = {};
       attachments = [];
-      for (var i = 0, len = extraParams.children.length; i < len; i++) {
-        if (extraParams.children[i].tagName === 'attachment') {
+      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+        if (extraParams.childNodes[i].tagName === 'attachment') {
           
           // attachments
           attach = {};
-          attributes = extraParams.children[i].attributes;
+          attributes = extraParams.childNodes[i].attributes;
           for (var j = 0, len2 = attributes.length; j < len2; j++) {
             if (attributes[j].name === 'id' || attributes[j].name === 'size')
               attach[attributes[j].name] = parseInt(attributes[j].value);
@@ -89,7 +93,7 @@ function ChatProxy(service) {
           attachments.push(attach);
 
         } else {
-          extension[extraParams.children[i].tagName] = extraParams.children[i].textContent;
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
         }
       }
 
@@ -105,8 +109,8 @@ function ChatProxy(service) {
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
-    if (typeof self.onMessageListener === 'function' && !delay)
-      self.onMessageListener(userId, message);
+    if (typeof self.onMessageListener === 'function' && (type === 'chat' || !delay))
+      self.onMessageListener(userId, message, to, delay);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -119,14 +123,18 @@ function ChatProxy(service) {
         userId = self.helpers.getIdFromNode(from);
 
     if (!type) {
-      if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
-        self.onContactListListener(userId, type);
+      if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
+        self.onContactListListener(userId);
     } else {
 
       // subscriptions callbacks
       switch (type) {
       case 'subscribe':
-        if (mutualSubscriptions[userId]) {
+        if (roster[userId] && roster[userId].subscription === 'to') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };
           self.roster._sendSubscriptionPresence({
             jid: from,
             type: 'subscribed'
@@ -137,21 +145,38 @@ function ChatProxy(service) {
         }
         break;
       case 'subscribed':
-        if (typeof self.onConfirmSubscribeListener === 'function')
-          self.onConfirmSubscribeListener(userId);
+        if (roster[userId] && roster[userId].subscription === 'from') {
+          roster[userId] = {
+            subscription: 'both',
+            ask: null
+          };          
+        } else {
+          roster[userId] = {
+            subscription: 'to',
+            ask: null
+          };
+          if (typeof self.onConfirmSubscribeListener === 'function')
+            self.onConfirmSubscribeListener(userId);
+        }
         break;
       case 'unsubscribed':
-        delete mutualSubscriptions[userId];
+        roster[userId] = {
+          subscription: 'none',
+          ask: null
+        };
         if (typeof self.onRejectSubscribeListener === 'function')
           self.onRejectSubscribeListener(userId);
         break;
       case 'unsubscribe':
-        delete mutualSubscriptions[userId];
-        if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+        roster[userId] = {
+          subscription: 'to',
+          ask: null
+        };
+        // if (typeof self.onRejectSubscribeListener === 'function')
+        //   self.onRejectSubscribeListener(userId);
         break;
       case 'unavailable':
-        if (typeof self.onContactListListener === 'function' && mutualSubscriptions[userId])
+        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
           self.onContactListListener(userId, type);
         break;
       }
@@ -173,148 +198,198 @@ function ChatProxy(service) {
 
 /* Chat module: Core
 ---------------------------------------------------------------------- */
-ChatProxy.prototype._autoSendPresence = function() {
-  if(!isBrowser) throw unsupported;
-  connection.send($pres().tree());
-  // we must return true to keep the handler alive
-  // returning false would remove it after it finishes
-  return true;
-};
+ChatProxy.prototype = {
 
-ChatProxy.prototype.connect = function(params, callback) {
-  
-  if(!isBrowser) throw unsupported;
-  
-  if (config.debug) { console.log('ChatProxy.connect', params); }
-  var self = this, err;
+  connect: function(params, callback) {
+    if(!isBrowser) throw unsupported;
 
-  connection.connect(params.jid, params.password, function(status) {
-    switch (status) {
-    case Strophe.Status.ERROR:
-      err = getError(422, 'Status.ERROR - An error has occurred');
-      callback(err, null);
-      break;
-    case Strophe.Status.CONNECTING:
-      trace('Status.CONNECTING');
-      trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
-      break;
-    case Strophe.Status.CONNFAIL:
-      err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
-      callback(err, null);
-      break;
-    case Strophe.Status.AUTHENTICATING:
-      trace('Status.AUTHENTICATING');
-      break;
-    case Strophe.Status.AUTHFAIL:
-      err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-      callback(err, null);
-      break;
-    case Strophe.Status.CONNECTED:
-      trace('Status.CONNECTED at ' + getLocalTime());
+    if (config.debug) { console.log('ChatProxy.connect', params); }
+    var self = this,
+        err, rooms;
 
-      connection.addHandler(self._onMessage, null, 'message');
-      connection.addHandler(self._onPresence, null, 'presence');
-      connection.addHandler(self._onIQ, null, 'iq');
+    connection.connect(params.jid, params.password, function(status) {
+      switch (status) {
+      case Strophe.Status.ERROR:
+        err = getError(422, 'Status.ERROR - An error has occurred');
+        if (typeof callback === 'function') callback(err, null);
+        break;
+      case Strophe.Status.CONNECTING:
+        trace('Status.CONNECTING');
+        trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
+        break;
+      case Strophe.Status.CONNFAIL:
+        err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
+        if (typeof callback === 'function') callback(err, null);
+        break;
+      case Strophe.Status.AUTHENTICATING:
+        trace('Status.AUTHENTICATING');
+        break;
+      case Strophe.Status.AUTHFAIL:
+        err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
+        if (typeof callback === 'function') callback(err, null);
+        break;
+      case Strophe.Status.CONNECTED:
+        trace('Status.CONNECTED at ' + getLocalTime());
 
-      // get the roster
-      self.roster.get(function(contacts) {
+        connection.addHandler(self._onMessage, null, 'message', 'chat');
+        connection.addHandler(self._onMessage, null, 'message', 'groupchat');
+        connection.addHandler(self._onPresence, null, 'presence');
+        connection.addHandler(self._onIQ, null, 'iq');
 
-        // chat server will close your connection if you are not active in chat during one minute
-        // initial presence and an automatic reminder of it each 55 seconds
-        connection.send($pres().tree());
-        connection.addTimedHandler(55 * 1000, self._autoSendPresence);
+        // enable carbons
+        self._enableCarbons(function() {
+          // get the roster
+          self.roster.get(function(contacts) {
+            roster = contacts;
 
-        callback(null, contacts);
-      });
+            // chat server will close your connection if you are not active in chat during one minute
+            // initial presence and an automatic reminder of it each 55 seconds
+            connection.send($pres().tree());
+            connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
-      break;
-    case Strophe.Status.DISCONNECTING:
-      trace('Status.DISCONNECTING');
-      break;
-    case Strophe.Status.DISCONNECTED:
-      trace('Status.DISCONNECTED at ' + getLocalTime());
+            if (typeof callback === 'function') {
+              callback(null, roster);
+            } else {
+              self._isLogout = false;
 
-      if (typeof self.onDisconnectingListener === 'function')
-        self.onDisconnectingListener();
+              // recover the joined rooms
+              rooms = Object.keys(joinedRooms);
+              for (var i = 0, len = rooms.length; i < len; i++) {
+                self.muc.join(rooms[i]);
+              }
 
-      connection.reset();
-      break;
-    case Strophe.Status.ATTACHED:
-      trace('Status.ATTACHED');
-      break;
-    }
-  });
-};
-
-ChatProxy.prototype.send = function(jid, message) {
-  
-  if(!isBrowser) throw unsupported;
-  
-  var msg = $msg({
-    from: connection.jid,
-    to: jid,
-    type: message.type,
-    id: message.id || connection.getUniqueId()
-  });
-  
-  if (message.body) {
-    msg.c('body', {
-      xmlns: Strophe.NS.CLIENT
-    }).t(message.body).up();
-  }
-  
-  // custom parameters
-  if (message.extension) {
-    msg.c('extraParams', {
-      xmlns: Strophe.NS.CLIENT
-    });
-    
-    Object.keys(message.extension).forEach(function(field) {
-      if (field === 'attachments') {
-
-        // attachments
-        message.extension[field].forEach(function(attach) {
-          msg.c('attachment', attach).up();
+              if (typeof self.onReconnectListener === 'function')
+                self.onReconnectListener();
+            }
+          });
         });
 
-      } else {
-        msg.c(field).t(message.extension[field]).up();
+        break;
+      case Strophe.Status.DISCONNECTING:
+        trace('Status.DISCONNECTING');
+        break;
+      case Strophe.Status.DISCONNECTED:
+        trace('Status.DISCONNECTED at ' + getLocalTime());
+        connection.reset();
+
+        if (typeof self.onDisconnectingListener === 'function')
+          self.onDisconnectingListener();
+
+        // reconnect to chat
+        if (!self._isLogout) self.connect(params);
+        break;
+      case Strophe.Status.ATTACHED:
+        trace('Status.ATTACHED');
+        break;
       }
     });
+  },
+
+  send: function(jid, message) {
+    if(!isBrowser) throw unsupported;
+
+    var self = this,
+        msg = $msg({
+          from: connection.jid,
+          to: jid,
+          type: message.type,
+          id: message.id || self.helpers.getBsonObjectId()
+        });
+    
+    if (message.body) {
+      msg.c('body', {
+        xmlns: Strophe.NS.CLIENT
+      }).t(message.body).up();
+    }
+    
+    // custom parameters
+    if (message.extension) {
+      msg.c('extraParams', {
+        xmlns: Strophe.NS.CLIENT
+      });
+      
+      Object.keys(message.extension).forEach(function(field) {
+        if (field === 'attachments') {
+
+          // attachments
+          message.extension[field].forEach(function(attach) {
+            msg.c('attachment', attach).up();
+          });
+
+        } else {
+          msg.c(field).t(message.extension[field]).up();
+        }
+      });
+    }
+    
+    connection.send(msg);
+  },
+
+  // helper function for ChatProxy.send()
+  sendPres: function(type) {
+    if(!isBrowser) throw unsupported;
+
+    connection.send($pres({ 
+      from: connection.jid,
+      type: type
+    }));
+  },
+
+  disconnect: function() {
+    if(!isBrowser) throw unsupported;
+
+    joinedRooms = {};
+    this._isLogout = true;
+    connection.flush();
+    connection.disconnect();
+  },
+
+  addListener: function(params, callback) {
+    if(!isBrowser) throw unsupported;
+
+    return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
+
+    function handler() {
+      callback();
+      // if 'false' - a handler will be performed only once
+      return params.live !== false;
+    }
+  },
+
+  deleteListener: function(ref) {
+    if(!isBrowser) throw unsupported;
+
+    connection.deleteHandler(ref);
+  },
+
+  _autoSendPresence: function() {
+    if(!isBrowser) throw unsupported;
+
+    connection.send($pres().tree());
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  },
+
+  // Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
+  _enableCarbons: function(callback) {
+    if(!isBrowser) throw unsupported;
+
+    var iq;
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('enableCarbons')
+    }).c('enable', {
+      xmlns: Strophe.NS.CARBONS
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback();
+    });
   }
-  
-  connection.send(msg);
-};
 
-// helper function for ChatProxy.send()
-ChatProxy.prototype.sendPres = function(type) {
-  if(!isBrowser) throw unsupported;
-  connection.send($pres({ 
-    from: connection.jid,
-    type: type
-  }));
-};
-
-ChatProxy.prototype.disconnect = function() {
-  if(!isBrowser) throw unsupported;
-  connection.flush();
-  connection.disconnect();
-};
-
-ChatProxy.prototype.addListener = function(params, callback) {
-  if(!isBrowser) throw unsupported;
-  return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
-
-  function handler() {
-    callback();
-    // if 'false' - a handler will be performed only once
-    return params.live !== false;
-  }
-};
-
-ChatProxy.prototype.deleteListener = function(ref) {
-  if(!isBrowser) throw unsupported;
-  connection.deleteHandler(ref);
 };
 
 /* Chat module: Roster
@@ -329,129 +404,122 @@ function RosterProxy(service) {
   this.helpers = new Helpers;
 }
 
-RosterProxy.prototype.get = function(callback) {
-  var iq, self = this,
-      items, userId, contacts = {};
+RosterProxy.prototype = {
 
-  iq = $iq({
-    from: connection.jid,
-    type: 'get',
-    id: connection.getUniqueId('roster')
-  }).c('query', {
-    xmlns: Strophe.NS.ROSTER
-  });
+  get: function(callback) {
+    var iq, self = this,
+        items, userId, contacts = {};
 
-  connection.sendIQ(iq, function(stanza) {
-    items = stanza.getElementsByTagName('item');
-    for (var i = 0, len = items.length; i < len; i++) {
-      userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
-      contacts[userId] = {
-        subscription: items[i].getAttribute('subscription'),
-        ask: items[i].getAttribute('ask') || null
-      };
+    iq = $iq({
+      from: connection.jid,
+      type: 'get',
+      id: connection.getUniqueId('getRoster')
+    }).c('query', {
+      xmlns: Strophe.NS.ROSTER
+    });
 
-      // mutual subscription
-      if (items[i].getAttribute('ask') || items[i].getAttribute('subscription') !== 'none')
-        mutualSubscriptions[userId] = true;
-    }
-    callback(contacts);
-  });
-};
+    connection.sendIQ(iq, function(stanza) {
+      items = stanza.getElementsByTagName('item');
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
+        contacts[userId] = {
+          subscription: items[i].getAttribute('subscription'),
+          ask: items[i].getAttribute('ask') || null
+        };
+      }
+      callback(contacts);
+    });
+  },
 
-RosterProxy.prototype.add = function(jid) {
-  this._sendRosterRequest({
-    jid: jid,
-    type: 'subscribe'
-  });
-};
+  add: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
-RosterProxy.prototype.confirm = function(jid) {
-  this._sendRosterRequest({
-    jid: jid,
-    type: 'subscribed'
-  });
-};
+    roster[userId] = {
+      subscription: 'none',
+      ask: 'subscribe'
+    };
 
-RosterProxy.prototype.reject = function(jid) {
-  this._sendRosterRequest({
-    jid: jid,
-    type: 'unsubscribed'
-  });
-};
+    self._sendSubscriptionPresence({
+      jid: jid,
+      type: 'subscribe'
+    });
 
-RosterProxy.prototype.remove = function(jid) {
-  this._sendSubscriptionPresence({
-    jid: jid,
-    type: 'unsubscribe'
-  });
-  this._sendSubscriptionPresence({
-    jid: jid,
-    type: 'unsubscribed'
-  });
-  this._sendRosterRequest({
-    jid: jid,
-    subscription: 'remove',
-    type: 'unsubscribe'
-  });
-};
+    if (typeof callback === 'function') callback();
+  },
 
-RosterProxy.prototype._sendRosterRequest = function(params) {
-  var iq, attr = {},
-      userId, self = this;
+  confirm: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
-  iq = $iq({
-    from: connection.jid,
-    type: 'set',
-    id: connection.getUniqueId('roster')
-  }).c('query', {
-    xmlns: Strophe.NS.ROSTER
-  });
+    roster[userId] = {
+      subscription: 'from',
+      ask: 'subscribe'
+    };
 
-  if (params.jid)
-    attr.jid = params.jid;
-  if (params.subscription)
-    attr.subscription = params.subscription;
+    self._sendSubscriptionPresence({
+      jid: jid,
+      type: 'subscribed'
+    });
 
-  iq.c('item', attr);
-  userId = self.helpers.getIdFromNode(params.jid).toString();
+    self._sendSubscriptionPresence({
+      jid: jid,
+      type: 'subscribe'
+    });
 
-  connection.sendIQ(iq, function() {
+    if (typeof callback === 'function') callback();
+  },
 
-    // subscriptions requests
-    switch (params.type) {
-    case 'subscribe':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
-      break;
-    case 'subscribed':
-      self._sendSubscriptionPresence(params);
-      mutualSubscriptions[userId] = true;
+  reject: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
-      params.type = 'subscribe';
-      self._sendSubscriptionPresence(params);
-      break;
-    case 'unsubscribed':
-      self._sendSubscriptionPresence(params);
-      break;
-    case 'unsubscribe':
-      delete mutualSubscriptions[userId];
-      params.type = 'unavailable';
-      self._sendSubscriptionPresence(params);
-      break;
-    }
+    roster[userId] = {
+      subscription: 'none',
+      ask: null
+    };
 
-  });
-};
+    self._sendSubscriptionPresence({
+      jid: jid,
+      type: 'unsubscribed'
+    });
 
-RosterProxy.prototype._sendSubscriptionPresence = function(params) {
-  var pres, self = this;
+    if (typeof callback === 'function') callback();
+  },
 
-  pres = $pres({
-    to: params.jid,
-    type: params.type
-  });
+  remove: function(jid, callback) {
+    var iq, userId, self = this;
 
-  connection.send(pres);
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('removeRosterItem')
+    }).c('query', {
+      xmlns: Strophe.NS.ROSTER
+    }).c('item', {
+      jid: jid,
+      subscription: 'remove'
+    });
+
+    userId = self.helpers.getIdFromNode(jid).toString();
+
+    connection.sendIQ(iq, function() {
+      delete roster[userId];
+      if (typeof callback === 'function') callback();
+    });
+  },
+
+  _sendSubscriptionPresence: function(params) {
+    var pres;
+
+    pres = $pres({
+      to: params.jid,
+      type: params.type
+    });
+
+    connection.send(pres);
+  }
+
 };
 
 /* Chat module: Group Chat
@@ -465,34 +533,44 @@ function MucProxy(service) {
   this.helpers = new Helpers;
 }
 
-MucProxy.prototype.join = function(jid, callback) {
-  var pres, self = this,
-      id = connection.getUniqueId('join');
+MucProxy.prototype = {
 
-  pres = $pres({
-    from: connection.jid,
-    to: self.helpers.getRoomJid(jid),
-    id: id
-  }).c("x", {
-    xmlns: Strophe.NS.MUC
-  });
+  join: function(jid, callback) {
+    var pres, self = this,
+        id = connection.getUniqueId('join');
 
-  connection.addHandler(callback, null, 'presence', null, id);
-  connection.send(pres);
-};
+    joinedRooms[jid] = true;
 
-MucProxy.prototype.leave = function(jid, callback) {
-  var pres, self = this,
-      roomJid = self.helpers.getRoomJid(jid);
+    pres = $pres({
+      from: connection.jid,
+      to: self.helpers.getRoomJid(jid),
+      id: id
+    }).c("x", {
+      xmlns: Strophe.NS.MUC
+    }).c("history", {
+      maxstanzas: 0
+    });
 
-  pres = $pres({
-    from: connection.jid,
-    to: roomJid,
-    type: 'unavailable'
-  });
+    if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
+    connection.send(pres);
+  },
 
-  connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
-  connection.send(pres);
+  leave: function(jid, callback) {
+    var pres, self = this,
+        roomJid = self.helpers.getRoomJid(jid);
+
+    delete joinedRooms[jid];
+
+    pres = $pres({
+      from: connection.jid,
+      to: roomJid,
+      type: 'unavailable'
+    });
+
+    if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+    connection.send(pres);
+  }
+
 };
 
 /* Chat module: History
@@ -505,29 +583,33 @@ function DialogProxy(service) {
   this.helpers = new Helpers;
 }
 
-DialogProxy.prototype.list = function(params, callback) {
-  if (typeof params === 'function' && typeof callback === 'undefined') {
-    callback = params;
-    params = {};
+DialogProxy.prototype = {
+
+  list: function(params, callback) {
+    if (typeof params === 'function' && typeof callback === 'undefined') {
+      callback = params;
+      params = {};
+    }
+
+    if (config.debug) { console.log('DialogProxy.list', params); }
+    this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
+  },
+
+  create: function(params, callback) {
+    if (config.debug) { console.log('DialogProxy.create', params); }
+    this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
+  },
+
+  update: function(id, params, callback) {
+    if (config.debug) { console.log('DialogProxy.update', id, params); }
+    this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
+  },
+
+  delete: function(id, callback) {
+    if (config.debug) { console.log('DialogProxy.delete', id); }
+    this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
   }
 
-  if (config.debug) { console.log('DialogProxy.list', params); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
-};
-
-DialogProxy.prototype.create = function(params, callback) {
-  if (config.debug) { console.log('DialogProxy.create', params); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
-};
-
-DialogProxy.prototype.update = function(id, params, callback) {
-  if (config.debug) { console.log('DialogProxy.update', id, params); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
-};
-
-DialogProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('DialogProxy.delete', id); }
-  this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
 };
 
 // Messages
@@ -537,19 +619,28 @@ function MessageProxy(service) {
   this.helpers = new Helpers;
 }
 
-MessageProxy.prototype.list = function(params, callback) {
-  if (config.debug) { console.log('MessageProxy.list', params); }
-  this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
-};
+MessageProxy.prototype = {
 
-MessageProxy.prototype.update = function(id, params, callback) {
-  if (config.debug) { console.log('MessageProxy.update', id, params); }
-  this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
-};
+  list: function(params, callback) {
+    if (config.debug) { console.log('MessageProxy.list', params); }
+    this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
+  },
 
-MessageProxy.prototype.delete = function(id, callback) {
-  if (config.debug) { console.log('MessageProxy.delete', id); }
-  this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  create: function(params, callback) {
+    if (config.debug) { console.log('MessageProxy.create', params); }
+    this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
+  },
+
+  update: function(id, params, callback) {
+    if (config.debug) { console.log('MessageProxy.update', id, params); }
+    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
+  },
+
+  delete: function(id, callback) {
+    if (config.debug) { console.log('MessageProxy.delete', id); }
+    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  }
+
 };
 
 /* Helpers
@@ -563,22 +654,49 @@ Helpers.prototype = {
   },
 
   getIdFromNode: function(jid) {
-    return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+    if (jid.indexOf('@') < 0) return null;
+    return parseInt(jid.split('@')[0].split('-')[0]);
+  },
+
+  getDialogIdFromNode: function(jid) {
+    if (jid.indexOf('@') < 0) return null;
+    return jid.split('@')[0].split('_')[1];
   },
 
   getRoomJid: function(jid) {
+    if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
   },  
 
   getIdFromResource: function(jid) {
-    return parseInt(Strophe.getResourceFromJid(jid));
+    var s = jid.split('/');
+    if (s.length < 2) return null;
+    s.splice(0, 1);
+    return parseInt(s.join('/'));
   },
 
   getUniqueId: function(suffix) {
+    if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
+  },
+
+  // Generating BSON ObjectId and converting it to a 24 character string representation
+  // Changed from https://github.com/justaprogrammer/ObjectId.js/blob/master/src/main/javascript/Objectid.js
+  getBsonObjectId: function() {
+    var timestamp = Utils.unixTime().toString(16),
+        increment = (ObjectId.increment++).toString(16);
+
+    if (increment > 0xffffff) ObjectId.increment = 0;
+
+    return '00000000'.substr(0, 8 - timestamp.length) + timestamp +
+           '000000'.substr(0, 6 - ObjectId.machine.length) + ObjectId.machine +
+           '0000'.substr(0, 4 - ObjectId.pid.length) + ObjectId.pid +
+           '000000'.substr(0, 6 - increment.length) + increment;
   }
 
 };
+
+module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
