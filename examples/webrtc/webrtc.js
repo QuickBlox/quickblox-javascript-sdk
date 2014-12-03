@@ -30,7 +30,24 @@ var webrtc = (function(window, document, navigator) {
   // attach media stream to audio/video element
   WebRTC.prototype.attachMediaStream = function(id, stream) {
     var elem = document.getElementById(id);
-    if (elem) elem.src = window.URL.createObjectURL(stream);
+    if (elem) {
+      elem.src = window.URL.createObjectURL(stream);
+      elem.play();
+    }
+  };
+
+  // take a screenshot from video stream
+  WebRTC.prototype.takePhoto = function(id) {
+    var video = document.getElementById(id),
+        canvas = document.createElement('canvas');
+    
+    if (video) {
+      canvas.width = video.clientWidth;
+      canvas.height = video.clientHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+
+      return canvas.toDataURL('image/png');
+    }
   };
 
   return new WebRTC;

@@ -1,5 +1,3 @@
-// console.log(webrtc);
-
 var params = {
   audio: true,
   video: true,
@@ -16,4 +14,9 @@ webrtc.getUserMedia(params, function(stream, err) {
   } else {
     console.log(err);
   }
+});
+
+$('#photo').on('click', function() {
+  var src = webrtc.takePhoto('localVideo');
+  $('body').append('<img src="'+src+'">');
 });
