@@ -22,7 +22,6 @@ QuickBlox.prototype = {
         Auth = require('./modules/qbAuth'),
         Users = require('./modules/qbUsers'),
         Chat = require('./modules/qbChat'),
-        WebRTC = require('./modules/qbWebRTC'),
         Content = require('./modules/qbContent'),
         Location = require('./modules/qbLocation'),
         Messages = require('./modules/qbMessages'),
@@ -38,11 +37,16 @@ QuickBlox.prototype = {
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
     this.chat = new Chat(this.service, conn || null);
-    this.webrtc = new WebRTC(this.service, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);
     this.data = new Data(this.service);
+
+    if (isBrowser) {
+      // add WebRTC API
+      var WebRTC = require('./modules/qbWebRTC');
+      this.webrtc = new WebRTC(this.service, conn || null);
+    }
     
     // Initialization by outside token
     if (typeof appId === 'string' && !authKey && !authSecret) {
