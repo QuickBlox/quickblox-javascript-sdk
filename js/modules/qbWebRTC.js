@@ -11,8 +11,6 @@
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
- * - onGetUserMediaSuccess
- * - onGetUserMediaError
  */
 
 require('../../lib/strophe/strophe.min');

@@ -1,11 +1,11 @@
 var params = {
   audio: true,
   video: true,
-  localElement: 'localVideo'
-  // video: {
-  //   mandatory: {maxWidth: 1360, maxHeight: 900, maxFrameRate: 5},
-  //   optional: []
-  // }
+  elemId: 'localVideo',
+  options: {
+    muted: true,
+    mirror: true
+  }
 };
 
 webrtc.getUserMedia(params, function(stream, err) {
