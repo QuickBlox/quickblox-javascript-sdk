@@ -1,9 +1,10 @@
+// cross-browser polyfill
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia ||
                          navigator.webkitGetUserMedia ||
                          navigator.mozGetUserMedia;
 
-var webrtc = (function(window, document, navigator) {
+(function(global, document, navigator) {
   function WebRTC() {}
 
   // get local stream from user media interface (web-camera, microphone)
@@ -44,7 +45,7 @@ var webrtc = (function(window, document, navigator) {
   WebRTC.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
     if (elem) {
-      elem.src = window.URL.createObjectURL(stream);
+      elem.src = global.URL.createObjectURL(stream);
       if (options && options.muted) elem.muted = true;
       if (options && options.mirror) {
         ['webkit', ''].forEach(function(prefix) {
@@ -57,7 +58,7 @@ var webrtc = (function(window, document, navigator) {
   };
 
   // take a screenshot from video stream
-  WebRTC.prototype.takePhoto = function(id) {
+  WebRTC.prototype.snapshot = function(id) {
     var video = document.getElementById(id),
         canvas = document.createElement('canvas'),
         context = canvas.getContext('2d');
@@ -75,5 +76,6 @@ var webrtc = (function(window, document, navigator) {
     }
   };
 
-  return new WebRTC;
+  global.webrtc = new WebRTC;
+
 })(this, document, navigator);
