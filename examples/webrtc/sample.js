@@ -16,7 +16,9 @@ webrtc.getUserMedia(params, function(stream, err) {
   }
 });
 
-$('#photo').on('click', function() {
+$('#snapshot').on('click', function() {
   var src = webrtc.snapshot('localVideo');
   $('body').append('<img src="'+src+'">');
 });
+
+// webrtc.filter('localVideo', 'blur(2px) sepia(1)');

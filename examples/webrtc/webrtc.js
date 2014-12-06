@@ -48,10 +48,8 @@ navigator.getUserMedia = navigator.getUserMedia ||
       elem.src = global.URL.createObjectURL(stream);
       if (options && options.muted) elem.muted = true;
       if (options && options.mirror) {
-        ['webkit', ''].forEach(function(prefix) {
-          var styleName = prefix ? prefix + 'Transform' : 'transform';
-          elem.style[styleName] = 'scaleX(-1)';
-        });
+        elem.style.webkitTransform = 'scaleX(-1)';
+        elem.style.transform = 'scaleX(-1)';
       }
       elem.play();
     }
@@ -73,6 +71,16 @@ navigator.getUserMedia = navigator.getUserMedia ||
       context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
 
       return canvas.toDataURL('image/png');
+    }
+  };
+
+  // add CSS filters to video stream
+  // http://css-tricks.com/almanac/properties/f/filter/
+  WebRTC.prototype.filter = function(id, filters) {
+    var video = document.getElementById(id);
+    if (video) {
+      video.style.webkitFilter = filters;
+      video.style.filter = filters;
     }
   };
 
