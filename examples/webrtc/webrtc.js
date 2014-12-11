@@ -1,10 +1,11 @@
-// cross-browser polyfill
-window.URL = window.URL || window.webkitURL;
-navigator.getUserMedia = navigator.getUserMedia ||
-                         navigator.webkitGetUserMedia ||
-                         navigator.mozGetUserMedia;
+(function(window, document, navigator) {
+  // cross-browser polyfill
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+  window.RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+  window.RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+  window.URL = window.URL || window.webkitURL;
 
-(function(global, document, navigator) {
   function WebRTC() {}
 
   // get local stream from user media interface (web-camera, microphone)
@@ -46,7 +47,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
   WebRTC.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
     if (elem) {
-      elem.src = global.URL.createObjectURL(stream);
+      elem.src = window.URL.createObjectURL(stream);
       if (options && options.muted) elem.muted = true;
       if (options && options.mirror) {
         elem.style.webkitTransform = 'scaleX(-1)';
@@ -85,6 +86,6 @@ navigator.getUserMedia = navigator.getUserMedia ||
     }
   };
 
-  global.webrtc = new WebRTC;
+  window.webrtc = new WebRTC;
 
 })(this, document, navigator);
