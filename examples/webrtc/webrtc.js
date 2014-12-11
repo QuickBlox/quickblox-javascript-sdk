@@ -13,6 +13,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
     var self = this;
     
     // Additional parameters for Media Constraints
+    // http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
     /**********************************************
      * googEchoCancellation: true
      * googAutoGainControl: true

@@ -39,7 +39,7 @@ module.exports = function (grunt) {
           port: 8080,
           open: true,
           keepalive: true,
-          base: 'examples/webrtc'
+          base: 'examples/'
         }
       }
     }
