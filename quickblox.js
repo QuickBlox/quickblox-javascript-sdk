@@ -21,7 +21,6 @@ AuthProxy.prototype = {
   getSession: function(callback) {
     if (config.debug) { console.log('AuthProxy.getSession');}
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
-      console.log('Error:', err, ', Response:', res);
       if (err){ callback(err, null); }
       else { callback (err, res); }
     });
@@ -1597,7 +1596,8 @@ var config = {
   },
   ssl: true,
   timeout: null,
-  debug: false
+  debug: false,
+  addISOTime: false
 };
 
 config.set = function(options) {
@@ -1716,7 +1716,7 @@ var config = require('./qbConfig');
 var isBrowser = typeof window !== 'undefined';
 if (!isBrowser) var request = require('request');
 
-ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
+var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
 if (isBrowser && !ajax) {
   throw new Error('Quickblox requires jQuery or Zepto');
 }
@@ -1745,8 +1745,12 @@ ServiceProxy.prototype = {
     if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
       config.on.sessionExpired(function(){next(error,response)}, retry);
     } else {
-      if (error) next(error, null);
-      else next(null, response);
+      if (error) {
+        next(error, null);
+      } else {
+        if (config.addISOTime) response = injectISOTimes(response);
+        next(null, response);
+      }
     }
   },
 
@@ -1840,6 +1844,26 @@ ServiceProxy.prototype = {
   }
   
 };
+
+// Date.toISOString polyfill
+// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
+
+if(!Date.prototype.toISOString){(function(){function e(e){if(e<10){return"0"+e}return e}Date.prototype.toISOString=function(){return this.getUTCFullYear()+"-"+e(this.getUTCMonth()+1)+"-"+e(this.getUTCDate())+"T"+e(this.getUTCHours())+":"+e(this.getUTCMinutes())+":"+e(this.getUTCSeconds())+"."+(this.getUTCMilliseconds()/1e3).toFixed(3).slice(2,5)+"Z"}})()}
+
+
+function injectISOTimes(data) {
+  if (data.created_at) {
+    if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
+    if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
+  }
+  else if (data.items) {
+    for (var i = 0, len = data.items.length; i < len; ++i) {
+      if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
+      if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
+    }
+  }
+  return data;
+}
 
 module.exports = ServiceProxy;
 
