@@ -44,6 +44,9 @@ var config = {
     data: 'data',
     type: '.json'
   },
+  on: {
+    sessionExpired: null
+  },
   ssl: true,
   timeout: null,
   debug: false
@@ -56,7 +59,7 @@ config.set = function(options) {
         config[key] = options[key]
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
-          if(config.hasOwnProperty(key))
+          if(config[key].hasOwnProperty(nextkey))
             config[key][nextkey] = options[key][nextkey];
         });
       }
