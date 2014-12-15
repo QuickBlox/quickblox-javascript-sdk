@@ -18,7 +18,6 @@ AuthProxy.prototype = {
   getSession: function(callback) {
     if (config.debug) { console.log('AuthProxy.getSession');}
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
-      console.log('Error:', err, ', Response:', res);
       if (err){ callback(err, null); }
       else { callback (err, res); }
     });
