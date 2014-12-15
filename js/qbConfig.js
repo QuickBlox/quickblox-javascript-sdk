@@ -49,7 +49,8 @@ var config = {
   },
   ssl: true,
   timeout: null,
-  debug: false
+  debug: false,
+  addISOTime: false
 };
 
 config.set = function(options) {
