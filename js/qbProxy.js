@@ -8,15 +8,20 @@
 var config = require('./qbConfig');
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
-var isBrowser = typeof window !== "undefined" && window.jQuery;
-if(!isBrowser) var request = require('request');
+var isBrowser = typeof window !== 'undefined';
+if (!isBrowser) var request = require('request');
+
+ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
+if (isBrowser && !ajax) {
+  throw new Error('Quickblox requires jQuery or Zepto');
+}
 
 function ServiceProxy() {
   this.qbInst = {
     config: config,
     session: null
   };
-  if (config.debug) { console.log("ServiceProxy", this.qbInst); }
+  if (config.debug) { console.log('ServiceProxy', this.qbInst); }
 }
 
 ServiceProxy.prototype = {
@@ -28,19 +33,32 @@ ServiceProxy.prototype = {
   getSession: function() {
     return this.qbInst.session;
   },
+  
+  handleResponse: function(error, response, next, retry) {
+    // can add middleware here...
+    var _this = this;
+    if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+      config.on.sessionExpired(function(){next(error,response)}, retry);
+    } else {
+      if (error) next(error, null);
+      else next(null, response);
+    }
+  },
 
   ajax: function(params, callback) {
     if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
-    var _this = this;
+    var _this = this,
+        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
     var ajaxCall = {
       url: params.url,
       type: params.type || 'GET',
       dataType: params.dataType || 'json',
       data: params.data || ' ',
+      timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
         if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          console.log('setting headers on request to ' + settings.url);
+          if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
           }
@@ -48,7 +66,8 @@ ServiceProxy.prototype = {
       },
       success: function(data, status, jqHXR) {
         if (config.debug) { console.log('ServiceProxy.ajax success', data); }
-        callback(null, data);
+        if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
+        else callback(null, data);
       },
       error: function(jqHXR, status, error) {
         if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
@@ -58,7 +77,8 @@ ServiceProxy.prototype = {
           message: error,
           detail: jqHXR.responseText
         };
-        callback(errorMsg, null);
+        if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(errorMsg, null, callback, retry);
+        else callback(errorMsg, null);
       }
     };
   
@@ -74,13 +94,14 @@ ServiceProxy.prototype = {
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
+        timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
         form: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
       };
           
       var requestCallback = function(error, response, body) {
-        if(error || response.statusCode > 300  || body.toString().indexOf("DOCTYPE") !== -1) {
+        if(error || response.statusCode > 300  || body.toString().indexOf('DOCTYPE') !== -1) {
           try {
             var errorMsg = {
               code: response && response.statusCode || error.code,
@@ -91,9 +112,11 @@ ServiceProxy.prototype = {
           } catch(e) {
             var errorMsg = error;
           }
-          callback(errorMsg, null);
+          if (qbRequest.url.indexOf(config.urls.session) === -1) _this.handleResponse(errorMsg, null, callback, retry);
+          else callback(errorMsg, null);
         } else {
-          callback(null, body);
+          if (qbRequest.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, body, callback, retry);
+          else callback(null, body);
         }
       };
 
@@ -105,7 +128,7 @@ ServiceProxy.prototype = {
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
     
     if(isBrowser) {
-      jQuery.ajax( ajaxCall );
+      ajax( ajaxCall );
     } else {
       request(qbRequest, requestCallback);
     }
