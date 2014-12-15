@@ -55,6 +55,10 @@ QuickBlox.prototype = {
     if(console && config.debug) console.log('QuickBlox.init', this);
   },
 
+  getSession: function(callback) {
+    this.auth.getSession(callback);
+  },
+
   createSession: function(params, callback) {
     this.auth.createSession(params, callback);
   },
