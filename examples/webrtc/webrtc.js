@@ -3,8 +3,8 @@
   var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
   var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
   var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  window.URL = window.URL || window.webkitURL;
+  var getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia).bind(navigator);
+  var URL = window.URL || window.webkitURL;
 
   var PC_CONFIG = {
     'iceServers': [
@@ -33,7 +33,7 @@
 
   // get local stream from user media interface (web-camera, microphone)
   WebRTC.prototype.getUserMedia = function(params, callback) {
-    if (!navigator.getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
+    if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
     var self = this;
     
     // Additional parameters for Media Constraints
@@ -50,18 +50,18 @@
      * minFrameRate: 60
      * maxAspectRatio: 1.333
     **********************************************/
-    navigator.getUserMedia(
+    getUserMedia(
       params,
 
       function(stream) {
         self.localStream = stream;
         if (params.elemId)
           self.attachMediaStream(params.elemId, stream, params.options);
-        callback(stream, null);
+        callback(null, stream);
       },
 
       function(err) {
-        callback(null, err);
+        callback(err, null);
       }
     );
   };
@@ -69,7 +69,7 @@
   WebRTC.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
     if (elem) {
-      elem.src = window.URL.createObjectURL(stream);
+      elem.src = URL.createObjectURL(stream);
       if (options && options.muted) elem.muted = true;
       if (options && options.mirror) {
         elem.style.webkitTransform = 'scaleX(-1)';
@@ -133,9 +133,6 @@
   };
 
   WebRTC.prototype.accept = function() {
-    // Additional parameters for SDP Constraints
-    // http://www.w3.org/TR/webrtc/#constraints
-    // peer.createAnswer(successCallback, errorCallback, constraints)
     peer.createAnswer(peer.onGetDescriptionCallback, peer.onErrorDescriptionCallback);
     // peer.createAnswer(peer.remoteDescription, peer.onGetDescriptionCallback);
   };
