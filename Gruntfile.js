@@ -34,12 +34,12 @@ module.exports = function (grunt) {
     connect: {
       server: {
         options: {
-          protocol: 'https',
+          // protocol: 'https',
           hostname: 'localhost',
           port: 8080,
           open: true,
           keepalive: true,
-          base: 'examples/'
+          base: 'examples/webrtc'
         }
       }
     }
