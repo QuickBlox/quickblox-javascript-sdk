@@ -127,6 +127,8 @@ function WebRTCProxy(service, conn) {
       if (candidates.length > 0)
         extension.candidates = candidates;
     }
+
+    return extension;
   };
 }
 
