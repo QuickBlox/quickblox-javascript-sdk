@@ -13,10 +13,24 @@ var QBUser2 = {
   login: 'Sam',
   password: '123123123'
 };
-var caller, opponent;
+
+var caller,
+    opponent,
+    peerParams;
+
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
 $(document).ready(function() {
-  QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
+
+  var mediaParams = {
+    audio: true,
+    video: true,
+    elemId: 'localVideo',
+    options: {
+      muted: true,
+      mirror: true
+    }
+  };
 
   $('#loginUser1').on('click', function() {
     QB.createSession(QBUser1, function(err, res) {
@@ -39,32 +53,43 @@ $(document).ready(function() {
   });
 
   $('#call').on('click', function() {
-    var params = {
-      audio: true,
-      video: true,
-      elemId: 'localVideo',
-      options: {
-        muted: true,
-        mirror: true
-      }
-    };
-
-    QB.webrtc.getUserMedia(params, function(err, stream) {
+    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
         console.log(err);
       } else {
-        console.log(stream);
+        // console.log(stream);
         QB.webrtc.createPeer();
-        console.log(1111111111111);
-        QB.webrtc.call();
+        QB.webrtc.call(opponent.id, 'video');
       }
-    });    
-  });  
+    });
+  });
 
-  // webrtc.onRemoteStreamListener = function(stream) {
-  //   console.log(stream);
-  //   webrtc.attachMediaStream('remoteVideo', stream);
-  // };
+  $('#accept').on('click', function() {
+    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+      if (err) {
+        console.log(err);
+      } else {
+        // console.log(stream);
+        QB.webrtc.createPeer({
+          sessionID: peerParams.sessionID,
+          description: peerParams.sdp
+        });
+        QB.webrtc.accept(opponent.id);
+      }
+    });
+  });
+
+  $('#reject').on('click', function() {
+    QB.webrtc.reject(opponent.id, {
+      sessionID: peerParams.sessionID
+    });
+  });
+
+  $('#hangup').on('click', function() {
+    QB.webrtc.stop(opponent.id, 'manually');
+    QB.webrtc.hangup();
+  });
+
 });
 
 function connectChat() {
@@ -75,6 +100,30 @@ function connectChat() {
     
   })
 }
+
+QB.webrtc.onCallListener = function(id, extension) {
+  console.log(extension);
+  peerParams = extension;
+};
+
+QB.webrtc.onAcceptCallListener = function(id, extension) {
+  console.log(extension);
+};
+
+QB.webrtc.onRejectCallListener = function(id, extension) {
+  console.log(extension);
+  QB.webrtc.hangup();
+};
+
+QB.webrtc.onStopCallListener = function(id, extension) {
+  console.log(extension);
+  QB.webrtc.hangup();
+};
+
+QB.webrtc.onRemoteStreamListener = function(stream) {
+  // console.log(stream);
+  QB.webrtc.attachMediaStream('remoteVideo', stream);
+};
 
 // $('#snapshot').on('click', function() {
 //   var src = webrtc.snapshot('localVideo');

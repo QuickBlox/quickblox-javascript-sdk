@@ -15,7 +15,8 @@
  */
 
 require('../../lib/strophe/strophe.min');
-var config = require('../qbConfig');
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils');
 
 // cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -49,47 +50,70 @@ function WebRTCProxy(service, conn) {
   connection = conn;
 
   this.service = service;
-  this.helpers = new Helpers;
-
-  // set signaling callbacks
-  connection.addHandler(self._onMessage, null, 'message', 'headline');
+  this.helpers = new Helpers;  
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
         extraParams = stanza.querySelector('extraParams'),
         userId = self.helpers.getIdFromNode(from),
-        extension = {};
+        extension = {}, candidates = [], candidate, children, children2;
     
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+        if (extraParams.childNodes[i].tagName === 'candidates') {
+        
+          // candidates
+          children = extraParams.childNodes[i].childNodes;
+          for (var j = 0, len2 = children.length; j < len2; j++) {
+            candidate = {};
+            children2 = children[j].childNodes;
+            for (var k = 0, len3 = children2.length; k < len3; k++) {
+              candidate[children2[k].tagName] = children2[k].textContent;
+            }
+            candidates.push(candidate);
+          }
+
+        } else {
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+        }
       }
+
+      if (candidates.length > 0)
+        extension.candidates = candidates;
     }
     
     switch (extension.videochat_signaling_type) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
+      delete extension.videochat_signaling_type;
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-      // self.core.onAcceptSignalingCallback(extension.sdp);
+      delete extension.videochat_signaling_type;
+      peer.onRemoteSessionCallback(extension.sdp, 'answer');
       if (typeof self.onAcceptCallListener === 'function')
         self.onAcceptCallListener(userId, extension);
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+      delete extension.videochat_signaling_type;
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+      delete extension.videochat_signaling_type;
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
     case signalingType.CANDIDATE:
-      // self.core.addCandidate({
+      peer.addCandidates(extension.candidates);
+      if (peer.type === 'answer') {
+        self._sendCandidate(peer.opponentId, peer.candidates);
+      }
+      // peer.addCandidates({
       //   sdpMLineIndex: extension.sdpMLineIndex,
       //   candidate: extension.candidate,
       //   sdpMid: extension.sdpMid
@@ -184,7 +208,7 @@ WebRTCProxy.prototype.snapshot = function(id) {
   }
 };
 
-/* Real-Time Communication (+ Signaling)
+/* Real-Time Communication (Signaling)
 --------------------------------------------------------------------------------- */
 
 WebRTCProxy.prototype.createPeer = function(params) {
@@ -202,36 +226,36 @@ WebRTCProxy.prototype.createPeer = function(params) {
   **********************************************/
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  trace('Session ID ' + peer.sessionId);
-  trace(params);
+  trace('SessionID ' + peer.sessionID);
   trace(peer);
 };
 
-WebRTCProxy.prototype.call = function(userId, extension) {
+WebRTCProxy.prototype.call = function(userId, callType, extension) {
+  var self = this;
+  peer.opponentId = userId;
+
   peer.getSessionDescription(function(err, res) {
     if (err) {
       trace(err);
     } else {
       trace('call ' + userId);
-      this._sendMessage(userId, extension, 'CALL');
+      self._sendMessage(userId, extension, 'CALL', callType);
     }
   });
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
-  // this.setRemoteDescription(this.remoteSessionDescription, "offer");
-  peer.createAnswer(
-    function(sessionDescription) {
-      peer.onSessionDescriptionCallback(sessionDescription, function() {
-        trace('accept ' + userId);
-        this._sendMessage(userId, extension, 'ACCEPT');
-      });
-    },
+  var self = this;
+  peer.opponentId = userId;
 
-    function(error) {
-      trace(error);
+  peer.getSessionDescription(function(err, res) {
+    if (err) {
+      trace(err);
+    } else {
+      trace('accept ' + userId);
+      self._sendMessage(userId, extension, 'ACCEPT');
     }
-  );
+  });
 };
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
@@ -239,101 +263,127 @@ WebRTCProxy.prototype.reject = function(userId, extension) {
   this._sendMessage(userId, extension, 'REJECT');
 };
 
-WebRTCProxy.prototype.hangup = function(userId, extension) {
+WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   trace('stop ' + userId);
-  this._sendMessage(userId, extension, 'STOP');
+  var extension = extension || {},
+      status = reason || 'manually';
 
-  this.localStream.stop();
-  peer.close();
-  peer = null;
+  extension.status = stopCallReason[status.toUpperCase()];
+  this._sendMessage(userId, extension, 'STOP');
 };
 
-WebRTCProxy.prototype._sendCandidate = function(userId, candidate) {
+WebRTCProxy.prototype.hangup = function() {
+  this.localStream.stop();
+  peer.close();
+};
+
+WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
   var extension = {
-    sdpMLineIndex: candidate.sdpMLineIndex,
-    candidate: candidate.candidate,
-    sdpMid: candidate.sdpMid
+    candidates: candidates
   };
+  // var extension = {
+  //   sdpMLineIndex: candidate.sdpMLineIndex,
+  //   candidate: candidate.candidate,
+  //   sdpMid: candidate.sdpMid
+  // };
 
   this._sendMessage(userId, extension, 'CANDIDATE');
 };
 
-WebRTCProxy.prototype._sendMessage = function(userId, extension, type) {
-  var reply, params;
-  extension = extension || {};
+WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType) {
+  var extension = extension || {},
+      self = this,
+      msg, params;
 
   extension.videochat_signaling_type = signalingType[type];
-  extension.sessionID = sessionID;
+  extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
   if (type === 'CALL' || type === 'ACCEPT') {
-    extraParams.sdp = sessionDescription;
-    extraParams.platform = 'web';
-    extraParams.device_orientation = 'portrait';
+    if (callType) extension.callType = callType === 'video' ? 1 : 2;
+    extension.sdp = peer.localDescription.sdp;
+    extension.platform = 'web';
+    extension.device_orientation = 'portrait';
   }
   
   params = {
-    to: self.helpers.getUserJid(userId, self.service.getSession().application_id),
     from: connection.jid,
-    type: 'headline'
+    to: self.helpers.getUserJid(userId, self.service.getSession().application_id),
+    type: 'headline',
+    id: Utils.getBsonObjectId()
   };
   
-  reply = $msg(params).c('extraParams', {
+  msg = $msg(params).c('extraParams', {
     xmlns: Strophe.NS.CLIENT
   });
   
-  Object.keys(extension).forEach(function(key) {
-    reply.c(key).t(extension[key]).up();
+  Object.keys(extension).forEach(function(field) {
+    if (field === 'candidates') {
+
+      // candidates
+      msg = msg.c('candidates');
+      extension[field].forEach(function(candidate) {
+        msg = msg.c('candidate');
+        Object.keys(candidate).forEach(function(key) {
+          msg.c(key).t(candidate[key]).up();
+        });
+        msg.up();
+      });
+      msg.up();
+
+    } else {
+      msg.c(field).t(extension[field]).up();
+    }
   });
   
-  connection.send(reply);
+  connection.send(msg);
 };
 
 /* RTCPeerConnection extension
 --------------------------------------------------------------------------------- */
 
 RTCPeerConnection.prototype.init = function(service, options) {
-  var desc;
-
   this.service = service;
-  this.sessionId = options && options.sessionId || Date.now();
-  this.type = options && options.peerType || 'offer';
+  this.sessionID = parseInt(options && options.sessionID) || Date.now();
+  this.type = options && options.description ? 'answer' : 'offer';
   this.addStream(this.service.localStream);
 
   if (this.type === 'answer') {
-    desc = new RTCSessionDescription(options.sdp);
-    // this.setRemoteDescription(desc, successCallback, errorCallback);
-    this.setRemoteDescription(desc);
+    this.onRemoteSessionCallback(options.description, 'offer');
   }
 
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onRemoteStreamCallback;
 
   this.oniceconnectionstatechange = function() {
-    trace('oniceconnectionstatechange START');
-    trace(peer.iceConnectionState);
-    trace('oniceconnectionstatechange END');
+    if (peer.iceConnectionState === 'closed' || peer.iceConnectionState === 'disconnected')
+      peer = null;
   };
-  this.onsignalingstatechange = function() {
-    trace('onsignalingstatechange START');
-    trace(peer.iceGatheringState);
-    trace(peer.signalingState);
-    trace('onsignalingstatechange END');
+  this.onsignalingstatechange = function() {    
+    // send candidates
+    if (peer && peer.signalingState === 'stable' && peer.type === 'offer') {
+      peer.service._sendCandidate(peer.opponentId, peer.candidates);
+    }
+
+    // if (peer.signalingState === 'stable' && peer.candidates && peer.candidates.length > 0) {
+    //   for (var i = 0, len = peer.candidates.length; i < len; i++) {
+    //     candidate = peer.candidates.pop();
+    //     peer.service._sendCandidate(peer.opponentId, candidate);
+    //   }
+    // }
   };
 };
 
 RTCPeerConnection.prototype.getSessionDescription = function(callback) {
-  var request = peer.type === 'offer' ? peer.createOffer : peer.createAnswer;
+  var request = (peer.type === 'offer' ? peer.createOffer : peer.createAnswer).bind(peer);
 
   // Additional parameters for SDP Constraints
   // http://www.w3.org/TR/webrtc/#constraints
   // peer.createOffer(successCallback, errorCallback, constraints)
   request(
     function(desc) {
-      trace(desc);
-
-      // peer.setLocalDescription(desc, successCallback, errorCallback)
-      peer.setLocalDescription(desc);
-      callback(null, desc);
+      peer.setLocalDescription(desc, function() {
+        callback(null, desc);
+      });
     },
 
     function(error) {
@@ -342,82 +392,49 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
   );
 }
 
-// // Set RemoteDescription
-//   setRemoteDescription: function(descriptionSDP, descriptionType) {
-//     trace('RemoteDescription...');
-//     var self = this,
-//         sessionDescription, candidate;
-    
-//     // self._state = QBVideoChatState.ESTABLISHING;
-//     sessionDescription = new RTCSessionDescription({sdp: descriptionSDP, type: descriptionType});
-    
-//     self.pc.setRemoteDescription(sessionDescription,
-                                 
-//                                  function onSuccess() {
-//                                    trace('RemoteDescription success');
-                                   
-//                                    if (sessionDescription.type === 'offer')
-//                                      self.pc.createAnswer(self.onGetSessionDescriptionSuccessCallback, self.onCreateAnswerFailureCallback);
-//                                  },
-                                 
-//                                  function onError(error) {
-//                                    trace('RemoteDescription error: ' + JSON.stringify(error));
-//                                  }
-//     );
-    
-//     // send candidates
-//     for (var i = 0; i < self._candidatesQueue.length; i++) {
-//       candidate = self._candidatesQueue.pop();
-//       self.webrtc.sendCandidate(self.opponentID, candidate, self.sessionID);
-//     }
-//   },
+RTCPeerConnection.prototype.onRemoteSessionCallback = function(sessionDescription, type) {
+  var desc = new RTCSessionDescription({sdp: sessionDescription, type: type});
+  peer.setRemoteDescription(desc);
+};
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
-  trace(event.candidate);
+  var candidate = event.candidate;
 
-  var self = this,
-        candidate = event.candidate;
-    
-    if (candidate) {
-      // if (self._state == QBVideoChatState.INACTIVE)
-        self._candidatesQueue.push(candidate);
-      else {
-        // Send ICE candidate to opponent
-        self.webrtc.sendCandidate(self.opponentID, candidate, self.sessionID);
-      }
-    }
+  if (candidate) {
+    peer.candidates = peer.candidates || [];
+    peer.candidates.push({
+      sdpMLineIndex: candidate.sdpMLineIndex,
+      sdpMid: candidate.sdpMid,
+      sdp: candidate.candidate
+    });
+    // if (peer.signalingState === 'stable') {
+    //   peer.service._sendCandidate(peer.opponentId, candidate);
+    // } else {
+    //   peer.candidates = peer.candidates || [];
+    //   peer.candidates.push(candidate);
+    // }
+  }
+};
 
-  // if (event.candidate) {
-  //   sendMessage({type: 'candidate',
-  //     label: event.candidate.sdpMLineIndex,
-  //     id: event.candidate.sdpMid,
-  //     candidate: event.candidate.candidate});
-  // } else {
-  //   trace("End of candidates.");
-  // }
-  // signalingChannel.send(JSON.stringify({'candidate': event.candidate}));
+RTCPeerConnection.prototype.addCandidates = function(candidates) {
+  var candidate;
+
+  for (var i = 0, len = candidates.length; i < len; i++) {
+    candidate = {
+      sdpMLineIndex: candidates[i].sdpMLineIndex,
+      sdpMid: candidates[i].sdpMid,
+      candidate: candidates[i].sdp
+    };
+    peer.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+  // candidate = new RTCIceCandidate(data);
+  // peer.addIceCandidate(candidate);
 };
 
 RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
-  trace('Remote stream ' + event);
   if (typeof peer.service.onRemoteStreamListener === 'function')
     peer.service.onRemoteStreamListener(event.stream);
 };
-
-// var candidate = new RTCIceCandidate({sdpMLineIndex:msg.label,
-//                                      candidate:msg.candidate});
-// peer.addIceCandidate(candidate);
-// peer.addIceCandidate(new RTCIceCandidate(signal.candidate));
-
-// // Signalling callbacks
-//   onAcceptSignalingCallback: function(sessionDescription) {
-//     this.setRemoteDescription(sessionDescription, 'answer');
-//   },
-  
-//   addCandidate: function(data) {
-//     var candidate = new RTCIceCandidate(data);
-//     this.pc.addIceCandidate(candidate);
-//   },
 
 /* Helpers
 ---------------------------------------------------------------------- */

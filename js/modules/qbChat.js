@@ -32,20 +32,14 @@ var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
 var connection,
+    webrtc,
     roster = {},
     joinedRooms = {};
 
-// The object for type MongoDB.Bson.ObjectId
-// http://docs.mongodb.org/manual/reference/object-id/
-var ObjectId = {
-  machine: Math.floor(Math.random() * 16777216).toString(16),
-  pid: Math.floor(Math.random() * 32767).toString(16),
-  increment: 0
-};
-
-function ChatProxy(service, conn) {
+function ChatProxy(service, webrtcModule, conn) {
   var self = this;
   connection = conn;
+  webrtc = webrtcModule;
 
   this.service = service;
   if(isBrowser) {
@@ -236,6 +230,9 @@ ChatProxy.prototype = {
         connection.addHandler(self._onPresence, null, 'presence');
         connection.addHandler(self._onIQ, null, 'iq');
 
+        // set signaling callbacks
+        connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
+
         // enable carbons
         self._enableCarbons(function() {
           // get the roster
@@ -293,7 +290,7 @@ ChatProxy.prototype = {
           from: connection.jid,
           to: jid,
           type: message.type,
-          id: message.id || self.helpers.getBsonObjectId()
+          id: message.id || Utils.getBsonObjectId()
         });
     
     if (message.body) {
@@ -678,20 +675,6 @@ Helpers.prototype = {
   getUniqueId: function(suffix) {
     if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
-  },
-
-  // Generating BSON ObjectId and converting it to a 24 character string representation
-  // Changed from https://github.com/justaprogrammer/ObjectId.js/blob/master/src/main/javascript/Objectid.js
-  getBsonObjectId: function() {
-    var timestamp = Utils.unixTime().toString(16),
-        increment = (ObjectId.increment++).toString(16);
-
-    if (increment > 0xffffff) ObjectId.increment = 0;
-
-    return '00000000'.substr(0, 8 - timestamp.length) + timestamp +
-           '000000'.substr(0, 6 - ObjectId.machine.length) + ObjectId.machine +
-           '0000'.substr(0, 4 - ObjectId.pid.length) + ObjectId.pid +
-           '000000'.substr(0, 6 - increment.length) + increment;
   }
 
 };

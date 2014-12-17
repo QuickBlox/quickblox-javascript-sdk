@@ -27,9 +27,19 @@ var config = {
   },
   iceServers: [
     /* QB servers */
-    // {urls: "stun:stun.l.google.com:19302"},
-    // {urls: "turn:turnserver.quickblox.com:3478?transport=udp", username: "", credential: ""},
-    // {urls: "turn:turnserver.quickblox.com:3478?transport=tcp", username: "", credential: ""}
+    // {
+    //   'url': 'stun:stun.l.google.com:19302'
+    // },
+    // {
+    //   'url': 'turn:turnserver.quickblox.com:3478?transport=udp',
+    //   'credential': '',
+    //   'username': ''
+    // },
+    // {
+    //   'url': 'turn:turnserver.quickblox.com:3478?transport=tcp',
+    //   'credential': '',
+    //   'username': ''
+    // }
 
     /* Demo servers */
     {

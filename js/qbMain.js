@@ -17,9 +17,11 @@ QuickBlox.prototype = {
     if (debug && typeof debug === 'boolean') config.debug = debug;
     else if (debug && typeof debug === 'object') config.set(debug);
 
+    var Proxy = require('./qbProxy');
+    this.service = new Proxy();
+
     // include dependencies
-    var Proxy = require('./qbProxy'),
-        Auth = require('./modules/qbAuth'),
+    var Auth = require('./modules/qbAuth'),
         Users = require('./modules/qbUsers'),
         Chat = require('./modules/qbChat'),
         Content = require('./modules/qbContent'),
@@ -31,22 +33,19 @@ QuickBlox.prototype = {
       // create Strophe Connection object
       var Connection = require('./qbStrophe');
       var conn = new Connection();
-    }
-    
-    this.service = new Proxy();
-    this.auth = new Auth(this.service);
-    this.users = new Users(this.service);
-    this.chat = new Chat(this.service, conn || null);
-    this.content = new Content(this.service);
-    this.location = new Location(this.service);
-    this.messages = new Messages(this.service);
-    this.data = new Data(this.service);
 
-    if (isBrowser) {
       // add WebRTC API
       var WebRTC = require('./modules/qbWebRTC');
       this.webrtc = new WebRTC(this.service, conn || null);
     }
+    
+    this.auth = new Auth(this.service);
+    this.users = new Users(this.service);
+    this.chat = new Chat(this.service, this.webrtc || null, conn || null);
+    this.content = new Content(this.service);
+    this.location = new Location(this.service);
+    this.messages = new Messages(this.service);
+    this.data = new Data(this.service);
     
     // Initialization by outside token
     if (typeof appId === 'string' && !authKey && !authSecret) {
