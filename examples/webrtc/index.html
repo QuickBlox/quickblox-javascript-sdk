@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebRTC prototype</title>
+
+  <style>
+    video {
+      width: 320px;
+      height: 240px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #ccc;
+      outline: 0;
+    }
+  </style>
+</head>
+<body>
+  <p>
+    <button id="loginUser1">Login as User1</button>
+    <button id="loginUser2">Login as User2</button>
+  </p>
+  <video id="localVideo"></video>
+  <video id="remoteVideo"></video>
+  <p>
+    <button id="call">Call user</button>
+    <button id="accept">Accept</button>
+    <button id="reject">Reject</button>
+    <button id="hangup">Hangup</button>
+  </p>
+  <p>
+    <button id="mute">Mute</button>
+    <button id="unmute">Unmute</button>
+    <!-- <button id="snapshot">Take snapshot</button> -->
+  </p>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="../../quickblox.js"></script>
+  <script src="sample.js"></script>
+</body>
+</html>

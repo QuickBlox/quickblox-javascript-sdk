@@ -5,28 +5,27 @@
  *
  */
 
-require('../../lib/strophe/strophe.min');
-require('../../lib/adapter');
-var config = require('../qbConfig');
-
 /*
  * User's callbacks (listener-functions):
  * - onCallListener
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
+ * - onRemoteStreamListener
  */
 
-// onCallCallback: params.onCallCallback || null,
-// onAcceptCallback: params.onAcceptCallback || null,
-// onRejectCallback: params.onRejectCallback || null,
-// onStopCallback: params.onStopCallback || null,
-// onInnerAcceptCallback: null,
-// onCandidateCallback: null
+require('../../lib/strophe/strophe.min');
+var config = require('../qbConfig'),
+    Utils = require('../qbUtils');
 
-var connection;
+// cross-browser polyfill
+var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+var getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia).bind(navigator);
+var URL = window.URL || window.webkitURL;
 
-var QBSignalingType = {
+var signalingType = {
   CALL: 'qbvideochat_call',
   ACCEPT: 'qbvideochat_acceptCall',
   REJECT: 'qbvideochat_rejectCall',
@@ -35,100 +34,434 @@ var QBSignalingType = {
   PARAMETERS_CHANGED: 'qbvideochat_callParametersChanged'
 };
 
-function traceS(text) {
-  console.log('[QBWebRTC]:', text);
-}
+var stopCallReason = {
+  MANUALLY: 'kStopVideoChatCallStatus_Manually',
+  BAD_CONNECTION: 'kStopVideoChatCallStatus_BadConnection',
+  CANCEL: 'kStopVideoChatCallStatus_Cancel',
+  NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
+};
 
+var connection, peer;
+
+/* WebRTC module: Core
+--------------------------------------------------------------------------------- */
 function WebRTCProxy(service, conn) {
   var self = this;
   connection = conn;
+
   this.service = service;
+  this.helpers = new Helpers;
 
-  // set WebRTC callbacks
-  connection.addHandler(self._onMessage, null, 'message', 'headline');
-
-  this._onMessage = function(msg) {
-    var author, qbID;
-    var extraParams, extension = {};
-    
-    author = $(msg).attr('from');
-    qbID = QBChatHelpers.getIDFromNode(author);
-    
-    extraParams = $(msg).find('extraParams')[0];
-    $(extraParams.childNodes).each(function() {
-      extension[$(this).context.tagName] = $(this).context.textContent;
-    });
+  this._onMessage = function(stanza) {
+    var from = stanza.getAttribute('from'),
+        extraParams = stanza.querySelector('extraParams'),
+        userId = self.helpers.getIdFromNode(from),
+        extension = self._getExtension(extraParams);
     
     switch (extension.videochat_signaling_type) {
-    case QBSignalingType.CALL:
-      traceS('onCall from ' + qbID);
-      self._callbacks.onCallCallback(qbID, extension);
+    case signalingType.CALL:
+      trace('onCall from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof self.onCallListener === 'function')
+        self.onCallListener(userId, extension);
       break;
-    case QBSignalingType.ACCEPT:
-      traceS('onAccept from ' + qbID);
-      self._callbacks.onAcceptCallback(qbID, extension);
-      self._callbacks.onInnerAcceptCallback(extension.sdp);
+    case signalingType.ACCEPT:
+      trace('onAccept from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof peer === 'object')
+        peer.onRemoteSessionCallback(extension.sdp, 'answer');
+      if (typeof self.onAcceptCallListener === 'function')
+        self.onAcceptCallListener(userId, extension);
       break;
-    case QBSignalingType.REJECT:
-      traceS('onReject from ' + qbID);
-      self._callbacks.onRejectCallback(qbID, extension);
+    case signalingType.REJECT:
+      trace('onReject from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof self.onRejectCallListener === 'function')
+        self.onRejectCallListener(userId, extension);
       break;
-    case QBSignalingType.STOP:
-      traceS('onStop from ' + qbID);
-      self._callbacks.onStopCallback(qbID, extension);
+    case signalingType.STOP:
+      trace('onStop from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof self.onStopCallListener === 'function')
+        self.onStopCallListener(userId, extension);
       break;
-    case QBSignalingType.CANDIDATE:
-      self._callbacks.onCandidateCallback({
-        sdpMLineIndex: extension.sdpMLineIndex,
-        candidate: extension.candidate,
-        sdpMid: extension.sdpMid
-      });
+    case signalingType.CANDIDATE:
+      if (typeof peer === 'object') {
+        peer.addCandidates(extension.candidates);
+        if (peer.type === 'answer')
+          self._sendCandidate(peer.opponentId, peer.candidates);
+      }
       break;
-    case QBSignalingType.PARAMETERS_CHANGED:
+    case signalingType.PARAMETERS_CHANGED:
       break;
     }
     
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
     return true;
+  };
+
+  this._getExtension = function(extraParams) {
+    var extension = {}, candidates = [],
+        candidate, items, candidateNodes;
+
+    if (extraParams) {
+      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+        if (extraParams.childNodes[i].tagName === 'candidates') {
+        
+          // candidates
+          items = extraParams.childNodes[i].childNodes;
+          for (var j = 0, len2 = items.length; j < len2; j++) {
+            candidate = {};
+            candidateNodes = items[j].childNodes;
+            for (var k = 0, len3 = candidateNodes.length; k < len3; k++) {
+              candidate[candidateNodes[k].tagName] = candidateNodes[k].textContent;
+            }
+            candidates.push(candidate);
+          }
+
+        } else {
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+        }
+      }
+      if (candidates.length > 0)
+        extension.candidates = candidates;
+    }
+
+    return extension;
   };
 }
 
-WebRTCProxy.prototype = {
-  init: function() {
+/* WebRTC module: User Media Steam
+--------------------------------------------------------------------------------- */
+// get local stream from user media interface (web-camera, microphone)
+WebRTCProxy.prototype.getUserMedia = function(params, callback) {
+  if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
+  var self = this;
+  
+  // Additional parameters for Media Constraints
+  // http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
+  /**********************************************
+   * googEchoCancellation: true
+   * googAutoGainControl: true
+   * googNoiseSuppression: true
+   * googHighpassFilter: true
+   * minWidth: 640
+   * minHeight: 480
+   * maxWidth: 1280
+   * maxHeight: 720
+   * minFrameRate: 60
+   * maxAspectRatio: 1.333
+  **********************************************/
+  getUserMedia(
+    params,
 
-  },
+    function(stream) {
+      self.localStream = stream;
+      if (params.elemId)
+        self.attachMediaStream(params.elemId, stream, params.options);
+      callback(null, stream);
+    },
 
-  call: function(opponentID, sessionDescription, sessionID, extraParams) {
-    traceS('call to ' + opponentID);
-    extraParams = extraParams || {};
-    
-    extraParams.videochat_signaling_type = QBSignalingType.CALL;
-    extraParams.sessionID = sessionID;
-    extraParams.sdp = sessionDescription;
-    extraParams.platform = 'web';
-    extraParams.device_orientation = 'portrait';
-    
-    this._sendMessage(opponentID, extraParams);
-  },
-
-  _sendMessage: function(opponentID, extraParams) {
-    var reply, params;
-    
-    params = {
-      to: QBChatHelpers.getJID(opponentID),
-      from: chatService._connection.jid,
-      type: 'headline'
-    };
-    
-    reply = $msg(params).c('extraParams', {
-      xmlns: Strophe.NS.CLIENT
-    });
-    
-    $(Object.keys(extraParams)).each(function() {
-      reply.c(this).t(extraParams[this]).up();
-    });
-    
-    chatService._connection.send(reply);
+    function(err) {
+      callback(err, null);
     }
+  );
+};
+
+// attach media stream to audio/video element
+WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
+  var elem = document.getElementById(id);
+  if (elem) {
+    elem.src = URL.createObjectURL(stream);
+    if (options && options.muted) elem.muted = true;
+    if (options && options.mirror) {
+      elem.style.webkitTransform = 'scaleX(-1)';
+      elem.style.transform = 'scaleX(-1)';
+    }
+    elem.play();
+  }
+};
+
+// add CSS filters to video stream
+// http://css-tricks.com/almanac/properties/f/filter/
+WebRTCProxy.prototype.filter = function(id, filters) {
+  var video = document.getElementById(id);
+  if (video) {
+    video.style.webkitFilter = filters;
+    video.style.filter = filters;
+  }
+};
+
+WebRTCProxy.prototype.snapshot = function(id) {
+  var video = document.getElementById(id),
+      canvas = document.createElement('canvas'),
+      context = canvas.getContext('2d');
+  
+  if (video) {
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
+    if (video.style.transform === 'scaleX(-1)') {
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
+    }
+    context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+
+    return canvas.toDataURL('image/png');
+  }
+};
+
+WebRTCProxy.prototype.mute = function(type) {
+  this._switchOffDevice(0, type);
+};
+
+WebRTCProxy.prototype.unmute = function(type) {
+  this._switchOffDevice(1, type);
+};
+
+WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
+  if (type === 'audio') {
+    this.localStream.getAudioTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+  if (type === 'video') {
+    this.localStream.getVideoTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+};
+
+/* WebRTC module: Real-Time Communication (Signaling)
+--------------------------------------------------------------------------------- */
+WebRTCProxy.prototype.createPeer = function(params) {
+  if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+  if (!this.localStream) throw new Error("You don't have an access to the local stream");
+  var pcConfig = {
+    iceServers: config.iceServers
+  };
+  
+  // Additional parameters for RTCPeerConnection options
+  // new RTCPeerConnection(pcConfig, options)
+  /**********************************************
+   * DtlsSrtpKeyAgreement: true
+   * RtpDataChannels: true
+  **********************************************/
+  peer = new RTCPeerConnection(pcConfig);
+  peer.init(this, params);
+  trace('SessionID ' + peer.sessionID);
+  trace(peer);
+};
+
+WebRTCProxy.prototype.call = function(userId, callType, extension) {
+  var self = this;
+  peer.opponentId = userId;
+
+  peer.getSessionDescription(function(err, res) {
+    if (err) {
+      trace(err);
+    } else {
+      trace('call ' + userId);
+      self._sendMessage(userId, extension, 'CALL', callType);
+    }
+  });
+};
+
+WebRTCProxy.prototype.accept = function(userId, extension) {
+  var self = this;
+  peer.opponentId = userId;
+
+  peer.getSessionDescription(function(err, res) {
+    if (err) {
+      trace(err);
+    } else {
+      trace('accept ' + userId);
+      self._sendMessage(userId, extension, 'ACCEPT');
+    }
+  });
+};
+
+WebRTCProxy.prototype.reject = function(userId, extension) {
+  trace('reject ' + userId);
+  this._sendMessage(userId, extension, 'REJECT');
+};
+
+WebRTCProxy.prototype.stop = function(userId, reason, extension) {
+  var extension = extension || {},
+      status = reason || 'manually';
+  
+  extension.status = stopCallReason[status.toUpperCase()];
+  trace('stop ' + userId);  
+  this._sendMessage(userId, extension, 'STOP');
+};
+
+// cleanup
+WebRTCProxy.prototype.hangup = function() {
+  this.localStream.stop();
+  peer.close();
+};
+
+WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
+  var extension = {
+    candidates: candidates
+  };
+  this._sendMessage(userId, extension, 'CANDIDATE');
+};
+
+WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType) {
+  var extension = extension || {},
+      msg, params;
+
+  extension.videochat_signaling_type = signalingType[type];
+  extension.sessionID = peer && peer.sessionID || extension.sessionID;
+
+  if (type === 'CALL' || type === 'ACCEPT') {
+    if (callType) extension.callType = callType === 'video' ? 1 : 2;
+    extension.sdp = peer.localDescription.sdp;
+    extension.platform = 'web';
+    extension.device_orientation = 'portrait';
+  }
+  
+  params = {
+    from: connection.jid,
+    to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
+    type: 'headline',
+    id: Utils.getBsonObjectId()
+  };
+  
+  msg = $msg(params).c('extraParams', {
+    xmlns: Strophe.NS.CLIENT
+  });
+  
+  Object.keys(extension).forEach(function(field) {
+    if (field === 'candidates') {
+
+      // candidates
+      msg = msg.c('candidates');
+      extension[field].forEach(function(candidate) {
+        msg = msg.c('candidate');
+        Object.keys(candidate).forEach(function(key) {
+          msg.c(key).t(candidate[key]).up();
+        });
+        msg.up();
+      });
+      msg.up();
+
+    } else {
+      msg.c(field).t(extension[field]).up();
+    }
+  });
+  
+  connection.send(msg);
+};
+
+/* WebRTC module: RTCPeerConnection extension
+--------------------------------------------------------------------------------- */
+RTCPeerConnection.prototype.init = function(service, options) {
+  this.service = service;
+  this.sessionID = parseInt(options && options.sessionID) || Date.now();
+  this.type = options && options.description ? 'answer' : 'offer';
+  
+  this.addStream(this.service.localStream);
+  this.onicecandidate = this.onIceCandidateCallback;
+  this.onaddstream = this.onRemoteStreamCallback;
+  this.onsignalingstatechange = this.onSignalingStateCallback;
+  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;  
+
+  if (this.type === 'answer') {
+    this.onRemoteSessionCallback(options.description, 'offer');
+  }
+};
+
+RTCPeerConnection.prototype.getSessionDescription = function(callback) {
+  var request = (peer.type === 'offer' ? peer.createOffer : peer.createAnswer).bind(peer);
+
+  // Additional parameters for SDP Constraints
+  // http://www.w3.org/TR/webrtc/#constraints
+  // peer.createOffer(successCallback, errorCallback, constraints)
+  request(
+    function(desc) {
+      peer.setLocalDescription(desc, function() {
+        callback(null, desc);
+      });
+    },
+    function(error) {
+      callback(error, null);
+    }
+  );
+};
+
+RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
+  var candidate = event.candidate;
+  if (candidate) {
+    peer.candidates = peer.candidates || [];
+    peer.candidates.push({
+      sdpMLineIndex: candidate.sdpMLineIndex,
+      sdpMid: candidate.sdpMid,
+      sdp: candidate.candidate
+    });
+  }
+};
+
+// handler of remote session description
+RTCPeerConnection.prototype.onRemoteSessionCallback = function(sessionDescription, type) {
+  var desc = new RTCSessionDescription({sdp: sessionDescription, type: type});
+  this.setRemoteDescription(desc);
+};
+
+// handler of remote media stream
+RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
+  if (typeof peer.service.onRemoteStreamListener === 'function')
+    peer.service.onRemoteStreamListener(event.stream);
+};
+
+RTCPeerConnection.prototype.addCandidates = function(candidates) {
+  var candidate;
+  for (var i = 0, len = candidates.length; i < len; i++) {
+    candidate = {
+      sdpMLineIndex: candidates[i].sdpMLineIndex,
+      sdpMid: candidates[i].sdpMid,
+      candidate: candidates[i].sdp
+    };
+    this.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+};
+
+RTCPeerConnection.prototype.onSignalingStateCallback = function() {
+  // send candidates
+  if (peer && peer.signalingState === 'stable' && peer.type === 'offer') {
+    peer.service._sendCandidate(peer.opponentId, peer.candidates);
+  }
+};
+
+RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
+  if (peer.iceConnectionState === 'closed' || peer.iceConnectionState === 'disconnected')
+    peer = null;
+};
+
+/* Helpers
+---------------------------------------------------------------------- */
+function Helpers() {}
+
+Helpers.prototype = {
+
+  getUserJid: function(id, appId) {
+    return id + '-' + appId + '@' + config.endpoints.chat;
+  },
+
+  getIdFromNode: function(jid) {
+    if (jid.indexOf('@') < 0) return null;
+    return parseInt(jid.split('@')[0].split('-')[0]);
+  }
+
 };
 
 module.exports = WebRTCProxy;
+
+/* Private
+---------------------------------------------------------------------- */
+function trace(text) {
+  // if (config.debug) {
+    console.log('[QBWebRTC]:', text);
+  // }
+}
