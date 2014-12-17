@@ -1723,6 +1723,27 @@ WebRTCProxy.prototype.snapshot = function(id) {
   }
 };
 
+WebRTCProxy.prototype.mute = function(type) {
+  this._switchOffDevice(0, type);
+};
+
+WebRTCProxy.prototype.unmute = function(type) {
+  this._switchOffDevice(1, type);
+};
+
+WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
+  if (type === 'audio') {
+    this.localStream.getAudioTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+  if (type === 'video') {
+    this.localStream.getVideoTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+};
+
 /* Real-Time Communication (Signaling)
 --------------------------------------------------------------------------------- */
 

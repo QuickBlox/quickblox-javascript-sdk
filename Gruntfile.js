@@ -38,8 +38,7 @@ module.exports = function (grunt) {
           hostname: 'localhost',
           port: 8080,
           open: true,
-          keepalive: true,
-          // base: 'examples'
+          keepalive: true
         }
       }
     }

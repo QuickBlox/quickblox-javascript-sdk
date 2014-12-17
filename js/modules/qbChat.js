@@ -38,8 +38,8 @@ var connection,
 
 function ChatProxy(service, webrtcModule, conn) {
   var self = this;
-  connection = conn;
   webrtc = webrtcModule;
+  connection = conn;
 
   this.service = service;
   if(isBrowser) {

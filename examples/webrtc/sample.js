@@ -90,6 +90,16 @@ $(document).ready(function() {
     QB.webrtc.hangup();
   });
 
+  $('#mute').on('click', function() {
+    // QB.webrtc.mute('audio');
+    QB.webrtc.mute('video');
+  });
+
+  $('#unmute').on('click', function() {
+    // QB.webrtc.unmute('audio');
+    QB.webrtc.unmute('video');
+  });
+
 });
 
 function connectChat() {
