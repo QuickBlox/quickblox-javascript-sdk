@@ -29,6 +29,18 @@ module.exports = function (grunt) {
           'quickblox.min.js': ['quickblox.js']
         }
       }
+    },
+
+    connect: {
+      server: {
+        options: {
+          // protocol: 'https',
+          hostname: 'localhost',
+          port: 8080,
+          open: true,
+          keepalive: true
+        }
+      }
     }
 
   });
@@ -36,5 +48,9 @@ module.exports = function (grunt) {
   grunt.registerTask('default', [
     'browserify',
     'uglify'
+  ]);
+
+  grunt.registerTask('server', [
+    'connect'
   ]);
 };
