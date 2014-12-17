@@ -6,6 +6,7 @@
  */
 
 var config = require('./qbConfig');
+var isBrowser = typeof window !== "undefined";
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -16,26 +17,31 @@ QuickBlox.prototype = {
     if (debug && typeof debug === 'boolean') config.debug = debug;
     else if (debug && typeof debug === 'object') config.set(debug);
 
+    var Proxy = require('./qbProxy');
+    this.service = new Proxy();
+
     // include dependencies
-    var Proxy = require('./qbProxy'),
-        Connection = require('./qbStrophe'),
-        Auth = require('./modules/qbAuth'),
+    var Auth = require('./modules/qbAuth'),
         Users = require('./modules/qbUsers'),
         Chat = require('./modules/qbChat'),
-        // WebRTC = require('./modules/qbWebRTC'),
         Content = require('./modules/qbContent'),
         Location = require('./modules/qbLocation'),
         Messages = require('./modules/qbMessages'),
         Data = require('./modules/qbData');
 
-    // create Strophe Connection object
-    var conn = new Connection();
+    if (isBrowser) {
+      // create Strophe Connection object
+      var Connection = require('./qbStrophe');
+      var conn = new Connection();
+
+      // add WebRTC API
+      var WebRTC = require('./modules/qbWebRTC');
+      this.webrtc = new WebRTC(this.service, conn || null);
+    }
     
-    this.service = new Proxy();
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
-    this.chat = new Chat(this.service, conn);
-    // this.webrtc = new WebRTC(this.service, conn);
+    this.chat = new Chat(this.service, this.webrtc || null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);

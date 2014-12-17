@@ -1,0 +1,88 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Brief test</title>
+  <style>
+    html {
+      height: 100%;
+      background: #343434;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    #log {
+      margin: 0 auto;
+      max-width: 600px;
+      width: 95%;
+    }
+    #log div {
+      font-family: Helvetica Neue, sans-serif;
+      font: 300 1em/1em 'Helvetica Neue', sans-serif;
+      margin-top: 10px;
+      color: #fff;
+      -webkit-animation: fadeIn .3s ease;
+      -webkit-transform-origin: 0 0;
+    }
+    #log div svg {
+      vertical-align: sub;
+    }
+    @-webkit-keyframes fadeIn {
+      0% {opacity: 0; -webkit-transform: translate(0, 20px) rotate(5deg);}
+      100% {opacity: 1; -webkit-transform: translate(0) rotate(0);}
+    }
+  </style>
+</head>
+<body>
+
+<div id="log"></div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="../quickblox.js"></script>
+<script>
+  
+  var tick = '<svg width="20" height="20" viewBox="-2 -2 34 34"><g stroke="#35D400" stroke-width="2" fill="none"><circle cx="15" cy="15" r="15"/><path d="M6.808 17.073l4.079 4.079 12.305-12.305"/></g></svg>'
+  
+  var cross = '<svg width="20" height="20" viewBox="-2 -2 34 34" xmlns="http://www.w3.org/2000/svg"><title></title><g fill="none"><circle stroke="#D92525" stroke-width="2" cx="15" cy="15" r="15"/><path d="M7.192 8.47l6.495 6.53-6.495 6.53 1.278 1.278 6.53-6.495 6.53 6.495 1.278-1.278-6.53-6.53 6.53-6.53-1.278-1.278-6.53 6.53-6.53-6.53-1.278 1.278z" fill="#D92525"/></g></svg>'
+  
+  function log(worked, statement, proof){
+    $('#log').append('<div>' + (worked ? tick : cross) + ' <span>' + statement + ' <code>(' + proof + ')</code></span></div>');
+  }
+  
+  var config = {
+    endpoints: {
+      api: 'api.quickblox.com',
+      chat: 'chat.quickblox.com',
+      muc: 'muc.chat.quickblox.com',
+    },
+    chatProtocol: {
+      bosh: "https://chat.quickblox.com:8081"
+    },
+    debug: true,
+    timeout: 1000
+  };
+  
+  QB.init(3, "88AO6M2LObcegCG", "tHs8XHpMxGDVPnU", config);
+  
+  QB.createSession({login:"JohnDoe", password:"Hello123"}, function(error, response){
+    if(!error) {
+      log(true, "Made an API user session", response.token);
+      createDialog();
+    } else {
+    	console.log("failed");
+    }
+  });
+  
+  function createDialog() {
+  	QB.chat.dialog.create({ type: 1, name: "Developer chat" }, function(error, response) {
+      if(!error) {
+          log(true, 'Chat dialog created', response._id);
+        } else {
+        	console.log("failed");
+        }
+  	});
+  }
+</script>
+
+</body>
+</html>

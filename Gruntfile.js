@@ -8,6 +8,7 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        ignore: ['request'],
         browserifyOptions: {
           standalone: 'QB'
         }
@@ -28,6 +29,18 @@ module.exports = function (grunt) {
           'quickblox.min.js': ['quickblox.js']
         }
       }
+    },
+
+    connect: {
+      server: {
+        options: {
+          // protocol: 'https',
+          hostname: 'localhost',
+          port: 8080,
+          open: true,
+          keepalive: true
+        }
+      }
     }
 
   });
@@ -35,5 +48,9 @@ module.exports = function (grunt) {
   grunt.registerTask('default', [
     'browserify',
     'uglify'
+  ]);
+
+  grunt.registerTask('server', [
+    'connect'
   ]);
 };

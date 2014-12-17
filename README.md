@@ -91,7 +91,7 @@ QB.users.listUsers(function(err, result) {
 Passing configuration options
 ----------------------
 
-Sometimes you will want to pass some configuration options such as a different enterprise endpoint, to enable/disable SSL, or turn on debugging. You can do this by passing an `object` as a fourth parameter to `QB.init()`, like so:
+Sometimes you will want to pass some configuration options such as a different enterprise endpoint, to enable/disable SSL, setting a timeout for your requests, or turn on debugging. You can do this by passing an `object` as a fourth parameter to `QB.init()`, like so:
 
 ```javascript
 // Initialise with configuration options
@@ -102,9 +102,10 @@ var config = {
     muc: 'muc.chat.differenthost.com'
   },
   chatProtocol: {
-    bosh: 'https://chat.differenthost.com:8081'
+    bosh: 'https://chat.differenthost.com:5281'
   },
   debug: true,
+  timeout: 5000,
   ssl: false
 };
 
@@ -112,7 +113,7 @@ QB.init(103, "89AO9Z2LobcegCG", "1Hs8XZpMxGRVPnD", config);
 
 ```
 
-The code above would then make `QB` make API requests to `http://api.differenthost.com/` rather than `https://api.quickblox.com` and would give you full debugging to the console.
+The code above would then make `QB` make API requests to `http://api.differenthost.com/` rather than `https://api.quickblox.com` and would give you full debugging to the console. It would also set a 5 second timeout for all your requests, triggering the `error` callback.
 
 Documentation
 ----------------------
