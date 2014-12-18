@@ -22,8 +22,9 @@ var config = require('../qbConfig'),
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-var getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia).bind(navigator);
+var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var URL = window.URL || window.webkitURL;
+getUserMedia = getUserMedia && getUserMedia.bind(navigator);
 
 var signalingType = {
   CALL: 'qbvideochat_call',
