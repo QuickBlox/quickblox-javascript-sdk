@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.6.1 - 2014-12-18 */
+/* QuickBlox JavaScript SDK - v1.6.2 - 2014-12-19 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1526,6 +1526,7 @@ function generateOrder(obj) {
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
+ * - onChangeCallListener
  * - onRemoteStreamListener
  */
 
@@ -1539,7 +1540,6 @@ var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSession
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var URL = window.URL || window.webkitURL;
-getUserMedia = getUserMedia && getUserMedia.bind(navigator);
 
 var signalingType = {
   CALL: 'qbvideochat_call',
@@ -1609,6 +1609,10 @@ function WebRTCProxy(service, conn) {
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
+      trace('onChangeCall from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof self.onChangeCallListener === 'function')
+        self.onChangeCallListener(userId, extension);
       break;
     }
     
@@ -1653,6 +1657,7 @@ function WebRTCProxy(service, conn) {
 // get local stream from user media interface (web-camera, microphone)
 WebRTCProxy.prototype.getUserMedia = function(params, callback) {
   if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
+  getUserMedia = getUserMedia.bind(navigator);
   var self = this;
   
   // Additional parameters for Media Constraints
@@ -1811,6 +1816,11 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   this._sendMessage(userId, extension, 'STOP');
 };
 
+WebRTCProxy.prototype.changeCall = function(userId, extension) {
+  trace('changeCall ' + userId);
+  this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
+};
+
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
   this.localStream.stop();
@@ -1873,6 +1883,8 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
 
 /* WebRTC module: RTCPeerConnection extension
 --------------------------------------------------------------------------------- */
+if (RTCPeerConnection) {
+
 RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
   this.sessionID = parseInt(options && options.sessionID) || Date.now();
@@ -1890,21 +1902,23 @@ RTCPeerConnection.prototype.init = function(service, options) {
 };
 
 RTCPeerConnection.prototype.getSessionDescription = function(callback) {
-  var request = (peer.type === 'offer' ? peer.createOffer : peer.createAnswer).bind(peer);
+  if (peer.type === 'offer') {
+    // Additional parameters for SDP Constraints
+    // http://www.w3.org/TR/webrtc/#constraints
+    // peer.createOffer(successCallback, errorCallback, constraints)
+    peer.createOffer(successCallback, errorCallback);
+  } else {
+    peer.createAnswer(successCallback, errorCallback);
+  }
 
-  // Additional parameters for SDP Constraints
-  // http://www.w3.org/TR/webrtc/#constraints
-  // peer.createOffer(successCallback, errorCallback, constraints)
-  request(
-    function(desc) {
-      peer.setLocalDescription(desc, function() {
-        callback(null, desc);
-      });
-    },
-    function(error) {
-      callback(error, null);
-    }
-  );
+  function successCallback(desc) {
+    peer.setLocalDescription(desc, function() {
+      callback(null, desc);
+    });
+  }
+  function errorCallback(error) {
+    callback(error, null);
+  }
 };
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
@@ -1945,15 +1959,16 @@ RTCPeerConnection.prototype.addCandidates = function(candidates) {
 
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
-  if (peer && peer.signalingState === 'stable' && peer.type === 'offer') {
+  if (peer && peer.signalingState === 'stable' && peer.type === 'offer')
     peer.service._sendCandidate(peer.opponentId, peer.candidates);
-  }
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if (peer.iceConnectionState === 'closed' || peer.iceConnectionState === 'disconnected')
     peer = null;
 };
+
+}
 
 /* Helpers
 ---------------------------------------------------------------------- */

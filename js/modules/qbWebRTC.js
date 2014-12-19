@@ -11,6 +11,7 @@
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
+ * - onChangeCallListener
  * - onRemoteStreamListener
  */
 
@@ -24,7 +25,6 @@ var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSession
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var URL = window.URL || window.webkitURL;
-getUserMedia = getUserMedia && getUserMedia.bind(navigator);
 
 var signalingType = {
   CALL: 'qbvideochat_call',
@@ -94,6 +94,10 @@ function WebRTCProxy(service, conn) {
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
+      trace('onChangeCall from ' + userId);
+      delete extension.videochat_signaling_type;
+      if (typeof self.onChangeCallListener === 'function')
+        self.onChangeCallListener(userId, extension);
       break;
     }
     
@@ -138,6 +142,7 @@ function WebRTCProxy(service, conn) {
 // get local stream from user media interface (web-camera, microphone)
 WebRTCProxy.prototype.getUserMedia = function(params, callback) {
   if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
+  getUserMedia = getUserMedia.bind(navigator);
   var self = this;
   
   // Additional parameters for Media Constraints
@@ -296,6 +301,11 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   this._sendMessage(userId, extension, 'STOP');
 };
 
+WebRTCProxy.prototype.changeCall = function(userId, extension) {
+  trace('changeCall ' + userId);
+  this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
+};
+
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
   this.localStream.stop();
@@ -358,6 +368,8 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
 
 /* WebRTC module: RTCPeerConnection extension
 --------------------------------------------------------------------------------- */
+if (RTCPeerConnection) {
+
 RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
   this.sessionID = parseInt(options && options.sessionID) || Date.now();
@@ -375,21 +387,23 @@ RTCPeerConnection.prototype.init = function(service, options) {
 };
 
 RTCPeerConnection.prototype.getSessionDescription = function(callback) {
-  var request = (peer.type === 'offer' ? peer.createOffer : peer.createAnswer).bind(peer);
+  if (peer.type === 'offer') {
+    // Additional parameters for SDP Constraints
+    // http://www.w3.org/TR/webrtc/#constraints
+    // peer.createOffer(successCallback, errorCallback, constraints)
+    peer.createOffer(successCallback, errorCallback);
+  } else {
+    peer.createAnswer(successCallback, errorCallback);
+  }
 
-  // Additional parameters for SDP Constraints
-  // http://www.w3.org/TR/webrtc/#constraints
-  // peer.createOffer(successCallback, errorCallback, constraints)
-  request(
-    function(desc) {
-      peer.setLocalDescription(desc, function() {
-        callback(null, desc);
-      });
-    },
-    function(error) {
-      callback(error, null);
-    }
-  );
+  function successCallback(desc) {
+    peer.setLocalDescription(desc, function() {
+      callback(null, desc);
+    });
+  }
+  function errorCallback(error) {
+    callback(error, null);
+  }
 };
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
@@ -430,15 +444,16 @@ RTCPeerConnection.prototype.addCandidates = function(candidates) {
 
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
-  if (peer && peer.signalingState === 'stable' && peer.type === 'offer') {
+  if (peer && peer.signalingState === 'stable' && peer.type === 'offer')
     peer.service._sendCandidate(peer.opponentId, peer.candidates);
-  }
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if (peer.iceConnectionState === 'closed' || peer.iceConnectionState === 'disconnected')
     peer = null;
 };
+
+}
 
 /* Helpers
 ---------------------------------------------------------------------- */
