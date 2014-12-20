@@ -56,9 +56,12 @@ function WebRTCProxy(service, conn) {
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
         extraParams = stanza.querySelector('extraParams'),
+        delay = stanza.querySelector('delay'),
         userId = self.helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
     
+    if (delay) return true;
+
     switch (extension.videochat_signaling_type) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
@@ -144,7 +147,7 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
   if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
   getUserMedia = getUserMedia.bind(navigator);
   var self = this;
-  
+
   // Additional parameters for Media Constraints
   // http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
   /**********************************************
@@ -226,12 +229,12 @@ WebRTCProxy.prototype.unmute = function(type) {
 };
 
 WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
-  if (type === 'audio') {
+  if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
     this.localStream.getAudioTracks().forEach(function (track) {
       track.enabled = !!bool;
     });
   }
-  if (type === 'video') {
+  if (type === 'video' && this.localStream.getVideoTracks().length > 0) {
     this.localStream.getVideoTracks().forEach(function (track) {
       track.enabled = !!bool;
     });

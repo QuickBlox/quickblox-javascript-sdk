@@ -61,7 +61,7 @@ function ChatProxy(service, webrtcModule, conn) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         invite = stanza.querySelector('invite'),
-        extraParams = stanza.querySelector('extraParams'),        
+        extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         message, extension, attachments, attach, attributes;
@@ -675,7 +675,11 @@ Helpers.prototype = {
   getUniqueId: function(suffix) {
     if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
-  }
+  },
+
+  getBsonObjectId: function() {
+    return Utils.getBsonObjectId();
+  }  
 
 };
 
