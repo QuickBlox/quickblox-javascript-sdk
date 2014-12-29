@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.6.3 - 2014-12-20 */
+/* QuickBlox JavaScript SDK - v1.6.3 - 2014-12-29 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1830,8 +1830,11 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
 
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
-  this.localStream.stop();
-  peer.close();
+  if (peer && this.localStream) {
+    peer.close();
+    this.localStream.stop();
+    this.localStream = null;
+  }
 };
 
 WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
@@ -2033,34 +2036,48 @@ var config = {
     active: 1
   },
   iceServers: [
+    // {
+    //   "url": "stun:stun.l.google.com:19302"
+    // },
+    // {
+    //   "url": "stun:stun.anyfirewall.com:3478"
+    // },
+    // {
+    //   "url": "turn:turn.bistri.com:80",
+    //   "credential": "homeo",
+    //   "username": "homeo"
+    // },
+    // {
+    //   "url": "turn:turn.anyfirewall.com:443?transport=tcp",
+    //   "credential": "webrtc",
+    //   "username": "webrtc"
+    // },
+    // {
+    //   "url": "stun:turn2.xirsys.com"
+    // },
+    // {
+    //   "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
+    //   "url": "turn:turn2.xirsys.com:443?transport=udp",
+    //   "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    // },
+    // {
+    //   "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
+    //   "url": "turn:turn2.xirsys.com:443?transport=tcp",
+    //   "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    // }
+
     {
-      "url": "stun:stun.l.google.com:19302"
+    'url': 'stun:stun.l.google.com:19302'
     },
     {
-      "url": "stun:stun.anyfirewall.com:3478"
+    'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+    'credential': 'testqbtest',
+    'username': 'testqb'
     },
     {
-      "url": "turn:turn.bistri.com:80",
-      "credential": "homeo",
-      "username": "homeo"
-    },
-    {
-      "url": "turn:turn.anyfirewall.com:443?transport=tcp",
-      "credential": "webrtc",
-      "username": "webrtc"
-    },
-    {
-      "url": "stun:turn2.xirsys.com"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=udp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=tcp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+    'credential': 'testqbtest',
+    'username': 'testqb'
     }
   ],
   urls: {
