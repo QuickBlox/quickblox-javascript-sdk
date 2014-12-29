@@ -26,34 +26,48 @@ var config = {
     active: 1
   },
   iceServers: [
+    // {
+    //   "url": "stun:stun.l.google.com:19302"
+    // },
+    // {
+    //   "url": "stun:stun.anyfirewall.com:3478"
+    // },
+    // {
+    //   "url": "turn:turn.bistri.com:80",
+    //   "credential": "homeo",
+    //   "username": "homeo"
+    // },
+    // {
+    //   "url": "turn:turn.anyfirewall.com:443?transport=tcp",
+    //   "credential": "webrtc",
+    //   "username": "webrtc"
+    // },
+    // {
+    //   "url": "stun:turn2.xirsys.com"
+    // },
+    // {
+    //   "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
+    //   "url": "turn:turn2.xirsys.com:443?transport=udp",
+    //   "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    // },
+    // {
+    //   "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
+    //   "url": "turn:turn2.xirsys.com:443?transport=tcp",
+    //   "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    // }
+
     {
-      "url": "stun:stun.l.google.com:19302"
+    'url': 'stun:stun.l.google.com:19302'
     },
     {
-      "url": "stun:stun.anyfirewall.com:3478"
+    'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+    'credential': 'testqbtest',
+    'username': 'testqb'
     },
     {
-      "url": "turn:turn.bistri.com:80",
-      "credential": "homeo",
-      "username": "homeo"
-    },
-    {
-      "url": "turn:turn.anyfirewall.com:443?transport=tcp",
-      "credential": "webrtc",
-      "username": "webrtc"
-    },
-    {
-      "url": "stun:turn2.xirsys.com"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=udp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=tcp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+    'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+    'credential': 'testqbtest',
+    'username': 'testqb'
     }
   ],
   urls: {
