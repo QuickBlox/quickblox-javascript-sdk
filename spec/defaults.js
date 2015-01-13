@@ -29,14 +29,14 @@ var DEFAULTS = {
       'url': 'stun:stun.l.google.com:19302'
     },
     {
-      'url': 'turn:192.158.29.39:3478?transport=udp',
-      'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      'username': '28224511:1379330808'
+      'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+      'credential': 'testqbtest',
+      'username': 'testqb'
     },
     {
-      'url': 'turn:192.158.29.39:3478?transport=tcp',
-      'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-      'username': '28224511:1379330808'
+      'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+      'credential': 'testqbtest',
+      'username': 'testqb'
     }
   ],
   urls: {
@@ -53,9 +53,13 @@ var DEFAULTS = {
     data: 'data',
     type: '.json'
   },
+  on: {
+    sessionExpired: null
+  },
   ssl: true,
   timeout: null,
-  debug: false
+  debug: false,
+  addISOTime: false
 };
 
 // Default timeout for calls to the API

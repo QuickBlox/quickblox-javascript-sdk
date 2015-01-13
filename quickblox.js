@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.6.3 - 2014-12-20 */
+/* QuickBlox JavaScript SDK - v1.7.0 - 2015-01-13 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -18,7 +18,22 @@ function AuthProxy(service) {
 
 AuthProxy.prototype = {
 
+  getSession: function(callback) {
+    if (config.debug) { console.log('AuthProxy.getSession');}
+    this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
+      if (err){ callback(err, null); }
+      else { callback (err, res); }
+    });
+  },
+
   createSession: function(params, callback) {
+
+    if (config.creds.appId === '' ||
+        config.creds.authKey === '' ||
+        config.creds.authSecret === '') {
+      throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
+    }
+
     var _this = this, message;
 
     if (typeof params === 'function' && typeof callback === 'undefined') {
@@ -1830,8 +1845,11 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
 
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
-  this.localStream.stop();
-  peer.close();
+  if (peer && this.localStream) {
+    peer.close();
+    this.localStream.stop();
+    this.localStream = null;
+  }
 };
 
 WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
@@ -2034,33 +2052,17 @@ var config = {
   },
   iceServers: [
     {
-      "url": "stun:stun.l.google.com:19302"
+      'url': 'stun:stun.l.google.com:19302'
     },
     {
-      "url": "stun:stun.anyfirewall.com:3478"
+      'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+      'credential': 'testqbtest',
+      'username': 'testqb'
     },
     {
-      "url": "turn:turn.bistri.com:80",
-      "credential": "homeo",
-      "username": "homeo"
-    },
-    {
-      "url": "turn:turn.anyfirewall.com:443?transport=tcp",
-      "credential": "webrtc",
-      "username": "webrtc"
-    },
-    {
-      "url": "stun:turn2.xirsys.com"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=udp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
-    },
-    {
-      "username": "36b7fdaf-524e-4c38-a6d3-b174166fd573",
-      "url": "turn:turn2.xirsys.com:443?transport=tcp",
-      "credential": "0371abb5-fa95-4bbe-b282-25e5888513f7"
+      'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+      'credential': 'testqbtest',
+      'username': 'testqb'
     }
   ],
   urls: {
@@ -2077,9 +2079,13 @@ var config = {
     data: 'data',
     type: '.json'
   },
+  on: {
+    sessionExpired: null
+  },
   ssl: true,
   timeout: null,
-  debug: false
+  debug: false,
+  addISOTime: false
 };
 
 config.set = function(options) {
@@ -2089,7 +2095,7 @@ config.set = function(options) {
         config[key] = options[key]
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
-          if(config.hasOwnProperty(key))
+          if(config[key].hasOwnProperty(nextkey))
             config[key][nextkey] = options[key][nextkey];
         });
       }
@@ -2160,6 +2166,10 @@ QuickBlox.prototype = {
     if(console && config.debug) console.log('QuickBlox.init', this);
   },
 
+  getSession: function(callback) {
+    this.auth.getSession(callback);
+  },
+
   createSession: function(params, callback) {
     this.auth.createSession(params, callback);
   },
@@ -2194,15 +2204,20 @@ module.exports = QB;
 var config = require('./qbConfig');
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
-var isBrowser = typeof window !== "undefined" && window.jQuery;
-if(!isBrowser) var request = require('request');
+var isBrowser = typeof window !== 'undefined';
+if (!isBrowser) var request = require('request');
+
+var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
+if (isBrowser && !ajax) {
+  throw new Error('Quickblox requires jQuery or Zepto');
+}
 
 function ServiceProxy() {
   this.qbInst = {
     config: config,
     session: null
   };
-  if (config.debug) { console.log("ServiceProxy", this.qbInst); }
+  if (config.debug) { console.log('ServiceProxy', this.qbInst); }
 }
 
 ServiceProxy.prototype = {
@@ -2214,19 +2229,36 @@ ServiceProxy.prototype = {
   getSession: function() {
     return this.qbInst.session;
   },
+  
+  handleResponse: function(error, response, next, retry) {
+    // can add middleware here...
+    var _this = this;
+    if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+      config.on.sessionExpired(function(){next(error,response)}, retry);
+    } else {
+      if (error) {
+        next(error, null);
+      } else {
+        if (config.addISOTime) response = injectISOTimes(response);
+        next(null, response);
+      }
+    }
+  },
 
   ajax: function(params, callback) {
     if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
-    var _this = this;
+    var _this = this,
+        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
     var ajaxCall = {
       url: params.url,
       type: params.type || 'GET',
       dataType: params.dataType || 'json',
       data: params.data || ' ',
+      timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
         if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          console.log('setting headers on request to ' + settings.url);
+          if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
           }
@@ -2234,7 +2266,8 @@ ServiceProxy.prototype = {
       },
       success: function(data, status, jqHXR) {
         if (config.debug) { console.log('ServiceProxy.ajax success', data); }
-        callback(null, data);
+        if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
+        else callback(null, data);
       },
       error: function(jqHXR, status, error) {
         if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
@@ -2244,7 +2277,8 @@ ServiceProxy.prototype = {
           message: error,
           detail: jqHXR.responseText
         };
-        callback(errorMsg, null);
+        if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(errorMsg, null, callback, retry);
+        else callback(errorMsg, null);
       }
     };
   
@@ -2260,13 +2294,14 @@ ServiceProxy.prototype = {
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
+        timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
         form: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
       };
           
       var requestCallback = function(error, response, body) {
-        if(error || response.statusCode > 300  || body.toString().indexOf("DOCTYPE") !== -1) {
+        if(error || response.statusCode > 300  || body.toString().indexOf('DOCTYPE') !== -1) {
           try {
             var errorMsg = {
               code: response && response.statusCode || error.code,
@@ -2277,9 +2312,11 @@ ServiceProxy.prototype = {
           } catch(e) {
             var errorMsg = error;
           }
-          callback(errorMsg, null);
+          if (qbRequest.url.indexOf(config.urls.session) === -1) _this.handleResponse(errorMsg, null, callback, retry);
+          else callback(errorMsg, null);
         } else {
-          callback(null, body);
+          if (qbRequest.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, body, callback, retry);
+          else callback(null, body);
         }
       };
 
@@ -2291,13 +2328,33 @@ ServiceProxy.prototype = {
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
     
     if(isBrowser) {
-      jQuery.ajax( ajaxCall );
+      ajax( ajaxCall );
     } else {
       request(qbRequest, requestCallback);
     }
   }
   
 };
+
+// Date.toISOString polyfill
+// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
+
+if(!Date.prototype.toISOString){(function(){function e(e){if(e<10){return"0"+e}return e}Date.prototype.toISOString=function(){return this.getUTCFullYear()+"-"+e(this.getUTCMonth()+1)+"-"+e(this.getUTCDate())+"T"+e(this.getUTCHours())+":"+e(this.getUTCMinutes())+":"+e(this.getUTCSeconds())+"."+(this.getUTCMilliseconds()/1e3).toFixed(3).slice(2,5)+"Z"}})()}
+
+
+function injectISOTimes(data) {
+  if (data.created_at) {
+    if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
+    if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
+  }
+  else if (data.items) {
+    for (var i = 0, len = data.items.length; i < len; ++i) {
+      if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
+      if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
+    }
+  }
+  return data;
+}
 
 module.exports = ServiceProxy;
 

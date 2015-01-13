@@ -311,8 +311,11 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
 
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
-  this.localStream.stop();
-  peer.close();
+  if (peer && this.localStream) {
+    peer.close();
+    this.localStream.stop();
+    this.localStream = null;
+  }
 };
 
 WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
