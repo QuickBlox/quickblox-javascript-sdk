@@ -63,7 +63,9 @@ function ChatProxy(service, webrtcModule, conn) {
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
-        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+        messageId = stanza.getAttribute('id'),
+        dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),        
         message, extension, attachments, attach, attributes;
 
     if (invite) return true;
@@ -96,6 +98,8 @@ function ChatProxy(service, webrtcModule, conn) {
     }
 
     message = {
+      id: messageId,
+      dialog_id: dialogId,
       type: type,
       body: (body && body.textContent) || null,
       extension: extension || null
