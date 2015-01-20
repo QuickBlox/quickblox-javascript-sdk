@@ -163,7 +163,10 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
    * maxAspectRatio: 1.333
   **********************************************/
   getUserMedia(
-    params,
+    {
+      audio: params.audio || false,
+      video: params.video || false
+    },
 
     function(stream) {
       self.localStream = stream;
