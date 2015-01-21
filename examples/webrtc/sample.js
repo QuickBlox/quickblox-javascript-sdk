@@ -135,9 +135,11 @@ QB.webrtc.onRemoteStreamListener = function(stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
 
-// $('#snapshot').on('click', function() {
-//   var src = QB.webrtc.snapshot('localVideo');
-//   $('body').append('<img src="'+src+'">');
-// });
+$('#snapshot').on('click', function() {
+  var blob = QB.webrtc.snapshot('localVideo');
+  console.log(blob);
+  $('body').append('<img src="'+blob.url+'">');
+  blob.download();
+});
   
 // QB.webrtc.filter('localVideo', 'blur(2px) sepia(1)');

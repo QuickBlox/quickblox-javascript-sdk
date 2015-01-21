@@ -16,6 +16,8 @@
  */
 
 require('../../lib/strophe/strophe.min');
+var download = require('../../lib/download/download.min');
+
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
@@ -195,20 +197,11 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
   }
 };
 
-// add CSS filters to video stream
-// http://css-tricks.com/almanac/properties/f/filter/
-WebRTCProxy.prototype.filter = function(id, filters) {
-  var video = document.getElementById(id);
-  if (video) {
-    video.style.webkitFilter = filters;
-    video.style.filter = filters;
-  }
-};
-
 WebRTCProxy.prototype.snapshot = function(id) {
   var video = document.getElementById(id),
       canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d');
+      context = canvas.getContext('2d'),
+      dataURL, blob;
   
   if (video) {
     canvas.width = video.clientWidth;
@@ -218,8 +211,23 @@ WebRTCProxy.prototype.snapshot = function(id) {
       context.scale(-1, 1);
     }
     context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+    dataURL = canvas.toDataURL();
 
-    return canvas.toDataURL('image/png');
+    blob = dataURItoBlob(dataURL, 'image/png');
+    blob.name = 'snapshot_' + getLocalTime() + '.png';
+    blob.url = dataURL;
+
+    return blob;
+  }
+};
+
+// add CSS filters to video stream
+// http://css-tricks.com/almanac/properties/f/filter/
+WebRTCProxy.prototype.filter = function(id, filters) {
+  var video = document.getElementById(id);
+  if (video) {
+    video.style.webkitFilter = filters;
+    video.style.filter = filters;
   }
 };
 
@@ -490,3 +498,25 @@ function trace(text) {
     console.log('[QBWebRTC]:', text);
   // }
 }
+
+function getLocalTime() {
+  var arr = (new Date).toString().split(' ');
+  return arr.slice(1,5).join('-');
+}
+
+// Convert Data URI to Blob
+function dataURItoBlob(dataURI, contentType) {
+  var arr = [],
+      binary = window.atob(dataURI.split(',')[1]);
+  
+  for (var i = 0, len = binary.length; i < len; i++) {
+    arr.push(binary.charCodeAt(i));
+  }
+  
+  return new Blob([new Uint8Array(arr)], {type: contentType});
+}
+
+// Download Blob to local file system
+Blob.prototype.download = function() {
+  download(this, this.name, this.type);
+};
