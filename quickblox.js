@@ -1606,6 +1606,7 @@ function WebRTCProxy(service, conn) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
       delete extension.videochat_signaling_type;
+      extension.callType = extension.callType === '1' ? 'video' : 'audio';
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
@@ -1848,7 +1849,7 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   var extension = extension || {},
       status = reason || 'manually';
   
-  extension.status = stopCallReason[status.toUpperCase()];
+  extension.status = stopCallReason[status.toUpperCase()] || reason;
   trace('stop ' + userId);  
   this._sendMessage(userId, extension, 'STOP');
 };
@@ -1860,8 +1861,10 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
 
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
-  if (peer && this.localStream) {
+  if (peer) {
     peer.close();
+  }
+  if (this.localStream) {
     this.localStream.stop();
     this.localStream = null;
   }
@@ -1882,7 +1885,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
   extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
   if (type === 'CALL' || type === 'ACCEPT') {
-    if (callType) extension.callType = callType === 'video' ? 1 : 2;
+    if (callType) extension.callType = callType === 'video' ? '1' : '2';
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
     extension.device_orientation = 'portrait';

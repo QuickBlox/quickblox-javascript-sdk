@@ -311,7 +311,7 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   var extension = extension || {},
       status = reason || 'manually';
   
-  extension.status = stopCallReason[status.toUpperCase()];
+  extension.status = stopCallReason[status.toUpperCase()] || reason;
   trace('stop ' + userId);  
   this._sendMessage(userId, extension, 'STOP');
 };
@@ -323,8 +323,10 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
 
 // cleanup
 WebRTCProxy.prototype.hangup = function() {
-  if (peer && this.localStream) {
+  if (peer) {
     peer.close();
+  }
+  if (this.localStream) {
     this.localStream.stop();
     this.localStream = null;
   }
