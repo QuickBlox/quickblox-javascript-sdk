@@ -137,7 +137,6 @@ QB.webrtc.onRemoteStreamListener = function(stream) {
 
 $('#snapshot').on('click', function() {
   var blob = QB.webrtc.snapshot('localVideo');
-  console.log(blob);
   $('body').append('<img src="'+blob.url+'">');
   blob.download();
 });

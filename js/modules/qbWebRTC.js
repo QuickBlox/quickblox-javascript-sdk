@@ -68,6 +68,7 @@ function WebRTCProxy(service, conn) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
       delete extension.videochat_signaling_type;
+      extension.callType = extension.callType === '1' ? 'video' : 'audio';
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
@@ -344,7 +345,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
   extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
   if (type === 'CALL' || type === 'ACCEPT') {
-    if (callType) extension.callType = callType === 'video' ? 1 : 2;
+    if (callType) extension.callType = callType === 'video' ? '1' : '2';
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
     extension.device_orientation = 'portrait';
