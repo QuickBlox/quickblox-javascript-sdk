@@ -44,7 +44,8 @@ var stopCallReason = {
   NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
 };
 
-var connection, peer;
+var connection, peer,
+    callers = {};
 
 /* WebRTC module: Core
 --------------------------------------------------------------------------------- */
@@ -67,7 +68,12 @@ function WebRTCProxy(service, conn) {
     switch (extension.videochat_signaling_type) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
+      callers[userId] = {
+        sessionID: extension.sessionID,
+        sdp: extension.sdp
+      };
       delete extension.videochat_signaling_type;
+      delete extension.sdp;
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
@@ -75,6 +81,7 @@ function WebRTCProxy(service, conn) {
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
       delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
       if (typeof self.onAcceptCallListener === 'function')
@@ -258,7 +265,7 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
 
 /* WebRTC module: Real-Time Communication (Signaling)
 --------------------------------------------------------------------------------- */
-WebRTCProxy.prototype.createPeer = function(params) {
+WebRTCProxy.prototype._createPeer = function(params) {
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
   if (!this.localStream) throw new Error("You don't have an access to the local stream");
   var pcConfig = {
@@ -278,6 +285,8 @@ WebRTCProxy.prototype.createPeer = function(params) {
 };
 
 WebRTCProxy.prototype.call = function(userId, callType, extension) {
+  this._createPeer();
+
   var self = this;
   peer.opponentId = userId;
 
@@ -292,6 +301,13 @@ WebRTCProxy.prototype.call = function(userId, callType, extension) {
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
+  if (callers[userId]) {
+    this._createPeer({
+      sessionID: callers[userId].sessionID,
+      description: callers[userId].sdp
+    });
+  }
+  
   var self = this;
   peer.opponentId = userId;
 
@@ -306,6 +322,11 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 };
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
+  var extension = extension || {};
+
+  if (callers[userId]) {
+    extension.sessionID = callers[userId].sessionID;
+  }
   trace('reject ' + userId);
   this._sendMessage(userId, extension, 'REJECT');
 };
