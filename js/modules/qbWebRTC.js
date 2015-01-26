@@ -82,12 +82,14 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+      self._close();
       delete extension.videochat_signaling_type;
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+      self._close();
       delete extension.videochat_signaling_type;
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
@@ -314,6 +316,7 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   extension.status = stopCallReason[status.toUpperCase()] || reason;
   trace('stop ' + userId);  
   this._sendMessage(userId, extension, 'STOP');
+  this._close();
 };
 
 WebRTCProxy.prototype.changeCall = function(userId, extension) {
@@ -321,8 +324,8 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
-// cleanup
-WebRTCProxy.prototype.hangup = function() {
+// close peer connection and local stream
+WebRTCProxy.prototype._close = function() {
   if (peer) {
     peer.close();
   }
