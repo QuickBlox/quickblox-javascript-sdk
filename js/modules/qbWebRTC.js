@@ -82,15 +82,16 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
-      self._close();
       delete extension.videochat_signaling_type;
+      self._close();      
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
-      self._close();
       delete extension.videochat_signaling_type;
+      if (extension.status === stopCallReason.MANUALLY)
+        self._close();
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
@@ -314,7 +315,7 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
       status = reason || 'manually';
   
   extension.status = stopCallReason[status.toUpperCase()] || reason;
-  trace('stop ' + userId);  
+  trace('stop ' + userId);
   this._sendMessage(userId, extension, 'STOP');
   this._close();
 };
