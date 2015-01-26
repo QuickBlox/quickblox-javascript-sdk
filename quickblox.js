@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.7.1 - 2015-01-20 */
+/* QuickBlox JavaScript SDK - v1.7.2 - 2015-01-26 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -209,6 +209,7 @@ function ChatProxy(service, webrtcModule, conn) {
     if (invite) return true;
 
     // custom parameters
+    // TODO: need rewrite this block
     if (extraParams) {
       extension = {};
       attachments = [];
@@ -227,7 +228,15 @@ function ChatProxy(service, webrtcModule, conn) {
           attachments.push(attach);
 
         } else {
-          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+          if (extraParams.childNodes[i].childNodes.length > 1) {
+
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+
+          } else {
+
+            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+
+          }
         }
       }
 
@@ -455,6 +464,10 @@ ChatProxy.prototype = {
             msg.c('attachment', attach).up();
           });
 
+        } else if (typeof message.extension[field] === 'object') {
+
+          self._JStoXML(field, message.extension[field], msg);
+
         } else {
           msg.c(field).t(message.extension[field]).up();
         }
@@ -499,6 +512,33 @@ ChatProxy.prototype = {
     if(!isBrowser) throw unsupported;
 
     connection.deleteHandler(ref);
+  },
+
+  // TODO: the magic
+  _JStoXML: function(title, obj, msg) {
+    var self = this;
+    msg.c(title);
+    Object.keys(obj).forEach(function(field) {
+      if (typeof obj[field] === 'object')
+        self._JStoXML(field, obj[field], msg);
+      else
+        msg.c(field).t(obj[field]).up();
+    });
+    msg.up();
+  },
+
+  // TODO: the magic
+  _XMLtoJS: function(extension, title, obj) {
+    var self = this;
+    extension[title] = {};
+    for (var i = 0, len = obj.childNodes.length; i < len; i++) {
+      if (obj.childNodes[i].childNodes.length > 1) {
+        extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
+      } else {
+        extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
+      }
+    }
+    return extension;
   },
 
   _autoSendPresence: function() {
@@ -2035,6 +2075,7 @@ function trace(text) {
  */
 
 var config = {
+  version: '1.7.2',
   creds: {
     appId: '',
     authKey: '',
@@ -2265,6 +2306,7 @@ ServiceProxy.prototype = {
           if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+            jqXHR.setRequestHeader('QB-SDK', 'JS ' + config.version + ' - Client');
           }
         }
       },
@@ -2301,7 +2343,7 @@ ServiceProxy.prototype = {
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
         form: !isJSONRequest ? ajaxCall.data : null,
-        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
+        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + config.version + ' - Server' } : null
       };
           
       var requestCallback = function(error, response, body) {
