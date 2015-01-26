@@ -96,9 +96,9 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+      extension.reason = self._checkReason(extension.status);
       delete extension.videochat_signaling_type;
-      if (extension.status === stopCallReason.MANUALLY)
-        self._close();
+      delete extension.status;
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
@@ -150,6 +150,32 @@ function WebRTCProxy(service, conn) {
     }
 
     return extension;
+  };
+
+  this._checkReason = function(status) {
+    var self = this,
+        reason;
+
+    switch (status) {
+    case stopCallReason.MANUALLY:
+      reason = 'manually';
+      self._close();
+      break;
+    case stopCallReason.BAD_CONNECTION:
+      reason = 'bad_connection';
+      break;
+    case stopCallReason.CANCEL:
+      reason = 'cancel';
+      break;
+    case stopCallReason.NOT_ANSWER:
+      reason = 'not_answer';
+      break;
+    default:
+      reason = status;
+      break;
+    }
+
+    return reason;
   };
 }
 
