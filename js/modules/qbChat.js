@@ -71,6 +71,7 @@ function ChatProxy(service, webrtcModule, conn) {
     if (invite) return true;
 
     // custom parameters
+    // TODO: need rewrite this block
     if (extraParams) {
       extension = {};
       attachments = [];
@@ -89,7 +90,15 @@ function ChatProxy(service, webrtcModule, conn) {
           attachments.push(attach);
 
         } else {
-          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+          if (extraParams.childNodes[i].childNodes.length > 1) {
+
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+
+          } else {
+
+            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+
+          }
         }
       }
 
@@ -317,6 +326,10 @@ ChatProxy.prototype = {
             msg.c('attachment', attach).up();
           });
 
+        } else if (typeof message.extension[field] === 'object') {
+
+          self._JStoXML(field, message.extension[field], msg);
+
         } else {
           msg.c(field).t(message.extension[field]).up();
         }
@@ -361,6 +374,33 @@ ChatProxy.prototype = {
     if(!isBrowser) throw unsupported;
 
     connection.deleteHandler(ref);
+  },
+
+  // TODO: the magic
+  _JStoXML: function(title, obj, msg) {
+    var self = this;
+    msg.c(title);
+    Object.keys(obj).forEach(function(field) {
+      if (typeof obj[field] === 'object')
+        self._JStoXML(field, obj[field], msg);
+      else
+        msg.c(field).t(obj[field]).up();
+    });
+    msg.up();
+  },
+
+  // TODO: the magic
+  _XMLtoJS: function(extension, title, obj) {
+    var self = this;
+    extension[title] = {};
+    for (var i = 0, len = obj.childNodes.length; i < len; i++) {
+      if (obj.childNodes[i].childNodes.length > 1) {
+        extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
+      } else {
+        extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
+      }
+    }
+    return extension;
   },
 
   _autoSendPresence: function() {
