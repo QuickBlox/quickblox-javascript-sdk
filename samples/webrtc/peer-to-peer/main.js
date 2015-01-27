@@ -58,7 +58,7 @@ $(document).ready(function() {
         console.log(err);
       } else {
         // console.log(stream);
-        QB.webrtc.createPeer();
+        // QB.webrtc.createPeer();
         QB.webrtc.call(opponent.id, 'video');
       }
     });
@@ -70,24 +70,22 @@ $(document).ready(function() {
         console.log(err);
       } else {
         // console.log(stream);
-        QB.webrtc.createPeer({
-          sessionID: peerParams.sessionID,
-          description: peerParams.sdp
-        });
+        // QB.webrtc.createPeer({
+        //   sessionID: peerParams.sessionID,
+        //   description: peerParams.sdp
+        // });
         QB.webrtc.accept(opponent.id);
       }
     });
   });
 
   $('#reject').on('click', function() {
-    QB.webrtc.reject(opponent.id, {
-      sessionID: peerParams.sessionID
-    });
+    QB.webrtc.reject(opponent.id);
   });
 
   $('#hangup').on('click', function() {
     QB.webrtc.stop(opponent.id, 'manually');
-    QB.webrtc.hangup();
+    // QB.webrtc.hangup();
   });
 
   $('#mute').on('click', function() {
@@ -113,7 +111,7 @@ function connectChat() {
 
 QB.webrtc.onCallListener = function(id, extension) {
   console.log(extension);
-  peerParams = extension;
+  // peerParams = extension;
 };
 
 QB.webrtc.onAcceptCallListener = function(id, extension) {
@@ -122,12 +120,12 @@ QB.webrtc.onAcceptCallListener = function(id, extension) {
 
 QB.webrtc.onRejectCallListener = function(id, extension) {
   console.log(extension);
-  QB.webrtc.hangup();
+  // QB.webrtc.hangup();
 };
 
 QB.webrtc.onStopCallListener = function(id, extension) {
   console.log(extension);
-  QB.webrtc.hangup();
+  // QB.webrtc.hangup();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {

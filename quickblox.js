@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.7.1 - 2015-01-22 */
+/* QuickBlox JavaScript SDK - v1.7.1 - 2015-01-27 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1582,7 +1582,8 @@ var stopCallReason = {
   NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
 };
 
-var connection, peer;
+var connection, peer,
+    callers = {};
 
 /* WebRTC module: Core
 --------------------------------------------------------------------------------- */
@@ -1605,28 +1606,37 @@ function WebRTCProxy(service, conn) {
     switch (extension.videochat_signaling_type) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-      delete extension.videochat_signaling_type;
+      callers[userId] = {
+        sessionID: extension.sessionID,
+        sdp: extension.sdp
+      };
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
+      delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-      delete extension.videochat_signaling_type;
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
+      delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof self.onAcceptCallListener === 'function')
         self.onAcceptCallListener(userId, extension);
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+      self._close();
       delete extension.videochat_signaling_type;
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+      extension.reason = self._checkReason(extension.status);
       delete extension.videochat_signaling_type;
+      delete extension.status;
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
@@ -1678,6 +1688,32 @@ function WebRTCProxy(service, conn) {
     }
 
     return extension;
+  };
+
+  this._checkReason = function(status) {
+    var self = this,
+        reason;
+
+    switch (status) {
+    case stopCallReason.MANUALLY:
+      reason = 'manually';
+      self._close();
+      break;
+    case stopCallReason.BAD_CONNECTION:
+      reason = 'bad_connection';
+      break;
+    case stopCallReason.CANCEL:
+      reason = 'cancel';
+      break;
+    case stopCallReason.NOT_ANSWER:
+      reason = 'not_answer';
+      break;
+    default:
+      reason = status;
+      break;
+    }
+
+    return reason;
   };
 }
 
@@ -1793,7 +1829,7 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
 
 /* WebRTC module: Real-Time Communication (Signaling)
 --------------------------------------------------------------------------------- */
-WebRTCProxy.prototype.createPeer = function(params) {
+WebRTCProxy.prototype._createPeer = function(params) {
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
   if (!this.localStream) throw new Error("You don't have an access to the local stream");
   var pcConfig = {
@@ -1813,6 +1849,8 @@ WebRTCProxy.prototype.createPeer = function(params) {
 };
 
 WebRTCProxy.prototype.call = function(userId, callType, extension) {
+  this._createPeer();
+
   var self = this;
   peer.opponentId = userId;
 
@@ -1827,6 +1865,13 @@ WebRTCProxy.prototype.call = function(userId, callType, extension) {
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
+  if (callers[userId]) {
+    this._createPeer({
+      sessionID: callers[userId].sessionID,
+      description: callers[userId].sdp
+    });
+  }
+  
   var self = this;
   peer.opponentId = userId;
 
@@ -1841,6 +1886,11 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 };
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
+  var extension = extension || {};
+
+  if (callers[userId]) {
+    extension.sessionID = callers[userId].sessionID;
+  }
   trace('reject ' + userId);
   this._sendMessage(userId, extension, 'REJECT');
 };
@@ -1850,8 +1900,9 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
       status = reason || 'manually';
   
   extension.status = stopCallReason[status.toUpperCase()] || reason;
-  trace('stop ' + userId);  
+  trace('stop ' + userId);
   this._sendMessage(userId, extension, 'STOP');
+  this._close();
 };
 
 WebRTCProxy.prototype.changeCall = function(userId, extension) {
@@ -1859,8 +1910,8 @@ WebRTCProxy.prototype.changeCall = function(userId, extension) {
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
-// cleanup
-WebRTCProxy.prototype.hangup = function() {
+// close peer connection and local stream
+WebRTCProxy.prototype._close = function() {
   if (peer) {
     peer.close();
   }
@@ -2091,18 +2142,48 @@ var config = {
     active: 1
   },
   iceServers: [
+    // {
+    //   'url': 'stun:stun.l.google.com:19302'
+    // },
+    // {
+    //   'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+    //   'credential': 'testqbtest',
+    //   'username': 'testqb'
+    // },
+    // {
+    //   'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+    //   'credential': 'testqbtest',
+    //   'username': 'testqb'
+    // }
+
     {
       'url': 'stun:stun.l.google.com:19302'
     },
     {
-      'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
-      'credential': 'testqbtest',
-      'username': 'testqb'
+      'url': 'stun:stun.anyfirewall.com:3478'
     },
     {
-      'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
-      'credential': 'testqbtest',
-      'username': 'testqb'
+      'url': 'stun:turn2.xirsys.com'
+    },
+    {
+      'url': 'turn:turn.bistri.com:80',
+      'username': 'homeo',
+      'credential': 'homeo'
+    },
+    {
+      'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
+      'username': 'webrtc',
+      'credential': 'webrtc'
+    },
+    {
+      'url': 'turn:turn2.xirsys.com:443?transport=udp',
+      'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
+      'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
+    },
+    {
+      'url': 'turn:turn2.xirsys.com:443?transport=tcp',
+      'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
+      'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
     }
   ],
   urls: {

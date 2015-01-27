@@ -72,25 +72,25 @@ function WebRTCProxy(service, conn) {
         sessionID: extension.sessionID,
         sdp: extension.sdp
       };
+      extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.videochat_signaling_type;
       delete extension.sdp;
-      extension.callType = extension.callType === '1' ? 'video' : 'audio';
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-      delete extension.videochat_signaling_type;
-      delete extension.sdp;
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
+      delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof self.onAcceptCallListener === 'function')
         self.onAcceptCallListener(userId, extension);
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+      self._close();
       delete extension.videochat_signaling_type;
-      self._close();      
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
