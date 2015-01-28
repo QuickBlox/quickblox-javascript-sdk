@@ -2,22 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WebRTC prototype</title>
-
-  <style>
-    video {
-      width: 320px;
-      height: 240px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid #ccc;
-      outline: 0;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuickBlox JavaScript WebRTC sample</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../main.css">
 </head>
 <body>
-  <p>
-    <button id="loginUser1">Login as User1</button>
-    <button id="loginUser2">Login as User2</button>
+  <header class="header">
+    <div class="center">     
+      <h1 class="title">
+        <a href="http://quickblox.com/"><img class="logo" src="../../images/logo-quickblox.png" alt="QuickBlox Samples"></a>
+        JavaScript WebRTC Sample <small>(Peer-to-Peer)</small>
+      </h1>
+    </div>
+  </header>
+  <div class="wrapper">
+    <section class="info">
+      <p class="center">
+        Login as any user on this computer and another user on another computer
+      </p>
+    </section>
+
+    <section class="login center">
+      <div class="loginForm">
+        <button id="loginUser1" type="button" class="btn btn-primary btn-lg btn-block">Login as User 1</button>
+        <button id="loginUser2" type="button" class="btn btn-success btn-lg btn-block">Login as User 2</button>
+      </div>
+    </section>
+
+    <section class="connecting center">
+      
+    </section>
+
+    <section class="chat center">
+      
+    </section>
+
+    <section class="incoming center">
+
+    </section>
+  </div>
+  <footer class="footer">
+    <div class="center">
+      Source: <a href="https://github.com/QuickBlox/quickblox-javascript-sdk">https://github.com/QuickBlox/quickblox-javascript-sdk</a>
+    </div>
+  </footer>
+
+
+
+  <!-- <p>
+    
   </p>
   <video id="localVideo"></video>
   <video id="remoteVideo"></video>
@@ -31,7 +65,7 @@
     <button id="mute">Mute</button>
     <button id="unmute">Unmute</button>
     <button id="snapshot">Take snapshot</button>
-  </p>
+  </p> -->
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="../../../quickblox.js"></script>
