@@ -1,30 +1,119 @@
-var QBApp = {
-  appId: 9068,
-  authKey: 'jxceTebX-Tdjczq',
-  authSecret: '7CgdO4zTd8rLUDM'
-};
-var QBUser1 = {
-  id: 1018619,
-  login: 'Bob',
-  password: '123123123'
-};
-var QBUser2 = {
-  id: 1018620,
-  login: 'Sam',
-  password: '123123123'
-};
-
-var caller,
-    opponent,
-    peerParams;
+var mediaParams, caller, opponent;
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
 $(document).ready(function() {
+  $('#loginUser1').on('click', function() {
+    createSession(QBUser1, QBUser2);
+  });
 
-  var mediaParams = {
+  $('#loginUser2').on('click', function() {
+    createSession(QBUser2, QBUser1);
+  });
+
+  $('#audiocall').on('click', function() {
+    mediaParams = {
+      audio: true,
+      elemId: 'localVideo',
+      options: { muted: true }
+    };
+    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+      if (err) {
+        console.log(err);
+        $('#infoMessage').text('Devices are not found');
+      } else {
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        $('#audiocall, #videocall').attr('disabled', 'disabled');
+        $('#infoMessage').text('Calling...');
+        $('#callingSignal')[0].play();
+        QB.webrtc.call(opponent.id, 'audio');
+      }
+    });
+  });
+
+  $('#videocall').on('click', function() {
+    mediaParams = {
+      audio: true,
+      video: true,
+      elemId: 'localVideo',
+      options: {
+        muted: true,
+        mirror: true
+      }
+    };
+    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+      if (err) {
+        console.log(err);
+        $('#infoMessage').text('Devices are not found');
+      } else {
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        $('#audiocall, #videocall').attr('disabled', 'disabled');
+        $('#infoMessage').text('Calling...');
+        $('#callingSignal')[0].play();
+        QB.webrtc.call(opponent.id, 'video');
+      }
+    });
+  });
+
+  $('#accept').on('click', function() {
+    $('#incomingCall').modal('hide');
+    $('#ringtoneSignal')[0].pause();
+    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+      if (err) {
+        console.log(err);
+        $('#infoMessage').text('Devices are not found');
+        QB.webrtc.reject(opponent.id);
+      } else {
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        $('#audiocall, #videocall').attr('disabled', 'disabled');
+        QB.webrtc.accept(opponent.id);
+      }
+    });
+  });
+
+  $('#reject').on('click', function() {
+    $('#incomingCall').modal('hide');
+    $('#ringtoneSignal')[0].pause();
+    QB.webrtc.reject(opponent.id);
+  });
+
+  $('#hangup').on('click', function() {
+    $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+    $('#audiocall, #videocall').removeAttr('disabled');
+    $('video').attr('src', '');
+    $('#callingSignal')[0].pause();
+    $('#endCallSignal')[0].play();
+    QB.webrtc.stop(opponent.id, 'manually');
+  });
+
+  $('.btn_camera_off').on('click', function() {
+    var action = $(this).data('action');
+    if (action === 'mute') {
+      $(this).addClass('off').data('action', 'unmute');
+      QB.webrtc.mute('video');
+    } else {
+      $(this).removeClass('off').data('action', 'mute');
+      QB.webrtc.unmute('video');
+    }
+  });
+
+  $('.btn_mic_off').on('click', function() {
+    var action = $(this).data('action');
+    if (action === 'mute') {
+      $(this).addClass('off').data('action', 'unmute');
+      QB.webrtc.mute('audio');
+    } else {
+      $(this).removeClass('off').data('action', 'mute');
+      QB.webrtc.unmute('audio');
+    }
+  });
+});
+
+QB.webrtc.onCallListener = function(id, extension) {
+  console.log(extension);
+  mediaParams = {
     audio: true,
-    video: true,
+    video: extension.callType === 'video' ? true : false,
     elemId: 'localVideo',
     options: {
       muted: true,
@@ -32,113 +121,65 @@ $(document).ready(function() {
     }
   };
 
-  QB.webrtc.getUserMedia(mediaParams, function(err, stream) {});
+  $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
+  $('.caller').text(opponent.full_name);
+  $('#ringtoneSignal')[0].play();
 
-  $('#loginUser1').on('click', function() {
-    QB.createSession(QBUser1, function(err, res) {
-      if (res) {
-        caller = QBUser1;
-        opponent = QBUser2;
-        connectChat();
-      }
-    });
+  $('#incomingCall').modal({
+    backdrop: 'static',
+    keyboard: false
   });
-
-  $('#loginUser2').on('click', function() {
-    QB.createSession(QBUser2, function(err, res) {
-      if (res) {
-        caller = QBUser2;
-        opponent = QBUser1;
-        connectChat();
-      }
-    });
-  });
-
-  $('#call').on('click', function() {
-    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
-      if (err) {
-        console.log(err);
-      } else {
-        // console.log(stream);
-        // QB.webrtc.createPeer();
-        QB.webrtc.call(opponent.id, 'video');
-      }
-    });
-  });
-
-  $('#accept').on('click', function() {
-    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
-      if (err) {
-        console.log(err);
-      } else {
-        // console.log(stream);
-        // QB.webrtc.createPeer({
-        //   sessionID: peerParams.sessionID,
-        //   description: peerParams.sdp
-        // });
-        QB.webrtc.accept(opponent.id);
-      }
-    });
-  });
-
-  $('#reject').on('click', function() {
-    QB.webrtc.reject(opponent.id);
-  });
-
-  $('#hangup').on('click', function() {
-    QB.webrtc.stop(opponent.id, 'manually');
-    // QB.webrtc.hangup();
-  });
-
-  $('#mute').on('click', function() {
-    // QB.webrtc.mute('audio');
-    QB.webrtc.mute('video');
-  });
-
-  $('#unmute').on('click', function() {
-    // QB.webrtc.unmute('audio');
-    QB.webrtc.unmute('video');
-  });
-
-});
-
-function connectChat() {
-  QB.chat.connect({
-    jid: QB.chat.helpers.getUserJid(caller.id, QBApp.appId),
-    password: caller.password
-  }, function(err, res) {
-    
-  })
-}
-
-QB.webrtc.onCallListener = function(id, extension) {
-  console.log(extension);
-  // peerParams = extension;
 };
 
 QB.webrtc.onAcceptCallListener = function(id, extension) {
   console.log(extension);
+  $('#callingSignal')[0].pause();
+  $('#infoMessage').text(opponent.full_name + ' has accepted this call');
 };
 
 QB.webrtc.onRejectCallListener = function(id, extension) {
   console.log(extension);
-  // QB.webrtc.hangup();
+  $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+  $('#audiocall, #videocall').removeAttr('disabled');
+  $('video').attr('src', '');
+  $('#callingSignal')[0].pause();
+  $('#infoMessage').text(opponent.full_name + ' has rejected this call');
 };
 
 QB.webrtc.onStopCallListener = function(id, extension) {
   console.log(extension);
-  // QB.webrtc.hangup();
+  $('#infoMessage').text('Call was stoped');
+  $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+  $('#audiocall, #videocall').removeAttr('disabled');
+  $('video').attr('src', '');
+  $('#endCallSignal')[0].play();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {
-  // console.log(stream);
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
 
-$('#snapshot').on('click', function() {
-  var blob = QB.webrtc.snapshot('localVideo');
-  $('body').append('<img src="'+blob.url+'">');
-  blob.download();
-});
-  
-// QB.webrtc.filter('localVideo', 'blur(2px) sepia(1)');
+function createSession(newCaller, newCallee) {
+  $('.login').addClass('hidden');
+  $('.connecting').removeClass('hidden');
+  $('#infoMessage').text('Creating QB session...');
+  QB.createSession(QBUser1, function(err, res) {
+    if (res) {
+      caller = newCaller;
+      opponent = newCallee;
+      connectChat();
+    }
+  });
+}
+
+function connectChat() {
+  $('#infoMessage').text('Connecting to chat...');
+  QB.chat.connect({
+    jid: QB.chat.helpers.getUserJid(caller.id, QBApp.appId),
+    password: caller.password
+  }, function(err, res) {
+    $('.connecting').addClass('hidden');
+    $('.chat').removeClass('hidden');
+    $('#infoMessage').text('Make a call to your opponent');
+  })
+}

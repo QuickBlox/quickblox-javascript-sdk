@@ -120,6 +120,7 @@ html, body {
       border: 0;
       cursor: pointer;
       transition: opacity .1s ease-in-out;
+      outline: 0 !important;
     }
     .btn_mediacall:hover,
     .btn_mediacall.off {
@@ -129,6 +130,47 @@ html, body {
       .btn-icon_mediacall {
         vertical-align: text-bottom;
       }
+
+.incoming .modal-dialog {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 310px;
+  height: 127px;
+  margin: auto;
+}
+  .info-notice {
+    width: 100%;
+    padding: 0 15px;
+    font-size: 20px;
+    line-height: 25px;
+    color: #333;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    display: inline-block;
+  }
+  .incoming-call-controls {
+    width: 100%;
+  }
+    .btn_decline,
+    .btn_accept {
+      outline: 0 !important;
+      text-transform: uppercase;
+    }
+    .btn_decline {
+      margin-right: 55px;
+      color: #b20001 !important;
+    }
+    .btn_accept {
+      color: #1ec252 !important;
+    }
+    .btn {
+      outline: 0 !important;
+    }
 
 /* Flexbox
 --------------------------------------------------*/
