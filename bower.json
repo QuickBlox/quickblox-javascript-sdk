@@ -30,6 +30,7 @@
     "lib",
     "node_modules",
     "plugins",
+    "samples",
     "spec",
     "npm-debug.log",
     "Gruntfile.js",
