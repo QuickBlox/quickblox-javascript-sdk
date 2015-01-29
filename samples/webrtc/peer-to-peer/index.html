@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>QuickBlox JavaScript WebRTC sample</title>
+  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../main.css">
 </head>
@@ -23,23 +24,43 @@
       </p>
     </section>
 
-    <section class="login center">
+    <section class="login center hidden">
       <div class="loginForm">
         <button id="loginUser1" type="button" class="btn btn-primary btn-lg btn-block">Login as User 1</button>
         <button id="loginUser2" type="button" class="btn btn-success btn-lg btn-block">Login as User 2</button>
       </div>
     </section>
 
-    <section class="connecting center">
-      
+    <section class="connecting center hidden">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
     </section>
 
     <section class="chat center">
-      
-    </section>
-
-    <section class="incoming center">
-
+      <div class="streams">
+        <div class="localControls">
+          <video id="localVideo"></video>
+          <div class="mediacall-controls l-flexbox l-flexbox_flexcenter">
+            <button class="btn_mediacall btn_camera_off"><img class="btn-icon_mediacall" src="../../images/icon-camera-off.png" alt="camera"></button>
+            <button class="btn_mediacall btn_mic_off"><img class="btn-icon_mediacall" src="../../images/icon-mic-off.png" alt="mic"></button>
+          </div>
+        </div>
+        <video id="remoteVideo"></video>
+      </div>
+      <div class="controls">
+        <button id="call" type="button" class="btn btn-default">
+          <img class="icon-audiocall" src="../../images/icon-audiocall.png" alt="QuickBlox Samples">Audio call
+        </button>
+        <button id="call" type="button" class="btn btn-default">
+          <img class="icon-videocall" src="../../images/icon-videocall.png" alt="QuickBlox Samples">Video call
+        </button>
+        <button id="hangup" type="button" class="btn btn-default">
+          <img class="icon-hangup" src="../../images/icon-hangup.png" alt="QuickBlox Samples">Hangup
+        </button>
+      </div>
     </section>
   </div>
   <footer class="footer">
@@ -48,24 +69,18 @@
     </div>
   </footer>
 
-
-
-  <!-- <p>
-    
-  </p>
-  <video id="localVideo"></video>
-  <video id="remoteVideo"></video>
-  <p>
-    <button id="call">Call user</button>
-    <button id="accept">Accept</button>
-    <button id="reject">Reject</button>
-    <button id="hangup">Hangup</button>
-  </p>
-  <p>
-    <button id="mute">Mute</button>
-    <button id="unmute">Unmute</button>
-    <button id="snapshot">Take snapshot</button>
-  </p> -->
+  <section class="incoming modal fade hidden">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          
+        </div>
+        <div class="modal-body">
+          
+        </div>
+      </div>
+    </div>
+  </section>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="../../../quickblox.js"></script>

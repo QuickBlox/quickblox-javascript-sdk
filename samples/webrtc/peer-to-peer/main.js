@@ -32,6 +32,8 @@ $(document).ready(function() {
     }
   };
 
+  QB.webrtc.getUserMedia(mediaParams, function(err, stream) {});
+
   $('#loginUser1').on('click', function() {
     QB.createSession(QBUser1, function(err, res) {
       if (res) {
