@@ -65,6 +65,7 @@ ServiceProxy.prototype = {
           if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+            jqXHR.setRequestHeader('QB-SDK', 'JS ' + config.version + ' - Client');
           }
         }
       },
@@ -101,7 +102,7 @@ ServiceProxy.prototype = {
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
         form: !isJSONRequest ? ajaxCall.data : null,
-        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token } : null
+        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + config.version + ' - Server' } : null
       };
           
       var requestCallback = function(error, response, body) {
