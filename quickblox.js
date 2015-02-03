@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.7.2 - 2015-01-29 */
+/* QuickBlox JavaScript SDK - v1.7.3 - 2015-02-03 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1589,7 +1589,7 @@ function generateOrder(obj) {
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
- * - onChangeCallListener
+ * - onUpdateCallListener
  * - onRemoteStreamListener
  */
 
@@ -1688,10 +1688,10 @@ function WebRTCProxy(service, conn) {
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
-      trace('onChangeCall from ' + userId);
+      trace('onUpdateCall from ' + userId);
       delete extension.videochat_signaling_type;
-      if (typeof self.onChangeCallListener === 'function')
-        self.onChangeCallListener(userId, extension);
+      if (typeof self.onUpdateCallListener === 'function')
+        self.onUpdateCallListener(userId, extension);
       break;
     }
     
@@ -1945,8 +1945,8 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   this._close();
 };
 
-WebRTCProxy.prototype.changeCall = function(userId, extension) {
-  trace('changeCall ' + userId);
+WebRTCProxy.prototype.update = function(userId, extension) {
+  trace('update ' + userId);
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
@@ -2162,7 +2162,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.7.2',
+  version: '1.7.3',
   creds: {
     appId: '',
     authKey: '',
