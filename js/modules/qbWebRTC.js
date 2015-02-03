@@ -11,11 +11,13 @@
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
- * - onChangeCallListener
+ * - onUpdateCallListener
  * - onRemoteStreamListener
  */
 
 require('../../lib/strophe/strophe.min');
+var download = require('../../lib/download/download.min');
+
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
@@ -42,7 +44,8 @@ var stopCallReason = {
   NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
 };
 
-var connection, peer;
+var connection, peer,
+    callers = {};
 
 /* WebRTC module: Core
 --------------------------------------------------------------------------------- */
@@ -65,27 +68,37 @@ function WebRTCProxy(service, conn) {
     switch (extension.videochat_signaling_type) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
+      callers[userId] = {
+        sessionID: extension.sessionID,
+        sdp: extension.sdp
+      };
+      extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-      delete extension.videochat_signaling_type;
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
+      delete extension.videochat_signaling_type;
+      delete extension.sdp;
       if (typeof self.onAcceptCallListener === 'function')
         self.onAcceptCallListener(userId, extension);
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+      self._close();
       delete extension.videochat_signaling_type;
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+      extension.reason = self._checkReason(extension.status);
       delete extension.videochat_signaling_type;
+      delete extension.status;
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
@@ -97,10 +110,10 @@ function WebRTCProxy(service, conn) {
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
-      trace('onChangeCall from ' + userId);
+      trace('onUpdateCall from ' + userId);
       delete extension.videochat_signaling_type;
-      if (typeof self.onChangeCallListener === 'function')
-        self.onChangeCallListener(userId, extension);
+      if (typeof self.onUpdateCallListener === 'function')
+        self.onUpdateCallListener(userId, extension);
       break;
     }
     
@@ -138,6 +151,32 @@ function WebRTCProxy(service, conn) {
 
     return extension;
   };
+
+  this._checkReason = function(status) {
+    var self = this,
+        reason;
+
+    switch (status) {
+    case stopCallReason.MANUALLY:
+      reason = 'manually';
+      self._close();
+      break;
+    case stopCallReason.BAD_CONNECTION:
+      reason = 'bad_connection';
+      break;
+    case stopCallReason.CANCEL:
+      reason = 'cancel';
+      break;
+    case stopCallReason.NOT_ANSWER:
+      reason = 'not_answer';
+      break;
+    default:
+      reason = status;
+      break;
+    }
+
+    return reason;
+  };
 }
 
 /* WebRTC module: User Media Steam
@@ -163,7 +202,10 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
    * maxAspectRatio: 1.333
   **********************************************/
   getUserMedia(
-    params,
+    {
+      audio: params.audio || false,
+      video: params.video || false
+    },
 
     function(stream) {
       self.localStream = stream;
@@ -192,20 +234,11 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
   }
 };
 
-// add CSS filters to video stream
-// http://css-tricks.com/almanac/properties/f/filter/
-WebRTCProxy.prototype.filter = function(id, filters) {
-  var video = document.getElementById(id);
-  if (video) {
-    video.style.webkitFilter = filters;
-    video.style.filter = filters;
-  }
-};
-
 WebRTCProxy.prototype.snapshot = function(id) {
   var video = document.getElementById(id),
       canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d');
+      context = canvas.getContext('2d'),
+      dataURL, blob;
   
   if (video) {
     canvas.width = video.clientWidth;
@@ -215,8 +248,23 @@ WebRTCProxy.prototype.snapshot = function(id) {
       context.scale(-1, 1);
     }
     context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+    dataURL = canvas.toDataURL();
 
-    return canvas.toDataURL('image/png');
+    blob = dataURItoBlob(dataURL, 'image/png');
+    blob.name = 'snapshot_' + getLocalTime() + '.png';
+    blob.url = dataURL;
+
+    return blob;
+  }
+};
+
+// add CSS filters to video stream
+// http://css-tricks.com/almanac/properties/f/filter/
+WebRTCProxy.prototype.filter = function(id, filters) {
+  var video = document.getElementById(id);
+  if (video) {
+    video.style.webkitFilter = filters;
+    video.style.filter = filters;
   }
 };
 
@@ -243,7 +291,7 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
 
 /* WebRTC module: Real-Time Communication (Signaling)
 --------------------------------------------------------------------------------- */
-WebRTCProxy.prototype.createPeer = function(params) {
+WebRTCProxy.prototype._createPeer = function(params) {
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
   if (!this.localStream) throw new Error("You don't have an access to the local stream");
   var pcConfig = {
@@ -263,6 +311,8 @@ WebRTCProxy.prototype.createPeer = function(params) {
 };
 
 WebRTCProxy.prototype.call = function(userId, callType, extension) {
+  this._createPeer();
+
   var self = this;
   peer.opponentId = userId;
 
@@ -277,6 +327,13 @@ WebRTCProxy.prototype.call = function(userId, callType, extension) {
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
+  if (callers[userId]) {
+    this._createPeer({
+      sessionID: callers[userId].sessionID,
+      description: callers[userId].sdp
+    });
+  }
+  
   var self = this;
   peer.opponentId = userId;
 
@@ -291,6 +348,11 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 };
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
+  var extension = extension || {};
+
+  if (callers[userId]) {
+    extension.sessionID = callers[userId].sessionID;
+  }
   trace('reject ' + userId);
   this._sendMessage(userId, extension, 'REJECT');
 };
@@ -299,20 +361,23 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   var extension = extension || {},
       status = reason || 'manually';
   
-  extension.status = stopCallReason[status.toUpperCase()];
-  trace('stop ' + userId);  
+  extension.status = stopCallReason[status.toUpperCase()] || reason;
+  trace('stop ' + userId);
   this._sendMessage(userId, extension, 'STOP');
+  this._close();
 };
 
-WebRTCProxy.prototype.changeCall = function(userId, extension) {
-  trace('changeCall ' + userId);
+WebRTCProxy.prototype.update = function(userId, extension) {
+  trace('update ' + userId);
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
-// cleanup
-WebRTCProxy.prototype.hangup = function() {
-  if (peer && this.localStream) {
+// close peer connection and local stream
+WebRTCProxy.prototype._close = function() {
+  if (peer) {
     peer.close();
+  }
+  if (this.localStream) {
     this.localStream.stop();
     this.localStream = null;
   }
@@ -333,7 +398,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
   extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
   if (type === 'CALL' || type === 'ACCEPT') {
-    if (callType) extension.callType = callType === 'video' ? 1 : 2;
+    if (callType) extension.callType = callType === 'video' ? '1' : '2';
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
     extension.device_orientation = 'portrait';
@@ -487,3 +552,25 @@ function trace(text) {
     console.log('[QBWebRTC]:', text);
   // }
 }
+
+function getLocalTime() {
+  var arr = (new Date).toString().split(' ');
+  return arr.slice(1,5).join('-');
+}
+
+// Convert Data URI to Blob
+function dataURItoBlob(dataURI, contentType) {
+  var arr = [],
+      binary = window.atob(dataURI.split(',')[1]);
+  
+  for (var i = 0, len = binary.length; i < len; i++) {
+    arr.push(binary.charCodeAt(i));
+  }
+  
+  return new Blob([new Uint8Array(arr)], {type: contentType});
+}
+
+// Download Blob to local file system
+Blob.prototype.download = function() {
+  download(this, this.name, this.type);
+};
