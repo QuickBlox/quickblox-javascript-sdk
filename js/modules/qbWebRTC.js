@@ -11,7 +11,7 @@
  * - onAcceptCallListener
  * - onRejectCallListener
  * - onStopCallListener
- * - onChangeCallListener
+ * - onUpdateCallListener
  * - onRemoteStreamListener
  */
 
@@ -110,10 +110,10 @@ function WebRTCProxy(service, conn) {
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
-      trace('onChangeCall from ' + userId);
+      trace('onUpdateCall from ' + userId);
       delete extension.videochat_signaling_type;
-      if (typeof self.onChangeCallListener === 'function')
-        self.onChangeCallListener(userId, extension);
+      if (typeof self.onUpdateCallListener === 'function')
+        self.onUpdateCallListener(userId, extension);
       break;
     }
     
@@ -367,8 +367,8 @@ WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   this._close();
 };
 
-WebRTCProxy.prototype.changeCall = function(userId, extension) {
-  trace('changeCall ' + userId);
+WebRTCProxy.prototype.update = function(userId, extension) {
+  trace('update ' + userId);
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 

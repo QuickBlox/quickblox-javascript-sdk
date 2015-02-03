@@ -1,4 +1,4 @@
-var mediaParams, caller, opponent;
+var mediaParams, caller, callee;
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
@@ -26,7 +26,7 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
         $('#infoMessage').text('Calling...');
         $('#callingSignal')[0].play();
-        QB.webrtc.call(opponent.id, 'audio');
+        QB.webrtc.call(callee.id, 'audio');
       }
     });
   });
@@ -50,7 +50,7 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
         $('#infoMessage').text('Calling...');
         $('#callingSignal')[0].play();
-        QB.webrtc.call(opponent.id, 'video');
+        QB.webrtc.call(callee.id, 'video');
       }
     });
   });
@@ -62,11 +62,11 @@ $(document).ready(function() {
       if (err) {
         console.log(err);
         $('#infoMessage').text('Devices are not found');
-        QB.webrtc.reject(opponent.id);
+        QB.webrtc.reject(callee.id);
       } else {
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
-        QB.webrtc.accept(opponent.id);
+        QB.webrtc.accept(callee.id);
       }
     });
   });
@@ -74,7 +74,7 @@ $(document).ready(function() {
   $('#reject').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
-    QB.webrtc.reject(opponent.id);
+    QB.webrtc.reject(callee.id);
   });
 
   $('#hangup').on('click', function() {
@@ -83,7 +83,7 @@ $(document).ready(function() {
     $('video').attr('src', '');
     $('#callingSignal')[0].pause();
     $('#endCallSignal')[0].play();
-    QB.webrtc.stop(opponent.id, 'manually');
+    QB.webrtc.stop(callee.id, 'manually');
   });
 
   $('.btn_camera_off').on('click', function() {
@@ -122,7 +122,7 @@ QB.webrtc.onCallListener = function(id, extension) {
   };
 
   $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
-  $('.caller').text(opponent.full_name);
+  $('.caller').text(callee.full_name);
   $('#ringtoneSignal')[0].play();
 
   $('#incomingCall').modal({
@@ -134,7 +134,7 @@ QB.webrtc.onCallListener = function(id, extension) {
 QB.webrtc.onAcceptCallListener = function(id, extension) {
   console.log(extension);
   $('#callingSignal')[0].pause();
-  $('#infoMessage').text(opponent.full_name + ' has accepted this call');
+  $('#infoMessage').text(callee.full_name + ' has accepted this call');
 };
 
 QB.webrtc.onRejectCallListener = function(id, extension) {
@@ -143,7 +143,7 @@ QB.webrtc.onRejectCallListener = function(id, extension) {
   $('#audiocall, #videocall').removeAttr('disabled');
   $('video').attr('src', '');
   $('#callingSignal')[0].pause();
-  $('#infoMessage').text(opponent.full_name + ' has rejected this call');
+  $('#infoMessage').text(callee.full_name + ' has rejected this call');
 };
 
 QB.webrtc.onStopCallListener = function(id, extension) {
@@ -166,7 +166,7 @@ function createSession(newCaller, newCallee) {
   QB.createSession(QBUser1, function(err, res) {
     if (res) {
       caller = newCaller;
-      opponent = newCallee;
+      callee = newCallee;
       connectChat();
     }
   });
