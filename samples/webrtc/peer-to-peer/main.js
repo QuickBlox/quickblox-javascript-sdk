@@ -3,12 +3,12 @@ var mediaParams, caller, callee;
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
 $(document).ready(function() {
-  $('#loginUser1').on('click', function() {
-    createSession(QBUser1, QBUser2);
-  });
+  $('.loginForm .btn').on('click', function() {
+    var callerIndex = $('#loginUser').val();
+    var calleeIndex = $('#opponentUser').val();
 
-  $('#loginUser2').on('click', function() {
-    createSession(QBUser2, QBUser1);
+    if (callerIndex === calleeIndex) return alert('Please choose your opponent!');
+    createSession(QBUsers[callerIndex], QBUsers[calleeIndex]);
   });
 
   $('#audiocall').on('click', function() {
@@ -50,7 +50,7 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
         $('#infoMessage').text('Calling...');
         $('#callingSignal')[0].play();
-        QB.webrtc.call(callee.id, 'video');
+        QB.webrtc.call(callee.id, 'video', {user: {fullname: "asdas", age: 1213}});
       }
     });
   });
@@ -148,7 +148,7 @@ QB.webrtc.onRejectCallListener = function(id, extension) {
 
 QB.webrtc.onStopCallListener = function(id, extension) {
   console.log(extension);
-  $('#infoMessage').text('Call was stoped');
+  $('#infoMessage').text('Call was stopped');
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
   $('#audiocall, #videocall').removeAttr('disabled');
   $('video').attr('src', '');
@@ -163,7 +163,7 @@ function createSession(newCaller, newCallee) {
   $('.login').addClass('hidden');
   $('.connecting').removeClass('hidden');
   $('#infoMessage').text('Creating QB session...');
-  QB.createSession(QBUser1, function(err, res) {
+  QB.createSession(newCaller, function(err, res) {
     if (res) {
       caller = newCaller;
       callee = newCallee;
@@ -180,6 +180,8 @@ function connectChat() {
   }, function(err, res) {
     $('.connecting').addClass('hidden');
     $('.chat').removeClass('hidden');
+    $('#callerName').text(caller.full_name);
+    $('#calleeName').text(callee.full_name);
     $('#infoMessage').text('Make a call to your opponent');
   })
 }
