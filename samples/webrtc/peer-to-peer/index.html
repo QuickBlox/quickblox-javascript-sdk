@@ -25,10 +25,39 @@
     </section>
 
     <section class="login center">
-      <div class="loginForm">
-        <button id="loginUser1" type="button" class="btn btn-primary btn-lg btn-block">Login as User 1</button>
-        <button id="loginUser2" type="button" class="btn btn-success btn-lg btn-block">Login as User 2</button>
-      </div>
+      <form class="loginForm" action="#">
+        <div class="form-group">
+          <label for="loginUser">Choose your user</label>
+          <select class="form-control" id="loginUser">
+            <option value="0">User 1</option>
+            <option value="1">User 2</option>
+            <option value="2">User 3</option>
+            <option value="3">User 4</option>
+            <option value="4">User 5</option>
+            <option value="5">User 6</option>
+            <option value="6">User 7</option>
+            <option value="7">User 8</option>
+            <option value="8">User 9</option>
+            <option value="9">User 10</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="opponentUser">Choose opponent</label>
+          <select class="form-control" id="opponentUser">
+            <option value="0">User 1</option>
+            <option value="1">User 2</option>
+            <option value="2">User 3</option>
+            <option value="3">User 4</option>
+            <option value="4">User 5</option>
+            <option value="5">User 6</option>
+            <option value="6">User 7</option>
+            <option value="7">User 8</option>
+            <option value="8">User 9</option>
+            <option value="9">User 10</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg btn-block">Connect to chat</button>
+      </form>
     </section>
 
     <section class="connecting center hidden">
@@ -42,13 +71,17 @@
     <section class="chat center hidden">
       <div class="streams">
         <div class="localControls">
+          <span id="callerName"></span><br>
           <video id="localVideo"></video>
           <div class="mediacall-controls l-flexbox l-flexbox_flexcenter">
             <button class="btn_mediacall btn_camera_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="../../images/icon-camera-off.png" alt="camera"></button>
             <button class="btn_mediacall btn_mic_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="../../images/icon-mic-off.png" alt="mic"></button>
           </div>
         </div>
-        <video id="remoteVideo"></video>
+        <div class="remoteControls">
+          <span id="calleeName"></span><br>
+          <video id="remoteVideo"></video>
+        </div>
       </div>
       <div class="controls">
         <button id="audiocall" type="button" class="btn btn-default">
