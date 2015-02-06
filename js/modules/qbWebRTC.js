@@ -70,7 +70,7 @@ function WebRTCProxy(service, conn) {
     // clean for users
     delete extension.moduleIdentifier;
 
-    switch (extension.signalingType) {
+    switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
       if (callers[userId]) return true;
@@ -402,7 +402,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
       msg, params;
 
   extension.moduleIdentifier = WEBRTC_MODULE_ID;
-  extension.signalingType = signalingType[type];
+  extension.signalType = signalingType[type];
   extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
   if (callType) {
