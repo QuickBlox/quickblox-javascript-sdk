@@ -33,16 +33,10 @@ html, body {
 
 .loginForm {
   width: 300px;
-  height: 115px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  margin: auto;
+  margin: 40px auto 0;
 }
-  .loginForm button:first-child {
-    margin-bottom: 20px;
+  .loginForm .btn {
+    margin-top: 40px;
   }
 
 .footer,
@@ -61,6 +55,7 @@ html, body {
 }
 
 .streams {
+  overflow: hidden;
   margin: 20px 0 20px;
 }
   .streams video {
@@ -72,11 +67,14 @@ html, body {
   }
   .localControls {
     width: 400px;
-    height: 300px;
     margin-left: 70px;
     position: relative;
     margin-right: 20px;
     float: left;
+  }
+  .localControls,
+  .remoteControls {
+    height: 320px;
   }
 
 .controls {

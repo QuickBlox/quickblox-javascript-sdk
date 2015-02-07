@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.7.3 - 2015-02-03 */
+/* QuickBlox JavaScript SDK - v1.8.0 - 2015-02-07 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1607,20 +1607,22 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
 var URL = window.URL || window.webkitURL;
 
 var signalingType = {
-  CALL: 'qbvideochat_call',
-  ACCEPT: 'qbvideochat_acceptCall',
-  REJECT: 'qbvideochat_rejectCall',
-  STOP: 'qbvideochat_stopCall',
-  CANDIDATE: 'qbvideochat_candidate',
-  PARAMETERS_CHANGED: 'qbvideochat_callParametersChanged'
+  CALL: 'call',
+  ACCEPT: 'accept',
+  REJECT: 'reject',
+  STOP: 'hangUp',
+  CANDIDATE: 'iceCandidates',
+  PARAMETERS_CHANGED: 'update'
 };
 
 var stopCallReason = {
-  MANUALLY: 'kStopVideoChatCallStatus_Manually',
-  BAD_CONNECTION: 'kStopVideoChatCallStatus_BadConnection',
-  CANCEL: 'kStopVideoChatCallStatus_Cancel',
-  NOT_ANSWER: 'kStopVideoChatCallStatus_OpponentDidNotAnswer'
+  MANUALLY: 'manually',
+  BAD_CONNECTION: 'bad_connection',
+  CANCEL: 'cancel',
+  NOT_ANSWER: 'not_answer'
 };
+
+var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
 var connection, peer,
     callers = {};
@@ -1641,17 +1643,20 @@ function WebRTCProxy(service, conn) {
         userId = self.helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
     
-    if (delay) return true;
+    if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
 
-    switch (extension.videochat_signaling_type) {
+    // clean for users
+    delete extension.moduleIdentifier;
+
+    switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
+      if (callers[userId]) return true;
       callers[userId] = {
         sessionID: extension.sessionID,
         sdp: extension.sdp
       };
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
-      delete extension.videochat_signaling_type;
       delete extension.sdp;
       if (typeof self.onCallListener === 'function')
         self.onCallListener(userId, extension);
@@ -1660,7 +1665,6 @@ function WebRTCProxy(service, conn) {
       trace('onAccept from ' + userId);
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
-      delete extension.videochat_signaling_type;
       delete extension.sdp;
       if (typeof self.onAcceptCallListener === 'function')
         self.onAcceptCallListener(userId, extension);
@@ -1668,28 +1672,25 @@ function WebRTCProxy(service, conn) {
     case signalingType.REJECT:
       trace('onReject from ' + userId);
       self._close();
-      delete extension.videochat_signaling_type;
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
-      extension.reason = self._checkReason(extension.status);
-      delete extension.videochat_signaling_type;
-      delete extension.status;
+      if (callers[userId]) delete callers[userId];
+      self._checkReason(extension.reason);
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
     case signalingType.CANDIDATE:
       if (typeof peer === 'object') {
-        peer.addCandidates(extension.candidates);
+        peer.addCandidates(extension.iceCandidates);
         if (peer.type === 'answer')
-          self._sendCandidate(peer.opponentId, peer.candidates);
+          self._sendCandidate(peer.opponentId, peer.iceCandidates);
       }
       break;
     case signalingType.PARAMETERS_CHANGED:
       trace('onUpdateCall from ' + userId);
-      delete extension.videochat_signaling_type;
       if (typeof self.onUpdateCallListener === 'function')
         self.onUpdateCallListener(userId, extension);
       break;
@@ -1701,59 +1702,60 @@ function WebRTCProxy(service, conn) {
   };
 
   this._getExtension = function(extraParams) {
-    var extension = {}, candidates = [],
-        candidate, items, candidateNodes;
+    var extension = {}, iceCandidates = [], opponents = [],
+        candidate, oponnent, items, childrenNodes;
 
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        if (extraParams.childNodes[i].tagName === 'candidates') {
+        if (extraParams.childNodes[i].tagName === 'iceCandidates') {
         
-          // candidates
+          // iceCandidates
           items = extraParams.childNodes[i].childNodes;
           for (var j = 0, len2 = items.length; j < len2; j++) {
             candidate = {};
-            candidateNodes = items[j].childNodes;
-            for (var k = 0, len3 = candidateNodes.length; k < len3; k++) {
-              candidate[candidateNodes[k].tagName] = candidateNodes[k].textContent;
+            childrenNodes = items[j].childNodes;
+            for (var k = 0, len3 = childrenNodes.length; k < len3; k++) {
+              candidate[childrenNodes[k].tagName] = childrenNodes[k].textContent;
             }
-            candidates.push(candidate);
+            iceCandidates.push(candidate);
+          }
+
+        } else if (extraParams.childNodes[i].tagName === 'opponentsIDs') {
+
+          // opponentsIDs
+          items = extraParams.childNodes[i].childNodes;
+          for (var j = 0, len2 = items.length; j < len2; j++) {
+            oponnent = items[j].textContent;
+            opponents.push(oponnent);
           }
 
         } else {
-          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+          if (extraParams.childNodes[i].childNodes.length > 1) {
+
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+
+          } else {
+
+            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+
+          }
         }
       }
-      if (candidates.length > 0)
-        extension.candidates = candidates;
+      if (iceCandidates.length > 0)
+        extension.iceCandidates = iceCandidates;
+      if (opponents.length > 0)
+        extension.opponents = opponents;
     }
 
     return extension;
   };
 
-  this._checkReason = function(status) {
-    var self = this,
-        reason;
+  this._checkReason = function(reason) {
+    var self = this;
 
-    switch (status) {
-    case stopCallReason.MANUALLY:
-      reason = 'manually';
+    if (reason === stopCallReason.MANUALLY) {
       self._close();
-      break;
-    case stopCallReason.BAD_CONNECTION:
-      reason = 'bad_connection';
-      break;
-    case stopCallReason.CANCEL:
-      reason = 'cancel';
-      break;
-    case stopCallReason.NOT_ANSWER:
-      reason = 'not_answer';
-      break;
-    default:
-      reason = status;
-      break;
     }
-
-    return reason;
   };
 }
 
@@ -1888,18 +1890,20 @@ WebRTCProxy.prototype._createPeer = function(params) {
   trace(peer);
 };
 
-WebRTCProxy.prototype.call = function(userId, callType, extension) {
+WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
   this._createPeer();
 
   var self = this;
-  peer.opponentId = userId;
+  // TODO: need to add a posibility created group calls
+  var ids = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
 
+  peer.opponentId = ids[0];
   peer.getSessionDescription(function(err, res) {
     if (err) {
       trace(err);
     } else {
-      trace('call ' + userId);
-      self._sendMessage(userId, extension, 'CALL', callType);
+      trace('call ' + peer.opponentId);
+      self._sendMessage(peer.opponentId, extension, 'CALL', callType, ids);
     }
   });
 };
@@ -1910,6 +1914,7 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
       sessionID: callers[userId].sessionID,
       description: callers[userId].sdp
     });
+    delete callers[userId];
   }
   
   var self = this;
@@ -1930,6 +1935,7 @@ WebRTCProxy.prototype.reject = function(userId, extension) {
 
   if (callers[userId]) {
     extension.sessionID = callers[userId].sessionID;
+    delete callers[userId];
   }
   trace('reject ' + userId);
   this._sendMessage(userId, extension, 'REJECT');
@@ -1938,8 +1944,8 @@ WebRTCProxy.prototype.reject = function(userId, extension) {
 WebRTCProxy.prototype.stop = function(userId, reason, extension) {
   var extension = extension || {},
       status = reason || 'manually';
-  
-  extension.status = stopCallReason[status.toUpperCase()] || reason;
+
+  extension.reason = stopCallReason[status.toUpperCase()] || reason;
   trace('stop ' + userId);
   this._sendMessage(userId, extension, 'STOP');
   this._close();
@@ -1961,25 +1967,34 @@ WebRTCProxy.prototype._close = function() {
   }
 };
 
-WebRTCProxy.prototype._sendCandidate = function(userId, candidates) {
+WebRTCProxy.prototype._sendCandidate = function(userId, iceCandidates) {
   var extension = {
-    candidates: candidates
+    iceCandidates: iceCandidates
   };
   this._sendMessage(userId, extension, 'CANDIDATE');
 };
 
-WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType) {
+WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType, opponentsIDs) {
   var extension = extension || {},
+      self = this,
       msg, params;
 
-  extension.videochat_signaling_type = signalingType[type];
+  extension.moduleIdentifier = WEBRTC_MODULE_ID;
+  extension.signalType = signalingType[type];
   extension.sessionID = peer && peer.sessionID || extension.sessionID;
 
-  if (type === 'CALL' || type === 'ACCEPT') {
-    if (callType) extension.callType = callType === 'video' ? '1' : '2';
+  if (callType) {
+    extension.callType = callType === 'video' ? '1' : '2';
+  }
+
+  if (type === 'CALL' || type === 'ACCEPT') {    
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
-    extension.device_orientation = 'portrait';
+  }
+
+  if (type === 'CALL') {
+    extension.callerID = this.helpers.getIdFromNode(connection.jid);
+    extension.opponentsIDs = opponentsIDs;
   }
   
   params = {
@@ -1994,18 +2009,31 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
   });
   
   Object.keys(extension).forEach(function(field) {
-    if (field === 'candidates') {
+    if (field === 'iceCandidates') {
 
-      // candidates
-      msg = msg.c('candidates');
+      // iceCandidates
+      msg = msg.c('iceCandidates');
       extension[field].forEach(function(candidate) {
-        msg = msg.c('candidate');
+        msg = msg.c('iceCandidate');
         Object.keys(candidate).forEach(function(key) {
           msg.c(key).t(candidate[key]).up();
         });
         msg.up();
       });
       msg.up();
+
+    } else if (field === 'opponentsIDs') {
+
+      // opponentsIDs
+      msg = msg.c('opponentsIDs');
+      extension[field].forEach(function(opponentId) {
+        msg = msg.c('opponentID').t(opponentId).up();
+      });
+      msg.up();
+
+    } else if (typeof extension[field] === 'object') {
+
+      self._JStoXML(field, extension[field], msg);
 
     } else {
       msg.c(field).t(extension[field]).up();
@@ -2015,13 +2043,40 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType)
   connection.send(msg);
 };
 
+// TODO: the magic
+WebRTCProxy.prototype._JStoXML = function(title, obj, msg) {
+  var self = this;
+  msg.c(title);
+  Object.keys(obj).forEach(function(field) {
+    if (typeof obj[field] === 'object')
+      self._JStoXML(field, obj[field], msg);
+    else
+      msg.c(field).t(obj[field]).up();
+  });
+  msg.up();
+};
+
+// TODO: the magic
+WebRTCProxy.prototype._XMLtoJS = function(extension, title, obj) {
+  var self = this;
+  extension[title] = {};
+  for (var i = 0, len = obj.childNodes.length; i < len; i++) {
+    if (obj.childNodes[i].childNodes.length > 1) {
+      extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
+    } else {
+      extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
+    }
+  }
+  return extension;
+};
+
 /* WebRTC module: RTCPeerConnection extension
 --------------------------------------------------------------------------------- */
 if (RTCPeerConnection) {
 
 RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
-  this.sessionID = parseInt(options && options.sessionID) || Date.now();
+  this.sessionID = options && options.sessionID || Date.now();
   this.type = options && options.description ? 'answer' : 'offer';
   
   this.addStream(this.service.localStream);
@@ -2058,11 +2113,11 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
   if (candidate) {
-    peer.candidates = peer.candidates || [];
-    peer.candidates.push({
+    peer.iceCandidates = peer.iceCandidates || [];
+    peer.iceCandidates.push({
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
-      sdp: candidate.candidate
+      candidate: candidate.candidate
     });
   }
 };
@@ -2079,13 +2134,13 @@ RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
     peer.service.onRemoteStreamListener(event.stream);
 };
 
-RTCPeerConnection.prototype.addCandidates = function(candidates) {
+RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
   var candidate;
-  for (var i = 0, len = candidates.length; i < len; i++) {
+  for (var i = 0, len = iceCandidates.length; i < len; i++) {
     candidate = {
-      sdpMLineIndex: candidates[i].sdpMLineIndex,
-      sdpMid: candidates[i].sdpMid,
-      candidate: candidates[i].sdp
+      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
+      sdpMid: iceCandidates[i].sdpMid,
+      candidate: iceCandidates[i].candidate
     };
     this.addIceCandidate(new RTCIceCandidate(candidate));
   }
@@ -2094,7 +2149,7 @@ RTCPeerConnection.prototype.addCandidates = function(candidates) {
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
   if (peer && peer.signalingState === 'stable' && peer.type === 'offer')
-    peer.service._sendCandidate(peer.opponentId, peer.candidates);
+    peer.service._sendCandidate(peer.opponentId, peer.iceCandidates);
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
@@ -2162,7 +2217,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.7.3',
+  version: '1.8.0',
   creds: {
     appId: '',
     authKey: '',
