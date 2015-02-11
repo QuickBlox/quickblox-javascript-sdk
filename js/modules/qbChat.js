@@ -69,9 +69,10 @@ function ChatProxy(service, webrtcModule, conn) {
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),        
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+        marker = received || displayed || null,
         message, extension, attachments, attach, attributes,
-        msg, marker;
+        msg;
 
     if (invite) return true;
 
@@ -120,25 +121,7 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     // chat markers
-    if (markable && type === 'chat') {
-      msg = $msg({
-        from: connection.jid,
-        to: from,
-        type: type,
-        id: Utils.getBsonObjectId()
-      });
-
-      // chat markers
-      msg.c('received', {
-        xmlns: Strophe.NS.CHAT_MARKERS,
-        id: messageId
-      });
-      
-      connection.send(msg);
-    }
-
-    if (received || displayed) {
-      marker = received || displayed;
+    if (marker) {
       message.markerType = received ? 'received' : 'displayed';
       message.markerMessageId = marker.getAttribute('id');
     }
@@ -385,6 +368,24 @@ ChatProxy.prototype = {
       from: connection.jid,
       type: type
     }));
+  },
+
+  sendDeliveredMessage: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat',
+      id: Utils.getBsonObjectId()
+    });
+
+    msg.c('received', {
+      xmlns: Strophe.NS.CHAT_MARKERS,
+      id: messageId
+    });
+    
+    connection.send(msg);
   },
 
   sendReadMessage: function(jid, messageId) {
