@@ -26,6 +26,7 @@ if (isBrowser) {
   require('../../lib/strophe/strophe.min');
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+  Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
 }
  
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -60,13 +61,17 @@ function ChatProxy(service, webrtcModule, conn) {
         to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
+        markable = stanza.querySelector('markable'),
+        received = stanza.querySelector('received'),
+        displayed = stanza.querySelector('displayed'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),        
-        message, extension, attachments, attach, attributes;
+        message, extension, attachments, attach, attributes,
+        msg, marker;
 
     if (invite) return true;
 
@@ -113,6 +118,30 @@ function ChatProxy(service, webrtcModule, conn) {
       body: (body && body.textContent) || null,
       extension: extension || null
     };
+
+    // chat markers
+    if (markable && type === 'chat') {
+      msg = $msg({
+        from: connection.jid,
+        to: from,
+        type: type,
+        id: Utils.getBsonObjectId()
+      });
+
+      // chat markers
+      msg.c('received', {
+        xmlns: Strophe.NS.CHAT_MARKERS,
+        id: messageId
+      });
+      
+      connection.send(msg);
+    }
+
+    if (received || displayed) {
+      marker = received || displayed;
+      message.markerType = received ? 'received' : 'displayed';
+      message.markerMessageId = marker.getAttribute('id');
+    }
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
@@ -334,6 +363,15 @@ ChatProxy.prototype = {
           msg.c(field).t(message.extension[field]).up();
         }
       });
+
+      msg.up();
+    }
+
+    // chat markers
+    if (message.type === 'chat') {
+      msg.c('markable', {
+        xmlns: Strophe.NS.CHAT_MARKERS
+      });
     }
     
     connection.send(msg);
@@ -347,6 +385,24 @@ ChatProxy.prototype = {
       from: connection.jid,
       type: type
     }));
+  },
+
+  sendReadMessage: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat',
+      id: Utils.getBsonObjectId()
+    });
+
+    msg.c('displayed', {
+      xmlns: Strophe.NS.CHAT_MARKERS,
+      id: messageId
+    });
+    
+    connection.send(msg);
   },
 
   disconnect: function() {
