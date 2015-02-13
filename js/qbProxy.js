@@ -6,7 +6,7 @@
  */
 
 var config = require('./qbConfig');
-var versionNum = require('../package.json').version;
+var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';

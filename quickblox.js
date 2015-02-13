@@ -2419,7 +2419,7 @@ module.exports = QB;
  */
 
 var config = require('./qbConfig');
-var versionNum = require('../package.json').version;
+var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
@@ -2578,7 +2578,7 @@ function injectISOTimes(data) {
 
 module.exports = ServiceProxy;
 
-},{"../package.json":21,"./qbConfig":9,"request":20}],12:[function(require,module,exports){
+},{"./qbConfig":9,"request":20}],12:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -2671,52 +2671,6 @@ function b64_sha1(s){return binb2b64(core_sha1(str2binb(s),8*s.length))}function
 },{"./core":16}],19:[function(require,module,exports){
 (function(e,r){"object"==typeof exports?module.exports=exports=r(require("./core")):"function"==typeof define&&define.amd?define(["./core"],r):r(e.CryptoJS)})(this,function(e){return function(){var r=e,t=r.lib,n=t.WordArray,i=t.Hasher,o=r.algo,s=[],c=o.SHA1=i.extend({_doReset:function(){this._hash=new n.init([1732584193,4023233417,2562383102,271733878,3285377520])},_doProcessBlock:function(e,r){for(var t=this._hash.words,n=t[0],i=t[1],o=t[2],c=t[3],a=t[4],f=0;80>f;f++){if(16>f)s[f]=0|e[r+f];else{var u=s[f-3]^s[f-8]^s[f-14]^s[f-16];s[f]=u<<1|u>>>31}var d=(n<<5|n>>>27)+a+s[f];d+=20>f?(i&o|~i&c)+1518500249:40>f?(i^o^c)+1859775393:60>f?(i&o|i&c|o&c)-1894007588:(i^o^c)-899497514,a=c,c=o,o=i<<30|i>>>2,i=n,n=d}t[0]=0|t[0]+n,t[1]=0|t[1]+i,t[2]=0|t[2]+o,t[3]=0|t[3]+c,t[4]=0|t[4]+a},_doFinalize:function(){var e=this._data,r=e.words,t=8*this._nDataBytes,n=8*e.sigBytes;return r[n>>>5]|=128<<24-n%32,r[(n+64>>>9<<4)+14]=Math.floor(t/4294967296),r[(n+64>>>9<<4)+15]=t,e.sigBytes=4*r.length,this._process(),this._hash},clone:function(){var e=i.clone.call(this);return e._hash=this._hash.clone(),e}});r.SHA1=i._createHelper(c),r.HmacSHA1=i._createHmacHelper(c)}(),e.SHA1});
 },{"./core":16}],20:[function(require,module,exports){
-
-},{}],21:[function(require,module,exports){
-module.exports={
-  "name": "quickblox",
-  "description": "QuickBlox JavaScript SDK",
-  "version": "1.8.1",
-  "homepage": "http://quickblox.com/developers/Javascript",
-  "main": "js/qbMain.js",
-  "license": "MIT",
-  "keywords": [
-    "quickblox",
-    "javascript",
-    "sdk",
-    "baas",
-    "cloud",
-    "api"
-  ],
-  "maintainers": [
-    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>",
-    "Alex Bass <alex.bass@quickblox.com>"
-  ],
-  "contributors": [
-    "Dan Murphy <dan@quickblox.com>",
-    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>",
-    "Alex Bass <alex.bass@quickblox.com>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/QuickBlox/quickblox-javascript-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/issues",
-    "email": "web@quickblox.com"
-  },
-  "dependencies": {
-    "crypto-js": "3.1.2-2",
-    "request": "^2.48.0"
-  },
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.2.1",
-    "grunt-contrib-uglify": "^0.6.0",
-    "grunt-contrib-connect": "^0.9.0",
-    "load-grunt-tasks": "^1.0.0"
-  }
-}
 
 },{}]},{},[10])(10)
 });
