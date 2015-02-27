@@ -64,5 +64,17 @@ var QBUsers = [
     login: '@user10',
     password: 'x6Bt0VDy5',
     full_name: 'User 10'
+  },
+  {
+    id: 2327456,
+    login: 'androidUser1',
+    password: 'x6Bt0VDy5',
+    full_name: 'Web user 1'
+  },
+  {
+    id: 2077906,
+    login: 'androidUser2',
+    password: 'x6Bt0VDy5',
+    full_name: 'Web user 2'
   }
 ];

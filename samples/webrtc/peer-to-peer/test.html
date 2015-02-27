@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuickBlox JavaScript WebRTC sample</title>
+  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../main.css">
+</head>
+<body>
+  <header class="header">
+    <div class="center">     
+      <h1 class="title">
+        <a href="http://quickblox.com/"><img class="logo" src="../../images/logo-quickblox.png" alt="QuickBlox Samples"></a>
+        JavaScript WebRTC Sample <small>(Peer-to-Peer)</small>
+      </h1>
+    </div>
+  </header>
+  <div class="wrapper">
+    <section class="info">
+      <p id="infoMessage" class="center">
+        Login as any user on this computer and another user on another computer
+      </p>
+    </section>
+
+    <section class="login center">
+      <form class="loginForm" action="#">
+        <div class="form-group">
+          <label for="loginUser">Choose your user</label>
+          <select class="form-control" id="loginUser">
+            <option value="0">User 1</option>
+            <option value="1">User 2</option>
+            <option value="2">User 3</option>
+            <option value="3">User 4</option>
+            <option value="4">User 5</option>
+            <option value="5">User 6</option>
+            <option value="6">User 7</option>
+            <option value="7">User 8</option>
+            <option value="8">User 9</option>
+            <option value="9">User 10</option>
+            <option value="10">Web user 1</option>
+            <option value="11">Web user 2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="opponentUser">Choose opponent</label>
+          <select class="form-control" id="opponentUser">
+            <option value="0">User 1</option>
+            <option value="1">User 2</option>
+            <option value="2">User 3</option>
+            <option value="3">User 4</option>
+            <option value="4">User 5</option>
+            <option value="5">User 6</option>
+            <option value="6">User 7</option>
+            <option value="7">User 8</option>
+            <option value="8">User 9</option>
+            <option value="9">User 10</option>
+            <option value="10">Web user 1</option>
+            <option value="11">Web user 2</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg btn-block">Connect to chat</button>
+      </form>
+    </section>
+
+    <section class="connecting center hidden">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </section>
+
+    <section class="chat center hidden">
+      <div class="streams">
+        <div class="localControls">
+          <span id="callerName"></span><br>
+          <video id="localVideo"></video>
+          <div class="mediacall-controls l-flexbox l-flexbox_flexcenter">
+            <button class="btn_mediacall btn_camera_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="../../images/icon-camera-off.png" alt="camera"></button>
+            <button class="btn_mediacall btn_mic_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="../../images/icon-mic-off.png" alt="mic"></button>
+          </div>
+        </div>
+        <div class="remoteControls">
+          <span id="calleeName"></span><br>
+          <video id="remoteVideo"></video>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="audiocall" type="button" class="btn btn-default">
+          <img class="icon-audiocall" src="../../images/icon-audiocall.png" alt="QuickBlox Samples">Audio call
+        </button>
+        <button id="videocall" type="button" class="btn btn-default">
+          <img class="icon-videocall" src="../../images/icon-videocall.png" alt="QuickBlox Samples">Video call
+        </button>
+        <button id="hangup" type="button" class="btn btn-default" disabled>
+          <img class="icon-hangup" src="../../images/icon-hangup.png" alt="QuickBlox Samples">Hangup
+        </button>
+      </div>
+    </section>
+  </div>
+  <footer class="footer">
+    <div class="center">
+      Source: <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/master/samples/webrtc/peer-to-peer">https://github.com/QuickBlox/quickblox-javascript-sdk/tree/master/samples/webrtc/peer-to-peer</a>
+    </div>
+  </footer>
+
+  <section id="incomingCall" class="incoming modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="info-notice"><span class="incoming-callType"></span> Call from <span class="caller"></span></span>
+        </div>
+        <div class="modal-body">
+          <div class="incoming-call-controls l-flexbox l-flexbox_flexcenter">
+            <button id="reject" class="btn btn-default btn_decline">Decline</button>
+            <button id="accept" class="btn btn-default btn_accept">Accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <audio id="callingSignal" loop>
+    <source src="../../audio/calling.ogg"></source>
+    <source src="../../audio/calling.mp3"></source>
+  </audio>
+
+  <audio id="ringtoneSignal" loop>
+    <source src="../../audio/ringtone.ogg"></source>
+    <source src="../../audio/ringtone.mp3"></source>
+  </audio>
+
+  <audio id="endCallSignal">
+    <source src="../../audio/end_of_call.ogg"></source>
+    <source src="../../audio/end_of_call.mp3"></source>
+  </audio>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script src="../../../quickblox.js"></script>
+  <script src="../../config.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
