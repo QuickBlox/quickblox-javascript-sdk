@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.8.0 - 2015-02-07 */
+/* QuickBlox JavaScript SDK - v1.8.1 - 2015-02-13 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -870,9 +870,9 @@ module.exports = ChatProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  // if (config.debug) {
+  if (config.debug) {
     console.log('[QBChat]:', text);
-  // }
+  }
 }
 
 function getError(code, detail) {
@@ -2181,9 +2181,9 @@ module.exports = WebRTCProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  // if (config.debug) {
+  if (config.debug) {
     console.log('[QBWebRTC]:', text);
-  // }
+  }
 }
 
 function getLocalTime() {
@@ -2419,6 +2419,7 @@ module.exports = QB;
  */
 
 var config = require('./qbConfig');
+var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
@@ -2478,7 +2479,7 @@ ServiceProxy.prototype = {
           if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
-            jqXHR.setRequestHeader('QB-SDK', 'JS ' + config.version + ' - Client');
+            jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
           }
         }
       },
@@ -2515,20 +2516,21 @@ ServiceProxy.prototype = {
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
         form: !isJSONRequest ? ajaxCall.data : null,
-        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + config.version + ' - Server' } : null
+        headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
           
       var requestCallback = function(error, response, body) {
-        if(error || response.statusCode > 300  || body.toString().indexOf('DOCTYPE') !== -1) {
+        if(error || response.statusCode !== 200 && response.statusCode !== 201) {
+          var errorMsg;
           try {
-            var errorMsg = {
-              code: response && response.statusCode || error.code,
-              status: response && response.headers.status || 'error',
-              message: body || error.errno,
-              detail: body && body.errors || error.syscall
+            errorMsg = {
+              code: response && response.statusCode || error && error.code,
+              status: response && response.headers && response.headers.status || 'error',
+              message: body || error && error.errno,
+              detail: body && body.errors || error && error.syscall
             };
           } catch(e) {
-            var errorMsg = error;
+            errorMsg = error;
           }
           if (qbRequest.url.indexOf(config.urls.session) === -1) _this.handleResponse(errorMsg, null, callback, retry);
           else callback(errorMsg, null);
@@ -2590,7 +2592,7 @@ var config = require('./qbConfig');
 function Connection() {
   var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
   var conn = new Strophe.Connection(protocol);
-  // if (config.debug) {
+  if (config.debug) {
     if (config.chatProtocol.active === 1) {
       conn.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
       conn.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
@@ -2598,7 +2600,7 @@ function Connection() {
       conn.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
       conn.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
     }
-  // }
+  }
 
   return conn;
 }
