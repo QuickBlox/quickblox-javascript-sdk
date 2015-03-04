@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.8.1 - 2015-02-13 */
+/* QuickBlox JavaScript SDK - v1.9.0 - 2015-03-04 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -164,6 +164,7 @@ if (isBrowser) {
   require('../../lib/strophe/strophe.min');
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+  Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
 }
  
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -198,13 +199,18 @@ function ChatProxy(service, webrtcModule, conn) {
         to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
+        markable = stanza.querySelector('markable'),
+        received = stanza.querySelector('received'),
+        displayed = stanza.querySelector('displayed'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),        
-        message, extension, attachments, attach, attributes;
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+        marker = received || displayed || null,
+        message, extension, attachments, attach, attributes,
+        msg;
 
     if (invite) return true;
 
@@ -251,6 +257,12 @@ function ChatProxy(service, webrtcModule, conn) {
       body: (body && body.textContent) || null,
       extension: extension || null
     };
+
+    // chat markers
+    if (marker) {
+      message.markerType = received ? 'received' : 'displayed';
+      message.markerMessageId = marker.getAttribute('id');
+    }
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
@@ -472,6 +484,15 @@ ChatProxy.prototype = {
           msg.c(field).t(message.extension[field]).up();
         }
       });
+
+      msg.up();
+    }
+
+    // chat markers
+    if (message.type === 'chat') {
+      msg.c('markable', {
+        xmlns: Strophe.NS.CHAT_MARKERS
+      });
     }
     
     connection.send(msg);
@@ -485,6 +506,42 @@ ChatProxy.prototype = {
       from: connection.jid,
       type: type
     }));
+  },
+
+  sendDeliveredMessage: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat',
+      id: Utils.getBsonObjectId()
+    });
+
+    msg.c('received', {
+      xmlns: Strophe.NS.CHAT_MARKERS,
+      id: messageId
+    });
+    
+    connection.send(msg);
+  },
+
+  sendReadMessage: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat',
+      id: Utils.getBsonObjectId()
+    });
+
+    msg.c('displayed', {
+      xmlns: Strophe.NS.CHAT_MARKERS,
+      id: messageId
+    });
+    
+    connection.send(msg);
   },
 
   disconnect: function() {
@@ -870,9 +927,9 @@ module.exports = ChatProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  if (config.debug) {
+  // if (config.debug) {
     console.log('[QBChat]:', text);
-  }
+  // }
 }
 
 function getError(code, detail) {
@@ -2181,9 +2238,9 @@ module.exports = WebRTCProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  if (config.debug) {
+  // if (config.debug) {
     console.log('[QBWebRTC]:', text);
-  }
+  // }
 }
 
 function getLocalTime() {
@@ -2217,7 +2274,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.8.0',
+  version: '1.9.0',
   creds: {
     appId: '',
     authKey: '',
@@ -2520,7 +2577,7 @@ ServiceProxy.prototype = {
       };
           
       var requestCallback = function(error, response, body) {
-        if(error || response.statusCode !== 200 && response.statusCode !== 201) {
+        if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
           var errorMsg;
           try {
             errorMsg = {
@@ -2592,7 +2649,7 @@ var config = require('./qbConfig');
 function Connection() {
   var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
   var conn = new Strophe.Connection(protocol);
-  if (config.debug) {
+  // if (config.debug) {
     if (config.chatProtocol.active === 1) {
       conn.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
       conn.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
@@ -2600,7 +2657,7 @@ function Connection() {
       conn.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
       conn.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
     }
-  }
+  // }
 
   return conn;
 }
