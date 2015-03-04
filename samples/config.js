@@ -72,7 +72,7 @@ var QBUsers = [
     full_name: 'Web user 1'
   },
   {
-    id: 2077906,
+    id: 2344849,
     login: 'androidUser2',
     password: 'x6Bt0VDy5',
     full_name: 'Web user 2'
