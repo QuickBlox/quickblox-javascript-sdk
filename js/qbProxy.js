@@ -107,7 +107,7 @@ ServiceProxy.prototype = {
       };
           
       var requestCallback = function(error, response, body) {
-        if(error || response.statusCode !== 200 && response.statusCode !== 201) {
+        if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
           var errorMsg;
           try {
             errorMsg = {
