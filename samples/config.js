@@ -6,63 +6,63 @@ var QBApp = {
 
 var QBUsers = [
   {
-    id: 2077886,
-    login: '@user1',
+    id: 2436251,
+    login: 'webrtc_user1',
     password: 'x6Bt0VDy5',
     full_name: 'User 1'
   },
   {
-    id: 2077894,
-    login: '@user2',
+    id: 2436254,
+    login: 'webrtc_user2',
     password: 'x6Bt0VDy5',
     full_name: 'User 2'
   },
   {
-    id: 2077896,
-    login: '@user3',
+    id: 2436257,
+    login: 'webrtc_user3',
     password: 'x6Bt0VDy5',
     full_name: 'User 3'
   },
   {
-    id: 2077897,
-    login: '@user4',
+    id: 2436258,
+    login: 'webrtc_user4',
     password: 'x6Bt0VDy5',
     full_name: 'User 4'
   },
   {
-    id: 2077900,
-    login: '@user5',
+    id: 2436259,
+    login: 'webrtc_user5',
     password: 'x6Bt0VDy5',
     full_name: 'User 5'
   },
   {
-    id: 2077901,
-    login: '@user6',
+    id: 2436262,
+    login: 'webrtc_user6',
     password: 'x6Bt0VDy5',
     full_name: 'User 6'
   },
   {
-    id: 2077902,
-    login: '@user7',
+    id: 2436263,
+    login: 'webrtc_user7',
     password: 'x6Bt0VDy5',
     full_name: 'User 7'
   },
   {
-    id: 2077904,
-    login: '@user8',
+    id: 2436265,
+    login: 'webrtc_user8',
     password: 'x6Bt0VDy5',
     full_name: 'User 8'
   },
   {
-    id: 2077906,
-    login: '@user9',
+    id: 2436266,
+    login: 'webrtc_user9',
     password: 'x6Bt0VDy5',
     full_name: 'User 9'
   },
   {
-    id: 2077907,
-    login: '@user10',
+    id: 2436269,
+    login: 'webrtc_user10',
     password: 'x6Bt0VDy5',
     full_name: 'User 10'
-  }
+  } 
 ];
