@@ -10,6 +10,18 @@ $(document).ready(function() {
     if (callerIndex === calleeIndex) return alert('Please choose your opponent!');
     createSession(QBUsers[callerIndex], QBUsers[calleeIndex]);
   });
+  
+  $('#loginUser').on('change', function() {
+    var index = $(this).val();
+    $('#opponentUser option').each(function() {
+      $(this).prop('disabled', false);
+    });
+    $('#opponentUser option[value="' + index + '"]').attr('disabled', 'disabled');
+    console.log(index === $('#opponentUser').val())
+    if (index === $('#opponentUser').val()) {
+      $('#opponentUser').val('null');
+    }
+  });
 
   $('#audiocall').on('click', function() {
     mediaParams = {
