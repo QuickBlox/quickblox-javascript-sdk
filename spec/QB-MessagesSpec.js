@@ -27,7 +27,7 @@ describe('QuickBlox SDK - Messages', function() {
       var done;
       runs(function(){
         done = false;
-        params = {environment: 'production', client_identification_sequence: 'aa557232bc237245ba67686484efab', platform: 'iOS', udid: '5f5930e927660e6e7d8ff0548b3c404a4d16c04f'};
+        params = {environment: 'production', client_identification_sequence: 'aw03O90yoKaKhr3NsVjUNdzP732d0sPlIbIUJsLJqoy0EqjVMCEg76fJH0WHIsrn', platform: 'iOS', udid: '5f5930e927660e6e7d8ff0548b3c404a4d16c04f'};
         QB.messages.tokens.create(params, function(err, res){
           pushToken = res;
           done = true;
