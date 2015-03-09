@@ -3,12 +3,26 @@ var mediaParams, caller, callee;
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
 $(document).ready(function() {
-  $('.loginForm .btn').on('click', function() {
-    var callerIndex = $('#loginUser').val();
-    var calleeIndex = $('#opponentUser').val();
-
-    if (callerIndex === calleeIndex) return alert('Please choose your opponent!');
-    createSession(QBUsers[callerIndex], QBUsers[calleeIndex]);
+  
+  appendUsers('.users-wrap.caller');
+  
+  $(document).on('click', '.choose-user button', function() {
+    caller = {
+      id: $(this).attr('id'),
+      full_name: $(this).attr('data-name'),
+      login: $(this).attr('data-login'),
+      password: $(this).attr('data-password') };
+    chooseRecipient(caller.id);
+  });
+  
+  $(document).on('click', '.choose-recipient button', function() {
+    console.log('executed');
+    callee = {
+      id: $(this).attr('id'),
+      full_name: $(this).attr('data-name'),
+      login: $(this).attr('data-login'),
+      password: $(this).attr('data-password') };
+    createSession();
   });
   
   $('#loginUser').on('change', function() {
@@ -171,14 +185,12 @@ QB.webrtc.onRemoteStreamListener = function(stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
 
-function createSession(newCaller, newCallee) {
-  $('.login').addClass('hidden');
+function createSession() {
+  $('.choose-recipient').addClass('hidden');
   $('.connecting').removeClass('hidden');
   $('#infoMessage').text('Creating QB session...');
-  QB.createSession(newCaller, function(err, res) {
+  QB.createSession(caller, function(err, res) {
     if (res) {
-      caller = newCaller;
-      callee = newCallee;
       connectChat();
     }
   });
@@ -196,4 +208,36 @@ function connectChat() {
     $('#calleeName').text(callee.full_name);
     $('#infoMessage').text('Make a call to your opponent');
   })
+}
+
+
+// Alex
+
+function chooseRecipient(id) {
+  $('.choose-user').addClass('hidden');
+  $('.choose-recipient').removeClass('hidden');
+  appendUsers('.users-wrap.recipient', id);
+  $('.choose-recipient').removeClass('hidden');
+}
+
+function appendUsers(el, excludeID) {
+  for (var i = 0, len = QBUsers.length; i < len; ++i) {
+    var user = QBUsers[i];
+    var userBtn = $('<button>').attr({
+      'class' : 'user',
+      'id' : user.id,
+      'data-login' : user.login,
+      'data-password' : user.password,
+      'data-name' : user.full_name
+    });
+    if (excludeID == user.id) userBtn.prop('disabled', true);
+    var imgWrap = $('<div>').addClass('icon-wrap').html( userIcon(user.colour) ).appendTo(userBtn);
+    var userFullName = $('<div>').addClass('name').text(user.full_name).appendTo(userBtn);
+    userBtn.appendTo(el);
+  }
+  
+}
+
+function userIcon(hexColorCode) {
+  return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30" viewBox="0 0 48 48"><path d="M24 30c0 0-16 0-22 14 0 0 10.020 4 22 4s22-4 22-4c-6-14-22-14-22-14zM24 28c6 0 10-6 10-16s-10-10-10-10-10 0-10 10 4 16 10 16z" fill="#' + (hexColorCode || '666') + '"></path></svg>';
 }
