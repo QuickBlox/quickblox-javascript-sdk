@@ -70,6 +70,7 @@ html, body {
 
 .users-wrap {
   margin-top: 20px;
+  text-align: center;
 }
 
 .user {
@@ -90,7 +91,7 @@ html, body {
   box-shadow: 0 0 0 3px #F0F7FE;
 }
 
-.user:active {
+.user:active, .user.active {
   border-color: #4298ED;
   background: #E4F3FF;
   box-shadow: 0 0 0 3px #F0F7FE;

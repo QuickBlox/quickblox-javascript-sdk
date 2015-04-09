@@ -16,25 +16,14 @@ $(document).ready(function() {
   });
   
   $(document).on('click', '.choose-recipient button', function() {
-    console.log('executed');
+    $('.choose-recipient button').removeClass('active');
+    $(this).addClass('active');
     callee = {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
       password: $(this).attr('data-password') };
-    createSession();
-  });
-  
-  $('#loginUser').on('change', function() {
-    var index = $(this).val();
-    $('#opponentUser option').each(function() {
-      $(this).prop('disabled', false);
-    });
-    $('#opponentUser option[value="' + index + '"]').attr('disabled', 'disabled');
-    console.log(index === $('#opponentUser').val())
-    if (index === $('#opponentUser').val()) {
-      $('#opponentUser').val('null');
-    }
+      $('#calleeName').text(callee.full_name);
   });
 
   $('#audiocall').on('click', function() {
@@ -186,9 +175,6 @@ QB.webrtc.onRemoteStreamListener = function(stream) {
 };
 
 function createSession() {
-  $('.choose-recipient').addClass('hidden');
-  $('.connecting').removeClass('hidden');
-  $('#infoMessage').text('Creating QB session...');
   QB.createSession(caller, function(err, res) {
     if (res) {
       connectChat();
@@ -204,9 +190,8 @@ function connectChat() {
   }, function(err, res) {
     $('.connecting').addClass('hidden');
     $('.chat').removeClass('hidden');
-    $('#callerName').text(caller.full_name);
-    $('#calleeName').text(callee.full_name);
-    $('#infoMessage').text('Make a call to your opponent');
+    $('#callerName').text('You');
+    $('#infoMessage').text('Logged in as ' + caller.full_name);
   })
 }
 
@@ -215,25 +200,27 @@ function connectChat() {
 
 function chooseRecipient(id) {
   $('.choose-user').addClass('hidden');
-  $('.choose-recipient').removeClass('hidden');
+  $('.connecting').removeClass('hidden');
+  $('#infoMessage').text('Creating a session...');
   appendUsers('.users-wrap.recipient', id);
-  $('.choose-recipient').removeClass('hidden');
+  createSession();
 }
 
 function appendUsers(el, excludeID) {
   for (var i = 0, len = QBUsers.length; i < len; ++i) {
     var user = QBUsers[i];
-    var userBtn = $('<button>').attr({
-      'class' : 'user',
-      'id' : user.id,
-      'data-login' : user.login,
-      'data-password' : user.password,
-      'data-name' : user.full_name
-    });
-    if (excludeID == user.id) userBtn.prop('disabled', true);
+    if (excludeID != user.id) {
+      var userBtn = $('<button>').attr({
+        'class' : 'user',
+        'id' : user.id,
+        'data-login' : user.login,
+        'data-password' : user.password,
+        'data-name' : user.full_name
+      });
     var imgWrap = $('<div>').addClass('icon-wrap').html( userIcon(user.colour) ).appendTo(userBtn);
     var userFullName = $('<div>').addClass('name').text(user.full_name).appendTo(userBtn);
     userBtn.appendTo(el);
+    }
   }
   
 }
