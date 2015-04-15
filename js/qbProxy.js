@@ -6,6 +6,7 @@
  */
 
 var config = require('./qbConfig');
+var Utils = require('./qbUtils');
 var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
@@ -44,7 +45,7 @@ ServiceProxy.prototype = {
       if (error) {
         next(error, null);
       } else {
-        if (config.addISOTime) response = injectISOTimes(response);
+        if (config.addISOTime) response = Utils.injectISOTimes(response);
         next(null, response);
       }
     }
@@ -142,25 +143,5 @@ ServiceProxy.prototype = {
   }
   
 };
-
-// Date.toISOString polyfill
-// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
-
-if(!Date.prototype.toISOString){(function(){function e(e){if(e<10){return"0"+e}return e}Date.prototype.toISOString=function(){return this.getUTCFullYear()+"-"+e(this.getUTCMonth()+1)+"-"+e(this.getUTCDate())+"T"+e(this.getUTCHours())+":"+e(this.getUTCMinutes())+":"+e(this.getUTCSeconds())+"."+(this.getUTCMilliseconds()/1e3).toFixed(3).slice(2,5)+"Z"}})()}
-
-
-function injectISOTimes(data) {
-  if (data.created_at) {
-    if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
-    if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
-  }
-  else if (data.items) {
-    for (var i = 0, len = data.items.length; i < len; ++i) {
-      if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
-      if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
-    }
-  }
-  return data;
-}
 
 module.exports = ServiceProxy;
