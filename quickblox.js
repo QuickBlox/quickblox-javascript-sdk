@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.9.0 - 2015-03-04 */
+/* QuickBlox JavaScript SDK - v1.9.1 - 2015-04-16 */
 
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1462,8 +1462,13 @@ EventsProxy.prototype = {
   },
 
   get: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEvents', id); }
+    if (config.debug) { console.log('MessageProxy.getEvent', id); }
     this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
+  },
+  
+  status: function(id, callback) {
+    if (config.debug) { console.log('MessageProxy.getEventStatus', id); }
+    this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
   },
 
   update: function(params, callback) {
@@ -2274,7 +2279,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.9.0',
+  version: '1.9.1',
   creds: {
     appId: '',
     authKey: '',
@@ -2476,6 +2481,7 @@ module.exports = QB;
  */
 
 var config = require('./qbConfig');
+var Utils = require('./qbUtils');
 var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
@@ -2514,7 +2520,7 @@ ServiceProxy.prototype = {
       if (error) {
         next(error, null);
       } else {
-        if (config.addISOTime) response = injectISOTimes(response);
+        if (config.addISOTime) response = Utils.injectISOTimes(response);
         next(null, response);
       }
     }
@@ -2613,29 +2619,9 @@ ServiceProxy.prototype = {
   
 };
 
-// Date.toISOString polyfill
-// Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
-
-if(!Date.prototype.toISOString){(function(){function e(e){if(e<10){return"0"+e}return e}Date.prototype.toISOString=function(){return this.getUTCFullYear()+"-"+e(this.getUTCMonth()+1)+"-"+e(this.getUTCDate())+"T"+e(this.getUTCHours())+":"+e(this.getUTCMinutes())+":"+e(this.getUTCSeconds())+"."+(this.getUTCMilliseconds()/1e3).toFixed(3).slice(2,5)+"Z"}})()}
-
-
-function injectISOTimes(data) {
-  if (data.created_at) {
-    if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
-    if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
-  }
-  else if (data.items) {
-    for (var i = 0, len = data.items.length; i < len; ++i) {
-      if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
-      if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
-    }
-  }
-  return data;
-}
-
 module.exports = ServiceProxy;
 
-},{"./qbConfig":9,"request":20}],12:[function(require,module,exports){
+},{"./qbConfig":9,"./qbUtils":13,"request":20}],12:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -2709,7 +2695,22 @@ var Utils = {
            '000000'.substr(0, 6 - ObjectId.machine.length) + ObjectId.machine +
            '0000'.substr(0, 4 - ObjectId.pid.length) + ObjectId.pid +
            '000000'.substr(0, 6 - increment.length) + increment;
+  },
+
+  injectISOTimes: function(data) {
+    if (data.created_at) {
+      if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
+      if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
+    }
+    else if (data.items) {
+      for (var i = 0, len = data.items.length; i < len; ++i) {
+        if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
+        if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
+      }
+    }
+    return data;
   }
+
 };
 
 module.exports = Utils;

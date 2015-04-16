@@ -44,7 +44,7 @@ var Utils = {
            '000000'.substr(0, 6 - increment.length) + increment;
   },
 
-  injectISOTimes function(data) {
+  injectISOTimes: function(data) {
     if (data.created_at) {
       if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
       if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
