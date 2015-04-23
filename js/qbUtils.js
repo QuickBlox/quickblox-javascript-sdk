@@ -42,7 +42,22 @@ var Utils = {
            '000000'.substr(0, 6 - ObjectId.machine.length) + ObjectId.machine +
            '0000'.substr(0, 4 - ObjectId.pid.length) + ObjectId.pid +
            '000000'.substr(0, 6 - increment.length) + increment;
+  },
+
+  injectISOTimes: function(data) {
+    if (data.created_at) {
+      if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
+      if (typeof data.updated_at === 'number') data.iso_updated_at = new Date(data.updated_at * 1000).toISOString();
+    }
+    else if (data.items) {
+      for (var i = 0, len = data.items.length; i < len; ++i) {
+        if (typeof data.items[i].created_at === 'number') data.items[i].iso_created_at = new Date(data.items[i].created_at * 1000).toISOString();
+        if (typeof data.items[i].updated_at === 'number') data.items[i].iso_updated_at = new Date(data.items[i].updated_at * 1000).toISOString();
+      }
+    }
+    return data;
   }
+
 };
 
 module.exports = Utils;

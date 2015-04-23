@@ -98,8 +98,13 @@ EventsProxy.prototype = {
   },
 
   get: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEvents', id); }
+    if (config.debug) { console.log('MessageProxy.getEvent', id); }
     this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
+  },
+  
+  status: function(id, callback) {
+    if (config.debug) { console.log('MessageProxy.getEventStatus', id); }
+    this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
   },
 
   update: function(params, callback) {
