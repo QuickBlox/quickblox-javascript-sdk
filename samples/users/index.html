@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QuickBlox JavaScript Users sample</title>
+  <title>QuickBlox JavaScript Users code sample</title>
   <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 </head>
 <body>
   <div class="container">
     <div class="jumbotron">
-      <h1>QuickBlox Users sample</h1>
+      <h1>JavaScript Users code sample</h1>
+      <p>Powered by QuickBlox</p>
     </div>
     <div class="row">
       <div class="col-sm-6">
@@ -58,6 +59,36 @@
             <div class="form-group">        
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="sign_in" data-toggle="modal" data-target="#progressModal">Try</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- User social login -->
+        <div class="row">
+          <h3>User Sign In with social provider</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="usr_sgn_n_social_provider">Social provider:</label>
+              <div class="col-sm-6">          
+                <input type="text" class="form-control" id="usr_sgn_n_social_provider" placeholder="facebook or twitter">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="usr_sgn_n_social_token">Social token:</label>
+              <div class="col-sm-6">          
+                <input type="text" class="form-control" id="usr_sgn_n_social_token" placeholder="Enter social token">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="usr_sgn_n_social_secret">Social secret:</label>
+              <div class="col-sm-6">          
+                <input type="text" class="form-control" id="usr_sgn_n_social_secret" placeholder="Enter social secret">
+              </div>
+            </div>
+            <div class="form-group">        
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-primary" id="sign_in_social" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
             </div>
           </form>

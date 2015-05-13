@@ -29,6 +29,8 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
@@ -49,9 +51,33 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
+  // Login user with social provider
+  //
+  $('#sign_in_social').on('click', function() {
+    
+    var provider = $('#usr_sgn_n_social_provider').val();
+    var token = $('#usr_sgn_n_social_token').val();
+    var secret = $('#usr_sgn_n_social_secret').val();
+
+    var params = { 'provider': provider, 'keys[token]': token, 'keys[secret]': secret};
+
+    QB.login(params, function(err, user){
+      if (user) {
+        $('#output_place').val(JSON.stringify(user));
+      } else  {
+        $('#output_place').val(JSON.stringify(err));
+      }
+
+      $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+  });
 
   // Logout user
   //
@@ -64,6 +90,8 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
@@ -145,6 +173,8 @@ $(document).ready(function() {
         }
 
         $("#progressModal").modal("hide");
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
       });
     }else{
       QB.users.get(params, function(err, user){
@@ -155,6 +185,8 @@ $(document).ready(function() {
         }
 
         $("#progressModal").modal("hide");
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
       });
     }
   });
@@ -174,6 +206,8 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
@@ -206,6 +240,8 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
@@ -223,6 +259,8 @@ $(document).ready(function() {
       }
 
       $("#progressModal").modal("hide");
+
+      $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
 
