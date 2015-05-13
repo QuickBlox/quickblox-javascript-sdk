@@ -178,7 +178,7 @@ $(document).ready(function() {
   });
 
 
-   // Delete user
+  // Delete user
   //
   $('#delete_by').on('click', function() {
     var user_id = $('#usr_delete_id').val();
@@ -208,5 +208,23 @@ $(document).ready(function() {
       $("#progressModal").modal("hide");
     });
   });
+
+
+  // Reset email
+  //
+  $('#reset').on('click', function() {
+    var user_email = $('#usr_rst_email').val();
+
+    QB.users.resetPassword(user_email, function(err, user){
+      if (user) {
+        $('#output_place').val(JSON.stringify(user));
+      } else  {
+        $('#output_place').val(JSON.stringify(err));
+      }
+
+      $("#progressModal").modal("hide");
+    });
+  });
+
 
 });
