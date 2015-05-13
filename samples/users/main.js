@@ -159,6 +159,7 @@ $(document).ready(function() {
     }
   });
 
+
   // Update user
   //
   $('#update').on('click', function() {
@@ -166,6 +167,38 @@ $(document).ready(function() {
     var user_fullname = $('#usr_upd_full_name').val();
 
     QB.users.update(parseInt(user_id), {full_name: user_fullname}, function(err, user){
+      if (user) {
+        $('#output_place').val(JSON.stringify(user));
+      } else  {
+        $('#output_place').val(JSON.stringify(err));
+      }
+
+      $("#progressModal").modal("hide");
+    });
+  });
+
+
+   // Delete user
+  //
+  $('#delete_by').on('click', function() {
+    var user_id = $('#usr_delete_id').val();
+    var operation_type = $("#sel_filter_for_delete_user option:selected").val();
+
+    var params;
+
+    switch (operation_type) {
+      // delete by id
+      case "1":
+        params = parseInt(user_id);
+        break;
+
+      // delete by external id
+      case "2":
+        params = {external: user_id};
+        break;
+    }
+
+    QB.users.delete(params, function(err, user){
       if (user) {
         $('#output_place').val(JSON.stringify(user));
       } else  {
