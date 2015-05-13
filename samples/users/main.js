@@ -19,8 +19,6 @@ $(document).ready(function() {
     var login = $('#usr_sgn_p_lgn').val();
     var password = $('#usr_sgn_p_pwd').val();
 
-    console.log("login: " + login + ", password: " + password);
-
     var params = { 'login': login, 'password': password};
 
     QB.users.create(params, function(err, user){
@@ -40,8 +38,6 @@ $(document).ready(function() {
   $('#sign_in').on('click', function() {
     var login = $('#usr_sgn_n_lgn').val();
     var password = $('#usr_sgn_n_pwd').val();
-
-    console.log("login: " + login + ", password: " + password);
 
     var params = { 'login': login, 'password': password};
 
@@ -69,6 +65,53 @@ $(document).ready(function() {
 
       $("#progressModal").modal("hide");
     });
+  });
+
+
+  // Get users 
+  //
+  $('#get_by').on('click', function() {
+    var filter_value = $('#usrs_get_by_filter').val();
+    var filter_type = $("#sel_filter_for_users option:selected").val();
+
+    var params;
+
+    var request_for_many_user = true
+
+    switch (filter_type) {
+      // all users, no filters<
+      case "1":
+        params = { page: '1', per_page: '100'};
+        break;
+
+      // by id
+      case "2":
+        params = parseInt(filter_value);
+        request_for_many_user = false
+        break;
+    }
+
+    if(request_for_many_user){
+      QB.users.listUsers(params, function(err, user){
+        if (user) {
+          $('#output_place').val(JSON.stringify(user));
+        } else  {
+          $('#output_place').val(JSON.stringify(err));
+        }
+
+        $("#progressModal").modal("hide");
+      });
+    }else{
+      QB.users.get(params, function(err, user){
+        if (user) {
+          $('#output_place').val(JSON.stringify(user));
+        } else  {
+          $('#output_place').val(JSON.stringify(err));
+        }
+
+        $("#progressModal").modal("hide");
+      });
+    }
   });
 
 });

@@ -14,6 +14,8 @@
     </div>
     <div class="row">
       <div class="col-sm-6">
+
+        <!-- User create -->
         <div class="row">
           <h3>User Sign Up</h3>
           <form class="form-horizontal" role="form">
@@ -36,6 +38,8 @@
             </div>
           </form>
         </div>
+
+        <!-- User login -->
         <div class="row">
           <h3>User Sign In</h3>
           <form class="form-horizontal" role="form">
@@ -58,6 +62,8 @@
             </div>
           </form>
         </div>
+
+        <!-- User logout -->
         <div class="row">
           <h3>User Sign Out</h3>
           <form class="form-horizontal" role="form">
@@ -68,6 +74,43 @@
             </div>
           </form>
         </div>
+
+
+        <!-- Users get -->
+        <div class="row">
+          <h3>Get users</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="sel_filter_for_users">Select filter:</label>
+              <div class="col-sm-6"> 
+                <select class="form-control" id="sel_filter_for_users">
+                  <option value="1" selected="selected">all users, no filters</option>
+                  <option value="2">by id</option>
+                  <option value="3">by login</option>
+                  <option value="4">by fullname</option>
+                  <option value="5">by facebook id</option>
+                  <option value="6">by twitter id</option>
+                  <option value="7">by email</option>
+                  <option value="8">by tags</option>
+                  <option value="9">by external id</option>
+                  <option value="10">custom filters</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="usrs_get_by_filter">Filter value:</label>
+              <div class="col-sm-6">          
+                <input type="text" class="form-control" id="usrs_get_by_filter" placeholder="Enter a value for filter:">
+              </div>
+            </div>
+            <div class="form-group">        
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-primary" id="get_by" data-toggle="modal" data-target="#progressModal">Try</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
       </div>
       <div class="col-sm-6">
         <h3>Output</h3>
