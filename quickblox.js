@@ -2163,8 +2163,7 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
   }
 
   function successCallback(desc) {
-    trace("successCallback");
-    trace("" + desc.toString());
+    trace("" + desc.toJSON());
     
     peer.setLocalDescription(desc, function() {
       callback(null, desc);
