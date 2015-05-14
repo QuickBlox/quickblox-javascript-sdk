@@ -6,6 +6,8 @@ $(document).ready(function() {
   
   appendUsers('.users-wrap.caller');
   
+  // Choose user
+  //
   $(document).on('click', '.choose-user button', function() {
     caller = {
       id: $(this).attr('id'),
@@ -15,6 +17,8 @@ $(document).ready(function() {
     chooseRecipient(caller.id);
   });
   
+  // Choose recipient
+  //
   $(document).on('click', '.choose-recipient button', function() {
     $('.choose-recipient button').removeClass('active');
     $(this).addClass('active');
@@ -27,6 +31,8 @@ $(document).ready(function() {
       $('#calleeName').text(callee.full_name);
   });
 
+  // Audio call
+  //
   $('#audiocall').on('click', function() {
     mediaParams = {
       audio: true,
@@ -47,6 +53,8 @@ $(document).ready(function() {
     });
   });
 
+  // Video call
+  //
   $('#videocall').on('click', function() {
     mediaParams = {
       audio: true,
@@ -66,11 +74,13 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
         $('#infoMessage').text('Calling...');
         $('#callingSignal')[0].play();
-        QB.webrtc.call(callee.id, 'video', {user: {fullname: "asdas", age: 1213}});
+        QB.webrtc.call(callee.id, 'video', {});
       }
     });
   });
 
+  // Accept call
+  //
   $('#accept').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
@@ -87,6 +97,9 @@ $(document).ready(function() {
     });
   });
 
+
+  // Reject
+  //
   $('#reject').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
@@ -95,6 +108,9 @@ $(document).ready(function() {
     }
   });
 
+
+  // Hangup
+  //
   $('#hangup').on('click', function() {
     $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
     $('#audiocall, #videocall').removeAttr('disabled');
@@ -107,6 +123,9 @@ $(document).ready(function() {
     }
   });
 
+
+  // Mute camera
+  //
   $('.btn_camera_off').on('click', function() {
     var action = $(this).data('action');
     if (action === 'mute') {
@@ -118,6 +137,9 @@ $(document).ready(function() {
     }
   });
 
+
+  // Mute microphone
+  //
   $('.btn_mic_off').on('click', function() {
     var action = $(this).data('action');
     if (action === 'mute') {
@@ -129,6 +151,7 @@ $(document).ready(function() {
     }
   });
 });
+
 
 QB.webrtc.onCallListener = function(id, extension) {
   console.log(extension);
@@ -210,9 +233,6 @@ function connectChat() {
     $('#infoMessage').text('Logged in as ' + caller.full_name);
   })
 }
-
-
-// Alex
 
 function chooseRecipient(id) {
   $('.choose-user').addClass('hidden');
