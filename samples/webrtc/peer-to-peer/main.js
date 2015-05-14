@@ -90,7 +90,9 @@ $(document).ready(function() {
   $('#reject').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
-    QB.webrtc.reject(callee.id);
+    if (typeof callee != 'undefined'){
+      QB.webrtc.reject(callee.id);
+    }
   });
 
   $('#hangup').on('click', function() {
@@ -99,7 +101,10 @@ $(document).ready(function() {
     $('video').attr('src', '');
     $('#callingSignal')[0].pause();
     $('#endCallSignal')[0].play();
-    QB.webrtc.stop(callee.id, 'manually');
+
+    if (typeof callee != 'undefined'){
+      QB.webrtc.stop(callee.id, 'manually');
+    }
   });
 
   $('.btn_camera_off').on('click', function() {
