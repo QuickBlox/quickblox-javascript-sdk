@@ -2162,14 +2162,10 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
     peer.createAnswer(successCallback, errorCallback);
   }
 
-  function successCallback(desc) {
-    trace("" + desc.sdp.toString());
-    trace("" + desc.type.toString());
-
-    
+  function successCallback(desc) { 
     peer.setLocalDescription(desc, function() {
       callback(null, desc);
-    });
+    }, errorCallback);
   }
   function errorCallback(error) {
     callback(error, null);
