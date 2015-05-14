@@ -2317,32 +2317,47 @@ var config = {
     {
       'url': 'stun:stun.l.google.com:19302'
     },
+    // {
+    //   'url': 'stun:stun.anyfirewall.com:3478'
+    // },
+    // {
+    //   'url': 'stun:turn2.xirsys.com'
+    // },
     {
-      'url': 'stun:stun.anyfirewall.com:3478'
+      'url': 'stun:turn.quickblox.com',
+      'username': 'quickblox',
+      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
     {
-      'url': 'stun:turn2.xirsys.com'
+      'url': 'turn:turn.quickblox.com:3478?transport=udp',
+      'username': 'quickblox',
+      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
     {
-      'url': 'turn:turn.bistri.com:80',
-      'username': 'homeo',
-      'credential': 'homeo'
+      'url': 'turn:turn.quickblox.com:3478?transport=tcp',
+      'username': 'quickblox',
+      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
-    {
-      'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
-      'username': 'webrtc',
-      'credential': 'webrtc'
-    },
-    {
-      'url': 'turn:turn2.xirsys.com:443?transport=udp',
-      'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
-      'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
-    },
-    {
-      'url': 'turn:turn2.xirsys.com:443?transport=tcp',
-      'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
-      'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
-    }
+    // {
+    //   'url': 'turn:turn.bistri.com:80',
+    //   'username': 'homeo',
+    //   'credential': 'homeo'
+    // },
+    // {
+    //   'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
+    //   'username': 'webrtc',
+    //   'credential': 'webrtc'
+    // },
+    // {
+    //   'url': 'turn:turn2.xirsys.com:443?transport=udp',
+    //   'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
+    //   'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
+    // },
+    // {
+    //   'url': 'turn:turn2.xirsys.com:443?transport=tcp',
+    //   'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
+    //   'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
+    // }
   ],
   urls: {
     session: 'session',
