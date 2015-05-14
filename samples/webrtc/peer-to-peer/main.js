@@ -23,6 +23,7 @@ $(document).ready(function() {
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
       password: $(this).attr('data-password') };
+
       $('#calleeName').text(callee.full_name);
   });
 
@@ -137,11 +138,17 @@ QB.webrtc.onCallListener = function(id, extension) {
   };
 
   $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
-  if (typeof callee != 'undefined'){
-    $('.caller').text(callee.full_name);
-  }else{
-    $('.caller').text("User");
+  
+  if (typeof callee == 'undefined'){
+      callee = {
+        id: extension.callerID,
+        full_name: "User with id " + extension.callerID,
+        login: "",
+        password: "" };
   }
+
+  $('.caller').text(callee.full_name);
+
   $('#ringtoneSignal')[0].play();
 
   $('#incomingCall').modal({
