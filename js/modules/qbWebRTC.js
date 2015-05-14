@@ -525,7 +525,7 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
   function successCallback(desc) {
     peer.setLocalDescription(desc, function() {
       callback(null, desc);
-    });
+    }, errorCallback);
   }
   function errorCallback(error) {
     callback(error, null);
