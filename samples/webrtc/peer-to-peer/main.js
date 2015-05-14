@@ -137,7 +137,11 @@ QB.webrtc.onCallListener = function(id, extension) {
   };
 
   $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
-  $('.caller').text(callee.full_name);
+  if (typeof callee != 'undefined'){
+    $('.caller').text(callee.full_name);
+  }else{
+    $('.caller').text("User");
+  }
   $('#ringtoneSignal')[0].play();
 
   $('#incomingCall').modal({
