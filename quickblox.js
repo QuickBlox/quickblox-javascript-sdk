@@ -1,6 +1,6 @@
-/* QuickBlox JavaScript SDK - v1.9.1 - 2015-04-23 */
+/* QuickBlox JavaScript SDK - v1.9.1 - 2015-05-14 */
 
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.QB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -2162,7 +2162,7 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
     peer.createAnswer(successCallback, errorCallback);
   }
 
-  function successCallback(desc) { 
+  function successCallback(desc) {
     peer.setLocalDescription(desc, function() {
       callback(null, desc);
     }, errorCallback);
@@ -2297,32 +2297,12 @@ var config = {
     bosh: 'https://chat.quickblox.com:5281', // With SSL
     // websocket: 'ws://chat.quickblox.com:5290',
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
-    active: 1
+    active: 2
   },
   iceServers: [
-    // {
-    //   'url': 'stun:stun.l.google.com:19302'
-    // },
-    // {
-    //   'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
-    //   'credential': 'testqbtest',
-    //   'username': 'testqb'
-    // },
-    // {
-    //   'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
-    //   'credential': 'testqbtest',
-    //   'username': 'testqb'
-    // }
-
     {
       'url': 'stun:stun.l.google.com:19302'
     },
-    // {
-    //   'url': 'stun:stun.anyfirewall.com:3478'
-    // },
-    // {
-    //   'url': 'stun:turn2.xirsys.com'
-    // },
     {
       'url': 'stun:turn.quickblox.com',
       'username': 'quickblox',
@@ -2338,26 +2318,6 @@ var config = {
       'username': 'quickblox',
       'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
-    // {
-    //   'url': 'turn:turn.bistri.com:80',
-    //   'username': 'homeo',
-    //   'credential': 'homeo'
-    // },
-    // {
-    //   'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
-    //   'username': 'webrtc',
-    //   'credential': 'webrtc'
-    // },
-    // {
-    //   'url': 'turn:turn2.xirsys.com:443?transport=udp',
-    //   'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
-    //   'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
-    // },
-    // {
-    //   'url': 'turn:turn2.xirsys.com:443?transport=tcp',
-    //   'username': '36b7fdaf-524e-4c38-a6d3-b174166fd573',      
-    //   'credential': '0371abb5-fa95-4bbe-b282-25e5888513f7'
-    // }
   ],
   urls: {
     session: 'session',
