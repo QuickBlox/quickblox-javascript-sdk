@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuickBlox JavaScript Chat code sample</title>
+  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container"> 
+
+    <!-- Main block -->
+    <div class="row">
+      <div class="col-sm-10">
+        <br>
+        <p>
+          <button type="button" class="btn btn-primary" id="user1" data-toggle="modal" data-target="#progressModal">Connect as User1</button>
+          <button type="button" class="btn btn-primary" id="user2" data-toggle="modal" data-target="#progressModal">Connect as User2</button>
+        </p>
+        
+        <hr>
+        
+        <p>
+          <textarea id="message" placeholder="Enter a message..." class="form-control" rows="7"></textarea>
+        </p>
+        <p>
+          <button type="button" class="btn btn-primary" id="sendMessage">Send message</button>
+        </p>
+        
+        <hr>
+
+        <h2>Chat feed</h2>
+        <textarea id="feed" class="form-control" rows="15" readonly></textarea>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="progressModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Processing</h4>
+          </div>
+          <div class="modal-body">
+            <p>connecting to chat...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="../../quickblox.js"></script>
+  <script src="config.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
