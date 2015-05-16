@@ -558,8 +558,8 @@ ChatProxy.prototype = {
 
     return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
-    function handler() {
-      callback();
+    function handler(stanza) {
+      callback(stanza);
       // if 'false' - a handler will be performed only once
       return params.live !== false;
     }
