@@ -78,7 +78,6 @@ function sendMessage(user_id, val) {
 // Show messages in UI
 //
 function showMessage(userId, msg) {
-  console.log(userId)
 
   var body = msg.body,
       time = msg.extension && msg.extension.time,

@@ -98,12 +98,21 @@ function ChatProxy(service, webrtcModule, conn) {
         } else {
           if (extraParams.childNodes[i].childNodes.length > 1) {
 
-            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+            // Firefox issue with 4K XML node limit:
+            // http://www.coderholic.com/firefox-4k-xml-node-limit/
+            var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+            if (nodeTextContentSize > 4096) {
+              var wholeNodeContent = "";
+              for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+              }
+              extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
 
+            } else {
+              extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+            }
           } else {
-
             extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-
           }
         }
       }

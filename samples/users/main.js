@@ -157,7 +157,7 @@ $(document).ready(function() {
       case "10":
         // More info about filters here 
         // http://quickblox.com/developers/Users#Filters
-        params = {filter: { field: 'email', param: 'eq', value: 'nobody@nowhere.org' }};
+        params = {filter: { field: 'login', param: 'in', value: ["sam33","ivan_gram"] }};
         request_for_many_user = true
         break;
     }
@@ -165,12 +165,17 @@ $(document).ready(function() {
     console.log("filter_value: " + filter_value)
 
     if(request_for_many_user){
-      QB.users.listUsers(params, function(err, user){
-        if (user) {
-          $('#output_place').val(JSON.stringify(user));
+      QB.users.listUsers(params, function(err, result){
+        if (result) {
+          $('#output_place').val(JSON.stringify(result));
         } else  {
           $('#output_place').val(JSON.stringify(err));
         }
+
+        console.log("current_page: " + result.current_page)
+        console.log("per_page: " + result.per_page)
+        console.log("total_entries: " + result.total_entries)
+        console.log("count: " + result.items.length)
 
         $("#progressModal").modal("hide");
 
