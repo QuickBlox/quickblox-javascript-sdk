@@ -158,9 +158,9 @@ These modules are combined through [browserify](http://browserify.org/) into a s
 
 * You need to have the dependencies listed in the package.json available, use `npm install` to load them.
 * Change the 'version' properties in next files:
-** https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/js/qbConfig.js
-** https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/bower.json
-** https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/package.json
+  * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/js/qbConfig.js
+  * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/bower.json
+  * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/package.json
 * Rebuild SDK: `grunt`
 * Commit your changes to git repository and create a new "git tag" for new version. This action updates SDK for GIT and also for bower package manager.
 * `npm publish`. This action updates SDK for node package manager, but maybe you will be needed some author credentials for it (you should be in owner list)
