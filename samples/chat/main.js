@@ -7,6 +7,9 @@ var opponent, currentUser;
 
 $(document).ready(function() {
 
+  $("#loginForm").modal("show");
+  $('#loginForm .progress').hide();
+
   // User1 login action
   //
   $('#user1').click(function() {
@@ -35,13 +38,16 @@ $(document).ready(function() {
 
 function connectChat(user) {
 
+  $('#loginForm button').hide();
+  $('#loginForm .progress').show();
+
   // Create session and connect to chat
   //
   QB.createSession({login: user.login, password: user.pass}, function(err, res) {
     if (res) {
       var user_jid = QB.chat.helpers.getUserJid(user.id, QBApp.appId);
       QB.chat.connect({jid: user_jid, password: user.pass}, function(err, roster) {
-        $("#progressModal").modal("hide");
+        $("#loginForm").modal("hide");
 
         if (err) {
           console.log(err);
