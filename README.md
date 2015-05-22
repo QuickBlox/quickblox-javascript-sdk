@@ -164,5 +164,6 @@ These modules are combined through [browserify](http://browserify.org/) into a s
 * Rebuild SDK: `grunt`
 * Commit your changes to git repository and create a new "git tag" for new version. This action updates SDK for GIT and also for bower package manager.
 * `npm publish`. This action updates SDK for node package manager, but maybe you will be needed some author credentials for it (you should be in owner list)
+* Update QuickBlox developers section
 
 
