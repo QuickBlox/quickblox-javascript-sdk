@@ -126,7 +126,8 @@ function ChatProxy(service, webrtcModule, conn) {
       dialog_id: dialogId,
       type: type,
       body: (body && body.textContent) || null,
-      extension: extension || null
+      extension: extension || null,
+      delay: delay
     };
 
     // chat markers
@@ -137,8 +138,8 @@ function ChatProxy(service, webrtcModule, conn) {
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
-    if (typeof self.onMessageListener === 'function' && (type === 'chat' || !delay))
-      self.onMessageListener(userId, message, to, delay);
+    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay))
+      self.onMessageListener(userId, message);
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
