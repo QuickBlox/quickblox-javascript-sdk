@@ -11,7 +11,9 @@
     "sdk",
     "baas",
     "cloud",
-    "api"
+    "api",
+    "chat",
+    "communication"
   ],
   "authors": [
     "Andrey Povelichenko <andrey.povelichenko@quickblox.com>",

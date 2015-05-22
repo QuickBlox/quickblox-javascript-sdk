@@ -11,7 +11,9 @@
     "sdk",
     "baas",
     "cloud",
-    "api"
+    "api",
+    "chat",
+    "communication"
   ],
   "maintainers": [
     "Alex Bass <alex.bass@quickblox.com>"
