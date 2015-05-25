@@ -4,7 +4,12 @@
   "version": "1.9.2",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/qbMain.js",
-  "license": "MIT",
+  "license": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/LICENSE"
+    }
+  ],
   "keywords": [
     "quickblox",
     "javascript",
