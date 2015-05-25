@@ -11,21 +11,29 @@
   <div class="container"> 
 
     <!-- Main block -->
-    <div class="row">
-      <div class="col-sm-10">
-        <br>
-        <p>
-          <textarea id="message" placeholder="Enter a message..." class="form-control" rows="7"></textarea>
-        </p>
-        <p>
-          <button type="button" class="btn btn-primary" id="sendMessage">Send message</button>
-        </p>
-        
-        <hr>
-
-        <h2>Chat feed</h2>
-        <textarea id="feed" class="form-control" rows="15" readonly></textarea>
-      </div>
+    <div id="main_block">
+        <h2>List of chat dialogs</h2>
+        <div class="panel panel-primary">
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="list-group" id="dialogs-list">
+                  <a href="#" class="list-group-item active">
+                    <span class="badge">12</span>
+                    <h4 class="list-group-item-heading">What do you think about it?</h4>
+                    <p class="list-group-item-text">School friends</p>
+                  </a>
+                  <a href="#" class="list-group-item">
+                    <span class="badge">8</span>
+                    <h4 class="list-group-item-heading">Hello</h4>
+                    <p class="list-group-item-text">private chat</p>
+                  </a>
+                </div>
+              </div>
+              <div class="col-md-8">messages</div>
+            </div>
+          </div>
+        </div>
     </div>
 
     <!-- Modal -->

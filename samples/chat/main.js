@@ -56,7 +56,31 @@ function connectChat(user) {
 
           QB.chat.onMessageListener = showMessage;
 
-          $('#feed').val('User : CONNECTED at ' + getLocalTime());
+          // Load chat dialogs
+          //
+          QB.chat.dialog.list(null, function(err, res) {
+            if (err) {
+
+            } else {
+              res.items.forEach(function(item, i, arr) {
+
+                console.log(item);
+
+                var dialogName = item.name;
+                var dialogLastMessage = item.last_message;
+                var dialogUnreadMessagesCount = item.unread_messages_count; 
+
+                var dialogHtml = '<a href="#" class="list-group-item">' + 
+                    '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
+                    '<h4 class="list-group-item-heading">' + dialogLastMessage + '</h4>' + 
+                    '<p class="list-group-item-text">' + dialogName + '</p>' + 
+                    '</a>';
+
+                $('#dialogs-list').append(dialogHtml);
+              });
+            }
+          });
+
         }
       });
     }
