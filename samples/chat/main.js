@@ -47,7 +47,6 @@ function connectChat(user) {
     if (res) {
       var user_jid = QB.chat.helpers.getUserJid(user.id, QBApp.appId);
       QB.chat.connect({jid: user_jid, password: user.pass}, function(err, roster) {
-        $("#loginForm").modal("hide");
 
         if (err) {
           console.log(err);
@@ -59,11 +58,12 @@ function connectChat(user) {
           // Load chat dialogs
           //
           QB.chat.dialog.list(null, function(err, res) {
+            $("#loginForm").modal("hide");
+
             if (err) {
 
             } else {
               res.items.forEach(function(item, i, arr) {
-
                 var dialogId = item._id;
                 var dialogName = item.name;
                 var dialogLastMessage = item.last_message;
@@ -79,7 +79,6 @@ function connectChat(user) {
               });
             }
           });
-
         }
       });
     }
@@ -88,7 +87,46 @@ function connectChat(user) {
 
 function triggerDialog(element, dialogId){
   console.log(element);
+
+  // deselect
+  var kids = $( "#dialogs-list" ).children();
+  kids.removeClass("active");
+
+  // select
   element.className = element.className + " active";
+
+
+  // Load messages history
+  //
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
+  QB.chat.message.list(params, function(err, messages) {
+    $('#messages-list').html('');
+
+    if (messages) {
+      if(messages.items.length == 0){
+        $("#no-messages-label").removeClass('hide');
+      }else{
+        $("#no-messages-label").addClass('hide');
+        
+        messages.items.forEach(function(item, i, arr) {
+          var messageText = item.message;
+          var messageSenderId = item.sender_id;
+          var messageDateSent = new Date(item.date_sent*1000);
+
+          var messageHtml = '<div class="list-group-item">' + 
+                            '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
+                            '<h4 class="list-group-item-heading">' + 'Igor Khomenko' + '</h4>' + 
+                            '<p class="list-group-item-text">' + 'Hey how are you doing?' + '</p>' + 
+                            '</div>';
+
+          $('#messages-list').append(messageHtml);
+        });
+      }
+    }else{
+    
+    }
+  });
+
 }
 
 // Send a chat message

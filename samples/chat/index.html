@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>QuickBlox JavaScript Chat code sample</title>
   <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css">
 </head>
 <body>
   <div class="container"> 
@@ -18,23 +18,14 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="list-group" id="dialogs-list">
-                <!-- list of dialogs will be here -->
+                <!-- list of chat dialogs will be here -->
                 </div>
               </div>
               <div class="col-md-8">
-                <div class="list-group">
-                  <div href="#" class="list-group-item">
-                    <time datetime="2015-05-20T11:17:27Z" class="pull-right">7 days ago</time>
-                    <h4 class="list-group-item-heading">Igor Khomenko</h4>
-                    <p class="list-group-item-text">Hey how are you doing?</p>
-
-                  </div>
-                  <div href="#" class="list-group-item">
-                    <time datetime="2015-05-20T11:17:27Z" class="pull-right">7 days ago</time>
-                    <h4 class="list-group-item-heading">Second List Group Item Heading</h4>
-                    <p class="list-group-item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vitae ornare ante, nec aliquam mauris. Curabitur egestas egestas odio. Donec tincidunt velit est, non molestie eros varius ac. Morbi leo dolor, tincidunt vel dui fringilla, ultricies venenatis ligula. Cras felis massa, iaculis eget euismod ac, maximus in arcu.</p>
-                  </div>
+                <div class="list-group" id="messages-list">
+                  <!-- list of chat messages will be here -->
                 </div>
+                <p id="no-messages-label" class="hide">No messages</p>
                 <form class="form-inline" role="form">
                   <div class="form-group">
                     <input type="text" class="form-control" id="message_text" placeholder="Enter message">
@@ -68,8 +59,9 @@
 
   </div>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
   <script src="../../quickblox.js"></script>
   <script src="config.js"></script>
   <script src="main.js"></script>
