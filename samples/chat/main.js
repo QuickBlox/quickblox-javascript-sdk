@@ -64,13 +64,12 @@ function connectChat(user) {
             } else {
               res.items.forEach(function(item, i, arr) {
 
-                console.log(item);
-
+                var dialogId = item._id;
                 var dialogName = item.name;
                 var dialogLastMessage = item.last_message;
                 var dialogUnreadMessagesCount = item.unread_messages_count; 
 
-                var dialogHtml = '<a href="#" class="list-group-item">' + 
+                var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
                     '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
                     '<h4 class="list-group-item-heading">' + dialogLastMessage + '</h4>' + 
                     '<p class="list-group-item-text">' + dialogName + '</p>' + 
@@ -85,6 +84,11 @@ function connectChat(user) {
       });
     }
   });
+}
+
+function triggerDialog(element, dialogId){
+  console.log(element);
+  element.className = element.className + " active";
 }
 
 // Send a chat message
