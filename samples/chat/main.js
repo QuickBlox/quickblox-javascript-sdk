@@ -3,7 +3,10 @@
 //
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
-var opponent, currentUser;
+var dialogs = {};
+var currentDialog;
+
+var currentUser;
 
 $(document).ready(function() {
 
@@ -13,26 +16,15 @@ $(document).ready(function() {
   // User1 login action
   //
   $('#user1').click(function() {
-    opponent = QBUser2;
+    currentUser = QBUser1;
     connectChat(QBUser1);
   });
 
   // User2 login action
   //
   $('#user2').click(function() {
-    opponent = QBUser1;
+    currentUser = QBUser2;
     connectChat(QBUser2);
-  });
-
-  // Send message action
-  //
-  $('#sendMessage').click(function() {
-    var msg = $('#message').val().trim();
-    $('#message').val('').focus();
-
-    if (msg.length > 0){
-      sendMessage(opponent.id, msg);
-    }
   });
 });
 
@@ -69,6 +61,8 @@ function connectChat(user) {
                 var dialogLastMessage = item.last_message;
                 var dialogUnreadMessagesCount = item.unread_messages_count; 
 
+                dialogs[dialogId] = item;
+
                 var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
                     '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
                     '<h4 class="list-group-item-heading">' + dialogLastMessage + '</h4>' + 
@@ -95,6 +89,7 @@ function triggerDialog(element, dialogId){
   // select
   element.className = element.className + " active";
 
+  currentDialog = dialogs[dialogId];
 
   // Load messages history
   //
@@ -129,23 +124,43 @@ function triggerDialog(element, dialogId){
 
 }
 
-// Send a chat message
-//
-function sendMessage(user_id, val) {
-  var msg = {
-    type: 'chat',
-    body: val,
+function onSendMessage(){
+  var currentText = $('#message_text').val().trim();
+  $('#message_text').val('').focus();
+ 
+  if (currentText.length == 0){
+    return;
+  }
 
+  // send a message
+  //
+  var msg = {
+    type: currentDialog.type == 3 ? 'chat' : 'groupchat',
+    body: currentText,
     extension: {
-      time: Math.floor(Date.now() / 1000),
+      save_to_history: 1,
     }
   };
+  //
+  if(currentDialog.type == 3){
+    console.log(currentDialog.occupants_ids);
 
-  var user_jid = QB.chat.helpers.getUserJid(user_id, QBApp.appId);
-  QB.chat.send(user_jid, msg);
+    var userId;
+    currentDialog.occupants_ids.forEach(function(item, i, arr) {
+      if(item != currentUser.id){
+        userId = item;
+      }  
+    });
+    QB.chat.send(userId, msg);
+  }else{
+    QB.chat.send(currentDialog.xmpp_room_jid, msg);
+  }
+  
 
-  showMessage(null, msg);
+  //showMessage(null, msg);
+
 }
+
 
 // Show messages in UI
 //

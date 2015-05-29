@@ -317,8 +317,17 @@ ChatProxy.prototype = {
     });
   },
 
-  send: function(jid, message) {
+  send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
+
+    var jid;
+    if (typeof jid_or_user_id === 'string') {
+      jid = jid_or_user_id;
+    } else if (typeof jid_or_user_id === 'number') {
+      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    } else {
+      throw unsupported;
+    }
 
     var self = this,
         msg = $msg({
