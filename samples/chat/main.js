@@ -4,8 +4,9 @@
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
 
 var dialogs = {};
-var currentDialog;
+var users = {};
 
+var currentDialog;
 var currentUser;
 
 $(document).ready(function() {
@@ -49,26 +50,60 @@ function connectChat(user) {
           // Load chat dialogs
           //
           QB.chat.dialog.list(null, function(err, res) {
-            $("#loginForm").modal("hide");
 
             if (err) {
 
             } else {
-              res.items.forEach(function(item, i, arr) {
-                var dialogId = item._id;
-                var dialogName = item.name;
-                var dialogLastMessage = item.last_message;
-                var dialogUnreadMessagesCount = item.unread_messages_count; 
 
+              var occupantsIds = [];  
+
+              // repackage dialogs data
+              //
+              res.items.forEach(function(item, i, arr) {
                 dialogs[dialogId] = item;
 
-                var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
-                    '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
-                    '<h4 class="list-group-item-heading">' + dialogLastMessage + '</h4>' + 
-                    '<p class="list-group-item-text">' + dialogName + '</p>' + 
-                    '</a>';
+                // collect all occupants ids
+                item.occupants_ids.map(function(userId) {
+                  occupantsIds.push(userId);
+                });
+              });
 
-                $('#dialogs-list').append(dialogHtml);
+
+              // Load all dialogs' users
+              //
+              var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
+              QB.users.listUsers(params, function(err, result){
+                if (result) {
+                  result.items.forEach(function(item, i, arr) {
+                    users[item.user.id] = item.user;
+                  });
+
+
+                  // // show dialogs
+                  // //
+                  // var dialogId = item._id;
+                  // var dialogName = item.name;
+                  // var dialogLastMessage = item.last_message;
+                  // var dialogUnreadMessagesCount = item.unread_messages_count; 
+
+                  // var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
+                  //   '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
+                  //   '<h4 class="list-group-item-heading">' + dialogName + '</h4>' + 
+                  //   '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
+                  //   '</a>';
+
+                  // $('#dialogs-list').append(dialogHtml);
+
+                  // // trigger 1st dialog
+                  // triggerDialog($('#dialogs-list').children()[0] ,res.items[0]._id);
+
+                  
+
+                } else  {
+                  
+                }
+
+                $("#loginForm").modal("hide");
               });
             }
           });
@@ -91,7 +126,7 @@ function triggerDialog(element, dialogId){
 
   // Load messages history
   //
-  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
+  var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
 
@@ -133,18 +168,14 @@ function clickSendMessage(){
     extension: {
       save_to_history: 1,
     },
-
+    senderId: currentUser.id
   };
   //
   if(currentDialog.type == 3){
     console.log(currentDialog.occupants_ids);
 
-    var userId;
-    currentDialog.occupants_ids.forEach(function(item, i, arr) {
-      if(item != currentUser.id){
-        userId = item;
-      }  
-    });
+    var userId = getRecipientId(currentDialog.occupants_ids, currentUser.id);
+
     QB.chat.send(userId, msg);
   }else{
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
@@ -156,20 +187,28 @@ function clickSendMessage(){
 // Show messages in UI
 //
 function showMessage(msg) {
-  var messageHtml = buildMessageHTML(msg.body, messageSenderId, new Date());
+  // add a message to list
+  var messageHtml = buildMessageHTML(msg.body, msg.senderId, new Date());
+  $('#messages-list').append(messageHtml);
 
-  $('#feed').val(currentText + message); 
+  // scroll to bottom
+  var mydiv = $('#messages-list');
+  mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
 function buildMessageHTML(messageText, messageSenderId, messageDateSent){
   var messageHtml = '<div class="list-group-item">' + 
                     '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
                     '<h4 class="list-group-item-heading">' + 'Igor Khomenko' + '</h4>' + 
-                    '<p class="list-group-item-text">' + 'Hey how are you doing?' + '</p>' + 
+                    '<p class="list-group-item-text">' + messageText + '</p>' + 
                     '</div>';
   return messageHtml;
 }
 
-function getLocalTime() {
-  return (new Date).toTimeString().split(' ')[0];
+function getRecipientId(occupantsIds, currentUserId){
+  occupantsIds.forEach(function(item, i, arr) {
+    if(item != currentUserId){
+      return item;
+    }  
+  });
 }
