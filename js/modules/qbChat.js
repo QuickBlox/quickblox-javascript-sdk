@@ -236,7 +236,14 @@ ChatProxy.prototype = {
     var self = this,
         err, rooms;
 
-    connection.connect(params.jid, params.password, function(status) {
+    var userJid;
+    if ('userId' in params) {
+      userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    } else if ('jid' in params) {
+      userJid = params.jid;
+    }
+
+    connection.connect(userJid, params.password, function(status) {
       switch (status) {
       case Strophe.Status.ERROR:
         err = getError(422, 'Status.ERROR - An error has occurred');

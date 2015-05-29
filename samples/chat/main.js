@@ -37,8 +37,7 @@ function connectChat(user) {
   //
   QB.createSession({login: user.login, password: user.pass}, function(err, res) {
     if (res) {
-      var user_jid = QB.chat.helpers.getUserJid(user.id, QBApp.appId);
-      QB.chat.connect({jid: user_jid, password: user.pass}, function(err, roster) {
+      QB.chat.connect({userId: user.id, password: user.pass}, function(err, roster) {
 
         if (err) {
           console.log(err);
@@ -80,7 +79,6 @@ function connectChat(user) {
 }
 
 function triggerDialog(element, dialogId){
-  console.log(element);
 
   // deselect
   var kids = $( "#dialogs-list" ).children();
@@ -108,11 +106,7 @@ function triggerDialog(element, dialogId){
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
 
-          var messageHtml = '<div class="list-group-item">' + 
-                            '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
-                            '<h4 class="list-group-item-heading">' + 'Igor Khomenko' + '</h4>' + 
-                            '<p class="list-group-item-text">' + 'Hey how are you doing?' + '</p>' + 
-                            '</div>';
+          var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent);
 
           $('#messages-list').append(messageHtml);
         });
@@ -121,10 +115,9 @@ function triggerDialog(element, dialogId){
     
     }
   });
-
 }
 
-function onSendMessage(){
+function clickSendMessage(){
   var currentText = $('#message_text').val().trim();
   $('#message_text').val('').focus();
  
@@ -139,7 +132,8 @@ function onSendMessage(){
     body: currentText,
     extension: {
       save_to_history: 1,
-    }
+    },
+
   };
   //
   if(currentDialog.type == 3){
@@ -155,29 +149,25 @@ function onSendMessage(){
   }else{
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
-  
 
-  //showMessage(null, msg);
-
+  showMessage(msg);
 }
-
 
 // Show messages in UI
 //
-function showMessage(userId, msg) {
+function showMessage(msg) {
+  var messageHtml = buildMessageHTML(msg.body, messageSenderId, new Date());
 
-  var body = msg.body,
-      time = msg.extension && msg.extension.time,
-      messageDate = new Date(time * 1000);
-
-  var message = "\n";
-      message += (userId === null ? "Me" : "Opponent");
-      message += " (" + messageDate.getHours() + ':' + (messageDate.getMinutes().toString().length === 1 ? '0'+messageDate.getMinutes() : messageDate.getMinutes()) + ':' + messageDate.getSeconds() + ")";
-      message +=  ": ";
-      message += body;
-
-  var currentText = $('#feed').val();
   $('#feed').val(currentText + message); 
+}
+
+function buildMessageHTML(messageText, messageSenderId, messageDateSent){
+  var messageHtml = '<div class="list-group-item">' + 
+                    '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
+                    '<h4 class="list-group-item-heading">' + 'Igor Khomenko' + '</h4>' + 
+                    '<p class="list-group-item-text">' + 'Hey how are you doing?' + '</p>' + 
+                    '</div>';
+  return messageHtml;
 }
 
 function getLocalTime() {
