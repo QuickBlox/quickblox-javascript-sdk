@@ -49,7 +49,7 @@ function connectChat(user) {
 
           // Load chat dialogs
           //
-          QB.chat.dialog.list(null, function(err, res) {
+          QB.chat.dialog.list(null, function(err, resDialogs) {
 
             if (err) {
 
@@ -59,7 +59,8 @@ function connectChat(user) {
 
               // repackage dialogs data
               //
-              res.items.forEach(function(item, i, arr) {
+              resDialogs.items.forEach(function(item, i, arr) {
+                var dialogId = item._id;
                 dialogs[dialogId] = item;
 
                 // collect all occupants ids
@@ -79,25 +80,25 @@ function connectChat(user) {
                   });
 
 
-                  // // show dialogs
-                  // //
-                  // var dialogId = item._id;
-                  // var dialogName = item.name;
-                  // var dialogLastMessage = item.last_message;
-                  // var dialogUnreadMessagesCount = item.unread_messages_count; 
+                  // show dialogs
+                  //
+                  resDialogs.items.forEach(function(item, i, arr) {
+                    var dialogId = item._id;
+                    var dialogName = item.name;
+                    var dialogLastMessage = item.last_message;
+                    var dialogUnreadMessagesCount = item.unread_messages_count; 
 
-                  // var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
-                  //   '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
-                  //   '<h4 class="list-group-item-heading">' + dialogName + '</h4>' + 
-                  //   '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
-                  //   '</a>';
+                    var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
+                      '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
+                      '<h4 class="list-group-item-heading">' + dialogName + '</h4>' + 
+                      '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
+                      '</a>';
 
-                  // $('#dialogs-list').append(dialogHtml);
+                    $('#dialogs-list').append(dialogHtml);
+                  });
 
-                  // // trigger 1st dialog
-                  // triggerDialog($('#dialogs-list').children()[0] ,res.items[0]._id);
-
-                  
+                  // trigger 1st dialog
+                  triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
 
                 } else  {
                   
@@ -140,6 +141,8 @@ function triggerDialog(element, dialogId){
           var messageText = item.message;
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
+
+          console.log(item.read_ids);
 
           var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent);
 
