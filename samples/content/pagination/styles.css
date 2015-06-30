@@ -1,0 +1,154 @@
+*{
+	/* Universal page reset */
+	margin:0;
+	padding:0;
+}
+
+body{
+	/* Setting default text color, background and a font stack */
+	font-size:0.825em;
+	color:#666;
+	background:url('img/page_bg.jpg') repeat-x #383b3f;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+#main{
+	/* The main container div */
+	position:relative;
+	margin:50px auto;
+	width:410px;
+	background:url('img/main_bg.jpg') repeat-x #aeadad;
+	border:1px solid #CCCCCC;
+	padding:70px 25px 60px;
+	
+	/* CSS3 rounded cornenrs */
+	
+	-moz-border-radius:12px;
+	-webkit-border-radius:12px;
+	border-radius:12px;
+}
+
+#holder{
+	/* The unordered list that is to be split into pages */
+
+	width:400px;
+	overflow:hidden;
+	position:relative;
+	background:url('img/dark_bg.jpg') repeat #4e5355;
+	padding-bottom:10px;
+
+	/*	CSS3 inner shadow (the webkit one is commeted, because Google Chrome
+		does not like rounded corners combined with inset shadows): */
+
+	-moz-box-shadow:0 0 10px #222 inset;
+	/*-webkit-box-shadow:0 0 10px #222 inset;*/
+	box-shadow:0 0 10px #222 inset;
+}
+
+.swControls{
+	position:absolute;
+	margin-top:10px;
+}
+
+a.swShowPage{
+
+	/* The links that initiate the page slide */
+
+	background-color:#444444;
+	float:left;
+	height:15px;
+	margin:4px 3px;
+	text-indent:-9999px;
+	width:15px;
+	/*border:1px solid #ccc;*/
+	
+	/* CSS3 rounded corners */
+	
+	-moz-border-radius:7px;
+	-webkit-border-radius:7px;
+	border-radius:7px;
+}
+
+a.swShowPage:hover,
+a.swShowPage.active{
+	background-color:#2993dd;
+	
+	/*	CSS3 inner shadow */
+	
+	-moz-box-shadow:0 0 7px #1e435d inset;
+	/*-webkit-box-shadow:0 0 7px #1e435d inset;*/
+	box-shadow:0 0 7px #1e435d inset;
+}
+
+#holder li{
+	background-color:#F4F4F4;
+	list-style:none outside none;
+	margin:10px 10px 0;
+	padding:20px;
+	float:left;
+
+	/* Regular CSS3 box shadows (not inset): */
+
+	-moz-box-shadow:0 0 6px #111111;
+	-webkit-box-shadow:0 0 6px #111111;
+	box-shadow:0 0 6px #111111;
+}
+
+#holder,
+#holder li{
+	/* Applying rouded corners to both the holder and the holder lis */
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	border-radius:8px;
+}
+
+.clear{
+	/* This class clears the floated elements */
+	clear:both;
+}
+
+
+/* The styles below are only necessary for the styling of the demo page */
+
+h1{
+	background-color:#272B2C;
+	border-bottom:1px solid #000000;
+	color:#EEEEEE;
+	font-size:32px;
+	font-weight:normal;
+	margin-bottom:30px;
+	padding:30px 0;
+	text-align:center;
+	
+	-moz-box-shadow:0 1px 0 #444444;
+	-webkit-box-shadow:0 1px 0 #444444;
+	box-shadow:0 1px 0 #444444;
+}
+
+h1,h2{
+	font-family:"Myriad Pro",Arial,Helvetica,sans-serif;
+}
+
+h2{
+	font-size:14px;
+	font-weight:normal;
+	text-align:center;
+	
+	position:absolute;
+	right:40px;
+	top:43px;
+}
+
+a, a:visited {
+	color:#0196e3;
+	text-decoration:none;
+	outline:none;
+}
+
+a:hover{
+	text-decoration:underline;
+}
+
+a img{
+	border:none;
+}
