@@ -995,7 +995,7 @@ ContentProxy.prototype = {
       callback = params;
       params = null;
     }
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs)}, function(err,result){
+    this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
     });

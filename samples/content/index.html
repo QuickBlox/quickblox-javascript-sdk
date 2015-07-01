@@ -6,15 +6,20 @@
  	<title>QuickBlox Images</title>
  	<link href="css/style.css" rel="stylesheet">
  	<link href="css/bootstrap.min.css" rel="stylesheet">
- 	<script src="js/jquery.min.js"></script>
- 	<script src="js/bootstrap.min.js"></script>	
- 	<script src="js/quickblox.min.js"></script>	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+ 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>	
+ 	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.2/quickblox.min.js"></script>-->
+ 	<script src="js/quickblox.js"></script>	
  	<script src="js/main.js"></script>	
  </head>
 
  <body>
 
- 	<div id="pictures" class="row"></div>
+	<form enctype="multipart/form-data" method="post">
+		<input type="file">
+		<input type="submit" value="Отправить">
+	</form>
+	<div id="pictures" class="row"></div>
 
  </body>
 
