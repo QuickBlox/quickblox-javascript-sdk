@@ -1,6 +1,7 @@
 QB.init(24507, 'eskKgMVUc7nRSbq', 'UW6VdHKdAV8Jxc7', false);
 
 $(document).ready(function(){
+// create session
 	QB.createSession({login: 'vladlukhanin', password: 'papajad24'}, function(err, result) {
 		if (err) { 
 	        console.log('Something went wrong: ' + err);
@@ -10,7 +11,7 @@ $(document).ready(function(){
 	 			user_id = result.id;
 				uploadPages = 1;
 
-	 		// get content images
+			// get content images
 	 		function uploadingImages() {
 				QB.content.list({page: uploadPages, per_page: '4'}, function(error, response) {
 	    	  	$.each(response.items, function(index, item){
@@ -27,6 +28,7 @@ $(document).ready(function(){
 
 	 		uploadingImages();
 
+			// uploading images scroll event
 			$(window).scroll(function() {
 			    if  ($(window).scrollTop() == $(document).height() - $(window).height())
 			    {
@@ -35,29 +37,20 @@ $(document).ready(function(){
 				}
 			});	 		
 
+			// loading image click event
+		    $("input[type=submit]").click(function(e){
+		    	e.preventDefault();
+		    	var file = $("input[type=file]")[0].files[0];
+		    	console.log(file);
+		    	// loading image
+		    	QB.content.createAndUpload({name: file.name, file:file, type: file.type, size:file.size, 'public': true}, function(err, response){
+				    if (err) {
+				        console.log(err);
+				    } else {
+				        console.log(response);
+				    }
+				});
+		    });
 	    }
-
-	    $("input[type=submit]").click(function(e){
-	    	e.preventDefault();
-	    	var file = $("input[type=file]")[0].files[0];
-	    	console.log(file);
-
-	    	QB.content.createAndUpload({name: file.name, file:file, type: file.type, size:file.size, 'public': true}, function(err, response){
-			    if (err) {
-			        console.log(err);
-			    } else {
-			        console.log(response);
-			    }
-			});
-			console.log(QB);
-	    });
     });
-
-		// $(window).scroll(function() {
-		//      if  ($(window).scrollTop() == $(document).height() - $(window).height()) 
-		//      {
-		//         alert("это сработало событие");
-		//      }
-		// });
-	
 });
