@@ -1,4 +1,4 @@
-QB.init(24507, 'eskKgMVUc7nRSbq', 'UW6VdHKdAV8Jxc7', false);
+QB.init(24507, 'eskKgMVUc7nRSbq', 'UW6VdHKdAV8Jxc7', true);
 
 $(document).ready(function(){
 // create session
@@ -22,6 +22,16 @@ $(document).ready(function(){
 						console.log(error);
 					} else {
 						console.log(response);
+
+						$.ajax({
+							beforeSend: function(){
+								$("#loadwnd").show(0);
+							},
+							complete: function(){
+								$("#loadwnd").delay(1250).hide(0);
+							}
+						});
+
 					}
 				});
 			}
@@ -38,19 +48,29 @@ $(document).ready(function(){
 			});
 
 			// loading image click event
-			$("input[type=submit]").click(function(e){
+			$("#loading-btn").click(function(e){
 				e.preventDefault();
-				var file = $("input[type=file]")[0].files[0];
-				console.log(file);
-				// loading image
-				QB.content.createAndUpload({name: file.name, file:file, type: file.type, size:file.size, 'public': true}, function(err, response){
+
+				var inputFile = $("input[type=file]")[0].files[0];
+				console.log(inputFile);
+				// uploading image
+				QB.content.createAndUpload({name: inputFile.name, file: inputFile, type: inputFile.type, size: inputFile.size, 'public': true}, function(err, response){
 					if (err) {
 						console.log(err);
 					} else {
 						console.log(response);
+						$.ajax({
+							beforeSend: function(){
+								$("#progress").show(0);
+							},
+							complete: function(){
+								$("#progress").delay(1250).hide(0);
+							}
+						});
 					}
 				});
 			});
+
 		}
 	});
 });

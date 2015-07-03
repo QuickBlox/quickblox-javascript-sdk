@@ -3,15 +3,16 @@ body {
 }
 
 #upload-form {
-	margin-bottom: 10px;
 	margin-top: 10px;
+	height: 100px;
 }
 
 #upload-img {
 	width: 100%;
+	padding-left: 10px;
 }
 
-#btn {
+#loading-btn {
 	margin-top: 10px;
 }
 
@@ -23,4 +24,17 @@ body {
 	margin-bottom: 10px;
 	padding-left: 5px;
 	padding-right: 5px;
+}
+
+#loadwnd {
+	width: 4%;
+	height: 1%;
+	position: fixed;
+	bottom: 5%;
+	left: 48%;
+	display: none;
+}
+
+#progress {
+	display: none;
 }

@@ -1,28 +1,42 @@
 <!DOCTYPE html>
- <html lang="en">
+<html lang="en">
  
- <head>
- 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
- 	<title>QuickBlox Images</title>
- 	<link href="css/style.css" rel="stylesheet">
- 	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
- 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>	
- 	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.2/quickblox.min.js"></script>-->
- 	<script src="js/quickblox.js"></script>	
- 	<script src="js/main.js"></script>	
- </head>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>QuickBlox JavaScript content samle</title>
+	<link href="css/style.css" rel="stylesheet">
+	<!-- <link href="css/bootstrap.min.css" rel="stylesheet"> -->
+	<link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
 
- <body>
+<body>
 
- 	<div class="row">
-		<form id="upload-form" class="col-md-11 col-md-offset-1 col-sm-11 col-sm-offset-1 col-xs-12">
+	<div class="row">
+		<form id="upload-form" class="col-md-12 col-sm-12 col-xs-12">
 			<input id="upload-img" type="file">
-			<input id="btn" type="submit" value="Отправить">
+			<div class="col-md-2 col-sm-3 col-xs-5">
+				<button class="btn btn-default col-md-12 col-sm-12 col-xs-12" id="loading-btn" type="submit" data-loading-text="Loading...">
+					Отправить <span class="glyphicon glyphicon-export"></span>
+				</button>
+				<div id="progress">
+					<img src="ajax-uploader.gif" class="img-responsive">
+				</div>
+			</div>
 		</form>
 		<div id="pictures"></div>
 	</div>
 
- </body>
+	<div id="loadwnd">
+		<img src="ajax-loader.gif" class="img-responsive">
+	</div>
 
- </html> 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>	
+	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.2/quickblox.min.js"></script>-->
+	<script src="js/quickblox.js"></script>	
+	<script src="js/main.js"></script>	
+</body>
+
+</html> 
