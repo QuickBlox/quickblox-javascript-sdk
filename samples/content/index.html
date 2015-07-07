@@ -8,34 +8,35 @@
 	<link href="css/style.css" rel="stylesheet">
 	<!-- <link href="css/bootstrap.min.css" rel="stylesheet"> -->
 	<link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
 
 <body>
-
-	<div class="row">
-		<form id="upload-form" class="col-md-12 col-sm-12 col-xs-12">
-			<input id="upload-img" type="file">
-			<div class="col-md-2 col-sm-3 col-xs-5">
-				<button class="btn btn-default col-md-12 col-sm-12 col-xs-12" id="loading-btn" type="submit" data-loading-text="Loading...">
-					Send <span class="glyphicon glyphicon-export"></span>
-				</button>
-				<div id="progress">
-					<img src="ajax-uploader.gif" class="img-responsive">
-				</div>
-			</div>
-		</form>
-		<div id="pictures"></div>
-	</div>
-
-	<div id="loadwnd">
-		<img src="ajax-loader.gif" class="img-responsive">
-	</div>
+<div class="container">
+  <div class="row">
+	<form id="upload-form" class="col-md-12 col-sm-12 col-xs-12">
+	  <input id="upload-img" type="file">
+	  <div class="col-md-2 col-sm-3 col-xs-5">
+		<button class="btn btn-default col-md-12 col-sm-12 col-xs-12" id="loading-btn" type="submit" data-loading-text="Loading...">
+			Send <span class="glyphicon glyphicon-export"></span>
+		</button>
+		<div id="progress">
+			<img src="images/ajax-uploader.gif" class="img-responsive">
+		</div>
+	  </div>
+	</form>
+  </div>
+  <div id="pictures" class="row"></div>
+  <div class="row" id="loadwnd">
+	<img src="images/ajax-loader.gif" class="img-responsive">
+  </div>
+</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>	
 	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.2/quickblox.min.js"></script>-->
-	<script src="js/quickblox.js"></script>	
+	<script src="js/quickblox.js"></script>
+	<script src="js/config.js"></script>
 	<script src="js/main.js"></script>	
 </body>
 

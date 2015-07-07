@@ -17,7 +17,6 @@ body {
 }
 
 #pictures {
-	padding: 10px 20px;
 	clear: both;
 }
 
@@ -28,8 +27,8 @@ body {
 }
 
 #loadwnd {
-	width: 4%;
-	height: 1%;
+	width: 8%;
+	height: 2%;
 	position: fixed;
 	bottom: 5%;
 	left: 48%;
