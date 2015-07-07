@@ -1,5 +1,14 @@
-body {
-	overflow-x: hidden;
+.site-head {
+	padding: 20px 0;
+}
+
+#logo {
+
+}
+
+.title {
+	width: 100%;
+	text-align: center;
 }
 
 #upload-form {
