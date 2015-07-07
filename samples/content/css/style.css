@@ -18,9 +18,10 @@ body {
 
 #pictures {
 	padding: 10px 20px;
+	clear: both;
 }
 
-.animals.col-md-6.col-sm-6.col-xs-6, .animals.col-md-12.col-sm-12.col-xs-12 {
+.animals.col-md-4.col-sm-6.col-xs-12, .animals.col-md-12.col-sm-12.col-xs-12 {
 	margin-bottom: 10px;
 	padding-left: 5px;
 	padding-right: 5px;
