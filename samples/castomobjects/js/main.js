@@ -33,5 +33,3 @@ QB.createSession(QBUser, function(err, result){
         });
     }
 });
-
-});
