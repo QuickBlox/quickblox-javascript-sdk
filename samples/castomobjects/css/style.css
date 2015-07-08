@@ -1,8 +1,7 @@
-.site-head {
-	padding: 20px 0;
+body {
+  padding-top: 50px;
 }
 
-.title {
-	width: 100%;
-	text-align: center;
+.starter-template {
+  padding: 5px;
 }
