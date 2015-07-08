@@ -1,0 +1,3 @@
+[submodule "quickblox-web-sdk-master"]
+	path = quickblox-web-sdk-master
+	url = https://github.com/QuickBlox/quickblox-web-sdk
