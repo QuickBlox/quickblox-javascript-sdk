@@ -2,6 +2,27 @@ body {
   padding-top: 50px;
 }
 
+.navbar-brand {
+	padding: 1px 15px;
+}
+
 .starter-template {
   padding: 5px;
+}
+
+#send_post {
+	margin-right: 13%;
+	float: right;
+}
+
+#title_post, #body_post {
+	margin-bottom: 10px;
+}
+
+#load-img {
+	display: none;
+}
+
+#add-btn {
+	margin: 10px;
 }
