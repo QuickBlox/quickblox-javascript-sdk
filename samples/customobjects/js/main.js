@@ -39,9 +39,6 @@ QB.createSession(QBUser, function(err, result){
 						containerElement.append(postElement);
 				}
 			});
-
-
-	
 		});
 	}
 });
@@ -77,7 +74,6 @@ function addNewPost(textTitle, textBody) {
 			console.log(res);
 			$("#load-img").delay(1000).fadeOut(1000);
 			$('#myModal').modal('hide');
-
 		}
 	});
 }
