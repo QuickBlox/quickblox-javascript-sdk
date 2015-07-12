@@ -1,8 +1,7 @@
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, true);
 
 // Create session
-var filter = {sort_desc: 'created_at'};
-
+	var filter = {sort_asc: 'created_at'};
 QB.createSession(QBUser, function(err, result){
 	if (err) {
 		console.log('Something went wrong: ' + err);
@@ -15,18 +14,20 @@ QB.createSession(QBUser, function(err, result){
 			e.preventDefault();
 
 			var textTitle = $('#title_post')[0].value;
-				textBody = $('#body_post')[0].value;
-
-			if (textTitle || textBody) {
-				$("#load-img").show(0);
-			}
+					textBody = $('#body_post').val();
 			// Adds a new post
-			addNewPost(textTitle, textBody);
+			if (textTitle && textBody) {
+				$("#load-img").show(0);
+				addNewPost(textTitle, textBody);
+			} else {
+				alert('Please complete all required fields')
+			}
 		});
 	}
 });
 
 function getAllPosts() {
+
 	QB.data.list("Blog", filter, function(err, result){
 		if (err) { 
 			console.log(err);
@@ -37,10 +38,10 @@ function getAllPosts() {
 
 			for (var i=0; i < result.items.length; i++) {
 				var postElement = $('<div></div>').addClass('starter-template');
-				var postTitle = $('<h1></h1>').html('#' + (i+1) + ' ' + result.items[result.items.length-i-1].title);
-					postElement.append(postTitle);
+				var postTitle = $('<h2></h2>').html(result.items[result.items.length-i-1].title);
+						postElement.append(postTitle);
 				var postBody = $('<p></p>').addClass('lead').html(result.items[result.items.length-i-1].body);
-					postElement.append(postBody);
+						postElement.append(postBody);
 
 					containerElement.append(postElement);
 			}	
@@ -68,12 +69,12 @@ function addNewPost(textTitle, textBody) {
 
 					var containerElement = $('#posts-container');
 					var postElement = $('<div></div>').addClass('starter-template');
-					var postTitle = $('<h1></h1>').html('#' + (result.items.length) + ' ' + textTitle);
-						postElement.append(postTitle);
+					var postTitle = $('<h1></h1>').html(textTitle);
+							postElement.append(postTitle);
 					var postBody = $('<p></p>').addClass('lead').html(textBody);
-						postElement.append(postBody);
+							postElement.append(postBody);
 
-						containerElement.append(postElement);
+						containerElement.prepend(postElement);
 					}
 			});
 		}
