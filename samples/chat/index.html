@@ -5,37 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>QuickBlox JavaScript Chat code sample</title>
   <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 </head>
 <body>
   <div class="container"> 
 
     <!-- Main block -->
-    <div id="main_block">
-        <h2>List of chat dialogs</h2>
-        <div class="panel panel-primary">
-          <div class="panel-body">
-            <div class="row">
-              <div class="col-md-4">
-                <div class="list-group" id="dialogs-list">
-                <!-- list of chat dialogs will be here -->
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="list-group pre-scrollable" id="messages-list">
-                  <!-- list of chat messages will be here -->
-                </div>
-                <p id="no-messages-label" class="hide">No messages</p>
-                <form class="form-inline" role="form">
-                  <div class="form-group">
-                    <input type="text" class="form-control" id="message_text" placeholder="Enter message">
-                  </div>
-                  <button type="button" class="btn btn-default" onclick="clickSendMessage()">Send</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="row">
+      <div class="col-sm-10">
+        <br>
+        <p>
+          <textarea id="message" placeholder="Enter a message..." class="form-control" rows="7"></textarea>
+        </p>
+        <p>
+          <button type="button" class="btn btn-primary" id="sendMessage">Send message</button>
+        </p>
+        
+        <hr>
+
+        <h2>Chat feed</h2>
+        <textarea id="feed" class="form-control" rows="15" readonly></textarea>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -59,9 +49,8 @@
 
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
   <script src="../../quickblox.js"></script>
   <script src="config.js"></script>
   <script src="main.js"></script>
