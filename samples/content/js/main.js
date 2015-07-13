@@ -57,7 +57,6 @@ function showImage(fileId, fileName, token, toAppend){
 	var imageHTML = "<img src='http://api.quickblox.com/blobs/"+fileId+"/download.xml?token="+token+"' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
 	if (toAppend) {
 		$('#pictures').append(imageHTML);
-		console.log(token);
 	} else {
 		$('#pictures').prepend(imageHTML);
 	}

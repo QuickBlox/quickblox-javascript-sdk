@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
     <title>QuickBlox Sample Web Blog</title>
+    <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -22,21 +22,42 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">QuickBlox Sample Web Blog</a>
+          <a class="navbar-brand" href="http://quickblox.com/developers/Custom_Objects">
+            <img class="logo" src="images/logo-quickblox.png" alt="QuickBlox Samples" class="img-responsive"></a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+<!--             <li><a href="#about"></a></li>
+            <li><a href="#contact"></a></li> -->
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
 
-    <div id="posts-container" class="container">
-        <!-- your posts will be here -->
-    </div><!-- /.container -->
+  <!-- Large modal -->
+
+  <div class="modal fade bs-example-modal-lg in" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="auto-close">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h4 class="modal-title" id="myLargeModalLabel">QuickBlox Sample Custom Object</h4>
+          </div>
+        <div class="modal-body clearfix">
+          <input type="text" id="title_post" placeholder="Enter a title" class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+          <textarea id="body_post" type="text" placeholder="Enter the text body" class="col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1 col-xs-10 col-xs-offset-1"></textarea>
+        <button class="btn btn-primary" id="send_post" type="button" data-dismiss="modal" aria-hidden="true">Add new post</button>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <button class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg" id="add-btn">Add new post</button>
+    <img src="images/loader.gif" id="load-img">
+    <div id="posts-container"></div><!-- your posts will be here -->
+  </div><!-- /.container -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script> 
