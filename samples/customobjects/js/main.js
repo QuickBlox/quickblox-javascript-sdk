@@ -27,23 +27,15 @@ QB.createSession(QBUser, function(err, result){
 });
 
 function getAllPosts() {
-
 	QB.data.list("Blog", filter, function(err, result){
 		if (err) { 
 			console.log(err);
 		} else {
 			console.log(result);
 
-			var containerElement = $('#posts-container');
-
 			for (var i=0; i < result.items.length; i++) {
-				var postElement = $('<div></div>').addClass('starter-template');
-				var postTitle = $('<h2></h2>').html(result.items[result.items.length-i-1].title);
-						postElement.append(postTitle);
-				var postBody = $('<p></p>').addClass('lead').html(result.items[result.items.length-i-1].body);
-						postElement.append(postBody);
-
-					containerElement.append(postElement);
+				var item = result.items[result.items.length-i-1];
+				showPost(item.title, item.body, false);
 			}	
 		}
 	});
@@ -61,14 +53,30 @@ function addNewPost(textTitle, textBody) {
 			$('#title_post').val('');
 			$('#body_post').val('');
 
-			var containerElement = $('#posts-container');
-			var postElement = $('<div></div>').addClass('starter-template');
-			var postTitle = $('<h1></h1>').html(textTitle);
-					postElement.append(postTitle);
-			var postBody = $('<p></p>').addClass('lead').html(textBody);
-					postElement.append(postBody);
+			QB.data.list("Blog", filter, function(err, result){
+				if (err) { 
+					console.log(err);
+				} else {
+					console.log(result);
 
-				containerElement.prepend(postElement);
+					showPost(textTitle, textBody, true);
+				}
+			});
 		}
 	});
+}
+
+function showPost(textTitle, textBody, lastPost) {
+	var containerElement = $('#posts-container');
+	var postElement = $('<div></div>').addClass('starter-template');
+	var postTitle = $('<h2></h2>').html(textTitle);
+			postElement.append(postTitle);
+	var postBody = $('<p></p>').addClass('lead').html(textBody);
+			postElement.append(postBody);
+
+	if (lastPost) {
+				containerElement.prepend(postElement);
+	} else {
+				containerElement.append(postElement);
+	}		
 }
