@@ -61,22 +61,14 @@ function addNewPost(textTitle, textBody) {
 			$('#title_post').val('');
 			$('#body_post').val('');
 
-			QB.data.list("Blog", filter, function(err, result){
-				if (err) { 
-					console.log(err);
-				} else {
-					console.log(result);
+			var containerElement = $('#posts-container');
+			var postElement = $('<div></div>').addClass('starter-template');
+			var postTitle = $('<h1></h1>').html(textTitle);
+					postElement.append(postTitle);
+			var postBody = $('<p></p>').addClass('lead').html(textBody);
+					postElement.append(postBody);
 
-					var containerElement = $('#posts-container');
-					var postElement = $('<div></div>').addClass('starter-template');
-					var postTitle = $('<h1></h1>').html(textTitle);
-							postElement.append(postTitle);
-					var postBody = $('<p></p>').addClass('lead').html(textBody);
-							postElement.append(postBody);
-
-						containerElement.prepend(postElement);
-					}
-			});
+				containerElement.prepend(postElement);
 		}
 	});
 }
