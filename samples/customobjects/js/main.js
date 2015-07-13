@@ -14,7 +14,7 @@ QB.createSession(QBUser, function(err, result){
 			e.preventDefault();
 
 			var textTitle = $('#title_post')[0].value;
-					textBody = $('#body_post').val();
+				textBody = $('#body_post').val();
 			// Adds a new post
 			if (textTitle && textBody) {
 				$("#load-img").show(0);
@@ -75,8 +75,8 @@ function showPost(textTitle, textBody, lastPost) {
 			postElement.append(postBody);
 
 	if (lastPost) {
-				containerElement.prepend(postElement);
+		containerElement.prepend(postElement);
 	} else {
-				containerElement.append(postElement);
+		containerElement.append(postElement);
 	}		
 }
