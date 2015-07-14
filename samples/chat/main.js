@@ -79,7 +79,6 @@ function connectChat(user) {
                     users[item.user.id] = item.user;
                   });
 
-
                   // show dialogs
                   //
                   resDialogs.items.forEach(function(item, i, arr) {
@@ -126,7 +125,7 @@ function triggerDialog(element, dialogId){
   currentDialog = dialogs[dialogId];
 
   // join in room
-  QB.chat.muc.join(currentDialog.xmpp_room_jid, {roomName : 'test', nick : '978815'}, function() {
+  QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
     console.log('join to: ' + currentDialog.xmpp_room_jid);
   });
 
