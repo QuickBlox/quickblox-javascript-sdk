@@ -125,6 +125,11 @@ function triggerDialog(element, dialogId){
 
   currentDialog = dialogs[dialogId];
 
+  // join in room
+  QB.chat.muc.join(currentDialog.xmpp_room_jid, {roomName : 'test', nick : '978815'}, function() {
+    console.log('join to: ' + currentDialog.xmpp_room_jid);
+  });
+
   // Load messages history
   //
   var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
@@ -141,8 +146,6 @@ function triggerDialog(element, dialogId){
           var messageText = item.message;
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
-
-          console.log(item.read_ids);
 
           var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent);
 
@@ -165,6 +168,7 @@ function clickSendMessage(){
 
   // send a message
   //
+  console.log(currentDialog);
   var msg = {
     type: currentDialog.type == 3 ? 'chat' : 'groupchat',
     body: currentText,
@@ -176,22 +180,19 @@ function clickSendMessage(){
   //
   if(currentDialog.type == 3){
     console.log(currentDialog.occupants_ids);
-
     var userId = getRecipientId(currentDialog.occupants_ids, currentUser.id);
-
     QB.chat.send(userId, msg);
-  }else{
+  } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
-
-  showMessage(msg);
+  
 }
 
 // Show messages in UI
 //
-function showMessage(msg) {
+function showMessage(userId, msg) {
   // add a message to list
-  var messageHtml = buildMessageHTML(msg.body, msg.senderId, new Date());
+  var messageHtml = buildMessageHTML(msg.body, userId, new Date());
   $('#messages-list').append(messageHtml);
 
   // scroll to bottom
@@ -202,7 +203,7 @@ function showMessage(msg) {
 function buildMessageHTML(messageText, messageSenderId, messageDateSent){
   var messageHtml = '<div class="list-group-item">' + 
                     '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
-                    '<h4 class="list-group-item-heading">' + 'Igor Khomenko' + '</h4>' + 
+                    '<h4 class="list-group-item-heading">' + messageSenderId + '</h4>' + 
                     '<p class="list-group-item-text">' + messageText + '</p>' + 
                     '</div>';
   return messageHtml;
