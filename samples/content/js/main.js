@@ -33,7 +33,7 @@ QB.createSession(QBUser, function(err, result) {
 				$("#progress").show(0);
 			}
 
-			// uploade image
+			// upload image
 			QB.content.createAndUpload({name: inputFile.name, file: inputFile, type: inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
 				if (err) {
 					console.log(err);
