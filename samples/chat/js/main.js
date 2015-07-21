@@ -80,16 +80,17 @@ function connectChat(user) {
                     var dialogName = item.name;
                     var dialogLastMessage = item.last_message;
                     var dialogUnreadMessagesCount = item.unread_messages_count;
+                    var attachments = item.attachments;
 
-                    whatTypeChat(item.type, item.occupants_ids, user.id);
+                    whatTypeChat(item.type, item.occupants_ids, user.id, item.photo, token);
                       if (dialogName == null) {
                         dialogName = chatName;
                       }
 
                     var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
-                      '<span class="badge">' + dialogUnreadMessagesCount + '</span>' + 
+                      (dialogUnreadMessagesCount == 0 ? "" : ('<span class="badge">' + dialogUnreadMessagesCount + '</span>')) + 
                       '<h4 class="list-group-item-heading">' + dialogIcon + '&nbsp;&nbsp;&nbsp;' + dialogName + '</h4>' + 
-                      '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
+                      '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : ($(dialogLastMessage).attr('src') ? "[attachment]" : dialogLastMessage)) + '</p>' + 
                       '</a>';
 
                     $('#dialogs-list').append(dialogHtml);
@@ -98,7 +99,7 @@ function connectChat(user) {
                   // trigger 1st dialog
                   triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
 
-                } else  {
+                } else {
                   
                 }
 
@@ -128,8 +129,6 @@ function triggerDialog(element, dialogId){
   element.className = element.className + " active";
 
   currentDialog = dialogs[dialogId];
-
-  console.log(currentDialog);
   // join in room
   if (currentDialog.type != 3) {
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
@@ -144,7 +143,7 @@ function triggerDialog(element, dialogId){
     if (messages) {
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
-      }else{
+      } else {
         $("#no-messages-label").addClass('hide');
         
         messages.items.forEach(function(item, i, arr) {
@@ -198,7 +197,7 @@ function sendMessage(currentImg, currentText) {
     extension: {
       save_to_history: 1,
       if (currentImg) {
-        attachments: [{type: 'photo', url: uploadedFile.path}]
+        attachments: [{type: 'photo', id: uploadedFile.id}]
       },
     },
     senderId: currentUser.id, 
@@ -241,21 +240,25 @@ function getRecipientId(occupantsIds, currentUserId){
   });
 }
 
-function whatTypeChat (itemType, occupantsIds, itemId) {
+function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto, token) {
+  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
+      withoutPhoto = '<img src="https://qm.quickblox.com/images/ava-group.svg" width="30" height="30" class="round">';
+      privatPhoto  = '<img src="https://qm.quickblox.com/images/ava-single.svg" width="30" height="30" class="round">';
+      defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
   switch (itemType) {
     case 1:
-      dialogIcon = '<img src="https://qbprod.s3.amazonaws.com/f253e6db51bb481497d647738bdaa36c00" width="25 height="25>';
+      dialogIcon = itemPhoto ? withPhoto  : withoutPhoto;
       break;
     case 2:
-      dialogIcon = '<img src="https://qbprod.s3.amazonaws.com/0920bbd1eaf94df99c7bc39aa9d460c800" width="25 height="25>';
+      dialogIcon = itemPhoto ? withPhoto  : withoutPhoto;
       break;
     case 3:
       getRecipientId(occupantsIds, itemId);
-      chatName = 'Dialog with ' + userId;
-      dialogIcon = '<img src="https://qbprod.s3.amazonaws.com/362d8c6f33c540c28b5bfae14e23657400" width="25 height="25>';
+      chatName = 'Dialog with ' +userId;
+      dialogIcon = privatPhoto;
       break;
     default:
-      dialogIcon = '<span class="glyphicon glyphicon-eye-close"></span>';
+      dialogIcon = defaultPhoto;
       break;
   }
 }
