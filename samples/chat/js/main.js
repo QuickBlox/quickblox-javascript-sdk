@@ -264,8 +264,8 @@ function getRecipientId(occupantsIds, currentUserId){
 
 function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
   var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
-      withoutPhoto = '<img src="https://qm.quickblox.com/images/ava-group.svg" width="30" height="30" class="round">';
-      privatPhoto  = '<img src="https://qm.quickblox.com/images/ava-single.svg" width="30" height="30" class="round">';
+      withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
+      privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
       defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
   switch (itemType) {
     case 1:
