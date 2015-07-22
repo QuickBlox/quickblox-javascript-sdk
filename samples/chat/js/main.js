@@ -1,6 +1,5 @@
 
 // Init QuickBlox application here
-//
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
 
 var dialogs = {};
@@ -8,6 +7,8 @@ var users = {};
 
 var currentDialog;
 var currentUser;
+
+var token;
 
 $(document).ready(function() {
 
@@ -43,7 +44,7 @@ function connectChat(user) {
   // Create session and connect to chat
   QB.createSession({login: user.login, password: user.pass}, function(err, res) {
     if (res) {
-      var token = res.token;
+          token = res.token;
           user_id = res.id;
       QB.chat.connect({userId: user.id, password: user.pass}, function(err, roster) {
         if (err) {
@@ -51,7 +52,7 @@ function connectChat(user) {
         } else {
           console.log(roster);
 
-          QB.chat.onMessageListener = showMessage;
+          QB.chat.onMessageListener = onMessage;
           // Load chat dialogs
           QB.chat.dialog.list(null, function(err, resDialogs) {
             if (err) {
@@ -80,25 +81,22 @@ function connectChat(user) {
                     var dialogName = item.name;
                     var dialogLastMessage = item.last_message;
                     var dialogUnreadMessagesCount = item.unread_messages_count;
-                    var attachments = item.attachments;
 
-                    whatTypeChat(item.type, item.occupants_ids, user.id, item.photo, token);
+                    whatTypeChat(item.type, item.occupants_ids, user.id, item.photo);
                       if (dialogName == null) {
                         dialogName = chatName;
                       }
 
-                    var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
-                      (dialogUnreadMessagesCount == 0 ? "" : ('<span class="badge">' + dialogUnreadMessagesCount + '</span>')) + 
-                      '<h4 class="list-group-item-heading">' + dialogIcon + '&nbsp;&nbsp;&nbsp;' + dialogName + '</h4>' + 
-                      '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : ($(dialogLastMessage).attr('src') ? "[attachment]" : dialogLastMessage)) + '</p>' + 
-                      '</a>';
+	                  var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
+	                    (dialogUnreadMessagesCount == 0 ? "" : ('<span class="badge">' + dialogUnreadMessagesCount + '</span>')) + 
+	                    '<h4 class="list-group-item-heading">' + dialogIcon + '&nbsp;&nbsp;&nbsp;' + dialogName + '</h4>' + 
+	                    '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
+	                    '</a>';
 
-                    $('#dialogs-list').append(dialogHtml);
+	                  	$('#dialogs-list').append(dialogHtml);
                   });
-
                   // trigger 1st dialog
                   triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
-
                 } else {
                   
                 }
@@ -110,7 +108,7 @@ function connectChat(user) {
                   if (inputFile) {
                     $("#progress").show(0);
                   }
-                    clickSendAttachments(token, inputFile);
+                    clickSendAttachments(inputFile);
                 });
               });
             }
@@ -132,31 +130,35 @@ function triggerDialog(element, dialogId){
   // join in room
   if (currentDialog.type != 3) {
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
-      console.log('join to: ' + currentDialog.xmpp_room_jid);
+    	console.log('join to: ' + currentDialog.xmpp_room_jid);
     });
   }
   // Load messages history
   var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
-
     if (messages) {
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
       } else {
         $("#no-messages-label").addClass('hide');
-        
+
         messages.items.forEach(function(item, i, arr) {
           var messageText = item.message;
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
-
-          var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent);
+          var messageAttachmentFileId = null;
+          if (item.hasOwnProperty("attachments")) {
+          	if(item.attachments.length > 0) {
+							messageAttachmentFileId = item.attachments[0].id;
+          	}
+          }
+          var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent, messageAttachmentFileId);
 
           $('#messages-list').append(messageHtml);
         });
       }
-    }else{
+    } else {
     
     }
   });
@@ -169,53 +171,68 @@ function clickSendMessage(){
   if (currentText.length == 0){
     return;
   }
-    // send a message
-    sendMessage(currentText);
+
+	sendMessage(currentText, null);
 }
-// add photo to QB content
-function clickSendAttachments(token, inputFile) {
+// add attachment to QB content
+function clickSendAttachments(inputFile) {
 // upload image
   QB.content.createAndUpload({name: inputFile.name, file: inputFile, type: inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
     if (err) {
       console.log(err);
     } else {
-      console.log("response", response);  
       $("#progress").fadeOut(400);
       var uploadedFile = response;
-      var currentImg = "<img src='http://api.quickblox.com/blobs/"+uploadedFile.id+"/download.xml?token="+token+"' alt='"+inputFile.name+"' class='attachments img-responsive' />";
-          $('#message_text').val('').focus();
-        // send a message with attachments
-        sendMessage(currentImg);
+
+      sendMessage("[attachment]", uploadedFile.id);
     }
-  });
+  }); 
+  		inputFile = null;
 }
-// send text or photo
-function sendMessage(currentImg, currentText) {
-  var msg = {
+
+// send text or attachment
+function sendMessage(text, attachmentFileId) {
+	var msg = {
     type: currentDialog.type == 3 ? 'chat' : 'groupchat',
-    body: currentImg ? currentImg : currentText,
+    body: text,
     extension: {
       save_to_history: 1,
-      if (currentImg) {
-        attachments: [{type: 'photo', id: uploadedFile.id}]
-      },
     },
     senderId: currentUser.id, 
   };
-  //
+  if(attachmentFileId != null){
+  	msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
+  }
+
   if (currentDialog.type == 3) {
     getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(userId, msg);
-    showMessage(currentUser.id, msg);
+      if(attachmentFileId == null){
+        showMessage(currentUser.id, msg);
+      } else {
+			  showMessage(currentUser.id, msg, attachmentFileId);
+      }
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
+    	console.log(currentDialog.xmpp_room_jid);
   }
 }
 
+function onMessage(userId, msg){
+	var messageAttachmentFileId = null;
+		if (msg.extension.hasOwnProperty("attachments")) {
+			if(msg.extension.attachments.length > 0) {
+				messageAttachmentFileId = msg.extension.attachments[0].id;
+			}
+		}
+	showMessage(userId, msg, messageAttachmentFileId);
+}
+
 // Show messages in UI
-function showMessage(userId, msg) {
+function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
-  var messageHtml = buildMessageHTML(msg.body, userId, new Date());
+  var messageHtml = buildMessageHTML(msg.body, userId, new Date(), attachmentFileId);
+
   $('#messages-list').append(messageHtml);
 
   // scroll to bottom
@@ -223,11 +240,16 @@ function showMessage(userId, msg) {
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
-function buildMessageHTML(messageText, messageSenderId, messageDateSent){
+function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId){
+	var messageAttach;
+  if(attachmentFileId){
+	  messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
+  }
+
   var messageHtml = '<div class="list-group-item">' + 
                     '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
                     '<h4 class="list-group-item-heading">' + messageSenderId + '</h4>' + 
-                    '<p class="list-group-item-text">' + messageText + '</p>' + 
+                    '<p class="list-group-item-text">' + (messageAttach ? messageAttach : messageText) + '</p>' + 
                     '</div>';
   return messageHtml;
 }
@@ -240,21 +262,21 @@ function getRecipientId(occupantsIds, currentUserId){
   });
 }
 
-function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto, token) {
+function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
   var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
       withoutPhoto = '<img src="https://qm.quickblox.com/images/ava-group.svg" width="30" height="30" class="round">';
       privatPhoto  = '<img src="https://qm.quickblox.com/images/ava-single.svg" width="30" height="30" class="round">';
       defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
   switch (itemType) {
     case 1:
-      dialogIcon = itemPhoto ? withPhoto  : withoutPhoto;
+      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
       break;
     case 2:
-      dialogIcon = itemPhoto ? withPhoto  : withoutPhoto;
+      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
       break;
     case 3:
       getRecipientId(occupantsIds, itemId);
-      chatName = 'Dialog with ' +userId;
+      chatName = 'Dialog with ' + userId;
       dialogIcon = privatPhoto;
       break;
     default:
@@ -262,4 +284,3 @@ function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto, token) {
       break;
   }
 }
-
