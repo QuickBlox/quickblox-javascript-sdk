@@ -72,6 +72,7 @@ function sendMessage(user_id, val) {
 
     extension: {
       time: Math.floor(Date.now() / 1000),
+      save_to_history: 1
     }
   };
 
