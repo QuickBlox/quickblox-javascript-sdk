@@ -10,6 +10,12 @@
 </head>
 <body>
 
+<script>
+  function submit_handler(form) {
+    return false;
+  }
+</script>
+
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -49,12 +55,12 @@
                   <!-- list of chat messages will be here -->
                 </div>
                 <p id="no-messages-label" class="hide">No messages</p>
-                <form class="form-inline" role="form">
+                <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
                   <div class="form-group">
                     <input id="load-img" type="file">
                     <button type="button" id="attach_btn" class="btn btn-default" onclick="">Attach</button>
                     <input type="text" class="form-control" id="message_text" placeholder="Enter message">
-                    <button type="button" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
+                    <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
                   </div>
                   <img src="images/ajax-loader.gif" id="progress">
                 </form>
@@ -90,8 +96,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.3/quickblox.min.js" type="text/javascript"></script>
-  <!-- <script src="js/quickblox.js"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.3/quickblox.min.js" type="text/javascript"></script> -->
+  <script src="js/quickblox.js"></script>
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
 </body>

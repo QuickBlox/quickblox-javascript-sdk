@@ -1,4 +1,3 @@
-
 // Init QuickBlox application here
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
 
@@ -7,8 +6,6 @@ var users = {};
 
 var currentDialog;
 var currentUser;
-
-var token;
 
 $(document).ready(function() {
 
@@ -81,18 +78,14 @@ function connectChat(user) {
                     var dialogName = item.name;
                     var dialogLastMessage = item.last_message;
                     var dialogUnreadMessagesCount = item.unread_messages_count;
-
+console.log(item);
                     whatTypeChat(item.type, item.occupants_ids, user.id, item.photo);
                       if (dialogName == null) {
                         dialogName = chatName;
                       }
 
-	                  var dialogHtml = '<a href="#" class="list-group-item" onclick="triggerDialog(this, ' + "'" + dialogId + "'" + ')">' + 
-	                    (dialogUnreadMessagesCount == 0 ? "" : ('<span class="badge">' + dialogUnreadMessagesCount + '</span>')) + 
-	                    '<h4 class="list-group-item-heading">' + dialogIcon + '&nbsp;&nbsp;&nbsp;' + dialogName + '</h4>' + 
-	                    '<p class="list-group-item-text">' + (dialogLastMessage === null ?  "" : dialogLastMessage) + '</p>' + 
-	                    '</a>';
-
+                      var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+                    
 	                  	$('#dialogs-list').append(dialogHtml);
                   });
                   // trigger 1st dialog
@@ -109,6 +102,7 @@ function connectChat(user) {
                     $("#progress").show(0);
                   }
                     clickSendAttachments(inputFile);
+                    inputFile = '';
                 });
               });
             }
@@ -122,11 +116,13 @@ function connectChat(user) {
 function triggerDialog(element, dialogId){
   // deselect
   var kids = $( "#dialogs-list" ).children();
-  kids.removeClass("active");
+  kids.removeClass("active").addClass("inactive");
   // select
-  element.className = element.className + " active";
+  $('#'+dialogId).removeClass("inactive").addClass("active");
 
+  $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
+
   // join in room
   if (currentDialog.type != 3) {
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
@@ -137,6 +133,7 @@ function triggerDialog(element, dialogId){
   var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
+    console.log(messages);
     if (messages) {
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
@@ -156,6 +153,9 @@ function triggerDialog(element, dialogId){
           var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent, messageAttachmentFileId);
 
           $('#messages-list').append(messageHtml);
+
+          var mydiv = $('#messages-list');
+              mydiv.scrollTop(mydiv.prop('scrollHeight'));
         });
       }
     } else {
@@ -174,6 +174,7 @@ function clickSendMessage(){
 
 	sendMessage(currentText, null);
 }
+
 // add attachment to QB content
 function clickSendAttachments(inputFile) {
 // upload image
@@ -187,7 +188,6 @@ function clickSendAttachments(inputFile) {
       sendMessage("[attachment]", uploadedFile.id);
     }
   }); 
-  		inputFile = null;
 }
 
 // send text or attachment
@@ -207,25 +207,39 @@ function sendMessage(text, attachmentFileId) {
   if (currentDialog.type == 3) {
     getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(userId, msg);
+    $('.list-group-item.active .list-group-item-text').text(msg.body);
       if(attachmentFileId == null){
         showMessage(currentUser.id, msg);
       } else {
-			  showMessage(currentUser.id, msg, attachmentFileId);
+        showMessage(currentUser.id, msg, attachmentFileId);
       }
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
-    	console.log(currentDialog.xmpp_room_jid);
   }
 }
 
 function onMessage(userId, msg){
-	var messageAttachmentFileId = null;
-		if (msg.extension.hasOwnProperty("attachments")) {
-			if(msg.extension.attachments.length > 0) {
-				messageAttachmentFileId = msg.extension.attachments[0].id;
-			}
-		}
-	showMessage(userId, msg, messageAttachmentFileId);
+  var messageAttachmentFileId = null;
+    if (msg.extension.hasOwnProperty("attachments")) {
+      if(msg.extension.attachments.length > 0) {
+        messageAttachmentFileId = msg.extension.attachments[0].id;
+      }
+    }
+
+  showMessage(userId, msg, messageAttachmentFileId);
+
+  newLastMessage(msg.extension.dialog_id, msg.body);
+
+  newUnreadMessage(msg.extension.dialog_id);
+}
+
+function newLastMessage(DialogId, text){
+  $('#'+DialogId+' .list-group-item-text').text(text);
+}
+
+function newUnreadMessage(DialogId) {
+  badgeCount = $('#'+DialogId+' .badge').html();
+  $('#'+DialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500); 
 }
 
 // Show messages in UI
@@ -242,17 +256,26 @@ function showMessage(userId, msg, attachmentFileId) {
 
 function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId){
 	var messageAttach;
-  if(attachmentFileId){
-	  messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
-  }
+    if(attachmentFileId){
+  	  messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
+    }
 
-  var messageHtml = '<div class="list-group-item">' + 
-                    '<time datetime="' + messageDateSent + '" class="pull-right">' + jQuery.timeago(messageDateSent) + '</time>' + 
-                    '<h4 class="list-group-item-heading">' + messageSenderId + '</h4>' + 
-                    '<p class="list-group-item-text">' + (messageAttach ? messageAttach : messageText) + '</p>' + 
-                    '</div>';
+  var messageHtml = '<div class="list-group-item">'+'<time datetime="'+messageDateSent+'" class="pull-right">'+jQuery.timeago(messageDateSent)+
+                    '</time>'+'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+'<p class="list-group-item-text">'+
+                    (messageAttach ? messageAttach : messageText)+'</p>'+'</div>';
   return messageHtml;
 }
+
+function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage) {
+  var UnreadMessagesCountShow = '<span class="badge">'+dialogUnreadMessagesCount+'</span>';
+      UnreadMessagesCountHide = '<span class="badge" style="display: none;">'+dialogUnreadMessagesCount+'</span>';
+      console.log(dialogUnreadMessagesCount);
+  var dialogHtml = '<a href="#" class="list-group-item" id='+'"'+dialogId+'"'+' onclick="triggerDialog(this, '+"'"+dialogId+"'"+')">'+ 
+                   (dialogUnreadMessagesCount == 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+'<h4 class="list-group-item-heading">'+
+                   dialogIcon+'&nbsp;&nbsp;&nbsp;'+dialogName+'</h4>'+'<p class="list-group-item-text last-message">'+
+                   (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
+  return dialogHtml;
+} 
 
 function getRecipientId(occupantsIds, currentUserId){
   occupantsIds.forEach(function(item, i, arr) {
@@ -284,3 +307,4 @@ function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
       break;
   }
 }
+
