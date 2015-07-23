@@ -69,9 +69,7 @@ function sendMessage(user_id, val) {
   var msg = {
     type: 'chat',
     body: val,
-
     extension: {
-      time: Math.floor(Date.now() / 1000),
       save_to_history: 1
     }
   };
@@ -86,13 +84,14 @@ function sendMessage(user_id, val) {
 //
 function showMessage(userId, msg) {
 
-  var body = msg.body,
-      time = msg.extension && msg.extension.time,
-      messageDate = new Date(time * 1000);
+  var body = msg.body;
+  var messageDate = Date.now();
+
+  console.log(messageDate);
 
   var message = "\n";
       message += (userId === null ? "Me" : "Opponent");
-      message += " (" + messageDate.getHours() + ':' + (messageDate.getMinutes().toString().length === 1 ? '0'+messageDate.getMinutes() : messageDate.getMinutes()) + ':' + messageDate.getSeconds() + ")";
+      message += " (" + getLocalTime() + ")";
       message +=  ": ";
       message += body;
 
