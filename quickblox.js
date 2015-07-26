@@ -858,7 +858,7 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('DialogProxy.create', params); }
+]    if (config.debug) { console.log('DialogProxy.create', params); }
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 

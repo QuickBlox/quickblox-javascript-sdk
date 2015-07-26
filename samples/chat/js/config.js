@@ -21,16 +21,4 @@ var QBUser1 = {
       name: 'chatuserweb2',
       login: 'chatuserweb2',
       pass: 'chatuserweb2'
-    },
-    QBUser3 = {
-      id: 4201579,
-      name: 'chatuserweb3',
-      login: 'chatuserweb3',
-      pass: 'chatuserweb3'
-    },
-    QBUser4 = {
-      id: 4201584,
-      name: 'chatuserweb4',
-      login: 'chatuserweb4',
-      pass: 'chatuserweb4'
     };
