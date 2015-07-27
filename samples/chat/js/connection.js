@@ -29,7 +29,7 @@ function connectChat(user) {
     if (res) {
           token = res.token;
           user_id = res.id;
-          uploadPages = 450;
+          uploadPages = 0;
           usersCount = 0;
           finished = false;
           dlg_type = '';
