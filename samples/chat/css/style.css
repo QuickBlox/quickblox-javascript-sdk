@@ -231,16 +231,10 @@ input[type=file]:focus {
   padding: 10px;
 }
 
-a.users_form.active, a.users_form:focus  { 
-  background-color: #ddd;
+a.users_form.active, a.users_form:focus, a.users_form:hover  { 
   text-decoration: none;
-  color: #333;
-}
-
-a.users_form:hover {
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
+  color: #fff;
+  background-color: #337ab7;
 }
 
 #load-users {
@@ -251,7 +245,7 @@ a.users_form:hover {
 }
 
 #dlg_name {
-  display: inline-block;
+  display: none;
   border-radius: 0px;
   box-shadow: none;
   margin-bottom: 10px;
