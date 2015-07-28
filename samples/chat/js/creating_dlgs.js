@@ -1,3 +1,10 @@
+var uploadPages = 0;
+    dlg_type    = '';
+    dlg_users   = '';
+    users_ids   = [];
+    users_names = [];
+    finished    = false;
+
 // show users list
 function retrieveUsers() {
   if (finished != true) {
@@ -29,7 +36,7 @@ function retrieveUsers() {
 }
 // show users list
 function showUsers(userLogin, userId) {
-  var userHtml = "<a href='#' id='"+userId+"' class='users_form col-md-12 col-sm-12 col-xs-12' onclick='clickToAdd()'>"+userLogin+"</a>";
+  var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
     $('#users_list').append(userHtml);
 }
 // show modal window with users
@@ -40,19 +47,23 @@ function createNewDialog() {
   retrieveUsers();
 }
 // select users from users list
-function clickToAdd() {     
-  $('a.users_form:hover').addClass('active');
-
-  $(".users_form.active").each(function(index) {
-    users_ids[index] = $(this).attr('id');
-    console.log(dlg_users);
-  });
-    if (users_ids.length > 1) {
-      $('#dlg_name').fadeIn(500);
-    }
+function clickToAdd(forFocus) {
+  if ($('#'+forFocus).hasClass("active")) {
+    $('#'+forFocus).removeClass("active");
+    console.log(forFocus);
+  } else {
+    $('#'+forFocus).addClass("active");
+    console.log(forFocus);
+  }
 }
 // create new dialog
 function addNewDialog() {
+  $('.users_form.active').each(function(index) {
+    users_ids[index] = $(this).attr('id');
+    users_names[index] = $(this).text();
+    console.log(users_ids.join(', '));
+  });
+
   $("#add_new_dialog").modal("hide");
   $('#add_new_dialog .progress').show();
 
@@ -62,14 +73,13 @@ function addNewDialog() {
     dlg_name = 'QB public chat';
     dlg_type = 1;
   } if (users_ids.length > 1) {
-    dlg_name = (dlg_name == '' ? 'unnamed group chat' : $('#dlg_name').val().trim());
+    dlg_name = (dlg_name == '' ? users_names.join(', ') : $('#dlg_name').val().trim());
     dlg_users = users_ids.join(',');
     dlg_type = 2;
   } else {
     dlg_users = users_ids.join(',');
     dlg_type = 3;
   }
-
 
   var dlg_params = {
     type: dlg_type,

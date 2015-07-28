@@ -1,4 +1,4 @@
-// submit fort after press "ENTER"
+// submit form after press "ENTER"
 function submit_handler(form) {
   return false;
 }
@@ -71,7 +71,7 @@ function triggerDialog(element, dialogId){
     }  
   });
 }
-//
+// on message listener
 function onMessage(userId, msg){
   var messageAttachmentFileId = null;
     if (msg.extension.hasOwnProperty("attachments")) {
@@ -84,7 +84,7 @@ function onMessage(userId, msg){
 
   notifiesNew(msg.extension.dialog_id, msg.body);
 }
-//
+// build html for messages
 function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId){
   var messageAttach;
     if(attachmentFileId){
@@ -96,7 +96,7 @@ function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachm
                     (messageAttach ? messageAttach : messageText)+'</p>'+'</div>';
   return messageHtml;
 }
-//
+// build html for dialogs
 function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage) {
   var UnreadMessagesCountShow = '<span class="badge">'+dialogUnreadMessagesCount+'</span>';
       UnreadMessagesCountHide = '<span class="badge" style="display: none;">'+dialogUnreadMessagesCount+'</span>';

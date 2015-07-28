@@ -1,10 +1,10 @@
 // Init QuickBlox application here
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
 
-var dialogs = {};
-var users = {};
 var currentDialog;
 var currentUser;
+    dialogs = {};
+    users = {};
 
 $(document).ready(function() {
   $("#loginForm").modal("show");
@@ -27,14 +27,8 @@ function connectChat(user) {
   // Create session and connect to chat
   QB.createSession({login: user.login, password: user.pass}, function(err, res) {
     if (res) {
-          token = res.token;
-          user_id = res.id;
-          uploadPages = 0;
-          usersCount = 0;
-          finished = false;
-          dlg_type = '';
-          dlg_users = '';
-          users_ids = [];
+      token = res.token;
+
       QB.chat.connect({userId: user.id, password: user.pass}, function(err, roster) {
         if (err) {
           console.log(err);
@@ -59,6 +53,8 @@ function connectChat(user) {
               var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
               QB.users.listUsers(params, function(err, result){
                 if (result) {
+console.log(currentUser);
+                  console.log(result);
                   result.items.forEach(function(item, i, arr) {
                     users[item.user.id] = item.user;
                   });

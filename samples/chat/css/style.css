@@ -89,6 +89,11 @@ p {display: block;}
 	padding: 20px;
 }
 
+.list-group-item-heading {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .col-md-4 .list-group-item .list-group-item-text {
 	padding-left: 40px;
 }
@@ -231,7 +236,7 @@ input[type=file]:focus {
   padding: 10px;
 }
 
-a.users_form.active, a.users_form:focus, a.users_form:hover  { 
+a.users_form.active  { 
   text-decoration: none;
   color: #fff;
   background-color: #337ab7;
