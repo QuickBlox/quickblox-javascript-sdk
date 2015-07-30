@@ -396,6 +396,42 @@ ChatProxy.prototype = {
     }));
   },
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ QBChatHelpers
+
+  sendIsTypingStatus: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat'
+    });
+
+    msg.c('composing', {
+      xmlns: 'http://jabber.org/protocol/chatstates'
+    });
+    
+    connection.send(msg);
+  },
+
+  sendStopIsTypingStatus: function(jid, messageId) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: jid,
+      type: 'chat'
+    });
+
+    msg.c('paused', {
+      xmlns: 'http://jabber.org/protocol/chatstates'
+    });
+    
+    connection.send(msg);
+  },  
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   sendDeliveredMessage: function(jid, messageId) {
     if(!isBrowser) throw unsupported;
 

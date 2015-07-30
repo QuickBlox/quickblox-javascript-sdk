@@ -260,3 +260,16 @@ a.users_form.active  {
   box-shadow: none;
   border: 1px solid #04B624;
 }
+
+#messages-list {
+  position: relative;
+}
+
+#typing_field {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 50px;
+  background-color: red;
+}

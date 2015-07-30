@@ -1,10 +1,12 @@
 // Init QuickBlox application here
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
 
+var jid_uid;
 var currentDialog;
 var currentUser;
     dialogs = {};
     users = {};
+    ready = true;
 
 $(document).ready(function() {
   $("#loginForm").modal("show");
@@ -53,8 +55,6 @@ function connectChat(user) {
               var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
               QB.users.listUsers(params, function(err, result){
                 if (result) {
-console.log(currentUser);
-                  console.log(result);
                   result.items.forEach(function(item, i, arr) {
                     users[item.user.id] = item.user;
                   });
@@ -96,6 +96,8 @@ console.log(currentUser);
                     retrieveUsers();
                   }
                 });
+
+                sendTypingStatus();
               });
             }
           });

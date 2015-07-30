@@ -81,7 +81,7 @@ function onMessage(userId, msg){
     }
 
   showMessage(userId, msg, messageAttachmentFileId);
-
+  
   notifiesNew(msg.extension.dialog_id, msg.body);
 }
 // build html for messages
@@ -111,7 +111,6 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
 function clickSendMessage(){
   var currentText = $('#message_text').val().trim();
   $('#message_text').val('').focus();
-
   if (currentText.length == 0){
     return;
   }
@@ -132,6 +131,7 @@ function clickSendAttachments(inputFile) {
     }
   }); 
 }
+
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
   var msg = {
@@ -186,3 +186,34 @@ function getRecipientId(occupantsIds, currentUserId){
     }  
   });
 }
+
+function sendTypingStatus() {
+  var currentStatus = $('#message_text').val().length;
+  
+  $("#message_text").focus().keyup(function(){
+    if (ready == true) {
+      if (currentStatus  > 0) {
+        typingStatus = 'composing';
+      } else {
+        typingStatus = 'paused';
+      }
+        if (currentDialog.type == 3) {
+          getRecipientId(currentDialog.occupants_ids, currentUser.id);
+          QB.chat.onTypingStatus(userId, typingStatus);
+        } else {
+          QB.chat.onTypingStatus(currentDialog.xmpp_room_jid, typingStatus);
+        }
+
+        ready = false;
+
+        setTimeout(function(){
+          ready = true;
+        }, 5000);
+    } 
+  });  
+}
+
+// function showTyping(typingUser) {
+//   var typingUserHtml = '<p class="typing-user '+typingUser+'">type: '+typingUser+'</p>';
+//   $('#typing_field').prepend(typingUserHtml);
+// }

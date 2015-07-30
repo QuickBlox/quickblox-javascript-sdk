@@ -4,6 +4,7 @@ var uploadPages = 0;
     users_ids   = [];
     users_names = [];
     finished    = false;
+    usersCount = 0;
 
 // show users list
 function retrieveUsers() {
