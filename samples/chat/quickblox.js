@@ -195,9 +195,6 @@ function ChatProxy(service, webrtcModule, conn) {
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
-
-
-
     var from = stanza.getAttribute('from'),
         to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
@@ -205,8 +202,6 @@ function ChatProxy(service, webrtcModule, conn) {
         markable = stanza.querySelector('markable'),
         received = stanza.querySelector('received'),
         displayed = stanza.querySelector('displayed'),
-        composing = stanza.querySelector('composing'),
-        paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
@@ -215,18 +210,10 @@ function ChatProxy(service, webrtcModule, conn) {
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         marker = received || displayed || null,
         message, extension, attachments, attach, attributes,
-        msg;
+        msg,
+        typingStatus = true || false;
 
     if (invite) return true;
-
-    if(composing || paused){
-      if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(userId, dialogId);
-      }
-      return true;
-    }
-
-
 
     // custom parameters
     // TODO: need rewrite this block
@@ -282,8 +269,6 @@ function ChatProxy(service, webrtcModule, conn) {
       delay: delay
     };
 
-
-
     // chat markers
     if (marker) {
       message.markerType = received ? 'received' : 'displayed';
@@ -298,6 +283,7 @@ function ChatProxy(service, webrtcModule, conn) {
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
     return true;
+
   };
 
   this._onPresence = function(stanza) {
@@ -481,19 +467,10 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    var jid;
-    if (typeof jid_or_user_id === 'string') {
-      jid = jid_or_user_id;
-    } else if (typeof jid_or_user_id === 'number') {
-      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
-    } else {
-      throw unsupported;
-    }
-
     var self = this,
         msg = $msg({
           from: connection.jid,
-          to: jid,
+          to: this.helpers.jidOrUserId(jid_or_user_id),
           type: message.type,
           id: message.id || Utils.getBsonObjectId()
         });
@@ -540,40 +517,6 @@ ChatProxy.prototype = {
     connection.send(msg);
   },
 
-  // send typing status
-  sendIsTypingStatus: function(jid_or_user_id) {
-    if(!isBrowser) throw unsupported;
-
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(jid_or_user_id),
-      type: this.helpers.typeChat(jid_or_user_id)
-    });
-
-    msg.c('composing', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
-    });
-    
-    connection.send(msg);
-  },
-
-  // send stop typing status
-  sendIsStopTypingStatus: function(jid_or_user_id) {
-    if(!isBrowser) throw unsupported;
-
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(jid_or_user_id),
-      type: this.helpers.typeChat(jid_or_user_id)
-    });
-
-    msg.c('paused', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
-    });
-    
-    connection.send(msg);
-  },
-
   // helper function for ChatProxy.send()
   sendPres: function(type) {
     if(!isBrowser) throw unsupported;
@@ -583,7 +526,29 @@ ChatProxy.prototype = {
       type: type
     }));
   },
+// send typing status >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  onTypingStatus: function(jid_or_user_id, typingStatus) {
+    if(!isBrowser) throw unsupported;
 
+    var msg = $msg({
+      from: connection.jid,
+      to: this.helpers.jidOrUserId(jid_or_user_id),
+      type: this.helpers.typeChat(jid_or_user_id)
+    });
+
+    // if (typingStatus == true) {
+    //   typingStatus = 'composing';
+    // } else {
+    //   typingStatus = 'paused';
+    // }
+
+    msg.c(typingStatus, {
+      xmlns: 'http://jabber.org/protocol/chatstates'
+    });
+    
+    connection.send(msg);
+  },
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   sendDeliveredMessage: function(jid, messageId) {
     if(!isBrowser) throw unsupported;
 
@@ -601,7 +566,6 @@ ChatProxy.prototype = {
     
     connection.send(msg);
   },
-
   sendReadMessage: function(jid, messageId) {
     if(!isBrowser) throw unsupported;
 
@@ -960,7 +924,7 @@ MessageProxy.prototype = {
 function Helpers() {}
 
 Helpers.prototype = {
-
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   jidOrUserId: function(jid_or_user_id) {
     var jid;
     if (typeof jid_or_user_id === 'string') {
@@ -976,7 +940,7 @@ Helpers.prototype = {
   typeChat: function(jid_or_user_id) {
     var chatType;
     if (typeof jid_or_user_id === 'string') {
-      chatType = jid_or_user_id.indexOf("muc") > -1 ? 'groupchat' : 'chat';
+      chatType = 'groupchat';
     } else if (typeof jid_or_user_id === 'number') {
       chatType = 'chat';
     } else {
@@ -984,7 +948,7 @@ Helpers.prototype = {
     }
     return chatType;
   },
-
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;
   },

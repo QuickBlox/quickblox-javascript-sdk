@@ -7,6 +7,7 @@ var currentUser;
     dialogs = {};
     users = {};
     ready = true;
+    hide = false;
 
 $(document).ready(function() {
   $("#loginForm").modal("show");
@@ -36,6 +37,7 @@ function connectChat(user) {
           console.log(err);
         } else {
           QB.chat.onMessageListener = onMessage;
+          QB.chat.onMessageTypingListener = onMessageTyping;
           // Load chat dialogs
           QB.chat.dialog.list(null, function(err, resDialogs) {
             if (err) {
@@ -96,8 +98,8 @@ function connectChat(user) {
                     retrieveUsers();
                   }
                 });
-
-                sendTypingStatus();
+                sendIsTypingStatus();
+                sendStopTypinStatus();
               });
             }
           });

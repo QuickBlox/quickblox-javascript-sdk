@@ -73,6 +73,7 @@ function triggerDialog(element, dialogId){
 }
 // on message listener
 function onMessage(userId, msg){
+
   var messageAttachmentFileId = null;
     if (msg.extension.hasOwnProperty("attachments")) {
       if(msg.extension.attachments.length > 0) {
@@ -81,9 +82,9 @@ function onMessage(userId, msg){
     }
 
   showMessage(userId, msg, messageAttachmentFileId);
-  
   notifiesNew(msg.extension.dialog_id, msg.body);
 }
+
 // build html for messages
 function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId){
   var messageAttach;
@@ -107,6 +108,13 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
                    (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
   return dialogHtml;
 }
+// build html for typing status
+function buildTypingUserHtml() {
+  var typingUserHtml = '<div id="#'+currentUser.id+'" class="list-group-item">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
+                       currentUser.id+'</h4>'+'<p class="list-group-item-text"> . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . </p>'+'</div>';
+
+  return typingUserHtml;
+}
 // sending messages after confirmation
 function clickSendMessage(){
   var currentText = $('#message_text').val().trim();
@@ -114,7 +122,6 @@ function clickSendMessage(){
   if (currentText.length == 0){
     return;
   }
-
   sendMessage(currentText, null);
 }
 // add attachment to QB content
@@ -187,33 +194,54 @@ function getRecipientId(occupantsIds, currentUserId){
   });
 }
 
-function sendTypingStatus() {
-  var currentStatus = $('#message_text').val().length;
-  
+function onMessageTyping() {
+  showTypingUser(hide);
+}
+
+function sendIsTypingStatus() {
   $("#message_text").focus().keyup(function(){
     if (ready == true) {
-      if (currentStatus  > 0) {
-        typingStatus = 'composing';
-      } else {
-        typingStatus = 'paused';
-      }
+      if ($('#message_text').val() != '') {
+        hide = false;
         if (currentDialog.type == 3) {
           getRecipientId(currentDialog.occupants_ids, currentUser.id);
-          QB.chat.onTypingStatus(userId, typingStatus);
+          QB.chat.sendIsTypingStatus(userId);
         } else {
-          QB.chat.onTypingStatus(currentDialog.xmpp_room_jid, typingStatus);
+          QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
         }
+      } 
+      ready = false;
 
-        ready = false;
-
-        setTimeout(function(){
-          ready = true;
-        }, 5000);
+      setTimeout(function(){
+        ready = true;
+      }, 5000);
     } 
   });  
 }
 
-// function showTyping(typingUser) {
-//   var typingUserHtml = '<p class="typing-user '+typingUser+'">type: '+typingUser+'</p>';
-//   $('#typing_field').prepend(typingUserHtml);
-// }
+function sendStopTypinStatus() {
+  $("#message_text").focus().keyup(function(){
+
+    if ($('#message_text').val() == '') {
+      hide = true;
+      if (currentDialog.type == 3) {
+        getRecipientId(currentDialog.occupants_ids, currentUser.id);
+        QB.chat.sendIsStopTypingStatus(userId);
+      } else {
+        QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
+      }
+    }
+  });
+}
+
+
+function showTypingUser(hide) {
+  var TypingDiv = $('#'+currentUser.id);
+
+  if (hide) {
+    $(TypingDiv).remove();
+  } else {
+    var typingUserHtml = buildTypingUserHtml();
+    $('#messages-list').append(typingUserHtml);
+  }
+}

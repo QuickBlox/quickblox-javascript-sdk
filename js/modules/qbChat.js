@@ -64,6 +64,8 @@ function ChatProxy(service, webrtcModule, conn) {
         markable = stanza.querySelector('markable'),
         received = stanza.querySelector('received'),
         displayed = stanza.querySelector('displayed'),
+        composing = stanza.querySelector('composing'),
+        paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
@@ -75,6 +77,13 @@ function ChatProxy(service, webrtcModule, conn) {
         msg;
 
     if (invite) return true;
+
+    if(composing || paused){
+      if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
+        self.onMessageTypingListener(userId, dialogId);
+      }
+      return true;
+    }
 
     // custom parameters
     // TODO: need rewrite this block
@@ -327,19 +336,10 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    var jid;
-    if (typeof jid_or_user_id === 'string') {
-      jid = jid_or_user_id;
-    } else if (typeof jid_or_user_id === 'number') {
-      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
-    } else {
-      throw unsupported;
-    }
-
     var self = this,
         msg = $msg({
           from: connection.jid,
-          to: jid,
+          to: this.helpers.jidOrUserId(jid_or_user_id),
           type: message.type,
           id: message.id || Utils.getBsonObjectId()
         });
@@ -386,26 +386,14 @@ ChatProxy.prototype = {
     connection.send(msg);
   },
 
-  // helper function for ChatProxy.send()
-  sendPres: function(type) {
-    if(!isBrowser) throw unsupported;
-
-    connection.send($pres({ 
-      from: connection.jid,
-      type: type
-    }));
-  },
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
- QBChatHelpers
-
-  sendIsTypingStatus: function(jid, messageId) {
+  // send typing status
+  sendIsTypingStatus: function(jid_or_user_id) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
-      type: 'chat'
+      to: this.helpers.jidOrUserId(jid_or_user_id),
+      type: this.helpers.typeChat(jid_or_user_id)
     });
 
     msg.c('composing', {
@@ -415,13 +403,14 @@ ChatProxy.prototype = {
     connection.send(msg);
   },
 
-  sendStopIsTypingStatus: function(jid, messageId) {
+  // send stop typing status
+  sendIsStopTypingStatus: function(jid_or_user_id) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
-      type: 'chat'
+      to: this.helpers.jidOrUserId(jid_or_user_id),
+      type: this.helpers.typeChat(jid_or_user_id)
     });
 
     msg.c('paused', {
@@ -429,8 +418,17 @@ ChatProxy.prototype = {
     });
     
     connection.send(msg);
-  },  
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  },
+
+  // helper function for ChatProxy.send()
+  sendPres: function(type) {
+    if(!isBrowser) throw unsupported;
+
+    connection.send($pres({ 
+      from: connection.jid,
+      type: type
+    }));
+  },
 
   sendDeliveredMessage: function(jid, messageId) {
     if(!isBrowser) throw unsupported;
@@ -808,6 +806,31 @@ MessageProxy.prototype = {
 function Helpers() {}
 
 Helpers.prototype = {
+
+  jidOrUserId: function(jid_or_user_id) {
+    var jid;
+    if (typeof jid_or_user_id === 'string') {
+      jid = jid_or_user_id;
+    } else if (typeof jid_or_user_id === 'number') {
+      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    } else {
+      throw unsupported;
+    }
+    return jid;
+  },
+
+  typeChat: function(jid_or_user_id) {
+    var chatType;
+    if (typeof jid_or_user_id === 'string') {
+      chatType = jid_or_user_id.indexOf("muc") > -1 ? 'groupchat' : 'chat';
+    } else if (typeof jid_or_user_id === 'number') {
+      chatType = 'chat';
+    } else {
+      throw unsupported;
+    }
+    return chatType;
+  },
+
 
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;
