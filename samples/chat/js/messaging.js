@@ -209,7 +209,8 @@ function sendTypingStatus() {
         } else {
           QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
         }
-      } 
+      }
+      console.log($('div#messages-list div#'+currentUser.id));
       ready = false;
 
       setTimeout(function(){
@@ -236,8 +237,9 @@ function sendStopTypinStatus() {
 
 
 function showTypingUser(hide) {
-  var TypingDiv = $('#'+currentUser.id);
+  var TypingDiv = $('div#messages-list div#'+currentUser.id);
 
+console.log('hide? - '+hide);
   if (hide) {
     $(TypingDiv).remove();
   } else {
