@@ -108,13 +108,6 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
                    (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
   return dialogHtml;
 }
-// build html for typing status
-function buildTypingUserHtml() {
-  var typingUserHtml = '<div id="#'+currentUser.id+'" class="list-group-item">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
-                       currentUser.id+'</h4>'+'<p class="list-group-item-text"> . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . </p>'+'</div>';
-
-  return typingUserHtml;
-}
 // sending messages after confirmation
 function clickSendMessage(){
   var currentText = $('#message_text').val().trim();
@@ -166,6 +159,13 @@ function sendMessage(text, attachmentFileId) {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
 }
+// build html for typing status
+function buildTypingUserHtml() {
+  var typingUserHtml = '<div id="#'+currentUser.id+'" class="list-group-item">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
+                       currentUser.id+'</h4>'+'<p class="list-group-item-text"> . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . </p>'+'</div>';
+
+  return typingUserHtml;
+}
 // show unread message count and new last message
 function notifiesNew(DialogId, text){ 
   // unread message count
@@ -198,7 +198,7 @@ function onMessageTyping() {
   showTypingUser(hide);
 }
 
-function sendIsTypingStatus() {
+function sendTypingStatus() {
   $("#message_text").focus().keyup(function(){
     if (ready == true) {
       if ($('#message_text').val() != '') {

@@ -114,7 +114,6 @@ p {display: block;}
 	border: 1px dashed #DDD;
 	border-left: none;
 	border-right: none;
-  display: block;
 }
 
 input[type=file]#load-img {
