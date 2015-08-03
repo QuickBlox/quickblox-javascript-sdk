@@ -158,11 +158,14 @@ function sendMessage(text, attachmentFileId) {
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
+
+  // stop typing
+  sendStopTypinStatus();
 }
 // build html for typing status
-function buildTypingUserHtml() {
-  var typingUserHtml = '<div id="#'+currentUser.id+'" class="list-group-item">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
-                       currentUser.id+'</h4>'+'<p class="list-group-item-text"> . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . </p>'+'</div>';
+function buildTypingUserHtml(userId) {
+  var typingUserHtml = '<div id="'+userId+'_typing" class="list-group-item typing">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
+                       userId+'</h4>'+'<p class="list-group-item-text"> . . . </p>'+'</div>';
 
   return typingUserHtml;
 }
@@ -194,56 +197,63 @@ function getRecipientId(occupantsIds, currentUserId){
   });
 }
 
-function onMessageTyping() {
-  showTypingUser(hide);
+function onMessageTyping(isTyping, userId, dialogId) {
+  	showUserIsTypingView(isTyping, userId, dialogId);
 }
 
-function sendTypingStatus() {
+var isTypingTimerId;
+function setupIsTypingHandler() {
   $("#message_text").focus().keyup(function(){
-    if (ready == true) {
-      if ($('#message_text').val() != '') {
-        hide = false;
-        if (currentDialog.type == 3) {
-          getRecipientId(currentDialog.occupants_ids, currentUser.id);
-          QB.chat.sendIsTypingStatus(userId);
-        } else {
-          QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
-        }
-      }
-      console.log($('div#messages-list div#'+currentUser.id));
-      ready = false;
 
-      setTimeout(function(){
-        ready = true;
-      }, 5000);
-    } 
+	if (typeof isTypingTimerId === 'undefined') {
+		// start is typing timer
+  	  	isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
+
+        // send 'is typing' status
+   		sendTypingStatus();
+	}else{
+		// start is typing timer again
+  		clearTimeout(isTypingTimerId);
+  		isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
+	}
   });  
 }
 
-function sendStopTypinStatus() {
-  $("#message_text").focus().keyup(function(){
-
-    if ($('#message_text').val() == '') {
-      hide = true;
-      if (currentDialog.type == 3) {
-        getRecipientId(currentDialog.occupants_ids, currentUser.id);
-        QB.chat.sendIsStopTypingStatus(userId);
-      } else {
-        QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
-      }
-    }
-  });
+function isTypingTimeoutCallback(){
+	isTypingTimerId = undefined;
+	sendStopTypinStatus();
 }
 
+function sendTypingStatus(){
+	  		
+	// send 'is typing' status
+	if (currentDialog.type == 3) {
+	  getRecipientId(currentDialog.occupants_ids, currentUser.id);
+	  QB.chat.sendIsTypingStatus(userId);
+	} else {
+	  QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
+	}
+}
 
-function showTypingUser(hide) {
-  var TypingDiv = $('div#messages-list div#'+currentUser.id);
+function sendStopTypinStatus() {
+  if (typeof isTypingTimerId !== 'undefined') {
+	clearTimeout(isTypingTimerId);
+	isTypingTimerId = undefined;
+  }
 
-console.log('hide? - '+hide);
-  if (hide) {
-    $(TypingDiv).remove();
+  if (currentDialog.type == 3) {
+    getRecipientId(currentDialog.occupants_ids, currentUser.id);
+    QB.chat.sendIsStopTypingStatus(userId);
   } else {
-    var typingUserHtml = buildTypingUserHtml();
+    QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
+  }
+}
+
+function showUserIsTypingView(isTyping, userId, dialogId) {
+  if (!isTyping) {
+    $('#'+userId+'_typing').remove();
+  } else {
+    var typingUserHtml = buildTypingUserHtml(userId);
     $('#messages-list').append(typingUserHtml);
   }
 }

@@ -221,7 +221,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
     if(composing || paused){
       if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(userId, dialogId);
+        self.onMessageTypingListener(composing != null, userId, dialogId);
       }
       return true;
     }

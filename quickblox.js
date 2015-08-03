@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.9.3 - 2015-07-12 */
+/* QuickBlox JavaScript SDK - v1.9.3 - 2015-08-03 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -202,6 +202,8 @@ function ChatProxy(service, webrtcModule, conn) {
         markable = stanza.querySelector('markable'),
         received = stanza.querySelector('received'),
         displayed = stanza.querySelector('displayed'),
+        composing = stanza.querySelector('composing'),
+        paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
@@ -213,6 +215,13 @@ function ChatProxy(service, webrtcModule, conn) {
         msg;
 
     if (invite) return true;
+
+    if(composing || paused){
+      if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
+        self.onMessageTypingListener(composing != null, userId, dialogId);
+      }
+      return true;
+    }
 
     // custom parameters
     // TODO: need rewrite this block
@@ -465,19 +474,10 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    var jid;
-    if (typeof jid_or_user_id === 'string') {
-      jid = jid_or_user_id;
-    } else if (typeof jid_or_user_id === 'number') {
-      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
-    } else {
-      throw unsupported;
-    }
-
     var self = this,
         msg = $msg({
           from: connection.jid,
-          to: jid,
+          to: this.helpers.jidOrUserId(jid_or_user_id),
           type: message.type,
           id: message.id || Utils.getBsonObjectId()
         });
@@ -520,6 +520,40 @@ ChatProxy.prototype = {
         xmlns: Strophe.NS.CHAT_MARKERS
       });
     }
+    
+    connection.send(msg);
+  },
+
+  // send typing status
+  sendIsTypingStatus: function(jid_or_user_id) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: this.helpers.jidOrUserId(jid_or_user_id),
+      type: this.helpers.typeChat(jid_or_user_id)
+    });
+
+    msg.c('composing', {
+      xmlns: 'http://jabber.org/protocol/chatstates'
+    });
+    
+    connection.send(msg);
+  },
+
+  // send stop typing status
+  sendIsStopTypingStatus: function(jid_or_user_id) {
+    if(!isBrowser) throw unsupported;
+
+    var msg = $msg({
+      from: connection.jid,
+      to: this.helpers.jidOrUserId(jid_or_user_id),
+      type: this.helpers.typeChat(jid_or_user_id)
+    });
+
+    msg.c('paused', {
+      xmlns: 'http://jabber.org/protocol/chatstates'
+    });
     
     connection.send(msg);
   },
@@ -858,7 +892,7 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
-]    if (config.debug) { console.log('DialogProxy.create', params); }
+    if (config.debug) { console.log('DialogProxy.create', params); }
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 
@@ -910,6 +944,31 @@ MessageProxy.prototype = {
 function Helpers() {}
 
 Helpers.prototype = {
+
+  jidOrUserId: function(jid_or_user_id) {
+    var jid;
+    if (typeof jid_or_user_id === 'string') {
+      jid = jid_or_user_id;
+    } else if (typeof jid_or_user_id === 'number') {
+      jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    } else {
+      throw unsupported;
+    }
+    return jid;
+  },
+
+  typeChat: function(jid_or_user_id) {
+    var chatType;
+    if (typeof jid_or_user_id === 'string') {
+      chatType = jid_or_user_id.indexOf("muc") > -1 ? 'groupchat' : 'chat';
+    } else if (typeof jid_or_user_id === 'number') {
+      chatType = 'chat';
+    } else {
+      throw unsupported;
+    }
+    return chatType;
+  },
+
 
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;

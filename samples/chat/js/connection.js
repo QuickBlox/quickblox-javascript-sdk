@@ -98,8 +98,7 @@ function connectChat(user) {
                     retrieveUsers();
                   }
                 });
-                sendTypingStatus();
-                sendStopTypinStatus();
+                setupIsTypingHandler();
               });
             }
           });
