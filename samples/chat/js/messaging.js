@@ -3,7 +3,7 @@ function submit_handler(form) {
   return false;
 }
 
-//
+// add photo to dialogs
 function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
   var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
       withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
@@ -29,19 +29,23 @@ function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
 
 // Choose dialog
 function triggerDialog(element, dialogId){
+
   // deselect
   var kids = $( "#dialogs-list" ).children();
   kids.removeClass("active").addClass("inactive");
+
   // select
   $('#'+dialogId).removeClass("inactive").addClass("active");
 
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
+
   // join in room
   if (currentDialog.type != 3) {
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
     });
   }
+
   // Load messages history
   var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
@@ -167,7 +171,7 @@ function sendMessage(text, attachmentFileId) {
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
-  
+  // claer timer and send 'stop typing' status
   clearTimeout(isTypingTimerId);
   isTypingTimeoutCallback();
 }
@@ -181,10 +185,12 @@ function buildTypingUserHtml(userId) {
 }
 
 // show unread message count and new last message
-function notifiesNew(DialogId, text){ 
+function notifiesNew(DialogId, text){
+
   // unread message count
   badgeCount = $('#'+DialogId+' .badge').html();
   $('#'+DialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
+
   // last message
   $('#'+DialogId+' .list-group-item-text').text(text);
 }
@@ -210,23 +216,29 @@ function getRecipientId(occupantsIds, currentUserId){
       recipientId = item;
     }  
   });
+
   return recipientId;
 }
 
+// show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
   	showUserIsTypingView(isTyping, userId, dialogId);
 }
 
+// start timer after keypress event 
 var isTypingTimerId;
 function setupIsTypingHandler() {
   $("#message_text").focus().keyup(function(){
 
 		if (typeof isTypingTimerId === 'undefined') {
+
       // send 'is typing' status
    		sendTypingStatus();
+
 			// start is typing timer
 	  	isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
 		} else {
+
 			// start is typing timer again
 			clearTimeout(isTypingTimerId);
 			isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
@@ -234,13 +246,14 @@ function setupIsTypingHandler() {
   });  
 }
 
+// delete timer and send 'stop typing' status
 function isTypingTimeoutCallback() {
 	isTypingTimerId = undefined;
 	sendStopTypinStatus();
 }
 
+// send 'is typing' status
 function sendTypingStatus() {  		
-	// send 'is typing' status
 	if (currentDialog.type == 3) {
 	  QB.chat.sendIsTypingStatus(userId);
 	} else {
@@ -248,18 +261,17 @@ function sendTypingStatus() {
 	}
 }
 
+// send 'stop typing' status
 function sendStopTypinStatus() {
-	// send 'stop typing' status
 	if (currentDialog.type == 3) {
 		QB.chat.sendIsStopTypingStatus(userId);
 	} else {
 		QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
 }
 
+// shoew or hide typing status to other users
 function showUserIsTypingView(isTyping, userId, dialogId) {
 	if(isMessageForCurrentDialog(userId, dialogId)){
-
-		console.log("typing for this dialog");
 
 	  if (!isTyping) {
 	    $('#'+userId+'_typing').remove();
@@ -274,6 +286,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 	}
 }
 
+// filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId){
 		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && getRecipientId(currentDialog.occupants_ids, currentUser.id) == userId)) {
 			return true;
