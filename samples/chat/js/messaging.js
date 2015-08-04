@@ -267,6 +267,7 @@ function sendStopTypinStatus() {
 		QB.chat.sendIsStopTypingStatus(userId);
 	} else {
 		QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
+	}
 }
 
 // shoew or hide typing status to other users
@@ -287,7 +288,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 }
 
 // filter for current dialog
-function isMessageForCurrentDialog(userId, dialogId){
+function isMessageForCurrentDialog(userId, dialogId) {
 		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && getRecipientId(currentDialog.occupants_ids, currentUser.id) == userId)) {
 			return true;
 		} else {
