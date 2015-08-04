@@ -6,7 +6,7 @@ var QBApp = {
 
 var config = {
   chatProtocol: {
-    active: 1,
+    active: 2,
   }
 };
 

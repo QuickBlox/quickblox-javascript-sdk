@@ -217,19 +217,12 @@ function ChatProxy(service, webrtcModule, conn) {
         message, extension, attachments, attach, attributes,
         msg;
 
+      
     if (invite) return true;
 
-    if(composing || paused){
-      if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(composing != null, userId, dialogId);
-      }
-      return true;
-    }
 
-
-
-    // custom parameters
-    // TODO: need rewrite this block
+    // parse custom parameters
+    // 
     if (extraParams) {
       extension = {};
       attachments = [];
@@ -246,6 +239,9 @@ function ChatProxy(service, webrtcModule, conn) {
               attach[attributes[j].name] = attributes[j].value;
           }
           attachments.push(attach);
+
+        }else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+          dialogId = extraParams.childNodes[i].textContent;
 
         } else {
           if (extraParams.childNodes[i].childNodes.length > 1) {
@@ -272,6 +268,16 @@ function ChatProxy(service, webrtcModule, conn) {
       if (attachments.length > 0)
         extension.attachments = attachments;
     }
+
+    // fire 'is typing' callback
+    //
+    if(composing || paused){
+      if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
+        self.onMessageTypingListener(composing != null, userId, dialogId);
+      }
+      return true;
+    }
+
 
     message = {
       id: messageId,
