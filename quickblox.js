@@ -909,7 +909,13 @@ DialogProxy.prototype = {
   delete: function(id, callback) {
     if (config.debug) { console.log('DialogProxy.delete', id); }
     this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  },
+
+  delete: function(id, params, callback) {
+    if (config.debug) { console.log('DialogProxy.delete', id); }
+    this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params, dataType: 'text'}, callback);
   }
+
 
 };
 
