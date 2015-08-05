@@ -6,22 +6,31 @@ var uploadPages = 0;
     finished    = false;
     usersCount = 0;
 
-// show users list
+function setupUsersScrollHandler(){
+  // uploading users scroll event
+  $('.list-group.pre-scrollable.for-scroll').scroll(function() {
+    if  ($('.list-group.pre-scrollable.for-scroll').scrollTop() == $('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height()){
+      retrieveUsers();
+    }
+  });
+}
+
 function retrieveUsers() {
-  if (finished != true) {
+  if (!finished) {
+
     $("#load-users").show(0);
     uploadPages = uploadPages + 1;
 
+    // Load users, 10 per request
+    //
     QB.users.listUsers({page: uploadPages, per_page: '10'}, function(err, result) {
       if (err) {
         console.log(err);
       } else {
         $.each(result.items, function(index, item){
-          console.log(this.user.id);
           showUsers(this.user.login, this.user.id);
         });
 
-        console.log(result);
         $("#load-users").delay(100).fadeOut(500);
 
         var totalEntries = result.total_entries;
@@ -35,30 +44,33 @@ function retrieveUsers() {
     });
   }
 }
-// show users list
+
 function showUsers(userLogin, userId) {
   var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
     $('#users_list').append(userHtml);
 }
+
 // show modal window with users
 function createNewDialog() {
   $("#add_new_dialog").modal("show");
   $('#add_new_dialog .progress').hide();
 
   retrieveUsers();
+
+  setupUsersScrollHandler();
 }
+
 // select users from users list
 function clickToAdd(forFocus) {
   if ($('#'+forFocus).hasClass("active")) {
     $('#'+forFocus).removeClass("active");
-    console.log(forFocus);
   } else {
     $('#'+forFocus).addClass("active");
-    console.log(forFocus);
   }
 }
+
 // create new dialog
-function addNewDialog() {
+function createNewDialog() {
   $('.users_form.active').each(function(index) {
     users_ids[index] = $(this).attr('id');
     users_names[index] = $(this).text();
@@ -89,11 +101,13 @@ function addNewDialog() {
   };
 
   console.log(dlg_params);
+
+  // create a dialog
+  //
   QB.chat.dialog.create(dlg_params, function(err, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(res);
 
       if (dlg_name == '') {
         dlg_name = chatName = 'Dialog with ' + dlg_users;
