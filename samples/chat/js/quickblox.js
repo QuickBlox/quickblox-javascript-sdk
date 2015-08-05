@@ -213,11 +213,9 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        recipientId = type === 'chat' ? self.helpers.getRecipientId(occupantsIds, userId) : null,
         marker = received || displayed || null,
         message, extension, attachments, attach, attributes,
         msg;
-
       
     if (invite) return true;
 
@@ -969,13 +967,13 @@ function Helpers() {}
 Helpers.prototype = {
 
   getRecipientId: function(occupantsIds, UserId) {
-    var recipientId = null;
+    var recipient = null;
     occupantsIds.forEach(function(item, i, arr) {
       if(item != UserId){
-        recipientId = item;
+        recipient = item;
       }  
     });
-    return recipientId;
+    return recipient;
   },
 
   jidOrUserId: function(jid_or_user_id) {

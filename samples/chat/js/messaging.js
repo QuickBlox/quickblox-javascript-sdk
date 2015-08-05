@@ -48,7 +48,10 @@ function retrieveChatDialogs() {
               var dialogLastMessage = item.last_message;
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
-              whatTypeChat(item.type, item.occupants_ids, currentUser.id, item.photo);
+              //
+              recipientId = QB.chat.helpers.getRecipientId(item.occupants_ids, item.user_id);
+
+              whatTypeChat(item.type, item.photo);
               
               if (dialogName == null) {
                 dialogName = chatName;
@@ -109,11 +112,10 @@ function triggerDialog(element, dialogId){
 function retrieveChatMessages(dialogId){
   // Load messages history
   //
-  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 50, skip: 0};
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
     if (messages) {
-      console.log(messages);
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -229,8 +231,7 @@ function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
       dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
       break;
     case 3:
-      getRecipientId(occupantsIds, itemId);
-      chatName = 'Dialog with ' + userId;
+      chatName = 'Dialog with ' + recipientId;
       dialogIcon = privatPhoto;
       break;
     default:
@@ -262,19 +263,7 @@ function showMessage(userId, msg, attachmentFileId) {
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
-// get companion ID
-function getRecipientId(occupantsIds, currentUserId){
-	var recipientId = null;
-  occupantsIds.forEach(function(item, i, arr) {
-    if(item != currentUserId){
-      userId = item;
-      recipientId = item;
-    }  
-  });
-
-  return recipientId;
-}
-
+//
 function setupOnMessageListener(){
   QB.chat.onMessageListener = onMessage;
 }
@@ -293,7 +282,6 @@ function setupIsTypingHandler() {
   	console.log(isTypingTimerId);
 
 		if (typeof isTypingTimerId === 'undefined') {
-			console.log(isTypingTimerId);
 
       // send 'is typing' status
    		sendTypingStatus();
@@ -352,7 +340,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
-		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && getRecipientId(currentDialog.occupants_ids, currentUser.id) == userId)) {
+		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && recipientId == userId)) {
 			return true;
 		} else {
 			return false;

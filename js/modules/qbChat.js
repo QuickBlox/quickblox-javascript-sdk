@@ -842,6 +842,15 @@ Helpers.prototype = {
     return chatType;
   },
 
+  getRecipientId: function(occupantsIds, UserId) {
+    var recipient = null;
+    occupantsIds.forEach(function(item, i, arr) {
+      if(item != UserId){
+        recipient = item;
+      }  
+    });
+    return recipient;
+  },
 
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;
