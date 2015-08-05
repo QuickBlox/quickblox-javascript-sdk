@@ -47,10 +47,11 @@ function triggerDialog(element, dialogId){
   }
 
   // Load messages history
-  var params = {chat_dialog_id: dialogId, sort_asc: 'date_sent', limit: 100, skip: 0};
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 50, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
     if (messages) {
+    	console.log(messages);
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -68,7 +69,7 @@ function triggerDialog(element, dialogId){
           }
           var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent, messageAttachmentFileId);
 
-          $('#messages-list').append(messageHtml);
+          $('#messages-list').prepend(messageHtml);
 
           var mydiv = $('#messages-list');
               mydiv.scrollTop(mydiv.prop('scrollHeight'));
@@ -229,8 +230,10 @@ function onMessageTyping(isTyping, userId, dialogId) {
 var isTypingTimerId;
 function setupIsTypingHandler() {
   $("#message_text").focus().keyup(function(){
+  	console.log(isTypingTimerId);
 
 		if (typeof isTypingTimerId === 'undefined') {
+			console.log(isTypingTimerId);
 
       // send 'is typing' status
    		sendTypingStatus();
