@@ -44,8 +44,8 @@ function retrieveUsers() {
 }
 
 function showUsers(userLogin, userId) {
-  var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
-    $('#users_list').append(userHtml);
+  var userHtml = buildUserHtml(userLogin, userId);
+  $('#users_list').append(userHtml);
 }
 
 // show modal window with users

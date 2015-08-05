@@ -1,30 +1,85 @@
+var currentDialog;
+var dialogs = {};
+var users = {};
+
+
 // submit form after press "ENTER"
 function submit_handler(form) {
   return false;
 }
 
-// add photo to dialogs
-function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
-  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
-      withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
-      privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
-      defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
-  switch (itemType) {
-    case 1:
-      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
-      break;
-    case 2:
-      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
-      break;
-    case 3:
-      getRecipientId(occupantsIds, itemId);
-      chatName = 'Dialog with ' + userId;
-      dialogIcon = privatPhoto;
-      break;
-    default:
-      dialogIcon = defaultPhoto;
-      break;
-  }
+function retrieveChatDialogs() {
+    // get the chat dialogs list
+    //
+    QB.chat.dialog.list(null, function(err, resDialogs) {
+      if (err) {
+        console.log(err);
+      } else {
+
+        // repackage dialogs data and collect all occupants ids
+        // 
+        var occupantsIds = [];  
+        resDialogs.items.forEach(function(item, i, arr) {
+          var dialogId = item._id;
+          dialogs[dialogId] = item;
+
+          item.occupants_ids.map(function(userId) {
+            occupantsIds.push(userId);
+          });
+        });
+
+        // load dialogs' users
+        //
+        var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
+        QB.users.listUsers(params, function(err, result){
+          if (result) {
+            
+            // repackage users data 
+            //
+            result.items.forEach(function(item, i, arr) {
+              users[item.user.id] = item.user;
+            });
+
+            // show dialogs
+            //
+            resDialogs.items.forEach(function(item, i, arr) {
+              var dialogId = item._id;
+              var dialogName = item.name;
+              var dialogLastMessage = item.last_message;
+              var dialogUnreadMessagesCount = item.unread_messages_count;
+
+              whatTypeChat(item.type, item.occupants_ids, currentUser.id, item.photo);
+              
+              if (dialogName == null) {
+                dialogName = chatName;
+              }
+
+              var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+              $('#dialogs-list').append(dialogHtml);
+            });
+
+            //  and trigger the 1st dialog
+            //
+            triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
+          } 
+
+          // hide login form
+          $("#loginForm").modal("hide");
+
+
+          // setup attachments button handler
+          //
+          $("#load-img").change(function(){
+            var inputFile = $("input[type=file]")[0].files[0];
+            if (inputFile) {
+              $("#progress").show(0);
+            }
+            clickSendAttachments(inputFile);
+            inputFile = '';
+          });
+        });
+      }
+    });
 }
 
 // Choose dialog
@@ -46,12 +101,19 @@ function triggerDialog(element, dialogId){
     });
   }
 
+  // load chat history
+  //
+  retrieveChatMessages(dialogId);
+}
+
+function retrieveChatMessages(dialogId){
   // Load messages history
+  //
   var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 50, skip: 0};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
     if (messages) {
-    	console.log(messages);
+      console.log(messages);
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -94,31 +156,6 @@ function onMessage(userId, msg){
   }
 
   notifiesNew(msg.dialog_id, msg.body);
-}
-
-// build html for messages
-function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId){
-  var messageAttach;
-    if(attachmentFileId){
-      messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
-    }
-
-  var messageHtml = '<div class="list-group-item">'+'<time datetime="'+messageDateSent+'" class="pull-right">'+jQuery.timeago(messageDateSent)+
-                    '</time>'+'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+'<p class="list-group-item-text">'+
-                    (messageAttach ? messageAttach : messageText)+'</p>'+'</div>';
-  return messageHtml;
-}
-
-// build html for dialogs
-function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage) {
-  var UnreadMessagesCountShow = '<span class="badge">'+dialogUnreadMessagesCount+'</span>';
-      UnreadMessagesCountHide = '<span class="badge" style="display: none;">'+dialogUnreadMessagesCount+'</span>';
-
-  var dialogHtml = '<a href="#" class="list-group-item" id='+'"'+dialogId+'"'+' onclick="triggerDialog(this, '+"'"+dialogId+"'"+')">'+ 
-                   (dialogUnreadMessagesCount == 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+'<h4 class="list-group-item-heading">'+
-                   dialogIcon+'&nbsp;&nbsp;&nbsp;'+dialogName+'</h4>'+'<p class="list-group-item-text last-message">'+
-                   (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
-  return dialogHtml;
 }
 
 // sending messages after confirmation
@@ -177,12 +214,29 @@ function sendMessage(text, attachmentFileId) {
   isTypingTimeoutCallback();
 }
 
-// build html for typing status
-function buildTypingUserHtml(userId) {
-  var typingUserHtml = '<div id="'+userId+'_typing" class="list-group-item typing">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
-                       userId+'</h4>'+'<p class="list-group-item-text"> . . . </p>'+'</div>';
 
-  return typingUserHtml;
+// add photo to dialogs
+function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
+  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
+      withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
+      privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
+      defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
+  switch (itemType) {
+    case 1:
+      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
+      break;
+    case 2:
+      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
+      break;
+    case 3:
+      getRecipientId(occupantsIds, itemId);
+      chatName = 'Dialog with ' + userId;
+      dialogIcon = privatPhoto;
+      break;
+    default:
+      dialogIcon = defaultPhoto;
+      break;
+  }
 }
 
 // show unread message count and new last message
@@ -221,6 +275,10 @@ function getRecipientId(occupantsIds, currentUserId){
   return recipientId;
 }
 
+function setupOnMessageListener(){
+  QB.chat.onMessageListener = onMessage;
+}
+
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
   	showUserIsTypingView(isTyping, userId, dialogId);
@@ -229,6 +287,8 @@ function onMessageTyping(isTyping, userId, dialogId) {
 // start timer after keypress event 
 var isTypingTimerId;
 function setupIsTypingHandler() {
+  QB.chat.onMessageTypingListener = onMessageTyping;
+
   $("#message_text").focus().keyup(function(){
   	console.log(isTypingTimerId);
 
@@ -273,7 +333,7 @@ function sendStopTypinStatus() {
 	}
 }
 
-// shoew or hide typing status to other users
+// show or hide typing status to other users
 function showUserIsTypingView(isTyping, userId, dialogId) {
 	if(isMessageForCurrentDialog(userId, dialogId)){
 
