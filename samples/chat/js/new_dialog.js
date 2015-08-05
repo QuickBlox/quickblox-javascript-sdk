@@ -1,6 +1,4 @@
 var uploadPages = 0;
-    dlg_type    = '';
-    dlg_users   = '';
     users_ids   = [];
     users_names = [];
     finished    = false;
@@ -46,8 +44,8 @@ function retrieveUsers() {
 }
 
 function showUsers(userLogin, userId) {
-  var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
-    $('#users_list').append(userHtml);
+  var userHtml = buildUserHtml(userLogin, userId);
+  $('#users_list').append(userHtml);
 }
 
 // show modal window with users
@@ -74,56 +72,57 @@ function createNewDialog() {
   $('.users_form.active').each(function(index) {
     users_ids[index] = $(this).attr('id');
     users_names[index] = $(this).text();
-    console.log(users_ids.join(', '));
   });
 
   $("#add_new_dialog").modal("hide");
   $('#add_new_dialog .progress').show();
 
-  var dlg_name = $('#dlg_name').val().trim();
-  
-  if (users_ids.length == 0) {
-    dlg_name = 'QB public chat';
-    dlg_type = 1;
-  } if (users_ids.length > 1) {
-    dlg_name = (dlg_name == '' ? users_names.join(', ') : $('#dlg_name').val().trim());
-    dlg_users = users_ids.join(',');
-    dlg_type = 2;
+  var dialogName = $('#dlg_name').val().trim();
+  var dialogOccupants;
+  var dialogType;
+
+  if (users_ids.length > 1) {
+    dialogName = (dialogName == '' ? users_names.join(', ') : $('#dlg_name').val().trim());
+    dialogOccupants = users_ids.join(',');
+    dialogType = 2;
   } else {
-    dlg_users = users_ids.join(',');
-    dlg_type = 3;
+    dialogOccupants = users_ids.join(',');
+    dialogType = 3;
   }
 
-  var dlg_params = {
-    type: dlg_type,
-    occupants_ids: dlg_users,
-    name: dlg_name
+  var params = {
+    type: dialogType,
+    occupants_ids: dialogOccupants,
+    name: dialogName
   };
-
-  console.log(dlg_params);
 
   // create a dialog
   //
-  QB.chat.dialog.create(dlg_params, function(err, res) {
+  QB.chat.dialog.create(params, function(err, res) {
     if (err) {
       console.log(err);
     } else {
 
-      if (dlg_name == '') {
-        dlg_name = chatName = 'Dialog with ' + dlg_users;
+      if (dialogName == '') {
+        dialogName = chatName = 'Dialog with ' + dialogOccupants;
       }
+
       whatTypeChat (res.type, res.occupants_ids, res.user_id, res.photo);
-      var dialogHtml = buildDialogHtml(res._id, 0, dialogIcon, dlg_name, res.last_message);
+
+      // add new dialog to the list 
+      //
+      var dialogHtml = buildDialogHtml(res._id, 0, dialogIcon, dialogName, res.last_message);
       $('#dialogs-list').prepend(dialogHtml);
 
       var dialogId = res._id;
-          dialogs[dialogId] = res;
+      dialogs[dialogId] = res;
+
       triggerDialog($('#dialogs-list').children()[0], res._id);
 
-        $('#dlg_name').val('');
-        $('#dlg_name').hide(0);
-        users_ids = [];
-        $('a.users_form').removeClass('active');
+      $('#dlg_name').val('');
+      $('#dlg_name').hide(0);
+      users_ids = [];
+      $('a.users_form').removeClass('active');
     }
   });
 }
