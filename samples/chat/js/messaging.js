@@ -218,7 +218,7 @@ function sendMessage(text, attachmentFileId) {
 
 
 // add photo to dialogs
-function whatTypeChat (itemType, occupantsIds, itemId, itemPhoto) {
+function whatTypeChat (itemType, itemPhoto) {
   var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
       withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
       privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
