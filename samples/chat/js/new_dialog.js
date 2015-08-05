@@ -51,7 +51,7 @@ function showUsers(userLogin, userId) {
 }
 
 // show modal window with users
-function createNewDialog() {
+function showNewDialogPopup() {
   $("#add_new_dialog").modal("show");
   $('#add_new_dialog .progress').hide();
 
