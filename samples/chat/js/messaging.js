@@ -353,7 +353,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
-		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && recipientId == userId)) {
+		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && opponentId == userId)) {
 			return true;
 		} else {
 			return false;
