@@ -1,6 +1,7 @@
 var currentDialog;
 var dialogs = {};
 var users = {};
+var opponentId;
 
 
 // submit form after press "ENTER"
@@ -103,6 +104,10 @@ function triggerDialog(element, dialogId){
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
        console.log("Joined dialog " + dialogId);
     });
+
+    opponentId = null;
+  }else{
+    opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
   }
 
   // load chat history
@@ -205,7 +210,9 @@ function sendMessage(text, attachmentFileId) {
   }
 
   if (currentDialog.type == 3) {
-    QB.chat.send(userId, msg);
+    
+    QB.chat.send(opponentId, msg);
+
     $('.list-group-item.active .list-group-item-text').text(msg.body);
       if(attachmentFileId == null){
         showMessage(currentUser.id, msg);
@@ -312,7 +319,7 @@ function isTypingTimeoutCallback() {
 // send 'is typing' status
 function sendTypingStatus() {  		
 	if (currentDialog.type == 3) {
-	  QB.chat.sendIsTypingStatus(userId);
+	  QB.chat.sendIsTypingStatus(opponentId);
 	} else {
 	  QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
 	}
@@ -321,7 +328,7 @@ function sendTypingStatus() {
 // send 'stop typing' status
 function sendStopTypinStatus() {
 	if (currentDialog.type == 3) {
-		QB.chat.sendIsStopTypingStatus(userId);
+		QB.chat.sendIsStopTypingStatus(opponentId);
 	} else {
 		QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
 	}
