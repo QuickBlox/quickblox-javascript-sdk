@@ -51,10 +51,10 @@ function retrieveChatDialogs() {
               //
               recipientId = QB.chat.helpers.getRecipientId(item.occupants_ids, item.user_id);
 
-              whatTypeChat(item.type, item.photo);
+              var dialogIcon = getDialogIcon(item.type, item.photo);
               
               if (dialogName == null) {
-                dialogName = chatName;
+                dialogName = 'Dialog with ' + recipientId;;
               }
 
               var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
@@ -98,9 +98,10 @@ function triggerDialog(element, dialogId){
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
 
-  // join in room
+  // join room
   if (currentDialog.type != 3) {
     QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
+       console.log("Joined dialog " + dialogId);
     });
   }
 
@@ -146,18 +147,22 @@ function retrieveChatMessages(dialogId){
 // on message listener
 function onMessage(userId, msg){
 
+  // сheck if it's an attachment
+  //
   var messageAttachmentFileId = null;
-    if (msg.extension.hasOwnProperty("attachments")) {
-      if(msg.extension.attachments.length > 0) {
-        messageAttachmentFileId = msg.extension.attachments[0].id;
-      }
+  if (msg.extension.hasOwnProperty("attachments")) {
+    if(msg.extension.attachments.length > 0) {
+      messageAttachmentFileId = msg.extension.attachments[0].id;
     }
+  }
 
+  // check if it's a mesasges for current dialog
+  //
 	if(isMessageForCurrentDialog(userId, msg.dialog_id)){
      showMessage(userId, msg, messageAttachmentFileId);
   }
 
-  notifiesNew(msg.dialog_id, msg.body);
+  updateDialogsList(msg.dialog_id, msg.body);
 }
 
 // sending messages after confirmation
@@ -171,7 +176,6 @@ function clickSendMessage(){
   sendMessage(currentText, null);
 }
 
-// add attachment to QB content
 function clickSendAttachments(inputFile) {
   // upload image
   QB.content.createAndUpload({name: inputFile.name, file: inputFile, type: inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
@@ -218,40 +222,43 @@ function sendMessage(text, attachmentFileId) {
 
 
 // add photo to dialogs
-function whatTypeChat (itemType, itemPhoto) {
-  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+itemPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
-      withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
-      privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
-      defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
-  switch (itemType) {
+function getDialogIcon (dialogType, dialogPhoto) {
+  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+dialogPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
+  var withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
+  var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
+  var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
+  
+  var dialogIcon;
+  switch (dialogType) {
     case 1:
-      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
+      dialogIcon = dialogPhoto ? withPhoto : withoutPhoto;
       break;
     case 2:
-      dialogIcon = itemPhoto ? withPhoto : withoutPhoto;
+      dialogIcon = dialogPhoto ? withPhoto : withoutPhoto;
       break;
     case 3:
-      chatName = 'Dialog with ' + recipientId;
       dialogIcon = privatPhoto;
       break;
     default:
       dialogIcon = defaultPhoto;
       break;
   }
+
+  return dialogIcon;
 }
 
 // show unread message count and new last message
-function notifiesNew(DialogId, text){
+function updateDialogsList(DialogId, text){
 
-  // unread message count
+  // update unread message count
   badgeCount = $('#'+DialogId+' .badge').html();
   $('#'+DialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
 
-  // last message
+  // update last message
   $('#'+DialogId+' .list-group-item-text').text(text);
 }
 
-// Show messages in UI
+// ыhow messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
   var messageHtml = buildMessageHTML(msg.body, userId, new Date(), attachmentFileId);
@@ -263,7 +270,7 @@ function showMessage(userId, msg, attachmentFileId) {
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
-//
+
 function setupOnMessageListener(){
   QB.chat.onMessageListener = onMessage;
 }
@@ -279,7 +286,6 @@ function setupIsTypingHandler() {
   QB.chat.onMessageTypingListener = onMessageTyping;
 
   $("#message_text").focus().keyup(function(){
-  	console.log(isTypingTimerId);
 
 		if (typeof isTypingTimerId === 'undefined') {
 

@@ -107,7 +107,7 @@ function createNewDialog() {
         dialogName = chatName = 'Dialog with ' + dialogOccupants;
       }
 
-      whatTypeChat (res.type, res.occupants_ids, res.user_id, res.photo);
+      var dialogIcon = getDialogIcon(res.type, res.photo);
 
       // add new dialog to the list 
       //
