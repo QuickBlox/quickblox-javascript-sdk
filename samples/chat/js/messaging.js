@@ -10,6 +10,7 @@ function submit_handler(form) {
 }
 
 function retrieveChatDialogs() {
+
     // get the chat dialogs list
     //
     QB.chat.dialog.list(null, function(err, resDialogs) {
@@ -227,6 +228,7 @@ function sendMessage(text, attachmentFileId) {
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
+
   // claer timer and send 'stop typing' status
   clearTimeout(isTypingTimerId);
   isTypingTimeoutCallback();

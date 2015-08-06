@@ -7,7 +7,8 @@ var QBApp = {
 var config = {
   chatProtocol: {
     active: 2,
-  }
+  },
+  debug: false
 };
 
 var QBUser1 = {
