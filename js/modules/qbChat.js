@@ -772,17 +772,14 @@ DialogProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
   },
 
-  delete: function(id, callback) {
-    if (config.debug) { console.log('DialogProxy.delete', id); }
-    this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, callback);
-  },
-
-  delete: function(id, params, callback) {
-    if (config.debug) { console.log('DialogProxy.delete', id); }
-    this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params, dataType: 'text'}, callback);
+  delete: function(id, params_or_callback, callback) {
+    if (config.debug) { console.log('DialogProxy.delete', id);}
+    if (arguments.length == 2) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+    } else if (arguments.length == 3) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+    }
   }
-
-
 };
 
 // Messages

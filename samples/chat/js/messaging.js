@@ -10,6 +10,7 @@ function submit_handler(form) {
 }
 
 function retrieveChatDialogs() {
+
     // get the chat dialogs list
     //
     QB.chat.dialog.list(null, function(err, resDialogs) {
