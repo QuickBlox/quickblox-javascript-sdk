@@ -222,6 +222,7 @@ function sendMessage(text, attachmentFileId) {
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
+
   // claer timer and send 'stop typing' status
   clearTimeout(isTypingTimerId);
   isTypingTimeoutCallback();

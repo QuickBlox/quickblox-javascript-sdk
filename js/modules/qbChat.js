@@ -341,14 +341,18 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
+    if(message.id == null){
+      message.id = Utils.getBsonObjectId();
+    }
+
     var self = this,
         msg = $msg({
           from: connection.jid,
           to: this.helpers.jidOrUserId(jid_or_user_id),
           type: message.type,
-          id: message.id || Utils.getBsonObjectId()
+          id: message.id
         });
-    
+
     if (message.body) {
       msg.c('body', {
         xmlns: Strophe.NS.CLIENT
