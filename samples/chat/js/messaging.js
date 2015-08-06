@@ -24,6 +24,17 @@ function retrieveChatDialogs() {
           var dialogId = item._id;
           dialogs[dialogId] = item;
 
+          // join room
+          if (item.type != 3) {
+            QB.chat.muc.join(item.xmpp_room_jid, function() {
+               console.log("Joined dialog " + dialogId);
+            });
+
+            opponentId = null;
+          } else {
+            opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+          }
+
           item.occupants_ids.map(function(userId) {
             occupantsIds.push(userId);
           });
@@ -99,17 +110,6 @@ function triggerDialog(element, dialogId){
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
 
-  // join room
-  if (currentDialog.type != 3) {
-    QB.chat.muc.join(currentDialog.xmpp_room_jid, function() {
-       console.log("Joined dialog " + dialogId);
-    });
-
-    opponentId = null;
-  }else{
-    opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
-  }
-
   // load chat history
   //
   retrieveChatMessages(dialogId);
@@ -150,7 +150,7 @@ function retrieveChatMessages(dialogId){
 }
 
 // on message listener
-function onMessage(userId, msg){
+function onMessage(userId, msg) {
 
   // сheck if it's an attachment
   //
@@ -168,10 +168,15 @@ function onMessage(userId, msg){
   }
 
   updateDialogsList(msg.dialog_id, msg.body);
+
+  if (msg.extension.notification_type) {
+    sendDialog(msg.extension._id);
+    console.log(msg.extension._id);
+  }
 }
 
 // sending messages after confirmation
-function clickSendMessage(){
+function clickSendMessage() {
 
   var currentText = $('#message_text').val().trim();
   $('#message_text').val('').focus();
@@ -227,7 +232,6 @@ function sendMessage(text, attachmentFileId) {
   isTypingTimeoutCallback();
 }
 
-
 // add photo to dialogs
 function getDialogIcon (dialogType, dialogPhoto) {
   var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+dialogPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
@@ -265,7 +269,7 @@ function updateDialogsList(DialogId, text){
   $('#'+DialogId+' .list-group-item-text').text(text);
 }
 
-// ыhow messages in UI
+// show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
   var messageHtml = buildMessageHTML(msg.body, userId, new Date(), attachmentFileId);
@@ -278,7 +282,7 @@ function showMessage(userId, msg, attachmentFileId) {
 }
 
 
-function setupOnMessageListener(){
+function setupOnMessageListener() {
   QB.chat.onMessageListener = onMessage;
 }
 

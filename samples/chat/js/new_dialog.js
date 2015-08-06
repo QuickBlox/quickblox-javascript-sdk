@@ -1,4 +1,4 @@
-var uploadPages = 0;
+var uploadPages = 455;
     users_ids   = [];
     users_names = [];
     finished    = false;
@@ -77,13 +77,13 @@ function createNewDialog() {
   $("#add_new_dialog").modal("hide");
   $('#add_new_dialog .progress').show();
 
-  var dialogName = $('#dlg_name').val().trim();
+  var dialogName;
   var dialogOccupants;
   var dialogType;
 
   if (users_ids.length > 1) {
-    dialogName = (dialogName == '' ? users_names.join(', ') : $('#dlg_name').val().trim());
-    dialogOccupants = users_ids.join(',');
+    dialogName = currentUser.login+', '+users_names.join(', ');
+    dialogOccupants = currentUser.id+','+users_ids.join(',');
     dialogType = 2;
   } else {
     dialogOccupants = users_ids.join(',');
@@ -102,27 +102,93 @@ function createNewDialog() {
     if (err) {
       console.log(err);
     } else {
-
-      if (dialogName == '') {
-        dialogName = chatName = 'Dialog with ' + dialogOccupants;
-      }
+      console.log(res);
+      var dialogId = res._id;
+      var dialogName = res.name;
+      var dialogLastMessage = res.last_message;
+      var dialogUnreadMessagesCount = res.unread_messages_count;
+          dialogs[dialogId] = res;
 
       var dialogIcon = getDialogIcon(res.type, res.photo);
 
-      // add new dialog to the list 
-      //
-      var dialogHtml = buildDialogHtml(res._id, 0, dialogIcon, dialogName, res.last_message);
-      $('#dialogs-list').prepend(dialogHtml);
+      recipientId = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
 
-      var dialogId = res._id;
-      dialogs[dialogId] = res;
+      if (dialogName == null) {
+        dialogName = chatName = 'Dialog with ' + recipientId;
+      }
+
+      notifyOccupants(res.occupants_ids, res._id);
+
+      showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
 
       triggerDialog($('#dialogs-list').children()[0], res._id);
 
-      $('#dlg_name').val('');
-      $('#dlg_name').hide(0);
       users_ids = [];
       $('a.users_form').removeClass('active');
     }
   });
 }
+
+// add new dialog to the list 
+//
+function showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage) {
+  var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+  $('#dialogs-list').prepend(dialogHtml);
+}
+
+function notifyOccupants(dialogOccupants, newDialogId) {
+  dialogOccupants.forEach(function(itemOccupanId, i, arr) {
+    if (itemOccupanId != currentUser.id) {
+    
+      var msg = {
+        type: 'chat',
+        extension: {
+          notification_type: 1,
+          _id: newDialogId,
+        }, 
+      };
+
+      QB.chat.send(itemOccupanId, msg);
+    }
+  });
+}
+
+function sendDialog(newDialogId) {
+  QB.chat.dialog.list(null, function(err, res) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.items.forEach(function(item, i, arr) {
+        if (item._id == newDialogId) {
+          var dialogId = item._id;
+          var dialogName = item.name;
+          var dialogLastMessage = item.last_message;
+          var dialogUnreadMessagesCount = item.unread_messages_count;
+              dialogs[dialogId] = item;
+
+          var dialogIcon = getDialogIcon(item.type, item.photo);
+
+          recipientId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+
+          if (dialogName == null) {
+            dialogName = chatName = 'Dialog with ' + recipientId;
+          }
+
+            showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+
+          if (item.type != 3) {
+            QB.chat.muc.join(item.xmpp_room_jid, function() {
+               console.log("Joined dialog " + dialogId);
+            });
+
+            opponentId = null;
+          } else {
+            opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+          }
+          console.log(item);
+        } 
+      });
+    }
+  });
+}
+
