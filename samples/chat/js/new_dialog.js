@@ -98,15 +98,15 @@ function createNewDialog() {
 
   // create a dialog
   //
-  QB.chat.dialog.create(params, function(err, res) {
+  QB.chat.dialog.create(params, function(err, createdDialog) {
     if (err) {
       console.log(err);
     } else {
-      joinToNewDialogAndShow(res);
+      joinToNewDialogAndShow(createdDialog);
 
-      notifyOccupants(res.occupants_ids, res._id);
+      notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
 
-      triggerDialog($('#dialogs-list').children()[0], res._id);
+      triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
 
       users_ids = [];
       $('a.users_form').removeClass('active');
@@ -120,7 +120,9 @@ function joinToNewDialogAndShow(itemDialog) {
   var dialogLastMessage = itemDialog.last_message;
   var dialogUnreadMessagesCount = itemDialog.unread_messages_count;
   var dialogIcon = getDialogIcon(itemDialog.type, itemDialog.photo);
-      dialogs[dialogId] = itemDialog;
+      
+  // save dialog to local storage 
+  dialogs[dialogId] = itemDialog;
 
   // join if it's a group dialog
   if (itemDialog.type != 3) {
@@ -133,8 +135,9 @@ function joinToNewDialogAndShow(itemDialog) {
     dialogName = chatName = 'Dialog with ' + opponentId;
   }
 
+  // show it
   var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-      $('#dialogs-list').prepend(dialogHtml);
+  $('#dialogs-list').prepend(dialogHtml);
 }
 
 function notifyOccupants(dialogOccupants, newDialogId) {
