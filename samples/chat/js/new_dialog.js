@@ -102,29 +102,9 @@ function createNewDialog() {
     if (err) {
       console.log(err);
     } else {
-      console.log(res);
-      var dialogId = res._id;
-      var dialogName = res.name;
-      var dialogLastMessage = res.last_message;
-      var dialogUnreadMessagesCount = res.unread_messages_count;
-          dialogs[dialogId] = res;
-
-      var dialogIcon = getDialogIcon(res.type, res.photo);
+      joinToNewDialogAndShow(res);
 
       notifyOccupants(res.occupants_ids, res._id);
-
-      console.log(res.type);
-      if (res.type != 3) {
-        QB.chat.muc.join(res.xmpp_room_jid, function() {
-           console.log("Joined dialog " + dialogId);
-        });
-        opponentId = null;
-      } else {
-        opponentId = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
-        dialogName = 'Dialog with ' + opponentId;
-      }
-
-      showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
 
       triggerDialog($('#dialogs-list').children()[0], res._id);
 
@@ -134,17 +114,32 @@ function createNewDialog() {
   });
 }
 
-// add new dialog to the list 
-//
-function showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage) {
+function joinToNewDialogAndShow(itemDialog) {
+  var dialogId = itemDialog._id;
+  var dialogName = itemDialog.name;
+  var dialogLastMessage = itemDialog.last_message;
+  var dialogUnreadMessagesCount = itemDialog.unread_messages_count;
+  var dialogIcon = getDialogIcon(itemDialog.type, itemDialog.photo);
+      dialogs[dialogId] = itemDialog;
+
+  // join if it's a group dialog
+  if (itemDialog.type != 3) {
+    QB.chat.muc.join(itemDialog.xmpp_room_jid, function() {
+       console.log("Joined dialog " + dialogId);
+    });
+    opponentId = null;
+  } else {
+    opponentId = QB.chat.helpers.getRecipientId(itemDialog.occupants_ids, currentUser.id);
+    dialogName = chatName = 'Dialog with ' + opponentId;
+  }
+
   var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-  $('#dialogs-list').prepend(dialogHtml);
+      $('#dialogs-list').prepend(dialogHtml);
 }
 
 function notifyOccupants(dialogOccupants, newDialogId) {
   dialogOccupants.forEach(function(itemOccupanId, i, arr) {
     if (itemOccupanId != currentUser.id) {
-    
       var msg = {
         type: 'chat',
         extension: {
@@ -163,28 +158,7 @@ function getAndShowNewDialog(newDialogId) {
     if (err) {
       console.log(err);
     } else {
-      var newItem = res.items[0];
-      var dialogId = newItem._id;
-      var dialogName = newItem.name;
-      var dialogLastMessage = newItem.last_message;
-      var dialogUnreadMessagesCount = newItem.unread_messages_count;
-          dialogs[dialogId] = newItem;
-
-      var dialogIcon = getDialogIcon(newItem.type, newItem.photo);
-
-      console.log(newItem.type);
-      // join if it's a group dialog
-      if (newItem.type != 3) {
-        QB.chat.muc.join(newItem.xmpp_room_jid, function() {
-           console.log("Joined dialog " + newDialogId);
-        });
-        opponentId = null;
-      } else {
-        opponentId = QB.chat.helpers.getRecipientId(newItem.occupants_ids, currentUser.id);
-        dialogName = chatName = 'Dialog with ' + opponentId;
-      }
-
-      showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+      joinToNewDialogAndShow(res.items[0])
     }
   });
 }
