@@ -261,3 +261,9 @@ a.users_form.active  {
   border: 1px solid #04B624;
 }
 
+.list-group-item h4 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

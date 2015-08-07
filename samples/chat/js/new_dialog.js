@@ -4,6 +4,7 @@ var uploadPages = 455;
     finished    = false;
     usersCount = 0;
 
+//
 function setupUsersScrollHandler(){
   // uploading users scroll event
   $('.list-group.pre-scrollable.for-scroll').scroll(function() {
@@ -13,6 +14,7 @@ function setupUsersScrollHandler(){
   });
 }
 
+//
 function retrieveUsers() {
   if (!finished) {
 
@@ -43,6 +45,7 @@ function retrieveUsers() {
   }
 }
 
+//
 function showUsers(userLogin, userId) {
   var userHtml = buildUserHtml(userLogin, userId);
   $('#users_list').append(userHtml);
@@ -114,6 +117,7 @@ function createNewDialog() {
   });
 }
 
+//
 function joinToNewDialogAndShow(itemDialog) {
   var dialogId = itemDialog._id;
   var dialogName = itemDialog.name;
@@ -137,6 +141,7 @@ function joinToNewDialogAndShow(itemDialog) {
       $('#dialogs-list').prepend(dialogHtml);
 }
 
+//
 function notifyOccupants(dialogOccupants, newDialogId) {
   dialogOccupants.forEach(function(itemOccupanId, i, arr) {
     if (itemOccupanId != currentUser.id) {
@@ -153,6 +158,7 @@ function notifyOccupants(dialogOccupants, newDialogId) {
   });
 }
 
+//
 function getAndShowNewDialog(newDialogId) {
   QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
     if (err) {

@@ -79,7 +79,6 @@ function retrieveChatDialogs() {
           // hide login form
           $("#loginForm").modal("hide");
 
-
           // setup attachments button handler
           //
           $("#load-img").change(function(){
@@ -257,7 +256,6 @@ function getDialogIcon (dialogType, dialogPhoto) {
       dialogIcon = defaultPhoto;
       break;
   }
-
   return dialogIcon;
 }
 
@@ -282,9 +280,10 @@ function showMessage(userId, msg, attachmentFileId) {
   // scroll to bottom
   var mydiv = $('#messages-list');
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
+  $("#no-messages-label").addClass('hide');
 }
 
-
+//
 function setupOnMessageListener() {
   QB.chat.onMessageListener = onMessage;
 }
