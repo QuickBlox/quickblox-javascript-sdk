@@ -162,16 +162,18 @@ function getAndShowNewDialog(newDialogId) {
     if (err) {
       console.log(err);
     } else {
-      console.log(res.items[0]);
+
       var newItem = res.items[0];
+      
+      dialogs[dialogId] = newItem;
+
       var dialogId = newItem._id;
       var dialogName = newItem.name;
       var dialogLastMessage = newItem.last_message;
       var dialogUnreadMessagesCount = newItem.unread_messages_count;
-          dialogs[dialogId] = newItem;
-
       var dialogIcon = getDialogIcon(newItem.type, newItem.photo);
 
+      // join if it's a group dialog
       if (newItem.type != 3) {
         QB.chat.muc.join(newItem.xmpp_room_jid, function() {
            console.log("Joined dialog " + newDialogId);
@@ -182,7 +184,7 @@ function getAndShowNewDialog(newDialogId) {
         dialogName = chatName = 'Dialog with ' + opponentId;
       }
 
-        showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+      showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
     }
   });
 }
