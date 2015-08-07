@@ -155,7 +155,6 @@ function onMessage(userId, msg) {
   if (msg.extension.notification_type == 1) {
     getAndShowNewDialog(msg.extension._id);
 
-
   // Here we process regular messages
   //
   }else{
