@@ -111,12 +111,17 @@ function createNewDialog() {
 
       var dialogIcon = getDialogIcon(res.type, res.photo);
 
-      if (dialogName == null) {
+      notifyOccupants(res.occupants_ids, res._id);
+
+      if (dialogId.type != 3) {
+        QB.chat.muc.join(res.xmpp_room_jid, function() {
+           console.log("Joined dialog " + dialogId);
+        });
+        opponentId = null;
+      } else {
         opponentId = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
         dialogName = chatName = 'Dialog with ' + opponentId;
       }
-
-      notifyOccupants(res.occupants_ids, res._id);
 
       showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
 
