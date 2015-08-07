@@ -111,10 +111,9 @@ function createNewDialog() {
 
       var dialogIcon = getDialogIcon(res.type, res.photo);
 
-      recipientId = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
-
       if (dialogName == null) {
-        dialogName = chatName = 'Dialog with ' + recipientId;
+        opponentId = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
+        dialogName = chatName = 'Dialog with ' + opponentId;
       }
 
       notifyOccupants(res.occupants_ids, res._id);
@@ -153,42 +152,32 @@ function notifyOccupants(dialogOccupants, newDialogId) {
   });
 }
 
-function sendDialog(newDialogId) {
-  QB.chat.dialog.list(null, function(err, res) {
+function getAndShowNewDialog(newDialogId) {
+  QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
     if (err) {
       console.log(err);
     } else {
-      res.items.forEach(function(item, i, arr) {
-        if (item._id == newDialogId) {
-          var dialogId = item._id;
-          var dialogName = item.name;
-          var dialogLastMessage = item.last_message;
-          var dialogUnreadMessagesCount = item.unread_messages_count;
-              dialogs[dialogId] = item;
+      console.log(res.items[0]);
+      var newItem = res.items[0];
+      var dialogId = newItem._id;
+      var dialogName = newItem.name;
+      var dialogLastMessage = newItem.last_message;
+      var dialogUnreadMessagesCount = newItem.unread_messages_count;
+          dialogs[dialogId] = newItem;
 
-          var dialogIcon = getDialogIcon(item.type, item.photo);
+      var dialogIcon = getDialogIcon(newItem.type, newItem.photo);
 
-          recipientId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+      if (newItem.type != 3) {
+        QB.chat.muc.join(newItem.xmpp_room_jid, function() {
+           console.log("Joined dialog " + newDialogId);
+        });
+        opponentId = null;
+      } else {
+        opponentId = QB.chat.helpers.getRecipientId(newItem.occupants_ids, currentUser.id);
+        dialogName = chatName = 'Dialog with ' + opponentId;
+      }
 
-          if (dialogName == null) {
-            dialogName = chatName = 'Dialog with ' + recipientId;
-          }
-
-            showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-
-          if (item.type != 3) {
-            QB.chat.muc.join(item.xmpp_room_jid, function() {
-               console.log("Joined dialog " + dialogId);
-            });
-
-            opponentId = null;
-          } else {
-            opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
-          }
-          console.log(item);
-        } 
-      });
+        showDialogInTheList(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
     }
   });
 }
-

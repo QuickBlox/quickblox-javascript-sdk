@@ -30,7 +30,6 @@ function retrieveChatDialogs() {
             QB.chat.muc.join(item.xmpp_room_jid, function() {
                console.log("Joined dialog " + dialogId);
             });
-
             opponentId = null;
           } else {
             opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
@@ -61,13 +60,11 @@ function retrieveChatDialogs() {
               var dialogLastMessage = item.last_message;
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
-              //
-              recipientId = QB.chat.helpers.getRecipientId(item.occupants_ids, item.user_id);
-
               var dialogIcon = getDialogIcon(item.type, item.photo);
               
               if (dialogName == null) {
-                dialogName = 'Dialog with ' + recipientId;;
+                opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, item.user_id);
+                dialogName = 'Dialog with ' + opponentId;;
               }
 
               var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
@@ -156,7 +153,7 @@ function onMessage(userId, msg) {
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1) {
-    sendDialog(msg.extension._id);
+    getAndShowNewDialog(msg.extension._id);
 
 
   // Here we process regular messages
