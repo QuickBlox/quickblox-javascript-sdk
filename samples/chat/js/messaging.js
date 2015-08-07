@@ -57,14 +57,17 @@ function retrieveChatDialogs() {
             resDialogs.items.forEach(function(item, i, arr) {
               var dialogId = item._id;
               var dialogName = item.name;
+              var dialogType = item.type;
               var dialogLastMessage = item.last_message;
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
               var dialogIcon = getDialogIcon(item.type, item.photo);
               
-              if (dialogName == null) {
-                opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, item.user_id);
-                dialogName = 'Dialog with ' + opponentId;;
+              if (dialogType == 3) {
+                opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+                dialogName = 'Dialog with ' + opponentId;
+              }else if(dialogName == null){
+                dialogName = "group chat";    
               }
 
               var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
