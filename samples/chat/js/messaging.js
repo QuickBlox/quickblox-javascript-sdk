@@ -153,26 +153,31 @@ function retrieveChatMessages(dialogId){
 // on message listener
 function onMessage(userId, msg) {
 
-  // сheck if it's an attachment
+  // This is a notification about dialog creation
   //
-  var messageAttachmentFileId = null;
-  if (msg.extension.hasOwnProperty("attachments")) {
-    if(msg.extension.attachments.length > 0) {
-      messageAttachmentFileId = msg.extension.attachments[0].id;
-    }
-  }
-
-  // check if it's a mesasges for current dialog
-  //
-	if(isMessageForCurrentDialog(userId, msg.dialog_id)){
-     showMessage(userId, msg, messageAttachmentFileId);
-  }
-
-  updateDialogsList(msg.dialog_id, msg.body);
-
-  if (msg.extension.notification_type) {
+  if (msg.extension.notification_type == 1) {
     sendDialog(msg.extension._id);
-    console.log(msg.extension._id);
+
+
+  // Here we process regular messages
+  //
+  }else{
+    // сheck if it's an attachment
+    //
+    var messageAttachmentFileId = null;
+    if (msg.extension.hasOwnProperty("attachments")) {
+      if(msg.extension.attachments.length > 0) {
+        messageAttachmentFileId = msg.extension.attachments[0].id;
+      }
+    }
+
+    // check if it's a mesasges for current dialog
+    //
+    if(isMessageForCurrentDialog(userId, msg.dialog_id)){
+       showMessage(userId, msg, messageAttachmentFileId);
+    }
+
+    updateDialogsList(msg.dialog_id, msg.body);
   }
 }
 
