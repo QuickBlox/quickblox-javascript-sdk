@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.9.3.1",
+  "version": "1.10.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/qbMain.js",
   "license": [
@@ -24,7 +24,6 @@
     "Igor Khomenko <igor@quickblox.com>"
   ],
   "contributors": [
-    "Andrey Povelichenko <andrey.povelichenko@quickblox.com>",
     "Igor Khomenko <igor@quickblox.com>",
     "Alex Bass <alex.bass@quickblox.com>"
   ],
