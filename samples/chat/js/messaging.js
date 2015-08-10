@@ -188,6 +188,15 @@ function clickSendMessage() {
     return;
   }
   sendMessage(currentText, null);
+
+  // var dialog_id = '55c8603d535c12c34f00276a';
+  // QB.chat.dialog.update(dialog_id, {name: 'HHHHH', photo: 1783858}, function(err, res) {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     console.log(res);
+  //   }
+  // });
 }
 
 function clickSendAttachments(inputFile) {
@@ -219,7 +228,7 @@ function sendMessage(text, attachmentFileId) {
   }
 
   if (currentDialog.type == 3) {
-    
+    opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(opponentId, msg);
 
     $('.list-group-item.active .list-group-item-text').text(msg.body);

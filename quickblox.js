@@ -959,6 +959,7 @@ Helpers.prototype = {
 
   jidOrUserId: function(jid_or_user_id) {
     var jid;
+    console.log(jid_or_user_id);
     if (typeof jid_or_user_id === 'string') {
       jid = jid_or_user_id;
     } else if (typeof jid_or_user_id === 'number') {
