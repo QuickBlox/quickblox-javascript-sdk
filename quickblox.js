@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.10.0 - 2015-08-10 */
+/* QuickBlox JavaScript SDK - v1.11.0 - 2015-08-11 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1759,6 +1759,7 @@ function generateOrder(obj) {
  * - onStopCallListener
  * - onUpdateCallListener
  * - onRemoteStreamListener
+ * - onSessionStateChangedListener
  */
 
 require('../../lib/strophe/strophe.min');
@@ -1783,17 +1784,17 @@ var signalingType = {
   PARAMETERS_CHANGED: 'update'
 };
 
-var stopCallReason = {
-  MANUALLY: 'manually',
-  BAD_CONNECTION: 'bad_connection',
-  CANCEL: 'cancel',
-  NOT_ANSWER: 'not_answer'
-};
-
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
 var connection, peer,
     callers = {};
+
+// we use this timeout to fix next issue:
+// "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
+// We need a way to hide it if sach situation happened."
+//
+var answersTimers = {};
+
 
 /* WebRTC module: Core
 --------------------------------------------------------------------------------- */
@@ -1810,6 +1811,8 @@ function WebRTCProxy(service, conn) {
         delay = stanza.querySelector('delay'),
         userId = self.helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
+
+    var sessionId = extension.sessionID;
     
     if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
 
@@ -1819,15 +1822,33 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-      if (callers[userId]) return true;
+
+      // run caller availability timer and run again for this user
+      clearAnswerTimer(userId);
+      if(peer == null){
+      	var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+        answerTimer = setTimeout(self._answerTimeoutCallback, answerTimeInterval, userId);
+        answersTimers[userId] = answerTimer;
+      }
+      //
+      
+      if (callers[userId]) {
+      	trace('skip onCallListener, a user already got it');
+      	return true;
+      }
+
       callers[userId] = {
         sessionID: extension.sessionID,
         sdp: extension.sdp
       };
+
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.sdp;
-      if (typeof self.onCallListener === 'function')
+      
+      if (typeof self.onCallListener === 'function'){
         self.onCallListener(userId, extension);
+      }
+
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
@@ -1845,8 +1866,10 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
-      if (callers[userId]) delete callers[userId];
-      self._checkReason(extension.reason);
+
+      clearCallers(userId);
+      
+      self._close();
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
       break;
@@ -1918,14 +1941,24 @@ function WebRTCProxy(service, conn) {
     return extension;
   };
 
-  this._checkReason = function(reason) {
-    var self = this;
-
-    if (reason === stopCallReason.MANUALLY) {
-      self._close();
+  this._answerTimeoutCallback = function (userId){
+  	clearCallers(userId);
+    self._close();
+    
+    if(typeof self.onSessionStateChangedListener === 'function'){
+      self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
     }
   };
 }
+
+WebRTCProxy.prototype.SessionState = {
+  UNDEFINED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  FAILED: 3,
+  DISCONNECTED: 4,
+  CLOSED: 5
+};
 
 /* WebRTC module: User Media Steam
 --------------------------------------------------------------------------------- */
@@ -2077,14 +2110,19 @@ WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
-  if (callers[userId]) {
-    this._createPeer({
-      sessionID: callers[userId].sessionID,
-      description: callers[userId].sdp
-    });
-    delete callers[userId];
-  }
+  trace('accept ' + userId + ', extension: ' + extension);
+
+  clearAnswerTimer(userId);
   
+  var caller = callers[userId];
+  if (caller) {
+    this._createPeer({
+      sessionID: caller.sessionID,
+      description: caller.sdp
+    });
+    // delete callers[userId];
+  }
+
   var self = this;
   peer.opponentId = userId;
 
@@ -2092,7 +2130,6 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
     if (err) {
       trace(err);
     } else {
-      trace('accept ' + userId);
       self._sendMessage(userId, extension, 'ACCEPT');
     }
   });
@@ -2100,6 +2137,8 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
   var extension = extension || {};
+
+  clearAnswerTimer(userId);
 
   if (callers[userId]) {
     extension.sessionID = callers[userId].sessionID;
@@ -2109,14 +2148,16 @@ WebRTCProxy.prototype.reject = function(userId, extension) {
   this._sendMessage(userId, extension, 'REJECT');
 };
 
-WebRTCProxy.prototype.stop = function(userId, reason, extension) {
-  var extension = extension || {},
-      status = reason || 'manually';
-
-  extension.reason = stopCallReason[status.toUpperCase()] || reason;
+WebRTCProxy.prototype.stop = function(userId, extension) {
+  var extension = extension || {};
   trace('stop ' + userId);
+
+  clearAnswerTimer(userId);
+
   this._sendMessage(userId, extension, 'STOP');
   this._close();
+
+  clearCallers(userId);
 };
 
 WebRTCProxy.prototype.update = function(userId, extension) {
@@ -2280,7 +2321,10 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
+
   if (candidate) {
+    trace("onICECandidate: " + JSON.stringify(candidate));
+
     peer.iceCandidates = peer.iceCandidates || [];
     peer.iceCandidates.push({
       sdpMLineIndex: candidate.sdpMLineIndex,
@@ -2316,13 +2360,47 @@ RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
 
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
-  if (peer && peer.signalingState === 'stable' && peer.type === 'offer')
+  if (peer && peer.signalingState === 'stable' && peer.type === 'offer'){
     peer.service._sendCandidate(peer.opponentId, peer.iceCandidates);
+  }
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
-  if (peer.iceConnectionState === 'closed' || peer.iceConnectionState === 'disconnected')
+  trace("onIceConnectionStateCallback: " + peer.iceConnectionState);
+  
+  var newIceConnectionState = peer.iceConnectionState;
+
+  // read more about all states:
+  // http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
+  //
+  // 'disconnected' happens in a case when a user has killed an application (for example, on iOS/Android via task manager).
+  // So we should notify our user about it.
+
+  // notify user about state changes
+  //
+  if(typeof peer.service.onSessionStateChangedListener === 'function'){
+	var sessionState = null;	
+	if (newIceConnectionState === 'checking'){
+      sessionState = peer.service.SessionState.CONNECTING;
+	} else if (newIceConnectionState === 'connected'){
+      sessionState = peer.service.SessionState.CONNECTED;
+	} else if (newIceConnectionState === 'failed'){
+      sessionState = peer.service.SessionState.FAILED;
+	} else if (newIceConnectionState === 'disconnected'){
+      sessionState = peer.service.SessionState.DISCONNECTED;
+	} else if (newIceConnectionState === 'closed'){
+      sessionState = peer.service.SessionState.CLOSED;
+	}
+
+	if(sessionState != null){
+      peer.service.onSessionStateChangedListener(sessionState);
+    }
+  }
+
+  //
+  if (newIceConnectionState === 'closed'){
     peer = null;
+  }
 };
 
 }
@@ -2349,14 +2427,29 @@ module.exports = WebRTCProxy;
 /* Private
 ---------------------------------------------------------------------- */
 function trace(text) {
-  // if (config.debug) {
+  if (config.debug) {
     console.log('[QBWebRTC]:', text);
-  // }
+  }
 }
 
 function getLocalTime() {
   var arr = (new Date).toString().split(' ');
   return arr.slice(1,5).join('-');
+}
+
+function clearCallers(userId){
+	var caller = callers[userId];
+	if (caller){
+		delete callers[userId];
+	}
+}
+
+function clearAnswerTimer(userId){
+	var answerTimer = answersTimers[userId];
+    if(answerTimer){
+      clearTimeout(answerTimer);
+      delete answersTimers[userId];
+    }
 }
 
 // Convert Data URI to Blob
@@ -2385,7 +2478,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.10.0',
+  version: '1.11.0',
   creds: {
     appId: '',
     authKey: '',
@@ -2425,6 +2518,9 @@ var config = {
       'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
   ],
+  webrtc: {
+    answerTimeInterval: 60
+  },
   urls: {
     session: 'session',
     login: 'login',
