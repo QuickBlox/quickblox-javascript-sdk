@@ -4,6 +4,16 @@ var QBApp = {
   authSecret: 'BTFsj7Rtt27DAmT'
 };
 
+var CONFIG = {
+  chatProtocol: {
+    active: 2,
+  },
+  debug: true,
+  webrtc: {
+    answerTimeInterval: 15
+  }
+};
+
 var QBUsers = [
   {
     id: 2436251,

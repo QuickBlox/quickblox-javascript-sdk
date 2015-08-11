@@ -1,19 +1,22 @@
 var mediaParams, caller, callee;
 
-QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret);
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
 $(document).ready(function() {
   
-  appendUsers('.users-wrap.caller');
+  buildUsers('.users-wrap.caller');
   
   // Choose user
   //
   $(document).on('click', '.choose-user button', function() {
+
     caller = {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
-      password: $(this).attr('data-password') };
+      password: $(this).attr('data-password') 
+    };
+
     chooseRecipient(caller.id);
   });
   
@@ -22,41 +25,33 @@ $(document).ready(function() {
   $(document).on('click', '.choose-recipient button', function() {
     $('.choose-recipient button').removeClass('active');
     $(this).addClass('active');
+
     callee = {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
-      password: $(this).attr('data-password') };
+      password: $(this).attr('data-password') 
+    };
 
-      $('#calleeName').text(callee.full_name);
+    $('#calleeName').text(callee.full_name);
   });
 
   // Audio call
   //
   $('#audiocall').on('click', function() {
-    mediaParams = {
+    var mediaParams = {
       audio: true,
       elemId: 'localVideo',
       options: { muted: true }
     };
-    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
-      if (err) {
-        console.log(err);
-        $('#infoMessage').text('Devices are not found');
-      } else {
-        $('.btn_mediacall, #hangup').removeAttr('disabled');
-        $('#audiocall, #videocall').attr('disabled', 'disabled');
-        $('#infoMessage').text('Calling...');
-        $('#callingSignal')[0].play();
-        QB.webrtc.call(callee.id, 'audio');
-      }
-    });
+
+    callWithParams(mediaParams, true);
   });
 
   // Video call
   //
   $('#videocall').on('click', function() {
-    mediaParams = {
+    var mediaParams = {
       audio: true,
       video: true,
       elemId: 'localVideo',
@@ -65,18 +60,8 @@ $(document).ready(function() {
         mirror: true
       }
     };
-    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
-      if (err) {
-        console.log(err);
-        $('#infoMessage').text('Devices are not found');
-      } else {
-        $('.btn_mediacall, #hangup').removeAttr('disabled');
-        $('#audiocall, #videocall').attr('disabled', 'disabled');
-        $('#infoMessage').text('Calling...');
-        $('#callingSignal')[0].play();
-        QB.webrtc.call(callee.id, 'video', {});
-      }
-    });
+
+    callWithParams(mediaParams, false);
   });
 
   // Accept call
@@ -84,14 +69,18 @@ $(document).ready(function() {
   $('#accept').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
+
     QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
         console.log(err);
-        $('#infoMessage').text('Devices are not found');
-        QB.webrtc.reject(callee.id);
+        var deviceNotFoundError = 'Devices are not found';
+        updateInfoMessage(deviceNotFoundError);
+
+        QB.webrtc.reject(callee.id, {'reason': deviceNotFoundError});
       } else {
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
+
         QB.webrtc.accept(callee.id);
       }
     });
@@ -103,6 +92,7 @@ $(document).ready(function() {
   $('#reject').on('click', function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
+
     if (typeof callee != 'undefined'){
       QB.webrtc.reject(callee.id);
     }
@@ -112,14 +102,8 @@ $(document).ready(function() {
   // Hangup
   //
   $('#hangup').on('click', function() {
-    $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
-    $('#audiocall, #videocall').removeAttr('disabled');
-    $('video').attr('src', '');
-    $('#callingSignal')[0].pause();
-    $('#endCallSignal')[0].play();
-
     if (typeof callee != 'undefined'){
-      QB.webrtc.stop(callee.id, 'manually');
+      QB.webrtc.stop(callee.id);
     }
   });
 
@@ -153,8 +137,35 @@ $(document).ready(function() {
 });
 
 
+//
+// Callbacks
+//
+
+QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
+  console.log("New session state: " + newState + ", userId: " + userId);
+
+  // possible values of 'newState':
+  //
+  // QB.webrtc.SessionState.UNDEFINED
+  // QB.webrtc.SessionState.CONNECTING
+  // QB.webrtc.SessionState.CONNECTED
+  // QB.webrtc.SessionState.FAILED
+  // QB.webrtc.SessionState.DISCONNECTED
+  // QB.webrtc.SessionState.CLOSED
+
+  if(newState === QB.webrtc.SessionState.DISCONNECTED){
+    if (typeof callee != 'undefined'){
+      QB.webrtc.stop(callee.id);
+    }
+    hungUp();
+  }else if(newState === QB.webrtc.SessionState.CLOSED){
+    hungUp();
+  }
+};
+
 QB.webrtc.onCallListener = function(id, extension) {
   console.log(extension);
+
   mediaParams = {
     audio: true,
     video: extension.callType === 'video' ? true : false,
@@ -172,7 +183,8 @@ QB.webrtc.onCallListener = function(id, extension) {
         id: extension.callerID,
         full_name: "User with id " + extension.callerID,
         login: "",
-        password: "" };
+        password: "" 
+      };
   }
 
   $('.caller').text(callee.full_name);
@@ -187,31 +199,63 @@ QB.webrtc.onCallListener = function(id, extension) {
 
 QB.webrtc.onAcceptCallListener = function(id, extension) {
   console.log(extension);
+
   $('#callingSignal')[0].pause();
-  $('#infoMessage').text(callee.full_name + ' has accepted this call');
+  updateInfoMessage(callee.full_name + ' has accepted this call');
 };
 
 QB.webrtc.onRejectCallListener = function(id, extension) {
   console.log(extension);
+
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
   $('#audiocall, #videocall').removeAttr('disabled');
   $('video').attr('src', '');
   $('#callingSignal')[0].pause();
-  $('#infoMessage').text(callee.full_name + ' has rejected this call');
+  updateInfoMessage(callee.full_name + ' has rejected the call. Logged in as ' + caller.full_name);
 };
 
 QB.webrtc.onStopCallListener = function(id, extension) {
   console.log(extension);
-  $('#infoMessage').text('Call was stopped');
-  $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
-  $('#audiocall, #videocall').removeAttr('disabled');
-  $('video').attr('src', '');
-  $('#endCallSignal')[0].play();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
+
+
+//
+// Helpers
+//
+
+function callWithParams(mediaParams, isOnlyAudio){
+  QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+    if (err) {
+      console.log(err);
+      updateInfoMessage('Error: devices (camera or microphone) are not found');
+    } else {
+      $('.btn_mediacall, #hangup').removeAttr('disabled');
+      $('#audiocall, #videocall').attr('disabled', 'disabled');
+      updateInfoMessage('Calling...');
+      $('#callingSignal')[0].play();
+      //
+      QB.webrtc.call(callee.id, isOnlyAudio ? 'audio' : 'video', {});
+    }
+  });
+}
+
+function hungUp(){
+  // hide inciming popup if it's here
+  $('#incomingCall').modal('hide');
+  $('#ringtoneSignal')[0].pause();
+
+  updateInfoMessage('Call is stopped. Logged in as ' + caller.full_name);
+
+  $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+  $('#audiocall, #videocall').removeAttr('disabled');
+  $('video').attr('src', '');
+  $('#callingSignal')[0].pause();
+  $('#endCallSignal')[0].play();
+}
 
 function createSession() {
   QB.createSession(caller, function(err, res) {
@@ -222,7 +266,8 @@ function createSession() {
 }
 
 function connectChat() {
-  $('#infoMessage').text('Connecting to chat...');
+  updateInfoMessage('Connecting to chat...');
+
   QB.chat.connect({
     jid: QB.chat.helpers.getUserJid(caller.id, QBApp.appId),
     password: caller.password
@@ -230,19 +275,20 @@ function connectChat() {
     $('.connecting').addClass('hidden');
     $('.chat').removeClass('hidden');
     $('#callerName').text('You');
-    $('#infoMessage').text('Logged in as ' + caller.full_name);
+
+    updateInfoMessage('Logged in as ' + caller.full_name);
   })
 }
 
 function chooseRecipient(id) {
   $('.choose-user').addClass('hidden');
   $('.connecting').removeClass('hidden');
-  $('#infoMessage').text('Creating a session...');
-  appendUsers('.users-wrap.recipient', id);
+  updateInfoMessage('Creating a session...');
+  buildUsers('.users-wrap.recipient', id);
   createSession();
 }
 
-function appendUsers(el, excludeID) {
+function buildUsers(el, excludeID) {
   for (var i = 0, len = QBUsers.length; i < len; ++i) {
     var user = QBUsers[i];
     if (excludeID != user.id) {
@@ -253,12 +299,15 @@ function appendUsers(el, excludeID) {
         'data-password' : user.password,
         'data-name' : user.full_name
       });
-    var imgWrap = $('<div>').addClass('icon-wrap').html( userIcon(user.colour) ).appendTo(userBtn);
-    var userFullName = $('<div>').addClass('name').text(user.full_name).appendTo(userBtn);
-    userBtn.appendTo(el);
+      var imgWrap = $('<div>').addClass('icon-wrap').html( userIcon(user.colour) ).appendTo(userBtn);
+      var userFullName = $('<div>').addClass('name').text(user.full_name).appendTo(userBtn);
+      userBtn.appendTo(el);
     }
-  }
-  
+  } 
+}
+
+function updateInfoMessage(msg){
+  $('#infoMessage').text(msg);
 }
 
 function userIcon(hexColorCode) {

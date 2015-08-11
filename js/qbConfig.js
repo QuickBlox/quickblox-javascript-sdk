@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.10.0',
+  version: '1.11.0',
   creds: {
     appId: '',
     authKey: '',
@@ -46,6 +46,9 @@ var config = {
       'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
     },
   ],
+  webrtc: {
+    answerTimeInterval: 60
+  },
   urls: {
     session: 'session',
     login: 'login',
