@@ -8,7 +8,7 @@ var CONFIG = {
   chatProtocol: {
     active: 2,
   },
-  debug: true,
+  debug: false,
   webrtc: {
     answerTimeInterval: 15
   }
