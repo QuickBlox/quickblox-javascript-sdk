@@ -24,9 +24,9 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
 }
 
 // build html for typing status
-function buildTypingUserHtml(userId) {
+function buildTypingUserHtml(userId, userLogin) {
   var typingUserHtml = '<div id="'+userId+'_typing" class="list-group-item typing">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
-                       userId+'</h4>'+'<p class="list-group-item-text"> . . . </p>'+'</div>';
+                       userLogin+'</h4>'+'<p class="list-group-item-text"> . . . </p>'+'</div>';
 
   return typingUserHtml;
 }

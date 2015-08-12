@@ -2,6 +2,8 @@ var currentDialog;
 var dialogs = {};
 var users = {};
 var opponentId;
+var skipPage = 0;
+		cancelSkip = false;
 
 
 // submit form after press "ENTER"
@@ -65,7 +67,8 @@ function retrieveChatDialogs() {
               
               if (dialogType == 3) {
                 opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
-                dialogName = 'Dialog with ' + opponentId;
+                opponentLogin = getUserById(opponentId);
+                dialogName = 'Dialog with ' + opponentLogin;
               }else if(dialogName == null){
                 dialogName = "group chat";    
               }
@@ -99,7 +102,8 @@ function retrieveChatDialogs() {
 
 // Choose dialog
 function triggerDialog(element, dialogId){
-
+  skipPage = 0;
+  setupMsgScrollHandler(dialogId);
   // deselect
   var kids = $( "#dialogs-list" ).children();
   kids.removeClass("active").addClass("inactive");
@@ -115,13 +119,37 @@ function triggerDialog(element, dialogId){
   retrieveChatMessages(dialogId);
 }
 
-function retrieveChatMessages(dialogId){
+//
+function setupMsgScrollHandler(dialogId){
+  var msgWindow = $('.col-md-8 .list-group.pre-scrollable');
+      msgList = $('#messages-list');
+      TopOrBottom = undefined;
+  // uploading users scroll event
+  msgList.scroll(function() {
+    if  (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
+      TopOrBottom = true;
+      retrieveChatMessages(dialogId, TopOrBottom);
+    } else if (msgWindow.scrollTop() == msgList.height() - msgWindow.height()) {
+      TopOrBottom = false;
+      retrieveChatMessages(dialogId, TopOrBottom);
+    }
+  });
+}
+
+function retrieveChatMessages(dialogId, TopOrBottom){
   // Load messages history
   //
-  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
+  if (TopOrBottom == true) {
+		$(".load-msg-1").show(0);
+	}else{
+		$(".load-msg-2").show(0);
+	}
+
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 15, skip: skipPage};
   QB.chat.message.list(params, function(err, messages) {
     $('#messages-list').html('');
     if (messages) {
+    	console.log(messages);
       if(messages.items.length == 0){
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -132,21 +160,32 @@ function retrieveChatMessages(dialogId){
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
           var messageAttachmentFileId = null;
+		      var messageSenderLogin = getUserById(messageSenderId);
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
               messageAttachmentFileId = item.attachments[0].id;
             }
           }
-          var messageHtml = buildMessageHTML(messageText, messageSenderId, messageDateSent, messageAttachmentFileId);
+          var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId);
 
           $('#messages-list').prepend(messageHtml);
-
-          var mydiv = $('#messages-list');
-              mydiv.scrollTop(mydiv.prop('scrollHeight'));
+	          if (skipPage == 0) {
+		          var mydiv = $('#messages-list');
+		          mydiv.scrollTop(mydiv.prop('scrollHeight'));
+	          }
         });
       }
     }  
   });
+	if (TopOrBottom == true) {
+		$(".load-msg-1").delay(100).fadeOut(500);
+	  skipPage = skipPage + 15;
+	  console.log(skipPage);
+	} else {
+		$(".load-msg-2").delay(100).fadeOut(500);
+	  skipPage = skipPage - 15;
+	  console.log(skipPage);
+	}
 }
 
 // on message listener
@@ -285,7 +324,8 @@ function updateDialogsList(DialogId, text){
 // show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
-  var messageHtml = buildMessageHTML(msg.body, userId, new Date(), attachmentFileId);
+  var userLogin = getUserById(userId);
+  var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId);
 
   $('#messages-list').append(messageHtml);
 
@@ -359,7 +399,8 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 	  if (!isTyping) {
 	    $('#'+userId+'_typing').remove();
 	  } else if (userId != currentUser.id) {
-	    var typingUserHtml = buildTypingUserHtml(userId);
+	  	var userLogin = getUserById(userId);
+	    var typingUserHtml = buildTypingUserHtml(userId, userLogin);
 	    $('#messages-list').append(typingUserHtml);
 	  }
 
@@ -371,9 +412,18 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
-		if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && opponentId == userId)) {
-			return true;
-		} else {
-			return false;
-		}
+	if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && opponentId == userId)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function getUserById(byId) {
+	var userLogin;
+
+	if (users[byId]) {
+		userLogin = users[byId].login;
+		return userLogin;
+	}
 }

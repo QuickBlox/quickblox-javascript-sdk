@@ -63,10 +63,17 @@ ContentProxy.prototype = {
       else {
         var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
         fileId = createResult.id;
-        
-        Object.keys(uri.queryKey).forEach(function(val) {
-          data.append(val, decodeURIComponent(uri.queryKey[val]));
-        });
+
+        // Object.keys(uri.queryKey).forEach(function(val) {
+        //   data.append(val, decodeURIComponent(uri.queryKey[val]));
+        // });
+        Object.keys(uri.queryKey).forEach(function (val) {
+          payload_value = uri.queryKey[val];
+          if (val == "Expires") {
+            payload_value = payload_value.replace(/\+/g, '%20');
+          }
+          data.append(val, decodeURIComponent(payload_value));
+        });     
         data.append('file', file, createResult.name);
         
         uploadParams.data = data;

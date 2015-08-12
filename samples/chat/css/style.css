@@ -266,3 +266,23 @@ a.users_form.active  {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.load-msg-1 {
+  width: 15%;
+  height: 6px;
+  z-index: 99;
+  position: absolute;
+  top: 1%;
+  left: 42.5%;
+  display: block;
+} 
+
+.load-msg-2 {
+  width: 15%;
+  height: 6px;
+  z-index: 99;
+  position: absolute;
+  bottom: 11%;
+  left: 42.5%;
+  display: block;
+} 

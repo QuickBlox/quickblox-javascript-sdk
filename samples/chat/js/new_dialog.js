@@ -10,6 +10,9 @@ function setupUsersScrollHandler(){
   $('.list-group.pre-scrollable.for-scroll').scroll(function() {
     if  ($('.list-group.pre-scrollable.for-scroll').scrollTop() == $('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height()){
       retrieveUsers();
+      console.log($('#users_list').height());
+      console.log($('.list-group.pre-scrollable.for-scroll').height());
+      console.log($('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height());
     }
   });
 }
@@ -27,6 +30,7 @@ function retrieveUsers() {
       if (err) {
         console.log(err);
       } else {
+        console.log(result);
         $.each(result.items, function(index, item){
           showUsers(this.user.login, this.user.id);
         });
@@ -105,14 +109,28 @@ function createNewDialog() {
     if (err) {
       console.log(err);
     } else {
-      joinToNewDialogAndShow(createdDialog);
+      var newUsers = {};
 
-      notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
+      params = {filter: {field: 'id', param: 'in', value: createdDialog.occupants_ids}};
+      QB.users.listUsers(params, function(err, result){
+        if (result) {
+          result.items.forEach(function(item, i, arr) {
+            newUsers[item.user.id] = item.user;
+          });
+          console.log(newUsers);
+          users = $.extend(users, newUsers);
+          console.log(users);
+        }
 
-      triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
+        joinToNewDialogAndShow(createdDialog);
 
-      users_ids = [];
-      $('a.users_form').removeClass('active');
+        notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
+
+        triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
+
+        users_ids = [];
+        $('a.users_form').removeClass('active');
+      });
     }
   });
 }
@@ -133,10 +151,11 @@ function joinToNewDialogAndShow(itemDialog) {
     QB.chat.muc.join(itemDialog.xmpp_room_jid, function() {
        console.log("Joined dialog " + dialogId);
     });
-    opponentId = null;
+    opponentLogin = null;
   } else {
     opponentId = QB.chat.helpers.getRecipientId(itemDialog.occupants_ids, currentUser.id);
-    dialogName = chatName = 'Dialog with ' + opponentId;
+    opponentLogin = getUserById(opponentId);
+    dialogName = chatName = 'Dialog with ' + opponentLogin;
   }
 
   // show it
