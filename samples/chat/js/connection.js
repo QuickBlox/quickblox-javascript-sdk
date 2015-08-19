@@ -1,5 +1,6 @@
 // Init QuickBlox application here
-QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
+// QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
+QB.init(10, 'vnDPCeZQ4NskvhL', 'EF3n-Zj99WErTKR', CONFIG);
 
 var currentUser;
 

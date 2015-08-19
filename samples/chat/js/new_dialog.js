@@ -1,4 +1,4 @@
-var uploadPages     = 455;
+var uploadPages     = 0;
     usersCount      = 0;
     users_ids       = [];
     users_names     = [];
