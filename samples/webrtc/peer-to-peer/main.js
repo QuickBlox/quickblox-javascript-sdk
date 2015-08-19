@@ -216,6 +216,8 @@ QB.webrtc.onRejectCallListener = function(id, extension) {
 
 QB.webrtc.onStopCallListener = function(id, extension) {
   console.log(extension);
+  
+  hungUp();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {
