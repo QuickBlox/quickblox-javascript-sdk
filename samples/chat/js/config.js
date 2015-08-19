@@ -6,20 +6,22 @@ var QBApp = {
 
 var config = {
   chatProtocol: {
-    active: 2,
+    // websocket: 'ws://chat.quickblox.com:5290',
+    websocket: 'wss://chat.quickblox.com:5291',
+    active: 2
   },
-  debug: false
+  debug: true
 };
 
 var QBUser1 = {
-      id: 4448514,
-      name: 'chatuserweb1',
-      login: 'chatuserweb1',
-      pass: 'chatuserweb1'
+        id: 4834858,
+        name: 'quickuser',
+        login: 'quickuser',
+        pass: 'quickuser'
     },
     QBUser2 = {
-      id: 4448518,
-      name: 'chatuserweb2',
-      login: 'chatuserweb2',
-      pass: 'chatuserweb2'
+        id: 4834885,
+        name: 'bloxuser',
+        login: 'bloxuser',
+        pass: 'bloxuser'
     };

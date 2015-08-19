@@ -1,8 +1,13 @@
-var uploadPages = 455;
-    users_ids   = [];
-    users_names = [];
-    finished    = false;
-    usersCount = 0;
+var uploadPages     = 455;
+    usersCount      = 0;
+    users_ids       = [];
+    users_names     = [];
+    finished        = false;
+    pushUploadPages = 0;
+    pushUsersCount  = 0;
+    push_occupants  = [];
+    pull_occupants  = [];
+    selectedMsg     = undefined;
 
 //
 function setupUsersScrollHandler(){
@@ -10,9 +15,6 @@ function setupUsersScrollHandler(){
   $('.list-group.pre-scrollable.for-scroll').scroll(function() {
     if  ($('.list-group.pre-scrollable.for-scroll').scrollTop() == $('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height()){
       retrieveUsers();
-      console.log($('#users_list').height());
-      console.log($('.list-group.pre-scrollable.for-scroll').height());
-      console.log($('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height());
     }
   });
 }
@@ -189,4 +191,136 @@ function getAndShowNewDialog(newDialogId) {
       joinToNewDialogAndShow(res.items[0])
     }
   });
+}
+
+// show modal window with users
+function showUpdateDialogPopup() {
+  $("#update_dialog").modal("show");
+  $('#update_dialog .progress').hide();
+
+  retrievePushUsers();
+
+  forPushOccupantsScrollHandler();
+
+  if (currentDialog.type == 3) {
+    $('.dialog-type-info').text('').append('Dialog type: privat chat');
+  } else {
+    $('.dialog-type-info').text('').append('Dialog type: group chat');
+  }
+}
+
+function forPushOccupantsScrollHandler() {
+  // uploading users scroll event
+  $('#push_usersList').scroll(function() {
+    if  ($('#push_usersList').scrollTop() == $('#load-push-users').height() - $('#push_usersList').height()){
+      retrievePushUsers();
+    }
+  });
+}
+
+function retrievePushUsers() {
+  if (!finished) {
+
+    pushUploadPages = pushUploadPages + 1;
+
+    // Load users, 10 per request
+    QB.users.listUsers({page: pushUploadPages, per_page: '10'}, function(err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result);
+        $.each(result.items, function(index, item){
+          var userPushHtml = forPushOccupantsHtml(this.user.login, this.user.id);
+          $('#add_new_occupant').append(userPushHtml);
+        });
+
+        $.each(currentDialog.occupants_ids, function(index, item){
+          var occupantLogin = getUserById(item);
+          var userPullHtml  = forPullOccupantsHtml(occupantLogin, item);
+          $('#delete_occupants').append(userPullHtml);
+        });        
+
+        var totalEntries    = result.total_entries;
+            entries         = result.items.length;
+            pushUsersCount  = pushUsersCount + entries;
+
+        if (pushUsersCount >= totalEntries) {
+          finished = true;
+        }
+      }
+    });
+  }
+} 
+
+function onDialogUdate(iLeave) {
+  $('.push_form.active').each(function(index) {
+    push_occupants[index] = $(this).attr('id');
+  });
+
+  $('.pull_form.active').each(function(index) {
+    pull_occupants[index] = $(this).attr('id');
+  });
+
+  if (iLeave == true) {
+    var toUpdate = {pull_all: {occupants_ids: currentUser.id}};
+  } else {
+    var dialogPhoto = $('#set-new-photo').val().trim();
+    var dialogName  = $('#rename-dialog').val().trim();
+    var toUpdate    = {
+      photo:    $('#set-new-photo').val('') ? dialogPhoto : currentDialog.photo,
+      name:     $('#rename-dialog').val('') ? dialogName : currentDialog.name,
+      pull_all: {occupants_ids: [pull_occupants.join(',')]},
+      push_all: {occupants_ids: [push_occupants.join(',')]}
+    };
+    // var toUpdate    = {
+    //   photo:    $('#set-new-photo').val('') ? dialogPhoto : currentDialog.photo,
+    //   name:     'dfdfdfdfdfdfdf',
+    //   pull_all: {occupants_ids: [pull_occupants.join(',')]},
+    //   push_all: {occupants_ids: [push_occupants.join(',')]}
+    // };
+  }
+
+  QB.chat.dialog.update(currentDialog._id, toUpdate, function(err, res) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(res);
+    }
+  });
+}
+
+function onDeleteDialog() {
+  QB.chat.dialog.delete(currentDialog._id, function(err, res) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(res);
+      $('#'+currentDialog._id).remove();
+    }
+  });
+}
+
+// select users from users list
+function clickToAddMsg(messageId) {
+  console.log(messageId)
+  if ($('#'+messageId).hasClass("active")) {
+    $('#'+messageId).removeClass("active");
+  } else {
+    $('#'+messageId).addClass("active");
+  }
+}
+
+function deleteFocusMessage() {
+  if ('.list-group-item.active') {
+    selectedMsg = $(this).attr('id');
+  }
+
+  QB.chat.message.delete(selectedMsg, function(err, res) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(res);
+      $('#'+messageId).remove();
+    }
+  }); 
 }

@@ -227,7 +227,7 @@ input[type=file]:focus {
   width: 100%;
 }
 
-.users_form {
+.users_form, .pull_form, .push_form{
   height: auto;
   text-align: center;
   line-height: 100%;
@@ -236,7 +236,7 @@ input[type=file]:focus {
   padding: 10px;
 }
 
-a.users_form.active  { 
+a.users_form.active, a.pull_form.active, a.push_form.active { 
   text-decoration: none;
   color: #fff;
   background-color: #337ab7;
@@ -267,7 +267,7 @@ a.users_form.active  {
   text-overflow: ellipsis;
 }
 
-.load-msg-1 {
+.load-msg {
   width: 15%;
   height: 6px;
   z-index: 99;
@@ -275,14 +275,34 @@ a.users_form.active  {
   top: 1%;
   left: 42.5%;
   display: block;
-} 
+}
 
-.load-msg-2 {
-  width: 15%;
-  height: 6px;
-  z-index: 99;
-  position: absolute;
-  bottom: 11%;
-  left: 42.5%;
-  display: block;
-} 
+.list-group.pre-scrollable.occupants {
+  max-height: 200px;
+  height: 200px;
+}
+
+.occupants_padding {
+  padding: 3px;
+}
+
+.pull_push {
+  height: auto;
+  text-align: center;
+  line-height: 100%;
+  padding: 5px;
+}
+
+a.pull_push.active  {
+  text-decoration: none;
+  color: #fff;
+  background-color: #337ab7;
+}
+
+.new-info {
+  margin-bottom: 10px;
+}
+
+.pullorpush {
+  text-align: center;
+}

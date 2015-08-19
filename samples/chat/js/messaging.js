@@ -21,8 +21,8 @@ function retrieveChatDialogs() {
       } else {
 
         // repackage dialogs data and collect all occupants ids
-        // 
-        var occupantsIds = [];  
+        //
+        var occupantsIds = [];
         resDialogs.items.forEach(function(item, i, arr) {
           var dialogId = item._id;
           dialogs[dialogId] = item;
@@ -47,8 +47,8 @@ function retrieveChatDialogs() {
         var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
         QB.users.listUsers(params, function(err, result){
           if (result) {
-            
-            // repackage users data 
+
+            // repackage users data
             //
             result.items.forEach(function(item, i, arr) {
               users[item.user.id] = item.user;
@@ -64,13 +64,13 @@ function retrieveChatDialogs() {
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
               var dialogIcon = getDialogIcon(item.type, item.photo);
-              
+
               if (dialogType == 3) {
                 opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
                 opponentLogin = getUserById(opponentId);
                 dialogName = 'Dialog with ' + opponentLogin;
               }else if(dialogName == null){
-                dialogName = "group chat";    
+                dialogName = "group chat";
               }
 
               var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
@@ -80,7 +80,7 @@ function retrieveChatDialogs() {
             //  and trigger the 1st dialog
             //
             triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
-          } 
+          }
 
           // hide login form
           $("#loginForm").modal("hide");
@@ -93,7 +93,6 @@ function retrieveChatDialogs() {
               $("#progress").show(0);
             }
             clickSendAttachments(inputFile);
-            inputFile = '';
           });
         });
       }
@@ -127,23 +126,15 @@ function setupMsgScrollHandler(dialogId){
   // uploading users scroll event
   msgList.scroll(function() {
     if  (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
-      TopOrBottom = true;
-      retrieveChatMessages(dialogId, TopOrBottom);
-    } else if (msgWindow.scrollTop() == msgList.height() - msgWindow.height()) {
-      TopOrBottom = false;
       retrieveChatMessages(dialogId, TopOrBottom);
     }
   });
 }
 
-function retrieveChatMessages(dialogId, TopOrBottom){
+function retrieveChatMessages(dialogId){
   // Load messages history
   //
-  if (TopOrBottom == true) {
-		$(".load-msg-1").show(0);
-	}else{
-		$(".load-msg-2").show(0);
-	}
+  $(".load-msg").show(0);
 
   var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 15, skip: skipPage};
   QB.chat.message.list(params, function(err, messages) {
@@ -156,6 +147,7 @@ function retrieveChatMessages(dialogId, TopOrBottom){
         $("#no-messages-label").addClass('hide');
 
         messages.items.forEach(function(item, i, arr) {
+        	var messageId = item._id;
           var messageText = item.message;
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
@@ -166,7 +158,7 @@ function retrieveChatMessages(dialogId, TopOrBottom){
               messageAttachmentFileId = item.attachments[0].id;
             }
           }
-          var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId);
+          var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId, messageId);
 
           $('#messages-list').prepend(messageHtml);
 	          if (skipPage == 0) {
@@ -177,15 +169,9 @@ function retrieveChatMessages(dialogId, TopOrBottom){
       }
     }  
   });
-	if (TopOrBottom == true) {
-		$(".load-msg-1").delay(100).fadeOut(500);
-	  skipPage = skipPage + 15;
-	  console.log(skipPage);
-	} else {
-		$(".load-msg-2").delay(100).fadeOut(500);
-	  skipPage = skipPage - 15;
-	  console.log(skipPage);
-	}
+    $(".load-msg").delay(100).fadeOut(500);
+	skipPage = skipPage + 15;
+	console.log(skipPage);
 }
 
 // on message listener
@@ -220,22 +206,12 @@ function onMessage(userId, msg) {
 
 // sending messages after confirmation
 function clickSendMessage() {
-
   var currentText = $('#message_text').val().trim();
   $('#message_text').val('').focus();
   if (currentText.length == 0){
     return;
   }
   sendMessage(currentText, null);
-
-  // var dialog_id = '55c8603d535c12c34f00276a';
-  // QB.chat.dialog.update(dialog_id, {name: 'HHHHH', photo: 1783858}, function(err, res) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log(res);
-  //   }
-  // });
 }
 
 function clickSendAttachments(inputFile) {
@@ -248,6 +224,8 @@ function clickSendAttachments(inputFile) {
       var uploadedFile = response;
 
       sendMessage("[attachment]", uploadedFile.id);
+
+      inputFile = '';
     }
   }); 
 }
@@ -301,7 +279,7 @@ function getDialogIcon (dialogType, dialogPhoto) {
       dialogIcon = dialogPhoto ? withPhoto : withoutPhoto;
       break;
     case 3:
-      dialogIcon = privatPhoto;
+    	dialogIcon = dialogPhoto ? withPhoto : privatPhoto;
       break;
     default:
       dialogIcon = defaultPhoto;
@@ -421,7 +399,6 @@ function isMessageForCurrentDialog(userId, dialogId) {
 
 function getUserById(byId) {
 	var userLogin;
-
 	if (users[byId]) {
 		userLogin = users[byId].login;
 		return userLogin;

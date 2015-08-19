@@ -23,7 +23,8 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Chat</a></li>
             <li><a href="#" onclick="showNewDialogPopup()">Create dialog</a></li>
-<!--             <li><a href="#settings">Settings</a></li> -->
+             <li><a href="#" onclick="showUpdateDialogPopup()">Options dialog</a></li>
+              <li><a href="#" onclick="deleteFocusMessage()">Delete selected message</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -48,8 +49,7 @@
                 <div class="list-group pre-scrollable" id="messages-list">
                   <!-- list of chat messages will be here -->
                 </div>
-                <div><img src="images/ajax-loader.gif" class="load-msg-1"></div>
-                <div><img src="images/ajax-loader.gif" class="load-msg-2"></div>
+                <div><img src="images/ajax-loader.gif" class="load-msg"></div>
                 <p id="no-messages-label" class="hide">No messages</p>
                 <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
                   <div class="form-group">
@@ -99,6 +99,44 @@
             <div class="img-place"><img src="images/ajax-loader.gif" id="load-users"></div>
               <input type="text" class="form-control" id="dlg_name" placeholder="Enter dialog name">
             <button id="add-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block" onclick="createNewDialog()">Create dialog</button>
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal (update dialog)-->
+    <div id="update_dialog" class="modal fade row" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Settings to update dialog</h3>
+          </div>
+          <div class="modal-body">
+            <h4 class="col-md-12 col-sm-12 col-xs-12 dialog-type-info"></h4>
+            <div class="col-md-12 col-sm-12 col-xs-12 new-info">
+              <input type="text" class="form-control" id="set-new-photo" placeholder="ID or link to set a new photo">
+            </div>
+            <div class="col-md-12 col-sm-12 col-xs-12 new-info">
+              <input type="text" class="form-control" id="rename-dialog" placeholder="You can rename dialog">
+            </div>
+            <h5 class="col-md-6 col-sm-6 col-xs-6 pullorpush">Choose to pull occupants</h5>
+            <h5 class="col-md-6 col-sm-6 col-xs-6 pullorpush">Choose to push occupants</h5>
+              <div class="list-group pre-scrollable occupants col-md-6 col-sm-6 col-xs-6" id="pull_usersList">
+                <div id="delete_occupants" class="clearfix occupants_padding"></div>
+              </div>
+                <div class="list-group pre-scrollable occupants col-md-6 col-sm-6 col-xs-6" id="push_usersList">
+                  <div id="add_new_occupant" class="clearfix occupants_padding"></div>
+                </div>
+            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
+              onclick="onDialogUdate()">Update</button>
+            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-primary btn-lg btn-block"
+              onclick="onDeleteDialog()">Delete dialog</button>
+            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
+              onclick="onDialogUdate(true)">Leave current dialog</button>
             <div class="progress">
               <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
               </div>
