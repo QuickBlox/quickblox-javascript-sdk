@@ -391,6 +391,9 @@ ChatProxy.prototype = {
     var userJid;
     if ('userId' in params) {
       userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+      if ('resource' in params) {
+        userJid = userJid + "/" + params.resource;
+      }
     } else if ('jid' in params) {
       userJid = params.jid;
     }
