@@ -8,9 +8,10 @@ var CONFIG = {
   chatProtocol: {
     active: 2,
   },
-  debug: false,
+  debug: true,
   webrtc: {
-    answerTimeInterval: 15
+    answerTimeInterval: 25,
+    dialingTimeInterval: 5
   }
 };
 

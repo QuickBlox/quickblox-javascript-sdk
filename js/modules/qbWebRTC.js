@@ -14,6 +14,7 @@
  * - onUpdateCallListener
  * - onRemoteStreamListener
  * - onSessionStateChangedListener
+ * - onUserNotAnswerListener
  */
 
 require('../../lib/strophe/strophe.min');
@@ -47,7 +48,15 @@ var connection, peer,
 // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
 // We need a way to hide it if sach situation happened."
 //
-var answersTimers = {};
+var answerTimers = {};
+
+// We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+//
+var dialingTimerIntervals = {};
+
+// We use this timer on a caller's side to notify him if the opponent doesn't respond.
+//
+var callTimers = {};
 
 
 /* WebRTC module: Core
@@ -76,20 +85,18 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-
-      // run caller availability timer and run again for this user
-      clearAnswerTimer(userId);
-      if(peer == null){
-      	var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-        answerTimer = setTimeout(self._answerTimeoutCallback, answerTimeInterval, userId);
-        answersTimers[userId] = answerTimer;
-      }
-      //
       
       if (callers[userId]) {
       	trace('skip onCallListener, a user already got it');
       	return true;
       }
+
+      // run caller availability timer and run again for this user
+      clearAnswerTimer(userId);
+      if(peer == null){
+        startAnswerTimer(userId, self._answerTimeoutCallback);
+      }
+      //
 
       callers[userId] = {
         sessionID: extension.sessionID,
@@ -106,6 +113,10 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
+        
+      clearDialingTimerInterval(userId);
+      clearCallTimer(userId);
+
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
       delete extension.sdp;
@@ -114,12 +125,19 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
+
+      clearDialingTimerInterval(userId);
+      clearCallTimer(userId);
+
       self._close();
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
+
+      clearDialingTimerInterval(userId);
+      clearCallTimer(userId);
 
       clearCallers(userId);
       
@@ -201,6 +219,19 @@ function WebRTCProxy(service, conn) {
     
     if(typeof self.onSessionStateChangedListener === 'function'){
       self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
+    }
+  };
+
+  this._callTimeoutCallback = function (userId){
+    trace("User " + userId + " not asnwer");
+
+    clearDialingTimerInterval(userId);
+
+    clearCallers(userId);
+    self._close();
+
+    if(typeof self.onUserNotAnswerListener === 'function'){
+      self.onUserNotAnswerListener(userId);
     }
   };
 }
@@ -329,42 +360,62 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
 WebRTCProxy.prototype._createPeer = function(params) {
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
   if (!this.localStream) throw new Error("You don't have an access to the local stream");
-  var pcConfig = {
-    iceServers: config.iceServers
-  };
-  
+
   // Additional parameters for RTCPeerConnection options
   // new RTCPeerConnection(pcConfig, options)
   /**********************************************
    * DtlsSrtpKeyAgreement: true
    * RtpDataChannels: true
   **********************************************/
+  var pcConfig = {
+    iceServers: config.iceServers
+  };
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  trace('SessionID ' + peer.sessionID);
-  trace(peer);
+  
+  trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
 };
 
 WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
+
+  trace('Call. userId: ' + opponentsIDs + ", callType: " + callType + ', extension: ' + JSON.stringify(extension));
+
   this._createPeer();
 
   var self = this;
-  // TODO: need to add a posibility created group calls
-  var ids = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
 
-  peer.opponentId = ids[0];
+  // For now we support only 1-1 calls.
+  //
+  var userIdsToCall = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
+  var userIdToCall = userIdsToCall[0];
+
+  peer.opponentId = userIdToCall;
   peer.getSessionDescription(function(err, res) {
     if (err) {
-      trace(err);
+      trace("getSessionDescription error: " + err);
     } else {
-      trace('call ' + peer.opponentId);
-      self._sendMessage(peer.opponentId, extension, 'CALL', callType, ids);
+
+      // let's send call requests to user
+      //
+      clearDialingTimerInterval(userIdToCall);
+      var functionToRun = function() {
+        self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
+      };
+      functionToRun(); // run a function for the first time and then each N seconds.
+      startDialingTimerInterval(userIdToCall, functionToRun);
+      //
+      clearCallTimer(userIdToCall);
+      startCallTimer(userIdToCall, self._callTimeoutCallback);
+      //
+      //
     }
   });
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
-  trace('accept ' + userId + ', extension: ' + extension);
+  var extension = extension || {};
+
+  trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
   clearAnswerTimer(userId);
   
@@ -392,21 +443,26 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 WebRTCProxy.prototype.reject = function(userId, extension) {
   var extension = extension || {};
 
+  trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+
   clearAnswerTimer(userId);
 
   if (callers[userId]) {
     extension.sessionID = callers[userId].sessionID;
     delete callers[userId];
   }
-  trace('reject ' + userId);
+
   this._sendMessage(userId, extension, 'REJECT');
 };
 
 WebRTCProxy.prototype.stop = function(userId, extension) {
   var extension = extension || {};
-  trace('stop ' + userId);
+
+  trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
   clearAnswerTimer(userId);
+  clearDialingTimerInterval(userId);
+  clearCallTimer(userId);
 
   this._sendMessage(userId, extension, 'STOP');
   this._close();
@@ -415,12 +471,16 @@ WebRTCProxy.prototype.stop = function(userId, extension) {
 };
 
 WebRTCProxy.prototype.update = function(userId, extension) {
-  trace('update ' + userId);
+  var extension = extension || {};
+  trace('Update. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
+  trace("Peer._close");
+
   if (peer) {
     peer.close();
   }
@@ -698,13 +758,54 @@ function clearCallers(userId){
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////
+
 function clearAnswerTimer(userId){
-	var answerTimer = answersTimers[userId];
-    if(answerTimer){
-      clearTimeout(answerTimer);
-      delete answersTimers[userId];
-    }
+	var answerTimer = answerTimers[userId];
+  if(answerTimer){
+    clearTimeout(answerTimer);
+    delete answerTimers[userId];
+  }
 }
+
+function startAnswerTimer(userId, callback){
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  var answerTimer = setTimeout(callback, answerTimeInterval, userId);
+  answerTimers[userId] = answerTimer;
+}
+
+function clearDialingTimerInterval(userId){
+  var dialingTimer = dialingTimerIntervals[userId];
+  if(dialingTimer){
+    clearInterval(dialingTimer);
+    delete dialingTimerIntervals[userId];
+  }
+}
+
+function startDialingTimerInterval(userId, functionToRun){
+  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
+  var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
+  dialingTimerIntervals[userId] = dialingTimerId;
+}
+
+function clearCallTimer(userId){
+  var callTimer = callTimers[userId];
+  if(callTimer){
+    clearTimeout(callTimer);
+    delete callTimers[userId];
+  }
+}
+
+function startCallTimer(userId, callback){
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
+  var callTimer = setTimeout(callback, answerTimeInterval, userId);
+  callTimers[userId] = callTimer;
+}
+
+////////////////////////////////////////////////////////////////////////
+
 
 // Convert Data URI to Blob
 function dataURItoBlob(dataURI, contentType) {
