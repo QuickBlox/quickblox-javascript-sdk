@@ -150,7 +150,7 @@ function signMessage(message, secret) {
  * - onSubscribeListener
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
- * - onDisconnectingListener
+ * - onDisconnectedListener
  * - onReconnectListener
  */
 
@@ -466,8 +466,9 @@ ChatProxy.prototype = {
         trace('Status.DISCONNECTED at ' + getLocalTime());
         connection.reset();
 
-        if (typeof self.onDisconnectingListener === 'function')
-          self.onDisconnectingListener();
+        if (typeof self.onDisconnectedListener === 'function'){
+          self.onDisconnectedListener();
+        }
 
         // reconnect to chat
         if (!self._isLogout) self.connect(params);
