@@ -47,7 +47,8 @@ var config = {
     },
   ],
   webrtc: {
-    answerTimeInterval: 60
+    answerTimeInterval: 60,
+    dialingTimeInterval: 5,
   },
   urls: {
     session: 'session',
