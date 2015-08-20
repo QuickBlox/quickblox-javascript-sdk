@@ -20,3 +20,7 @@ var QBUser = {
 	password: "testtest" 
 };
 
+var QBConfig = {
+
+}
+

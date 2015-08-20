@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.11.0',
+  version: '1.12.0',
   creds: {
     appId: '',
     authKey: '',
@@ -47,7 +47,8 @@ var config = {
     },
   ],
   webrtc: {
-    answerTimeInterval: 60
+    answerTimeInterval: 60,
+    dialingTimeInterval: 5,
   },
   urls: {
     session: 'session',
