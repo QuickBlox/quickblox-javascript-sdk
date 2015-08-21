@@ -1,4 +1,4 @@
-QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, true);
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, QBConfig);
 
 $(document).ready(function(){
 

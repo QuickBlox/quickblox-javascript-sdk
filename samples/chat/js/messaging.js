@@ -29,8 +29,17 @@ function retrieveChatDialogs() {
 
           // join room
           if (item.type != 3) {
-            QB.chat.muc.join(item.xmpp_room_jid, function() {
-               console.log("Joined dialog " + dialogId);
+            QB.chat.muc.join(item.xmpp_room_jid, function(stanza) {
+               var joined = true;
+
+               for (var i = 0; i < stanza.childNodes.length; i++) {
+                 var elItem = stanza.childNodes.item(i);
+                 if (elItem.tagName === 'error'){
+                   joined = false; 
+                 }
+               }
+               
+               console.log("Joined dialog " + dialogId + ": " + joined);
             });
             opponentId = null;
           } else {
@@ -232,6 +241,7 @@ function clickSendAttachments(inputFile) {
 
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
+
   var msg = {
     type: currentDialog.type == 3 ? 'chat' : 'groupchat',
     body: text,

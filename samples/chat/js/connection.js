@@ -47,8 +47,16 @@ function connectToChat(user) {
           // setup 'isTyping' events handler and listener
           //
           setupIsTypingHandler();
+
+          // setup 'on disconnected' listener
+          //
+          QB.chat.onDisconnectedListener = onDisconnectedListener;
         }
       });
     }
   });
+}
+
+function onDisconnectedListener(){
+  console.log("onDisconnected");
 }

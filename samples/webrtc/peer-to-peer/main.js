@@ -20,6 +20,7 @@ $(document).ready(function() {
     chooseRecipient(caller.id);
   });
   
+
   // Choose recipient
   //
   $(document).on('click', '.choose-recipient button', function() {
@@ -39,6 +40,11 @@ $(document).ready(function() {
   // Audio call
   //
   $('#audiocall').on('click', function() {
+    if(callee == null){
+      alert('Please choose a user to call');
+      return;
+    }
+
     var mediaParams = {
       audio: true,
       elemId: 'localVideo',
@@ -51,6 +57,11 @@ $(document).ready(function() {
   // Video call
   //
   $('#videocall').on('click', function() {
+    if(callee == null){
+      alert('Please choose a user to call');
+      return;
+    }
+
     var mediaParams = {
       audio: true,
       video: true,
@@ -142,7 +153,7 @@ $(document).ready(function() {
 //
 
 QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
-  console.log("New session state: " + newState + ", userId: " + userId);
+  console.log("onSessionStateChangedListener: " + newState + ", userId: " + userId);
 
   // possible values of 'newState':
   //
@@ -163,8 +174,8 @@ QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
   }
 };
 
-QB.webrtc.onCallListener = function(id, extension) {
-  console.log(extension);
+QB.webrtc.onCallListener = function(userId, extension) {
+  console.log("onCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   mediaParams = {
     audio: true,
@@ -178,14 +189,13 @@ QB.webrtc.onCallListener = function(id, extension) {
 
   $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
   
-  if (typeof callee == 'undefined'){
-      callee = {
-        id: extension.callerID,
-        full_name: "User with id " + extension.callerID,
-        login: "",
-        password: "" 
-      };
-  }
+  // save a callee
+  callee = {
+    id: extension.callerID,
+    full_name: "User with id " + extension.callerID,
+    login: "",
+    password: "" 
+  };
 
   $('.caller').text(callee.full_name);
 
@@ -197,15 +207,15 @@ QB.webrtc.onCallListener = function(id, extension) {
   });
 };
 
-QB.webrtc.onAcceptCallListener = function(id, extension) {
-  console.log(extension);
+QB.webrtc.onAcceptCallListener = function(userId, extension) {
+  console.log("onAcceptCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   $('#callingSignal')[0].pause();
   updateInfoMessage(callee.full_name + ' has accepted this call');
 };
 
-QB.webrtc.onRejectCallListener = function(id, extension) {
-  console.log(extension);
+QB.webrtc.onRejectCallListener = function(userId, extension) {
+  console.log("onRejectCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
   $('#audiocall, #videocall').removeAttr('disabled');
@@ -214,12 +224,18 @@ QB.webrtc.onRejectCallListener = function(id, extension) {
   updateInfoMessage(callee.full_name + ' has rejected the call. Logged in as ' + caller.full_name);
 };
 
-QB.webrtc.onStopCallListener = function(id, extension) {
-  console.log(extension);
+QB.webrtc.onStopCallListener = function(userId, extension) {
+  console.log("onStopCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
+
+  hungUp();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
+};
+
+QB.webrtc.onUserNotAnswerListener = function(userId) {
+  console.log("onUserNotAnswerListener. userId: " + userId);
 };
 
 
