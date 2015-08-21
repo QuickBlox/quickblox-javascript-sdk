@@ -227,7 +227,7 @@ input[type=file]:focus {
   width: 100%;
 }
 
-.users_form, .pull_form, .push_form{
+.users_form, .push_form{
   height: auto;
   text-align: center;
   line-height: 100%;
@@ -236,7 +236,7 @@ input[type=file]:focus {
   padding: 10px;
 }
 
-a.users_form.active, a.pull_form.active, a.push_form.active { 
+a.users_form.active, a.push_form.active { 
   text-decoration: none;
   color: #fff;
   background-color: #337ab7;
@@ -277,16 +277,16 @@ a.users_form.active, a.pull_form.active, a.push_form.active {
   display: block;
 }
 
-.list-group.pre-scrollable.occupants {
+#push_usersList {
+  width: 100%;
   max-height: 200px;
   height: 200px;
+  border: 1px solid #DDD;
+  border-left: none;
+  margin-bottom: 10px !important;
 }
 
-.occupants_padding {
-  padding: 3px;
-}
-
-.pull_push {
+.push {
   height: auto;
   text-align: center;
   line-height: 100%;

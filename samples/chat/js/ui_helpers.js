@@ -5,7 +5,7 @@ function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachm
       messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
   }
 
-  var messageHtml = '<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+messageId+')">'+'<time datetime="'+messageDateSent+
+  var messageHtml = '<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+"'"+messageId+"'"+')">'+'<time datetime="'+messageDateSent+
                     '" class="pull-right">'+jQuery.timeago(messageDateSent)+'</time>'+'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+
                     '<p class="list-group-item-text">'+(messageAttach ? messageAttach : messageText)+'</p>'+'</div>';
   return messageHtml;
@@ -35,14 +35,4 @@ function buildTypingUserHtml(userId, userLogin) {
 function buildUserHtml(userLogin, userId) {
   var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
   return userHtml;
-}
-
-function forPushOccupantsHtml(userLogin, userId) {
-  var userPushHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 push_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
-  return userPushHtml;
-}
-
-function forPullOccupantsHtml(userLogin, userId) {
-  var userPullHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 pull_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
-  return userPullHtml;
 }

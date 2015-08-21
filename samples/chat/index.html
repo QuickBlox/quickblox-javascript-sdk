@@ -123,22 +123,18 @@
             <div class="col-md-12 col-sm-12 col-xs-12 new-info">
               <input type="text" class="form-control" id="rename-dialog" placeholder="You can rename dialog">
             </div>
-            <h5 class="col-md-6 col-sm-6 col-xs-6 pullorpush">Choose to pull occupants</h5>
-            <h5 class="col-md-6 col-sm-6 col-xs-6 pullorpush">Choose to push occupants</h5>
-              <div class="list-group pre-scrollable occupants col-md-6 col-sm-6 col-xs-6" id="pull_usersList">
-                <div id="delete_occupants" class="clearfix occupants_padding"></div>
-              </div>
-                <div class="list-group pre-scrollable occupants col-md-6 col-sm-6 col-xs-6" id="push_usersList">
-                  <div id="add_new_occupant" class="clearfix occupants_padding"></div>
-                </div>
+            <h5 class="col-md-12 col-sm-12 col-xs-12 push">Choose to push occupants</h5>
+            <div class="list-group pre-scrollable occupants" id="push_usersList">
+              <div id="add_new_occupant" class="clearfix"></div>
+            </div>
             <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
               onclick="onDialogUdate()">Update</button>
-            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
+            <button id="delete-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
               onclick="onDeleteDialog()">Delete dialog</button>
-            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-primary btn-lg btn-block"
+            <button id="leave-dialog" type="button" value="Confirm" id="" class="btn btn-primary btn-lg btn-block"
               onclick="onDialogUdate(true)">Leave current dialog</button>
             <div class="progress">
-              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
+             <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
               </div>
             </div>
           </div>

@@ -6,7 +6,6 @@ var uploadPages     = 0;
     pushUploadPages = 0;
     pushUsersCount  = 0;
     push_occupants  = [];
-    pull_occupants  = [];
     selectedMsg     = undefined;
 
 //
@@ -204,15 +203,23 @@ function showUpdateDialogPopup() {
 
   if (currentDialog.type == 3) {
     $('.dialog-type-info').text('').append('Dialog type: privat chat');
+    $('#rename-dialog').hide();
+    $('.push').hide();
+    $('#push_usersList').hide();
+    $('#leave-dialog').hide();
   } else {
     $('.dialog-type-info').text('').append('Dialog type: group chat');
+    $('#rename-dialog').show();
+    $('.push').show();
+    $('#push_usersList').show();
+    $('#leave-dialog').show();
   }
 }
 
 function forPushOccupantsScrollHandler() {
   // uploading users scroll event
   $('#push_usersList').scroll(function() {
-    if  ($('#push_usersList').scrollTop() == $('#load-push-users').height() - $('#push_usersList').height()){
+    if  ($('#push_usersList').scrollTop() == $('#add_new_occupant').height() - $('#push_usersList').height()){
       retrievePushUsers();
     }
   });
@@ -230,15 +237,9 @@ function retrievePushUsers() {
       } else {
         console.log(result);
         $.each(result.items, function(index, item){
-          var userPushHtml = forPushOccupantsHtml(this.user.login, this.user.id);
-          $('#add_new_occupant').append(userPushHtml);
-        });
-
-        $.each(currentDialog.occupants_ids, function(index, item){
-          var occupantLogin = getUserById(item);
-          var userPullHtml  = forPullOccupantsHtml(occupantLogin, item);
-          $('#delete_occupants').append(userPullHtml);
-        });        
+          var userHtml = buildUserHtml(this.user.login, this.user.id);
+          $('#add_new_occupant').append(userHtml);
+        });       
 
         var totalEntries    = result.total_entries;
             entries         = result.items.length;
@@ -253,40 +254,55 @@ function retrievePushUsers() {
 } 
 
 function onDialogUdate(iLeave) {
-  $('.push_form.active').each(function(index) {
+  $('.users_form.active').each(function(index) {
     push_occupants[index] = $(this).attr('id');
   });
 
-  $('.pull_form.active').each(function(index) {
-    pull_occupants[index] = $(this).attr('id');
-  });
-
   if (iLeave == true) {
-    var toUpdate = {pull_all: {occupants_ids: currentUser.id}};
+    $('#'+currentDialog._id).remove();
+    var toUpdate = {pull_all: {occupants_ids: [currentUser.id]}};
+    console.log(toUpdate);
   } else {
     var dialogPhoto = $('#set-new-photo').val().trim();
     var dialogName  = $('#rename-dialog').val().trim();
     var toUpdate    = {
       photo:    $('#set-new-photo').val('') ? dialogPhoto : currentDialog.photo,
       name:     $('#rename-dialog').val('') ? dialogName : currentDialog.name,
-      pull_all: {occupants_ids: [pull_occupants.join(',')]},
-      push_all: {occupants_ids: [push_occupants.join(',')]}
+      push_all: {occupants_ids: [push_occupants]}
     };
-    // var toUpdate    = {
-    //   photo:    $('#set-new-photo').val('') ? dialogPhoto : currentDialog.photo,
-    //   name:     'dfdfdfdfdfdfdf',
-    //   pull_all: {occupants_ids: [pull_occupants.join(',')]},
-    //   push_all: {occupants_ids: [push_occupants.join(',')]}
-    // };
+    console.log(toUpdate);
   }
+
+  console.log(dialogPhoto);
+  console.log(dialogName);
+  console.log(push_occupants);
 
   QB.chat.dialog.update(currentDialog._id, toUpdate, function(err, res) {
     if (err) {
       console.log(err);
     } else {
       console.log(res);
+
+      $('#'+res._id).remove();
+
+      if (!iLeave) {
+        var dialogIcon = getDialogIcon (res.type, res.photo);
+        var updatedDialogHtml = buildDialogHtml(res._id, res.unread_messages_count, dialogIcon, res.name, res.last_message);
+        $('#dialogs-list').prepend(updatedDialogHtml);
+      }  
     }
   });
+
+  $("#update_dialog").modal("hide");
+  $('#update_dialog .progress').show();
+
+    dialogPhoto = '';
+    dialogName = '';
+    push_occupants = [];
+
+  console.log(dialogPhoto);
+  console.log(dialogName);
+  console.log(push_occupants);
 }
 
 function onDeleteDialog() {
@@ -298,21 +314,25 @@ function onDeleteDialog() {
       $('#'+currentDialog._id).remove();
     }
   });
+
+  $("#update_dialog").modal("hide");
+  $('#update_dialog .progress').show();
 }
 
-// select users from users list
+// select message from messages list
 function clickToAddMsg(messageId) {
-  console.log(messageId)
+  console.log(messageId);
   if ($('#'+messageId).hasClass("active")) {
     $('#'+messageId).removeClass("active");
   } else {
     $('#'+messageId).addClass("active");
   }
+  console.log($('.list-group-item.active').attr('id'));
 }
 
 function deleteFocusMessage() {
   if ('.list-group-item.active') {
-    selectedMsg = $(this).attr('id');
+    selectedMsg = $('.list-group-item.active').attr('id');
   }
 
   QB.chat.message.delete(selectedMsg, function(err, res) {
