@@ -265,7 +265,7 @@ function sendMessage(text, attachmentFileId) {
 
 // add photo to dialogs
 function getDialogIcon (dialogType, dialogPhoto) {
-  var withPhoto    = '<img src="http://apituul.quickblox.com/blobs/'+dialogPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
+  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+dialogPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
   var withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
   var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
   var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
