@@ -1,9 +1,9 @@
-var uploadPages     = 0;
+var uploadPages     = 465;
     usersCount      = 0;
     users_ids       = [];
     users_names     = [];
     finished        = false;
-    pushUploadPages = 0;
+    pushUploadPages = 465;
     pushUsersCount  = 0;
     push_occupants  = [];
     selectedMsg     = undefined;
@@ -216,6 +216,7 @@ function showUpdateDialogPopup() {
   }
 }
 
+
 function forPushOccupantsScrollHandler() {
   // uploading users scroll event
   $('#push_usersList').scroll(function() {
@@ -225,12 +226,12 @@ function forPushOccupantsScrollHandler() {
   });
 }
 
+
 function retrievePushUsers() {
   if (!finished) {
 
     pushUploadPages = pushUploadPages + 1;
 
-    // Load users, 10 per request
     QB.users.listUsers({page: pushUploadPages, per_page: '10'}, function(err, result) {
       if (err) {
         console.log(err);
@@ -252,23 +253,26 @@ function retrievePushUsers() {
     });
   }
 } 
-
+// for dialog update
 function onDialogUdate(iLeave) {
   $('.users_form.active').each(function(index) {
     push_occupants[index] = $(this).attr('id');
   });
 
+  var dialogPhoto = $('#set-new-photo').val().trim();
+  var dialogName  = $('#rename-dialog').val().trim();
+
   if (iLeave == true) {
     $('#'+currentDialog._id).remove();
     var toUpdate = {pull_all: {occupants_ids: [currentUser.id]}};
     console.log(toUpdate);
+  } else if (currentDialog.type == 3) {
+    var toUpdate = {photo: dialogPhoto};
   } else {
-    var dialogPhoto = $('#set-new-photo').val().trim();
-    var dialogName  = $('#rename-dialog').val().trim();
-    var toUpdate    = {
-      photo:    $('#set-new-photo').val('') ? dialogPhoto : currentDialog.photo,
-      name:     $('#rename-dialog').val('') ? dialogName : currentDialog.name,
-      push_all: {occupants_ids: [push_occupants]}
+    var toUpdate = {
+      photo:    dialogPhoto,
+      name:     dialogName,
+      push_all: {occupants_ids: push_occupants}
     };
     console.log(toUpdate);
   }
@@ -299,12 +303,14 @@ function onDialogUdate(iLeave) {
     dialogPhoto = '';
     dialogName = '';
     push_occupants = [];
+    $('.users_form').removeClass("active");
 
   console.log(dialogPhoto);
   console.log(dialogName);
   console.log(push_occupants);
 }
 
+// delete currend dialog
 function onDeleteDialog() {
   QB.chat.dialog.delete(currentDialog._id, function(err, res) {
     if (err) {
@@ -321,26 +327,24 @@ function onDeleteDialog() {
 
 // select message from messages list
 function clickToAddMsg(messageId) {
-  console.log(messageId);
   if ($('#'+messageId).hasClass("active")) {
     $('#'+messageId).removeClass("active");
   } else {
     $('#'+messageId).addClass("active");
   }
-  console.log($('.list-group-item.active').attr('id'));
+
+  if ('.list-group-item.active') {
+    selectedMsg = messageId;
+  }
 }
 
+// delete selected message
 function deleteFocusMessage() {
-  if ('.list-group-item.active') {
-    selectedMsg = $('.list-group-item.active').attr('id');
-  }
-
   QB.chat.message.delete(selectedMsg, function(err, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(res);
-      $('#'+messageId).remove();
+      $('#'+selectedMsg).remove();
     }
   }); 
 }
