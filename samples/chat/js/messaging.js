@@ -117,7 +117,7 @@ function triggerDialog(element, dialogId){
   skipPage = 0;
   // load chat history
   //
-  retrieveChatMessages(dialogId);
+  retrieveChatMessages(dialogId, skipPage);
 }
 
 //
@@ -148,12 +148,13 @@ function retrieveChatMessages(dialogId, skipPage){
         $("#no-messages-label").addClass('hide');
 
         messages.items.forEach(function(item, i, arr) {
-        	var messageId = item._id;
-          var messageText = item.message;
-          var messageSenderId = item.sender_id;
-          var messageDateSent = new Date(item.date_sent*1000);
+        	var               messageId = item._id;
+          var             messageText = item.message;
+          var         messageSenderId = item.sender_id;
+          var         messageDateSent = new Date(item.date_sent*1000);
           var messageAttachmentFileId = null;
-		      var messageSenderLogin = getUserById(messageSenderId);
+		      var      messageSenderLogin = getUserById(messageSenderId);
+
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
               messageAttachmentFileId = item.attachments[0].id;
@@ -168,9 +169,10 @@ function retrieveChatMessages(dialogId, skipPage){
     if (skipPage == 0) {
       var mydiv = $('#messages-list');
       mydiv.scrollTop(mydiv.prop('scrollHeight'));
+      console.log(skipPage);
     }
   });
-    $(".load-msg").delay(100).fadeOut(500);
+   $(".load-msg").delay(100).fadeOut(500);
 	console.log(skipPage);
 }
 
