@@ -57,19 +57,19 @@ function retrieveChatDialogs() {
             // show dialogs
             //
             resDialogs.items.forEach(function(item, i, arr) {
-              var dialogId = item._id;
-              var dialogName = item.name;
-              var dialogType = item.type;
-              var dialogLastMessage = item.last_message;
+              var                  dialogId = item._id;
+              var                dialogName = item.name;
+              var                dialogType = item.type;
+              var         dialogLastMessage = item.last_message;
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
               var dialogIcon = getDialogIcon(item.type, item.photo);
 
               if (dialogType == 3) {
-                opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+                opponentId    = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
                 opponentLogin = getUserById(opponentId);
-                dialogName = 'Dialog with ' + opponentLogin;
-              }else if(dialogName == null){
+                dialogName    = 'Dialog with ' + opponentLogin;
+              } else if (dialogName == null){
                 dialogName = "group chat";
               }
 
@@ -113,6 +113,8 @@ function triggerDialog(element, dialogId){
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
 
+  $('#messages-list').html('');
+  skipPage = 0;
   // load chat history
   //
   retrieveChatMessages(dialogId);
@@ -122,23 +124,22 @@ function triggerDialog(element, dialogId){
 function setupMsgScrollHandler(dialogId){
   var msgWindow = $('.col-md-8 .list-group.pre-scrollable');
       msgList = $('#messages-list');
-      TopOrBottom = undefined;
   // uploading users scroll event
   msgList.scroll(function() {
     if  (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
-      retrieveChatMessages(dialogId, TopOrBottom);
+    	skipPage = skipPage + 10;
+      retrieveChatMessages(dialogId, skipPage);
     }
   });
 }
 
-function retrieveChatMessages(dialogId){
+function retrieveChatMessages(dialogId, skipPage){
   // Load messages history
   //
   $(".load-msg").show(0);
 
-  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 15, skip: skipPage};
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 10, skip: skipPage,};
   QB.chat.message.list(params, function(err, messages) {
-    $('#messages-list').html('');
     if (messages) {
     	console.log(messages);
       if(messages.items.length == 0){
@@ -161,16 +162,15 @@ function retrieveChatMessages(dialogId){
           var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId, messageId);
 
           $('#messages-list').prepend(messageHtml);
-	          if (skipPage == 0) {
-		          var mydiv = $('#messages-list');
-		          mydiv.scrollTop(mydiv.prop('scrollHeight'));
-	          }
         });
       }
     }  
+    if (skipPage == 0) {
+      var mydiv = $('#messages-list');
+      mydiv.scrollTop(mydiv.prop('scrollHeight'));
+    }
   });
     $(".load-msg").delay(100).fadeOut(500);
-	skipPage = skipPage + 2;
 	console.log(skipPage);
 }
 
@@ -303,7 +303,7 @@ function updateDialogsList(DialogId, text){
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
   var userLogin = getUserById(userId);
-  var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId);
+  var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId, msg.id);
 
   $('#messages-list').append(messageHtml);
 

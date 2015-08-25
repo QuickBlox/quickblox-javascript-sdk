@@ -8,6 +8,7 @@ var uploadPages     = 465;
     push_occupants  = [];
     selectedMsg     = undefined;
 
+$('#ready_to_delete').hide();
 //
 function setupUsersScrollHandler(){
   // uploading users scroll event
@@ -290,8 +291,20 @@ function onDialogUdate(iLeave) {
       $('#'+res._id).remove();
 
       if (!iLeave) {
-        var dialogIcon = getDialogIcon (res.type, res.photo);
-        var updatedDialogHtml = buildDialogHtml(res._id, res.unread_messages_count, dialogIcon, res.name, res.last_message);
+        var                  dialogId = res._id;
+        var                dialogName = res.name;
+        var                dialogType = res.type;
+        var         dialogLastMessage = res.last_message;
+        var dialogUnreadMessagesCount = res.unread_messages_count;
+        var                dialogIcon = getDialogIcon(res.type, res.photo);
+
+        if (dialogType == 3) {
+          opponentId    = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
+          opponentLogin = getUserById(opponentId);
+          dialogName    = 'Dialog with ' + opponentLogin;
+        }
+
+        var updatedDialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
         $('#dialogs-list').prepend(updatedDialogHtml);
       }  
     }
@@ -335,6 +348,7 @@ function clickToAddMsg(messageId) {
 
   if ('.list-group-item.active') {
     selectedMsg = messageId;
+    $('#ready_to_delete').show();
   }
 }
 
@@ -345,6 +359,7 @@ function deleteFocusMessage() {
       console.log(err);
     } else {
       $('#'+selectedMsg).remove();
+      $('#ready_to_delete').hide();
     }
   }); 
 }

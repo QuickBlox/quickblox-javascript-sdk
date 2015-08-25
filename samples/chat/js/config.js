@@ -15,16 +15,16 @@ var config = {
 };
 
 var QBUser1 = {
-        id: 4983781,
-        name: 'BROTHER',
-        login: 'BROTHER',
-        pass: '123456789'
+        id: 4834858,
+        name: 'quickuser',
+        login: 'quickuser',
+        pass: 'quickuser'
     },
     QBUser2 = {
-        id: 4983792,
-        name: 'SISTER',
-        login: 'SISTER',
-        pass: '123456789'
+        id: 4834885,
+        name: 'bloxuser',
+        login: 'bloxuser',
+        pass: 'bloxuser'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
