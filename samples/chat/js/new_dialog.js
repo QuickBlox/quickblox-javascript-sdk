@@ -278,10 +278,6 @@ function onDialogUdate(iLeave) {
     console.log(toUpdate);
   }
 
-  console.log(dialogPhoto);
-  console.log(dialogName);
-  console.log(push_occupants);
-
   QB.chat.dialog.update(currentDialog._id, toUpdate, function(err, res) {
     if (err) {
       console.log(err);
@@ -291,36 +287,17 @@ function onDialogUdate(iLeave) {
       $('#'+res._id).remove();
 
       if (!iLeave) {
-        var                  dialogId = res._id;
-        var                dialogName = res.name;
-        var                dialogType = res.type;
-        var         dialogLastMessage = res.last_message;
-        var dialogUnreadMessagesCount = res.unread_messages_count;
-        var                dialogIcon = getDialogIcon(res.type, res.photo);
-
-        if (dialogType == 3) {
-          opponentId    = QB.chat.helpers.getRecipientId(res.occupants_ids, currentUser.id);
-          opponentLogin = getUserById(opponentId);
-          dialogName    = 'Dialog with ' + opponentLogin;
-        }
-
-        var updatedDialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-        $('#dialogs-list').prepend(updatedDialogHtml);
-      }  
+        pastDialogUI(res, true);
+        $('#'+res._id).removeClass('inactive').addClass('active');
+      }
     }
   });
 
   $("#update_dialog").modal("hide");
-  $('#update_dialog .progress').show();
-
-    dialogPhoto = '';
-    dialogName = '';
-    push_occupants = [];
-    $('.users_form').removeClass("active");
-
-  console.log(dialogPhoto);
-  console.log(dialogName);
-  console.log(push_occupants);
+  $('#set-new-photo').val('');
+  $('#rename-dialog').val('');
+  $('.users_form').removeClass("active");
+  push_occupants = [];
 }
 
 // delete currend dialog

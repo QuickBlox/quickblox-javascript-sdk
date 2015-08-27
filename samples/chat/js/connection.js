@@ -42,7 +42,7 @@ function connectToChat(user) {
 
           // setup message listeners
           //
-          setupOnMessageListener()
+          setupOnMessageListener();
 
           // setup 'isTyping' events handler and listener
           //

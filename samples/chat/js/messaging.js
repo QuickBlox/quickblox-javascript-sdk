@@ -2,7 +2,7 @@ var currentDialog;
 var dialogs = {};
 var users = {};
 var opponentId;
-var skipPage = 0;
+var skipPage;
 		cancelSkip = false;
 
 
@@ -23,7 +23,9 @@ function retrieveChatDialogs() {
         // repackage dialogs data and collect all occupants ids
         //
         var occupantsIds = [];
+
         resDialogs.items.forEach(function(item, i, arr) {
+      		console.log(item);
           var dialogId = item._id;
           dialogs[dialogId] = item;
 
@@ -57,24 +59,7 @@ function retrieveChatDialogs() {
             // show dialogs
             //
             resDialogs.items.forEach(function(item, i, arr) {
-              var                  dialogId = item._id;
-              var                dialogName = item.name;
-              var                dialogType = item.type;
-              var         dialogLastMessage = item.last_message;
-              var dialogUnreadMessagesCount = item.unread_messages_count;
-
-              var dialogIcon = getDialogIcon(item.type, item.photo);
-
-              if (dialogType == 3) {
-                opponentId    = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
-                opponentLogin = getUserById(opponentId);
-                dialogName    = 'Dialog with ' + opponentLogin;
-              } else if (dialogName == null){
-                dialogName = "group chat";
-              }
-
-              var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-              $('#dialogs-list').append(dialogHtml);
+							pastDialogUI(item, false);
             });
 
             //  and trigger the 1st dialog
@@ -92,6 +77,7 @@ function retrieveChatDialogs() {
             if (inputFile) {
               $("#progress").show(0);
             }
+
             clickSendAttachments(inputFile);
           });
         });
@@ -101,39 +87,39 @@ function retrieveChatDialogs() {
 
 // Choose dialog
 function triggerDialog(element, dialogId){
-  skipPage = 0;
-  setupMsgScrollHandler(dialogId);
+	setupMsgScrollHandler(dialogId);
   // deselect
-  var kids = $( "#dialogs-list" ).children();
-  kids.removeClass("active").addClass("inactive");
+  var kids = $('#dialogs-list').children();
+  kids.removeClass('active').addClass('inactive');
 
   // select
-  $('#'+dialogId).removeClass("inactive").addClass("active");
+  $('#'+dialogId).removeClass('inactive').addClass('active');
 
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
   currentDialog = dialogs[dialogId];
 
   $('#messages-list').html('');
-  skipPage = 0;
   // load chat history
   //
-  retrieveChatMessages(dialogId, skipPage);
+  skipPage = 0;
+  retrieveChatMessages(dialogId);
 }
 
 //
 function setupMsgScrollHandler(dialogId){
   var msgWindow = $('.col-md-8 .list-group.pre-scrollable');
       msgList = $('#messages-list');
-  // uploading users scroll event
+  // uploading dialog history scroll event
   msgList.scroll(function() {
-    if  (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
+    if (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
     	skipPage = skipPage + 10;
-      retrieveChatMessages(dialogId, skipPage);
+      retrieveChatMessages(dialogId);
     }
   });
 }
 
-function retrieveChatMessages(dialogId, skipPage){
+function retrieveChatMessages(dialogId){
+	// setupMsgScrollHandler(dialogId);
   // Load messages history
   //
   $(".load-msg").show(0);
@@ -142,37 +128,38 @@ function retrieveChatMessages(dialogId, skipPage){
   QB.chat.message.list(params, function(err, messages) {
     if (messages) {
     	console.log(messages);
-      if(messages.items.length == 0){
+      if(messages.items.length == 0) {
         $("#no-messages-label").removeClass('hide');
       } else {
         $("#no-messages-label").addClass('hide');
 
         messages.items.forEach(function(item, i, arr) {
-        	var               messageId = item._id;
-          var             messageText = item.message;
-          var         messageSenderId = item.sender_id;
-          var         messageDateSent = new Date(item.date_sent*1000);
+        	var messageId = item._id;
+          var messageText = item.message;
+          var messageSenderId = item.sender_id;
+          var messageDateSent = new Date(item.date_sent*1000);
           var messageAttachmentFileId = null;
-		      var      messageSenderLogin = getUserById(messageSenderId);
+		      var messageSenderLogin = getUserById(messageSenderId);
 
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
               messageAttachmentFileId = item.attachments[0].id;
             }
           }
+
           var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId, messageId);
 
           $('#messages-list').prepend(messageHtml);
         });
       }
-    }  
-    if (skipPage == 0) {
-      var mydiv = $('#messages-list');
-      mydiv.scrollTop(mydiv.prop('scrollHeight'));
-      console.log(skipPage);
     }
+
+    if (skipPage == 0) {
+      $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
+    }
+
   });
-   $(".load-msg").delay(100).fadeOut(500);
+  $(".load-msg").delay(100).fadeOut(500);
 	console.log(skipPage);
 }
 
@@ -186,7 +173,7 @@ function onMessage(userId, msg) {
 
   // Here we process regular messages
   //
-  }else{
+  } else {
     // сheck if it's an attachment
     //
     var messageAttachmentFileId = null;
@@ -198,8 +185,8 @@ function onMessage(userId, msg) {
 
     // check if it's a mesasges for current dialog
     //
-    if(isMessageForCurrentDialog(userId, msg.dialog_id)){
-       showMessage(userId, msg, messageAttachmentFileId);
+    if (isMessageForCurrentDialog(userId, msg.dialog_id)){
+      showMessage(userId, msg, messageAttachmentFileId);
     }
 
     updateDialogsList(msg.dialog_id, msg.body);
@@ -227,7 +214,7 @@ function clickSendAttachments(inputFile) {
 
       sendMessage("[attachment]", uploadedFile.id);
 
-      inputFile = '';
+      $("input[type=file]").val('');
     }
   }); 
 }
@@ -404,5 +391,28 @@ function getUserById(byId) {
 	if (users[byId]) {
 		userLogin = users[byId].login;
 		return userLogin;
+	}
+}
+
+function pastDialogUI(itemRes, updateHtml) {
+  var dialogId = itemRes._id;
+  var dialogName = itemRes.name;
+  var dialogType = itemRes.type;
+  var dialogLastMessage = itemRes.last_message;
+  var dialogUnreadMessagesCount = itemRes.unread_messages_count;
+  var dialogIcon = getDialogIcon(itemRes.type, itemRes.photo);
+
+  if (dialogType == 3) {
+    opponentId    = QB.chat.helpers.getRecipientId(itemRes.occupants_ids, currentUser.id);
+    opponentLogin = getUserById(opponentId);
+    dialogName    = 'Dialog with ' + opponentLogin;
+  }
+  if (updateHtml == true) {
+  	var updatedDialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+  	$('#dialogs-list').prepend(updatedDialogHtml);
+  	$('.list-group-item.active .badge').text(0).hide(0);
+	} else {
+    var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+    $('#dialogs-list').append(dialogHtml);		
 	}
 }
