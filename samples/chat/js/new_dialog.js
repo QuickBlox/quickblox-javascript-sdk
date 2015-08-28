@@ -124,14 +124,16 @@ function createNewDialog() {
           console.log(users);
         }
 
-        joinToNewDialogAndShow(createdDialog);
+          joinToNewDialogAndShow(createdDialog);
 
-        notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
+          notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
 
-        triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
+          triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
 
-        users_ids = [];
-        $('a.users_form').removeClass('active');
+          users_ids = [];
+          $('a.users_form').removeClass('active');
+          console.log($('#'+createdDialog._id));
+
       });
     }
   });
@@ -315,28 +317,30 @@ function onDeleteDialog() {
   $('#update_dialog .progress').show();
 }
 
-// select message from messages list
-function clickToAddMsg(messageId) {
-  if ($('#'+messageId).hasClass("active")) {
-    $('#'+messageId).removeClass("active");
-  } else {
-    $('#'+messageId).addClass("active");
-  }
+//< < < < < < < < < < < < < < < < < < < < < < < < < < < < <  D_E_L_E_T_E    M_E_S_S_A_G_E  > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >
 
-  if ('.list-group-item.active') {
-    selectedMsg = messageId;
-    $('#ready_to_delete').show();
-  }
-}
+// // select message from messages list
+// function clickToAddMsg(messageId) {
+//   if ($('#'+messageId).hasClass("active")) {
+//     $('#'+messageId).removeClass("active");
+//   } else {
+//     $('#'+messageId).addClass("active");
+//   }
 
-// delete selected message
-function deleteFocusMessage() {
-  QB.chat.message.delete(selectedMsg, function(err, res) {
-    if (err) {
-      console.log(err);
-    } else {
-      $('#'+selectedMsg).remove();
-      $('#ready_to_delete').hide();
-    }
-  }); 
-}
+//   if ('.list-group-item.active') {
+//     selectedMsg = messageId;
+//     $('#ready_to_delete').show();
+//   }
+// }
+
+// // delete selected message
+// function deleteFocusMessage() {
+//   QB.chat.message.delete(selectedMsg, function(err, res) {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       $('#'+selectedMsg).remove();
+//       $('#ready_to_delete').hide();
+//     }
+//   }); 
+// }

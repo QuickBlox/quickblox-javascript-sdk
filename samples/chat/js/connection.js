@@ -30,6 +30,7 @@ function connectToChat(user) {
     if (res) {
       // save session token
       token = res.token;
+      console.log(res);
 
       QB.chat.connect({userId: user.id, password: user.pass}, function(err, roster) {
         if (err) {

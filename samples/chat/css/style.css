@@ -306,3 +306,7 @@ a.pull_push.active  {
 .pullorpush {
   text-align: center;
 }
+
+h4.dialog-type-info {
+  text-align: center;
+}
