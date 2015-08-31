@@ -200,6 +200,8 @@ function showUpdateDialogPopup() {
   $("#update_dialog").modal("show");
   $('#update_dialog .progress').hide();
 
+  AllDialogOccupants(currentDialog.occupants_ids);
+
   retrievePushUsers();
 
   forPushOccupantsScrollHandler();
@@ -344,3 +346,14 @@ function onDeleteDialog() {
 //     }
 //   }); 
 // }
+
+function AllDialogOccupants(users) {
+  var logins = [];
+
+  users.forEach(function(item, index) {
+    login = getUserById(item);
+    logins[index] = login;
+  });     
+    $('#all_occupants').text('');
+    $('#all_occupants').append('Occupants: '+logins.join(', '));
+}

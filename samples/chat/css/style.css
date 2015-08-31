@@ -279,8 +279,8 @@ a.users_form.active, a.push_form.active {
 
 #push_usersList {
   width: 100%;
-  max-height: 200px;
-  height: 200px;
+  max-height: 150px;
+  height: 150px;
   border: 1px solid #DDD;
   border-left: none;
   margin-bottom: 10px !important;
@@ -307,6 +307,7 @@ a.pull_push.active  {
   text-align: center;
 }
 
-h4.dialog-type-info {
-  text-align: center;
+.btn-block.for_width {
+	width: 49.5%;
+	display: inline;
 }

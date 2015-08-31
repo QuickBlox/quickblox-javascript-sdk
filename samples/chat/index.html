@@ -116,10 +116,9 @@
             <h3 class="modal-title">Dialog info</h3>
           </div>
           <div class="modal-body">
-            <h4 class="col-md-12 col-sm-12 col-xs-12 dialog-type-info"></h4>
             <div class="col-md-12 col-sm-12 col-xs-12 new-info">
               <h5 class="col-md-12 col-sm-12 col-xs-12">Dialog's photo:</h5>
-              <input type="text" class="form-control" id="set-new-photo" placeholder="ID or link to set a new photo">
+              <input type="text" class="form-control" id="set-new-photo">
             </div>
             <div class="col-md-12 col-sm-12 col-xs-12 new-info">
               <h5 class="col-md-12 col-sm-12 col-xs-12">Dialog's name:</h5>
@@ -129,11 +128,13 @@
             <div class="list-group pre-scrollable occupants" id="push_usersList">
               <div id="add_new_occupant" class="clearfix"></div>
             </div>
-            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-lg btn-block"
+            <h5 class="col-md-12 col-sm-12 col-xs-12 dialog-type-info"></h5>
+            <h5 class="col-md-12 col-sm-12 col-xs-12" id="all_occupants">Occupants: </h5>
+            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-sm btn-block"
               onclick="onDialogUdate()">Update</button>
-            <button id="leave-dialog" type="button" value="Confirm" id="" class="btn btn-primary btn-xs btn-block"
+            <button id="leave-dialog" type="button" value="Confirm" id="" class="btn btn-primary btn-sm btn-block for_width"
               onclick="onDialogUdate(true)">Leave current dialog</button>
-            <button id="delete-dialog" type="button" value="Confirm" id="" class="btn btn-danger btn-xs btn-block"
+            <button id="delete-dialog" type="button" value="Confirm" id="" class="btn btn-danger btn-sm btn-block for_width"
               onclick="onDeleteDialog()">Delete dialog</button>
           </div>
         </div>
