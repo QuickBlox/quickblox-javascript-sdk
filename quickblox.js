@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.12.0 - 2015-08-20 */
+/* QuickBlox JavaScript SDK - v1.13.0 - 2015-09-02 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -878,6 +878,30 @@ MucProxy.prototype = {
 
     if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
     connection.send(pres);
+  },
+
+  listOnlineUsers: function(roomJid, callback) {
+    var iq, self = this,
+        onlineUsers = [];
+
+    iq = $iq({
+      from: connection.jid,
+      id: connection.getUniqueId('muc_disco_items'),
+      to: roomJid,
+      type: "get"
+    }).c("query", {
+      xmlns: 'http://jabber.org/protocol/disco#items'
+    })
+
+    connection.sendIQ(iq, function(stanza) {
+      var items = stanza.getElementsByTagName('item');
+      var userId;
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
+        onlineUsers.push(userId);
+      }
+      callback(onlineUsers);
+    });
   }
 
 };
@@ -1028,7 +1052,15 @@ Helpers.prototype = {
 
   getBsonObjectId: function() {
     return Utils.getBsonObjectId();
-  }  
+  },
+
+  getUserIdFromRoomJid: function(jid) {
+    var arrayElements = jid.toString().split('/');
+    if(arrayElements.length == 0){
+      return null;
+    }
+    return arrayElements[arrayElements.length-1];
+  }
 
 };
 
@@ -2583,7 +2615,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.12.0',
+  version: '1.13.0',
   creds: {
     appId: '',
     authKey: '',
