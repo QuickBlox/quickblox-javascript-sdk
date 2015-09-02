@@ -740,6 +740,30 @@ MucProxy.prototype = {
 
     if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
     connection.send(pres);
+  },
+
+  listOnlineUsers: function(roomJid, callback) {
+    var iq, self = this,
+        onlineUsers = [];
+
+    iq = $iq({
+      from: connection.jid,
+      id: connection.getUniqueId('muc_disco_items'),
+      to: roomJid,
+      type: "get"
+    }).c("query", {
+      xmlns: 'http://jabber.org/protocol/disco#items'
+    })
+
+    connection.sendIQ(iq, function(stanza) {
+      var items = stanza.getElementsByTagName('item');
+      var userId;
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
+        onlineUsers.push(userId);
+      }
+      callback(onlineUsers);
+    });
   }
 
 };
@@ -890,7 +914,15 @@ Helpers.prototype = {
 
   getBsonObjectId: function() {
     return Utils.getBsonObjectId();
-  }  
+  },
+
+  getUserIdFromRoomJid: function(jid) {
+    var arrayElements = jid.toString().split('/');
+    if(arrayElements.length == 0){
+      return null;
+    }
+    return arrayElements[arrayElements.length-1];
+  }
 
 };
 
