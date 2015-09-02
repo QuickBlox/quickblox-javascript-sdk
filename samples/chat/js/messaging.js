@@ -197,15 +197,6 @@ function clickSendMessage() {
     return;
   }
   sendMessage(currentText, null);
-
-  // var dialog_id = '55c8603d535c12c34f00276a';
-  // QB.chat.dialog.update(dialog_id, {name: 'HHHHH', photo: 1783858}, function(err, res) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     console.log(res);
-  //   }
-  // });
 }
 
 function clickSendAttachments(inputFile) {
