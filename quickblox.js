@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.12.0 - 2015-08-20 */
+/* QuickBlox JavaScript SDK - v1.12.0 - 2015-09-02 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -878,6 +878,30 @@ MucProxy.prototype = {
 
     if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
     connection.send(pres);
+  },
+
+  listOnlineUsers: function(jid, callback) {
+    var iq, self = this,
+        items, userId, onlineUsers = [];
+
+    iq = $iq({
+      from: connection.jid,
+      id: connection.getUniqueId('muc'),
+      to: jid,
+      type: "get"
+    }).c("query", {
+      xmlns: 'http://jabber.org/protocol/disco#items'
+    })
+
+    connection.sendIQ(iq, function(stanza) {
+      items = stanza.getElementsByTagName('item');
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
+        onlineUsers.push(userId);
+      }
+        console.log(onlineUsers);
+      callback(onlineUsers);
+    });
   }
 
 };
@@ -1028,7 +1052,11 @@ Helpers.prototype = {
 
   getBsonObjectId: function() {
     return Utils.getBsonObjectId();
-  }  
+  },
+
+  getUserIdFromRoomJid: function(jid) {
+    return jid.toString().split('/')[1];
+  }
 
 };
 
@@ -1124,17 +1152,10 @@ ContentProxy.prototype = {
       else {
         var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
         fileId = createResult.id;
-
-        // Object.keys(uri.queryKey).forEach(function(val) {
-        //   data.append(val, decodeURIComponent(uri.queryKey[val]));
-        // });
-        Object.keys(uri.queryKey).forEach(function (val) {
-          payload_value = uri.queryKey[val];
-          if (val == "Expires") {
-            payload_value = payload_value.replace(/\+/g, '%20');
-          }
-          data.append(val, decodeURIComponent(payload_value));
-        });     
+        
+        Object.keys(uri.queryKey).forEach(function(val) {
+          data.append(val, decodeURIComponent(uri.queryKey[val]));
+        });
         data.append('file', file, createResult.name);
         
         uploadParams.data = data;
