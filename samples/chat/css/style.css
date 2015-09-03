@@ -274,7 +274,7 @@ a.users_form.active, a.push_form.active {
   position: absolute;
   top: 1%;
   left: 42.5%;
-  display: block;
+  display: none;
 }
 
 #push_usersList {
@@ -310,4 +310,9 @@ a.pull_push.active  {
 .btn-block.for_width {
 	width: 49.5%;
 	display: inline;
+}
+
+.container.del-style {
+	width: 100%;
+	padding: 0;
 }

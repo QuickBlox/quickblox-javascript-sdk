@@ -2,8 +2,9 @@ var currentDialog;
 var dialogs = {};
 var users = {};
 var opponentId;
+var dialogId;
 var skipPage;
-		cancelSkip = false;
+var cancelSkip = false;
 
 
 // submit form after press "ENTER"
@@ -26,13 +27,13 @@ function retrieveChatDialogs() {
 
         resDialogs.items.forEach(function(item, i, arr) {
       		console.log(item);
-          var dialogId = item._id;
+          dialogId = item._id;
           dialogs[dialogId] = item;
 
           // join room
           if (item.type != 3) {
             QB.chat.muc.join(item.xmpp_room_jid, function() {
-               console.log("Joined dialog " + dialogId);
+               console.log("Joined dialog "+dialogId);
             });
             opponentId = null;
           } else {
@@ -87,7 +88,6 @@ function retrieveChatDialogs() {
 
 // Choose dialog
 function triggerDialog(element, dialogId){
-	setupMsgScrollHandler(dialogId);
   // deselect
   var kids = $('#dialogs-list').children();
   kids.removeClass('active').addClass('inactive');
@@ -101,45 +101,56 @@ function triggerDialog(element, dialogId){
   $('#messages-list').html('');
   // load chat history
   //
+  dialogIdScroll = dialogId;
+  cancelSkip = false;
   skipPage = 0;
   retrieveChatMessages(dialogId);
+  $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
 }
 
 //
-function setupMsgScrollHandler(dialogId){
+function setupMsgScrollHandler() {
   var msgWindow = $('.col-md-8 .list-group.pre-scrollable');
       msgList = $('#messages-list');
   // uploading dialog history scroll event
   msgList.scroll(function() {
     if (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
-    	skipPage = skipPage + 10;
-      retrieveChatMessages(dialogId);
+      if (cancelSkip != true) {
+        skipPage = skipPage + 10;
+      console.log('dialogId >>> '+dialogIdScroll);
+      retrieveChatMessages(dialogIdScroll);
+      }
     }
   });
 }
 
 function retrieveChatMessages(dialogId){
-	// setupMsgScrollHandler(dialogId);
   // Load messages history
   //
   $(".load-msg").show(0);
 
-  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 10, skip: skipPage,};
+  var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 10, skip: skipPage};
   QB.chat.message.list(params, function(err, messages) {
     if (messages) {
-    	console.log(messages);
+      console.log(messages);
+      console.log(messages.items.length);
       if(messages.items.length == 0) {
         $("#no-messages-label").removeClass('hide');
       } else {
         $("#no-messages-label").addClass('hide');
 
+        if (messages.items.length < 10) {
+          cancelSkip = true;
+        }
+        console.log(cancelSkip);
+
         messages.items.forEach(function(item, i, arr) {
-        	var messageId = item._id;
+          var messageId = item._id;
           var messageText = item.message;
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
           var messageAttachmentFileId = null;
-		      var messageSenderLogin = getUserById(messageSenderId);
+          var messageSenderLogin = getUserById(messageSenderId);
 
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
@@ -154,13 +165,9 @@ function retrieveChatMessages(dialogId){
       }
     }
 
-    if (skipPage == 0) {
-      $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
-    }
-
   });
   $(".load-msg").delay(100).fadeOut(500);
-	console.log(skipPage);
+  console.log(skipPage);
 }
 
 // on message listener
@@ -201,6 +208,10 @@ function clickSendMessage() {
     return;
   }
   sendMessage(currentText, null);
+
+  QB.chat.muc.listOnlineUsers(currentDialog.xmpp_room_jid, function(stanza) {
+    console.log('online users: '+stanza);
+  });
 }
 
 function clickSendAttachments(inputFile) {
@@ -299,7 +310,6 @@ function showMessage(userId, msg, attachmentFileId) {
   // scroll to bottom
   var mydiv = $('#messages-list');
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
-  $("#no-messages-label").addClass('hide');
 }
 
 //

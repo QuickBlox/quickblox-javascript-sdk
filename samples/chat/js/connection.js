@@ -48,8 +48,20 @@ function connectToChat(user) {
           // setup 'isTyping' events handler and listener
           //
           setupIsTypingHandler();
+
+          // setup scroll events handler
+          //
+          setupMsgScrollHandler();
         }
       });
     }
   });
 }
+
+// niceScroll() - ON
+$(document).ready(
+    function() {
+        $("html").niceScroll({cursorcolor:"#02B923", cursorwidth:"7", zindex:"99999"});
+        $(".nice-scroll").niceScroll({cursorcolor:"#02B923", cursorwidth:"7", zindex:"99999"});
+    }
+);

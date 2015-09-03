@@ -11,7 +11,7 @@ var config = {
     active: 2
   },
   ssl: true,
-  debug: true
+  debug: false
 };
 
 var QBUser1 = {
