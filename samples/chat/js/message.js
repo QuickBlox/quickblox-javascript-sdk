@@ -12,8 +12,8 @@ function onMessage(userId, msg) {
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1) {
-    console.log("1231231243124235346234623463246 > > > "+msg.delay);
-    if (msg.delay != null) {
+    console.log(msg.delay);
+    if (!msg.delay) {
       getAndShowNewDialog(msg.extension._id);
     }
   // Here we process regular messages
