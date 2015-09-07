@@ -1,12 +1,12 @@
-var uploadPages     = 465;
+var uploadPages     = 466;
     usersCount      = 0;
     users_ids       = [];
     users_names     = [];
     finished        = false;
-    pushUploadPages = 465;
-    pushUsersCount  = 0;
+    pushUploadPages = 0;
+    pushUsersCount  = 466;
     push_occupants  = [];
-    selectedMsg     = undefined;
+  //  selectedMsg     = undefined;
 
 $('#ready_to_delete').hide();
 //
@@ -175,7 +175,7 @@ function notifyOccupants(dialogOccupants, newDialogId) {
         type: 'chat',
         extension: {
           notification_type: 1,
-          _id: newDialogId,
+          _id: newDialogId
         }, 
       };
 
@@ -207,17 +207,19 @@ function showUpdateDialogPopup() {
   forPushOccupantsScrollHandler();
 
   if (currentDialog.type == 3) {
-    $('.dialog-type-info').text('').append('Dialog type: privat chat');
-    $('#rename-dialog').hide();
+    $('.dialog-type-info').text('').append('<b>Dialog type: </b>privat chat');
+    $('.new-info').hide();
     $('.push').hide();
     $('#push_usersList').hide();
     $('#leave-dialog').hide();
+    $('#update-dialog').hide();
   } else {
-    $('.dialog-type-info').text('').append('Dialog type: group chat');
-    $('#rename-dialog').show();
+    $('.dialog-type-info').text('').append('<b>Dialog type: </b>group chat');
+    $('.new-info').show();
     $('.push').show();
     $('#push_usersList').show();
     $('#leave-dialog').show();
+    $('#update-dialog').show();
   }
 }
 
@@ -259,7 +261,7 @@ function retrievePushUsers() {
   }
 } 
 // for dialog update
-function onDialogUdate(iLeave) {
+function onDialogUdate() {
   $('.users_form.active').each(function(index) {
     push_occupants[index] = $(this).attr('id');
   });
@@ -267,11 +269,7 @@ function onDialogUdate(iLeave) {
   var dialogPhoto = $('#set-new-photo').val().trim();
   var dialogName  = $('#rename-dialog').val().trim();
 
-  if (iLeave == true) {
-    $('#'+currentDialog._id).remove();
-    var toUpdate = {pull_all: {occupants_ids: [currentUser.id]}};
-    console.log(toUpdate);
-  } else if (currentDialog.type == 3) {
+  if (currentDialog.type == 3) {
     var toUpdate = {photo: dialogPhoto};
   } else {
     var toUpdate = {
@@ -279,7 +277,6 @@ function onDialogUdate(iLeave) {
       name:     dialogName,
       push_all: {occupants_ids: push_occupants}
     };
-    console.log(toUpdate);
   }
 
   QB.chat.dialog.update(currentDialog._id, toUpdate, function(err, res) {
@@ -290,10 +287,8 @@ function onDialogUdate(iLeave) {
 
       $('#'+res._id).remove();
 
-      if (!iLeave) {
-        pastDialogUI(res, true);
-        $('#'+res._id).removeClass('inactive').addClass('active');
-      }
+      pastDialogUI(res, true);
+      $('#'+res._id).removeClass('inactive').addClass('active');
     }
   });
 
@@ -306,47 +301,24 @@ function onDialogUdate(iLeave) {
 
 // delete currend dialog
 function onDeleteDialog() {
-  QB.chat.dialog.delete(currentDialog._id, function(err, res) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(res);
-      $('#'+currentDialog._id).remove();
-    }
-  });
+  if (confirm("Dialog will be removed")) {
+    QB.chat.dialog.delete(currentDialog._id, function(err, res) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(res);
+        $('#'+currentDialog._id).remove();
+      }
+    });
 
-  $("#update_dialog").modal("hide");
-  $('#update_dialog .progress').show();
+    $("#update_dialog").modal("hide");
+    $('#update_dialog .progress').show();
+  } else {
+    alert("Canceled");
+  }
 }
 
-//< < < < < < < < < < < < < < < < < < < < < < < < < < < < <  D_E_L_E_T_E    M_E_S_S_A_G_E  > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >
-
-// // select message from messages list
-// function clickToAddMsg(messageId) {
-//   if ($('#'+messageId).hasClass("active")) {
-//     $('#'+messageId).removeClass("active");
-//   } else {
-//     $('#'+messageId).addClass("active");
-//   }
-
-//   if ('.list-group-item.active') {
-//     selectedMsg = messageId;
-//     $('#ready_to_delete').show();
-//   }
-// }
-
-// // delete selected message
-// function deleteFocusMessage() {
-//   QB.chat.message.delete(selectedMsg, function(err, res) {
-//     if (err) {
-//       console.log(err);
-//     } else {
-//       $('#'+selectedMsg).remove();
-//       $('#ready_to_delete').hide();
-//     }
-//   }); 
-// }
-
+// show information about occupants count in current dialog
 function AllDialogOccupants(users) {
   var logins = [];
 
@@ -355,5 +327,5 @@ function AllDialogOccupants(users) {
     logins[index] = login;
   });     
     $('#all_occupants').text('');
-    $('#all_occupants').append('Occupants: '+logins.join(', '));
+    $('#all_occupants').append('<b>Occupants: </b>'+logins.join(', '));
 }

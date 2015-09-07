@@ -36,14 +36,13 @@ function connectToChat(user) {
         if (err) {
           console.log(err);
         } else {
+          // setup message listeners
+          //
+          setupOnMessageListener();
           
           // load chat dialogs
           //
           retrieveChatDialogs();
-
-          // setup message listeners
-          //
-          setupOnMessageListener();
 
           // setup 'isTyping' events handler and listener
           //

@@ -1,5 +1,3 @@
-QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, QBConfig);
-
 $(document).ready(function(){
 
 QB.createSession(QBUser, function(err, result) {

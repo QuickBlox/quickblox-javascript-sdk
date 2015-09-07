@@ -6,6 +6,42 @@ var dialogId;
 var skipPage;
 var cancelSkip = false;
 
+// on message listener
+function onMessage(userId, msg) {
+
+  // This is a notification about dialog creation
+  //
+  if (msg.extension.notification_type == 1) {
+    console.log("1231231243124235346234623463246 > > > "+msg.delay);
+    if (msg.delay != null) {
+      getAndShowNewDialog(msg.extension._id);
+    }
+  // Here we process regular messages
+  //
+  } else {
+    // сheck if it's an attachment
+    //
+    var messageAttachmentFileId = null;
+    if (msg.extension.hasOwnProperty("attachments")) {
+      if(msg.extension.attachments.length > 0) {
+        messageAttachmentFileId = msg.extension.attachments[0].id;
+
+        skipPage = skipPage + 1;
+        console.log(skipPage);
+      }
+    }
+
+    // check if it's a mesasges for current dialog
+    //
+    if (isMessageForCurrentDialog(userId, msg.dialog_id)){
+      showMessage(userId, msg, messageAttachmentFileId);
+      skipPage = skipPage + 1;
+      console.log(skipPage);
+    }
+
+    updateDialogsList(msg.dialog_id, msg.body);
+  }
+}
 
 // submit form after press "ENTER"
 function submit_handler(form) {
@@ -13,77 +49,77 @@ function submit_handler(form) {
 }
 
 function retrieveChatDialogs() {
+  // get the chat dialogs list
+  //
+  QB.chat.dialog.list(null, function(err, resDialogs) {
+    if (err) {
+      console.log(err);
+    } else {
 
-    // get the chat dialogs list
-    //
-    QB.chat.dialog.list(null, function(err, resDialogs) {
-      if (err) {
-        console.log(err);
-      } else {
+      // repackage dialogs data and collect all occupants ids
+      //
+      var occupantsIds = [];
 
-        // repackage dialogs data and collect all occupants ids
-        //
-        var occupantsIds = [];
+      resDialogs.items.forEach(function(item, i, arr) {
+        console.log(item);
+        dialogId = item._id;
+        dialogs[dialogId] = item;
 
-        resDialogs.items.forEach(function(item, i, arr) {
-      		console.log(item);
-          dialogId = item._id;
-          dialogs[dialogId] = item;
-
-          // join room
-          if (item.type != 3) {
-            QB.chat.muc.join(item.xmpp_room_jid, function() {
-               console.log("Joined dialog "+dialogId);
-            });
-            opponentId = null;
-          } else {
-            opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
-          }
-
-          item.occupants_ids.map(function(userId) {
-            occupantsIds.push(userId);
+        // join room
+        if (item.type != 3) {
+          QB.chat.muc.join(item.xmpp_room_jid, function() {
+             console.log("Joined dialog "+dialogId);
           });
+          opponentId = null;
+        } else {
+          opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
+        }
+
+        item.occupants_ids.map(function(userId) {
+          occupantsIds.push(userId);
         });
+      });
 
-        // load dialogs' users
-        //
-        var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
-        QB.users.listUsers(params, function(err, result){
-          if (result) {
+      // load dialogs' users
+      //
+      var params = {filter: {field: 'id', param: 'in', value: jQuery.unique(occupantsIds)}};
+      QB.users.listUsers(params, function(err, result){
+        if (result) {
 
-            // repackage users data
-            //
-            result.items.forEach(function(item, i, arr) {
-              users[item.user.id] = item.user;
-            });
-
-            // show dialogs
-            //
-            resDialogs.items.forEach(function(item, i, arr) {
-							pastDialogUI(item, false);
-            });
-
-            //  and trigger the 1st dialog
-            //
-            triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
-          }
-
-          // hide login form
-          $("#loginForm").modal("hide");
-
-          // setup attachments button handler
+          // repackage users data
           //
-          $("#load-img").change(function(){
-            var inputFile = $("input[type=file]")[0].files[0];
-            if (inputFile) {
-              $("#progress").show(0);
-            }
-
-            clickSendAttachments(inputFile);
+          result.items.forEach(function(item, i, arr) {
+            console.log(item.user.id); 
+            users[item.user.id] = item.user;
           });
+
+          // show dialogs
+          //
+          resDialogs.items.forEach(function(item, i, arr) {
+            pastDialogUI(item, false);
+          });
+
+          //  and trigger the 1st dialog
+          //
+          triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
+        }
+
+        // hide login form
+        $("#loginForm").modal("hide");
+
+        // setup attachments button handler
+        //
+        $("#load-img").change(function(){
+          var inputFile = $("input[type=file]")[0].files[0];
+          if (inputFile) {
+            $("#progress").show(0);
+          }
+
+          clickSendAttachments(inputFile);
         });
-      }
-    });
+      });
+    }
+  });
 }
 
 // Choose dialog
@@ -170,35 +206,6 @@ function retrieveChatMessages(dialogId){
   console.log(skipPage);
 }
 
-// on message listener
-function onMessage(userId, msg) {
-
-  // This is a notification about dialog creation
-  //
-  if (msg.extension.notification_type == 1) {
-    getAndShowNewDialog(msg.extension._id);
-
-  // Here we process regular messages
-  //
-  } else {
-    // сheck if it's an attachment
-    //
-    var messageAttachmentFileId = null;
-    if (msg.extension.hasOwnProperty("attachments")) {
-      if(msg.extension.attachments.length > 0) {
-        messageAttachmentFileId = msg.extension.attachments[0].id;
-      }
-    }
-
-    // check if it's a mesasges for current dialog
-    //
-    if (isMessageForCurrentDialog(userId, msg.dialog_id)){
-      showMessage(userId, msg, messageAttachmentFileId);
-    }
-
-    updateDialogsList(msg.dialog_id, msg.body);
-  }
-}
 
 // sending messages after confirmation
 function clickSendMessage() {
@@ -249,6 +256,10 @@ function sendMessage(text, attachmentFileId) {
     QB.chat.send(opponentId, msg);
 
     $('.list-group-item.active .list-group-item-text').text(msg.body);
+
+    skipPage = skipPage + 1;
+    console.log(skipPage);
+    
       if(attachmentFileId == null){
         showMessage(currentUser.id, msg);
       } else {
@@ -261,6 +272,7 @@ function sendMessage(text, attachmentFileId) {
   // claer timer and send 'stop typing' status
   clearTimeout(isTypingTimerId);
   isTypingTimeoutCallback();
+
 }
 
 // add photo to dialogs
