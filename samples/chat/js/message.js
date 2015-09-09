@@ -1,8 +1,5 @@
 var currentDialog;
-var dialogs = {};
-var users = {};
 var opponentId;
-var dialogId;
 var skipPage;
 var cancelSkip = false;
 
@@ -12,7 +9,6 @@ function onMessage(userId, msg) {
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1) {
-    console.log(msg.delay);
     if (!msg.delay) {
       getAndShowNewDialog(msg.extension._id);
     }
@@ -27,7 +23,6 @@ function onMessage(userId, msg) {
         messageAttachmentFileId = msg.extension.attachments[0].id;
 
         skipPage = skipPage + 1;
-        console.log(skipPage);
       }
     }
 
@@ -36,7 +31,6 @@ function onMessage(userId, msg) {
     if (isMessageForCurrentDialog(userId, msg.dialog_id)){
       showMessage(userId, msg, messageAttachmentFileId);
       skipPage = skipPage + 1;
-      console.log(skipPage);
     }
 
     updateDialogsList(msg.dialog_id, msg.body);
@@ -48,111 +42,17 @@ function submit_handler(form) {
   return false;
 }
 
-function retrieveChatDialogs() {
-  // get the chat dialogs list
-  //
-  QB.chat.dialog.list(null, function(err, resDialogs) {
-    if (err) {
-      console.log(err);
-    } else {
-
-      // repackage dialogs data and collect all occupants ids
-      //
-      var occupantsIds = [];
-
-      resDialogs.items.forEach(function(item, i, arr) {
-        dialogId = item._id;
-        dialogs[dialogId] = item;
-
-        // join room
-        if (item.type != 3) {
-          QB.chat.muc.join(item.xmpp_room_jid, function() {
-             console.log("Joined dialog "+dialogId);
-          });
-          opponentId = null;
-        } else {
-          opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
-        }
-
-        item.occupants_ids.map(function(userId) {
-          occupantsIds.push(userId);
-        });
-      });
-
-      // load dialogs' users
-      //
-      var params = {filter: {field: 'id', param: 'in', value: jQuery.unique(occupantsIds)}};
-      QB.users.listUsers(params, function(err, result){
-        if (result) {
-
-          // repackage users data
-          //
-          result.items.forEach(function(item, i, arr) {
-            users[item.user.id] = item.user;
-          });
-
-          // show dialogs
-          //
-          resDialogs.items.forEach(function(item, i, arr) {
-            pastDialogUI(item, false);
-          });
-
-          //  and trigger the 1st dialog
-          //
-          triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
-        }
-
-        // hide login form
-        $("#loginForm").modal("hide");
-
-        // setup attachments button handler
-        //
-        $("#load-img").change(function(){
-          var inputFile = $("input[type=file]")[0].files[0];
-          if (inputFile) {
-            $("#progress").show(0);
-          }
-
-          clickSendAttachments(inputFile);
-        });
-      });
-    }
-  });
-}
-
-// Choose dialog
-function triggerDialog(element, dialogId){
-  // deselect
-  var kids = $('#dialogs-list').children();
-  kids.removeClass('active').addClass('inactive');
-
-  // select
-  $('#'+dialogId).removeClass('inactive').addClass('active');
-
-  $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
-  currentDialog = dialogs[dialogId];
-
-  $('#messages-list').html('');
-  // load chat history
-  //
-  dialogIdScroll = dialogId;
-  cancelSkip = false;
-  skipPage = 0;
-  retrieveChatMessages(dialogId);
-  $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
-}
-
 //
 function setupMsgScrollHandler() {
   var msgWindow = $('.col-md-8 .list-group.pre-scrollable');
-      msgList = $('#messages-list');
-  // uploading dialog history scroll event
+  var msgList = $('#messages-list');
+
   msgList.scroll(function() {
     if (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
       if (cancelSkip != true) {
         skipPage = skipPage + 10;
-      console.log('dialogId >>> '+dialogIdScroll);
-      retrieveChatMessages(dialogIdScroll);
+
+        retrieveChatMessages(dialogIdScroll);
       }
     }
   });
@@ -166,8 +66,7 @@ function retrieveChatMessages(dialogId){
   var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 10, skip: skipPage};
   QB.chat.message.list(params, function(err, messages) {
     if (messages) {
-      console.log(messages);
-      console.log(messages.items.length);
+
       if(messages.items.length == 0) {
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -176,7 +75,6 @@ function retrieveChatMessages(dialogId){
         if (messages.items.length < 10) {
           cancelSkip = true;
         }
-        console.log(cancelSkip);
 
         messages.items.forEach(function(item, i, arr) {
           var messageId = item._id;
@@ -184,7 +82,7 @@ function retrieveChatMessages(dialogId){
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
           var messageAttachmentFileId = null;
-          var messageSenderLogin = getUserById(messageSenderId);
+          var messageSenderLogin = getUserLoginById(messageSenderId);
 
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
@@ -207,20 +105,19 @@ function retrieveChatMessages(dialogId){
 // sending messages after confirmation
 function clickSendMessage() {
   var currentText = $('#message_text').val().trim();
-  $('#message_text').val('').focus();
   if (currentText.length == 0){
     return;
   }
-  sendMessage(currentText, null);
 
-  QB.chat.muc.listOnlineUsers(currentDialog.xmpp_room_jid, function(stanza) {
-    console.log('online users: '+stanza);
-  });
+  $('#message_text').val('').focus();
+
+  sendMessage(currentText, null);
 }
 
 function clickSendAttachments(inputFile) {
   // upload image
-  QB.content.createAndUpload({name: inputFile.name, file: inputFile, type: inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
+  QB.content.createAndUpload({name: inputFile.name, file: inputFile, type:
+        inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
     if (err) {
       console.log(err);
     } else {
@@ -255,13 +152,12 @@ function sendMessage(text, attachmentFileId) {
     $('.list-group-item.active .list-group-item-text').text(msg.body);
 
     skipPage = skipPage + 1;
-    console.log(skipPage);
 
-      if(attachmentFileId == null){
-        showMessage(currentUser.id, msg);
-      } else {
-        showMessage(currentUser.id, msg, attachmentFileId);
-      }
+    if(attachmentFileId == null){
+      showMessage(currentUser.id, msg);
+    } else {
+      showMessage(currentUser.id, msg, attachmentFileId);
+    }
   } else {
     QB.chat.send(currentDialog.xmpp_room_jid, msg);
   }
@@ -272,46 +168,10 @@ function sendMessage(text, attachmentFileId) {
 
 }
 
-// add photo to dialogs
-function getDialogIcon (dialogType, dialogPhoto) {
-  var withPhoto    = '<img src="http://api.quickblox.com/blobs/'+dialogPhoto+'/download.xml?token='+token+'" width="30" height="30" class="round">';
-  var withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
-  var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
-  var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
-
-  var dialogIcon;
-  switch (dialogType) {
-    case 1:
-      dialogIcon = dialogPhoto ? withPhoto : withoutPhoto;
-      break;
-    case 2:
-      dialogIcon = dialogPhoto ? withPhoto : withoutPhoto;
-      break;
-    case 3:
-    	dialogIcon = dialogPhoto ? withPhoto : privatPhoto;
-      break;
-    default:
-      dialogIcon = defaultPhoto;
-      break;
-  }
-  return dialogIcon;
-}
-
-// show unread message count and new last message
-function updateDialogsList(DialogId, text){
-
-  // update unread message count
-  badgeCount = $('#'+DialogId+' .badge').html();
-  $('#'+DialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
-
-  // update last message
-  $('#'+DialogId+' .list-group-item-text').text(text);
-}
-
 // show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
-  var userLogin = getUserById(userId);
+  var userLogin = getUserLoginById(userId);
   var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId, msg.id);
 
   $('#messages-list').append(messageHtml);
@@ -385,7 +245,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 	  if (!isTyping) {
 	    $('#'+userId+'_typing').remove();
 	  } else if (userId != currentUser.id) {
-	  	var userLogin = getUserById(userId);
+	  	var userLogin = getUserLoginById(userId);
 	    var typingUserHtml = buildTypingUserHtml(userId, userLogin);
 	    $('#messages-list').append(typingUserHtml);
 	  }
@@ -400,38 +260,6 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 function isMessageForCurrentDialog(userId, dialogId) {
 	if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && opponentId == userId)) {
 		return true;
-	} else {
-		return false;
 	}
-}
-
-function getUserById(byId) {
-	var userLogin;
-	if (users[byId]) {
-		userLogin = users[byId].login;
-		return userLogin;
-	}
-}
-
-function pastDialogUI(itemRes, updateHtml) {
-  var dialogId = itemRes._id;
-  var dialogName = itemRes.name;
-  var dialogType = itemRes.type;
-  var dialogLastMessage = itemRes.last_message;
-  var dialogUnreadMessagesCount = itemRes.unread_messages_count;
-  var dialogIcon = getDialogIcon(itemRes.type, itemRes.photo);
-
-  if (dialogType == 3) {
-    opponentId    = QB.chat.helpers.getRecipientId(itemRes.occupants_ids, currentUser.id);
-    opponentLogin = getUserById(opponentId);
-    dialogName    = 'Dialog with ' + opponentLogin;
-  }
-  if (updateHtml == true) {
-  	var updatedDialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-  	$('#dialogs-list').prepend(updatedDialogHtml);
-  	$('.list-group-item.active .badge').text(0).hide(0);
-	} else {
-    var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-    $('#dialogs-list').append(dialogHtml);
-	}
+	return false;
 }

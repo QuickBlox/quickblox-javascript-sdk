@@ -1,6 +1,148 @@
 
-$('#ready_to_delete').hide();
-//
+var dialogs = {};
+
+function retrieveChatDialogs() {
+  // get the chat dialogs list
+  //
+  QB.chat.dialog.list(null, function(err, resDialogs) {
+    if (err) {
+      console.log(err);
+    } else {
+
+      // repackage dialogs data and collect all occupants ids
+      //
+      var occupantsIds = [];
+
+      resDialogs.items.forEach(function(item, i, arr) {
+        var dialogId = item._id;
+        dialogs[dialogId] = item;
+
+        // join room
+        if (item.type != 3) {
+          QB.chat.muc.join(item.xmpp_room_jid, function() {
+             console.log("Joined dialog "+dialogId);
+          });
+        }
+
+        item.occupants_ids.map(function(userId) {
+          occupantsIds.push(userId);
+        });
+      });
+
+      // load dialogs' users
+      //
+      updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
+        // show dialogs
+        //
+        resDialogs.items.forEach(function(item, i, arr) {
+          showOrUpdateDialogInUI(item, false);
+        });
+
+        //  and trigger the 1st dialog
+        //
+        triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
+
+        // hide login form
+        $("#loginForm").modal("hide");
+
+        // setup attachments button handler
+        //
+        $("#load-img").change(function(){
+          var inputFile = $("input[type=file]")[0].files[0];
+          if (inputFile) {
+            $("#progress").show(0);
+          }
+
+          clickSendAttachments(inputFile);
+        });
+      });
+    }
+  });
+}
+
+function showOrUpdateDialogInUI(itemRes, updateHtml) {
+  var dialogId = itemRes._id;
+  var dialogName = itemRes.name;
+  var dialogType = itemRes.type;
+  var dialogLastMessage = itemRes.last_message;
+  var dialogUnreadMessagesCount = itemRes.unread_messages_count;
+  var dialogIcon = getDialogIcon(itemRes.type);
+
+  if (dialogType == 3) {
+    opponentId    = QB.chat.helpers.getRecipientId(itemRes.occupants_ids, currentUser.id);
+    opponentLogin = getUserById(opponentId);
+    dialogName    = 'Dialog with ' + opponentLogin;
+  }
+
+  if (updateHtml == true) {
+  	var updatedDialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+  	$('#dialogs-list').prepend(updatedDialogHtml);
+  	$('.list-group-item.active .badge').text(0).hide(0);
+	} else {
+    var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
+    $('#dialogs-list').append(dialogHtml);
+	}
+}
+
+// add photo to dialogs
+function getDialogIcon (dialogType) {
+  var groupPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
+  var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
+  var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
+
+  var dialogIcon;
+  switch (dialogType) {
+    case 1:
+      dialogIcon = groupPhoto;
+      break;
+    case 2:
+      dialogIcon = groupPhoto;
+      break;
+    case 3:
+    	dialogIcon = dialogPhoto ? withPhoto : privatPhoto;
+      break;
+    default:
+      dialogIcon = defaultPhoto;
+      break;
+  }
+  return dialogIcon;
+}
+
+// show unread message count and new last message
+function updateDialogsList(dialogId, text){
+
+  // update unread message count
+  var badgeCount = $('#'+dialogId+' .badge').html();
+  $('#'+dialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
+
+  // update last message
+  $('#'+dialogId+' .list-group-item-text').text(text);
+}
+
+// Choose dialog
+function triggerDialog(element, dialogId){
+  // deselect
+  var kids = $('#dialogs-list').children();
+  kids.removeClass('active').addClass('inactive');
+
+  // select
+  $('#'+dialogId).removeClass('inactive').addClass('active');
+
+  $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
+  currentDialog = dialogs[dialogId];
+
+  $('#messages-list').html('');
+  // load chat history
+  //
+  dialogIdScroll = dialogId;
+  cancelSkip = false;
+  skipPage = 0;
+
+  retrieveChatMessages(dialogId);
+
+  $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
+}
+
 function setupUsersScrollHandler(){
   // uploading users scroll event
   $('.list-group.pre-scrollable.for-scroll').scroll(function() {
@@ -103,7 +245,7 @@ function joinToNewDialogAndShow(itemDialog) {
   var dialogName = itemDialog.name;
   var dialogLastMessage = itemDialog.last_message;
   var dialogUnreadMessagesCount = itemDialog.unread_messages_count;
-  var dialogIcon = getDialogIcon(itemDialog.type, itemDialog.photo);
+  var dialogIcon = getDialogIcon(itemDialog.type);
 
   // save dialog to local storage
   dialogs[dialogId] = itemDialog;
@@ -247,7 +389,7 @@ function onDialogUpdate() {
 
       $('#'+res._id).remove();
 
-      pastDialogUI(res, true);
+      showOrUpdateDialogInUI(res, true);
       $('#'+res._id).removeClass('inactive').addClass('active');
     }
   });

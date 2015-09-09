@@ -1,4 +1,4 @@
-"use strict";
+var users = {};
 
 var usersForDialogCreation = {currentPage: 0,
                               retrievedCount: 0,
@@ -7,8 +7,6 @@ var usersForDialogCreation = {currentPage: 0,
 var usersForDialogUpdate = {currentPage: 0,
                             retrievedCount: 0,
                             totalEntries: null}
-
-var dialogsUsers = {};
 
 function retrieveUsersForDialogCreation(callback) {
   retrieveUsers(usersForDialogCreation, callback);
@@ -56,9 +54,17 @@ function updateDialogsUsersStorage(usersIds, callback){
       result.items.forEach(function(item, i, arr) {
         newUsers[item.user.id] = item.user;
       });
-      dialogsUsers = $.extend(dialogsUsers, newUsers);
+      users = $.extend(users, newUsers);
     }
 
     callback();
   });
+}
+
+function getUserById(byId) {
+	var userLogin;
+	if (users[byId]) {
+		userLogin = users[byId].login;
+		return userLogin;
+	}
 }

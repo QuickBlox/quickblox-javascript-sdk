@@ -1,3 +1,5 @@
+"use strict";
+
 var currentUser;
 
 $(document).ready(function() {
