@@ -52,7 +52,7 @@ function createNewDialog() {
   var usersNames = [];
 
   $('.users_form.active').each(function(index) {
-    users_ids[index] = $(this).attr('id');
+    usersIds[index] = $(this).attr('id');
     usersNames[index] = $(this).text();
   });
 
@@ -84,6 +84,8 @@ function createNewDialog() {
     if (err) {
       console.log(err);
     } else {
+      console.log("Dialog created with users: " + dialogOccupants);
+
       joinToNewDialogAndShow(createdDialog);
 
       notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
@@ -241,6 +243,7 @@ function onDialogUpdate() {
     if (err) {
       console.log(err);
     } else {
+      console.log("Dialog updated");
 
       $('#'+res._id).remove();
 
@@ -262,6 +265,7 @@ function onDialogDelete() {
       if (err) {
         console.log(err);
       } else {
+        console.log("Dialog removed");
         $('#'+currentDialog._id).remove();
       }
     });

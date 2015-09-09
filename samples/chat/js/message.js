@@ -61,7 +61,6 @@ function retrieveChatDialogs() {
       var occupantsIds = [];
 
       resDialogs.items.forEach(function(item, i, arr) {
-        console.log(item);
         dialogId = item._id;
         dialogs[dialogId] = item;
 
@@ -89,7 +88,6 @@ function retrieveChatDialogs() {
           // repackage users data
           //
           result.items.forEach(function(item, i, arr) {
-            console.log(item.user.id);
             users[item.user.id] = item.user;
           });
 
@@ -203,7 +201,6 @@ function retrieveChatMessages(dialogId){
 
   });
   $(".load-msg").delay(100).fadeOut(500);
-  console.log(skipPage);
 }
 
 

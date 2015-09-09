@@ -23,7 +23,7 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Chat</a></li>
             <li><a href="#" onclick="showNewDialogPopup()">Create dialog</a></li>
-             <li><a href="#" onclick="showDialogInfo()">Dialog info</a></li>
+             <li><a href="#" onclick="showDialogInfoPopup()">Dialog info</a></li>
               <!-- <li><a href="#" onclick="deleteFocusMessage()" id="ready_to_delete">Delete the selected message</a></li> -->
           </ul>
         </div><!--/.nav-collapse -->
@@ -131,9 +131,9 @@
             <h5 class="col-md-12 col-sm-12 col-xs-12 dialog-type-info"></h5>
             <h5 class="col-md-12 col-sm-12 col-xs-12" id="all_occupants"></h5>
             <button id="update_dialog_button" type="button" value="Confirm" id="" class="btn btn-success btn-ms btn-block"
-              onclick="onDialogUdate()">Update</button>
+              onclick="onDialogUpdate()">Update</button>
             <button id="delete_dialog_button" type="button" value="Confirm" id="for_width" class="btn btn-danger btn-ms btn-block"
-              onclick="onDeleteDialog()">Delete dialog</button>
+              onclick="onDialogDelete()">Delete dialog</button>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@
   <script src="js/connection.js"></script>
   <script src="js/message.js"></script>
   <script src="js/ui_helpers.js"></script>
-  <script src="js/dialog.js"></script>
+  <script src="js/dialogs.js"></script>
   <script src="js/users.js"></script>
 
 </body>
