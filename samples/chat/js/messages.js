@@ -52,7 +52,7 @@ function setupMsgScrollHandler() {
       if (cancelSkip != true) {
         skipPage = skipPage + 10;
 
-        retrieveChatMessages(dialogIdScroll);
+        retrieveChatMessages(currentDialog.id);
       }
     }
   });

@@ -70,7 +70,7 @@ function showOrUpdateDialogInUI(itemRes, updateHtml) {
 
   if (dialogType == 3) {
     opponentId    = QB.chat.helpers.getRecipientId(itemRes.occupants_ids, currentUser.id);
-    opponentLogin = getUserById(opponentId);
+    opponentLogin = getUserLoginById(opponentId);
     dialogName    = 'Dialog with ' + opponentLogin;
   }
 
@@ -99,7 +99,7 @@ function getDialogIcon (dialogType) {
       dialogIcon = groupPhoto;
       break;
     case 3:
-    	dialogIcon = dialogPhoto ? withPhoto : privatPhoto;
+    	dialogIcon = privatPhoto;
       break;
     default:
       dialogIcon = defaultPhoto;
@@ -134,7 +134,6 @@ function triggerDialog(element, dialogId){
   $('#messages-list').html('');
   // load chat history
   //
-  dialogIdScroll = dialogId;
   cancelSkip = false;
   skipPage = 0;
 

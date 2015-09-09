@@ -61,7 +61,7 @@ function updateDialogsUsersStorage(usersIds, callback){
   });
 }
 
-function getUserById(byId) {
+function getUserLoginById(byId) {
 	var userLogin;
 	if (users[byId]) {
 		userLogin = users[byId].login;
