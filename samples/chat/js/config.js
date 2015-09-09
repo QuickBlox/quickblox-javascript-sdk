@@ -6,12 +6,11 @@ var QBApp = {
 
 var config = {
   chatProtocol: {
-    websocket: 'ws://chat.quickblox.com:5290',
-    // websocket: 'wss://chat.quickblox.com:5291',
+    websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
   ssl: true,
-  debug: true
+  debug: false
 };
 
 var QBUser1 = {

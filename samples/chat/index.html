@@ -23,7 +23,7 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Chat</a></li>
             <li><a href="#" onclick="showNewDialogPopup()">Create dialog</a></li>
-             <li><a href="#" onclick="showUpdateDialogPopup()">Dialog info</a></li>
+             <li><a href="#" onclick="showDialogInfo()">Dialog info</a></li>
               <!-- <li><a href="#" onclick="deleteFocusMessage()" id="ready_to_delete">Delete the selected message</a></li> -->
           </ul>
         </div><!--/.nav-collapse -->
@@ -31,7 +31,7 @@
     </div>
 
   <!-- Main block -->
-  <div class="container"> 
+  <div class="container">
     <div id="main_block">
 
         <div class="panel panel-primary">
@@ -121,22 +121,18 @@
           </div>
           <div class="modal-body">
             <div class="col-md-12 col-sm-12 col-xs-12 new-info">
-              <h5 class="col-md-12 col-sm-12 col-xs-12">Dialog's photo:</h5>
-              <input type="text" class="form-control" id="set-new-photo">
-            </div>
-            <div class="col-md-12 col-sm-12 col-xs-12 new-info">
-              <h5 class="col-md-12 col-sm-12 col-xs-12">Dialog's name:</h5>
+              <h5 class="col-md-12 col-sm-12 col-xs-12">Name:</h5>
               <input type="text" class="form-control" id="rename-dialog">
             </div>
-            <h5 class="col-md-12 col-sm-12 col-xs-12 push">Add more user:</h5>
+            <h5 class="col-md-12 col-sm-12 col-xs-12 push">Add more user (select to add):</h5>
             <div class="list-group pre-scrollable occupants" id="push_usersList">
               <div id="add_new_occupant" class="clearfix"></div>
             </div>
             <h5 class="col-md-12 col-sm-12 col-xs-12 dialog-type-info"></h5>
             <h5 class="col-md-12 col-sm-12 col-xs-12" id="all_occupants"></h5>
-            <button id="update-dialog" type="button" value="Confirm" id="" class="btn btn-success btn-ms btn-block"
+            <button id="update_dialog_button" type="button" value="Confirm" id="" class="btn btn-success btn-ms btn-block"
               onclick="onDialogUdate()">Update</button>
-            <button id="delete-dialog" type="button" value="Confirm" id="for_width" class="btn btn-danger btn-ms btn-block"
+            <button id="delete_dialog_button" type="button" value="Confirm" id="for_width" class="btn btn-danger btn-ms btn-block"
               onclick="onDeleteDialog()">Delete dialog</button>
           </div>
         </div>
@@ -146,12 +142,9 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.6.0/jquery.nicescroll.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.9.3/quickblox.min.js" type="text/javascript"></script> -->
 
   <script src="../../quickblox.js"></script>
   <script src="js/config.js"></script>
@@ -159,6 +152,7 @@
   <script src="js/message.js"></script>
   <script src="js/ui_helpers.js"></script>
   <script src="js/dialog.js"></script>
+  <script src="js/users.js"></script>
 
 </body>
 </html>

@@ -89,7 +89,7 @@ function retrieveChatDialogs() {
           // repackage users data
           //
           result.items.forEach(function(item, i, arr) {
-            console.log(item.user.id); 
+            console.log(item.user.id);
             users[item.user.id] = item.user;
           });
 
@@ -234,7 +234,7 @@ function clickSendAttachments(inputFile) {
 
       $("input[type=file]").val('');
     }
-  }); 
+  });
 }
 
 // send text or attachment
@@ -245,7 +245,7 @@ function sendMessage(text, attachmentFileId) {
     extension: {
       save_to_history: 1,
     },
-    senderId: currentUser.id, 
+    senderId: currentUser.id,
   };
   if(attachmentFileId != null){
     msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
@@ -259,7 +259,7 @@ function sendMessage(text, attachmentFileId) {
 
     skipPage = skipPage + 1;
     console.log(skipPage);
-    
+
       if(attachmentFileId == null){
         showMessage(currentUser.id, msg);
       } else {
@@ -281,7 +281,7 @@ function getDialogIcon (dialogType, dialogPhoto) {
   var withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
   var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
   var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
-  
+
   var dialogIcon;
   switch (dialogType) {
     case 1:
@@ -334,7 +334,7 @@ function onMessageTyping(isTyping, userId, dialogId) {
   	showUserIsTypingView(isTyping, userId, dialogId);
 }
 
-// start timer after keypress event 
+// start timer after keypress event
 var isTypingTimerId;
 function setupIsTypingHandler() {
   QB.chat.onMessageTypingListener = onMessageTyping;
@@ -354,7 +354,7 @@ function setupIsTypingHandler() {
 			clearTimeout(isTypingTimerId);
 			isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
 		}
-  });  
+  });
 }
 
 // delete timer and send 'stop typing' status
@@ -364,7 +364,7 @@ function isTypingTimeoutCallback() {
 }
 
 // send 'is typing' status
-function sendTypingStatus() {  		
+function sendTypingStatus() {
 	if (currentDialog.type == 3) {
 	  QB.chat.sendIsTypingStatus(opponentId);
 	} else {
@@ -435,6 +435,6 @@ function pastDialogUI(itemRes, updateHtml) {
   	$('.list-group-item.active .badge').text(0).hide(0);
 	} else {
     var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
-    $('#dialogs-list').append(dialogHtml);		
+    $('#dialogs-list').append(dialogHtml);
 	}
 }

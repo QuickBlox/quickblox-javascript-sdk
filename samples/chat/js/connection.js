@@ -4,14 +4,14 @@ $(document).ready(function() {
 
   $("#loginForm").modal("show");
   $('#loginForm .progress').hide();
-  
+
   // User1 login action
   //
   $('#user1').click(function() {
     currentUser = QBUser1;
     connectToChat(QBUser1);
   });
-  
+
   // User2 login action
   //
   $('#user2').click(function() {
@@ -39,7 +39,7 @@ function connectToChat(user) {
           // setup message listeners
           //
           setupOnMessageListener();
-          
+
           // load chat dialogs
           //
           retrieveChatDialogs();

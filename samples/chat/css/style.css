@@ -1,15 +1,15 @@
 ::-webkit-scrollbar {
-    width: 8px;} 
+    width: 8px;}
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0); 
-    border-radius: 0px;} 
+    -webkit-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+    border-radius: 0px;}
 ::-webkit-scrollbar-thumb {
     border-radius: 0px;
     -webkit-box-shadow: inset 0 0 100px rgba(4, 182, 36, 1);}
 ::-o-scrollbar {
     width: 8px;}
 ::-o-scrollbar-track {
-    -o-box-shadow: inset 0 0 0px rgba(0,0,0,0); 
+    -o-box-shadow: inset 0 0 0px rgba(0,0,0,0);
     border-radius: 0px;}
 ::-o-scrollbar-thumb {
     border-radius: 0px;
@@ -17,16 +17,16 @@
 ::-ms-scrollbar {
     width: 8px;}
 ::-ms-scrollbar-track {
-    -ms-box-shadow: inset 0 0 0px rgba(0,0,0,0); 
+    -ms-box-shadow: inset 0 0 0px rgba(0,0,0,0);
     border-radius: 0px;}
 ::-ms-scrollbar-thumb {
     border-radius: 0px;
     -ms-box-shadow: inset 0 0 100px rgba(4, 182, 36, 1);}
 ::-moz-scrollbar {
-    width: 8px;} 
+    width: 8px;}
 ::-moz-scrollbar-track {
-    -moz-box-shadow: inset 0 0 0px rgba(0,0,0,0); 
-    border-radius: 0px;} 
+    -moz-box-shadow: inset 0 0 0px rgba(0,0,0,0);
+    border-radius: 0px;}
 ::-moz-scrollbar-thumb {
     border-radius: 0px;
     -moz-box-shadow: inset 0 0 100px rgba(4, 182, 36, 1);}
@@ -200,6 +200,10 @@ input[type=file]:focus {
 	width: 10%
 }
 
+#all_occupants{
+  margin-bottom: 25px;
+}
+
 .attachments.img-responsive {
 	max-width: 40%;
 }
@@ -236,7 +240,7 @@ input[type=file]:focus {
   padding: 10px;
 }
 
-a.users_form.active, a.push_form.active { 
+a.users_form.active, a.push_form.active {
   text-decoration: none;
   color: #fff;
   background-color: #337ab7;

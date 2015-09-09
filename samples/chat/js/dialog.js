@@ -1,12 +1,3 @@
-var uploadPages     = 466;
-    usersCount      = 0;
-    users_ids       = [];
-    users_names     = [];
-    finished        = false;
-    pushUploadPages = 0;
-    pushUsersCount  = 466;
-    push_occupants  = [];
-  //  selectedMsg     = undefined;
 
 $('#ready_to_delete').hide();
 //
@@ -14,41 +5,15 @@ function setupUsersScrollHandler(){
   // uploading users scroll event
   $('.list-group.pre-scrollable.for-scroll').scroll(function() {
     if  ($('.list-group.pre-scrollable.for-scroll').scrollTop() == $('#users_list').height() - $('.list-group.pre-scrollable.for-scroll').height()){
-      retrieveUsers();
-    }
-  });
-}
 
-//
-function retrieveUsers() {
-  if (!finished) {
-
-    $("#load-users").show(0);
-    uploadPages = uploadPages + 1;
-
-    // Load users, 10 per request
-    //
-    QB.users.listUsers({page: uploadPages, per_page: '10'}, function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result);
-        $.each(result.items, function(index, item){
+      // get and show users
+      retrieveUsersForDialogCreation(function(users) {
+        $.each(users, function(index, item){
           showUsers(this.user.login, this.user.id);
         });
-
-        $("#load-users").delay(100).fadeOut(500);
-
-        var totalEntries = result.total_entries;
-            entries      = result.items.length;
-            usersCount   = usersCount + entries;
-
-        if (usersCount >= totalEntries) {
-          finished = true;
-        }
-      }
-    });
-  }
+      });
+    }
+  });
 }
 
 //
@@ -62,7 +27,12 @@ function showNewDialogPopup() {
   $("#add_new_dialog").modal("show");
   $('#add_new_dialog .progress').hide();
 
-  retrieveUsers();
+  // get and show users
+  retrieveUsersForDialogCreation(function(users) {
+    $.each(users, function(index, item){
+      showUsers(this.user.login, this.user.id);
+    });
+  });
 
   setupUsersScrollHandler();
 }
@@ -78,9 +48,12 @@ function clickToAdd(forFocus) {
 
 // create new dialog
 function createNewDialog() {
+  var usersIds = [];
+  var usersNames = [];
+
   $('.users_form.active').each(function(index) {
     users_ids[index] = $(this).attr('id');
-    users_names[index] = $(this).text();
+    usersNames[index] = $(this).text();
   });
 
   $("#add_new_dialog").modal("hide");
@@ -90,12 +63,12 @@ function createNewDialog() {
   var dialogOccupants;
   var dialogType;
 
-  if (users_ids.length > 1) {
-    dialogName = currentUser.login+', '+users_names.join(', ');
-    dialogOccupants = users_ids.join(',');
+  if (usersIds.length > 1) {
+    dialogName = currentUser.login+', '+usersNames.join(', ');
+    dialogOccupants = usersIds.join(',');
     dialogType = 2;
   } else {
-    dialogOccupants = users_ids.join(',');
+    dialogOccupants = usersIds.join(',');
     dialogType = 3;
   }
 
@@ -111,30 +84,13 @@ function createNewDialog() {
     if (err) {
       console.log(err);
     } else {
-      var newUsers = {};
+      joinToNewDialogAndShow(createdDialog);
 
-      params = {filter: {field: 'id', param: 'in', value: createdDialog.occupants_ids}};
-      QB.users.listUsers(params, function(err, result){
-        if (result) {
-          result.items.forEach(function(item, i, arr) {
-            newUsers[item.user.id] = item.user;
-          });
-          console.log(newUsers);
-          users = $.extend(users, newUsers);
-          console.log(users);
-        }
+      notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
 
-          joinToNewDialogAndShow(createdDialog);
+      triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
 
-          notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
-
-          triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
-
-          users_ids = [];
-          $('a.users_form').removeClass('active');
-          console.log($('#'+createdDialog._id));
-
-      });
+      $('a.users_form').removeClass('active');
     }
   });
 }
@@ -146,14 +102,14 @@ function joinToNewDialogAndShow(itemDialog) {
   var dialogLastMessage = itemDialog.last_message;
   var dialogUnreadMessagesCount = itemDialog.unread_messages_count;
   var dialogIcon = getDialogIcon(itemDialog.type, itemDialog.photo);
-      
-  // save dialog to local storage 
+
+  // save dialog to local storage
   dialogs[dialogId] = itemDialog;
 
   // join if it's a group dialog
   if (itemDialog.type != 3) {
     QB.chat.muc.join(itemDialog.xmpp_room_jid, function() {
-       console.log("Joined dialog " + dialogId);
+       console.log("Joined dialog: " + dialogId);
     });
     opponentLogin = null;
   } else {
@@ -176,7 +132,7 @@ function notifyOccupants(dialogOccupants, newDialogId) {
         extension: {
           notification_type: 1,
           _id: newDialogId
-        }, 
+        },
       };
 
       QB.chat.send(itemOccupanId, msg);
@@ -195,16 +151,23 @@ function getAndShowNewDialog(newDialogId) {
   });
 }
 
-// show modal window with users
-function showUpdateDialogPopup() {
+// show modal window with dialog's info
+function showDialogInfoPopup() {
   $("#update_dialog").modal("show");
   $('#update_dialog .progress').hide();
 
-  AllDialogOccupants(currentDialog.occupants_ids);
+  // shwo current dialog's occupants
+  showDialogOccupants(currentDialog.occupants_ids);
 
-  retrievePushUsers();
+  // get users to add to dialog
+  retrieveUsersForDialogUpdate(function(users){
+    $.each(users, function(index, item){
+      var userHtml = buildUserHtml(this.user.login, this.user.id);
+      $('#add_new_occupant').append(userHtml);
+    });
+  });
 
-  forPushOccupantsScrollHandler();
+  setupScrollHandlerForNewOccupants();
 
   if (currentDialog.type == 3) {
     $('.dialog-type-info').text('').append('<b>Dialog type: </b>privat chat');
@@ -223,59 +186,54 @@ function showUpdateDialogPopup() {
   }
 }
 
+// show information about the occupants for current dialog
+function showDialogOccupants(users) {
+  var logins = [];
 
-function forPushOccupantsScrollHandler() {
+  users.forEach(function(item, index) {
+    login = getUserById(item);
+    logins[index] = login;
+  });
+    $('#all_occupants').text('');
+    $('#all_occupants').append('<b>Occupants: </b>'+logins.join(', '));
+}
+
+
+function setupScrollHandlerForNewOccupants() {
   // uploading users scroll event
   $('#push_usersList').scroll(function() {
     if  ($('#push_usersList').scrollTop() == $('#add_new_occupant').height() - $('#push_usersList').height()){
-      retrievePushUsers();
+
+      retrieveUsersForDialogUpdate(function(users){
+        $.each(users, function(index, item){
+          var userHtml = buildUserHtml(this.user.login, this.user.id);
+          $('#add_new_occupant').append(userHtml);
+        });
+      });
+
     }
   });
 }
 
-
-function retrievePushUsers() {
-  if (!finished) {
-
-    pushUploadPages = pushUploadPages + 1;
-
-    QB.users.listUsers({page: pushUploadPages, per_page: '10'}, function(err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result);
-        $.each(result.items, function(index, item){
-          var userHtml = buildUserHtml(this.user.login, this.user.id);
-          $('#add_new_occupant').append(userHtml);
-        });       
-
-        var totalEntries    = result.total_entries;
-            entries         = result.items.length;
-            pushUsersCount  = pushUsersCount + entries;
-
-        if (pushUsersCount >= totalEntries) {
-          finished = true;
-        }
-      }
-    });
-  }
-} 
 // for dialog update
-function onDialogUdate() {
+function onDialogUpdate() {
+  var pushOccupants  = [];
+
   $('.users_form.active').each(function(index) {
-    push_occupants[index] = $(this).attr('id');
+    pushOccupants[index] = $(this).attr('id');
   });
 
   var dialogPhoto = $('#set-new-photo').val().trim();
   var dialogName  = $('#rename-dialog').val().trim();
 
+  var toUpdate;
   if (currentDialog.type == 3) {
-    var toUpdate = {photo: dialogPhoto};
+    toUpdate = {photo: dialogPhoto};
   } else {
-    var toUpdate = {
+    toUpdate = {
       photo:    dialogPhoto,
       name:     dialogName,
-      push_all: {occupants_ids: push_occupants}
+      push_all: {occupants_ids: pushOccupants}
     };
   }
 
@@ -283,7 +241,6 @@ function onDialogUdate() {
     if (err) {
       console.log(err);
     } else {
-      console.log(res);
 
       $('#'+res._id).remove();
 
@@ -296,36 +253,20 @@ function onDialogUdate() {
   $('#set-new-photo').val('');
   $('#rename-dialog').val('');
   $('.users_form').removeClass("active");
-  push_occupants = [];
 }
 
 // delete currend dialog
-function onDeleteDialog() {
-  if (confirm("Dialog will be removed")) {
+function onDialogDelete() {
+  if (confirm("Are you sure you want remove the dialog?")) {
     QB.chat.dialog.delete(currentDialog._id, function(err, res) {
       if (err) {
         console.log(err);
       } else {
-        console.log(res);
         $('#'+currentDialog._id).remove();
       }
     });
 
     $("#update_dialog").modal("hide");
     $('#update_dialog .progress').show();
-  } else {
-    alert("Canceled");
   }
-}
-
-// show information about occupants count in current dialog
-function AllDialogOccupants(users) {
-  var logins = [];
-
-  users.forEach(function(item, index) {
-    login = getUserById(item);
-    logins[index] = login;
-  });     
-    $('#all_occupants').text('');
-    $('#all_occupants').append('<b>Occupants: </b>'+logins.join(', '));
 }
