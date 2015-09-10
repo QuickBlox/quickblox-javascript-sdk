@@ -40,7 +40,7 @@ function retrieveChatDialogs() {
 
         //  and trigger the 1st dialog
         //
-        triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
+        triggerDialog(resDialogs.items[0]._id);
 
         // hide login form
         $("#loginForm").modal("hide");
@@ -120,7 +120,9 @@ function updateDialogsList(dialogId, text){
 }
 
 // Choose dialog
-function triggerDialog(element, dialogId){
+function triggerDialog(dialogId){
+  console.log("Select a dialog with id: " + dialogId);
+
   // deselect
   var kids = $('#dialogs-list').children();
   kids.removeClass('active').addClass('inactive');
@@ -236,7 +238,7 @@ function createNewDialog() {
 
       notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
 
-      triggerDialog($('#dialogs-list').children()[0], createdDialog._id);
+      triggerDialog(createdDialog._id);
 
       $('a.users_form').removeClass('active');
     }
@@ -294,11 +296,7 @@ function getAndShowNewDialog(newDialogId) {
       console.log(err);
     } else {
 
-      console.log("new dialog id: " + newDialogId);
-
       var newDialog = res.items[0];
-
-      console.log("new dialog: " + JSON.stringify(res));
 
       // save dialog to local storage
       var dialogId = newDialog._id;
@@ -436,6 +434,15 @@ function onDialogDelete() {
       } else {
         console.log("Dialog removed");
         $('#'+currentDialog._id).remove();
+
+        // remove from storage
+        delete dialogs[currentDialog._id];
+
+        //  and trigger the next dialog
+        if(Object.keys(dialogs).length > 0){
+          triggerDialog(dialogs[Object.keys(dialogs)[0]]._id);
+        }
+
       }
     });
 
