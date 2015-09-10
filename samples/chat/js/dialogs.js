@@ -224,6 +224,11 @@ function createNewDialog() {
     } else {
       console.log("Dialog created with users: " + dialogOccupants);
 
+      var dialogId = createdDialog._id;
+      dialogs[dialogId] = createdDialog;
+
+      currentDialog = createdDialog;
+
       joinToNewDialogAndShow(createdDialog);
 
       notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
@@ -254,7 +259,7 @@ function joinToNewDialogAndShow(itemDialog) {
     opponentLogin = null;
   } else {
     opponentId = QB.chat.helpers.getRecipientId(itemDialog.occupants_ids, currentUser.id);
-    opponentLogin = getUserById(opponentId);
+    opponentLogin = getUserLoginById(opponentId);
     dialogName = chatName = 'Dialog with ' + opponentLogin;
   }
 
@@ -297,45 +302,51 @@ function showDialogInfoPopup() {
   $('#update_dialog .progress').hide();
 
   // shwo current dialog's occupants
-  showDialogOccupants(currentDialog.occupants_ids);
+  setupDialogInfoPopup(currentDialog.occupants_ids, currentDialog.name);
+}
 
-  // get users to add to dialog
-  retrieveUsersForDialogUpdate(function(users){
-    $.each(users, function(index, item){
-      var userHtml = buildUserHtml(this.user.login, this.user.id);
-      $('#add_new_occupant').append(userHtml);
-    });
+// show information about the occupants for current dialog
+function setupDialogInfoPopup(occupantsIds, name) {
+
+  // show name
+  $('#dialog-name-input').val(name);
+
+  // show occupants
+  var logins = [];
+  occupantsIds.forEach(function(item, index) {
+    login = getUserLoginById(item);
+    logins[index] = login;
   });
+  $('#all_occupants').text('');
+  $('#all_occupants').append('<b>Occupants: </b>'+logins.join(', '));
 
-  setupScrollHandlerForNewOccupants();
-
+  // show type
+  //
+  // private
   if (currentDialog.type == 3) {
     $('.dialog-type-info').text('').append('<b>Dialog type: </b>privat chat');
     $('.new-info').hide();
     $('.push').hide();
     $('#push_usersList').hide();
-    $('#leave-dialog').hide();
-    $('#update-dialog').hide();
+    $('#update_dialog_button').hide();
+
+  // group
   } else {
     $('.dialog-type-info').text('').append('<b>Dialog type: </b>group chat');
     $('.new-info').show();
     $('.push').show();
     $('#push_usersList').show();
-    $('#leave-dialog').show();
-    $('#update-dialog').show();
+    $('#update_dialog_button').show();
+
+    // get users to add to dialog
+    retrieveUsersForDialogUpdate(function(users){
+      $.each(users, function(index, item){
+        var userHtml = buildUserHtml(this.user.login, this.user.id);
+        $('#add_new_occupant').append(userHtml);
+      });
+    });
+    setupScrollHandlerForNewOccupants();
   }
-}
-
-// show information about the occupants for current dialog
-function showDialogOccupants(users) {
-  var logins = [];
-
-  users.forEach(function(item, index) {
-    login = getUserById(item);
-    logins[index] = login;
-  });
-    $('#all_occupants').text('');
-    $('#all_occupants').append('<b>Occupants: </b>'+logins.join(', '));
 }
 
 
@@ -358,30 +369,29 @@ function setupScrollHandlerForNewOccupants() {
 // for dialog update
 function onDialogUpdate() {
   var pushOccupants  = [];
-
   $('.users_form.active').each(function(index) {
     pushOccupants[index] = $(this).attr('id');
   });
 
-  var dialogPhoto = $('#set-new-photo').val().trim();
-  var dialogName  = $('#rename-dialog').val().trim();
+  var dialogName  = $('#dialog-name-input').val().trim();
 
-  var toUpdate;
-  if (currentDialog.type == 3) {
-    toUpdate = {photo: dialogPhoto};
-  } else {
-    toUpdate = {
-      photo:    dialogPhoto,
+  var toUpdate = {
       name:     dialogName,
       push_all: {occupants_ids: pushOccupants}
     };
-  }
+
+  console.log("Updating the dialog with params: " + JSON.stringify(toUpdate));
 
   QB.chat.dialog.update(currentDialog._id, toUpdate, function(err, res) {
     if (err) {
       console.log(err);
     } else {
       console.log("Dialog updated");
+
+      var dialogId = res._id;
+      dialogs[dialogId] = res;
+
+      currentDialog = res;
 
       $('#'+res._id).remove();
 
@@ -391,8 +401,7 @@ function onDialogUpdate() {
   });
 
   $("#update_dialog").modal("hide");
-  $('#set-new-photo').val('');
-  $('#rename-dialog').val('');
+  $('#dialog-name-input').val('');
   $('.users_form').removeClass("active");
 }
 
