@@ -1,19 +1,19 @@
 var users = {};
 
-var usersForDialogCreation = {currentPage: 0,
+var usersForDialogCreationStats = {currentPage: 0,
                               retrievedCount: 0,
                               totalEntries: null}
 
-var usersForDialogUpdate = {currentPage: 0,
+var usersForDialogUpdateStats = {currentPage: 0,
                             retrievedCount: 0,
                             totalEntries: null}
 
 function retrieveUsersForDialogCreation(callback) {
-  retrieveUsers(usersForDialogCreation, callback);
+  retrieveUsers(usersForDialogCreationStats, callback);
 }
 
 function retrieveUsersForDialogUpdate(callback) {
-  retrieveUsers(usersForDialogUpdate, callback);
+  retrieveUsers(usersForDialogUpdateStats, callback);
 }
 
 function retrieveUsers(usersStorage, callback) {
@@ -34,6 +34,8 @@ function retrieveUsers(usersStorage, callback) {
       console.log(err);
     } else {
 
+      mergeUsers(result.items);
+
       callback(result.items);
 
       $("#load-users").delay(100).fadeOut(500);
@@ -45,20 +47,23 @@ function retrieveUsers(usersStorage, callback) {
 }
 
 function updateDialogsUsersStorage(usersIds, callback){
-  var newUsers = {};
-
   var params = {filter: {field: 'id', param: 'in', value: usersIds}};
 
   QB.users.listUsers(params, function(err, result){
     if (result) {
-      result.items.forEach(function(item, i, arr) {
-        newUsers[item.user.id] = item.user;
-      });
-      users = $.extend(users, newUsers);
+      mergeUsers(result.items);
     }
 
     callback();
   });
+}
+
+function mergeUsers(usersItems){
+  var newUsers = {};
+  usersItems.forEach(function(item, i, arr) {
+    newUsers[item.user.id] = item.user;
+  });
+  users = $.extend(users, newUsers);
 }
 
 function getUserLoginById(byId) {
