@@ -129,15 +129,12 @@ function triggerDialog(element, dialogId){
   $('#'+dialogId).removeClass('inactive').addClass('active');
 
   $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
-  currentDialog = dialogs[dialogId];
 
   $('#messages-list').html('');
+
   // load chat history
   //
-  cancelSkip = false;
-  skipPage = 0;
-
-  retrieveChatMessages(dialogId);
+  retrieveChatMessages(dialogs[dialogId], null);
 
   $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
 }
@@ -274,7 +271,7 @@ function notifyOccupants(dialogOccupants, newDialogId) {
         type: 'chat',
         extension: {
           notification_type: 1,
-          _id: newDialogId
+          dialog_id: newDialogId
         },
       };
 

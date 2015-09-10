@@ -47,7 +47,7 @@ function retrieveUsers(usersStorage, callback) {
 }
 
 function updateDialogsUsersStorage(usersIds, callback){
-  var params = {filter: {field: 'id', param: 'in', value: usersIds}};
+  var params = {filter: {field: 'id', param: 'in', value: usersIds}, per_page: 100};
 
   QB.users.listUsers(params, function(err, result){
     if (result) {
