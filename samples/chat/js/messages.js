@@ -27,7 +27,7 @@ function onMessage(userId, msg) {
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1 && !msg.delay) {
-    getAndShowNewDialog(msg.extension.dialog_id);
+    getAndShowNewDialog(msg.dialog_id);
 
   // Here we process the regular messages
   //

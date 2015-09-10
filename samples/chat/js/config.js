@@ -14,10 +14,10 @@ var config = {
 };
 
 var QBUser1 = {
-        id: 4834858,
-        name: 'quickuser',
-        login: 'quickuser',
-        pass: 'quickuser'
+        id: 9267,
+        name: 'igor',
+        login: 'igor',
+        pass: 'igor8888'
     },
     QBUser2 = {
         id: 4834885,

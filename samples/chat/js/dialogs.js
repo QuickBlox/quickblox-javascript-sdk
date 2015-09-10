@@ -218,12 +218,15 @@ function createNewDialog() {
 
   // create a dialog
   //
+  console.log("Creating a dialog with params: " + JSON.stringify(params));
+
   QB.chat.dialog.create(params, function(err, createdDialog) {
     if (err) {
       console.log(err);
     } else {
-      console.log("Dialog created with users: " + dialogOccupants);
+      console.log("Dialog " + createdDialog._id + " created with users: " + dialogOccupants);
 
+      // save dialog to local storage
       var dialogId = createdDialog._id;
       dialogs[dialogId] = createdDialog;
 
@@ -247,9 +250,6 @@ function joinToNewDialogAndShow(itemDialog) {
   var dialogLastMessage = itemDialog.last_message;
   var dialogUnreadMessagesCount = itemDialog.unread_messages_count;
   var dialogIcon = getDialogIcon(itemDialog.type);
-
-  // save dialog to local storage
-  dialogs[dialogId] = itemDialog;
 
   // join if it's a group dialog
   if (itemDialog.type != 3) {
@@ -287,11 +287,33 @@ function notifyOccupants(dialogOccupants, newDialogId) {
 
 //
 function getAndShowNewDialog(newDialogId) {
+  // get the dialog and users
+  //
   QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
     if (err) {
       console.log(err);
     } else {
-      joinToNewDialogAndShow(res.items[0])
+
+      console.log("new dialog id: " + newDialogId);
+
+      var newDialog = res.items[0];
+
+      console.log("new dialog: " + JSON.stringify(res));
+
+      // save dialog to local storage
+      var dialogId = newDialog._id;
+      dialogs[dialogId] = newDialog;
+
+      // collect the occupants
+      var occupantsIds = [];
+      newDialog.occupants_ids.map(function(userId) {
+        occupantsIds.push(userId);
+      });
+      updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
+
+      });
+
+      joinToNewDialogAndShow(newDialog)
     }
   });
 }
