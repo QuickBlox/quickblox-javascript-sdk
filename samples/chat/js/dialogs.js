@@ -236,7 +236,7 @@ function createNewDialog() {
 
       joinToNewDialogAndShow(createdDialog);
 
-      notifyOccupants(createdDialog.occupants_ids, createdDialog._id);
+      notifyOccupants(createdDialog.occupants_ids, createdDialog._id, createdDialog.name, 1);
 
       triggerDialog(createdDialog._id);
 
@@ -271,15 +271,16 @@ function joinToNewDialogAndShow(itemDialog) {
 }
 
 //
-function notifyOccupants(dialogOccupants, newDialogId) {
+function notifyOccupants(dialogOccupants, dialogId, dialogName, notificationType) {
   dialogOccupants.forEach(function(itemOccupanId, i, arr) {
     if (itemOccupanId != currentUser.id) {
       var msg = {
         type: 'chat',
         extension: {
-          notification_type: 1,
-          dialog_id: newDialogId
-        },
+          notification_type: notificationType,
+          dialog_id: dialogId,
+          dialog_name: dialogName
+        }
       };
 
       QB.chat.send(itemOccupanId, msg);
@@ -416,6 +417,8 @@ function onDialogUpdate() {
       $('#'+res._id).remove();
 
       showOrUpdateDialogInUI(res, true);
+      notifyOccupants(res.occupants_ids, dialogId, res.name, 2);
+
       $('#'+res._id).removeClass('inactive').addClass('active');
     }
   });
@@ -423,6 +426,12 @@ function onDialogUpdate() {
   $("#update_dialog").modal("hide");
   $('#dialog-name-input').val('');
   $('.users_form').removeClass("active");
+}
+
+//
+function updatingDialog(dialogId, dialogName) {
+  $('#'+dialogId+' h4 span').html('');
+  $('#'+dialogId+' h4 span').append(dialogName);
 }
 
 // delete currend dialog

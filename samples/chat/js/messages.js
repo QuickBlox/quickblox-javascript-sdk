@@ -28,6 +28,8 @@ function onMessage(userId, msg) {
   //
   if (msg.extension.notification_type == 1 && !msg.delay) {
     getAndShowNewDialog(msg.dialog_id);
+  } else if (msg.extension.notification_type == 2 && !msg.delay) {
+    updatingDialog(msg.dialog_id, msg.extension.dialog_name);
 
   // Here we process the regular messages
   //
