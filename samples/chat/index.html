@@ -24,6 +24,7 @@
             <li class="active"><a href="#">Chat</a></li>
             <li><a href="#" onclick="showNewDialogPopup()">Create dialog</a></li>
              <li><a href="#" onclick="showDialogInfoPopup()">Dialog info</a></li>
+             <li><a href="#" onclick="showRosterPopup()">Roster</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -83,6 +84,21 @@
               <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal (roster)-->
+    <div id="rosterForm" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">R O S T E R</h3>
+              <button  type="button" id="rosterAdd" class="btn btn-primary btn-lg btn-block" onclick="rosterAdd()">Roster Add</button>
+              <button  type="button" id="rosterRemove" class="btn btn-success btn-lg btn-block" onclick="rosterRemove()">Roster Remove</button>
+              <button  type="button" id="rosterConfirm" class="btn btn-primary btn-lg btn-block" onclick="rosterConfirm()">Roster Confirm</button>
+              <button  type="button" id="rosterReject" class="btn btn-success btn-lg btn-block" onclick="rosterReject()">Roster Reject</button>
           </div>
         </div>
       </div>
