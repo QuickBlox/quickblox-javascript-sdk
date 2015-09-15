@@ -35,6 +35,12 @@ function rosterReject() {
   });
 }
 
+function rosterGet() {
+  QB.chat.roster.get(function(roster) {
+    console.log(roster);
+  });
+}
+
 QB.chat.onSubscribeListener = function(userId) {
   console.log('onSubscribeListener');
 };
