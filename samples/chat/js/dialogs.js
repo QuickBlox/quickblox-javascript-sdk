@@ -13,6 +13,25 @@ function retrieveChatDialogs() {
       //
       var occupantsIds = [];
 
+      if(resDialogs.items.length == 0){
+
+        // hide login form
+        $("#loginForm").modal("hide");
+
+        // setup attachments button handler
+        //
+        $("#load-img").change(function(){
+          var inputFile = $("input[type=file]")[0].files[0];
+          if (inputFile) {
+            $("#progress").show(0);
+          }
+
+          clickSendAttachments(inputFile);
+        });
+
+        return;
+      }
+
       resDialogs.items.forEach(function(item, i, arr) {
         var dialogId = item._id;
         dialogs[dialogId] = item;
@@ -169,6 +188,9 @@ function showNewDialogPopup() {
 
   // get and show users
   retrieveUsersForDialogCreation(function(users) {
+    if(users == null || users.length == 0){
+      return;
+    }
     $.each(users, function(index, item){
       showUsers(this.user.login, this.user.id);
     });
@@ -204,7 +226,11 @@ function createNewDialog() {
   var dialogType;
 
   if (usersIds.length > 1) {
-    dialogName = currentUser.login+', '+usersNames.join(', ');
+    if (usersNames.indexOf(currentUser.login) > -1) {
+      dialogName = usersNames.join(', ');
+    }else{
+      dialogName = currentUser.login + ', ' + usersNames.join(', ');
+    }
     dialogOccupants = usersIds.join(',');
     dialogType = 2;
   } else {
@@ -236,7 +262,7 @@ function createNewDialog() {
 
       joinToNewDialogAndShow(createdDialog);
 
-      notifyOccupants(createdDialog.occupants_ids, createdDialog._id, createdDialog.name, 1);
+      notifyOccupants(createdDialog.occupants_ids, createdDialog._id, 1);
 
       triggerDialog(createdDialog._id);
 
@@ -271,15 +297,14 @@ function joinToNewDialogAndShow(itemDialog) {
 }
 
 //
-function notifyOccupants(dialogOccupants, dialogId, dialogName, notificationType) {
+function notifyOccupants(dialogOccupants, dialogId, notificationType) {
   dialogOccupants.forEach(function(itemOccupanId, i, arr) {
     if (itemOccupanId != currentUser.id) {
       var msg = {
         type: 'chat',
         extension: {
           notification_type: notificationType,
-          dialog_id: dialogId,
-          dialog_name: dialogName
+          dialog_id: dialogId
         }
       };
 
@@ -313,6 +338,45 @@ function getAndShowNewDialog(newDialogId) {
       });
 
       joinToNewDialogAndShow(newDialog)
+    }
+  });
+}
+
+function getAndUpdateDialog(updatedDialogId) {
+  // get the dialog and users
+  //
+
+console.log("getAndUpdateDialog");
+
+  var dialogAlreadyExist = dialogs[updatedDialogId] != null
+  console.log("dialog " + updatedDialogId + " already exist: " + dialogAlreadyExist);
+
+  QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
+    if (err) {
+      console.log(err);
+    } else {
+      var updatedDialog = res.items[0];
+
+      // update dialog in local storage
+      var dialogId = updatedDialog._id;
+      dialogs[dialogId] = updatedDialog;
+
+      // collect the occupants
+      var occupantsIds = [];
+      newDialog.occupants_ids.map(function(userId) {
+        occupantsIds.push(userId);
+      });
+      updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
+
+      });
+
+      if(!dialogAlreadyExist){
+          joinToNewDialogAndShow(updatedDialog)
+      }else{
+        // just update UI
+        $('#'+dialogId+' h4 span').html('');
+        $('#'+dialogId+' h4 span').append(updatedDialog.name);
+      }
     }
   });
 }
@@ -361,6 +425,10 @@ function setupDialogInfoPopup(occupantsIds, name) {
 
     // get users to add to dialog
     retrieveUsersForDialogUpdate(function(users){
+      if(users == null || users.length == 0){
+        return;
+      }
+
       $.each(users, function(index, item){
         var userHtml = buildUserHtml(this.user.login, this.user.id);
         $('#add_new_occupant').append(userHtml);
@@ -377,6 +445,9 @@ function setupScrollHandlerForNewOccupants() {
     if  ($('#push_usersList').scrollTop() == $('#add_new_occupant').height() - $('#push_usersList').height()){
 
       retrieveUsersForDialogUpdate(function(users){
+        if(users == null || users.length == 0){
+          return;
+        }
         $.each(users, function(index, item){
           var userHtml = buildUserHtml(this.user.login, this.user.id);
           $('#add_new_occupant').append(userHtml);
@@ -417,7 +488,8 @@ function onDialogUpdate() {
       $('#'+res._id).remove();
 
       showOrUpdateDialogInUI(res, true);
-      notifyOccupants(res.occupants_ids, dialogId, res.name, 2);
+
+      notifyOccupants(res.occupants_ids, dialogId, 2);
 
       $('#'+res._id).removeClass('inactive').addClass('active');
     }
@@ -426,12 +498,6 @@ function onDialogUpdate() {
   $("#update_dialog").modal("hide");
   $('#dialog-name-input').val('');
   $('.users_form').removeClass("active");
-}
-
-//
-function updatingDialog(dialogId, dialogName) {
-  $('#'+dialogId+' h4 span').html('');
-  $('#'+dialogId+' h4 span').append(dialogName);
 }
 
 // delete currend dialog
