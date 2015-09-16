@@ -140,7 +140,7 @@ function updateDialogsList(dialogId, text){
 
 // Choose dialog
 function triggerDialog(dialogId){
-  console.log("Select a dialog with id: " + dialogId);
+  console.log("Select a dialog with id: " + dialogId + ", name: " + dialogs[dialogId].name);
 
   // deselect
   var kids = $('#dialogs-list').children();
@@ -351,10 +351,11 @@ console.log("getAndUpdateDialog");
   var dialogAlreadyExist = dialogs[updatedDialogId] != null
   console.log("dialog " + updatedDialogId + " already exist: " + dialogAlreadyExist);
 
-  QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
+  QB.chat.dialog.list({_id: updatedDialogId}, function(err, res) {
     if (err) {
       console.log(err);
     } else {
+
       var updatedDialog = res.items[0];
 
       // update dialog in local storage
@@ -363,7 +364,7 @@ console.log("getAndUpdateDialog");
 
       // collect the occupants
       var occupantsIds = [];
-      newDialog.occupants_ids.map(function(userId) {
+      updatedDialog.occupants_ids.map(function(userId) {
         occupantsIds.push(userId);
       });
       updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){

@@ -24,10 +24,6 @@ function setupMsgScrollHandler() {
 // on message listener
 function onMessage(userId, msg) {
 
-  console.log("onMessage");
-  console.log("msg.extension.notification_type: " + msg.extension.notification_type);
-  console.log("sg.dialog_id: " + msg.dialog_id);
-
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1 && !msg.delay) {
