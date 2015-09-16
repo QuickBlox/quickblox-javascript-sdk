@@ -42,7 +42,7 @@ var signalingType = {
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
 var connection, peer,
-    callers = {};
+    sessions = {};
 
 // we use this timeout to fix next issue:
 // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
@@ -76,7 +76,7 @@ function WebRTCProxy(service, conn) {
         extension = self._getExtension(extraParams);
 
     var sessionId = extension.sessionID;
-    
+
     if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
 
     // clean for users
@@ -85,36 +85,35 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-      
-      if (callers[userId]) {
+
+      if (sessions[sessionId]) {
       	trace('skip onCallListener, a user already got it');
       	return true;
       }
 
       // run caller availability timer and run again for this user
-      clearAnswerTimer(userId);
+      clearAnswerTimer(sessionId);
       if(peer == null){
-        startAnswerTimer(userId, self._answerTimeoutCallback);
+        startAnswerTimer(sessionId, self._answerTimeoutCallback);
       }
       //
 
-      callers[userId] = {
-        sessionID: extension.sessionID,
+      sessions[sessionId] = {
         sdp: extension.sdp
       };
 
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.sdp;
-      
+
       if (typeof self.onCallListener === 'function'){
         self.onCallListener(userId, extension);
       }
 
       break;
     case signalingType.ACCEPT:
-      trace('onAccept from ' + userId);
-        
-      clearDialingTimerInterval(userId);
+      trace('onAccept from ' + sessionId);
+
+      clearDialingTimerInterval(sessionId);
       clearCallTimer(userId);
 
       if (typeof peer === 'object')
@@ -124,9 +123,9 @@ function WebRTCProxy(service, conn) {
         self.onAcceptCallListener(userId, extension);
       break;
     case signalingType.REJECT:
-      trace('onReject from ' + userId);
+      trace('onReject from ' + sessionId);
 
-      clearDialingTimerInterval(userId);
+      clearDialingTimerInterval(sessionId);
       clearCallTimer(userId);
 
       self._close();
@@ -134,13 +133,13 @@ function WebRTCProxy(service, conn) {
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
-      trace('onStop from ' + userId);
+      trace('onStop from ' + sessionId);
 
-      clearDialingTimerInterval(userId);
+      clearDialingTimerInterval(sessionId);
       clearCallTimer(userId);
 
-      clearCallers(userId);
-      
+      clearSession(sessionId);
+
       self._close();
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
@@ -158,7 +157,7 @@ function WebRTCProxy(service, conn) {
         self.onUpdateCallListener(userId, extension);
       break;
     }
-    
+
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
     return true;
@@ -171,7 +170,7 @@ function WebRTCProxy(service, conn) {
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
         if (extraParams.childNodes[i].tagName === 'iceCandidates') {
-        
+
           // iceCandidates
           items = extraParams.childNodes[i].childNodes;
           for (var j = 0, len2 = items.length; j < len2; j++) {
@@ -213,25 +212,25 @@ function WebRTCProxy(service, conn) {
     return extension;
   };
 
-  this._answerTimeoutCallback = function (userId){
-  	clearCallers(userId);
+  this._answerTimeoutCallback = function (sessionId){
+  	clearSession(sessionId);
     self._close();
-    
+
     if(typeof self.onSessionStateChangedListener === 'function'){
       self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
     }
   };
 
-  this._callTimeoutCallback = function (userId){
-    trace("User " + userId + " not asnwer");
+  this._callTimeoutCallback = function (sessionId){
+    trace("sessionId: " + sessionId + " not asnwer");
 
-    clearDialingTimerInterval(userId);
+    clearDialingTimerInterval(sessionId);
 
-    clearCallers(userId);
+    clearSession(sessionId);
     self._close();
 
     if(typeof self.onUserNotAnswerListener === 'function'){
-      self.onUserNotAnswerListener(userId);
+      self.onUserNotAnswerListener(sessionId);
     }
   };
 }
@@ -305,7 +304,7 @@ WebRTCProxy.prototype.snapshot = function(id) {
       canvas = document.createElement('canvas'),
       context = canvas.getContext('2d'),
       dataURL, blob;
-  
+
   if (video) {
     canvas.width = video.clientWidth;
     canvas.height = video.clientHeight;
@@ -372,7 +371,7 @@ WebRTCProxy.prototype._createPeer = function(params) {
   };
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  
+
   trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
 };
 
@@ -395,17 +394,19 @@ WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
       trace("getSessionDescription error: " + err);
     } else {
 
+      var sessionId = extension.sessionID;
+
       // let's send call requests to user
       //
-      clearDialingTimerInterval(userIdToCall);
+      clearDialingTimerInterval(sessionId);
       var functionToRun = function() {
         self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
       };
       functionToRun(); // run a function for the first time and then each N seconds.
-      startDialingTimerInterval(userIdToCall, functionToRun);
+      startDialingTimerInterval(sessionId, functionToRun);
       //
-      clearCallTimer(userIdToCall);
-      startCallTimer(userIdToCall, self._callTimeoutCallback);
+      clearCallTimer(sessionId);
+      startCallTimer(sessionId, self._callTimeoutCallback);
       //
       //
     }
@@ -414,18 +415,18 @@ WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
   var extension = extension || {};
+  var sessionId = extension.sessionID;
 
   trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
-  clearAnswerTimer(userId);
-  
-  var caller = callers[userId];
-  if (caller) {
+  clearAnswerTimer(sessionId);
+
+  var session = sessions[sessionId];
+  if (session) {
     this._createPeer({
-      sessionID: caller.sessionID,
-      description: caller.sdp
+      sessionID: sessionId,
+      description: session.sdp
     });
-    // delete callers[userId];
   }
 
   var self = this;
@@ -442,14 +443,14 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
   var extension = extension || {};
+  var sessionId = extension.sessionID;
 
   trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
-  clearAnswerTimer(userId);
+  clearAnswerTimer(sessionId);
 
-  if (callers[userId]) {
-    extension.sessionID = callers[userId].sessionID;
-    delete callers[userId];
+  if (sessions[sessionId]) {
+    delete sessions[sessionId];
   }
 
   this._sendMessage(userId, extension, 'REJECT');
@@ -457,17 +458,18 @@ WebRTCProxy.prototype.reject = function(userId, extension) {
 
 WebRTCProxy.prototype.stop = function(userId, extension) {
   var extension = extension || {};
+  var sessionId = extension.sessionID;
 
   trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
-  clearAnswerTimer(userId);
-  clearDialingTimerInterval(userId);
+  clearAnswerTimer(sessionId);
+  clearDialingTimerInterval(sessionId);
   clearCallTimer(userId);
 
   this._sendMessage(userId, extension, 'STOP');
   this._close();
 
-  clearCallers(userId);
+  clearSession(sessionId);
 };
 
 WebRTCProxy.prototype.update = function(userId, extension) {
@@ -510,7 +512,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callType = callType === 'video' ? '1' : '2';
   }
 
-  if (type === 'CALL' || type === 'ACCEPT') {    
+  if (type === 'CALL' || type === 'ACCEPT') {
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
   }
@@ -519,18 +521,18 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callerID = this.helpers.getIdFromNode(connection.jid);
     extension.opponentsIDs = opponentsIDs;
   }
-  
+
   params = {
     from: connection.jid,
     to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };
-  
+
   msg = $msg(params).c('extraParams', {
     xmlns: Strophe.NS.CLIENT
   });
-  
+
   Object.keys(extension).forEach(function(field) {
     if (field === 'iceCandidates') {
 
@@ -562,7 +564,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
       msg.c(field).t(extension[field]).up();
     }
   });
-  
+
   connection.send(msg);
 };
 
@@ -601,12 +603,12 @@ RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
   this.sessionID = options && options.sessionID || Date.now();
   this.type = options && options.description ? 'answer' : 'offer';
-  
+
   this.addStream(this.service.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;  
+  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   if (this.type === 'answer') {
     this.onRemoteSessionCallback(options.description, 'offer');
@@ -681,7 +683,7 @@ RTCPeerConnection.prototype.onSignalingStateCallback = function() {
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   trace("onIceConnectionStateCallback: " + peer.iceConnectionState);
-  
+
   var newIceConnectionState = peer.iceConnectionState;
 
   // read more about all states:
@@ -693,7 +695,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   // notify user about state changes
   //
   if(typeof peer.service.onSessionStateChangedListener === 'function'){
-	var sessionState = null;	
+	var sessionState = null;
 	if (newIceConnectionState === 'checking'){
       sessionState = peer.service.SessionState.CONNECTING;
 	} else if (newIceConnectionState === 'connected'){
@@ -751,57 +753,54 @@ function getLocalTime() {
   return arr.slice(1,5).join('-');
 }
 
-function clearCallers(userId){
-	var caller = callers[userId];
-	if (caller){
-		delete callers[userId];
-	}
+function clearSession(sessionId){
+  delete sessions[sessionId];
 }
 
 
 ////////////////////////////////////////////////////////////////////////
 
-function clearAnswerTimer(userId){
-	var answerTimer = answerTimers[userId];
+function clearAnswerTimer(sessionId){
+	var answerTimer = answerTimers[sessionId];
   if(answerTimer){
     clearTimeout(answerTimer);
-    delete answerTimers[userId];
+    delete answerTimers[sessionId];
   }
 }
 
-function startAnswerTimer(userId, callback){
+function startAnswerTimer(sessionId, callback){
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  var answerTimer = setTimeout(callback, answerTimeInterval, userId);
-  answerTimers[userId] = answerTimer;
+  var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
+  answerTimers[sessionId] = answerTimer;
 }
 
-function clearDialingTimerInterval(userId){
-  var dialingTimer = dialingTimerIntervals[userId];
+function clearDialingTimerInterval(sessionId){
+  var dialingTimer = dialingTimerIntervals[sessionId];
   if(dialingTimer){
     clearInterval(dialingTimer);
-    delete dialingTimerIntervals[userId];
+    delete dialingTimerIntervals[sessionId];
   }
 }
 
-function startDialingTimerInterval(userId, functionToRun){
+function startDialingTimerInterval(sessionId, functionToRun){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
   var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
-  dialingTimerIntervals[userId] = dialingTimerId;
+  dialingTimerIntervals[sessionId] = dialingTimerId;
 }
 
-function clearCallTimer(userId){
-  var callTimer = callTimers[userId];
+function clearCallTimer(sessionId){
+  var callTimer = callTimers[sessionId];
   if(callTimer){
     clearTimeout(callTimer);
-    delete callTimers[userId];
+    delete callTimers[sessionId];
   }
 }
 
-function startCallTimer(userId, callback){
+function startCallTimer(sessionId, callback){
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
   trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
-  var callTimer = setTimeout(callback, answerTimeInterval, userId);
-  callTimers[userId] = callTimer;
+  var callTimer = setTimeout(callback, answerTimeInterval, sessionId);
+  callTimers[sessionId] = callTimer;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -811,11 +810,11 @@ function startCallTimer(userId, callback){
 function dataURItoBlob(dataURI, contentType) {
   var arr = [],
       binary = window.atob(dataURI.split(',')[1]);
-  
+
   for (var i = 0, len = binary.length; i < len; i++) {
     arr.push(binary.charCodeAt(i));
   }
-  
+
   return new Blob([new Uint8Array(arr)], {type: contentType});
 }
 
