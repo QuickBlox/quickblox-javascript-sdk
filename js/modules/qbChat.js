@@ -28,7 +28,7 @@ if (isBrowser) {
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
 }
- 
+
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
@@ -85,7 +85,7 @@ function ChatProxy(service, webrtcModule, conn) {
       attachments = [];
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
         if (extraParams.childNodes[i].tagName === 'attachment') {
-          
+
           // attachments
           attach = {};
           attributes = extraParams.childNodes[i].attributes;
@@ -192,7 +192,7 @@ function ChatProxy(service, webrtcModule, conn) {
           roster[userId] = {
             subscription: 'both',
             ask: null
-          };          
+          };
         } else {
           roster[userId] = {
             subscription: 'to',
@@ -362,13 +362,13 @@ ChatProxy.prototype = {
         xmlns: Strophe.NS.CLIENT
       }).t(message.body).up();
     }
-    
+
     // custom parameters
     if (message.extension) {
       msg.c('extraParams', {
         xmlns: Strophe.NS.CLIENT
       });
-      
+
       Object.keys(message.extension).forEach(function(field) {
         if (field === 'attachments') {
 
@@ -395,7 +395,7 @@ ChatProxy.prototype = {
         xmlns: Strophe.NS.CHAT_MARKERS
       });
     }
-    
+
     connection.send(msg);
   },
 
@@ -412,7 +412,7 @@ ChatProxy.prototype = {
     msg.c('composing', {
       xmlns: 'http://jabber.org/protocol/chatstates'
     });
-    
+
     connection.send(msg);
   },
 
@@ -429,7 +429,7 @@ ChatProxy.prototype = {
     msg.c('paused', {
       xmlns: 'http://jabber.org/protocol/chatstates'
     });
-    
+
     connection.send(msg);
   },
 
@@ -437,7 +437,7 @@ ChatProxy.prototype = {
   sendPres: function(type) {
     if(!isBrowser) throw unsupported;
 
-    connection.send($pres({ 
+    connection.send($pres({
       from: connection.jid,
       type: type
     }));
@@ -457,7 +457,7 @@ ChatProxy.prototype = {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: messageId
     });
-    
+
     connection.send(msg);
   },
 
@@ -475,7 +475,7 @@ ChatProxy.prototype = {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: messageId
     });
-    
+
     connection.send(msg);
   },
 
@@ -612,7 +612,7 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: jid,
+      jid: this.helpers.jidOrUserId(jid),
       type: 'subscribe'
     });
 
@@ -629,12 +629,12 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: jid,
+      jid: this.helpers.jidOrUserId(jid),
       type: 'subscribed'
     });
 
     self._sendSubscriptionPresence({
-      jid: jid,
+      jid: this.helpers.jidOrUserId(jid),
       type: 'subscribe'
     });
 
@@ -651,7 +651,7 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: jid,
+      jid: this.helpers.jidOrUserId(jid),
       type: 'unsubscribed'
     });
 
@@ -668,7 +668,7 @@ RosterProxy.prototype = {
     }).c('query', {
       xmlns: Strophe.NS.ROSTER
     }).c('item', {
-      jid: jid,
+      jid: this.helpers.jidOrUserId(jid),
       subscription: 'remove'
     });
 
@@ -876,7 +876,7 @@ Helpers.prototype = {
     occupantsIds.forEach(function(item, i, arr) {
       if(item != UserId){
         recipient = item;
-      }  
+      }
     });
     return recipient;
   },
@@ -898,7 +898,7 @@ Helpers.prototype = {
   getRoomJid: function(jid) {
     if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
-  },  
+  },
 
   getIdFromResource: function(jid) {
     var s = jid.split('/');
