@@ -177,7 +177,7 @@ function setupUsersScrollHandler(){
 
 //
 function showUsers(userLogin, userId) {
-  var userHtml = buildUserHtml(userLogin, userId);
+  var userHtml = buildUserHtml(userLogin, userId, false);
   $('#users_list').append(userHtml);
 }
 
@@ -440,7 +440,7 @@ function setupDialogInfoPopup(occupantsIds, name) {
       }
 
       $.each(users, function(index, item){
-        var userHtml = buildNewUserHtml(this.user.login, this.user.id);
+        var userHtml = buildUserHtml(this.user.login, this.user.id, true);
         $('#add_new_occupant').append(userHtml);
       });
     });
@@ -459,7 +459,7 @@ function setupScrollHandlerForNewOccupants() {
           return;
         }
         $.each(users, function(index, item){
-          var userHtml = buildUserHtmli(this.user.login, this.user.id);
+          var userHtml = buildUserHtml(this.user.login, this.user.id, false);
           $('#add_new_occupant').append(userHtml);
         });
       });
