@@ -36,3 +36,9 @@ function buildUserHtml(userLogin, userId) {
   var userHtml = "<a href='#' id='"+userId+"' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAdd("+userId+")'>"+userLogin+"</a>";
   return userHtml;
 }
+
+// build html for users list
+function buildNewUserHtml(userLogin, userId) {
+  var userHtml = "<a href='#' id='"+userId+"_new' class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='clickToAddNew("+userId+")'>"+userLogin+"</a>";
+  return userHtml;
+}

@@ -208,12 +208,21 @@ function clickToAdd(forFocus) {
   }
 }
 
+// select users from users list for dialog update
+function clickToAddNew(forFocus) {
+  if ($('#'+forFocus+'_new').hasClass("active")) {
+    $('#'+forFocus+'_new').removeClass("active");
+  } else {
+    $('#'+forFocus+'_new').addClass("active");
+  }
+}
+
 // create new dialog
 function createNewDialog() {
   var usersIds = [];
   var usersNames = [];
 
-  $('.users_form.active').each(function(index) {
+  $('#users_list .users_form.active').each(function(index) {
     usersIds[index] = $(this).attr('id');
     usersNames[index] = $(this).text();
   });
@@ -431,7 +440,7 @@ function setupDialogInfoPopup(occupantsIds, name) {
       }
 
       $.each(users, function(index, item){
-        var userHtml = buildUserHtml(this.user.login, this.user.id);
+        var userHtml = buildNewUserHtml(this.user.login, this.user.id);
         $('#add_new_occupant').append(userHtml);
       });
     });
@@ -450,7 +459,7 @@ function setupScrollHandlerForNewOccupants() {
           return;
         }
         $.each(users, function(index, item){
-          var userHtml = buildUserHtml(this.user.login, this.user.id);
+          var userHtml = buildUserHtmli(this.user.login, this.user.id);
           $('#add_new_occupant').append(userHtml);
         });
       });
@@ -462,8 +471,8 @@ function setupScrollHandlerForNewOccupants() {
 // for dialog update
 function onDialogUpdate() {
   var pushOccupants  = [];
-  $('.users_form.active').each(function(index) {
-    pushOccupants[index] = $(this).attr('id');
+  $('#add_new_occupant .users_form.active').each(function(index) {
+    pushOccupants[index] = $(this).attr('id').slice(0, -4);
   });
 
   var dialogName  = $('#dialog-name-input').val().trim();
