@@ -40,16 +40,17 @@ function buildUserHtml(userLogin, userId, isNew) {
     userHtml += "'";
   }
   userHtml += " class='col-md-12 col-sm-12 col-xs-12 users_form' onclick='";
-  if(isNew){
-    userHtml += "clickToAddNew";
-  }else{
-    userHtml += "clickToAdd";
-  }
-  userHtml += "(";
+  userHtml += "clickToAdd";
+  userHtml += "(\"";
   userHtml += userId;
-  userHtml += ")'>";
+  if(isNew){
+    userHtml += "_new";
+  }
+  userHtml += "\")'>";
   userHtml += userLogin;
   userHtml +="</a>";
+
+  console.log("userHtml: " + userHtml);
 
   return userHtml;
 }

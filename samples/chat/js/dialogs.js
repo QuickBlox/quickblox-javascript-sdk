@@ -208,15 +208,6 @@ function clickToAdd(forFocus) {
   }
 }
 
-// select users from users list for dialog update
-function clickToAddNew(forFocus) {
-  if ($('#'+forFocus+'_new').hasClass("active")) {
-    $('#'+forFocus+'_new').removeClass("active");
-  } else {
-    $('#'+forFocus+'_new').addClass("active");
-  }
-}
-
 // create new dialog
 function createNewDialog() {
   var usersIds = [];
