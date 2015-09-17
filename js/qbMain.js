@@ -35,10 +35,10 @@ QuickBlox.prototype = {
       var conn = new Connection();
 
       // add WebRTC API
-      var WebRTC = require('./modules/qbWebRTC');
+      var WebRTC = require('./modules/webrtc/qbWebRTC');
       this.webrtc = new WebRTC(this.service, conn || null);
     }
-    
+
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
     this.chat = new Chat(this.service, this.webrtc || null, conn || null);
@@ -46,7 +46,7 @@ QuickBlox.prototype = {
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);
     this.data = new Data(this.service);
-    
+
     // Initialization by outside token
     if (typeof appId === 'string' && !authKey && !authSecret) {
       this.service.setSession({ token: appId });
@@ -77,7 +77,7 @@ QuickBlox.prototype = {
   logout: function(callback) {
     this.auth.logout(callback);
   }
-  
+
 };
 
 var QB = new QuickBlox();

@@ -1799,11 +1799,11 @@ function generateOrder(obj) {
  * - onUserNotAnswerListener
  */
 
-require('../../lib/strophe/strophe.min');
-var download = require('../../lib/download/download.min');
+require('../../../lib/strophe/strophe.min');
+var download = require('../../../lib/download/download.min');
 
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+var config = require('../../qbConfig'),
+    Utils = require('../../qbUtils');
 
 // cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -1821,10 +1821,28 @@ var signalingType = {
   PARAMETERS_CHANGED: 'update'
 };
 
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
+};
+
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
-var connection, peer,
-    sessions = {};
+var connection;
+
+var peer;
+
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ * Fields:
+ *  - ID -> string
+ *  - initiatorID -> number
+ *  - opponentsIDs -> array of numbers
+ *  - callType -> enum
+ *  - peerConnections -> map of objects
+ */
+var sessions = {};
 
 // we use this timeout to fix next issue:
 // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
@@ -1955,6 +1973,7 @@ function WebRTCProxy(service, conn) {
 
           // iceCandidates
           items = extraParams.childNodes[i].childNodes;
+
           for (var j = 0, len2 = items.length; j < len2; j++) {
             candidate = {};
             childrenNodes = items[j].childNodes;
@@ -2052,16 +2071,16 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
     {
       audio: params.audio || false,
       video: params.video || false
-    },
 
-    function(stream) {
+    },function(stream) {
       self.localStream = stream;
-      if (params.elemId)
-        self.attachMediaStream(params.elemId, stream, params.options);
-      callback(null, stream);
-    },
 
-    function(err) {
+      if (params.elemId){
+        self.attachMediaStream(params.elemId, stream, params.options);
+      }
+      callback(null, stream);
+
+    },function(err) {
       callback(err, null);
     }
   );
@@ -2605,7 +2624,7 @@ Blob.prototype.download = function() {
   download(this, this.name, this.type);
 };
 
-},{"../../lib/download/download.min":14,"../../lib/strophe/strophe.min":15,"../qbConfig":9,"../qbUtils":13}],9:[function(require,module,exports){
+},{"../../../lib/download/download.min":14,"../../../lib/strophe/strophe.min":15,"../../qbConfig":9,"../../qbUtils":13}],9:[function(require,module,exports){
 /* 
  * QuickBlox JavaScript SDK
  *
@@ -2736,10 +2755,10 @@ QuickBlox.prototype = {
       var conn = new Connection();
 
       // add WebRTC API
-      var WebRTC = require('./modules/qbWebRTC');
+      var WebRTC = require('./modules/webrtc/qbWebRTC');
       this.webrtc = new WebRTC(this.service, conn || null);
     }
-    
+
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
     this.chat = new Chat(this.service, this.webrtc || null, conn || null);
@@ -2747,7 +2766,7 @@ QuickBlox.prototype = {
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);
     this.data = new Data(this.service);
-    
+
     // Initialization by outside token
     if (typeof appId === 'string' && !authKey && !authSecret) {
       this.service.setSession({ token: appId });
@@ -2778,7 +2797,7 @@ QuickBlox.prototype = {
   logout: function(callback) {
     this.auth.logout(callback);
   }
-  
+
 };
 
 var QB = new QuickBlox();
@@ -2786,7 +2805,7 @@ QB.QuickBlox = QuickBlox;
 
 module.exports = QB;
 
-},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./modules/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12}],11:[function(require,module,exports){
+},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./modules/webrtc/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12}],11:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *

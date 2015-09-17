@@ -17,11 +17,11 @@
  * - onUserNotAnswerListener
  */
 
-require('../../lib/strophe/strophe.min');
-var download = require('../../lib/download/download.min');
+require('../../../lib/strophe/strophe.min');
+var download = require('../../../lib/download/download.min');
 
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+var config = require('../../qbConfig'),
+    Utils = require('../../qbUtils');
 
 // cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -39,10 +39,28 @@ var signalingType = {
   PARAMETERS_CHANGED: 'update'
 };
 
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
+};
+
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
-var connection, peer,
-    sessions = {};
+var connection;
+
+var peer;
+
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ * Fields:
+ *  - ID -> string
+ *  - initiatorID -> number
+ *  - opponentsIDs -> array of numbers
+ *  - callType -> enum
+ *  - peerConnections -> map of objects
+ */
+var sessions = {};
 
 // we use this timeout to fix next issue:
 // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
@@ -173,6 +191,7 @@ function WebRTCProxy(service, conn) {
 
           // iceCandidates
           items = extraParams.childNodes[i].childNodes;
+
           for (var j = 0, len2 = items.length; j < len2; j++) {
             candidate = {};
             childrenNodes = items[j].childNodes;
