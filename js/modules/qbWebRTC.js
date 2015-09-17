@@ -270,16 +270,16 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
     {
       audio: params.audio || false,
       video: params.video || false
-    },
 
-    function(stream) {
+    },function(stream) {
       self.localStream = stream;
-      if (params.elemId)
-        self.attachMediaStream(params.elemId, stream, params.options);
-      callback(null, stream);
-    },
 
-    function(err) {
+      if (params.elemId){
+        self.attachMediaStream(params.elemId, stream, params.options);
+      }
+      callback(null, stream);
+
+    },function(err) {
       callback(err, null);
     }
   );
