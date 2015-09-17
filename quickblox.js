@@ -740,10 +740,10 @@ RosterProxy.prototype = {
     });
   },
 
-  add: function(jid, callback) {
-    var self = this,
-        userJid = this.helpers.jidOrUserId(jid),
-        userId = self.helpers.getIdFromNode(userJid).toString();
+  add: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -758,10 +758,10 @@ RosterProxy.prototype = {
     if (typeof callback === 'function') callback();
   },
 
-  confirm: function(jid, callback) {
-    var self = this,
-        userJid = this.helpers.jidOrUserId(jid),
-        userId = self.helpers.getIdFromNode(userJid).toString();
+  confirm: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'from',
@@ -781,10 +781,10 @@ RosterProxy.prototype = {
     if (typeof callback === 'function') callback();
   },
 
-  reject: function(jid, callback) {
-    var self = this,
-        userJid = this.helpers.jidOrUserId(jid),
-        userId = self.helpers.getIdFromNode(userJid).toString();
+  reject: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -799,9 +799,11 @@ RosterProxy.prototype = {
     if (typeof callback === 'function') callback();
   },
 
-  remove: function(jid, callback) {
-    var iq, userId, self = this, 
-        userJid = this.helpers.jidOrUserId(jid);
+  remove: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
+    var iq;
 
     iq = $iq({
       from: connection.jid,
@@ -813,8 +815,6 @@ RosterProxy.prototype = {
       jid: userJid,
       subscription: 'remove'
     });
-
-    userId = self.helpers.getIdFromNode(userJid).toString();
 
     connection.sendIQ(iq, function() {
       delete roster[userId];
