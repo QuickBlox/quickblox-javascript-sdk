@@ -82,7 +82,7 @@ function rosterReject() {
 function rosterGet() {
   QB.chat.roster.get(function(roster) {
     console.log(roster);
-    $('#output_place').val('Information about roster: '+roster.rosterJid);
+    $('#output_place').val('Look in console to inspect roster object');
   });
 }
 
