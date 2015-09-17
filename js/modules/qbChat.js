@@ -604,7 +604,8 @@ RosterProxy.prototype = {
 
   add: function(jid, callback) {
     var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+        userJid = this.helpers.jidOrUserId(jid),
+        userId = self.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -612,7 +613,7 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribe'
     });
 
@@ -621,7 +622,8 @@ RosterProxy.prototype = {
 
   confirm: function(jid, callback) {
     var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+        userJid = this.helpers.jidOrUserId(jid),
+        userId = self.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'from',
@@ -629,12 +631,12 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribed'
     });
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribe'
     });
 
@@ -643,7 +645,8 @@ RosterProxy.prototype = {
 
   reject: function(jid, callback) {
     var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+        userJid = this.helpers.jidOrUserId(jid),
+        userId = self.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -651,7 +654,7 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'unsubscribed'
     });
 
@@ -659,7 +662,8 @@ RosterProxy.prototype = {
   },
 
   remove: function(jid, callback) {
-    var iq, userId, self = this;
+    var iq, userId, self = this, 
+        userJid = this.helpers.jidOrUserId(jid);
 
     iq = $iq({
       from: connection.jid,
@@ -668,11 +672,11 @@ RosterProxy.prototype = {
     }).c('query', {
       xmlns: Strophe.NS.ROSTER
     }).c('item', {
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       subscription: 'remove'
     });
 
-    userId = self.helpers.getIdFromNode(jid).toString();
+    userId = self.helpers.getIdFromNode(userJid).toString();
 
     connection.sendIQ(iq, function() {
       delete roster[userId];
