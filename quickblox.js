@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.13.0 - 2015-09-16 */
+/* QuickBlox JavaScript SDK - v1.13.0 - 2015-09-17 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -740,9 +740,10 @@ RosterProxy.prototype = {
     });
   },
 
-  add: function(jid, callback) {
-    var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+  add: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -750,16 +751,17 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribe'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  confirm: function(jid, callback) {
-    var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+  confirm: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'from',
@@ -767,21 +769,22 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribed'
     });
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'subscribe'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  reject: function(jid, callback) {
-    var self = this,
-        userId = self.helpers.getIdFromNode(jid).toString();
+  reject: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -789,15 +792,18 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       type: 'unsubscribed'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  remove: function(jid, callback) {
-    var iq, userId, self = this;
+  remove: function(jidOrUserId, callback) {
+    var self = this;
+    var userJid = this.helpers.jidOrUserId(jidOrUserId);
+    var userId = this.helpers.getIdFromNode(userJid).toString();
+    var iq;
 
     iq = $iq({
       from: connection.jid,
@@ -806,11 +812,9 @@ RosterProxy.prototype = {
     }).c('query', {
       xmlns: Strophe.NS.ROSTER
     }).c('item', {
-      jid: this.helpers.jidOrUserId(jid),
+      jid: userJid,
       subscription: 'remove'
     });
-
-    userId = self.helpers.getIdFromNode(jid).toString();
 
     connection.sendIQ(iq, function() {
       delete roster[userId];
