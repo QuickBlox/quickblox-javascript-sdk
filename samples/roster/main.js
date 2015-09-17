@@ -1,6 +1,6 @@
 var currentUser,
-    rosterJid,
-    rosterName;
+    otherUser,
+    output = $('#output_place');
 
 $(document).ready(function() {
 
@@ -39,11 +39,9 @@ function connectToChat(user) {
           console.log(roster);
 
           if (currentUser == QBUser1) {
-            rosterJid = QBUser2.id;
-            rosterName = QBUser2.name;
+            otherUser = QBUser2;
           } else {
-            rosterJid = QBUser1.id;
-            rosterName = QBUser1.name;
+            otherUser = QBUser1;
           }
         }
       });
@@ -52,62 +50,62 @@ function connectToChat(user) {
 }
 
 function rosterAdd() {
-  QB.chat.roster.add(rosterJid, function() {
-    console.log(rosterJid);
-    $('#output_place').val('You have sent a request to add the user <'+rosterName+'> to your contact list');
+  QB.chat.roster.add(otherUser.id, function() {
+    console.log(otherUser.id);
+    output.val(output.val()+"You have sent a request to add the user <"+otherUser.name+"> to your contact list\n");
   });
 }
 
 function rosterRemove() {
-  QB.chat.roster.remove(rosterJid, function() {
-    console.log(rosterJid);
-    $('#output_place').val('you removed the user <'+rosterName+'> from your contact list');
+  QB.chat.roster.remove(otherUser.id, function() {
+    console.log(otherUser.id);
+    output.val(output.val()+"you removed the user <"+otherUser.name+"> from your contact list\n");
   });
 }
 
 function rosterConfirm() {
-  QB.chat.roster.confirm(rosterJid, function() {
-    console.log(rosterJid);
-    $('#output_place').val('Confirmed...');
+  QB.chat.roster.confirm(otherUser.id, function() {
+    console.log(otherUser.id);
+    output.val(output.val()+"Confirmed...\n");
   });
 }
 
 function rosterReject() {
-  QB.chat.roster.reject(rosterJid, function() {
-    console.log(rosterJid);
-    $('#output_place').val('Rejected...');
+  QB.chat.roster.reject(otherUser.id, function() {
+    console.log(otherUser.id);
+    output.val(output.val()+"Rejected...\n");
   });
 }
 
 function rosterGet() {
   QB.chat.roster.get(function(roster) {
     console.log(roster);
-    $('#output_place').val('Look in console to inspect roster object');
+    output.val(output.val()+"Look in console to inspect roster object\n");
   });
 }
 
 QB.chat.onSubscribeListener = function(userId) {
-  console.log('onSubscribeListener');
-  $('#output_place').val('User <'+rosterName+'> wants to add you to their contact list. Confirm or reject?');
+  console.log("onSubscribeListener");
+  output.val(output.val()+"User <"+otherUser.name+"> wants to add you to their contact list. Confirm or reject?\n");
 };
 
 QB.chat.onConfirmSubscribeListener = function(userId) {
-  console.log('onConfirmSubscribeListener');
-  $('#output_place').val('User <'+rosterName+'> is now in your contact list');
+  console.log("onConfirmSubscribeListener");
+  output.val(output.val()+"User <"+otherUser.name+"> is now in your contact list\n");
 };
 
 QB.chat.onRejectSubscribeListener = function(userId) {
-  console.log('onRejectSubscribeListener');
-  $('#output_place').val('User <'+rosterName+'> has rejected a request');
+  console.log("onRejectSubscribeListener");
+  output.val(output.val()+"User <"+otherUser.name+"> has rejected a request\n");
 };
 
 QB.chat.onContactListListener = function(userId, type) {
-  console.log('onContactListListener');
+  console.log("onContactListListener");
   if (type === undefined) {
-    $('#output_place').val('User <'+rosterName+'> is ONLINE');
-    console.log('status: online');
+    output.val(output.val()+"User <"+otherUser.name+"> is ONLINE\n");
+    console.log("status: online");
   } else {
-    $('#output_place').val('User <'+rosterName+'> is OFFLINE');
-    console.log('status: '+type);
+    output.val(output.val()+"User <"+otherUser.name+"> is OFFLINE\n");
+    console.log("status: "+type);
   }
 };
