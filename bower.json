@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "quickblox.js",
   "license": "MIT",
