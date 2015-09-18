@@ -1,15 +1,28 @@
+var config = {
+    endpoints: {
+        api: "apivronetwork.quickblox.com"
+        chat: "chatvronetwork.quickblox.com"
+        s3Bucket: "qb-vronetwork"
+        turn: "turnserver.quickblox.com"
+    },
+    chatProtocol: {
+        bosh: "https://chatvronetwork.quickblox.com:5281",
+        websocket: "wss://chatvronetwork.quickblox.com:5291",
+        active: 2
+    },
+    debug: true,
+    ssl: true
+};
+
 var QBApp = {
-  appId: 92,
-  authKey: 'wJHdOcQSxXQGWx5',
-  authSecret: 'BTFsj7Rtt27DAmT'
+  appId: 16381,
+  authKey: 'JmecSQ5e8XGnVxr',
+  authSecret: 'RGFhyTj4gMq4FKP'
 };
 
 var QBUser = {
-	login: "content_js_login",   
-	password: "content_js_password" 
+  login: "Quickblox",   
+  password: "Quickblox" 
 };
 
-var QBConfig = {
-
-}
-
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, QBConfig);
