@@ -50,7 +50,5 @@ function buildUserHtml(userLogin, userId, isNew) {
   userHtml += userLogin;
   userHtml +="</a>";
 
-  console.log("userHtml: " + userHtml);
-
   return userHtml;
 }
