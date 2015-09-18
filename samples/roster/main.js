@@ -36,7 +36,8 @@ function connectToChat(user) {
         } else {
           $("#loginForm").modal("hide");
           $('#loginForm .progress').hide();
-          console.log(roster);
+
+          log("Roster: " + JSON.stringify(roster));
 
           if (currentUser == QBUser1) {
             otherUser = QBUser2;
@@ -49,63 +50,55 @@ function connectToChat(user) {
   });
 }
 
+
 function rosterAdd() {
   QB.chat.roster.add(otherUser.id, function() {
-    console.log(otherUser.id);
-    output.val(output.val()+"You have sent a request to add the user <"+otherUser.name+"> to your contact list\n");
+    log("You have sent a request to add the user " + otherUser.id);
   });
 }
 
 function rosterRemove() {
   QB.chat.roster.remove(otherUser.id, function() {
-    console.log(otherUser.id);
-    output.val(output.val()+"you removed the user <"+otherUser.name+"> from your contact list\n");
+    log("You removed the user " + otherUser.id);
   });
 }
 
 function rosterConfirm() {
   QB.chat.roster.confirm(otherUser.id, function() {
-    console.log(otherUser.id);
-    output.val(output.val()+"Confirmed...\n");
+    log("Confirmed user " + otherUser.id);
   });
 }
 
 function rosterReject() {
   QB.chat.roster.reject(otherUser.id, function() {
-    console.log(otherUser.id);
-    output.val(output.val()+"Rejected...\n");
+    log("Rejected user " + otherUser.id);
   });
 }
 
 function rosterGet() {
   QB.chat.roster.get(function(roster) {
-    console.log(roster);
-    output.val(output.val()+"Look in console to inspect roster object\n");
+    log("Roster: " + JSON.stringify(roster));
   });
 }
 
+
 QB.chat.onSubscribeListener = function(userId) {
-  console.log("onSubscribeListener");
-  output.val(output.val()+"User <"+otherUser.name+"> wants to add you to their contact list. Confirm or reject?\n");
+  log("onSubscribeListener for user " + userId + ". Confirm or reject?");
 };
 
 QB.chat.onConfirmSubscribeListener = function(userId) {
-  console.log("onConfirmSubscribeListener");
-  output.val(output.val()+"User <"+otherUser.name+"> is now in your contact list\n");
+  log("onConfirmSubscribeListener for user " + userId);
 };
 
 QB.chat.onRejectSubscribeListener = function(userId) {
-  console.log("onRejectSubscribeListener");
-  output.val(output.val()+"User <"+otherUser.name+"> has rejected a request\n");
+  log("onRejectSubscribeListener for user " + userId);
 };
 
 QB.chat.onContactListListener = function(userId, type) {
-  console.log("onContactListListener");
-  if (type === undefined) {
-    output.val(output.val()+"User <"+otherUser.name+"> is ONLINE\n");
-    console.log("status: online");
-  } else {
-    output.val(output.val()+"User <"+otherUser.name+"> is OFFLINE\n");
-    console.log("status: "+type);
-  }
+  log("onContactListListener for user " + userId + ". Is online: " + (type === undefined || type == 'available'));
 };
+
+
+function log(string){
+  output.val(output.val() + string + "\n");
+}
