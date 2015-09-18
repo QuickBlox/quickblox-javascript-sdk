@@ -5,6 +5,7 @@
  *
  */
 
+var config = require('../../qbConfig');
 
  /**
   * Creates a session
@@ -27,15 +28,18 @@ function WebRTCSession(initiatorID, opponentsIDs, callType) {
  * Initiate a call
  * @param {array} A map with custom parameters
  */
-WebRTCProxy.prototype.call = function(extension) {
-
+WebRTCSession.prototype.call = function(extension) {
+  // create a peer connection for each opponent
+  this.opponentsIDs.forEach(function(item, i, arr) {
+    this.peerConnections[item] = this._createPeer(null);
+  });
 }
 
 /**
  * Accept a call
  * @param {array} A map with custom parameters
  */
-WebRTCProxy.prototype.accept = function(extension) {
+WebRTCSession.prototype.accept = function(extension) {
 
 }
 
@@ -43,7 +47,7 @@ WebRTCProxy.prototype.accept = function(extension) {
  * Reject a call
  * @param {array} A map with custom parameters
  */
-WebRTCProxy.prototype.reject = function(extension) {
+WebRTCSession.prototype.reject = function(extension) {
 
 }
 
@@ -51,7 +55,7 @@ WebRTCProxy.prototype.reject = function(extension) {
  * Stop a call
  * @param {array} A map with custom parameters
  */
-WebRTCProxy.prototype.stop = function(extension) {
+WebRTCSession.prototype.stop = function(extension) {
 
 }
 
@@ -59,9 +63,27 @@ WebRTCProxy.prototype.stop = function(extension) {
  * Update a call
  * @param {array} A map with custom parameters
  */
-WebRTCProxy.prototype.update = function(extension) {
+WebRTCSession.prototype.update = function(extension) {
 
 }
+
+WebRTCSession.prototype._createPeer = function(params) {
+  if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+
+  // Additional parameters for RTCPeerConnection options
+  // new RTCPeerConnection(pcConfig, options)
+  /**********************************************
+   * DtlsSrtpKeyAgreement: true
+   * RtpDataChannels: true
+  **********************************************/
+  var pcConfig = {
+    iceServers: config.iceServers
+  };
+  var peer = new RTCPeerConnection(pcConfig);
+  peer.init(this, params);
+
+  return peer;
+};
 
 /**
  * State of a session
