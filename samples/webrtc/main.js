@@ -12,6 +12,9 @@ $(document).ready(function() {
   //
   $(document).on('click', '.choose-user button', function() {
 
+    var ses = QB.webrtc.createNewSession(5, [1,2,3], 2);
+    console.log("ses: " + ses);
+
     caller = {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),

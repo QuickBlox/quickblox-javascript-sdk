@@ -13,7 +13,7 @@
  * - onStopCallListener
  * - onUpdateCallListener
  * - onRemoteStreamListener
- * - onSessionStateChangedListener
+ * - onSessionConnectionStateChangedListener
  * - onUserNotAnswerListener
  */
 
@@ -21,7 +21,8 @@ require('../../../lib/strophe/strophe.min');
 var download = require('../../../lib/download/download.min');
 
 var config = require('../../qbConfig'),
-    Utils = require('../../qbUtils');
+    Utils = require('../../qbUtils'),
+    RTCSession = require('./qbWebRTCSession');
 
 // cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -85,6 +86,7 @@ function WebRTCProxy(service, conn) {
 
   this.service = service;
   this.helpers = new Helpers;
+  this.session =
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -235,8 +237,8 @@ function WebRTCProxy(service, conn) {
   	clearSession(sessionId);
     self._close();
 
-    if(typeof self.onSessionStateChangedListener === 'function'){
-      self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
+    if(typeof self.onSessionConnectionStateChangedListener === 'function'){
+      self.onSessionConnectionStateChangedListener(self.SessionState.CLOSED, userId);
     }
   };
 
@@ -253,15 +255,6 @@ function WebRTCProxy(service, conn) {
     }
   };
 }
-
-WebRTCProxy.prototype.SessionState = {
-  UNDEFINED: 0,
-  CONNECTING: 1,
-  CONNECTED: 2,
-  FAILED: 3,
-  DISCONNECTED: 4,
-  CLOSED: 5
-};
 
 /* WebRTC module: User Media Steam
 --------------------------------------------------------------------------------- */
@@ -315,61 +308,6 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
       elem.style.transform = 'scaleX(-1)';
     }
     elem.play();
-  }
-};
-
-WebRTCProxy.prototype.snapshot = function(id) {
-  var video = document.getElementById(id),
-      canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d'),
-      dataURL, blob;
-
-  if (video) {
-    canvas.width = video.clientWidth;
-    canvas.height = video.clientHeight;
-    if (video.style.transform === 'scaleX(-1)') {
-      context.translate(canvas.width, 0);
-      context.scale(-1, 1);
-    }
-    context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
-    dataURL = canvas.toDataURL();
-
-    blob = dataURItoBlob(dataURL, 'image/png');
-    blob.name = 'snapshot_' + getLocalTime() + '.png';
-    blob.url = dataURL;
-
-    return blob;
-  }
-};
-
-// add CSS filters to video stream
-// http://css-tricks.com/almanac/properties/f/filter/
-WebRTCProxy.prototype.filter = function(id, filters) {
-  var video = document.getElementById(id);
-  if (video) {
-    video.style.webkitFilter = filters;
-    video.style.filter = filters;
-  }
-};
-
-WebRTCProxy.prototype.mute = function(type) {
-  this._switchOffDevice(0, type);
-};
-
-WebRTCProxy.prototype.unmute = function(type) {
-  this._switchOffDevice(1, type);
-};
-
-WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
-  if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
-    this.localStream.getAudioTracks().forEach(function (track) {
-      track.enabled = !!bool;
-    });
-  }
-  if (type === 'video' && this.localStream.getVideoTracks().length > 0) {
-    this.localStream.getVideoTracks().forEach(function (track) {
-      track.enabled = !!bool;
-    });
   }
 };
 
@@ -614,6 +552,123 @@ WebRTCProxy.prototype._XMLtoJS = function(extension, title, obj) {
   return extension;
 };
 
+
+WebRTCProxy.prototype.snapshot = function(id) {
+  var video = document.getElementById(id),
+      canvas = document.createElement('canvas'),
+      context = canvas.getContext('2d'),
+      dataURL, blob;
+
+  if (video) {
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
+    if (video.style.transform === 'scaleX(-1)') {
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
+    }
+    context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+    dataURL = canvas.toDataURL();
+
+    blob = dataURItoBlob(dataURL, 'image/png');
+    blob.name = 'snapshot_' + getLocalTime() + '.png';
+    blob.url = dataURL;
+
+    return blob;
+  }
+};
+
+// add CSS filters to video stream
+// http://css-tricks.com/almanac/properties/f/filter/
+WebRTCProxy.prototype.filter = function(id, filters) {
+  var video = document.getElementById(id);
+  if (video) {
+    video.style.webkitFilter = filters;
+    video.style.filter = filters;
+  }
+};
+
+WebRTCProxy.prototype.mute = function(type) {
+  this._switchOffDevice(0, type);
+};
+
+WebRTCProxy.prototype.unmute = function(type) {
+  this._switchOffDevice(1, type);
+};
+
+WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
+  if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
+    this.localStream.getAudioTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+  if (type === 'video' && this.localStream.getVideoTracks().length > 0) {
+    this.localStream.getVideoTracks().forEach(function (track) {
+      track.enabled = !!bool;
+    });
+  }
+};
+
+
+////////////////////////////// Session part ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Creates the new session.
+ * @param {number} Initiator ID
+ * @param {array} Opponents IDs
+ * @param {enum} Call type
+ */
+WebRTCProxy.prototype.createNewSession = function(initiatorID, opponentsIDs, callType) {
+  var newSession = new RTCSession(initiatorID, opponentsIDs, callType);
+  return newSession;
+}
+
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ */
+WebRTCProxy.prototype.sessions = {};
+
+/**
+ * Checks is session active or not
+ * @param {string} Session ID
+ */
+WebRTCProxy.prototype.isSessionActive = function(sessionId){
+   var session = this.sessions[sessionId];
+   return (session != null && session.state == this.state.ACTIVE);
+};
+
+
+/**
+ * Checks is session rejected or not
+ * @param {string} Session ID
+ */
+WebRTCProxy.prototype.isSessionRejected = function(sessionId){
+   var session = this.sessions[sessionId];
+   return (session != null && session.state == this.state.REJECTED);
+};
+
+/**
+ * Checks is session hung up or not
+ * @param {string} Session ID
+ */
+WebRTCProxy.prototype.isSessionHungUp = function(sessionId){
+   var session = this.sessions[sessionId];
+   return (session != null && session.state == this.state.HUNGUP);
+};
+
+
+
+WebRTCProxy.prototype.SessionState = {
+  UNDEFINED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  FAILED: 3,
+  DISCONNECTED: 4,
+  CLOSED: 5
+};
+
+
 /* WebRTC module: RTCPeerConnection extension
 --------------------------------------------------------------------------------- */
 if (RTCPeerConnection) {
@@ -713,7 +768,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
   // notify user about state changes
   //
-  if(typeof peer.service.onSessionStateChangedListener === 'function'){
+  if(typeof peer.service.onSessionConnectionStateChangedListener === 'function'){
 	var sessionState = null;
 	if (newIceConnectionState === 'checking'){
       sessionState = peer.service.SessionState.CONNECTING;
@@ -728,7 +783,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 	}
 
 	if(sessionState != null){
-      peer.service.onSessionStateChangedListener(sessionState);
+      peer.service.onSessionConnectionStateChangedListener(sessionState);
     }
   }
 
