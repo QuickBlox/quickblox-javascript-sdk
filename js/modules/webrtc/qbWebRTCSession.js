@@ -1,60 +1,25 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * WebRTC Module (WebRTC sessions part)
+ * WebRTC Module (WebRTC session model)
  *
  */
 
-function WebRTCSessionProxy() {
-  var self = this;
+function WebRTCSession(id) {
+  this.ID = id;
+  this.initiatorID = 0;
+  this.opponentsIDs = [];
+  this.callType = null;
+  this.peerConnections = {};
+  this.state = null;
 }
-
-/**
- * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
- * Fields:
- *  - ID -> string
- *  - initiatorID -> number
- *  - opponentsIDs -> array of numbers
- *  - callType -> enum
- *  - peerConnections -> map of objects
- *  - state -> enum
- */
-WebRTCSessionProxy.prototype.sessions = {};
 
 /**
  * State of a session
  */
-WebRTCSessionProxy.prototype.state = {
+WebRTCSession.prototype.state = {
   NEW: 'new',
   ACTIVE: 'active',
   HUNGUP: 'hungup',
   REJECTED: 'rejected'
-};
-
-/**
- * Checks is session active or not
- * @param {string} Session ID
- */
-WebRTCSessionProxy.prototype.isSessionActive = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.ACTIVE);
-};
-
-/**
- * Checks is session rejected or not
- * @param {string} Session ID
- */
-WebRTCSessionProxy.prototype.isSessionRejected = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.REJECTED);
-};
-
-/**
- * Checks is session hung up or not
- * @param {string} Session ID
- */
-WebRTCSessionProxy.prototype.isSessionHungUp = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.HUNGUP);
 };
