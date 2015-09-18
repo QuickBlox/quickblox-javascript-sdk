@@ -17,17 +17,15 @@
  * - onUserNotAnswerListener
  */
 
+
 require('../../../lib/strophe/strophe.min');
 var download = require('../../../lib/download/download.min');
 
 var config = require('../../qbConfig'),
     Utils = require('../../qbUtils'),
-    RTCSession = require('./qbWebRTCSession');
+    RTCSession = require('./qbWebRTCSession'),
+    RTCPeerConnection = require('./qbRTCPeerConnection');
 
-// cross-browser polyfill
-var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
-var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var URL = window.URL || window.webkitURL;
 
@@ -238,7 +236,7 @@ function WebRTCProxy(service, conn) {
     self._close();
 
     if(typeof self.onSessionConnectionStateChangedListener === 'function'){
-      self.onSessionConnectionStateChangedListener(self.SessionState.CLOSED, userId);
+      self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
     }
   };
 
@@ -659,7 +657,7 @@ WebRTCProxy.prototype.isSessionHungUp = function(sessionId){
 
 
 
-WebRTCProxy.prototype.SessionState = {
+WebRTCProxy.prototype.SessionConnectionState = {
   UNDEFINED: 0,
   CONNECTING: 1,
   CONNECTED: 2,
@@ -668,132 +666,14 @@ WebRTCProxy.prototype.SessionState = {
   CLOSED: 5
 };
 
-
-/* WebRTC module: RTCPeerConnection extension
---------------------------------------------------------------------------------- */
-if (RTCPeerConnection) {
-
-RTCPeerConnection.prototype.init = function(service, options) {
-  this.service = service;
-  this.sessionID = options && options.sessionID || Date.now();
-  this.type = options && options.description ? 'answer' : 'offer';
-
-  this.addStream(this.service.localStream);
-  this.onicecandidate = this.onIceCandidateCallback;
-  this.onaddstream = this.onRemoteStreamCallback;
-  this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
-
-  if (this.type === 'answer') {
-    this.onRemoteSessionCallback(options.description, 'offer');
-  }
+WebRTCProxy.prototype.CallType = {
+  VIDEO: 'video',
+  AUDIO: 'accept'
 };
 
-RTCPeerConnection.prototype.getSessionDescription = function(callback) {
-  if (peer.type === 'offer') {
-    // Additional parameters for SDP Constraints
-    // http://www.w3.org/TR/webrtc/#constraints
-    // peer.createOffer(successCallback, errorCallback, constraints)
-    peer.createOffer(successCallback, errorCallback);
-  } else {
-    peer.createAnswer(successCallback, errorCallback);
-  }
 
-  function successCallback(desc) {
-    peer.setLocalDescription(desc, function() {
-      callback(null, desc);
-    }, errorCallback);
-  }
-  function errorCallback(error) {
-    callback(error, null);
-  }
-};
 
-RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
-  var candidate = event.candidate;
 
-  if (candidate) {
-    trace("onICECandidate: " + JSON.stringify(candidate));
-
-    peer.iceCandidates = peer.iceCandidates || [];
-    peer.iceCandidates.push({
-      sdpMLineIndex: candidate.sdpMLineIndex,
-      sdpMid: candidate.sdpMid,
-      candidate: candidate.candidate
-    });
-  }
-};
-
-// handler of remote session description
-RTCPeerConnection.prototype.onRemoteSessionCallback = function(sessionDescription, type) {
-  var desc = new RTCSessionDescription({sdp: sessionDescription, type: type});
-  this.setRemoteDescription(desc);
-};
-
-// handler of remote media stream
-RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
-  if (typeof peer.service.onRemoteStreamListener === 'function')
-    peer.service.onRemoteStreamListener(event.stream);
-};
-
-RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
-  var candidate;
-  for (var i = 0, len = iceCandidates.length; i < len; i++) {
-    candidate = {
-      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
-      sdpMid: iceCandidates[i].sdpMid,
-      candidate: iceCandidates[i].candidate
-    };
-    this.addIceCandidate(new RTCIceCandidate(candidate));
-  }
-};
-
-RTCPeerConnection.prototype.onSignalingStateCallback = function() {
-  // send candidates
-  if (peer && peer.signalingState === 'stable' && peer.type === 'offer'){
-    peer.service._sendCandidate(peer.opponentId, peer.iceCandidates);
-  }
-};
-
-RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
-  trace("onIceConnectionStateCallback: " + peer.iceConnectionState);
-
-  var newIceConnectionState = peer.iceConnectionState;
-
-  // read more about all states:
-  // http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
-  //
-  // 'disconnected' happens in a case when a user has killed an application (for example, on iOS/Android via task manager).
-  // So we should notify our user about it.
-
-  // notify user about state changes
-  //
-  if(typeof peer.service.onSessionConnectionStateChangedListener === 'function'){
-	var sessionState = null;
-	if (newIceConnectionState === 'checking'){
-      sessionState = peer.service.SessionState.CONNECTING;
-	} else if (newIceConnectionState === 'connected'){
-      sessionState = peer.service.SessionState.CONNECTED;
-	} else if (newIceConnectionState === 'failed'){
-      sessionState = peer.service.SessionState.FAILED;
-	} else if (newIceConnectionState === 'disconnected'){
-      sessionState = peer.service.SessionState.DISCONNECTED;
-	} else if (newIceConnectionState === 'closed'){
-      sessionState = peer.service.SessionState.CLOSED;
-	}
-
-	if(sessionState != null){
-      peer.service.onSessionConnectionStateChangedListener(sessionState);
-    }
-  }
-
-  //
-  if (newIceConnectionState === 'closed'){
-    peer = null;
-  }
-};
-
-}
 
 /* Helpers
 ---------------------------------------------------------------------- */
@@ -813,6 +693,8 @@ Helpers.prototype = {
 };
 
 module.exports = WebRTCProxy;
+
+
 
 /* Private
 ---------------------------------------------------------------------- */

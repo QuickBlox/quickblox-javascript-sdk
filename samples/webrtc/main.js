@@ -1,4 +1,5 @@
 var mediaParams, caller, callee;
+var currentSession;
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
@@ -11,9 +12,6 @@ $(document).ready(function() {
   // Choose user
   //
   $(document).on('click', '.choose-user button', function() {
-
-    var ses = QB.webrtc.createNewSession(5, [1,2,3], 2);
-    console.log("ses: " + ses);
 
     caller = {
       id: $(this).attr('id'),
@@ -263,6 +261,7 @@ QB.webrtc.onUserNotAnswerListener = function(userId) {
 //
 
 function callWithParams(mediaParams, isOnlyAudio){
+
   QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
     if (err) {
       console.log(err);
@@ -272,10 +271,18 @@ function callWithParams(mediaParams, isOnlyAudio){
       $('#audiocall, #videocall').attr('disabled', 'disabled');
       updateInfoMessage('Calling...');
       $('#callingSignal')[0].play();
-      //
+
+      // create RTC session and call
+      currentSession = QB.webrtc.createNewSession(caller.id, [callee.id],
+         isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+      console.log("session: " + session);
+
       var extension = {
-        sessionID: new Date().getTime().toString()
+
       }
+
+      currentSession.call(extension);
+
       QB.webrtc.call(callee.id, isOnlyAudio ? 'audio' : 'video', {});
     }
   });
