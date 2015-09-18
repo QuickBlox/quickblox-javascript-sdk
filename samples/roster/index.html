@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuickBlox JavaScript Roster code sample</title>
+  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h1>JavaScript Roster code sample</h1>
+      <p>Powered by QuickBlox</p>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-xs-12">
+        <h3>Output</h3>
+        <textarea readonly class="form-control" rows="9" id="output_place"></textarea>
+      </div>
+      <div class="col-sm-6 col-xs-12">
+        <button  type="button" id="rosterReject" class="btn btn-info btn-lg btn-block" onclick="rosterGet()">Get contact list</button>
+        <button  type="button" id="rosterAdd" class="btn btn-primary btn-lg btn-block" onclick="rosterAdd()">Add user to roster</button>
+        <button  type="button" id="rosterConfirm" class="btn btn-success btn-lg btn-block" onclick="rosterConfirm()">Confirm</button>
+        <button  type="button" id="rosterReject" class="btn btn-danger btn-lg btn-block" onclick="rosterReject()">Reject</button>
+        <button  type="button" id="rosterRemove" class="btn btn-warning btn-lg btn-block" onclick="rosterRemove()">Remove user from roster</button>
+      </div>
+    </div>
+
+    <!-- Modal (login to chat)-->
+    <div id="loginForm" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Sign In to QuickBlox Contact_List sample</h3>
+          </div>
+          <div class="modal-body">
+            <button type="button" value="Quick" id="user1" class="btn btn-primary btn-lg btn-block">Sign in with Quick</button>
+            <button type="button" value="Blox" id="user2" class="btn btn-success btn-lg btn-block">Sign in with Blox</button>
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="../../quickblox.js"></script>
+  <script src="config.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

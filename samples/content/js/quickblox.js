@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.13.1 - 2015-09-18 */
+/* QuickBlox JavaScript SDK - v1.11.0 - 2015-08-11 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -150,7 +150,7 @@ function signMessage(message, secret) {
  * - onSubscribeListener
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
- * - onDisconnectedListener
+ * - onDisconnectingListener
  * - onReconnectListener
  */
 
@@ -166,7 +166,7 @@ if (isBrowser) {
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
 }
-
+ 
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
@@ -223,7 +223,7 @@ function ChatProxy(service, webrtcModule, conn) {
       attachments = [];
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
         if (extraParams.childNodes[i].tagName === 'attachment') {
-
+          
           // attachments
           attach = {};
           attributes = extraParams.childNodes[i].attributes;
@@ -330,7 +330,7 @@ function ChatProxy(service, webrtcModule, conn) {
           roster[userId] = {
             subscription: 'both',
             ask: null
-          };
+          };          
         } else {
           roster[userId] = {
             subscription: 'to',
@@ -391,9 +391,6 @@ ChatProxy.prototype = {
     var userJid;
     if ('userId' in params) {
       userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
-      if ('resource' in params) {
-        userJid = userJid + "/" + params.resource;
-      }
     } else if ('jid' in params) {
       userJid = params.jid;
     }
@@ -466,9 +463,8 @@ ChatProxy.prototype = {
         trace('Status.DISCONNECTED at ' + getLocalTime());
         connection.reset();
 
-        if (typeof self.onDisconnectedListener === 'function'){
-          self.onDisconnectedListener();
-        }
+        if (typeof self.onDisconnectingListener === 'function')
+          self.onDisconnectingListener();
 
         // reconnect to chat
         if (!self._isLogout) self.connect(params);
@@ -500,13 +496,13 @@ ChatProxy.prototype = {
         xmlns: Strophe.NS.CLIENT
       }).t(message.body).up();
     }
-
+    
     // custom parameters
     if (message.extension) {
       msg.c('extraParams', {
         xmlns: Strophe.NS.CLIENT
       });
-
+      
       Object.keys(message.extension).forEach(function(field) {
         if (field === 'attachments') {
 
@@ -533,7 +529,7 @@ ChatProxy.prototype = {
         xmlns: Strophe.NS.CHAT_MARKERS
       });
     }
-
+    
     connection.send(msg);
   },
 
@@ -550,7 +546,7 @@ ChatProxy.prototype = {
     msg.c('composing', {
       xmlns: 'http://jabber.org/protocol/chatstates'
     });
-
+    
     connection.send(msg);
   },
 
@@ -567,7 +563,7 @@ ChatProxy.prototype = {
     msg.c('paused', {
       xmlns: 'http://jabber.org/protocol/chatstates'
     });
-
+    
     connection.send(msg);
   },
 
@@ -575,7 +571,7 @@ ChatProxy.prototype = {
   sendPres: function(type) {
     if(!isBrowser) throw unsupported;
 
-    connection.send($pres({
+    connection.send($pres({ 
       from: connection.jid,
       type: type
     }));
@@ -595,7 +591,7 @@ ChatProxy.prototype = {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: messageId
     });
-
+    
     connection.send(msg);
   },
 
@@ -613,7 +609,7 @@ ChatProxy.prototype = {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: messageId
     });
-
+    
     connection.send(msg);
   },
 
@@ -740,10 +736,9 @@ RosterProxy.prototype = {
     });
   },
 
-  add: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
+  add: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -751,17 +746,16 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: userJid,
+      jid: jid,
       type: 'subscribe'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  confirm: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
+  confirm: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
     roster[userId] = {
       subscription: 'from',
@@ -769,22 +763,21 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: userJid,
+      jid: jid,
       type: 'subscribed'
     });
 
     self._sendSubscriptionPresence({
-      jid: userJid,
+      jid: jid,
       type: 'subscribe'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  reject: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
+  reject: function(jid, callback) {
+    var self = this,
+        userId = self.helpers.getIdFromNode(jid).toString();
 
     roster[userId] = {
       subscription: 'none',
@@ -792,18 +785,15 @@ RosterProxy.prototype = {
     };
 
     self._sendSubscriptionPresence({
-      jid: userJid,
+      jid: jid,
       type: 'unsubscribed'
     });
 
     if (typeof callback === 'function') callback();
   },
 
-  remove: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
-    var iq;
+  remove: function(jid, callback) {
+    var iq, userId, self = this;
 
     iq = $iq({
       from: connection.jid,
@@ -812,9 +802,11 @@ RosterProxy.prototype = {
     }).c('query', {
       xmlns: Strophe.NS.ROSTER
     }).c('item', {
-      jid: userJid,
+      jid: jid,
       subscription: 'remove'
     });
+
+    userId = self.helpers.getIdFromNode(jid).toString();
 
     connection.sendIQ(iq, function() {
       delete roster[userId];
@@ -882,30 +874,6 @@ MucProxy.prototype = {
 
     if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
     connection.send(pres);
-  },
-
-  listOnlineUsers: function(roomJid, callback) {
-    var iq, self = this,
-        onlineUsers = [];
-
-    iq = $iq({
-      from: connection.jid,
-      id: connection.getUniqueId('muc_disco_items'),
-      to: roomJid,
-      type: "get"
-    }).c("query", {
-      xmlns: 'http://jabber.org/protocol/disco#items'
-    })
-
-    connection.sendIQ(iq, function(stanza) {
-      var items = stanza.getElementsByTagName('item');
-      var userId;
-      for (var i = 0, len = items.length; i < len; i++) {
-        userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
-        onlineUsers.push(userId);
-      }
-      callback(onlineUsers);
-    });
   }
 
 };
@@ -1018,7 +986,7 @@ Helpers.prototype = {
     occupantsIds.forEach(function(item, i, arr) {
       if(item != UserId){
         recipient = item;
-      }
+      }  
     });
     return recipient;
   },
@@ -1040,7 +1008,7 @@ Helpers.prototype = {
   getRoomJid: function(jid) {
     if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
-  },
+  },  
 
   getIdFromResource: function(jid) {
     var s = jid.split('/');
@@ -1056,15 +1024,7 @@ Helpers.prototype = {
 
   getBsonObjectId: function() {
     return Utils.getBsonObjectId();
-  },
-
-  getUserIdFromRoomJid: function(jid) {
-    var arrayElements = jid.toString().split('/');
-    if(arrayElements.length == 0){
-      return null;
-    }
-    return arrayElements[arrayElements.length-1];
-  }
+  }  
 
 };
 
@@ -1162,8 +1122,12 @@ ContentProxy.prototype = {
         fileId = createResult.id;
         
         Object.keys(uri.queryKey).forEach(function(val) {
-          data.append(val, decodeURIComponent(uri.queryKey[val]));
-        });
+          payload_value = uri.queryKey[val];
+          if (val === "Expires") {
+            payload_value = payload_value.replace(/\+/g, '%20');
+          }
+          data.append(val, decodeURIComponent(payload_value));
+        });        
         data.append('file', file, createResult.name);
         
         uploadParams.data = data;
@@ -1800,7 +1764,6 @@ function generateOrder(obj) {
  * - onUpdateCallListener
  * - onRemoteStreamListener
  * - onSessionStateChangedListener
- * - onUserNotAnswerListener
  */
 
 require('../../lib/strophe/strophe.min');
@@ -1834,15 +1797,7 @@ var connection, peer,
 // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
 // We need a way to hide it if sach situation happened."
 //
-var answerTimers = {};
-
-// We use this timer interval to dial a user - produce the call reqeusts each N seconds.
-//
-var dialingTimerIntervals = {};
-
-// We use this timer on a caller's side to notify him if the opponent doesn't respond.
-//
-var callTimers = {};
+var answersTimers = {};
 
 
 /* WebRTC module: Core
@@ -1871,18 +1826,20 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
+
+      // run caller availability timer and run again for this user
+      clearAnswerTimer(userId);
+      if(peer == null){
+      	var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+        answerTimer = setTimeout(self._answerTimeoutCallback, answerTimeInterval, userId);
+        answersTimers[userId] = answerTimer;
+      }
+      //
       
       if (callers[userId]) {
       	trace('skip onCallListener, a user already got it');
       	return true;
       }
-
-      // run caller availability timer and run again for this user
-      clearAnswerTimer(userId);
-      if(peer == null){
-        startAnswerTimer(userId, self._answerTimeoutCallback);
-      }
-      //
 
       callers[userId] = {
         sessionID: extension.sessionID,
@@ -1899,10 +1856,6 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-        
-      clearDialingTimerInterval(userId);
-      clearCallTimer(userId);
-
       if (typeof peer === 'object')
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
       delete extension.sdp;
@@ -1911,19 +1864,12 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
-
-      clearDialingTimerInterval(userId);
-      clearCallTimer(userId);
-
       self._close();
       if (typeof self.onRejectCallListener === 'function')
         self.onRejectCallListener(userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
-
-      clearDialingTimerInterval(userId);
-      clearCallTimer(userId);
 
       clearCallers(userId);
       
@@ -2005,19 +1951,6 @@ function WebRTCProxy(service, conn) {
     
     if(typeof self.onSessionStateChangedListener === 'function'){
       self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
-    }
-  };
-
-  this._callTimeoutCallback = function (userId){
-    trace("User " + userId + " not asnwer");
-
-    clearDialingTimerInterval(userId);
-
-    clearCallers(userId);
-    self._close();
-
-    if(typeof self.onUserNotAnswerListener === 'function'){
-      self.onUserNotAnswerListener(userId);
     }
   };
 }
@@ -2146,62 +2079,42 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
 WebRTCProxy.prototype._createPeer = function(params) {
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
   if (!this.localStream) throw new Error("You don't have an access to the local stream");
-
+  var pcConfig = {
+    iceServers: config.iceServers
+  };
+  
   // Additional parameters for RTCPeerConnection options
   // new RTCPeerConnection(pcConfig, options)
   /**********************************************
    * DtlsSrtpKeyAgreement: true
    * RtpDataChannels: true
   **********************************************/
-  var pcConfig = {
-    iceServers: config.iceServers
-  };
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  
-  trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
+  trace('SessionID ' + peer.sessionID);
+  trace(peer);
 };
 
 WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
-
-  trace('Call. userId: ' + opponentsIDs + ", callType: " + callType + ', extension: ' + JSON.stringify(extension));
-
   this._createPeer();
 
   var self = this;
+  // TODO: need to add a posibility created group calls
+  var ids = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
 
-  // For now we support only 1-1 calls.
-  //
-  var userIdsToCall = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
-  var userIdToCall = userIdsToCall[0];
-
-  peer.opponentId = userIdToCall;
+  peer.opponentId = ids[0];
   peer.getSessionDescription(function(err, res) {
     if (err) {
-      trace("getSessionDescription error: " + err);
+      trace(err);
     } else {
-
-      // let's send call requests to user
-      //
-      clearDialingTimerInterval(userIdToCall);
-      var functionToRun = function() {
-        self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
-      };
-      functionToRun(); // run a function for the first time and then each N seconds.
-      startDialingTimerInterval(userIdToCall, functionToRun);
-      //
-      clearCallTimer(userIdToCall);
-      startCallTimer(userIdToCall, self._callTimeoutCallback);
-      //
-      //
+      trace('call ' + peer.opponentId);
+      self._sendMessage(peer.opponentId, extension, 'CALL', callType, ids);
     }
   });
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
-  var extension = extension || {};
-
-  trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  trace('accept ' + userId + ', extension: ' + extension);
 
   clearAnswerTimer(userId);
   
@@ -2229,26 +2142,21 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
 WebRTCProxy.prototype.reject = function(userId, extension) {
   var extension = extension || {};
 
-  trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
   clearAnswerTimer(userId);
 
   if (callers[userId]) {
     extension.sessionID = callers[userId].sessionID;
     delete callers[userId];
   }
-
+  trace('reject ' + userId);
   this._sendMessage(userId, extension, 'REJECT');
 };
 
 WebRTCProxy.prototype.stop = function(userId, extension) {
   var extension = extension || {};
-
-  trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  trace('stop ' + userId);
 
   clearAnswerTimer(userId);
-  clearDialingTimerInterval(userId);
-  clearCallTimer(userId);
 
   this._sendMessage(userId, extension, 'STOP');
   this._close();
@@ -2257,16 +2165,12 @@ WebRTCProxy.prototype.stop = function(userId, extension) {
 };
 
 WebRTCProxy.prototype.update = function(userId, extension) {
-  var extension = extension || {};
-  trace('Update. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
+  trace('update ' + userId);
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
-  trace("Peer._close");
-
   if (peer) {
     peer.close();
   }
@@ -2544,54 +2448,13 @@ function clearCallers(userId){
 	}
 }
 
-
-////////////////////////////////////////////////////////////////////////
-
 function clearAnswerTimer(userId){
-	var answerTimer = answerTimers[userId];
-  if(answerTimer){
-    clearTimeout(answerTimer);
-    delete answerTimers[userId];
-  }
+	var answerTimer = answersTimers[userId];
+    if(answerTimer){
+      clearTimeout(answerTimer);
+      delete answersTimers[userId];
+    }
 }
-
-function startAnswerTimer(userId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  var answerTimer = setTimeout(callback, answerTimeInterval, userId);
-  answerTimers[userId] = answerTimer;
-}
-
-function clearDialingTimerInterval(userId){
-  var dialingTimer = dialingTimerIntervals[userId];
-  if(dialingTimer){
-    clearInterval(dialingTimer);
-    delete dialingTimerIntervals[userId];
-  }
-}
-
-function startDialingTimerInterval(userId, functionToRun){
-  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
-  dialingTimerIntervals[userId] = dialingTimerId;
-}
-
-function clearCallTimer(userId){
-  var callTimer = callTimers[userId];
-  if(callTimer){
-    clearTimeout(callTimer);
-    delete callTimers[userId];
-  }
-}
-
-function startCallTimer(userId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
-  var callTimer = setTimeout(callback, answerTimeInterval, userId);
-  callTimers[userId] = callTimer;
-}
-
-////////////////////////////////////////////////////////////////////////
-
 
 // Convert Data URI to Blob
 function dataURItoBlob(dataURI, contentType) {
@@ -2611,7 +2474,7 @@ Blob.prototype.download = function() {
 };
 
 },{"../../lib/download/download.min":14,"../../lib/strophe/strophe.min":15,"../qbConfig":9,"../qbUtils":13}],9:[function(require,module,exports){
-/*
+/* 
  * QuickBlox JavaScript SDK
  *
  * Configuration Module
@@ -2619,18 +2482,25 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.13.1',
+  version: '1.11.0',
   creds: {
     appId: '',
     authKey: '',
     authSecret: ''
   },
-  endpoints: {
-    api: 'api.quickblox.com',
+  // endpoints: {
+  //   api: 'api.quickblox.com',
+  //   chat: 'chat.quickblox.com',
+  //   muc: 'muc.chat.quickblox.com',
+  //   turn: 'turnserver.quickblox.com',
+  //   s3Bucket: 'qbprod'
+  // },
+    endpoints: {
+    api: 'apistage3.quickblox.com',
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com',
     turn: 'turnserver.quickblox.com',
-    s3Bucket: 'qbprod'
+    s3Bucket: 'qb-stage-3'
   },
   chatProtocol: {
     // bosh: 'http://chat.quickblox.com:5280',
@@ -2660,8 +2530,7 @@ var config = {
     },
   ],
   webrtc: {
-    answerTimeInterval: 60,
-    dialingTimeInterval: 5,
+    answerTimeInterval: 60
   },
   urls: {
     session: 'session',
