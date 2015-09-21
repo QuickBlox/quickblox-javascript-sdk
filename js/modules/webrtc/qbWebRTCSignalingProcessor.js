@@ -1,16 +1,14 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * WebRTC Module (WebRTC signaling)
+ * WebRTC Module (WebRTC signaling provider)
  *
  */
 
 require('../../../lib/strophe/strophe.min');
 var Helpers = require('./qbWebRTCHelpers'),
 
-var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
-
-function WebRTCSignaling(service, delegate, connection) {
+function WebRTCSignalingProcessor(service, delegate, connection) {
   this.service = service;
   this.delegate = delegate;
   this.connection = connection;
@@ -21,7 +19,7 @@ function WebRTCSignaling(service, delegate, connection) {
         delay = stanza.querySelector('delay'),
         userId = Helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
-    if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID){
+    if (delay || extension.moduleIdentifier !== Helpers.getWebRTCModuleID()){
       return true;
     }
 
@@ -142,6 +140,9 @@ WebRTCSignaling.SignalingType = {
    CANDIDATE: 'iceCandidates',
    PARAMETERS_CHANGED: 'update'
 };
+
+
+
 
 WebRTCSignaling.prototype.sendCandidate = function(userId, iceCandidates, extension) {
   var extension = extension || {};

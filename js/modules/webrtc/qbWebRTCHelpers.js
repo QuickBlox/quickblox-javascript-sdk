@@ -12,6 +12,8 @@ function WebRTCHelpers() {
 
 }
 
+WebRTCHelpers.MODULE_ID = "WebRTCVideoChat";
+
 WebRTCHelpers = {
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;
@@ -43,6 +45,10 @@ WebRTCHelpers = {
     }
 
     return new Blob([new Uint8Array(arr)], {type: contentType});
+  }
+
+  getWebRTCModuleID: function(){
+    return WebRTCHelpers.MODULE_ID;
   }
 
 };
