@@ -11,6 +11,7 @@ var config = require('../../qbConfig');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
 var Utils = require('../../qbUtils'),
 var Helpers = require('./qbWebRTCHelpers'),
+var Signaling = require('./qbWebRTCSignaling'),
 
 // Variables
 //

@@ -18,14 +18,13 @@
   */
 
 
- var WebRTCSession = require('./qbWebRTCSession');
+var WebRTCSession = require('./qbWebRTCSession');
+var WebRTCSignaling = require('./qbWebRTCSignaling');
 
- var connection;
-
- function WebRTCClient(connection) {
-   var self = this;
-   connection = conn;
- }
+function WebRTCClient(service, connection) {
+  this.service = service;
+  this.signaling = new WebRTCSignaling(service, connection);
+}
 
  /**
   * Call type

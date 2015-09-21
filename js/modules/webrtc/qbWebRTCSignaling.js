@@ -6,19 +6,12 @@
  */
 
 require('../../../lib/strophe/strophe.min');
+var Helpers = require('./qbWebRTCHelpers'),
 
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
-var signalingType = {
-   CALL: 'call',
-   ACCEPT: 'accept',
-   REJECT: 'reject',
-   STOP: 'hangUp',
-   CANDIDATE: 'iceCandidates',
-   PARAMETERS_CHANGED: 'update'
-};
-
-function WebRTCSignaling(connection) {
+function WebRTCSignaling(service, connection) {
+  this.service = service;
   this.connection = connection;
 
   this._onMessage = function(stanza) {
@@ -168,39 +161,41 @@ function WebRTCSignaling(connection) {
 
 }
 
-WebRTCSignaling.prototype.sendCandidate = function(userId, iceCandidates) {
-  var extension = {
-    iceCandidates: iceCandidates
-  };
-  this.sendMessage(userId, extension, 'CANDIDATE');
+WebRTCSignaling.SignalingType = {
+   CALL: 'call',
+   ACCEPT: 'accept',
+   REJECT: 'reject',
+   STOP: 'hangUp',
+   CANDIDATE: 'iceCandidates',
+   PARAMETERS_CHANGED: 'update'
 };
 
-WebRTCSignaling.prototype.sendMessage = function(userId, extension, type, callType, opponentsIDs) {
+WebRTCSignaling.prototype.sendCandidate = function(userId, iceCandidates, extension) {
+  var extension = extension || {};
+  extension[iceCandidates] = iceCandidates;
+
+  this.sendMessage(userId, extension, WebRTCSignaling.SignalingType.CANDIDATE);
+};
+
+WebRTCSignaling.prototype.sendMessage = function(userId, extension, signalingType) {
   var extension = extension || {},
       self = this,
       msg, params;
 
+  // basic parameters
+  //
   extension.moduleIdentifier = WEBRTC_MODULE_ID;
-  extension.signalType = signalingType[type];
-  extension.sessionID = peer && peer.sessionID || extension.sessionID;
-
-  if (callType) {
-    extension.callType = callType === 'video' ? '1' : '2';
-  }
-
-  if (type === 'CALL' || type === 'ACCEPT') {
-    extension.sdp = peer.localDescription.sdp;
-    extension.platform = 'web';
-  }
-
-  if (type === 'CALL') {
-    extension.callerID = this.helpers.getIdFromNode(this.connection.jid);
-    extension.opponentsIDs = opponentsIDs;
-  }
+  extension.signalType = signalingType;
+  // extension.sessionID
+  // extension.callType
+  extension.platform = 'web';
+  extension.callerID = Helpers.getIdFromNode(this.connection.jid);
+  // extension.opponentsIDs;
+  // extension.sdp
 
   params = {
     from: this.connection.jid,
-    to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
+    to: Helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };

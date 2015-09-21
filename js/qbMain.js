@@ -35,8 +35,8 @@ QuickBlox.prototype = {
       var conn = new Connection();
 
       // add WebRTC API
-      var WebRTC = require('./modules/webrtc/qbWebRTC');
-      this.webrtc = new WebRTC(this.service, conn || null);
+      var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+      this.webrtc = new WebRTCClient(this.service, conn || null);
     }
 
     this.auth = new Auth(this.service);
