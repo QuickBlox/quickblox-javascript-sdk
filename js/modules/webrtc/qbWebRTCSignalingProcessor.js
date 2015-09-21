@@ -6,7 +6,8 @@
  */
 
 require('../../../lib/strophe/strophe.min');
-var Helpers = require('./qbWebRTCHelpers'),
+var Helpers = require('./qbWebRTCHelpers');
+var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCSignalingProcessor(service, delegate, connection) {
   this.service = service;
@@ -19,7 +20,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         delay = stanza.querySelector('delay'),
         userId = Helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
-    if (delay || extension.moduleIdentifier !== Helpers.getWebRTCModuleID()){
+    if (delay || extension.moduleIdentifier !== SignalingConstants.MODULE_ID){
       return true;
     }
 
@@ -32,37 +33,37 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     delete extension.signalType;
 
     switch (signalType) {
-    case WebRTCSignaling.SignalingType.CALL:
+    case SignalingConstants.SignalingType.CALL:
       if (typeof self.delegate._onCallListener === 'function'){
         self.delegate._onCallListener(userId, sessionId, extension);
       }
 
       break;
-    case WebRTCSignaling.SignalingType.ACCEPT:
+    case SignalingConstants.SignalingType.ACCEPT:
       if (typeof self.delegate._onAcceptListener === 'function'){
         self.delegate._onAcceptListener(userId, sessionId, extension);
       }
 
       break;
-    case WebRTCSignaling.SignalingType.REJECT:
+    case SignalingConstants.SignalingType.REJECT:
       if (typeof self.delegate._onRejectListener === 'function'){
         self.delegate._onRejectListener(userId, sessionId, extension);
       }
 
       break;
-    case WebRTCSignaling.SignalingType.STOP:
+    case SignalingConstants.SignalingType.STOP:
       if (typeof self.delegate._onStopListener === 'function'){
         self.delegate._onStopListener(userId, sessionId, extension);
       }
 
       break;
-    case WebRTCSignaling.SignalingType.CANDIDATE:
+    case SignalingConstants.SignalingType.CANDIDATE:
       if (typeof self.delegate._onIceCandidatesListener === 'function'){
         self.delegate._onIceCandidatesListener(userId, sessionId, extension);
       }
 
       break;
-    case WebRTCSignaling.SignalingType.PARAMETERS_CHANGED:
+    case SignalingConstants.SignalingType.PARAMETERS_CHANGED:
       if (typeof self.delegate._onUpdateListener === 'function'){
         self.delegate._onUpdateListener(userId, sessionId, extension);
       }
@@ -130,113 +131,20 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     return extension;
   };
 
+  // TODO: the magic
+  this._XMLtoJS = function(extension, title, obj) {
+    var self = this;
+    extension[title] = {};
+    for (var i = 0, len = obj.childNodes.length; i < len; i++) {
+      if (obj.childNodes[i].childNodes.length > 1) {
+        extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
+      } else {
+        extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
+      }
+    }
+    return extension;
+  }
+
 }
 
-WebRTCSignaling.SignalingType = {
-   CALL: 'call',
-   ACCEPT: 'accept',
-   REJECT: 'reject',
-   STOP: 'hangUp',
-   CANDIDATE: 'iceCandidates',
-   PARAMETERS_CHANGED: 'update'
-};
-
-
-
-
-WebRTCSignaling.prototype.sendCandidate = function(userId, iceCandidates, extension) {
-  var extension = extension || {};
-  extension[iceCandidates] = iceCandidates;
-
-  this.sendMessage(userId, extension, WebRTCSignaling.SignalingType.CANDIDATE);
-};
-
-WebRTCSignaling.prototype.sendMessage = function(userId, extension, signalingType) {
-  var extension = extension || {},
-      self = this,
-      msg, params;
-
-  // basic parameters
-  //
-  extension.moduleIdentifier = WEBRTC_MODULE_ID;
-  extension.signalType = signalingType;
-  // extension.sessionID
-  // extension.callType
-  extension.platform = 'web';
-  extension.callerID = Helpers.getIdFromNode(this.connection.jid);
-  // extension.opponentsIDs;
-  // extension.sdp
-
-  params = {
-    to: Helpers.getUserJid(userId, this.service.getSession().application_id),
-    type: 'headline',
-    id: Utils.getBsonObjectId()
-  };
-
-  msg = $msg(params).c('extraParams', {
-    xmlns: Strophe.NS.CLIENT
-  });
-
-  Object.keys(extension).forEach(function(field) {
-    if (field === 'iceCandidates') {
-
-      // iceCandidates
-      msg = msg.c('iceCandidates');
-      extension[field].forEach(function(candidate) {
-        msg = msg.c('iceCandidate');
-        Object.keys(candidate).forEach(function(key) {
-          msg.c(key).t(candidate[key]).up();
-        });
-        msg.up();
-      });
-      msg.up();
-
-    } else if (field === 'opponentsIDs') {
-
-      // opponentsIDs
-      msg = msg.c('opponentsIDs');
-      extension[field].forEach(function(opponentId) {
-        msg = msg.c('opponentID').t(opponentId).up();
-      });
-      msg.up();
-
-    } else if (typeof extension[field] === 'object') {
-
-      self._JStoXML(field, extension[field], msg);
-
-    } else {
-      msg.c(field).t(extension[field]).up();
-    }
-  });
-
-  this.connection.send(msg);
-};
-
-// TODO: the magic
-WebRTCSignaling.prototype._JStoXML = function(title, obj, msg) {
-  var self = this;
-  msg.c(title);
-  Object.keys(obj).forEach(function(field) {
-    if (typeof obj[field] === 'object')
-      self._JStoXML(field, obj[field], msg);
-    else
-      msg.c(field).t(obj[field]).up();
-  });
-  msg.up();
-};
-
-// TODO: the magic
-WebRTCSignaling.prototype._XMLtoJS = function(extension, title, obj) {
-  var self = this;
-  extension[title] = {};
-  for (var i = 0, len = obj.childNodes.length; i < len; i++) {
-    if (obj.childNodes[i].childNodes.length > 1) {
-      extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
-    } else {
-      extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
-    }
-  }
-  return extension;
-};
-
-module.exports = WebRTCSignaling;
+module.exports = WebRTCSignalingProcessor;

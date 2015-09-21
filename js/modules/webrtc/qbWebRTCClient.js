@@ -19,7 +19,7 @@
 
 
 var WebRTCSession = require('./qbWebRTCSession');
-var WebRTCSignaling = require('./qbWebRTCSignaling');
+var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var Helpers = require('./qbWebRTCHelpers');
 
 function WebRTCClient(service, connection) {
@@ -32,7 +32,7 @@ function WebRTCClient(service, connection) {
   WebRTCClient.__instance = this;
 
 	// Initialise all properties here
-  this.signaling = new WebRTCSignaling(service, this, connection);
+  this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
 }
 
  /**
