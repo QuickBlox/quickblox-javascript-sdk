@@ -25,7 +25,30 @@ WebRTCHelpers.prototype = {
     if (config.debug) {
       console.log('[QBWebRTC]:', text);
     }
+  },
+
+  getLocalTime: function() {
+    var arr = (new Date).toString().split(' ');
+    return arr.slice(1,5).join('-');
+  },
+
+  // Convert Data URI to Blob
+  dataURItoBlob: function(dataURI, contentType) {
+    var arr = [],
+        binary = window.atob(dataURI.split(',')[1]);
+
+    for (var i = 0, len = binary.length; i < len; i++) {
+      arr.push(binary.charCodeAt(i));
+    }
+
+    return new Blob([new Uint8Array(arr)], {type: contentType});
   }
+
+};
+
+// Download Blob to local file system
+Blob.prototype.download = function() {
+  download(this, this.name, this.type);
 };
 
 module.exports = WebRTCHelpers;

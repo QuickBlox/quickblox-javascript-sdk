@@ -17,12 +17,12 @@ var Helpers = require('./qbWebRTCHelpers'),
 var localStream;
 
 
- /**
-  * Creates a session
-  * @param {number} An ID if the call's initiator
-  * @param {array} An array with opponents
-  * @param {enum} Type of a call
-  */
+/**
+ * Creates a session
+ * @param {number} An ID if the call's initiator
+ * @param {array} An array with opponents
+ * @param {enum} Type of a call
+ */
 function WebRTCSession(initiatorID, opponentsIDs, callType) {
   this.ID = generateUUID();
   this.state = this.state.NEW;
@@ -33,7 +33,6 @@ function WebRTCSession(initiatorID, opponentsIDs, callType) {
   //
   this.peerConnections = {};
 }
-
 
 /**
  * Gete the user media stream
@@ -220,18 +219,77 @@ WebRTCSession.prototype.update = function(extension) {
   // this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 }
 
+
 /**
- * MMutes the stream
+ * Mutes the stream
  * @param {string} what to mute: 'audio' or 'video'
  */
 WebRTCSession.prototype.mute = function(type) {
   this._muteStream(0, type);
 };
 
+/**
+ * Unmutes the stream
+ * @param {string} what to unmute: 'audio' or 'video'
+ */
 WebRTCSession.prototype.unmute = function(type) {
   this._muteStream(1, type);
 };
 
+/**
+ * Creates a snapshot
+ * @param {string} Id of element to make a shapshot from
+ */
+WebRTCSession.snapshot = function(id) {
+  var video = document.getElementById(id),
+      canvas = document.createElement('canvas'),
+      context = canvas.getContext('2d'),
+      dataURL, blob;
+
+  if (video) {
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
+    if (video.style.transform === 'scaleX(-1)') {
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
+    }
+    context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
+    dataURL = canvas.toDataURL();
+
+    blob = Helpers.dataURItoBlob(dataURL, 'image/png');
+    blob.name = 'snapshot_' + getLocalTime() + '.png';
+    blob.url = dataURL;
+
+    return blob;
+  }
+};
+
+/**
+ * Adds the CSS filters to video stream http://css-tricks.com/almanac/properties/f/filter/
+ * @param {string} Id of element to apply filters to
+ * @param {string} Filters string
+ */
+WebRTCSession.filter = function(id, filters) {
+  var video = document.getElementById(id);
+  if (video) {
+    video.style.webkitFilter = filters;
+    video.style.filter = filters;
+  }
+};
+
+
+//
+///////////////////////////////// Static methods ///////////////////////////////
+//
+
+
+/**
+ * Call type
+ */
+WebRTCSession.CallType = {
+  VIDEO: 'video',
+  AUDIO: 'accept'
+};
 
 /**
  * State of a session
@@ -243,11 +301,11 @@ WebRTCSession.State = {
   REJECTED: 'rejected'
 };
 
-
-//
-///////////////////////////////// Static methods ///////////////////////////////
-//
-
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ */
+WebRTCSession.sessions = {};
 
 /**
  * Creates the new session.
@@ -261,10 +319,13 @@ WebRTCSession.createNewSession = function(initiatorID, opponentsIDs, callType) {
 }
 
 /**
- * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
+ * Deletes a session
+ * @param {string} Session ID
  */
-WebRTCSession.sessions = {};
+WebRTCSession.clearSession = function(sessionId){
+  delete WebRTCSession.sessions[sessionId];
+}
+
 
 /**
  * Checks is session active or not
@@ -272,9 +333,8 @@ WebRTCSession.sessions = {};
  */
 WebRTCSession.isSessionActive = function(sessionId){
    var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == this.state.ACTIVE);
+   return (session != null && session.state == WebRTCSession.State.ACTIVE);
 };
-
 
 /**
  * Checks is session rejected or not
@@ -282,7 +342,7 @@ WebRTCSession.isSessionActive = function(sessionId){
  */
 WebRTCSession.isSessionRejected = function(sessionId){
    var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == this.state.REJECTED);
+   return (session != null && session.state == WebRTCSession.State.REJECTED);
 };
 
 /**
@@ -291,13 +351,14 @@ WebRTCSession.isSessionRejected = function(sessionId){
  */
 WebRTCSession.isSessionHungUp = function(sessionId){
    var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == this.state.HUNGUP);
+   return (session != null && session.state == WebRTCSession.State.HUNGUP);
 };
 
 
 //
 /////////////////////////////////// Delegates //////////////////////////////////
 //
+
 
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
   if (typeof this.onRemoteStreamListener === 'function'){
