@@ -56,19 +56,7 @@ var peer;
  */
 var sessions = {};
 
-// we use this timeout to fix next issue:
-// "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
-// We need a way to hide it if sach situation happened."
-//
-var answerTimers = {};
 
-// We use this timer interval to dial a user - produce the call reqeusts each N seconds.
-//
-var dialingTimerIntervals = {};
-
-// We use this timer on a caller's side to notify him if the opponent doesn't respond.
-//
-var callTimers = {};
 
 
 /* WebRTC module: Core
@@ -485,53 +473,6 @@ function clearSession(sessionId){
   delete sessions[sessionId];
 }
 
-
-////////////////////////////////////////////////////////////////////////
-
-function clearAnswerTimer(sessionId){
-	var answerTimer = answerTimers[sessionId];
-  if(answerTimer){
-    clearTimeout(answerTimer);
-    delete answerTimers[sessionId];
-  }
-}
-
-function startAnswerTimer(sessionId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
-  answerTimers[sessionId] = answerTimer;
-}
-
-function clearDialingTimerInterval(sessionId){
-  var dialingTimer = dialingTimerIntervals[sessionId];
-  if(dialingTimer){
-    clearInterval(dialingTimer);
-    delete dialingTimerIntervals[sessionId];
-  }
-}
-
-function startDialingTimerInterval(sessionId, functionToRun){
-  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
-  dialingTimerIntervals[sessionId] = dialingTimerId;
-}
-
-function clearCallTimer(sessionId){
-  var callTimer = callTimers[sessionId];
-  if(callTimer){
-    clearTimeout(callTimer);
-    delete callTimers[sessionId];
-  }
-}
-
-function startCallTimer(sessionId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
-  var callTimer = setTimeout(callback, answerTimeInterval, sessionId);
-  callTimers[sessionId] = callTimer;
-}
-
-////////////////////////////////////////////////////////////////////////
 
 
 // Convert Data URI to Blob

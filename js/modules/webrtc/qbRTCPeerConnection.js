@@ -1,23 +1,52 @@
+/*
+ * QuickBlox JavaScript SDK
+ *
+ * WebRTC Module (WebRTC peer connection model)
+ *
+ */
+
+// Modules
+//
+var config = require('../../qbConfig');
+
+// Variable
+//
 // cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 
+
 if (RTCPeerConnection) {
 
-RTCPeerConnection.prototype.init = function(service, options) {
-  this.service = service;
-  this.sessionID = options && options.sessionID || Date.now();
-  this.type = options && options.description ? 'answer' : 'offer';
+RTCPeerConnection.prototype.init = function(delegate, sessionID, type, sessionDescription) {
+  this.delegate = delegate;
+  this.sessionID = sessionID;
+  this.type = type;
 
-  this.addStream(this.service.localStream);
+  this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
+  // we use this timeout to fix next issue:
+  // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
+  // We need a way to hide it if sach situation happened."
+  //
+  this.answerTimers = {};
+
+  // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+  //
+  this.dialingTimerIntervals = {};
+
+  // We use this timer on a caller's side to notify him if the opponent doesn't respond.
+  //
+  this.callTimers = {};
+
   if (this.type === 'answer') {
-    this.onRemoteSessionCallback(options.description, 'offer');
+    var desc = new RTCSessionDescription({sdp: sessionDescription, type: 'offer'});
+    this.setRemoteDescription(desc);
   }
 };
 
@@ -58,16 +87,10 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   }
 };
 
-// handler of remote session description
-RTCPeerConnection.prototype.onRemoteSessionCallback = function(sessionDescription, type) {
-  var desc = new RTCSessionDescription({sdp: sessionDescription, type: type});
-  this.setRemoteDescription(desc);
-};
-
 // handler of remote media stream
 RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
-  if (typeof this.service.onRemoteStreamListener === 'function'){
-    this.service.onRemoteStreamListener(event.stream);
+  if (typeof this.delegate.onRemoteStreamListener === 'function'){
+    this.delegate.onRemoteStreamListener(event.stream);
   }
 };
 
@@ -86,7 +109,7 @@ RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
   if (this.signalingState === 'stable' && this.type === 'offer'){
-    this.service._sendCandidate(this.opponentId, this.iceCandidates);
+    this.delegate._sendCandidate(this.opponentId, this.iceCandidates);
   }
 };
 
@@ -103,22 +126,22 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
   // notify user about state changes
   //
-  if(typeof this.service.onSessionConnectionStateChangedListener === 'function'){
+  if(typeof this.delegate.onSessionConnectionStateChangedListener === 'function'){
   	var sessionState = null;
   	if (newIceConnectionState === 'checking'){
-        sessionState = this.service.SessionConnectionState.CONNECTING;
+        sessionState = this.delegate.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        sessionState = this.service.SessionConnectionState.CONNECTED;
+        sessionState = this.delegate.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
-        sessionState = this.service.SessionConnectionState.FAILED;
+        sessionState = this.delegate.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        sessionState = this.service.SessionConnectionState.DISCONNECTED;
+        sessionState = this.delegate.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        sessionState = this.service.SessionConnectionState.CLOSED;
+        sessionState = this.delegate.SessionConnectionState.CLOSED;
   	}
 
   	if(sessionState != null){
-      this.service.onSessionConnectionStateChangedListener(sessionState);
+      this.delegate.onSessionConnectionStateChangedListener(sessionState);
     }
   }
 
@@ -128,10 +151,52 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   }
 };
 
-function trace(text) {
-  // if (config.debug) {
-    console.log('[QBWebRTC]:', text);
-  // }
+
+//
+/////////////////////////////////// Timers//////////////////////////////////////
+//
+
+RTCPeerConnection.prototype.clearAnswerTimer = function(sessionId){
+	var answerTimer = this.answerTimers[sessionId];
+  if(answerTimer){
+    clearTimeout(answerTimer);
+    delete this.answerTimers[sessionId];
+  }
+}
+
+RTCPeerConnection.prototype.startAnswerTimer = function(sessionId, callback){
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
+  this.answerTimers[sessionId] = answerTimer;
+}
+
+RTCPeerConnection.prototype.clearDialingTimerInterval = function(sessionId){
+  var dialingTimer = this.dialingTimerIntervals[sessionId];
+  if(dialingTimer){
+    clearInterval(dialingTimer);
+    delete this.dialingTimerIntervals[sessionId];
+  }
+}
+
+RTCPeerConnection.prototype.startDialingTimerInterval = function(sessionId, functionToRun){
+  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
+  var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
+  this.dialingTimerIntervals[sessionId] = dialingTimerId;
+}
+
+RTCPeerConnection.prototype.clearCallTimer = function(sessionId){
+  var callTimer = this.callTimers[sessionId];
+  if(callTimer){
+    clearTimeout(callTimer);
+    delete this.callTimers[sessionId];
+  }
+}
+
+RTCPeerConnection.prototype.startCallTimer = function(sessionId, callback){
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
+  var callTimer = setTimeout(callback, answerTimeInterval, sessionId);
+  this.callTimers[sessionId] = callTimer;
 }
 
 }

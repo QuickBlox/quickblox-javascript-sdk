@@ -110,7 +110,7 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer(null);
+    var peer = this._createPeer('offer', null);
     this.peerConnections[item] = peer;
 
     peer.getSessionDescription(function(err, res) {
@@ -118,19 +118,19 @@ WebRTCSession.prototype.call = function(extension) {
         trace("getSessionDescription error: " + err);
       } else {
 
-        // // let's send call requests to user
-        // //
-        // clearDialingTimerInterval(sessionId);
-        // var functionToRun = function() {
-        //   self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
-        // };
-        // functionToRun(); // run a function for the first time and then each N seconds.
-        // startDialingTimerInterval(sessionId, functionToRun);
-        // //
-        // clearCallTimer(sessionId);
-        // startCallTimer(sessionId, self._callTimeoutCallback);
-        // //
-        // //
+        // let's send call requests to user
+        //
+        clearDialingTimerInterval(sessionId);
+        var functionToRun = function() {
+          self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
+        };
+        functionToRun(); // run a function for the first time and then each N seconds.
+        startDialingTimerInterval(sessionId, functionToRun);
+        //
+        clearCallTimer(sessionId);
+        startCallTimer(sessionId, self._callTimeoutCallback);
+        //
+        //
       }
     });
 
@@ -150,7 +150,7 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer(null);
+    var peer = this._createPeer('answer', extension.sdp);
     this.peerConnections[item] = peer;
 
     // var session = sessions[sessionId];
@@ -249,7 +249,7 @@ WebRTCSession.prototype.state = {
 //
 
 
-WebRTCSession.prototype._createPeer = function(params) {
+WebRTCSession.prototype._createPeer = function(type, sessionDescription) {
   trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
@@ -264,7 +264,7 @@ WebRTCSession.prototype._createPeer = function(params) {
     iceServers: config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, params);
+  peer.init(this, this.ID, type, sessionDescription);
 
   return peer;
 };

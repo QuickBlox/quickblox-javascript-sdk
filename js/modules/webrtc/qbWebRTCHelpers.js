@@ -5,6 +5,8 @@
  *
  */
 
+ var config = require('../../qbConfig');
+
 function WebRTCHelpers() {
 
 }
@@ -17,6 +19,12 @@ WebRTCHelpers.prototype = {
   getIdFromNode: function(jid) {
     if (jid.indexOf('@') < 0) return null;
     return parseInt(jid.split('@')[0].split('-')[0]);
+  },
+
+  trace: function(text) {
+    if (config.debug) {
+      console.log('[QBWebRTC]:', text);
+    }
   }
 };
 
