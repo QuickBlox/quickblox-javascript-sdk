@@ -15,7 +15,7 @@ var Helpers = require('./qbWebRTCHelpers'),
 // Variables
 //
 var localStream;
-
+var URL = window.URL || window.webkitURL;
 
 /**
  * Creates a session
@@ -279,17 +279,9 @@ WebRTCSession.filter = function(id, filters) {
 
 
 //
-///////////////////////////////// Static methods ///////////////////////////////
+////////////////////////////////// Enums ///////////////////////////////////////
 //
 
-
-/**
- * Call type
- */
-WebRTCSession.CallType = {
-  VIDEO: 'video',
-  AUDIO: 'accept'
-};
 
 /**
  * State of a session
@@ -299,59 +291,6 @@ WebRTCSession.State = {
   ACTIVE: 'active',
   HUNGUP: 'hungup',
   REJECTED: 'rejected'
-};
-
-/**
- * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
- */
-WebRTCSession.sessions = {};
-
-/**
- * Creates the new session.
- * @param {number} Initiator ID
- * @param {array} Opponents IDs
- * @param {enum} Call type
- */
-WebRTCSession.createNewSession = function(initiatorID, opponentsIDs, callType) {
-  var newSession = new WebRTCSession(initiatorID, opponentsIDs, callType);
-  return newSession;
-}
-
-/**
- * Deletes a session
- * @param {string} Session ID
- */
-WebRTCSession.clearSession = function(sessionId){
-  delete WebRTCSession.sessions[sessionId];
-}
-
-
-/**
- * Checks is session active or not
- * @param {string} Session ID
- */
-WebRTCSession.isSessionActive = function(sessionId){
-   var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == WebRTCSession.State.ACTIVE);
-};
-
-/**
- * Checks is session rejected or not
- * @param {string} Session ID
- */
-WebRTCSession.isSessionRejected = function(sessionId){
-   var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == WebRTCSession.State.REJECTED);
-};
-
-/**
- * Checks is session hung up or not
- * @param {string} Session ID
- */
-WebRTCSession.isSessionHungUp = function(sessionId){
-   var session = WebRTCSession.sessions[sessionId];
-   return (session != null && session.state == WebRTCSession.State.HUNGUP);
 };
 
 

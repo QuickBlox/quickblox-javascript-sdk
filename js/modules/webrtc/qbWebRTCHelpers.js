@@ -6,12 +6,13 @@
  */
 
  var config = require('../../qbConfig');
+ var download = require('../../../lib/download/download.min');
 
 function WebRTCHelpers() {
 
 }
 
-WebRTCHelpers.prototype = {
+WebRTCHelpers = {
   getUserJid: function(id, appId) {
     return id + '-' + appId + '@' + config.endpoints.chat;
   },

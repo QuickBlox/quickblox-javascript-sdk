@@ -15,6 +15,10 @@ var config = require('../../qbConfig');
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
+};
 
 
 if (RTCPeerConnection) {
@@ -203,6 +207,33 @@ RTCPeerConnection.prototype.startCallTimer = function(sessionId, callback){
   var callTimer = setTimeout(callback, answerTimeInterval, sessionId);
   this.callTimers[sessionId] = callTimer;
 }
+
+
+//
+/////////////////////////////////// Private ////////////////////////////////////
+//
+
+// RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
+//   clearSession(sessionId);
+//   self._close();
+//
+//   if(typeof self.onSessionConnectionStateChangedListener === 'function'){
+//     self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
+//   }
+// };
+//
+// RTCPeerConnection.prototype._callTimeoutCallback = function (sessionId){
+//   trace("sessionId: " + sessionId + " not asnwer");
+//
+//   clearDialingTimerInterval(sessionId);
+//
+//   clearSession(sessionId);
+//   self._close();
+//
+//   if(typeof self.onUserNotAnswerListener === 'function'){
+//     self.onUserNotAnswerListener(sessionId);
+//   }
+// };
 
 }
 

@@ -1,73 +1,25 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * WebRTC Module
+ * WebRTC Module (WebRTC signaling)
  *
  */
 
-/*
- * User's callbacks (listener-functions):
- * - onCallListener
- * - onAcceptCallListener
- * - onRejectCallListener
- * - onStopCallListener
- * - onUpdateCallListener
- * - onRemoteStreamListener
- * - onSessionConnectionStateChangedListener
- * - onUserNotAnswerListener
- */
-
-
 require('../../../lib/strophe/strophe.min');
-var download = require('../../../lib/download/download.min');
-var URL = window.URL || window.webkitURL;
-
-var RTCSession = require('./qbWebRTCSession'),
-
-var signalingType = {
-  CALL: 'call',
-  ACCEPT: 'accept',
-  REJECT: 'reject',
-  STOP: 'hangUp',
-  CANDIDATE: 'iceCandidates',
-  PARAMETERS_CHANGED: 'update'
-};
-
-var offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 1
-};
 
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
-var connection;
+var signalingType = {
+   CALL: 'call',
+   ACCEPT: 'accept',
+   REJECT: 'reject',
+   STOP: 'hangUp',
+   CANDIDATE: 'iceCandidates',
+   PARAMETERS_CHANGED: 'update'
+};
 
-var peer;
-
-/**
- * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
- * Fields:
- *  - ID -> string
- *  - initiatorID -> number
- *  - opponentsIDs -> array of numbers
- *  - callType -> enum
- *  - peerConnections -> map of objects
- */
-var sessions = {};
-
-
-
-
-/* WebRTC module: Core
---------------------------------------------------------------------------------- */
-function WebRTCProxy(service, conn) {
-  var self = this;
-  connection = conn;
-
-  this.service = service;
-  this.helpers = new Helpers;
-  this.session =
+function WebRTCSignaling(connection) {
+  this.connection = connection;
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -214,39 +166,16 @@ function WebRTCProxy(service, conn) {
     return extension;
   };
 
-  this._answerTimeoutCallback = function (sessionId){
-  	clearSession(sessionId);
-    self._close();
-
-    if(typeof self.onSessionConnectionStateChangedListener === 'function'){
-      self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
-    }
-  };
-
-  this._callTimeoutCallback = function (sessionId){
-    trace("sessionId: " + sessionId + " not asnwer");
-
-    clearDialingTimerInterval(sessionId);
-
-    clearSession(sessionId);
-    self._close();
-
-    if(typeof self.onUserNotAnswerListener === 'function'){
-      self.onUserNotAnswerListener(sessionId);
-    }
-  };
 }
 
-
-
-WebRTCProxy.prototype._sendCandidate = function(userId, iceCandidates) {
+WebRTCSignaling.prototype.sendCandidate = function(userId, iceCandidates) {
   var extension = {
     iceCandidates: iceCandidates
   };
-  this._sendMessage(userId, extension, 'CANDIDATE');
+  this.sendMessage(userId, extension, 'CANDIDATE');
 };
 
-WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType, opponentsIDs) {
+WebRTCSignaling.prototype.sendMessage = function(userId, extension, type, callType, opponentsIDs) {
   var extension = extension || {},
       self = this,
       msg, params;
@@ -265,12 +194,12 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
   }
 
   if (type === 'CALL') {
-    extension.callerID = this.helpers.getIdFromNode(connection.jid);
+    extension.callerID = this.helpers.getIdFromNode(this.connection.jid);
     extension.opponentsIDs = opponentsIDs;
   }
 
   params = {
-    from: connection.jid,
+    from: this.connection.jid,
     to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()
@@ -312,11 +241,11 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     }
   });
 
-  connection.send(msg);
+  this.connection.send(msg);
 };
 
 // TODO: the magic
-WebRTCProxy.prototype._JStoXML = function(title, obj, msg) {
+WebRTCSignaling.prototype._JStoXML = function(title, obj, msg) {
   var self = this;
   msg.c(title);
   Object.keys(obj).forEach(function(field) {
@@ -329,7 +258,7 @@ WebRTCProxy.prototype._JStoXML = function(title, obj, msg) {
 };
 
 // TODO: the magic
-WebRTCProxy.prototype._XMLtoJS = function(extension, title, obj) {
+WebRTCSignaling.prototype._XMLtoJS = function(extension, title, obj) {
   var self = this;
   extension[title] = {};
   for (var i = 0, len = obj.childNodes.length; i < len; i++) {
@@ -342,4 +271,4 @@ WebRTCProxy.prototype._XMLtoJS = function(extension, title, obj) {
   return extension;
 };
 
-module.exports = WebRTCProxy;
+module.exports = WebRTCSignaling;
