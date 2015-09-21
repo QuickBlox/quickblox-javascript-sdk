@@ -20,14 +20,9 @@
 
 require('../../../lib/strophe/strophe.min');
 var download = require('../../../lib/download/download.min');
-
-var config = require('../../qbConfig'),
-    Utils = require('../../qbUtils'),
-    RTCSession = require('./qbWebRTCSession'),
-    RTCPeerConnection = require('./qbRTCPeerConnection');
-
-var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 var URL = window.URL || window.webkitURL;
+
+var RTCSession = require('./qbWebRTCSession'),
 
 var signalingType = {
   CALL: 'call',
@@ -254,198 +249,7 @@ function WebRTCProxy(service, conn) {
   };
 }
 
-/* WebRTC module: User Media Steam
---------------------------------------------------------------------------------- */
-// get local stream from user media interface (web-camera, microphone)
-WebRTCProxy.prototype.getUserMedia = function(params, callback) {
-  if (!getUserMedia) throw new Error('getUserMedia() is not supported in your browser');
-  getUserMedia = getUserMedia.bind(navigator);
-  var self = this;
 
-  // Additional parameters for Media Constraints
-  // http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
-  /**********************************************
-   * googEchoCancellation: true
-   * googAutoGainControl: true
-   * googNoiseSuppression: true
-   * googHighpassFilter: true
-   * minWidth: 640
-   * minHeight: 480
-   * maxWidth: 1280
-   * maxHeight: 720
-   * minFrameRate: 60
-   * maxAspectRatio: 1.333
-  **********************************************/
-  getUserMedia(
-    {
-      audio: params.audio || false,
-      video: params.video || false
-
-    },function(stream) {
-      self.localStream = stream;
-
-      if (params.elemId){
-        self.attachMediaStream(params.elemId, stream, params.options);
-      }
-      callback(null, stream);
-
-    },function(err) {
-      callback(err, null);
-    }
-  );
-};
-
-// attach media stream to audio/video element
-WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
-  var elem = document.getElementById(id);
-  if (elem) {
-    elem.src = URL.createObjectURL(stream);
-    if (options && options.muted) elem.muted = true;
-    if (options && options.mirror) {
-      elem.style.webkitTransform = 'scaleX(-1)';
-      elem.style.transform = 'scaleX(-1)';
-    }
-    elem.play();
-  }
-};
-
-/* WebRTC module: Real-Time Communication (Signaling)
---------------------------------------------------------------------------------- */
-WebRTCProxy.prototype._createPeer = function(params) {
-  if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
-  if (!this.localStream) throw new Error("You don't have an access to the local stream");
-
-  // Additional parameters for RTCPeerConnection options
-  // new RTCPeerConnection(pcConfig, options)
-  /**********************************************
-   * DtlsSrtpKeyAgreement: true
-   * RtpDataChannels: true
-  **********************************************/
-  var pcConfig = {
-    iceServers: config.iceServers
-  };
-  peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, params);
-
-  trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
-};
-
-WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
-
-  trace('Call. userId: ' + opponentsIDs + ", callType: " + callType + ', extension: ' + JSON.stringify(extension));
-
-  this._createPeer();
-
-  var self = this;
-
-  // For now we support only 1-1 calls.
-  //
-  var userIdsToCall = opponentsIDs instanceof Array ? opponentsIDs : [opponentsIDs];
-  var userIdToCall = userIdsToCall[0];
-
-  peer.opponentId = userIdToCall;
-  peer.getSessionDescription(function(err, res) {
-    if (err) {
-      trace("getSessionDescription error: " + err);
-    } else {
-
-      var sessionId = extension.sessionID;
-
-      // let's send call requests to user
-      //
-      clearDialingTimerInterval(sessionId);
-      var functionToRun = function() {
-        self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
-      };
-      functionToRun(); // run a function for the first time and then each N seconds.
-      startDialingTimerInterval(sessionId, functionToRun);
-      //
-      clearCallTimer(sessionId);
-      startCallTimer(sessionId, self._callTimeoutCallback);
-      //
-      //
-    }
-  });
-};
-
-WebRTCProxy.prototype.accept = function(userId, extension) {
-  var extension = extension || {};
-  var sessionId = extension.sessionID;
-
-  trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
-  clearAnswerTimer(sessionId);
-
-  var session = sessions[sessionId];
-  if (session) {
-    this._createPeer({
-      sessionID: sessionId,
-      description: session.sdp
-    });
-  }
-
-  var self = this;
-  peer.opponentId = userId;
-
-  peer.getSessionDescription(function(err, res) {
-    if (err) {
-      trace(err);
-    } else {
-      self._sendMessage(userId, extension, 'ACCEPT');
-    }
-  });
-};
-
-WebRTCProxy.prototype.reject = function(userId, extension) {
-  var extension = extension || {};
-  var sessionId = extension.sessionID;
-
-  trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
-  clearAnswerTimer(sessionId);
-
-  if (sessions[sessionId]) {
-    delete sessions[sessionId];
-  }
-
-  this._sendMessage(userId, extension, 'REJECT');
-};
-
-WebRTCProxy.prototype.stop = function(userId, extension) {
-  var extension = extension || {};
-  var sessionId = extension.sessionID;
-
-  trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
-  clearAnswerTimer(sessionId);
-  clearDialingTimerInterval(sessionId);
-  clearCallTimer(userId);
-
-  this._sendMessage(userId, extension, 'STOP');
-  this._close();
-
-  clearSession(sessionId);
-};
-
-WebRTCProxy.prototype.update = function(userId, extension) {
-  var extension = extension || {};
-  trace('Update. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
-
-  this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
-};
-
-// close peer connection and local stream
-WebRTCProxy.prototype._close = function() {
-  trace("Peer._close");
-
-  if (peer) {
-    peer.close();
-  }
-  if (this.localStream) {
-    this.localStream.stop();
-    this.localStream = null;
-  }
-};
 
 WebRTCProxy.prototype._sendCandidate = function(userId, iceCandidates) {
   var extension = {
@@ -585,26 +389,7 @@ WebRTCProxy.prototype.filter = function(id, filters) {
   }
 };
 
-WebRTCProxy.prototype.mute = function(type) {
-  this._switchOffDevice(0, type);
-};
 
-WebRTCProxy.prototype.unmute = function(type) {
-  this._switchOffDevice(1, type);
-};
-
-WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
-  if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
-    this.localStream.getAudioTracks().forEach(function (track) {
-      track.enabled = !!bool;
-    });
-  }
-  if (type === 'video' && this.localStream.getVideoTracks().length > 0) {
-    this.localStream.getVideoTracks().forEach(function (track) {
-      track.enabled = !!bool;
-    });
-  }
-};
 
 
 ////////////////////////////// Session part ////////////////////////////////////
@@ -617,7 +402,7 @@ WebRTCProxy.prototype._switchOffDevice = function(bool, type) {
  * @param {enum} Call type
  */
 WebRTCProxy.prototype.createNewSession = function(initiatorID, opponentsIDs, callType) {
-  var newSession = new RTCSession(initiatorID, opponentsIDs, callType);
+  var newSession = new WebRTCSession(initiatorID, opponentsIDs, callType);
   return newSession;
 }
 
@@ -677,20 +462,7 @@ WebRTCProxy.prototype.CallType = {
 
 /* Helpers
 ---------------------------------------------------------------------- */
-function Helpers() {}
 
-Helpers.prototype = {
-
-  getUserJid: function(id, appId) {
-    return id + '-' + appId + '@' + config.endpoints.chat;
-  },
-
-  getIdFromNode: function(jid) {
-    if (jid.indexOf('@') < 0) return null;
-    return parseInt(jid.split('@')[0].split('-')[0]);
-  }
-
-};
 
 module.exports = WebRTCProxy;
 
