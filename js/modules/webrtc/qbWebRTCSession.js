@@ -110,10 +110,10 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer('offer', null);
+    var peer = this._createPeer(item, 'offer', null);
     this.peerConnections[item] = peer;
 
-    peer.getSessionDescription(function(err, res) {
+    peer.getSessionDescription(function(err, localSessioNDescription) {
       if (err) {
         trace("getSessionDescription error: " + err);
       } else {
@@ -150,7 +150,7 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer('answer', extension.sdp);
+    var peer = this._createPeer(item, 'answer', extension.sdp);
     this.peerConnections[item] = peer;
 
     // var session = sessions[sessionId];
@@ -161,7 +161,7 @@ WebRTCSession.prototype.accept = function(extension) {
     //   });
     // }
 
-    peer.getSessionDescription(function(err, res) {
+    peer.getSessionDescription(function(err, localSessionDescription) {
       if (err) {
         trace("getSessionDescription error: " + err);
       } else {
@@ -236,7 +236,7 @@ WebRTCSession.prototype.unmute = function(type) {
 /**
  * State of a session
  */
-WebRTCSession.prototype.state = {
+WebRTCSession.State = {
   NEW: 'new',
   ACTIVE: 'active',
   HUNGUP: 'hungup',
@@ -245,11 +245,84 @@ WebRTCSession.prototype.state = {
 
 
 //
+///////////////////////////////// Static methods ///////////////////////////////
+//
+
+
+/**
+ * Creates the new session.
+ * @param {number} Initiator ID
+ * @param {array} Opponents IDs
+ * @param {enum} Call type
+ */
+WebRTCSession.createNewSession = function(initiatorID, opponentsIDs, callType) {
+  var newSession = new WebRTCSession(initiatorID, opponentsIDs, callType);
+  return newSession;
+}
+
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ */
+WebRTCSession.sessions = {};
+
+/**
+ * Checks is session active or not
+ * @param {string} Session ID
+ */
+WebRTCSession.isSessionActive = function(sessionId){
+   var session = WebRTCSession.sessions[sessionId];
+   return (session != null && session.state == this.state.ACTIVE);
+};
+
+
+/**
+ * Checks is session rejected or not
+ * @param {string} Session ID
+ */
+WebRTCSession.isSessionRejected = function(sessionId){
+   var session = WebRTCSession.sessions[sessionId];
+   return (session != null && session.state == this.state.REJECTED);
+};
+
+/**
+ * Checks is session hung up or not
+ * @param {string} Session ID
+ */
+WebRTCSession.isSessionHungUp = function(sessionId){
+   var session = WebRTCSession.sessions[sessionId];
+   return (session != null && session.state == this.state.HUNGUP);
+};
+
+
+//
+/////////////////////////////////// Delegates //////////////////////////////////
+//
+
+WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
+  if (typeof this.onRemoteStreamListener === 'function'){
+    this.onRemoteStreamListener(this, userID, stream);
+  }
+};
+
+WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
+
+  if (typeof this.onSessionConnectionStateChangedListener === 'function'){
+    this.onSessionConnectionStateChangedListener(this, userID, connectionState);
+  }
+
+  if (connectionState === RTCPeerConnection.SessionConnectionState.CLOSED){
+    //peer = null;
+  }
+}
+
+
+//
 //////////////////////////////////// Private ///////////////////////////////////
 //
 
 
-WebRTCSession.prototype._createPeer = function(type, sessionDescription) {
+WebRTCSession.prototype._createPeer = function(userID, type, sessionDescription) {
   trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
@@ -264,7 +337,7 @@ WebRTCSession.prototype._createPeer = function(type, sessionDescription) {
     iceServers: config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, this.ID, type, sessionDescription);
+  peer.init(this, userID, this.ID, type, sessionDescription);
 
   return peer;
 };

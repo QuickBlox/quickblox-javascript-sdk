@@ -380,64 +380,7 @@ WebRTCProxy.prototype.filter = function(id, filters) {
 
 
 
-////////////////////////////// Session part ////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Creates the new session.
- * @param {number} Initiator ID
- * @param {array} Opponents IDs
- * @param {enum} Call type
- */
-WebRTCProxy.prototype.createNewSession = function(initiatorID, opponentsIDs, callType) {
-  var newSession = new WebRTCSession(initiatorID, opponentsIDs, callType);
-  return newSession;
-}
-
-/**
- * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
- */
-WebRTCProxy.prototype.sessions = {};
-
-/**
- * Checks is session active or not
- * @param {string} Session ID
- */
-WebRTCProxy.prototype.isSessionActive = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.ACTIVE);
-};
-
-
-/**
- * Checks is session rejected or not
- * @param {string} Session ID
- */
-WebRTCProxy.prototype.isSessionRejected = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.REJECTED);
-};
-
-/**
- * Checks is session hung up or not
- * @param {string} Session ID
- */
-WebRTCProxy.prototype.isSessionHungUp = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == this.state.HUNGUP);
-};
-
-
-
-WebRTCProxy.prototype.SessionConnectionState = {
-  UNDEFINED: 0,
-  CONNECTING: 1,
-  CONNECTED: 2,
-  FAILED: 3,
-  DISCONNECTED: 4,
-  CLOSED: 5
-};
 
 WebRTCProxy.prototype.CallType = {
   VIDEO: 'video',

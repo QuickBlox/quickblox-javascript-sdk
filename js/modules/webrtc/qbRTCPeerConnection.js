@@ -19,14 +19,24 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 
 if (RTCPeerConnection) {
 
-RTCPeerConnection.prototype.init = function(delegate, sessionID, type, sessionDescription) {
+RTCPeerConnection.SessionConnectionState = {
+  UNDEFINED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  FAILED: 3,
+  DISCONNECTED: 4,
+  CLOSED: 5
+};
+
+RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, sessionDescription) {
   this.delegate = delegate;
   this.sessionID = sessionID;
+  this.userID = userID;
   this.type = type;
 
   this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
-  this.onaddstream = this.onRemoteStreamCallback;
+  this.onaddstream = this.onAddRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
@@ -88,9 +98,9 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
 };
 
 // handler of remote media stream
-RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
-  if (typeof this.delegate.onRemoteStreamListener === 'function'){
-    this.delegate.onRemoteStreamListener(event.stream);
+RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
+  if (typeof this.delegate._onRemoteStreamListener === 'function'){
+    this.delegate._onRemoteStreamListener(this.userID, event.stream);
   }
 };
 
@@ -126,28 +136,23 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
   // notify user about state changes
   //
-  if(typeof this.delegate.onSessionConnectionStateChangedListener === 'function'){
-  	var sessionState = null;
+  if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
+  	var connectionState = null;
   	if (newIceConnectionState === 'checking'){
-        sessionState = this.delegate.SessionConnectionState.CONNECTING;
+        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        sessionState = this.delegate.SessionConnectionState.CONNECTED;
+        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
-        sessionState = this.delegate.SessionConnectionState.FAILED;
+        connectionState = RTCPeerConnection.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        sessionState = this.delegate.SessionConnectionState.DISCONNECTED;
+        connectionState = RTCPeerConnection.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        sessionState = this.delegate.SessionConnectionState.CLOSED;
+        connectionState = RTCPeerConnection.SessionConnectionState.CLOSED;
   	}
 
-  	if(sessionState != null){
-      this.delegate.onSessionConnectionStateChangedListener(sessionState);
+  	if(connectionState != null){
+      this.delegate._onSessionConnectionStateChangedListener(this.userID, connectionState);
     }
-  }
-
-  //
-  if (newIceConnectionState === 'closed'){
-    //peer = null;
   }
 };
 
