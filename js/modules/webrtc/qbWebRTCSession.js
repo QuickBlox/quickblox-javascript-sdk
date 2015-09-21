@@ -24,8 +24,8 @@ var URL = window.URL || window.webkitURL;
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(initiatorID, opponentsIDs, callType) {
-  this.ID = generateUUID();
+function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType) {
+  this.ID = (sessionID == null ? generateUUID() : sessionID);
   this.state = this.state.NEW;
   //
   this.initiatorID = initiatorID;

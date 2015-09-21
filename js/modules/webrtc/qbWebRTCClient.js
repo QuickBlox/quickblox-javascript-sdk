@@ -17,7 +17,6 @@
   * - onUserNotAnswerListener
   */
 
-
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var Helpers = require('./qbWebRTCHelpers');
@@ -32,6 +31,7 @@ function WebRTCClient(service, connection) {
   WebRTCClient.__instance = this;
 
 	// Initialise all properties here
+  this.connection = connection;
   this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
 }
 
@@ -49,14 +49,15 @@ function WebRTCClient(service, connection) {
   */
  WebRTCClient.prototype.sessions = {};
 
- /**
-  * Creates the new session.
-  * @param {number} Initiator ID
-  * @param {array} Opponents IDs
-  * @param {enum} Call type
-  */
- WebRTCClient.prototype.createNewSession = function(initiatorID, opponentsIDs, callType) {
-   var newSession = new WebRTCSession(initiatorID, opponentsIDs, callType);
+/**
+ * Creates the new session.
+ * @param {number} Initiator ID
+ * @param {array} Opponents IDs
+ * @param {enum} Call type
+ */
+ WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+   var newSession = new WebRTCSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+   this.sessions[newSession.ID] = newSession;
    return newSession;
  }
 
@@ -104,6 +105,17 @@ function WebRTCClient(service, connection) {
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
    Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
 
+   var session = WebRTCClient.sessions[sessionId];
+   if(!session){
+     session = new WebRTCSession(sessionID, extension.callerID, opponentsIDs, callType);
+     this.sessions[session.ID] = session;
+   }
+
+   if (typeof this.onCallListener === 'function'){
+     this.onCallListener(session, extension);
+   }
+
+
   //  if (this.sessions[sessionID]) {
   //    trace('skip onCallListener, a user already got it');
   //    return true;
@@ -124,6 +136,11 @@ function WebRTCClient(service, connection) {
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
    Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
+   var session = WebRTCClient.sessions[sessionId];
+
+   if (typeof this.onAcceptCallListener === 'function'){
+     this.onAcceptCallListener(session, extension);
+   }
 
         //  clearDialingTimerInterval(sessionId);
         //  clearCallTimer(userId);
@@ -136,6 +153,12 @@ function WebRTCClient(service, connection) {
  WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
    Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
+   var session = WebRTCClient.sessions[sessionId];
+
+   if (typeof this.onRejectListener === 'function'){
+     this.onRejectListener(session, extension);
+   }
+
   //  clearDialingTimerInterval(sessionId);
   //  clearCallTimer(userId);
    //
@@ -144,6 +167,12 @@ function WebRTCClient(service, connection) {
 
  WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
    Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+   var session = WebRTCClient.sessions[sessionId];
+
+   if (typeof this.onStopCallListener === 'function'){
+     this.onStopCallListener(session, extension);
+   }
 
   //  clearDialingTimerInterval(sessionId);
   //  clearCallTimer(userId);
@@ -166,7 +195,12 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
+  var session = WebRTCClient.sessions[sessionId];
+
+  if (typeof this.onUpdateCallListener === 'function'){
+    this.onUpdateCallListener(session, extension);
+  }
 }
 
 
- module.exports = WebRTCClient;
+module.exports = WebRTCClient;
