@@ -110,6 +110,7 @@ function WebRTCClient(service, connection) {
      session = new WebRTCSession(sessionID, extension.callerID, opponentsIDs, callType);
      this.sessions[session.ID] = session;
    }
+   session.processOnCall(userID, extension);
 
    if (typeof this.onCallListener === 'function'){
      this.onCallListener(session, extension);
@@ -137,6 +138,7 @@ function WebRTCClient(service, connection) {
    Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    var session = WebRTCClient.sessions[sessionId];
+   session.processOnAccept(userID, extension);
 
    if (typeof this.onAcceptCallListener === 'function'){
      this.onAcceptCallListener(session, extension);
@@ -154,6 +156,7 @@ function WebRTCClient(service, connection) {
    Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    var session = WebRTCClient.sessions[sessionId];
+   session.processOnReject(userID, extension);
 
    if (typeof this.onRejectListener === 'function'){
      this.onRejectListener(session, extension);
@@ -169,6 +172,7 @@ function WebRTCClient(service, connection) {
    Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    var session = WebRTCClient.sessions[sessionId];
+   session.processOnStop(userID, extension);
 
    if (typeof this.onStopCallListener === 'function'){
      this.onStopCallListener(session, extension);
@@ -185,6 +189,8 @@ function WebRTCClient(service, connection) {
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
   Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
+  session.processOnIceCandidates(userID, extension);
+
   // if (typeof peer === 'object') {
   //   peer.addCandidates(extension.iceCandidates);
   //   if (peer.type === 'answer')
@@ -196,6 +202,7 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
   var session = WebRTCClient.sessions[sessionId];
+  session.processOnUpdate(userID, extension);
 
   if (typeof this.onUpdateCallListener === 'function'){
     this.onUpdateCallListener(session, extension);

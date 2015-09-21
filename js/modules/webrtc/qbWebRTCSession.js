@@ -296,6 +296,35 @@ WebRTCSession.State = {
 
 
 //
+///////////////////////// Delegates (rtc client)  /////////////////////////
+//
+
+WebRTCSession.prototype.processOnCall = function(userID, extension) {
+
+}
+
+WebRTCSession.prototype.processOnAccept = function(userID, extension) {
+
+}
+
+WebRTCSession.prototype.processOnReject = function(userID, extension) {
+
+}
+
+WebRTCSession.prototype.processOnStop = function(userID, extension) {
+
+}
+
+WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
+
+}
+
+WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
+
+}
+
+
+//
 ///////////////////////// Delegates (peer connection)  /////////////////////////
 //
 
