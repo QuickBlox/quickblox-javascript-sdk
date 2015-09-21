@@ -10,97 +10,65 @@ var Helpers = require('./qbWebRTCHelpers'),
 
 var WEBRTC_MODULE_ID = 'WebRTCVideoChat';
 
-function WebRTCSignaling(service, connection) {
+function WebRTCSignaling(service, delegate, connection) {
   this.service = service;
+  this.delegate = delegate;
   this.connection = connection;
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
-        userId = self.helpers.getIdFromNode(from),
+        userId = Helpers.getIdFromNode(from),
         extension = self._getExtension(extraParams);
+    if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID){
+      return true;
+    }
 
     var sessionId = extension.sessionID;
+    var signalType = extension.signalType;
 
-    if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
-
-    // clean for users
+    // cleanup
     delete extension.moduleIdentifier;
+    delete extension.sessionID;
+    delete extension.signalType;
 
-    switch (extension.signalType) {
-    case signalingType.CALL:
-      trace('onCall from ' + userId);
-
-      if (sessions[sessionId]) {
-      	trace('skip onCallListener, a user already got it');
-      	return true;
-      }
-
-      // run caller availability timer and run again for this user
-      clearAnswerTimer(sessionId);
-      if(peer == null){
-        startAnswerTimer(sessionId, self._answerTimeoutCallback);
-      }
-      //
-
-      sessions[sessionId] = {
-        sdp: extension.sdp
-      };
-
-      extension.callType = extension.callType === '1' ? 'video' : 'audio';
-      delete extension.sdp;
-
-      if (typeof self.onCallListener === 'function'){
-        self.onCallListener(userId, extension);
+    switch (signalType) {
+    case WebRTCSignaling.SignalingType.CALL:
+      if (typeof self.delegate._onCallListener === 'function'){
+        self.delegate._onCallListener(userId, sessionId, extension);
       }
 
       break;
-    case signalingType.ACCEPT:
-      trace('onAccept from ' + sessionId);
-
-      clearDialingTimerInterval(sessionId);
-      clearCallTimer(userId);
-
-      if (typeof peer === 'object')
-        peer.onRemoteSessionCallback(extension.sdp, 'answer');
-      delete extension.sdp;
-      if (typeof self.onAcceptCallListener === 'function')
-        self.onAcceptCallListener(userId, extension);
-      break;
-    case signalingType.REJECT:
-      trace('onReject from ' + sessionId);
-
-      clearDialingTimerInterval(sessionId);
-      clearCallTimer(userId);
-
-      self._close();
-      if (typeof self.onRejectCallListener === 'function')
-        self.onRejectCallListener(userId, extension);
-      break;
-    case signalingType.STOP:
-      trace('onStop from ' + sessionId);
-
-      clearDialingTimerInterval(sessionId);
-      clearCallTimer(userId);
-
-      clearSession(sessionId);
-
-      self._close();
-      if (typeof self.onStopCallListener === 'function')
-        self.onStopCallListener(userId, extension);
-      break;
-    case signalingType.CANDIDATE:
-      if (typeof peer === 'object') {
-        peer.addCandidates(extension.iceCandidates);
-        if (peer.type === 'answer')
-          self._sendCandidate(peer.opponentId, peer.iceCandidates);
+    case WebRTCSignaling.SignalingType.ACCEPT:
+      if (typeof self.delegate._onAcceptListener === 'function'){
+        self.delegate._onAcceptListener(userId, sessionId, extension);
       }
+
       break;
-    case signalingType.PARAMETERS_CHANGED:
-      trace('onUpdateCall from ' + userId);
-      if (typeof self.onUpdateCallListener === 'function')
-        self.onUpdateCallListener(userId, extension);
+    case WebRTCSignaling.SignalingType.REJECT:
+      if (typeof self.delegate._onRejectListener === 'function'){
+        self.delegate._onRejectListener(userId, sessionId, extension);
+      }
+
+      break;
+    case WebRTCSignaling.SignalingType.STOP:
+      if (typeof self.delegate._onStopListener === 'function'){
+        self.delegate._onStopListener(userId, sessionId, extension);
+      }
+
+      break;
+    case WebRTCSignaling.SignalingType.CANDIDATE:
+      if (typeof self.delegate._onIceCandidatesListener === 'function'){
+        self.delegate._onIceCandidatesListener(userId, sessionId, extension);
+      }
+
+      break;
+    case WebRTCSignaling.SignalingType.PARAMETERS_CHANGED:
+      if (typeof self.delegate._onUpdateListener === 'function'){
+        self.delegate._onUpdateListener(userId, sessionId, extension);
+      }
+
       break;
     }
 
@@ -110,51 +78,56 @@ function WebRTCSignaling(service, connection) {
   };
 
   this._getExtension = function(extraParams) {
+    if (!extraParams) {
+      return null;
+    }
+
     var extension = {}, iceCandidates = [], opponents = [],
         candidate, oponnent, items, childrenNodes;
 
-    if (extraParams) {
-      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        if (extraParams.childNodes[i].tagName === 'iceCandidates') {
+    for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+      if (extraParams.childNodes[i].tagName === 'iceCandidates') {
 
-          // iceCandidates
-          items = extraParams.childNodes[i].childNodes;
+        // iceCandidates
+        items = extraParams.childNodes[i].childNodes;
 
-          for (var j = 0, len2 = items.length; j < len2; j++) {
-            candidate = {};
-            childrenNodes = items[j].childNodes;
-            for (var k = 0, len3 = childrenNodes.length; k < len3; k++) {
-              candidate[childrenNodes[k].tagName] = childrenNodes[k].textContent;
-            }
-            iceCandidates.push(candidate);
+        for (var j = 0, len2 = items.length; j < len2; j++) {
+          candidate = {};
+          childrenNodes = items[j].childNodes;
+          for (var k = 0, len3 = childrenNodes.length; k < len3; k++) {
+            candidate[childrenNodes[k].tagName] = childrenNodes[k].textContent;
           }
+          iceCandidates.push(candidate);
+        }
 
-        } else if (extraParams.childNodes[i].tagName === 'opponentsIDs') {
+      } else if (extraParams.childNodes[i].tagName === 'opponentsIDs') {
 
-          // opponentsIDs
-          items = extraParams.childNodes[i].childNodes;
-          for (var j = 0, len2 = items.length; j < len2; j++) {
-            oponnent = items[j].textContent;
-            opponents.push(oponnent);
-          }
+        // opponentsIDs
+        items = extraParams.childNodes[i].childNodes;
+        for (var j = 0, len2 = items.length; j < len2; j++) {
+          oponnent = items[j].textContent;
+          opponents.push(oponnent);
+        }
+
+      } else {
+        if (extraParams.childNodes[i].childNodes.length > 1) {
+
+          extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
 
         } else {
-          if (extraParams.childNodes[i].childNodes.length > 1) {
 
-            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
 
-          } else {
-
-            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-
-          }
         }
       }
-      if (iceCandidates.length > 0)
-        extension.iceCandidates = iceCandidates;
-      if (opponents.length > 0)
-        extension.opponents = opponents;
     }
+    if (iceCandidates.length > 0){
+      extension.iceCandidates = iceCandidates;
+    }
+    if (opponents.length > 0){
+      extension.opponents = opponents;
+    }
+
 
     return extension;
   };
@@ -194,7 +167,6 @@ WebRTCSignaling.prototype.sendMessage = function(userId, extension, signalingTyp
   // extension.sdp
 
   params = {
-    from: this.connection.jid,
     to: Helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()

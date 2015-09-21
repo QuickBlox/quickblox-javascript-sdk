@@ -20,10 +20,19 @@
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignaling = require('./qbWebRTCSignaling');
+var Helpers = require('./qbWebRTCHelpers');
 
 function WebRTCClient(service, connection) {
-  this.service = service;
-  this.signaling = new WebRTCSignaling(service, connection);
+  if (WebRTCClient.__instance) {
+		return WebRTCClient.__instance;
+  } else if (this === window) {
+    return new WebRTCClient();
+  }
+
+  WebRTCClient.__instance = this;
+
+	// Initialise all properties here
+  this.signaling = new WebRTCSignaling(service, this, connection);
 }
 
  /**
@@ -86,6 +95,78 @@ function WebRTCClient(service, connection) {
     var session = WebRTCClient.sessions[sessionId];
     return (session != null && session.state == WebRTCSession.State.HUNGUP);
  };
+
+
+ //
+ /////////////////////////// Delegate (signaling) //////////////////////////////
+ //
+
+ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
+
+  //  if (this.sessions[sessionID]) {
+  //    trace('skip onCallListener, a user already got it');
+  //    return true;
+  //  }
+
+  // // run caller availability timer and run again for this user
+  // clearAnswerTimer(sessionId);
+  // if(peer == null){
+  //   startAnswerTimer(sessionId, self._answerTimeoutCallback);
+  // }
+
+
+  //  if (typeof this.onRemoteStreamListener === 'function'){
+  //    this.onRemoteStreamListener(this, userID, stream);
+  //  }
+ };
+
+ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
+   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+
+        //  clearDialingTimerInterval(sessionId);
+        //  clearCallTimer(userId);
+         //
+        //  if (typeof peer === 'object')
+        //    peer.onRemoteSessionCallback(extension.sdp, 'answer');
+        //  delete extension.sdp;
+ };
+
+ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
+   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+  //  clearDialingTimerInterval(sessionId);
+  //  clearCallTimer(userId);
+   //
+  //  self._close();
+ };
+
+ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
+   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+  //  clearDialingTimerInterval(sessionId);
+  //  clearCallTimer(userId);
+   //
+  //  clearSession(sessionId);
+   //
+  //  self._close();
+}
+
+WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
+  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+  // if (typeof peer === 'object') {
+  //   peer.addCandidates(extension.iceCandidates);
+  //   if (peer.type === 'answer')
+  //     self._sendCandidate(peer.opponentId, peer.iceCandidates);
+  // }
+}
+
+WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
+  Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+}
 
 
  module.exports = WebRTCClient;
