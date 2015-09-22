@@ -331,19 +331,28 @@ WebRTCSession.State = {
 //
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
-
+  this._clearAnswerTimer();
+  this._startAnswerTimer(this._answerTimeoutCallback);
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
-
+  var peerConnection = this.peerConnections[userID];
+  peerConnection._clearDialingTimer();
+  peerConnection.onRemoteSessionDescription('answer', extension.sdp);
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
+  var peerConnection = this.peerConnections[userID];
+  peerConnection._clearDialingTimer();
 
+  // this._close();
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
+  var peerConnection = this.peerConnections[userID];
+  peerConnection._clearDialingTimer();
 
+  //  self._close();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
@@ -406,7 +415,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 //
 
 
-WebRTCSession.prototype._createPeer = function(userID, type, sessionDescription) {
+WebRTCSession.prototype._createPeer = function(userID, peerConnectionType, remoteSessionDescription) {
   Helpers.trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
@@ -421,7 +430,7 @@ WebRTCSession.prototype._createPeer = function(userID, type, sessionDescription)
     iceServers: config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, userID, this.ID, type, sessionDescription);
+  peer.init(this, userID, this.ID, peerConnectionType, remoteSessionDescription);
 
   return peer;
 };

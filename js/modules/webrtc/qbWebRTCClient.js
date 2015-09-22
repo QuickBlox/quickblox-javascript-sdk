@@ -110,29 +110,13 @@ function WebRTCClient(service, connection) {
    if(!session){
      session = new WebRTCSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, this.signalingProvider);
      this.sessions[session.ID] = session;
+
+     if (typeof this.onCallListener === 'function'){
+       this.onCallListener(session, extension);
+     }
    }
+
    session.processOnCall(userID, extension);
-
-   if (typeof this.onCallListener === 'function'){
-     this.onCallListener(session, extension);
-   }
-
-
-  //  if (this.sessions[sessionID]) {
-  //    trace('skip onCallListener, a user already got it');
-  //    return true;
-  //  }
-
-  // // run caller availability timer and run again for this user
-  // clearAnswerTimer(sessionId);
-  // if(peer == null){
-  //   startAnswerTimer(sessionId, self._answerTimeoutCallback);
-  // }
-
-
-  //  if (typeof this.onRemoteStreamListener === 'function'){
-  //    this.onRemoteStreamListener(this, userID, stream);
-  //  }
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
@@ -145,8 +129,6 @@ function WebRTCClient(service, connection) {
      this.onAcceptCallListener(session, extension);
    }
 
-        //  clearDialingTimerInterval(sessionId);
-        //  clearCallTimer(userId);
          //
         //  if (typeof peer === 'object')
         //    peer.onRemoteSessionCallback(extension.sdp, 'answer');
@@ -162,11 +144,6 @@ function WebRTCClient(service, connection) {
    if (typeof this.onRejectListener === 'function'){
      this.onRejectListener(session, extension);
    }
-
-  //  clearDialingTimerInterval(sessionId);
-  //  clearCallTimer(userId);
-   //
-  //  self._close();
  };
 
  WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
@@ -178,13 +155,6 @@ function WebRTCClient(service, connection) {
    if (typeof this.onStopCallListener === 'function'){
      this.onStopCallListener(session, extension);
    }
-
-  //  clearDialingTimerInterval(sessionId);
-  //  clearCallTimer(userId);
-   //
-  //  clearSession(sessionId);
-   //
-  //  self._close();
 }
 
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
