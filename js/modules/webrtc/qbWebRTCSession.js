@@ -41,6 +41,13 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType) {
   this.callType = callType;
   //
   this.peerConnections = {};
+
+  // // we use this timeout to fix next issue:
+  // // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
+  // // We need a way to hide it if sach situation happened."
+  // //
+  // this.answerTimers = {};
+  //
 }
 
 /**
@@ -128,16 +135,12 @@ WebRTCSession.prototype.call = function(extension) {
 
         // let's send call requests to user
         //
-        clearDialingTimerInterval(sessionId);
+        peer._clearDialingTimer();
         var functionToRun = function() {
           self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
         };
         functionToRun(); // run a function for the first time and then each N seconds.
         startDialingTimerInterval(sessionId, functionToRun);
-        //
-        self._clearAnswerTimeoutTimer();
-        self._startAnswerTimeoutTimer(self._answerTimeoutCallback);
-        //
         //
       }
     });
@@ -332,6 +335,17 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 }
 
 
+WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
+  console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
+
+  peerConnection.close();
+
+  if(typeof this.onUserNotAnswerListener === 'function'){
+    this.onUserNotAnswerListener(this, userID);
+  }
+}
+
+
 //
 ///////////////////////// Delegates (peer connection)  /////////////////////////
 //
@@ -409,6 +423,23 @@ WebRTCSession.prototype._muteStream = function(bool, type) {
     return;
   }
 };
+
+
+
+// RTCPeerConnection.prototype.clearAnswerTimer = function(sessionId){
+// 	var answerTimer = this.answerTimers[sessionId];
+//   if(answerTimer){
+//     clearTimeout(answerTimer);
+//     delete this.answerTimers[sessionId];
+//   }
+// }
+//
+// RTCPeerConnection.prototype.startAnswerTimer = function(sessionId, callback){
+//   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+//   var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
+//   this.answerTimers[sessionId] = answerTimer;
+// }
+
 
 WebRTCSession.prototype.toString = function sessionToString() {
   var ret = 'ID: ' + this.ID + ', initiatorID:  ' + this.initiatorID + ', opponentsIDs: ' +

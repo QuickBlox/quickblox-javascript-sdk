@@ -44,19 +44,11 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, s
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  // We use this timer on a caller's side to notify him if an opponent doesn't answer the call.
+  // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
   //
-  this.answerTimeoutTimer;
+  this.dialingTimer = null;
+  this.answerTimeInterval = 0;
 
-  // // we use this timeout to fix next issue:
-  // // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
-  // // We need a way to hide it if sach situation happened."
-  // //
-  // this.answerTimers = {};
-  //
-  // // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
-  // //
-  // this.dialingTimerIntervals = {};
 
   if (this.type === 'answer') {
     var desc = new RTCSessionDescription({sdp: sessionDescription, type: 'offer'});
@@ -162,75 +154,32 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 
 //
-/////////////////////////////////// Timers//////////////////////////////////////
-//
-
-RTCPeerConnection.prototype.clearAnswerTimer = function(sessionId){
-	var answerTimer = this.answerTimers[sessionId];
-  if(answerTimer){
-    clearTimeout(answerTimer);
-    delete this.answerTimers[sessionId];
-  }
-}
-
-RTCPeerConnection.prototype.startAnswerTimer = function(sessionId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
-  this.answerTimers[sessionId] = answerTimer;
-}
-
-RTCPeerConnection.prototype.clearDialingTimerInterval = function(sessionId){
-  var dialingTimer = this.dialingTimerIntervals[sessionId];
-  if(dialingTimer){
-    clearInterval(dialingTimer);
-    delete this.dialingTimerIntervals[sessionId];
-  }
-}
-
-RTCPeerConnection.prototype.startDialingTimerInterval = function(sessionId, functionToRun){
-  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  var dialingTimerId = setInterval(functionToRun, dialingTimeInterval);
-  this.dialingTimerIntervals[sessionId] = dialingTimerId;
-}
-
-
-//
 /////////////////////////////////// Private ////////////////////////////////////
 //
 
-RTCPeerConnection.prototype._clearAnswerTimeoutTimer = function(){
-  if(this.answerTimeoutTimer){
-    clearTimeout(this.answerTimeoutTimer);
-    this.answerTimeoutTimer = null;
+
+RTCPeerConnection.prototype._clearDialingTimer = function(){
+  if(this.dialingTimer){
+    clearInterval(this.dialingTimer);
+    this.dialingTimer = null;
+    this.answerTimeInterval = 0;
   }
 }
 
-RTCPeerConnection.prototype._startAnswerTimeoutTimer = function(callback){
-  console.log("Start 'answer timeout timer' for session " + this.ID);
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  this.answerTimeoutTimer = setTimeout(callback, answerTimeInterval);
+RTCPeerConnection.prototype._startDialingTimer = function(){
+  var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
+  this.dialingTimer = setInterval(functionToRun, this.dialingCallback);
+}
+
+RTCPeerConnection.prototype.dialingCallback = function(){
+  this.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+  if(this.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
+    this._clearDialingTimer();
+    this.delegate.processOnNotAnswer(this);
+  }
 }
 
 
-RTCPeerConnection.prototype._answerTimeoutCallback = function (){
-  console.log("Answer timeout callback for session " + this.ID);
-
-  for (var key in this.peerConnections) {
-    var peer = this.peerConnections[key];
-
-    if(typeof this.onUserNotAnswerListener === 'function'){
-      this.onUserNotAnswerListener(this, peer.userID);
-    }
-
-  }
-
-  clearDialingTimerInterval(sessionId);
-
-  clearSession(sessionId);
-  self._close();
-
-
-};
 
 // RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
 //   clearSession(sessionId);
