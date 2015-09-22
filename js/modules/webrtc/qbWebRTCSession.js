@@ -30,7 +30,7 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
  */
 function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signalingProvider) {
   this.ID = (sessionID == null ? generateUUID() : sessionID);
-  this.state = this.state.NEW;
+  this.state = WebRTCSession.State.NEW;
   //
   this.initiatorID = initiatorID;
   this.opponentsIDs = opponentsIDs;
@@ -42,13 +42,11 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
 
   this.signalingProvider = signalingProvider;
 
-
-  // // we use this timeout to fix next issue:
-  // // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
-  // // We need a way to hide it if sach situation happened."
-  // //
-  // this.answerTimers = {};
+  // we use this timeout to fix next issue:
+  // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
+  // We need a way to hide it if sach situation happened."
   //
+  this.answerTimer = null;
 
 }
 
@@ -126,6 +124,10 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
 WebRTCSession.prototype.call = function(extension) {
   Helpers.trace('Call, extension: ' + JSON.stringify(extension));
 
+  var extension = extension || {};
+
+  this.state = WebRTCSession.State.ACTIVE;
+
   var self = this;
 
   // create a peer connection for each opponent
@@ -152,13 +154,15 @@ WebRTCSession.prototype.call = function(extension) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.accept = function(extension) {
+  Helpers.trace('Accept, extension: ' + JSON.stringify(extension));
+
   var extension = extension || {};
 
-  Helpers.trace('Accept, extension: ' + JSON.stringify(extension));
+  this.state = WebRTCSession.State.ACTIVE;
 
   var self = this;
 
-  // clearAnswerTimer(sessionId);
+  this._clearAnswerTimer();
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
@@ -192,7 +196,7 @@ WebRTCSession.prototype.reject = function(extension) {
 
   Helpers.trace('Reject, extension: ' + JSON.stringify(extension));
 
-  // clearAnswerTimer(sessionId);
+  this._clearAnswerTimer();
 
   extension[sessionID] = self.ID;
   extension[callType] = self.callType;
@@ -211,6 +215,11 @@ WebRTCSession.prototype.stop = function(extension) {
 
   Helpers.trace('Stop, extension: ' + JSON.stringify(extension));
 
+  this._clearAnswerTimer();
+  // clearDialingTimerInterval(sessionId);
+
+  // this._close();
+
   extension[sessionID] = this.ID;
   extension[callType] = this.callType;
   extension[callerID] = this.initiatorID;
@@ -221,11 +230,6 @@ WebRTCSession.prototype.stop = function(extension) {
 
     this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
   }
-
-  // clearAnswerTimer(sessionId);
-  // clearDialingTimerInterval(sessionId);
-
-  // this._close();
 }
 
 /**
@@ -372,16 +376,6 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
   }
-
-
-  // RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
-  //   clearSession(sessionId);
-  //   self._close();
-  //
-  //   if(typeof self.onSessionConnectionStateChangedListener === 'function'){
-  //     self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
-  //   }
-  // };
 }
 
 
@@ -463,21 +457,26 @@ WebRTCSession.prototype._muteStream = function(bool, type) {
   }
 };
 
+WebRTCSession.prototype._clearAnswerTimer = function(){
+  if(this.answerTimer){
+    clearTimeout(this.answerTimer);
+    this.answerTimer = null;
+  }
+}
 
+WebRTCSession.prototype._startAnswerTimer = function(callback){
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  this.answerTimer = setTimeout(callback, answerTimeInterval);
+}
 
-// RTCPeerConnection.prototype.clearAnswerTimer = function(sessionId){
-// 	var answerTimer = this.answerTimers[sessionId];
-//   if(answerTimer){
-//     clearTimeout(answerTimer);
-//     delete this.answerTimers[sessionId];
-//   }
-// }
-//
-// RTCPeerConnection.prototype.startAnswerTimer = function(sessionId, callback){
-//   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-//   var answerTimer = setTimeout(callback, answerTimeInterval, sessionId);
-//   this.answerTimers[sessionId] = answerTimer;
-// }
+WebRTCSession.prototype._answerTimeoutCallback = function (){
+
+  // self._close();
+
+  if(typeof this.onSessionConnectionStateChangedListener === 'function'){
+    this.onSessionConnectionStateChangedListener(RTCPeerConnection.SessionConnectionState.CLOSED, userId);
+  }
+};
 
 
 WebRTCSession.prototype.toString = function sessionToString() {
