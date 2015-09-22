@@ -7,9 +7,9 @@
 
  /*
   * User's callbacks (listener-functions):
+  * - onUserNotAnswerListener(session, userID)
   * - onRemoteStreamListener(session, stream)
   * - onSessionConnectionStateChangedListener
-  * - onUserNotAnswerListener(session, userID)
   */
 
 
@@ -19,12 +19,8 @@ var config = require('../../qbConfig');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
 var Utils = require('../../qbUtils'),
 var Helpers = require('./qbWebRTCHelpers'),
-var Signaling = require('./qbWebRTCSignaling'),
+var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
-// Variables
-//
-var localStream;
-var URL = window.URL || window.webkitURL;
 
 /**
  * Creates a session
@@ -32,7 +28,7 @@ var URL = window.URL || window.webkitURL;
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType) {
+function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signalingProvider) {
   this.ID = (sessionID == null ? generateUUID() : sessionID);
   this.state = this.state.NEW;
   //
@@ -42,12 +38,18 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType) {
   //
   this.peerConnections = {};
 
+  this.localStream = null;
+
+  this.signalingProvider = signalingProvider;
+
+
   // // we use this timeout to fix next issue:
   // // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
   // // We need a way to hide it if sach situation happened."
   // //
   // this.answerTimers = {};
   //
+
 }
 
 /**
@@ -106,6 +108,7 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
 WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
   var elem = document.getElementById(id);
   if (elem) {
+    var URL = window.URL || window.webkitURL;
     elem.src = URL.createObjectURL(stream);
     if (options && options.muted) elem.muted = true;
     if (options && options.mirror) {
@@ -121,33 +124,27 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.call = function(extension) {
+  Helpers.trace('Call, extension: ' + JSON.stringify(extension));
+
   var self = this;
 
   // create a peer connection for each opponent
-  this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer(item, 'offer', null);
-    this.peerConnections[item] = peer;
+  this.opponentsIDs.forEach(function(userID, i, arr) {
+    var peer = this._createPeer(userID, 'offer', null);
+    this.peerConnections[userID] = peer;
 
-    peer.getSessionDescription(function(err, localSessioNDescription) {
+    peer.getAndSetLocalSessionDescription(function(err) {
       if (err) {
-        trace("getSessionDescription error: " + err);
+        Helpers.trace("getAndSetLocalSessionDescription error: " + err);
       } else {
 
         // let's send call requests to user
         //
-        peer._clearDialingTimer();
-        var functionToRun = function() {
-          self._sendMessage(userIdToCall, extension, 'CALL', callType, userIdsToCall);
-        };
-        functionToRun(); // run a function for the first time and then each N seconds.
-        startDialingTimerInterval(sessionId, functionToRun);
-        //
+        peer._startDialingTimer(extension);
       }
     });
 
   });
-
-  trace('Call, extension: ' + JSON.stringify(extension));
 }
 
 /**
@@ -155,28 +152,31 @@ WebRTCSession.prototype.call = function(extension) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.accept = function(extension) {
-  trace('Accept, extension: ' + JSON.stringify(extension));
+  var extension = extension || {};
+
+  Helpers.trace('Accept, extension: ' + JSON.stringify(extension));
+
+  var self = this;
 
   // clearAnswerTimer(sessionId);
 
   // create a peer connection for each opponent
-  this.opponentsIDs.forEach(function(item, i, arr) {
-    var peer = this._createPeer(item, 'answer', extension.sdp);
-    this.peerConnections[item] = peer;
+  this.opponentsIDs.forEach(function(userID, i, arr) {
+    var peerConnection = this._createPeer(userID, 'answer', extension.sdp);
+    this.peerConnections[userID] = peerConnection;
 
-    // var session = sessions[sessionId];
-    // if (session) {
-    //   this._createPeer({
-    //     sessionID: sessionId,
-    //     description: session.sdp
-    //   });
-    // }
-
-    peer.getSessionDescription(function(err, localSessionDescription) {
+    peerConnection.getAndSetLocalSessionDescription(function(err) {
       if (err) {
-        trace("getSessionDescription error: " + err);
+        Helpers.trace("getAndSetLocalSessionDescription error: " + err);
       } else {
-        self._sendMessage(userId, extension, 'ACCEPT');
+
+        extension[sessionID] = self.ID;
+        extension[callType] = self.callType;
+        extension[callerID] = self.initiatorID;
+        extension[opponentsIDs] = self.opponentsIDs;
+        extension[sdp] = peerConnection.localDescription.sdp;
+
+        self.signalingProvider.sendMessage(self.initiatorID, extension, SignalingConstants.SignalingType.ACCEPT);
       }
     });
 
@@ -190,15 +190,16 @@ WebRTCSession.prototype.accept = function(extension) {
 WebRTCSession.prototype.reject = function(extension) {
   var extension = extension || {};
 
-  trace('Reject, extension: ' + JSON.stringify(extension));
+  Helpers.trace('Reject, extension: ' + JSON.stringify(extension));
 
   // clearAnswerTimer(sessionId);
-  //
-  // if (sessions[sessionId]) {
-  //   delete sessions[sessionId];
-  // }
-  //
-  // this._sendMessage(userId, extension, 'REJECT');
+
+  extension[sessionID] = self.ID;
+  extension[callType] = self.callType;
+  extension[callerID] = this.initiatorID;
+  extension[opponentsIDs] = self.opponentsIDs;
+
+  this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.REJECT);
 }
 
 /**
@@ -208,16 +209,23 @@ WebRTCSession.prototype.reject = function(extension) {
 WebRTCSession.prototype.stop = function(extension) {
   var extension = extension || {};
 
-  trace('Stop, extension: ' + JSON.stringify(extension));
+  Helpers.trace('Stop, extension: ' + JSON.stringify(extension));
+
+  extension[sessionID] = this.ID;
+  extension[callType] = this.callType;
+  extension[callerID] = this.initiatorID;
+  extension[opponentsIDs] = this.opponentsIDs;
+
+  for (var key in this.peerConnections) {
+    var peerConnection = this.peerConnections[key];
+
+    this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
+  }
 
   // clearAnswerTimer(sessionId);
   // clearDialingTimerInterval(sessionId);
-  // clearCallTimer(userId);
-  //
-  // this._sendMessage(userId, extension, 'STOP');
+
   // this._close();
-  //
-  // clearSession(sessionId);
 }
 
 /**
@@ -225,10 +233,18 @@ WebRTCSession.prototype.stop = function(extension) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.update = function(extension) {
-  var extension = extension || {};
-  trace('Update, extension: ' + JSON.stringify(extension));
+  Helpers.trace('Update, extension: ' + JSON.stringify(extension));
 
-  // this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
+  if(extension == null){
+    Helpers.trace("extension is null, no parameters to update");
+    return;
+  }
+
+  for (var key in this.peerConnections) {
+    var peerConnection = this.peerConnections[key];
+
+    this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.PARAMETERS_CHANGED);
+  }
 }
 
 
@@ -334,6 +350,19 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
 }
 
+//
+
+WebRTCSession.prototype.processCall = function(peerConnection, extension) {
+  var extension = extension || {};
+
+  extension[sessionID] = this.ID;
+  extension[callType] = this.callType;
+  extension[callerID] = this.initiatorID;
+  extension[opponentsIDs] = this.opponentsIDs;
+  extension[sdp] = peerConnection.localDescription.sdp;
+
+  this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
+}
 
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
@@ -341,8 +370,18 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   peerConnection.close();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
-    this.onUserNotAnswerListener(this, userID);
+    this.onUserNotAnswerListener(this, peerConnection.userID);
   }
+
+
+  // RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
+  //   clearSession(sessionId);
+  //   self._close();
+  //
+  //   if(typeof self.onSessionConnectionStateChangedListener === 'function'){
+  //     self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
+  //   }
+  // };
 }
 
 
@@ -374,7 +413,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 
 
 WebRTCSession.prototype._createPeer = function(userID, type, sessionDescription) {
-  trace("_createPeer");
+  Helpers.trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
 
@@ -395,7 +434,7 @@ WebRTCSession.prototype._createPeer = function(userID, type, sessionDescription)
 
 // close peer connection and local stream
 WebRTCSession.prototype._close = function() {
-  trace("_close");
+  Helpers.trace("_close");
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];

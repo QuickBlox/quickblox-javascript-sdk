@@ -16,6 +16,7 @@
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
+var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 
 function WebRTCClient(service, connection) {
@@ -30,6 +31,7 @@ function WebRTCClient(service, connection) {
 	// Initialise all properties here
   this.connection = connection;
   this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
+  this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 }
 
  /**
@@ -53,7 +55,7 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = new WebRTCSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+   var newSession = new WebRTCSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType, this.signalingProvider);
    this.sessions[newSession.ID] = newSession;
    return newSession;
  }
@@ -99,12 +101,14 @@ function WebRTCClient(service, connection) {
  /////////////////////////// Delegate (signaling) //////////////////////////////
  //
 
+  // Helpers.getIdFromNode(this.connection.jid);
+
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
    Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
 
    var session = WebRTCClient.sessions[sessionId];
    if(!session){
-     session = new WebRTCSession(sessionID, extension.callerID, opponentsIDs, callType);
+     session = new WebRTCSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, this.signalingProvider);
      this.sessions[session.ID] = session;
    }
    session.processOnCall(userID, extension);

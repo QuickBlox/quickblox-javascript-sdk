@@ -8,6 +8,7 @@
 // Modules
 //
 var config = require('../../qbConfig');
+var Helpers = require('./qbWebRTCHelpers'),
 
 // Variable
 //
@@ -56,7 +57,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, s
   }
 };
 
-RTCPeerConnection.prototype.getSessionDescription = function(callback) {
+RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
   var self = this;
 
   if (self.type === 'offer') {
@@ -70,11 +71,11 @@ RTCPeerConnection.prototype.getSessionDescription = function(callback) {
 
   function successCallback(desc) {
     self.setLocalDescription(desc, function() {
-      callback(null, desc);
+      callback(null);
     }, errorCallback);
   }
   function errorCallback(error) {
-    callback(error, null);
+    callback(error);
   }
 };
 
@@ -82,7 +83,7 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
 
   if (candidate) {
-    trace("onICECandidate: " + JSON.stringify(candidate));
+    Helpers.trace("onICECandidate: " + JSON.stringify(candidate));
 
     this.iceCandidates = this.iceCandidates || [];
     this.iceCandidates.push({
@@ -120,7 +121,7 @@ RTCPeerConnection.prototype.onSignalingStateCallback = function() {
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
-  trace("onIceConnectionStateCallback: " + this.iceConnectionState);
+  Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
 
   var newIceConnectionState = this.iceConnectionState;
 
@@ -166,29 +167,21 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
   }
 }
 
-RTCPeerConnection.prototype._startDialingTimer = function(){
+RTCPeerConnection.prototype._startDialingTimer = function(extension){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  this.dialingTimer = setInterval(functionToRun, this.dialingCallback);
+  this.dialingTimer = setInterval(functionToRun, this.dialingCallback, extension);
 }
 
-RTCPeerConnection.prototype.dialingCallback = function(){
+RTCPeerConnection.prototype.dialingCallback = function(extension){
   this.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
   if(this.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
     this._clearDialingTimer();
+
     this.delegate.processOnNotAnswer(this);
+  }else{
+    this.delegate.processCall(this, extension);
   }
 }
-
-
-
-// RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
-//   clearSession(sessionId);
-//   self._close();
-//
-//   if(typeof self.onSessionConnectionStateChangedListener === 'function'){
-//     self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
-//   }
-// };
 
 }
 

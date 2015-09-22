@@ -33,8 +33,8 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
   // extension.sessionID
   // extension.callType
   extension.platform = 'web';
-  extension.callerID = Helpers.getIdFromNode(this.connection.jid);
-  // extension.opponentsIDs;
+  // extension.callerID
+  // extension.opponentsIDs
   // extension.sdp
 
   params = {
