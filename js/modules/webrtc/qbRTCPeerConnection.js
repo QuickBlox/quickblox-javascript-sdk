@@ -16,10 +16,10 @@ var Helpers = require('./qbWebRTCHelpers'),
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-var offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 1
-};
+// var offerOptions = {
+//   offerToReceiveAudio: 1,
+//   offerToReceiveVideo: 1
+// };
 
 
 if (RTCPeerConnection) {
@@ -42,7 +42,6 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, r
   this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
-  this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
@@ -89,12 +88,20 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   if (candidate) {
     Helpers.trace("onICECandidate: " + JSON.stringify(candidate));
 
+    // collecting internally the ice candidates
+    // will send a bit later
+    //
     this.iceCandidates = this.iceCandidates || [];
     this.iceCandidates.push({
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
       candidate: candidate.candidate
     });
+  }
+
+  if (this.signalingState === 'stable'){
+    this.delegate.processIceCandidates(this, this.iceCandidates);
+    this.iceCandidates.length = 0;
   }
 };
 
@@ -114,13 +121,6 @@ RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
       candidate: iceCandidates[i].candidate
     };
     this.addIceCandidate(new RTCIceCandidate(candidate));
-  }
-};
-
-RTCPeerConnection.prototype.onSignalingStateCallback = function() {
-  // send candidates
-  if (this.signalingState === 'stable' && this.type === 'offer'){
-    this.delegate._sendCandidate(this.opponentId, this.iceCandidates);
   }
 };
 

@@ -101,7 +101,6 @@ function WebRTCClient(service, connection) {
  /////////////////////////// Delegate (signaling) //////////////////////////////
  //
 
-  // Helpers.getIdFromNode(this.connection.jid);
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
    Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
@@ -128,11 +127,6 @@ function WebRTCClient(service, connection) {
    if (typeof this.onAcceptCallListener === 'function'){
      this.onAcceptCallListener(session, extension);
    }
-
-         //
-        //  if (typeof peer === 'object')
-        //    peer.onRemoteSessionCallback(extension.sdp, 'answer');
-        //  delete extension.sdp;
  };
 
  WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
@@ -161,12 +155,6 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
   Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
   session.processOnIceCandidates(userID, extension);
-
-  // if (typeof peer === 'object') {
-  //   peer.addCandidates(extension.iceCandidates);
-  //   if (peer.type === 'answer')
-  //     self._sendCandidate(peer.opponentId, peer.iceCandidates);
-  // }
 }
 
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {

@@ -356,7 +356,8 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
-
+  var peerConnection = this.peerConnections[userID];
+  peerConnection.addCandidates(extension.iceCandidates);
 }
 
 WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
@@ -375,6 +376,16 @@ WebRTCSession.prototype.processCall = function(peerConnection, extension) {
   extension[sdp] = peerConnection.localDescription.sdp;
 
   this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
+}
+
+WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandidates) {
+  var extension = {};
+  extension[sessionID] = this.ID;
+  extension[callType] = this.callType;
+  extension[callerID] = this.initiatorID;
+  extension[opponentsIDs] = this.opponentsIDs;
+  
+  this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
 }
 
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
