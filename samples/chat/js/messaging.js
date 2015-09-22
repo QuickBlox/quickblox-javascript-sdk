@@ -19,8 +19,8 @@ function retrieveChatDialogs() {
       } else {
 
         // repackage dialogs data and collect all occupants ids
-        // 
-        var occupantsIds = [];  
+        //
+        var occupantsIds = [];
         resDialogs.items.forEach(function(item, i, arr) {
           var dialogId = item._id;
           dialogs[dialogId] = item;
@@ -33,10 +33,10 @@ function retrieveChatDialogs() {
                for (var i = 0; i < stanza.childNodes.length; i++) {
                  var elItem = stanza.childNodes.item(i);
                  if (elItem.tagName === 'error'){
-                   joined = false; 
+                   joined = false;
                  }
                }
-               
+
                console.log("Joined dialog " + dialogId + ": " + joined);
             });
             opponentId = null;
@@ -54,8 +54,8 @@ function retrieveChatDialogs() {
         var params = {filter: { field: 'id', param: 'in', value: jQuery.unique(occupantsIds) }};
         QB.users.listUsers(params, function(err, result){
           if (result) {
-            
-            // repackage users data 
+
+            // repackage users data
             //
             result.items.forEach(function(item, i, arr) {
               users[item.user.id] = item.user;
@@ -71,12 +71,12 @@ function retrieveChatDialogs() {
               var dialogUnreadMessagesCount = item.unread_messages_count;
 
               var dialogIcon = getDialogIcon(item.type, item.photo);
-              
+
               if (dialogType == 3) {
                 opponentId = QB.chat.helpers.getRecipientId(item.occupants_ids, currentUser.id);
                 dialogName = 'Dialog with ' + opponentId;
               }else if(dialogName == null){
-                dialogName = "group chat";    
+                dialogName = "group chat";
               }
 
               var dialogHtml = buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialogName, dialogLastMessage);
@@ -86,7 +86,7 @@ function retrieveChatDialogs() {
             //  and trigger the 1st dialog
             //
             triggerDialog($('#dialogs-list').children()[0], resDialogs.items[0]._id);
-          } 
+          }
 
           // hide login form
           $("#loginForm").modal("hide");
@@ -154,12 +154,16 @@ function retrieveChatMessages(dialogId){
               mydiv.scrollTop(mydiv.prop('scrollHeight'));
         });
       }
-    }  
+    }
   });
 }
 
 // on message listener
 function onMessage(userId, msg) {
+
+  if(userId === currentUser.id){
+    console.log("message comes here form carbons: " + JSON.stringify(msg));
+  }
 
   // This is a notification about dialog creation
   //
@@ -210,7 +214,7 @@ function clickSendAttachments(inputFile) {
 
       sendMessage("[attachment]", uploadedFile.id);
     }
-  }); 
+  });
 }
 
 // send text or attachment
@@ -222,7 +226,7 @@ function sendMessage(text, attachmentFileId) {
     extension: {
       save_to_history: 1,
     },
-    senderId: currentUser.id, 
+    senderId: currentUser.id,
   };
   if(attachmentFileId != null){
     msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
@@ -253,7 +257,7 @@ function getDialogIcon (dialogType, dialogPhoto) {
   var withoutPhoto = '<img src="images/ava-group.svg" width="30" height="30" class="round">';
   var privatPhoto  = '<img src="images/ava-single.svg" width="30" height="30" class="round">';
   var defaultPhoto = '<span class="glyphicon glyphicon-eye-close"></span>'
-  
+
   var dialogIcon;
   switch (dialogType) {
     case 1:
@@ -306,7 +310,7 @@ function onMessageTyping(isTyping, userId, dialogId) {
   	showUserIsTypingView(isTyping, userId, dialogId);
 }
 
-// start timer after keypress event 
+// start timer after keypress event
 var isTypingTimerId;
 function setupIsTypingHandler() {
   QB.chat.onMessageTypingListener = onMessageTyping;
@@ -326,7 +330,7 @@ function setupIsTypingHandler() {
 			clearTimeout(isTypingTimerId);
 			isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
 		}
-  });  
+  });
 }
 
 // delete timer and send 'stop typing' status
@@ -336,7 +340,7 @@ function isTypingTimeoutCallback() {
 }
 
 // send 'is typing' status
-function sendTypingStatus() {  		
+function sendTypingStatus() {
 	if (currentDialog.type == 3) {
 	  QB.chat.sendIsTypingStatus(opponentId);
 	} else {

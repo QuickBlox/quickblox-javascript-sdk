@@ -44,19 +44,19 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, s
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  // we use this timeout to fix next issue:
-  // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
-  // We need a way to hide it if sach situation happened."
+  // We use this timer on a caller's side to notify him if an opponent doesn't answer the call.
   //
-  this.answerTimers = {};
+  this.answerTimeoutTimer;
 
-  // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+  // // we use this timeout to fix next issue:
+  // // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
+  // // We need a way to hide it if sach situation happened."
+  // //
+  // this.answerTimers = {};
   //
-  this.dialingTimerIntervals = {};
-
-  // We use this timer on a caller's side to notify him if the opponent doesn't respond.
-  //
-  this.callTimers = {};
+  // // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+  // //
+  // this.dialingTimerIntervals = {};
 
   if (this.type === 'answer') {
     var desc = new RTCSessionDescription({sdp: sessionDescription, type: 'offer'});
@@ -193,25 +193,44 @@ RTCPeerConnection.prototype.startDialingTimerInterval = function(sessionId, func
   this.dialingTimerIntervals[sessionId] = dialingTimerId;
 }
 
-RTCPeerConnection.prototype.clearCallTimer = function(sessionId){
-  var callTimer = this.callTimers[sessionId];
-  if(callTimer){
-    clearTimeout(callTimer);
-    delete this.callTimers[sessionId];
-  }
-}
-
-RTCPeerConnection.prototype.startCallTimer = function(sessionId, callback){
-  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  trace("startCallTimer, answerTimeInterval: " + answerTimeInterval);
-  var callTimer = setTimeout(callback, answerTimeInterval, sessionId);
-  this.callTimers[sessionId] = callTimer;
-}
-
 
 //
 /////////////////////////////////// Private ////////////////////////////////////
 //
+
+RTCPeerConnection.prototype._clearAnswerTimeoutTimer = function(){
+  if(this.answerTimeoutTimer){
+    clearTimeout(this.answerTimeoutTimer);
+    this.answerTimeoutTimer = null;
+  }
+}
+
+RTCPeerConnection.prototype._startAnswerTimeoutTimer = function(callback){
+  console.log("Start 'answer timeout timer' for session " + this.ID);
+  var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
+  this.answerTimeoutTimer = setTimeout(callback, answerTimeInterval);
+}
+
+
+RTCPeerConnection.prototype._answerTimeoutCallback = function (){
+  console.log("Answer timeout callback for session " + this.ID);
+
+  for (var key in this.peerConnections) {
+    var peer = this.peerConnections[key];
+
+    if(typeof this.onUserNotAnswerListener === 'function'){
+      this.onUserNotAnswerListener(this, peer.userID);
+    }
+
+  }
+
+  clearDialingTimerInterval(sessionId);
+
+  clearSession(sessionId);
+  self._close();
+
+
+};
 
 // RTCPeerConnection.prototype._answerTimeoutCallback = function (sessionId){
 //   clearSession(sessionId);
@@ -219,19 +238,6 @@ RTCPeerConnection.prototype.startCallTimer = function(sessionId, callback){
 //
 //   if(typeof self.onSessionConnectionStateChangedListener === 'function'){
 //     self.onSessionConnectionStateChangedListener(self.SessionConnectionState.CLOSED, userId);
-//   }
-// };
-//
-// RTCPeerConnection.prototype._callTimeoutCallback = function (sessionId){
-//   trace("sessionId: " + sessionId + " not asnwer");
-//
-//   clearDialingTimerInterval(sessionId);
-//
-//   clearSession(sessionId);
-//   self._close();
-//
-//   if(typeof self.onUserNotAnswerListener === 'function'){
-//     self.onUserNotAnswerListener(sessionId);
 //   }
 // };
 

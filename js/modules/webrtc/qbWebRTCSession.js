@@ -5,6 +5,14 @@
  *
  */
 
+ /*
+  * User's callbacks (listener-functions):
+  * - onRemoteStreamListener(session, stream)
+  * - onSessionConnectionStateChangedListener
+  * - onUserNotAnswerListener(session, userID)
+  */
+
+
 // Modules
 //
 var config = require('../../qbConfig');
@@ -127,8 +135,8 @@ WebRTCSession.prototype.call = function(extension) {
         functionToRun(); // run a function for the first time and then each N seconds.
         startDialingTimerInterval(sessionId, functionToRun);
         //
-        clearCallTimer(sessionId);
-        startCallTimer(sessionId, self._callTimeoutCallback);
+        self._clearAnswerTimeoutTimer();
+        self._startAnswerTimeoutTimer(self._answerTimeoutCallback);
         //
         //
       }
@@ -345,7 +353,6 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
     //peer = null;
   }
 }
-
 
 //
 //////////////////////////////////// Private ///////////////////////////////////

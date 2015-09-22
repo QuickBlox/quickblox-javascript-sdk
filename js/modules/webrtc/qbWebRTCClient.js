@@ -7,14 +7,11 @@
 
  /*
   * User's callbacks (listener-functions):
-  * - onCallListener
-  * - onAcceptCallListener
-  * - onRejectCallListener
-  * - onStopCallListener
-  * - onUpdateCallListener
-  * - onRemoteStreamListener
-  * - onSessionConnectionStateChangedListener
-  * - onUserNotAnswerListener
+  * - onCallListener(session, extension)
+  * - onAcceptCallListener(session, extension)
+  * - onRejectCallListener(session, extension)
+  * - onStopCallListener(session, extension)
+  * - onUpdateCallListener(session, extension)
   */
 
 var WebRTCSession = require('./qbWebRTCSession');
