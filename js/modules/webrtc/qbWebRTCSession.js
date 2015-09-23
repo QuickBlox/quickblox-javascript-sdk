@@ -8,8 +8,8 @@
  /*
   * User's callbacks (listener-functions):
   * - onUserNotAnswerListener(session, userID)
-  * - onRemoteStreamListener(session, stream)
-  * - onSessionConnectionStateChangedListener
+  * - onRemoteStreamListener(session, userID, stream)
+  * - onSessionConnectionStateChangedListener(session, userID, connectionState)
   */
 
 

@@ -165,7 +165,7 @@ $(document).ready(function() {
 // Callbacks
 //
 
-QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
+QB.webrtc.onSessionStateChangedListener = function(session, userID, newState) {
   console.log("onSessionStateChangedListener: " + newState + ", userId: " + userId);
 
   // possible values of 'newState':
@@ -187,7 +187,7 @@ QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
   }
 };
 
-QB.webrtc.onCallListener = function(userId, extension) {
+QB.webrtc.onCallListener = function(session, extension) {
   console.log("onCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   sessionId = extension.sessionID;
@@ -222,14 +222,14 @@ QB.webrtc.onCallListener = function(userId, extension) {
   });
 };
 
-QB.webrtc.onAcceptCallListener = function(userId, extension) {
+QB.webrtc.onAcceptCallListener = function(session, extension) {
   console.log("onAcceptCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   $('#callingSignal')[0].pause();
   updateInfoMessage(callee.full_name + ' has accepted this call');
 };
 
-QB.webrtc.onRejectCallListener = function(userId, extension) {
+QB.webrtc.onRejectCallListener = function(session, extension) {
   console.log("onRejectCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
@@ -239,17 +239,21 @@ QB.webrtc.onRejectCallListener = function(userId, extension) {
   updateInfoMessage(callee.full_name + ' has rejected the call. Logged in as ' + caller.full_name);
 };
 
-QB.webrtc.onStopCallListener = function(userId, extension) {
+QB.webrtc.onStopCallListener = function(session, extension) {
   console.log("onStopCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   updateUIOnHungUp();
 };
 
-QB.webrtc.onRemoteStreamListener = function(stream) {
+QB.webrtc.onUpdateCallListener = function(session, extension) {
+
+}
+
+QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
 
-QB.webrtc.onUserNotAnswerListener = function(userId) {
+QB.webrtc.onUserNotAnswerListener = function(session, userId) {
   console.log("onUserNotAnswerListener. userId: " + userId);
 };
 
