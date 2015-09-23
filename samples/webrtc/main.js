@@ -92,22 +92,18 @@ $(document).ready(function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
-    QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+    session.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
         console.log(err);
         var deviceNotFoundError = 'Devices are not found';
         updateInfoMessage(deviceNotFoundError);
 
-        QB.webrtc.reject(callee.id, {'reason': deviceNotFoundError});
       } else {
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
 
-        var extension = {
-          sessionID: sessionId
-        }
-
-        QB.webrtc.accept(callee.id, extension);
+        var extension = {};
+        session.accept(extension);
       }
     });
   });
@@ -120,11 +116,8 @@ $(document).ready(function() {
     $('#ringtoneSignal')[0].pause();
 
     if (typeof callee != 'undefined'){
-      var extension = {
-        sessionID: sessionId
-      }
-
-      QB.webrtc.reject(callee.id, extension);
+      var extension = {};
+      session.reject(extension);
     }
   });
 
@@ -133,11 +126,8 @@ $(document).ready(function() {
   //
   $('#hangup').on('click', function() {
     if (typeof callee != 'undefined'){
-      var extension = {
-        sessionID: sessionId
-      }
-
-      QB.webrtc.stop(callee.id, extension);
+      var extension = {};
+      session.stop(extension);
     }
   });
 
@@ -148,10 +138,10 @@ $(document).ready(function() {
     var action = $(this).data('action');
     if (action === 'mute') {
       $(this).addClass('off').data('action', 'unmute');
-      QB.webrtc.mute('video');
+      session.mute('video');
     } else {
       $(this).removeClass('off').data('action', 'mute');
-      QB.webrtc.unmute('video');
+      session.unmute('video');
     }
   });
 
@@ -162,10 +152,10 @@ $(document).ready(function() {
     var action = $(this).data('action');
     if (action === 'mute') {
       $(this).addClass('off').data('action', 'unmute');
-      QB.webrtc.mute('audio');
+      session.mute('audio');
     } else {
       $(this).removeClass('off').data('action', 'mute');
-      QB.webrtc.unmute('audio');
+      session.unmute('audio');
     }
   });
 });
@@ -191,9 +181,9 @@ QB.webrtc.onSessionStateChangedListener = function(newState, userId) {
     if (typeof callee != 'undefined'){
       QB.webrtc.stop(callee.id);
     }
-    hungUp();
+    updateUIOnHungUp();
   }else if(newState === QB.webrtc.SessionState.CLOSED){
-    hungUp();
+    updateUIOnHungUp();
   }
 };
 
@@ -252,7 +242,7 @@ QB.webrtc.onRejectCallListener = function(userId, extension) {
 QB.webrtc.onStopCallListener = function(userId, extension) {
   console.log("onStopCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
-  hungUp();
+  updateUIOnHungUp();
 };
 
 QB.webrtc.onRemoteStreamListener = function(stream) {
@@ -297,7 +287,7 @@ function callWithParams(mediaParams, isOnlyAudio){
   });
 }
 
-function hungUp(){
+function updateUIOnHungUp(){
   // hide inciming popup if it's here
   $('#incomingCall').modal('hide');
   $('#ringtoneSignal')[0].pause();

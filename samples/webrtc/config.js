@@ -10,7 +10,7 @@ var CONFIG = {
   },
   debug: true,
   webrtc: {
-    answerTimeInterval: 60,
+    answerTimeInterval: 15,
     dialingTimeInterval: 5
   }
 };
@@ -87,4 +87,3 @@ var QBUsers = [
     colour: 'BDA0CA'
   }
 ];
-

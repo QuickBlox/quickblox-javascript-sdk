@@ -8,6 +8,7 @@
 require('../../../lib/strophe/strophe.min');
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
+var Utils = require('../../qbUtils');
 
 function WebRTCSignalingProvider(service, connection) {
   this.service = service;

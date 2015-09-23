@@ -21,9 +21,6 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 //   offerToReceiveVideo: 1
 // };
 
-
-if (RTCPeerConnection) {
-
 RTCPeerConnection.SessionConnectionState = {
   UNDEFINED: 0,
   CONNECTING: 1,
@@ -35,7 +32,7 @@ RTCPeerConnection.SessionConnectionState = {
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
   Helpers.trace("RTCPeerConnection init");
-  
+
   this.delegate = delegate;
   this.sessionID = sessionID;
   this.userID = userID;
@@ -180,23 +177,24 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension){
 
   Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
 
-  this.dialingTimer = setInterval(this._dialingCallback, dialingTimeInterval, extension);
-}
+  var self = this;
 
-RTCPeerConnection.prototype._dialingCallback = function(extension){
-  this.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+  var _dialingCallback = function(extension){
+    self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
 
-  Helpers.trace("_dialingCallback, answerTimeInterval: " + this.answerTimeInterval);
+    Helpers.trace("_dialingCallback, answerTimeInterval: " + self.answerTimeInterval);
 
-  if(this.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
-    this._clearDialingTimer();
+    if(self.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
+      self._clearDialingTimer();
 
-    this.delegate.processOnNotAnswer(this);
-  }else{
-    this.delegate.processCall(this, extension);
+      self.delegate.processOnNotAnswer(self);
+    }else{
+      self.delegate.processCall(self, extension);
+    }
   }
-}
 
+  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension);
+  _dialingCallback(extension);
 }
 
 module.exports = RTCPeerConnection;

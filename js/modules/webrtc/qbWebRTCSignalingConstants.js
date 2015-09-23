@@ -19,3 +19,5 @@ WebRTCSignalingConstants.SignalingType = {
    CANDIDATE: 'iceCandidates',
    PARAMETERS_CHANGED: 'update'
 };
+
+module.exports = WebRTCSignalingConstants;

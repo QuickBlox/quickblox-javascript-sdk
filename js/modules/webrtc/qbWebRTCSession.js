@@ -371,11 +371,11 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
   var extension = extension || {};
 
-  extension[sessionID] = this.ID;
-  extension[callType] = this.callType;
-  extension[callerID] = this.initiatorID;
-  extension[opponentsIDs] = this.opponentsIDs;
-  extension[sdp] = peerConnection.localDescription.sdp;
+  extension["sessionID"] = this.ID;
+  extension["callType"] = this.callType;
+  extension["callerID"] = this.initiatorID;
+  extension["opponentsIDs"] = this.opponentsIDs;
+  extension["sdp"] = peerConnection.localDescription.sdp;
 
   this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
 }
