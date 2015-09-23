@@ -8,7 +8,7 @@
 // Modules
 //
 var config = require('../../qbConfig');
-var Helpers = require('./qbWebRTCHelpers'),
+var Helpers = require('./qbWebRTCHelpers');
 
 // Variable
 //
