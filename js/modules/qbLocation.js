@@ -14,7 +14,6 @@ function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
   this.places = new PlacesProxy(service);
-  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 function GeoProxy(service){
@@ -37,7 +36,7 @@ GeoProxy.prototype = {
       if (params.hasOwnProperty(prop)) {
         if (allowedProps.indexOf(prop)>0) {
           msg[prop] = params[prop];
-        } 
+        }
       }
     }
     if (config.debug) { console.log('GeoProxy.create', params);}

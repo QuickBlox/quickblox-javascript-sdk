@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.13.1 - 2015-09-18 */
+/* QuickBlox JavaScript SDK - v1.13.1 - 2015-09-23 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -34,6 +34,8 @@ AuthProxy.prototype = {
       throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
     }
 
+    //Utils.QBLog("AuthProxy", "createSession");
+
     var _this = this, message;
 
     if (typeof params === 'function' && typeof callback === 'undefined') {
@@ -44,8 +46,11 @@ AuthProxy.prototype = {
     // Signature of message with SHA-1 using secret key
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
-    
-    if (config.debug) { console.log('AuthProxy.createSession', message); }
+
+    // if (config.debug) { console.log('AuthProxy.createSession', message); }
+    Utils.QBLog("11", "2");
+    Utils.QBLog('AuthProxy.createSession', message);
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -84,7 +89,7 @@ AuthProxy.prototype = {
     if (config.debug) { console.log('AuthProxy.logout'); }
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
-  
+
 };
 
 module.exports = AuthProxy;
@@ -98,7 +103,7 @@ function generateAuthMsg(params) {
     nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
-  
+
   // With user authorization
   if (params.login && params.password) {
     message.user = {login: params.login, password: params.password};
@@ -117,7 +122,7 @@ function generateAuthMsg(params) {
       messages.keys.secret = params.keys.secret;
     }
   }
-  
+
   return message;
 }
 
@@ -131,7 +136,7 @@ function signMessage(message, secret) {
       return val + '=' + message[val];
     }
   }).sort().join('&');
-  
+
   return CryptoJS(sessionMsg, secret).toString();
 }
 
@@ -1401,7 +1406,6 @@ function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
   this.places = new PlacesProxy(service);
-  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 function GeoProxy(service){
@@ -1424,7 +1428,7 @@ GeoProxy.prototype = {
       if (params.hasOwnProperty(prop)) {
         if (allowedProps.indexOf(prop)>0) {
           msg[prop] = params[prop];
-        } 
+        }
       }
     }
     if (config.debug) { console.log('GeoProxy.create', params);}
@@ -2682,7 +2686,7 @@ var config = {
   },
   ssl: true,
   timeout: null,
-  debug: false,
+  debug: {mode: 0, file: null},
   addISOTime: false
 };
 
@@ -2693,12 +2697,15 @@ config.set = function(options) {
         config[key] = options[key]
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
-          if(config[key].hasOwnProperty(nextkey))
+          if(config[key].hasOwnProperty(nextkey)){
             config[key][nextkey] = options[key][nextkey];
+          }
         });
       }
     }
   })
+
+
 };
 
 module.exports = config;
@@ -2712,6 +2719,8 @@ module.exports = config;
  */
 
 var config = require('./qbConfig');
+var Utils = require('./qbUtils');
+
 var isBrowser = typeof window !== "undefined";
 
 // Actual QuickBlox API starts here
@@ -2719,9 +2728,10 @@ function QuickBlox() {}
 
 QuickBlox.prototype = {
 
-  init: function(appId, authKey, authSecret, debug) {
-    if (debug && typeof debug === 'boolean') config.debug = debug;
-    else if (debug && typeof debug === 'object') config.set(debug);
+  init: function(appId, authKey, authSecret, configMap) {
+    if (configMap && typeof configMap === 'object') {
+      config.set(configMap);
+    }
 
     var Proxy = require('./qbProxy');
     this.service = new Proxy();
@@ -2744,7 +2754,7 @@ QuickBlox.prototype = {
       var WebRTC = require('./modules/qbWebRTC');
       this.webrtc = new WebRTC(this.service, conn || null);
     }
-    
+
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
     this.chat = new Chat(this.service, this.webrtc || null, conn || null);
@@ -2752,7 +2762,7 @@ QuickBlox.prototype = {
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);
     this.data = new Data(this.service);
-    
+
     // Initialization by outside token
     if (typeof appId === 'string' && !authKey && !authSecret) {
       this.service.setSession({ token: appId });
@@ -2761,7 +2771,6 @@ QuickBlox.prototype = {
       config.creds.authKey = authKey;
       config.creds.authSecret = authSecret;
     }
-    if(console && config.debug) console.log('QuickBlox.init', this);
   },
 
   getSession: function(callback) {
@@ -2783,7 +2792,7 @@ QuickBlox.prototype = {
   logout: function(callback) {
     this.auth.logout(callback);
   }
-  
+
 };
 
 var QB = new QuickBlox();
@@ -2791,7 +2800,7 @@ QB.QuickBlox = QuickBlox;
 
 module.exports = QB;
 
-},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./modules/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12}],11:[function(require,module,exports){
+},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./modules/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12,"./qbUtils":13}],11:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -2805,7 +2814,9 @@ var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
-if (!isBrowser) var request = require('request');
+if (!isBrowser) {
+  var request = require('request');
+}
 
 var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
 if (isBrowser && !ajax) {
@@ -2817,7 +2828,6 @@ function ServiceProxy() {
     config: config,
     session: null
   };
-  if (config.debug) { console.log('ServiceProxy', this.qbInst); }
 }
 
 ServiceProxy.prototype = {
@@ -2829,7 +2839,7 @@ ServiceProxy.prototype = {
   getSession: function() {
     return this.qbInst.session;
   },
-  
+
   handleResponse: function(error, response, next, retry) {
     // can add middleware here...
     var _this = this;
@@ -2882,16 +2892,16 @@ ServiceProxy.prototype = {
         else callback(errorMsg, null);
       }
     };
-  
+
     if(!isBrowser) {
-      
+
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
-                          _this.qbInst && 
-                          _this.qbInst.session && 
+        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+                          _this.qbInst &&
+                          _this.qbInst.session &&
                           _this.qbInst.session.token ||
                           false;
-                          
+
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
@@ -2900,7 +2910,7 @@ ServiceProxy.prototype = {
         form: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
-          
+
       var requestCallback = function(error, response, body) {
         if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
           var errorMsg;
@@ -2923,19 +2933,19 @@ ServiceProxy.prototype = {
       };
 
     }
-    
+
     // Optional - for example 'multipart/form-data' when sending a file.
     // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
     if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-    
+
     if(isBrowser) {
       ajax( ajaxCall );
     } else {
       request(qbRequest, requestCallback);
     }
   }
-  
+
 };
 
 module.exports = ServiceProxy;
@@ -2978,6 +2988,14 @@ module.exports = Connection;
  */
 
 var config = require('./qbConfig');
+
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
+
+if(!isBrowser){
+  var fs = require('fs');
+}
+
 
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
@@ -3028,13 +3046,34 @@ var Utils = {
       }
     }
     return data;
+  },
+
+  QBLog: function(title, data){
+    data = JSON.stringify(data);
+    
+    if (typeof config.debug === 'object'){
+      if(config.debug.mode == 1){
+        console.log("%s: %s", title, data);
+      }else if(config.debug.mode == 2){
+        if(isBrowser){
+          throw unsupported;
+        }else{
+          var toLog = title + ": " + data;
+          fs.writeFile(config.debug.file == null ? "qb_js_sdk.log" : config.debug.file, toLog, function(err) {
+              if(err) {
+                return console.error("Error write to file: " + err);
+              }
+          });
+        }
+      }
+    }
   }
 
 };
 
 module.exports = Utils;
 
-},{"./qbConfig":9}],14:[function(require,module,exports){
+},{"./qbConfig":9,"fs":20}],14:[function(require,module,exports){
 function download(data,strFileName,strMimeType){function d2b(u){var p=u.split(/[:;,]/),t=p[1],dec="base64"==p[2]?atob:decodeURIComponent,bin=dec(p.pop()),mx=bin.length,i=0,uia=new Uint8Array(mx);for(i;mx>i;++i)uia[i]=bin.charCodeAt(i);return new B([uia],{type:t})}function saver(url,winMode){if("download"in a)return a.href=url,a.setAttribute("download",fn),a.innerHTML="downloading...",D.body.appendChild(a),setTimeout(function(){a.click(),D.body.removeChild(a),winMode===!0&&setTimeout(function(){self.URL.revokeObjectURL(a.href)},250)},66),!0;if("undefined"!=typeof safari)return url="data:"+url.replace(/^data:([\w\/\-\+]+)/,u),window.open(url)||confirm("Displaying New Document\n\nUse Save As... to download, then click back to return to this page.")&&(location.href=url),!0;var f=D.createElement("iframe");D.body.appendChild(f),winMode||(url="data:"+url.replace(/^data:([\w\/\-\+]+)/,u)),f.src=url,setTimeout(function(){D.body.removeChild(f)},333)}var self=window,u="application/octet-stream",m=strMimeType||u,x=data,D=document,a=D.createElement("a"),z=function(a){return String(a)},B=self.Blob||self.MozBlob||self.WebKitBlob||z;B=B.call?B.bind(self):Blob;var blob,fr,fn=strFileName||"download";if("true"===String(this)&&(x=[x,m],m=x[0],x=x[1]),String(x).match(/^data\:[\w+\-]+\/[\w+\-]+[,;]/))return navigator.msSaveBlob?navigator.msSaveBlob(d2b(x),fn):saver(x);if(blob=x instanceof B?x:new B([x],{type:m}),navigator.msSaveBlob)return navigator.msSaveBlob(blob,fn);if(self.URL)saver(self.URL.createObjectURL(blob),!0);else{if("string"==typeof blob||blob.constructor===z)try{return saver("data:"+m+";base64,"+self.btoa(blob))}catch(y){return saver("data:"+m+","+encodeURIComponent(blob))}fr=new FileReader,fr.onload=function(){saver(this.result)},fr.readAsDataURL(blob)}return!0}module.exports=download;
 },{}],15:[function(require,module,exports){
 /*! strophe.js v1.2.2 - built on 20-06-2015 */

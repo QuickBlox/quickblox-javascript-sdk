@@ -31,6 +31,8 @@ AuthProxy.prototype = {
       throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
     }
 
+    //Utils.QBLog("AuthProxy", "createSession");
+
     var _this = this, message;
 
     if (typeof params === 'function' && typeof callback === 'undefined') {
@@ -41,8 +43,11 @@ AuthProxy.prototype = {
     // Signature of message with SHA-1 using secret key
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
-    
-    if (config.debug) { console.log('AuthProxy.createSession', message); }
+
+    // if (config.debug) { console.log('AuthProxy.createSession', message); }
+    Utils.QBLog("11", "2");
+    Utils.QBLog('AuthProxy.createSession', message);
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -81,7 +86,7 @@ AuthProxy.prototype = {
     if (config.debug) { console.log('AuthProxy.logout'); }
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
-  
+
 };
 
 module.exports = AuthProxy;
@@ -95,7 +100,7 @@ function generateAuthMsg(params) {
     nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
-  
+
   // With user authorization
   if (params.login && params.password) {
     message.user = {login: params.login, password: params.password};
@@ -114,7 +119,7 @@ function generateAuthMsg(params) {
       messages.keys.secret = params.keys.secret;
     }
   }
-  
+
   return message;
 }
 
@@ -128,6 +133,6 @@ function signMessage(message, secret) {
       return val + '=' + message[val];
     }
   }).sort().join('&');
-  
+
   return CryptoJS(sessionMsg, secret).toString();
 }

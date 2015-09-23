@@ -7,6 +7,14 @@
 
 var config = require('./qbConfig');
 
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
+
+if(!isBrowser){
+  var fs = require('fs');
+}
+
+
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
 var ObjectId = {
@@ -56,6 +64,27 @@ var Utils = {
       }
     }
     return data;
+  },
+
+  QBLog: function(title, data){
+    data = JSON.stringify(data);
+    
+    if (typeof config.debug === 'object'){
+      if(config.debug.mode == 1){
+        console.log("%s: %s", title, data);
+      }else if(config.debug.mode == 2){
+        if(isBrowser){
+          throw unsupported;
+        }else{
+          var toLog = title + ": " + data;
+          fs.writeFile(config.debug.file == null ? "qb_js_sdk.log" : config.debug.file, toLog, function(err) {
+              if(err) {
+                return console.error("Error write to file: " + err);
+              }
+          });
+        }
+      }
+    }
   }
 
 };

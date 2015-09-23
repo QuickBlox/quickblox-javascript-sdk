@@ -11,7 +11,9 @@ var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
-if (!isBrowser) var request = require('request');
+if (!isBrowser) {
+  var request = require('request');
+}
 
 var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
 if (isBrowser && !ajax) {
@@ -23,7 +25,6 @@ function ServiceProxy() {
     config: config,
     session: null
   };
-  if (config.debug) { console.log('ServiceProxy', this.qbInst); }
 }
 
 ServiceProxy.prototype = {
@@ -35,7 +36,7 @@ ServiceProxy.prototype = {
   getSession: function() {
     return this.qbInst.session;
   },
-  
+
   handleResponse: function(error, response, next, retry) {
     // can add middleware here...
     var _this = this;
@@ -88,16 +89,16 @@ ServiceProxy.prototype = {
         else callback(errorMsg, null);
       }
     };
-  
+
     if(!isBrowser) {
-      
+
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
-                          _this.qbInst && 
-                          _this.qbInst.session && 
+        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+                          _this.qbInst &&
+                          _this.qbInst.session &&
                           _this.qbInst.session.token ||
                           false;
-                          
+
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
@@ -106,7 +107,7 @@ ServiceProxy.prototype = {
         form: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
-          
+
       var requestCallback = function(error, response, body) {
         if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
           var errorMsg;
@@ -129,19 +130,19 @@ ServiceProxy.prototype = {
       };
 
     }
-    
+
     // Optional - for example 'multipart/form-data' when sending a file.
     // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
     if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-    
+
     if(isBrowser) {
       ajax( ajaxCall );
     } else {
       request(qbRequest, requestCallback);
     }
   }
-  
+
 };
 
 module.exports = ServiceProxy;

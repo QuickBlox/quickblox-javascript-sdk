@@ -69,7 +69,7 @@ var config = {
   },
   ssl: true,
   timeout: null,
-  debug: false,
+  debug: {mode: 0, file: null},
   addISOTime: false
 };
 
@@ -80,12 +80,15 @@ config.set = function(options) {
         config[key] = options[key]
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
-          if(config[key].hasOwnProperty(nextkey))
+          if(config[key].hasOwnProperty(nextkey)){
             config[key][nextkey] = options[key][nextkey];
+          }
         });
       }
     }
   })
+
+
 };
 
 module.exports = config;
