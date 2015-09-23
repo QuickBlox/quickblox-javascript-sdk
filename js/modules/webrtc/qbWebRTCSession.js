@@ -84,6 +84,7 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
       video: params.video || false
 
     },function(stream) {
+      // save local stream
       self.localStream = stream;
 
       if (params.elemId){
@@ -204,6 +205,8 @@ WebRTCSession.prototype.reject = function(extension) {
   extension[opponentsIDs] = self.opponentsIDs;
 
   this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.REJECT);
+
+  this._close();
 }
 
 /**
@@ -216,9 +219,6 @@ WebRTCSession.prototype.stop = function(extension) {
   Helpers.trace('Stop, extension: ' + JSON.stringify(extension));
 
   this._clearAnswerTimer();
-  // clearDialingTimerInterval(sessionId);
-
-  // this._close();
 
   extension[sessionID] = this.ID;
   extension[callType] = this.callType;
@@ -230,6 +230,8 @@ WebRTCSession.prototype.stop = function(extension) {
 
     this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
   }
+
+  this._close();
 }
 
 /**
@@ -352,7 +354,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   peerConnection._clearDialingTimer();
 
-  //  self._close();
+  this._close();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
@@ -384,7 +386,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
   extension[callType] = this.callType;
   extension[callerID] = this.initiatorID;
   extension[opponentsIDs] = this.opponentsIDs;
-  
+
   this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
 }
 
