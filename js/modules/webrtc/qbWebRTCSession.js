@@ -55,7 +55,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
  * @param {map} A map media stream constrains
  * @param {function} A callback to get a result of the function
  */
-WebRTCProxy.prototype.getUserMedia = function(params, callback) {
+WebRTCSession.prototype.getUserMedia = function(params, callback) {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   if (!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
@@ -104,7 +104,7 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
  * @param {Object} The steram to attach
  * @param {map} The additional options
  */
-WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
+WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
   var elem = document.getElementById(id);
   if (elem) {
     var URL = window.URL || window.webkitURL;
@@ -133,14 +133,14 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peer = this._createPeer(userID, 'offer', null);
-    this.peerConnections[userID] = peer;
+    var peer = self._createPeer(userID, 'offer', null);
+    self.peerConnections[userID] = peer;
 
     peer.getAndSetLocalSessionDescription(function(err) {
       if (err) {
         Helpers.trace("getAndSetLocalSessionDescription error: " + err);
       } else {
-
+        Helpers.trace("getAndSetLocalSessionDescription success");
         // let's send call requests to user
         //
         peer._startDialingTimer(extension);
@@ -167,8 +167,8 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peerConnection = this._createPeer(userID, 'answer', extension.sdp);
-    this.peerConnections[userID] = peerConnection;
+    var peerConnection = self._createPeer(userID, 'answer', extension.sdp);
+    self.peerConnections[userID] = peerConnection;
 
     peerConnection.getAndSetLocalSessionDescription(function(err) {
       if (err) {

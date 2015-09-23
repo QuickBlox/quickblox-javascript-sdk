@@ -34,6 +34,8 @@ RTCPeerConnection.SessionConnectionState = {
 };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
+  Helpers.trace("RTCPeerConnection init");
+  
   this.delegate = delegate;
   this.sessionID = sessionID;
   this.userID = userID;
@@ -164,6 +166,8 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
+  Helpers.trace("_clearDialingTimer");
+
   if(this.dialingTimer){
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
@@ -173,11 +177,17 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
 
 RTCPeerConnection.prototype._startDialingTimer = function(extension){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  this.dialingTimer = setInterval(functionToRun, this._dialingCallback, extension);
+
+  Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
+
+  this.dialingTimer = setInterval(this._dialingCallback, dialingTimeInterval, extension);
 }
 
 RTCPeerConnection.prototype._dialingCallback = function(extension){
   this.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+
+  Helpers.trace("_dialingCallback, answerTimeInterval: " + this.answerTimeInterval);
+
   if(this.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
     this._clearDialingTimer();
 

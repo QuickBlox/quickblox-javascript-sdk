@@ -1816,6 +1816,8 @@ RTCPeerConnection.SessionConnectionState = {
 };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
+  Helpers.trace("RTCPeerConnection init");
+  
   this.delegate = delegate;
   this.sessionID = sessionID;
   this.userID = userID;
@@ -1946,6 +1948,8 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
+  Helpers.trace("_clearDialingTimer");
+
   if(this.dialingTimer){
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
@@ -1955,11 +1959,17 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
 
 RTCPeerConnection.prototype._startDialingTimer = function(extension){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
-  this.dialingTimer = setInterval(functionToRun, this._dialingCallback, extension);
+
+  Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
+
+  this.dialingTimer = setInterval(this._dialingCallback, dialingTimeInterval, extension);
 }
 
 RTCPeerConnection.prototype._dialingCallback = function(extension){
   this.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+
+  Helpers.trace("_dialingCallback, answerTimeInterval: " + this.answerTimeInterval);
+
   if(this.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
     this._clearDialingTimer();
 
@@ -1994,6 +2004,8 @@ var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
+
+// this.session = WebRTCSession;
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -2262,7 +2274,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
  * @param {map} A map media stream constrains
  * @param {function} A callback to get a result of the function
  */
-WebRTCProxy.prototype.getUserMedia = function(params, callback) {
+WebRTCSession.prototype.getUserMedia = function(params, callback) {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   if (!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
@@ -2311,7 +2323,7 @@ WebRTCProxy.prototype.getUserMedia = function(params, callback) {
  * @param {Object} The steram to attach
  * @param {map} The additional options
  */
-WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
+WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
   var elem = document.getElementById(id);
   if (elem) {
     var URL = window.URL || window.webkitURL;
@@ -2340,14 +2352,14 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peer = this._createPeer(userID, 'offer', null);
-    this.peerConnections[userID] = peer;
+    var peer = self._createPeer(userID, 'offer', null);
+    self.peerConnections[userID] = peer;
 
     peer.getAndSetLocalSessionDescription(function(err) {
       if (err) {
         Helpers.trace("getAndSetLocalSessionDescription error: " + err);
       } else {
-
+        Helpers.trace("getAndSetLocalSessionDescription success");
         // let's send call requests to user
         //
         peer._startDialingTimer(extension);
@@ -2374,8 +2386,8 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peerConnection = this._createPeer(userID, 'answer', extension.sdp);
-    this.peerConnections[userID] = peerConnection;
+    var peerConnection = self._createPeer(userID, 'answer', extension.sdp);
+    self.peerConnections[userID] = peerConnection;
 
     peerConnection.getAndSetLocalSessionDescription(function(err) {
       if (err) {

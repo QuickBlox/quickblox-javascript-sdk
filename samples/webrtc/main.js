@@ -3,7 +3,7 @@ var currentSession;
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
-var sessionId;
+var session;
 
 $(document).ready(function() {
 
@@ -68,6 +68,14 @@ $(document).ready(function() {
     var mediaParams = {
       audio: true,
       video: true,
+      // video: {
+      //       mandatory: {
+      //         maxWidth: 1280,
+      //         maxHeight: 720,
+      //         minWidth: 1280,
+      //         minHeight: 720
+      //       }
+      // },
       elemId: 'localVideo',
       options: {
         muted: true,
@@ -262,28 +270,29 @@ QB.webrtc.onUserNotAnswerListener = function(userId) {
 
 function callWithParams(mediaParams, isOnlyAudio){
 
-  QB.webrtc.getUserMedia(mediaParams, function(err, stream) {
+  // create a session
+  //
+  session = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? 2 : 1);
+  console.log("Session: " + session);
+
+  // get local stream
+  //
+  session.getUserMedia(mediaParams, function(err, stream) {
     if (err) {
       console.log(err);
       updateInfoMessage('Error: devices (camera or microphone) are not found');
+
     } else {
       $('.btn_mediacall, #hangup').removeAttr('disabled');
       $('#audiocall, #videocall').attr('disabled', 'disabled');
       updateInfoMessage('Calling...');
       $('#callingSignal')[0].play();
 
-      // create RTC session and call
-      currentSession = QB.webrtc.createNewSession(caller.id, [callee.id],
-         isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
-      console.log("session: " + session);
 
-      var extension = {
-
-      }
-
-      currentSession.call(extension);
-
-      QB.webrtc.call(callee.id, isOnlyAudio ? 'audio' : 'video', {});
+      // start call
+      //
+      var extension = {};
+      session.call(extension);
     }
   });
 }
