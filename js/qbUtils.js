@@ -67,37 +67,36 @@ var Utils = {
   },
 
   QBLog: function(){
-    var title = arguments[0];
-    var data = [];
-    if(arguments.length > 1){
-      for (var i = 1; i < arguments.length; i++) {
-        data.push(JSON.stringify(arguments[i]));
-      }
-    }
-    data = data.join(" ");
 
     if(this.loggers){
-      this.loggers.forEach(function(logger, i, arr) {
-        logger(title, data);
-      });
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
       return;
     }
 
     this.loggers = [];
 
     var consoleLoggerFunction = function(){
-      var logger = function(title, data){
-        console.log("%s: %s", title, data);
+      var logger = function(args){
+        console.log.apply(console, Array.prototype.slice.call(args));
       }
       return logger;
     }
 
     var fileLoggerFunction = function(){
-      var logger = function(title, data){
+      var logger = function(args){
         if(isBrowser){
           throw unsupported;
         }else{
-          var toLog = "\n" + new Date() + ". " + title + ": " + data;
+
+          var data = [];
+          for (var i = 1; i < args.length; i++) {
+            data.push(JSON.stringify(args[i]));
+          }
+          data = data.join(" ");
+
+          var toLog = "\n" + new Date() + ". " + data;
           fs.appendFile(config.debug.file, toLog, function(err) {
             if(err) {
               return console.error("Error while writing log to file. Error: " + err);
@@ -145,9 +144,9 @@ var Utils = {
     }
 
     if(this.loggers){
-      this.loggers.forEach(function(logger, i, arr) {
-        logger(title, data);
-      });
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
     }
 
   }

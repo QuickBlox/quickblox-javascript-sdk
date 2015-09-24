@@ -54,7 +54,7 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    Utils.QBLog('[ServiceProxy]', params.type || 'GET', params);
+    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(params)});
 
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
@@ -65,11 +65,8 @@ ServiceProxy.prototype = {
       data: params.data || ' ',
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
-        Utils.QBLog('[ServiceProxy]', 'ajax beforeSend', jqXHR, settings);
 
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          Utils.QBLog('[ServiceProxy]', 'setting headers on request to ' + settings.url);
-
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -77,7 +74,7 @@ ServiceProxy.prototype = {
         }
       },
       success: function(data, status, jqHXR) {
-        Utils.QBLog('[ServiceProxy]', 'ajax success', data);
+        Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
         if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
         else callback(null, data);

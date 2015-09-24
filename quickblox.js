@@ -47,7 +47,7 @@ AuthProxy.prototype = {
     message.signature = signMessage(message, config.creds.authSecret);
 
     Utils.QBLog('[AuthProxy]', 'createSession', message);
-
+    
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -2882,7 +2882,7 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    Utils.QBLog('[ServiceProxy]', params.type || 'GET', params);
+    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(params)});
 
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
@@ -2893,11 +2893,8 @@ ServiceProxy.prototype = {
       data: params.data || ' ',
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
-        Utils.QBLog('[ServiceProxy]', 'ajax beforeSend', jqXHR, settings);
 
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          Utils.QBLog('[ServiceProxy]', 'setting headers on request to ' + settings.url);
-
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -2905,7 +2902,7 @@ ServiceProxy.prototype = {
         }
       },
       success: function(data, status, jqHXR) {
-        Utils.QBLog('[ServiceProxy]', 'ajax success', data);
+        Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
         if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
         else callback(null, data);
@@ -3087,37 +3084,36 @@ var Utils = {
   },
 
   QBLog: function(){
-    var title = arguments[0];
-    var data = [];
-    if(arguments.length > 1){
-      for (var i = 1; i < arguments.length; i++) {
-        data.push(JSON.stringify(arguments[i]));
-      }
-    }
-    data = data.join(" ");
 
     if(this.loggers){
-      this.loggers.forEach(function(logger, i, arr) {
-        logger(title, data);
-      });
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
       return;
     }
 
     this.loggers = [];
 
     var consoleLoggerFunction = function(){
-      var logger = function(title, data){
-        console.log("%s: %s", title, data);
+      var logger = function(args){
+        console.log.apply(console, Array.prototype.slice.call(args));
       }
       return logger;
     }
 
     var fileLoggerFunction = function(){
-      var logger = function(title, data){
+      var logger = function(args){
         if(isBrowser){
           throw unsupported;
         }else{
-          var toLog = "\n" + new Date() + ". " + title + ": " + data;
+
+          var data = [];
+          for (var i = 1; i < args.length; i++) {
+            data.push(JSON.stringify(args[i]));
+          }
+          data = data.join(" ");
+
+          var toLog = "\n" + new Date() + ". " + data;
           fs.appendFile(config.debug.file, toLog, function(err) {
             if(err) {
               return console.error("Error while writing log to file. Error: " + err);
@@ -3165,9 +3161,9 @@ var Utils = {
     }
 
     if(this.loggers){
-      this.loggers.forEach(function(logger, i, arr) {
-        logger(title, data);
-      });
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
     }
 
   }

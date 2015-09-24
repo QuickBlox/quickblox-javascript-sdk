@@ -44,7 +44,7 @@ AuthProxy.prototype = {
     message.signature = signMessage(message, config.creds.authSecret);
 
     Utils.QBLog('[AuthProxy]', 'createSession', message);
-
+    
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
