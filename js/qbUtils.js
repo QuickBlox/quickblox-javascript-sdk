@@ -76,44 +76,80 @@ var Utils = {
     }
     data = data.join(" ");
 
-    if(this.logFunction){
-      this.logFunction(title, data);
+    if(this.loggers){
+      this.loggers.forEach(function(logger, i, arr) {
+        logger(title, data);
+      });
       return;
     }
 
+    this.loggers = [];
+
+    var consoleLoggerFunction = function(){
+      var logger = function(title, data){
+        console.log("%s: %s", title, data);
+      }
+      return logger;
+    }
+
+    var fileLoggerFunction = function(){
+      var logger = function(title, data){
+        if(isBrowser){
+          throw unsupported;
+        }else{
+          var toLog = "\n" + new Date() + ". " + title + ": " + data;
+          fs.appendFile(config.debug.file, toLog, function(err) {
+            if(err) {
+              return console.error("Error while writing log to file. Error: " + err);
+            }
+          });
+        }
+      }
+      return logger;
+    }
+
+    // Build loggers
+    //
+
+    // format "debug: { }"
     if (typeof config.debug === 'object'){
-      if(config.debug.mode == 1){
 
-        this.logFunction = function(title, data){
-          console.log("%s: %s", title, data);
+      if(typeof config.debug.mode === 'number'){
+        if(config.debug.mode == 1){
+          var logger = consoleLoggerFunction();
+          this.loggers.push(logger);
+        }else if(config.debug.mode == 2){
+          var logger = fileLoggerFunction();
+          this.loggers.push(logger);
         }
-        this.logFunction(title, data);
-
-      }else if(config.debug.mode == 2){
-        this.logFunction = function(title, data){
-          if(isBrowser){
-            throw unsupported;
-          }else{
-            var toLog = title + ": " + data;
-            fs.appendFile(config.debug.file, toLog, function(err) {
-              if(err) {
-                return console.error("Error while writing log to file. Error: " + err);
-              }
-            });
+      }else if(typeof config.debug.mode === 'object'){
+        var self = this;
+        config.debug.mode.forEach(function(mode, i, arr) {
+          if (mode === 1){
+            var logger = consoleLoggerFunction();
+            self.loggers.push(logger);
+          }else if (mode === 2){
+            var logger = fileLoggerFunction();
+            self.loggers.push(logger);
           }
-        }
-        this.logFunction(title, data);
+        });
       }
 
+    // format "debug: true"
     // backward compatibility
     }else if (typeof config.debug === 'boolean'){
       if(config.debug){
-        this.logFunction = function(title, data){
-          console.log("%s: %s", title, data);
-        }
-        this.logFunction(title, data);
+        var logger = consoleLoggerFunction();
+        this.loggers.push(logger);
       }
     }
+
+    if(this.loggers){
+      this.loggers.forEach(function(logger, i, arr) {
+        logger(title, data);
+      });
+    }
+
   }
 };
 
