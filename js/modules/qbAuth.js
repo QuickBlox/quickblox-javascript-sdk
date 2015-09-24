@@ -16,7 +16,8 @@ function AuthProxy(service) {
 AuthProxy.prototype = {
 
   getSession: function(callback) {
-    if (config.debug) { console.log('AuthProxy.getSession');}
+    Utils.QBLog('[AuthProxy]', 'getSession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -31,8 +32,6 @@ AuthProxy.prototype = {
       throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
     }
 
-    //Utils.QBLog("AuthProxy", "createSession");
-
     var _this = this, message;
 
     if (typeof params === 'function' && typeof callback === 'undefined') {
@@ -44,9 +43,7 @@ AuthProxy.prototype = {
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
 
-    // if (config.debug) { console.log('AuthProxy.createSession', message); }
-    Utils.QBLog("11", "2");
-    Utils.QBLog('AuthProxy.createSession', message);
+    Utils.QBLog('[AuthProxy]', 'createSession', message);
 
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
@@ -61,7 +58,8 @@ AuthProxy.prototype = {
 
   destroySession: function(callback) {
     var _this = this;
-    if (config.debug) { console.log('AuthProxy.destroySession'); }
+    Utils.QBLog('[AuthProxy]', 'destroySession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                       function(err, res) {
                         if (err) {
@@ -74,7 +72,8 @@ AuthProxy.prototype = {
   },
 
   login: function(params, callback) {
-    if (config.debug) { console.log('AuthProxy.login', params); }
+    Utils.QBLog('[AuthProxy]', 'login', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -83,7 +82,8 @@ AuthProxy.prototype = {
   },
 
   logout: function(callback) {
-    if (config.debug) { console.log('AuthProxy.logout'); }
+    Utils.QBLog('[AuthProxy]', 'logout');
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
 

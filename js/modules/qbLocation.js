@@ -88,33 +88,4 @@ function PlacesProxy(service) {
   this.service = service;
 }
 
-PlacesProxy.prototype = {
-
-  list: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.list', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
-  },
-
-  create: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.create', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
-  },
-
-  get: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.get', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
-  },
-
-  update: function(place, callback){
-    if (config.debug) { console.log('PlacesProxy.update', place);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
-  },
-
-  delete: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.delete', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
-  }
-
-};
-
 module.exports = LocationProxy;

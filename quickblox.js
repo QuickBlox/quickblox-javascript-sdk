@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.13.1 - 2015-09-23 */
+/* QuickBlox JavaScript SDK - v1.13.1 - 2015-09-24 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -19,7 +19,8 @@ function AuthProxy(service) {
 AuthProxy.prototype = {
 
   getSession: function(callback) {
-    if (config.debug) { console.log('AuthProxy.getSession');}
+    Utils.QBLog('[AuthProxy]', 'getSession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -34,8 +35,6 @@ AuthProxy.prototype = {
       throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
     }
 
-    //Utils.QBLog("AuthProxy", "createSession");
-
     var _this = this, message;
 
     if (typeof params === 'function' && typeof callback === 'undefined') {
@@ -47,9 +46,7 @@ AuthProxy.prototype = {
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
 
-    // if (config.debug) { console.log('AuthProxy.createSession', message); }
-    Utils.QBLog("11", "2");
-    Utils.QBLog('AuthProxy.createSession', message);
+    Utils.QBLog('[AuthProxy]', 'createSession', message);
 
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
@@ -64,7 +61,8 @@ AuthProxy.prototype = {
 
   destroySession: function(callback) {
     var _this = this;
-    if (config.debug) { console.log('AuthProxy.destroySession'); }
+    Utils.QBLog('[AuthProxy]', 'destroySession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                       function(err, res) {
                         if (err) {
@@ -77,7 +75,8 @@ AuthProxy.prototype = {
   },
 
   login: function(params, callback) {
-    if (config.debug) { console.log('AuthProxy.login', params); }
+    Utils.QBLog('[AuthProxy]', 'login', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -86,7 +85,8 @@ AuthProxy.prototype = {
   },
 
   logout: function(callback) {
-    if (config.debug) { console.log('AuthProxy.logout'); }
+    Utils.QBLog('[AuthProxy]', 'logout');
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
 
@@ -389,7 +389,8 @@ ChatProxy.prototype = {
   connect: function(params, callback) {
     if(!isBrowser) throw unsupported;
 
-    if (config.debug) { console.log('ChatProxy.connect', params); }
+    Utils.QBLog('[ChatProxy]', 'connect', params);
+
     var self = this,
         err, rooms;
 
@@ -410,22 +411,22 @@ ChatProxy.prototype = {
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTING:
-        trace('Status.CONNECTING');
-        trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
+        Utils.QBLog('[ChatProxy]', 'Status.CONNECTING');
+        Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
         break;
       case Strophe.Status.CONNFAIL:
         err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.AUTHENTICATING:
-        trace('Status.AUTHENTICATING');
+        Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
         err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTED:
-        trace('Status.CONNECTED at ' + getLocalTime());
+        Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
         connection.addHandler(self._onMessage, null, 'message', 'chat');
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
@@ -465,10 +466,10 @@ ChatProxy.prototype = {
 
         break;
       case Strophe.Status.DISCONNECTING:
-        trace('Status.DISCONNECTING');
+        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTING');
         break;
       case Strophe.Status.DISCONNECTED:
-        trace('Status.DISCONNECTED at ' + getLocalTime());
+        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
         connection.reset();
 
         if (typeof self.onDisconnectedListener === 'function'){
@@ -479,7 +480,7 @@ ChatProxy.prototype = {
         if (!self._isLogout) self.connect(params);
         break;
       case Strophe.Status.ATTACHED:
-        trace('Status.ATTACHED');
+        Utils.QBLog('[ChatProxy]', 'Status.ATTACHED');
         break;
       }
     });
@@ -933,22 +934,26 @@ DialogProxy.prototype = {
       params = {};
     }
 
-    if (config.debug) { console.log('DialogProxy.list', params); }
+    Utils.QBLog('[DialogProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('DialogProxy.create', params); }
+    Utils.QBLog('[DialogProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('DialogProxy.update', id, params); }
+    Utils.QBLog('[DialogProxy]', 'update', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
   },
 
   delete: function(id, params_or_callback, callback) {
-    if (config.debug) { console.log('DialogProxy.delete', id);}
+    Utils.QBLog('[DialogProxy]', 'delete', id);
+
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
@@ -967,22 +972,26 @@ function MessageProxy(service) {
 MessageProxy.prototype = {
 
   list: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.list', params); }
+    Utils.QBLog('[MessageProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.create', params); }
+    Utils.QBLog('[MessageProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('MessageProxy.update', id, params); }
+    Utils.QBLog('[MessageProxy]', 'update', id, params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.delete', id); }
+    Utils.QBLog('[MessageProxy]', 'delete', id);
+
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
   }
 
@@ -1077,11 +1086,6 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
-function trace(text) {
-  // if (config.debug) {
-    console.log('[QBChat]:', text);
-  // }
-}
 
 function getError(code, detail) {
   var errorMsg = {
@@ -1091,7 +1095,7 @@ function getError(code, detail) {
     detail: detail
   };
 
-  trace(detail);
+  Utils.QBLog('[ChatProxy]', 'error: ', detail);
   return errorMsg;
 }
 
@@ -1122,9 +1126,10 @@ function ContentProxy(service) {
 }
 
 ContentProxy.prototype = {
-  
+
   create: function(params, callback){
-   if (config.debug) { console.log('ContentProxy.create', params);}
+   Utils.QBLog('[ContentProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: {blob:params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result.blob); }
@@ -1136,6 +1141,9 @@ ContentProxy.prototype = {
       callback = params;
       params = null;
     }
+
+    Utils.QBLog('[ContentProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -1143,6 +1151,8 @@ ContentProxy.prototype = {
   },
 
   delete: function(id, callback){
+    Utils.QBLog('[ContentProxy]', 'delete');
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
       if (err) { callback(err,null); }
       else { callback(null, true); }
@@ -1151,7 +1161,9 @@ ContentProxy.prototype = {
 
   createAndUpload: function(params, callback){
     var createParams= {}, file, name, type, size, fileId, _this = this;
-    if (config.debug) { console.log('ContentProxy.createAndUpload', params);}
+
+    Utils.QBLog('[ContentProxy]', 'createAndUpload', params);
+
     file = params.file;
     name = params.name || file.name;
     type = params.type || file.type;
@@ -1165,12 +1177,12 @@ ContentProxy.prototype = {
       else {
         var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
         fileId = createResult.id;
-        
+
         Object.keys(uri.queryKey).forEach(function(val) {
           data.append(val, decodeURIComponent(uri.queryKey[val]));
         });
         data.append('file', file, createResult.name);
-        
+
         uploadParams.data = data;
         _this.upload(uploadParams, function(err, result) {
           if (err) { callback(err, null); }
@@ -1189,6 +1201,8 @@ ContentProxy.prototype = {
   },
 
   upload: function(params, callback){
+    Utils.QBLog('[ContentProxy]', 'upload');
+
     this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
                        contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
       if (err) { callback (err, null); }
@@ -1198,14 +1212,16 @@ ContentProxy.prototype = {
         var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
         for (i = 0, m = children.length; i < m ; i++){
           result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
-        } 
-        if (config.debug) { console.log('result', result); }
+        }
+
         callback (null, result);
       }
     });
   },
 
   taggedForCurrentUser: function(callback) {
+    Utils.QBLog('[ContentProxy]', 'taggedForCurrentUser');
+
     this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
       if (err) { callback(err, null); }
       else { callback(null, result); }
@@ -1213,6 +1229,8 @@ ContentProxy.prototype = {
   },
 
   markUploaded: function (params, callback) {
+    Utils.QBLog('[ContentProxy]', 'markUploaded', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -1220,6 +1238,8 @@ ContentProxy.prototype = {
   },
 
   getInfo: function (id, callback) {
+    Utils.QBLog('[ContentProxy]', 'getInfo', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -1227,26 +1247,32 @@ ContentProxy.prototype = {
   },
 
   getFile: function (uid, callback) {
-   this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
+    Utils.QBLog('[ContentProxy]', 'getFile', uid);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
     });
   },
 
   getFileUrl: function (id, callback) {
-   this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
+    Utils.QBLog('[ContentProxy]', 'getFileUrl', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res.blob_object_access.params); }
     });
   },
 
   update: function (params, callback) {
+    Utils.QBLog('[ContentProxy]', 'update', params);
+
     var data = {};
     data.blob = {};
     if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
       if (err) { callback (err, null); }
-      else { callback (null, res); } 
+      else { callback (null, res); }
     });
   }
 
@@ -1300,13 +1326,13 @@ var config = require('../qbConfig'),
 
 function DataProxy(service){
   this.service = service;
-  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 DataProxy.prototype = {
 
   create: function(className, data, callback) {
-    if (config.debug) { console.log('DataProxy.create', className, data);}
+    Utils.QBLog('[DataProxy]', 'create', className, data);
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: data, type: 'POST'}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -1319,7 +1345,8 @@ DataProxy.prototype = {
       callback = filters;
       filters = null;
     }
-    if (config.debug) { console.log('DataProxy.list', className, filters);}
+    Utils.QBLog('[DataProxy]', 'list', className, filters);
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: filters}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -1327,7 +1354,8 @@ DataProxy.prototype = {
   },
 
   update: function(className, data, callback) {
-    if (config.debug) { console.log('DataProxy.update', className, data);}
+    Utils.QBLog('[DataProxy]', 'update', className, data);
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -1335,7 +1363,8 @@ DataProxy.prototype = {
   },
 
   delete: function(className, id, callback) {
-    if (config.debug) { console.log('DataProxy.delete', className, id);}
+    Utils.QBLog('[DataProxy]', 'delete', className, id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + id), type: 'DELETE', dataType: 'text'},
                       function(err,result){
                         if (err){ callback(err, null); }
@@ -1344,8 +1373,9 @@ DataProxy.prototype = {
   },
 
   uploadFile: function(className, params, callback) {
+    Utils.QBLog('[DataProxy]', 'uploadFile', className, params);
+
     var formData;
-    if (config.debug) { console.log('DataProxy.uploadFile', className, params);}
     formData = new FormData();
     formData.append('field_name', params.field_name);
     formData.append('file', params.file);
@@ -1357,8 +1387,9 @@ DataProxy.prototype = {
   },
 
   updateFile: function(className, params, callback) {
+    Utils.QBLog('[DataProxy]', 'updateFile', className, params);
+
     var formData;
-    if (config.debug) { console.log('DataProxy.updateFile', className, params);}
     formData = new FormData();
     formData.append('field_name', params.field_name);
     formData.append('file', params.file);
@@ -1370,21 +1401,23 @@ DataProxy.prototype = {
   },
 
   downloadFile: function(className, params, callback) {
-    if (config.debug) { console.log('DataProxy.downloadFile', className, params); }
+    Utils.QBLog('[DataProxy]', 'downloadFile', className, params);
+
     var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
     result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
     callback(null, result);
   },
 
   deleteFile: function(className, params, callback) {
-    if (config.debug) { console.log('DataProxy.deleteFile', className, params);}
+    Utils.QBLog('[DataProxy]', 'deleteFile', className, params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
                       dataType: 'text', type: 'DELETE'}, function(err, result) {
                         if (err) { callback (err, null); }
                         else { callback (err, true); }
                       });
   }
-  
+
 };
 
 module.exports = DataProxy;
@@ -1479,35 +1512,6 @@ GeoProxy.prototype = {
 function PlacesProxy(service) {
   this.service = service;
 }
-
-PlacesProxy.prototype = {
-
-  list: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.list', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
-  },
-
-  create: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.create', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
-  },
-
-  get: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.get', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
-  },
-
-  update: function(place, callback){
-    if (config.debug) { console.log('PlacesProxy.update', place);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
-  },
-
-  delete: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.delete', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
-  }
-
-};
 
 module.exports = LocationProxy;
 
@@ -2810,6 +2814,7 @@ module.exports = QB;
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+
 var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
@@ -2856,7 +2861,8 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
+    Utils.QBLog('[ServiceProxy]', params.type || 'GET', params);
+
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
     var ajaxCall = {
@@ -2866,9 +2872,11 @@ ServiceProxy.prototype = {
       data: params.data || ' ',
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
-        if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
+        Utils.QBLog('[ServiceProxy]', 'ajax beforeSend', jqXHR, settings);
+
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          if (config.debug) { console.log('setting headers on request to ' + settings.url); }
+          Utils.QBLog('[ServiceProxy]', 'setting headers on request to ' + settings.url);
+
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -2876,12 +2884,14 @@ ServiceProxy.prototype = {
         }
       },
       success: function(data, status, jqHXR) {
-        if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+        Utils.QBLog('[ServiceProxy]', 'ajax success', data);
+
         if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
         else callback(null, data);
       },
       error: function(jqHXR, status, error) {
-        if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
+        Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR.responseText);
+
         var errorMsg = {
           code: jqHXR.status,
           status: status,
@@ -2960,17 +2970,26 @@ module.exports = ServiceProxy;
 
 require('../lib/strophe/strophe.min');
 var config = require('./qbConfig');
+var Utils = require('./qbUtils');
 
 function Connection() {
   var protocol = config.chatProtocol.active === 1 ? config.chatProtocol.bosh : config.chatProtocol.websocket;
   var conn = new Strophe.Connection(protocol);
   // if (config.debug) {
     if (config.chatProtocol.active === 1) {
-      conn.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat RECV]:', data.childNodes[i]); }} };
-      conn.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) { console.log('[QBChat SENT]:', data.childNodes[i]); }} };
+      conn.xmlInput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) {
+        Utils.QBLog('[QBChat]', 'RECV:', data.childNodes[i]);
+      }} };
+      conn.xmlOutput = function(data) { if (data.childNodes[0]) {for (var i = 0, len = data.childNodes.length; i < len; i++) {
+        Utils.QBLog('[QBChat]', 'SENT:', data.childNodes[i]);
+      }} };
     } else {
-      conn.xmlInput = function(data) { console.log('[QBChat RECV]:', data); };
-      conn.xmlOutput = function(data) { console.log('[QBChat SENT]:', data); };
+      conn.xmlInput = function(data) {
+        Utils.QBLog('[QBChat]', 'RECV:', data);
+      };
+      conn.xmlOutput = function(data) {
+        Utils.QBLog('[QBChat]', 'SENT:', data);
+      };
     }
   // }
 
@@ -2979,7 +2998,7 @@ function Connection() {
 
 module.exports = Connection;
 
-},{"../lib/strophe/strophe.min":15,"./qbConfig":9}],13:[function(require,module,exports){
+},{"../lib/strophe/strophe.min":15,"./qbConfig":9,"./qbUtils":13}],13:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -3048,27 +3067,55 @@ var Utils = {
     return data;
   },
 
-  QBLog: function(title, data){
-    data = JSON.stringify(data);
-    
+  QBLog: function(){
+    var title = arguments[0];
+    var data = [];
+    if(arguments.length > 1){
+      for (var i = 1; i < arguments.length; i++) {
+        data.push(arguments[i]);
+      }
+    }
+    data = data.join(" ");
+
+    if(this.logFunction){
+      this.logFunction(title, data);
+      return;
+    }
+
     if (typeof config.debug === 'object'){
       if(config.debug.mode == 1){
-        console.log("%s: %s", title, data);
-      }else if(config.debug.mode == 2){
-        if(isBrowser){
-          throw unsupported;
-        }else{
-          var toLog = title + ": " + data;
-          fs.writeFile(config.debug.file == null ? "qb_js_sdk.log" : config.debug.file, toLog, function(err) {
-              if(err) {
-                return console.error("Error write to file: " + err);
-              }
-          });
+
+        this.logFunction = function(title, data){
+          console.log("%s: %s", title, data);
         }
+        this.logFunction(title, data);
+
+      }else if(config.debug.mode == 2){
+        this.logFunction = function(title, data){
+          if(isBrowser){
+            throw unsupported;
+          }else{
+            var toLog = title + ": " + data;
+            fs.appendFile(config.debug.file, toLog, function(err) {
+              if(err) {
+                return console.error("Error while writing log to file. Error: " + err);
+              }
+            });
+          }
+        }
+        this.logFunction(title, data);
+      }
+
+    // backward compatibility
+    }else if (typeof config.debug === 'boolean'){
+      if(config.debug){
+        this.logFunction = function(title, data){
+          console.log("%s: %s", title, data);
+        }
+        this.logFunction(title, data);
       }
     }
   }
-
 };
 
 module.exports = Utils;

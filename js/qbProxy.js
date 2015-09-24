@@ -7,6 +7,7 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+
 var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
@@ -53,7 +54,8 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
+    Utils.QBLog('[ServiceProxy]', params.type || 'GET', params);
+
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
     var ajaxCall = {
@@ -63,9 +65,11 @@ ServiceProxy.prototype = {
       data: params.data || ' ',
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
-        if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
+        Utils.QBLog('[ServiceProxy]', 'ajax beforeSend', jqXHR, settings);
+
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          if (config.debug) { console.log('setting headers on request to ' + settings.url); }
+          Utils.QBLog('[ServiceProxy]', 'setting headers on request to ' + settings.url);
+
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -73,12 +77,14 @@ ServiceProxy.prototype = {
         }
       },
       success: function(data, status, jqHXR) {
-        if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+        Utils.QBLog('[ServiceProxy]', 'ajax success', data);
+
         if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
         else callback(null, data);
       },
       error: function(jqHXR, status, error) {
-        if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
+        Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR.responseText);
+
         var errorMsg = {
           code: jqHXR.status,
           status: status,

@@ -66,27 +66,55 @@ var Utils = {
     return data;
   },
 
-  QBLog: function(title, data){
-    data = JSON.stringify(data);
-    
+  QBLog: function(){
+    var title = arguments[0];
+    var data = [];
+    if(arguments.length > 1){
+      for (var i = 1; i < arguments.length; i++) {
+        data.push(arguments[i]);
+      }
+    }
+    data = data.join(" ");
+
+    if(this.logFunction){
+      this.logFunction(title, data);
+      return;
+    }
+
     if (typeof config.debug === 'object'){
       if(config.debug.mode == 1){
-        console.log("%s: %s", title, data);
-      }else if(config.debug.mode == 2){
-        if(isBrowser){
-          throw unsupported;
-        }else{
-          var toLog = title + ": " + data;
-          fs.writeFile(config.debug.file == null ? "qb_js_sdk.log" : config.debug.file, toLog, function(err) {
-              if(err) {
-                return console.error("Error write to file: " + err);
-              }
-          });
+
+        this.logFunction = function(title, data){
+          console.log("%s: %s", title, data);
         }
+        this.logFunction(title, data);
+
+      }else if(config.debug.mode == 2){
+        this.logFunction = function(title, data){
+          if(isBrowser){
+            throw unsupported;
+          }else{
+            var toLog = title + ": " + data;
+            fs.appendFile(config.debug.file, toLog, function(err) {
+              if(err) {
+                return console.error("Error while writing log to file. Error: " + err);
+              }
+            });
+          }
+        }
+        this.logFunction(title, data);
+      }
+
+    // backward compatibility
+    }else if (typeof config.debug === 'boolean'){
+      if(config.debug){
+        this.logFunction = function(title, data){
+          console.log("%s: %s", title, data);
+        }
+        this.logFunction(title, data);
       }
     }
   }
-
 };
 
 module.exports = Utils;

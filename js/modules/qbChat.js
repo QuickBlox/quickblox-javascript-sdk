@@ -246,7 +246,8 @@ ChatProxy.prototype = {
   connect: function(params, callback) {
     if(!isBrowser) throw unsupported;
 
-    if (config.debug) { console.log('ChatProxy.connect', params); }
+    Utils.QBLog('[ChatProxy]', 'connect', params);
+
     var self = this,
         err, rooms;
 
@@ -267,22 +268,22 @@ ChatProxy.prototype = {
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTING:
-        trace('Status.CONNECTING');
-        trace('Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
+        Utils.QBLog('[ChatProxy]', 'Status.CONNECTING');
+        Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
         break;
       case Strophe.Status.CONNFAIL:
         err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.AUTHENTICATING:
-        trace('Status.AUTHENTICATING');
+        Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
         err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTED:
-        trace('Status.CONNECTED at ' + getLocalTime());
+        Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
         connection.addHandler(self._onMessage, null, 'message', 'chat');
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
@@ -322,10 +323,10 @@ ChatProxy.prototype = {
 
         break;
       case Strophe.Status.DISCONNECTING:
-        trace('Status.DISCONNECTING');
+        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTING');
         break;
       case Strophe.Status.DISCONNECTED:
-        trace('Status.DISCONNECTED at ' + getLocalTime());
+        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
         connection.reset();
 
         if (typeof self.onDisconnectedListener === 'function'){
@@ -336,7 +337,7 @@ ChatProxy.prototype = {
         if (!self._isLogout) self.connect(params);
         break;
       case Strophe.Status.ATTACHED:
-        trace('Status.ATTACHED');
+        Utils.QBLog('[ChatProxy]', 'Status.ATTACHED');
         break;
       }
     });
@@ -790,22 +791,26 @@ DialogProxy.prototype = {
       params = {};
     }
 
-    if (config.debug) { console.log('DialogProxy.list', params); }
+    Utils.QBLog('[DialogProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl), data: params}, callback);
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('DialogProxy.create', params); }
+    Utils.QBLog('[DialogProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('DialogProxy.update', id, params); }
+    Utils.QBLog('[DialogProxy]', 'update', params);
+
     this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
   },
 
   delete: function(id, params_or_callback, callback) {
-    if (config.debug) { console.log('DialogProxy.delete', id);}
+    Utils.QBLog('[DialogProxy]', 'delete', id);
+
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
@@ -824,22 +829,26 @@ function MessageProxy(service) {
 MessageProxy.prototype = {
 
   list: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.list', params); }
+    Utils.QBLog('[MessageProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl), data: params}, callback);
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.create', params); }
+    Utils.QBLog('[MessageProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('MessageProxy.update', id, params); }
+    Utils.QBLog('[MessageProxy]', 'update', id, params);
+
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.delete', id); }
+    Utils.QBLog('[MessageProxy]', 'delete', id);
+
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
   }
 
@@ -934,11 +943,6 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
-function trace(text) {
-  // if (config.debug) {
-    console.log('[QBChat]:', text);
-  // }
-}
 
 function getError(code, detail) {
   var errorMsg = {
@@ -948,7 +952,7 @@ function getError(code, detail) {
     detail: detail
   };
 
-  trace(detail);
+  Utils.QBLog('[ChatProxy]', 'error: ', detail);
   return errorMsg;
 }
 
