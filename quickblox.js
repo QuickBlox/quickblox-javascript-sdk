@@ -1438,7 +1438,6 @@ var geoFindUrl = config.urls.geodata + '/find';
 function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
-  this.places = new PlacesProxy(service);
 }
 
 function GeoProxy(service){
@@ -1448,7 +1447,8 @@ function GeoProxy(service){
 GeoProxy.prototype = {
 
   create: function(params, callback){
-    if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
+    Utils.QBLog('[GeoProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result.geo_datum); }
@@ -1464,7 +1464,9 @@ GeoProxy.prototype = {
         }
       }
     }
-    if (config.debug) { console.log('GeoProxy.create', params);}
+
+    Utils.QBLog('[GeoProxy]', 'update', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
                      function(err,res){
                       if (err) { callback(err,null);}
@@ -1473,7 +1475,8 @@ GeoProxy.prototype = {
   },
 
   get: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.get', id);}
+    Utils.QBLog('[GeoProxy]', 'get', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
        if (err) { callback (err, null); }
        else { callback(null, result.geo_datum); }
@@ -1485,12 +1488,15 @@ GeoProxy.prototype = {
       callback = params;
       params = undefined;
     }
-    if (config.debug) { console.log('GeoProxy.find', params);}
+
+    Utils.QBLog('[GeoProxy]', 'find', params);
+
     this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
   },
 
   delete: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.delete', id); }
+    Utils.QBLog('[GeoProxy]', 'delete', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
                      function(err,res){
                       if (err) { callback(err, null);}
@@ -1499,7 +1505,8 @@ GeoProxy.prototype = {
   },
 
   purge: function(days, callback){
-    if (config.debug) { console.log('GeoProxy.purge', days); }
+    Utils.QBLog('[GeoProxy]', 'purge', days);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
                      function(err, res){
                       if (err) { callback(err, null);}
@@ -1508,10 +1515,6 @@ GeoProxy.prototype = {
   }
 
 };
-
-function PlacesProxy(service) {
-  this.service = service;
-}
 
 module.exports = LocationProxy;
 
@@ -1540,8 +1543,10 @@ function TokensProxy(service){
 }
 
 TokensProxy.prototype = {
-  
+
   create: function(params, callback){
+    Utils.QBLog('[TokensProxy]', 'create', params);
+
     var message = {
       push_token: {
         environment: params.environment,
@@ -1549,7 +1554,7 @@ TokensProxy.prototype = {
       },
       device: { platform: params.platform, udid: params.udid}
     };
-    if (config.debug) { console.log('TokensProxy.create', message);}
+
     this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
                       function(err, data){
                         if (err) { callback(err, null);}
@@ -1558,8 +1563,9 @@ TokensProxy.prototype = {
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'}, 
+    Utils.QBLog('[TokensProxy]', 'delete', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'},
                       function (err, res) {
                         if (err) {callback(err, null);}
                         else {callback(null, true);}
@@ -1577,18 +1583,21 @@ function SubscriptionsProxy(service){
 SubscriptionsProxy.prototype = {
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createSubscription', params); }
+    Utils.QBLog('[SubscriptionsProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
   },
 
   list: function(callback) {
-    if (config.debug) { console.log('MessageProxy.listSubscription'); }
+    Utils.QBLog('[SubscriptionsProxy]', 'list');
+
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
-    this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'}, 
+    Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'},
                       function(err, res){
                         if (err) { callback(err, null);}
                         else { callback(null, true);}
@@ -1605,34 +1614,40 @@ function EventsProxy(service){
 EventsProxy.prototype = {
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createEvent', params); }
+    Utils.QBLog('[EventsProxy]', 'create', params);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
 
   list: function(callback) {
-   if (config.debug) { console.log('MessageProxy.listEvents'); }
+    Utils.QBLog('[EventsProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
 
   get: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEvent', id); }
+    Utils.QBLog('[EventsProxy]', 'get', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
   },
-  
+
   status: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEventStatus', id); }
+    Utils.QBLog('[EventsProxy]', 'status', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
   },
 
   update: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createEvent', params); }
+    Utils.QBLog('[EventsProxy]', 'update', params);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
+    Utils.QBLog('[EventsProxy]', 'delete', id);
+    
     this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
   }
 
@@ -1663,13 +1678,15 @@ function UsersProxy(service) {
 UsersProxy.prototype = {
 
   listUsers: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'listUsers', params);
+
     var message = {}, filters = [], item;
-    
+
     if (typeof params === 'function' && typeof callback === 'undefined') {
       callback = params;
       params = {};
     }
-    
+
     if (params.filter) {
       if (params.filter instanceof Array) {
         params.filter.forEach(function(el) {
@@ -1691,14 +1708,15 @@ UsersProxy.prototype = {
     if (params.per_page) {
       message.per_page = params.per_page;
     }
-    
-    if (config.debug) { console.log('UsersProxy.listUsers', message); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
   },
 
   get: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'get', params);
+
     var url;
-    
+
     if (typeof params === 'number') {
       url = params;
       params = {};
@@ -1720,8 +1738,7 @@ UsersProxy.prototype = {
         params = {};
       }
     }
-    
-    if (config.debug) { console.log('UsersProxy.get', params); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, url), data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -1730,7 +1747,8 @@ UsersProxy.prototype = {
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('UsersProxy.create', params); }
+    Utils.QBLog('[UsersProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -1739,7 +1757,8 @@ UsersProxy.prototype = {
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('UsersProxy.update', id, params); }
+    Utils.QBLog('[UsersProxy]', 'update', id, params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'PUT', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -1748,8 +1767,10 @@ UsersProxy.prototype = {
   },
 
   delete: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'delete', params);
+
     var url;
-    
+
     if (typeof params === 'number') {
       url = params;
     } else {
@@ -1757,13 +1778,13 @@ UsersProxy.prototype = {
         url = 'external/' + params.external;
       }
     }
-    
-    if (config.debug) { console.log('UsersProxy.delete', url); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, url), type: 'DELETE', dataType: 'text'}, callback);
   },
 
   resetPassword: function(email, callback) {
-    if (config.debug) { console.log('UsersProxy.resetPassword', email); }
+    Utils.QBLog('[UsersProxy]', 'resetPassword', email);
+
     this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}}, callback);
   }
 
@@ -1775,14 +1796,14 @@ module.exports = UsersProxy;
 ---------------------------------------------------------------------- */
 function generateFilter(obj) {
   var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
-  
+
   if (obj.value instanceof Array) {
     if (type == 'object') {
       type = typeof obj.value[0];
     }
     obj.value = obj.value.toString();
   }
-  
+
   return [type, obj.field, obj.param, obj.value].join(' ');
 }
 
@@ -1870,7 +1891,7 @@ function WebRTCProxy(service, conn) {
         extension = self._getExtension(extraParams);
 
     var sessionId = extension.sessionID;
-    
+
     if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
 
     // clean for users
@@ -1879,7 +1900,7 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-      
+
       if (callers[userId]) {
       	trace('skip onCallListener, a user already got it');
       	return true;
@@ -1899,7 +1920,7 @@ function WebRTCProxy(service, conn) {
 
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.sdp;
-      
+
       if (typeof self.onCallListener === 'function'){
         self.onCallListener(userId, extension);
       }
@@ -1907,7 +1928,7 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-        
+
       clearDialingTimerInterval(userId);
       clearCallTimer(userId);
 
@@ -1934,7 +1955,7 @@ function WebRTCProxy(service, conn) {
       clearCallTimer(userId);
 
       clearCallers(userId);
-      
+
       self._close();
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
@@ -1952,7 +1973,7 @@ function WebRTCProxy(service, conn) {
         self.onUpdateCallListener(userId, extension);
       break;
     }
-    
+
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
     return true;
@@ -1965,7 +1986,7 @@ function WebRTCProxy(service, conn) {
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
         if (extraParams.childNodes[i].tagName === 'iceCandidates') {
-        
+
           // iceCandidates
           items = extraParams.childNodes[i].childNodes;
           for (var j = 0, len2 = items.length; j < len2; j++) {
@@ -2010,7 +2031,7 @@ function WebRTCProxy(service, conn) {
   this._answerTimeoutCallback = function (userId){
   	clearCallers(userId);
     self._close();
-    
+
     if(typeof self.onSessionStateChangedListener === 'function'){
       self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
     }
@@ -2099,7 +2120,7 @@ WebRTCProxy.prototype.snapshot = function(id) {
       canvas = document.createElement('canvas'),
       context = canvas.getContext('2d'),
       dataURL, blob;
-  
+
   if (video) {
     canvas.width = video.clientWidth;
     canvas.height = video.clientHeight;
@@ -2166,7 +2187,7 @@ WebRTCProxy.prototype._createPeer = function(params) {
   };
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  
+
   trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
 };
 
@@ -2212,7 +2233,7 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
   trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
   clearAnswerTimer(userId);
-  
+
   var caller = callers[userId];
   if (caller) {
     this._createPeer({
@@ -2304,7 +2325,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callType = callType === 'video' ? '1' : '2';
   }
 
-  if (type === 'CALL' || type === 'ACCEPT') {    
+  if (type === 'CALL' || type === 'ACCEPT') {
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
   }
@@ -2313,18 +2334,18 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callerID = this.helpers.getIdFromNode(connection.jid);
     extension.opponentsIDs = opponentsIDs;
   }
-  
+
   params = {
     from: connection.jid,
     to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };
-  
+
   msg = $msg(params).c('extraParams', {
     xmlns: Strophe.NS.CLIENT
   });
-  
+
   Object.keys(extension).forEach(function(field) {
     if (field === 'iceCandidates') {
 
@@ -2356,7 +2377,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
       msg.c(field).t(extension[field]).up();
     }
   });
-  
+
   connection.send(msg);
 };
 
@@ -2395,12 +2416,12 @@ RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
   this.sessionID = options && options.sessionID || Date.now();
   this.type = options && options.description ? 'answer' : 'offer';
-  
+
   this.addStream(this.service.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;  
+  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   if (this.type === 'answer') {
     this.onRemoteSessionCallback(options.description, 'offer');
@@ -2475,7 +2496,7 @@ RTCPeerConnection.prototype.onSignalingStateCallback = function() {
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   trace("onIceConnectionStateCallback: " + peer.iceConnectionState);
-  
+
   var newIceConnectionState = peer.iceConnectionState;
 
   // read more about all states:
@@ -2487,7 +2508,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   // notify user about state changes
   //
   if(typeof peer.service.onSessionStateChangedListener === 'function'){
-	var sessionState = null;	
+	var sessionState = null;
 	if (newIceConnectionState === 'checking'){
       sessionState = peer.service.SessionState.CONNECTING;
 	} else if (newIceConnectionState === 'connected'){
@@ -2536,7 +2557,7 @@ module.exports = WebRTCProxy;
 ---------------------------------------------------------------------- */
 function trace(text) {
   if (config.debug) {
-    console.log('[QBWebRTC]:', text);
+    Utils.QBLog('[QBWebRTC]', text);
   }
 }
 
@@ -2605,11 +2626,11 @@ function startCallTimer(userId, callback){
 function dataURItoBlob(dataURI, contentType) {
   var arr = [],
       binary = window.atob(dataURI.split(',')[1]);
-  
+
   for (var i = 0, len = binary.length; i < len; i++) {
     arr.push(binary.charCodeAt(i));
   }
-  
+
   return new Blob([new Uint8Array(arr)], {type: contentType});
 }
 
@@ -3072,7 +3093,7 @@ var Utils = {
     var data = [];
     if(arguments.length > 1){
       for (var i = 1; i < arguments.length; i++) {
-        data.push(arguments[i]);
+        data.push(JSON.stringify(arguments[i]));
       }
     }
     data = data.join(" ");

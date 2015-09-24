@@ -13,7 +13,6 @@ var geoFindUrl = config.urls.geodata + '/find';
 function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
-  this.places = new PlacesProxy(service);
 }
 
 function GeoProxy(service){
@@ -23,7 +22,8 @@ function GeoProxy(service){
 GeoProxy.prototype = {
 
   create: function(params, callback){
-    if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
+    Utils.QBLog('[GeoProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result.geo_datum); }
@@ -39,7 +39,9 @@ GeoProxy.prototype = {
         }
       }
     }
-    if (config.debug) { console.log('GeoProxy.create', params);}
+
+    Utils.QBLog('[GeoProxy]', 'update', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
                      function(err,res){
                       if (err) { callback(err,null);}
@@ -48,7 +50,8 @@ GeoProxy.prototype = {
   },
 
   get: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.get', id);}
+    Utils.QBLog('[GeoProxy]', 'get', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
        if (err) { callback (err, null); }
        else { callback(null, result.geo_datum); }
@@ -60,12 +63,15 @@ GeoProxy.prototype = {
       callback = params;
       params = undefined;
     }
-    if (config.debug) { console.log('GeoProxy.find', params);}
+
+    Utils.QBLog('[GeoProxy]', 'find', params);
+
     this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
   },
 
   delete: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.delete', id); }
+    Utils.QBLog('[GeoProxy]', 'delete', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
                      function(err,res){
                       if (err) { callback(err, null);}
@@ -74,7 +80,8 @@ GeoProxy.prototype = {
   },
 
   purge: function(days, callback){
-    if (config.debug) { console.log('GeoProxy.purge', days); }
+    Utils.QBLog('[GeoProxy]', 'purge', days);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
                      function(err, res){
                       if (err) { callback(err, null);}
@@ -83,9 +90,5 @@ GeoProxy.prototype = {
   }
 
 };
-
-function PlacesProxy(service) {
-  this.service = service;
-}
 
 module.exports = LocationProxy;
