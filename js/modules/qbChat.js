@@ -33,13 +33,13 @@ var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
 var connection,
-    webrtc,
+    webrtcSignalingProcessor,
     roster = {},
     joinedRooms = {};
 
-function ChatProxy(service, webrtcModule, conn) {
+function ChatProxy(service, webrtc, conn) {
   var self = this;
-  webrtc = webrtcModule;
+  webrtcSignalingProcessor = webrtc;
   connection = conn;
 
   this.service = service;
@@ -290,7 +290,7 @@ ChatProxy.prototype = {
         connection.addHandler(self._onIQ, null, 'iq');
 
         // set signaling callbacks
-        connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
+        connection.addHandler(webrtcSignalingProcessor._onMessage, null, 'message', 'headline');
 
         // enable carbons
         self._enableCarbons(function() {

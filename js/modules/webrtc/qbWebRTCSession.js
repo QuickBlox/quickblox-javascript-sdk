@@ -377,6 +377,8 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 //
 
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
+  console.log("processCall");
+  
   var extension = extension || {};
 
   extension["sessionID"] = this.ID;

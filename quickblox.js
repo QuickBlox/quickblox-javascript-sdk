@@ -171,13 +171,13 @@ var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
 var connection,
-    webrtc,
+    webrtcSignalingProcessor,
     roster = {},
     joinedRooms = {};
 
-function ChatProxy(service, webrtcModule, conn) {
+function ChatProxy(service, webrtc, conn) {
   var self = this;
-  webrtc = webrtcModule;
+  webrtcSignalingProcessor = webrtc;
   connection = conn;
 
   this.service = service;
@@ -428,7 +428,7 @@ ChatProxy.prototype = {
         connection.addHandler(self._onIQ, null, 'iq');
 
         // set signaling callbacks
-        connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
+        connection.addHandler(webrtcSignalingProcessor._onMessage, null, 'message', 'headline');
 
         // enable carbons
         self._enableCarbons(function() {
@@ -2016,12 +2016,6 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
-
-  var self = this;
-  this._onMessage = function(stanza) {
-    console.log("11");
-    self.signalingProcessor._onMessage(stanza);
-  }
 }
 
  /**
@@ -2631,6 +2625,8 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 //
 
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
+  console.log("processCall");
+  
   var extension = extension || {};
 
   extension["sessionID"] = this.ID;
@@ -2861,7 +2857,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
-        console.log("22");
+    
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');
@@ -2880,7 +2876,6 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     delete extension.sessionID;
     delete extension.signalType;
 
-    console.log("33");
     switch (signalType) {
     case SignalingConstants.SignalingType.CALL:
       if (typeof self.delegate._onCallListener === 'function'){
@@ -3236,7 +3231,7 @@ QuickBlox.prototype = {
 
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
-    this.chat = new Chat(this.service, this.webrtc || null, conn || null);
+    this.chat = new Chat(this.service, this.webrtc.signalingProcessor || null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);

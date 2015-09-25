@@ -125,7 +125,7 @@ $(document).ready(function() {
 
     if (currentSession != null){
       var extension = {};
-      currentSession.stop(extension);
+      currentSession.reject(extension);
       currentSession = null;
     }
   });

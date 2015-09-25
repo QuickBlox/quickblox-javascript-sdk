@@ -36,12 +36,6 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
-
-  var self = this;
-  this._onMessage = function(stanza) {
-    console.log("11");
-    self.signalingProcessor._onMessage(stanza);
-  }
 }
 
  /**
