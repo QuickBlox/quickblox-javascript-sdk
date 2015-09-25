@@ -226,10 +226,14 @@ WebRTCSession.prototype.stop = function(extension) {
   extension["callerID"] = this.initiatorID;
   extension["opponentsIDs"] = this.opponentsIDs;
 
-  for (var key in this.peerConnections) {
-    var peerConnection = this.peerConnections[key];
-
-    this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
+  var peersLen = Object.keys(this.peerConnections).length;
+  if(peersLen > 0){
+    for (var key in this.peerConnections) {
+      var peerConnection = this.peerConnections[key];
+      this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
+    }
+  }else{
+    this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.STOP);
   }
 
   this._close();
