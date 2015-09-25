@@ -91,7 +91,7 @@ var Utils = {
         }else{
 
           var data = [];
-          for (var i = 1; i < args.length; i++) {
+          for (var i = 0; i < args.length; i++) {
             data.push(JSON.stringify(args[i]));
           }
           data = data.join(" ");

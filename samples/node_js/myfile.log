@@ -1,5 +1,0 @@
-
-Thu Sep 24 2015 19:25:50 GMT+0300 (EEST). [object Arguments]
-Thu Sep 24 2015 19:25:50 GMT+0300 (EEST). [object Arguments]
-Thu Sep 24 2015 19:27:03 GMT+0300 (EEST). "createSession" {"application_id":92,"auth_key":"wJHdOcQSxXQGWx5","nonce":6092,"timestamp":1443112023,"signature":"dd320a10c97cc382242fa3fc4b45fd6a7f9ed765"}
-Thu Sep 24 2015 19:27:03 GMT+0300 (EEST). "Request: " "POST" {"data":"{\"url\":\"https://api.quickblox.com/session.json\",\"type\":\"POST\",\"data\":{\"application_id\":92,\"auth_key\":\"wJHdOcQSxXQGWx5\",\"nonce\":6092,\"timestamp\":1443112023,\"signature\":\"dd320a10c97cc382242fa3fc4b45fd6a7f9ed765\"}}"}
