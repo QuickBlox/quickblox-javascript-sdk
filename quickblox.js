@@ -2102,15 +2102,16 @@ function WebRTCClient(service, connection) {
    var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-   }
-   session.processOnCall(userID, extension);
+     
+     session.processOnCall(userID, extension);
 
-   this._cleanupExtension(extension);
+     this._cleanupExtension(extension);
 
-   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-   if (typeof this.onCallListener === 'function'){
-     this.onCallListener(session, extension);
+     if (typeof this.onCallListener === 'function'){
+       this.onCallListener(session, extension);
+     }
    }
  };
 
