@@ -2424,11 +2424,11 @@ WebRTCSession.prototype.accept = function(extension) {
         Helpers.trace("getAndSetLocalSessionDescription error: " + err);
       } else {
 
-        extension[sessionID] = self.ID;
-        extension[callType] = self.callType;
-        extension[callerID] = self.initiatorID;
-        extension[opponentsIDs] = self.opponentsIDs;
-        extension[sdp] = peerConnection.localDescription.sdp;
+        extension["sessionID"] = self.ID;
+        extension["callType"] = self.callType;
+        extension["callerID"] = self.initiatorID;
+        extension["opponentsIDs"] = self.opponentsIDs;
+        extension["sdp"] = peerConnection.localDescription.sdp;
 
         self.signalingProvider.sendMessage(self.initiatorID, extension, SignalingConstants.SignalingType.ACCEPT);
       }
@@ -2448,10 +2448,10 @@ WebRTCSession.prototype.reject = function(extension) {
 
   this._clearAnswerTimer();
 
-  extension[sessionID] = self.ID;
-  extension[callType] = self.callType;
-  extension[callerID] = this.initiatorID;
-  extension[opponentsIDs] = self.opponentsIDs;
+  extension["sessionID"] = this.ID;
+  extension["callType"] = this.callType;
+  extension["callerID"] = this.initiatorID;
+  extension["opponentsIDs"] = this.opponentsIDs;
 
   this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.REJECT);
 
@@ -2469,10 +2469,10 @@ WebRTCSession.prototype.stop = function(extension) {
 
   this._clearAnswerTimer();
 
-  extension[sessionID] = this.ID;
-  extension[callType] = this.callType;
-  extension[callerID] = this.initiatorID;
-  extension[opponentsIDs] = this.opponentsIDs;
+  extension["sessionID"] = this.ID;
+  extension["callType"] = this.callType;
+  extension["callerID"] = this.initiatorID;
+  extension["opponentsIDs"] = this.opponentsIDs;
 
   for (var key in this.peerConnections) {
     var peerConnection = this.peerConnections[key];
@@ -2583,7 +2583,7 @@ WebRTCSession.State = {
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
   this._clearAnswerTimer();
-  this._startAnswerTimer(this._answerTimeoutCallback);
+  this._startAnswerTimer();
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
@@ -2593,10 +2593,13 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
+  console.log("processOnReject");
   var peerConnection = this.peerConnections[userID];
   peerConnection._clearDialingTimer();
 
-  // this._close();
+  peerConnection.close();
+
+  this._closeSessionIfAllConnectionsClosed();
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
@@ -2644,32 +2647,11 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 
   peerConnection.close();
 
-
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
   }
 
-
-  // check if all connections are closed
-  //
-  var isAllConnectionsClosed = true;
-  for (var key in this.peerConnections) {
-    var peerCon = this.peerConnections[key];
-    if(peerCon.signalingState !== 'closed'){
-      isAllConnectionsClosed = false;
-      break;
-    }
-  }
-  console.log("All peer connections closed: " + isAllConnectionsClosed);
-  if(isAllConnectionsClosed){
-    // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
-    this.localStream.stop();
-    this.localStream = null;
-
-    if(typeof this.onSessionCloseListener === 'function'){
-      this.onSessionCloseListener(this);
-    }
-  }
+  this._closeSessionIfAllConnectionsClosed();
 }
 
 //
@@ -2732,7 +2714,38 @@ WebRTCSession.prototype._close = function() {
     this.localStream.stop();
     this.localStream = null;
   }
+
+  if(typeof this.onSessionCloseListener === 'function'){
+    this.onSessionCloseListener(this);
+  }
 };
+
+WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
+  // check if all connections are closed
+  //
+  var isAllConnectionsClosed = true;
+  for (var key in this.peerConnections) {
+    var peerCon = this.peerConnections[key];
+    if(peerCon.signalingState !== 'closed'){
+      isAllConnectionsClosed = false;
+      break;
+    }
+  }
+
+  Helpers.trace("All peer connections closed: " + isAllConnectionsClosed);
+
+  if(isAllConnectionsClosed){
+    // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
+    if (this.localStream) {
+      this.localStream.stop();
+      this.localStream = null;
+    }
+
+    if(typeof this.onSessionCloseListener === 'function'){
+      this.onSessionCloseListener(this);
+    }
+  }
+}
 
 WebRTCSession.prototype._muteStream = function(bool, type) {
   if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
@@ -2751,26 +2764,29 @@ WebRTCSession.prototype._muteStream = function(bool, type) {
 };
 
 WebRTCSession.prototype._clearAnswerTimer = function(){
+  Helpers.trace("_clearAnswerTimer");
+
   if(this.answerTimer){
     clearTimeout(this.answerTimer);
     this.answerTimer = null;
   }
 }
 
-WebRTCSession.prototype._startAnswerTimer = function(callback){
+WebRTCSession.prototype._startAnswerTimer = function(){
+  Helpers.trace("_startAnswerTimer");
+
+  var self = this;
+  var answerTimeoutCallback = function (){
+    Helpers.trace("_answerTimeoutCallback");
+
+    if(typeof self.onSessionCloseListener === 'function'){
+      self.onSessionCloseListener(self);
+    }
+  };
+
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
-  this.answerTimer = setTimeout(callback, answerTimeInterval);
+  this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
 }
-
-WebRTCSession.prototype._answerTimeoutCallback = function (){
-
-  // self._close();
-
-  if(typeof this.onSessionConnectionStateChangedListener === 'function'){
-    this.onSessionConnectionStateChangedListener(Helpers.SessionConnectionState.CLOSED, userId);
-  }
-};
-
 
 WebRTCSession.prototype.toString = function sessionToString() {
   var ret = 'ID: ' + this.ID + ', initiatorID:  ' + this.initiatorID + ', opponentsIDs: ' +

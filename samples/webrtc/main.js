@@ -248,6 +248,7 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
 
 QB.webrtc.onSessionCloseListener = function(session){
   console.log("onSessionCloseListener: " + session);
+  updateUIOnHungUp();
 }
 
 QB.webrtc.onUpdateCallListener = function(session, extension) {
