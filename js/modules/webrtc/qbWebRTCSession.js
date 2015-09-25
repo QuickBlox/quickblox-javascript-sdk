@@ -10,6 +10,7 @@
   * - onUserNotAnswerListener(session, userID)
   * - onRemoteStreamListener(session, userID, stream)
   * - onSessionConnectionStateChangedListener(session, userID, connectionState)
+  * - onSessionCloseListener(session)
   */
 
 
@@ -395,11 +396,33 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 
   peerConnection.close();
 
+
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
   }
-}
 
+
+  // check if all connections are closed
+  //
+  var isAllConnectionsClosed = true;
+  for (var key in this.peerConnections) {
+    var peerCon = this.peerConnections[key];
+    if(peerCon.signalingState !== 'closed'){
+      isAllConnectionsClosed = false;
+      break;
+    }
+  }
+  console.log("All peer connections closed: " + isAllConnectionsClosed);
+  if(isAllConnectionsClosed){
+    // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
+    this.localStream.stop();
+    this.localStream = null;
+
+    if(typeof this.onSessionCloseListener === 'function'){
+      this.onSessionCloseListener(this);
+    }
+  }
+}
 
 //
 ///////////////////////// Delegates (peer connection)  /////////////////////////

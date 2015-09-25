@@ -14,12 +14,15 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   this.delegate = delegate;
   this.connection = connection;
 
+  var self = this;
+
   this._onMessage = function(stanza) {
-    var from = stanza.getAttribute('from'),
-        extraParams = stanza.querySelector('extraParams'),
-        delay = stanza.querySelector('delay'),
-        userId = Helpers.getIdFromNode(from),
-        extension = self._getExtension(extraParams);
+    var from = stanza.getAttribute('from');
+    var extraParams = stanza.querySelector('extraParams');
+    var delay = stanza.querySelector('delay');
+    var userId = Helpers.getIdFromNode(from);
+    var extension = self._getExtension(extraParams);
+
     if (delay || extension.moduleIdentifier !== SignalingConstants.MODULE_ID){
       return true;
     }
@@ -82,7 +85,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     }
 
     var extension = {}, iceCandidates = [], opponents = [],
-        candidate, oponnent, items, childrenNodes;
+        candidate, opponent, items, childrenNodes;
 
     for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
       if (extraParams.childNodes[i].tagName === 'iceCandidates') {
@@ -104,8 +107,8 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         // opponentsIDs
         items = extraParams.childNodes[i].childNodes;
         for (var j = 0, len2 = items.length; j < len2; j++) {
-          oponnent = items[j].textContent;
-          opponents.push(oponnent);
+          opponent = items[j].textContent;
+          opponents.push(opponent);
         }
 
       } else {
@@ -124,7 +127,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
       extension.iceCandidates = iceCandidates;
     }
     if (opponents.length > 0){
-      extension.opponents = opponents;
+      extension.opponentsIDs = opponents;
     }
 
 

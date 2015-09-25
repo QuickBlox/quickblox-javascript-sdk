@@ -92,7 +92,17 @@ $(document).ready(function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
-    session.getUserMedia(mediaParams, function(err, stream) {
+    mediaParams = {
+      audio: true,
+      video: currentSession.callType === 'video' ? true : false,
+      elemId: 'localVideo',
+      options: {
+        muted: true,
+        mirror: true
+      }
+    };
+
+    currentSession.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
         console.log(err);
         var deviceNotFoundError = 'Devices are not found';
@@ -103,7 +113,7 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
 
         var extension = {};
-        session.accept(extension);
+        currentSession.accept(extension);
       }
     });
   });
@@ -115,9 +125,9 @@ $(document).ready(function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
-    if (typeof callee != 'undefined'){
+    if (currentSession != null){
       var extension = {};
-      session.reject(extension);
+      currentSession.reject(extension);
     }
   });
 
@@ -125,9 +135,9 @@ $(document).ready(function() {
   // Hangup
   //
   $('#hangup').on('click', function() {
-    if (typeof callee != 'undefined'){
+    if (currentSession != null){
       var extension = {};
-      session.stop(extension);
+      currentSession.stop(extension);
     }
   });
 
@@ -167,31 +177,13 @@ $(document).ready(function() {
 
 
 QB.webrtc.onCallListener = function(session, extension) {
-  console.log("onCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
+  console.log("onCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
-  sessionId = extension.sessionID;
+  currentSession = session;
 
-  mediaParams = {
-    audio: true,
-    video: extension.callType === 'video' ? true : false,
-    elemId: 'localVideo',
-    options: {
-      muted: true,
-      mirror: true
-    }
-  };
+  $('.incoming-callType').text(currentSession.callType === 'video' ? 'Video' : 'Audio');
 
-  $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
-
-  // save a callee
-  callee = {
-    id: extension.callerID,
-    full_name: "User with id " + extension.callerID,
-    login: "",
-    password: ""
-  };
-
-  $('.caller').text(callee.full_name);
+  $('.caller').text(currentSession.callerID);
 
   $('#ringtoneSignal')[0].play();
 
@@ -253,6 +245,10 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
     updateUIOnHungUp();
   }
 };
+
+QB.webrtc.onSessionCloseListener = function(session){
+  console.log("onSessionCloseListener: " + session);
+}
 
 QB.webrtc.onUpdateCallListener = function(session, extension) {
 

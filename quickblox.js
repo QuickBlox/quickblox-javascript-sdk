@@ -2011,6 +2011,11 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
+
+  var self = this;
+  this._onMessage = function(stanza) {
+    self.signalingProcessor._onMessage(stanza);
+  }
 }
 
  /**
@@ -2045,6 +2050,7 @@ function WebRTCClient(service, connection) {
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
     newSession.onRemoteStreamListener = this.onRemoteStreamListener;
     newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+    newSession.onSessionCloseListener = this.onSessionCloseListener;
 
     this.sessions[newSession.ID] = newSession;
     return newSession;
@@ -2093,24 +2099,28 @@ function WebRTCClient(service, connection) {
 
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-     if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extension);
-     }
    }
-
    session.processOnCall(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+   if (typeof this.onCallListener === 'function'){
+     this.onCallListener(session, extension);
+   }
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
-   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnAccept(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onAcceptCallListener === 'function'){
      this.onAcceptCallListener(session, extension);
@@ -2118,10 +2128,12 @@ function WebRTCClient(service, connection) {
  };
 
  WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
-   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnReject(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onRejectListener === 'function'){
      this.onRejectListener(session, extension);
@@ -2129,10 +2141,12 @@ function WebRTCClient(service, connection) {
  };
 
  WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
-   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnStop(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onStopCallListener === 'function'){
      this.onStopCallListener(session, extension);
@@ -2156,6 +2170,13 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   }
 }
 
+WebRTCClient.prototype._cleanupExtension = function(extension){
+  delete extension.platform;
+  delete extension.sdp;
+  delete extension.opponentsIDs;
+  delete extension.callerID;
+  delete extension.callType;
+}
 
 module.exports = WebRTCClient;
 
@@ -2237,6 +2258,7 @@ module.exports = WebRTCHelpers;
   * - onUserNotAnswerListener(session, userID)
   * - onRemoteStreamListener(session, userID, stream)
   * - onSessionConnectionStateChangedListener(session, userID, connectionState)
+  * - onSessionCloseListener(session)
   */
 
 
@@ -2622,11 +2644,33 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 
   peerConnection.close();
 
+
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
   }
-}
 
+
+  // check if all connections are closed
+  //
+  var isAllConnectionsClosed = true;
+  for (var key in this.peerConnections) {
+    var peerCon = this.peerConnections[key];
+    if(peerCon.signalingState !== 'closed'){
+      isAllConnectionsClosed = false;
+      break;
+    }
+  }
+  console.log("All peer connections closed: " + isAllConnectionsClosed);
+  if(isAllConnectionsClosed){
+    // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
+    this.localStream.stop();
+    this.localStream = null;
+
+    if(typeof this.onSessionCloseListener === 'function'){
+      this.onSessionCloseListener(this);
+    }
+  }
+}
 
 //
 ///////////////////////// Delegates (peer connection)  /////////////////////////
@@ -2788,12 +2832,15 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   this.delegate = delegate;
   this.connection = connection;
 
+  var self = this;
+
   this._onMessage = function(stanza) {
-    var from = stanza.getAttribute('from'),
-        extraParams = stanza.querySelector('extraParams'),
-        delay = stanza.querySelector('delay'),
-        userId = Helpers.getIdFromNode(from),
-        extension = self._getExtension(extraParams);
+    var from = stanza.getAttribute('from');
+    var extraParams = stanza.querySelector('extraParams');
+    var delay = stanza.querySelector('delay');
+    var userId = Helpers.getIdFromNode(from);
+    var extension = self._getExtension(extraParams);
+
     if (delay || extension.moduleIdentifier !== SignalingConstants.MODULE_ID){
       return true;
     }
@@ -2856,7 +2903,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     }
 
     var extension = {}, iceCandidates = [], opponents = [],
-        candidate, oponnent, items, childrenNodes;
+        candidate, opponent, items, childrenNodes;
 
     for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
       if (extraParams.childNodes[i].tagName === 'iceCandidates') {
@@ -2878,8 +2925,8 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         // opponentsIDs
         items = extraParams.childNodes[i].childNodes;
         for (var j = 0, len2 = items.length; j < len2; j++) {
-          oponnent = items[j].textContent;
-          opponents.push(oponnent);
+          opponent = items[j].textContent;
+          opponents.push(opponent);
         }
 
       } else {
@@ -2898,7 +2945,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
       extension.iceCandidates = iceCandidates;
     }
     if (opponents.length > 0){
-      extension.opponents = opponents;
+      extension.opponentsIDs = opponents;
     }
 
 

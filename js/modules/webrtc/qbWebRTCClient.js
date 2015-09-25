@@ -36,6 +36,11 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
+
+  var self = this;
+  this._onMessage = function(stanza) {
+    self.signalingProcessor._onMessage(stanza);
+  }
 }
 
  /**
@@ -70,6 +75,7 @@ function WebRTCClient(service, connection) {
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
     newSession.onRemoteStreamListener = this.onRemoteStreamListener;
     newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+    newSession.onSessionCloseListener = this.onSessionCloseListener;
 
     this.sessions[newSession.ID] = newSession;
     return newSession;
@@ -118,24 +124,28 @@ function WebRTCClient(service, connection) {
 
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + extension);
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-     if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extension);
-     }
    }
-
    session.processOnCall(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+
+   if (typeof this.onCallListener === 'function'){
+     this.onCallListener(session, extension);
+   }
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
-   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnAccept(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onAcceptCallListener === 'function'){
      this.onAcceptCallListener(session, extension);
@@ -143,10 +153,12 @@ function WebRTCClient(service, connection) {
  };
 
  WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
-   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnReject(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onRejectListener === 'function'){
      this.onRejectListener(session, extension);
@@ -154,10 +166,12 @@ function WebRTCClient(service, connection) {
  };
 
  WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
-   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   var session = WebRTCClient.sessions[sessionId];
+   var session = this.sessions[sessionID];
    session.processOnStop(userID, extension);
+
+   this._cleanupExtension(extension);
+
+   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
    if (typeof this.onStopCallListener === 'function'){
      this.onStopCallListener(session, extension);
@@ -181,5 +195,12 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   }
 }
 
+WebRTCClient.prototype._cleanupExtension = function(extension){
+  delete extension.platform;
+  delete extension.sdp;
+  delete extension.opponentsIDs;
+  delete extension.callerID;
+  delete extension.callType;
+}
 
 module.exports = WebRTCClient;

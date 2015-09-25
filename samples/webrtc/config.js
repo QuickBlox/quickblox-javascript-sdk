@@ -10,7 +10,7 @@ var CONFIG = {
   },
   debug: true,
   webrtc: {
-    answerTimeInterval: 15,
+    answerTimeInterval: 20,
     dialingTimeInterval: 5
   }
 };
