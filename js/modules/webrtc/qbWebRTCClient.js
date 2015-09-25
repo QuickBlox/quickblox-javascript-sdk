@@ -34,6 +34,8 @@ function WebRTCClient(service, connection) {
   this.connection = connection;
   this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
+
+  this.SessionConnectionState = Helpers.SessionConnectionState;
 }
 
  /**
@@ -57,10 +59,21 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = new WebRTCSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType, this.signalingProvider);
-   this.sessions[newSession.ID] = newSession;
+   var newSession = this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
    return newSession;
  }
+
+  WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider)
+
+    // set callbacks
+    newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
+    newSession.onRemoteStreamListener = this.onRemoteStreamListener;
+    newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+
+    this.sessions[newSession.ID] = newSession;
+    return newSession;
+  }
 
  /**
   * Deletes a session
@@ -109,9 +122,7 @@ function WebRTCClient(service, connection) {
 
    var session = WebRTCClient.sessions[sessionId];
    if(!session){
-     session = new WebRTCSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, this.signalingProvider);
-     this.sessions[session.ID] = session;
-
+     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
      if (typeof this.onCallListener === 'function'){
        this.onCallListener(session, extension);
      }

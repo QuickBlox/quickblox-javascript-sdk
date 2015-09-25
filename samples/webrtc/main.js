@@ -165,27 +165,6 @@ $(document).ready(function() {
 // Callbacks
 //
 
-QB.webrtc.onSessionStateChangedListener = function(session, userID, newState) {
-  console.log("onSessionStateChangedListener: " + newState + ", userId: " + userId);
-
-  // possible values of 'newState':
-  //
-  // QB.webrtc.SessionState.UNDEFINED
-  // QB.webrtc.SessionState.CONNECTING
-  // QB.webrtc.SessionState.CONNECTED
-  // QB.webrtc.SessionState.FAILED
-  // QB.webrtc.SessionState.DISCONNECTED
-  // QB.webrtc.SessionState.CLOSED
-
-  if(newState === QB.webrtc.SessionState.DISCONNECTED){
-    if (typeof callee != 'undefined'){
-      QB.webrtc.stop(callee.id);
-    }
-    updateUIOnHungUp();
-  }else if(newState === QB.webrtc.SessionState.CLOSED){
-    updateUIOnHungUp();
-  }
-};
 
 QB.webrtc.onCallListener = function(session, extension) {
   console.log("onCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
@@ -245,10 +224,6 @@ QB.webrtc.onStopCallListener = function(session, extension) {
   updateUIOnHungUp();
 };
 
-QB.webrtc.onUpdateCallListener = function(session, extension) {
-
-}
-
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
   QB.webrtc.attachMediaStream('remoteVideo', stream);
 };
@@ -257,6 +232,31 @@ QB.webrtc.onUserNotAnswerListener = function(session, userId) {
   console.log("onUserNotAnswerListener. userId: " + userId);
 };
 
+QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
+  console.log("onSessionConnectionStateChangedListener: " + connectionState + ", userID: " + userID);
+
+  // possible values of 'connectionState':
+  // RTCPeerConnection.SessionConnectionState
+  // QB.webrtc.SessionConnectionState.UNDEFINED
+  // QB.webrtc.SessionConnectionState.CONNECTING
+  // QB.webrtc.SessionConnectionState.CONNECTED
+  // QB.webrtc.SessionConnectionState.FAILED
+  // QB.webrtc.SessionConnectionState.DISCONNECTED
+  // QB.webrtc.SessionConnectionState.CLOSED
+
+  if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+    if (typeof callee != 'undefined'){
+      QB.webrtc.stop(callee.id);
+    }
+    updateUIOnHungUp();
+  }else if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+    updateUIOnHungUp();
+  }
+};
+
+QB.webrtc.onUpdateCallListener = function(session, extension) {
+
+}
 
 //
 // Helpers

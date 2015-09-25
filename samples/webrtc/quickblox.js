@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.13.0 - 2015-09-23 */
+/* QuickBlox JavaScript SDK - v1.13.0 - 2015-09-25 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1803,15 +1803,6 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 //   offerToReceiveVideo: 1
 // };
 
-RTCPeerConnection.SessionConnectionState = {
-  UNDEFINED: 0,
-  CONNECTING: 1,
-  CONNECTED: 2,
-  FAILED: 3,
-  DISCONNECTED: 4,
-  CLOSED: 5
-};
-
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
   Helpers.trace("RTCPeerConnection init");
 
@@ -1921,15 +1912,15 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
   	if (newIceConnectionState === 'checking'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTING;
+        connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTED;
+        connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
-        connectionState = RTCPeerConnection.SessionConnectionState.FAILED;
+        connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        connectionState = RTCPeerConnection.SessionConnectionState.DISCONNECTED;
+        connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CLOSED;
+        connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
   	if(connectionState != null){
@@ -2018,6 +2009,8 @@ function WebRTCClient(service, connection) {
   this.connection = connection;
   this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
+
+  this.SessionConnectionState = Helpers.SessionConnectionState;
 }
 
  /**
@@ -2041,10 +2034,21 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = new WebRTCSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType, this.signalingProvider);
-   this.sessions[newSession.ID] = newSession;
+   var newSession = this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
    return newSession;
  }
+
+  WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider)
+
+    // set callbacks
+    newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
+    newSession.onRemoteStreamListener = this.onRemoteStreamListener;
+    newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+
+    this.sessions[newSession.ID] = newSession;
+    return newSession;
+  }
 
  /**
   * Deletes a session
@@ -2093,9 +2097,7 @@ function WebRTCClient(service, connection) {
 
    var session = WebRTCClient.sessions[sessionId];
    if(!session){
-     session = new WebRTCSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, this.signalingProvider);
-     this.sessions[session.ID] = session;
-
+     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
      if (typeof this.onCallListener === 'function'){
        this.onCallListener(session, extension);
      }
@@ -2204,7 +2206,15 @@ WebRTCHelpers = {
 
     return new Blob([new Uint8Array(arr)], {type: contentType});
   }
-  
+};
+
+WebRTCHelpers.SessionConnectionState = {
+  UNDEFINED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  FAILED: 3,
+  DISCONNECTED: 4,
+  CLOSED: 5
 };
 
 // Download Blob to local file system
@@ -2225,8 +2235,8 @@ module.exports = WebRTCHelpers;
  /*
   * User's callbacks (listener-functions):
   * - onUserNotAnswerListener(session, userID)
-  * - onRemoteStreamListener(session, stream)
-  * - onSessionConnectionStateChangedListener
+  * - onRemoteStreamListener(session, userID, stream)
+  * - onSessionConnectionStateChangedListener(session, userID, connectionState)
   */
 
 
@@ -2635,7 +2645,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
     this.onSessionConnectionStateChangedListener(this, userID, connectionState);
   }
 
-  if (connectionState === RTCPeerConnection.SessionConnectionState.CLOSED){
+  if (connectionState === Helpers.SessionConnectionState.CLOSED){
     //peer = null;
   }
 }
@@ -2713,7 +2723,7 @@ WebRTCSession.prototype._answerTimeoutCallback = function (){
   // self._close();
 
   if(typeof this.onSessionConnectionStateChangedListener === 'function'){
-    this.onSessionConnectionStateChangedListener(RTCPeerConnection.SessionConnectionState.CLOSED, userId);
+    this.onSessionConnectionStateChangedListener(Helpers.SessionConnectionState.CLOSED, userId);
   }
 };
 

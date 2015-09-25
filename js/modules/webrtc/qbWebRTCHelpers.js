@@ -44,7 +44,15 @@ WebRTCHelpers = {
 
     return new Blob([new Uint8Array(arr)], {type: contentType});
   }
-  
+};
+
+WebRTCHelpers.SessionConnectionState = {
+  UNDEFINED: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  FAILED: 3,
+  DISCONNECTED: 4,
+  CLOSED: 5
 };
 
 // Download Blob to local file system

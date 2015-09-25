@@ -21,15 +21,6 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 //   offerToReceiveVideo: 1
 // };
 
-RTCPeerConnection.SessionConnectionState = {
-  UNDEFINED: 0,
-  CONNECTING: 1,
-  CONNECTED: 2,
-  FAILED: 3,
-  DISCONNECTED: 4,
-  CLOSED: 5
-};
-
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
   Helpers.trace("RTCPeerConnection init");
 
@@ -139,15 +130,15 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
   	if (newIceConnectionState === 'checking'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTING;
+        connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CONNECTED;
+        connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
-        connectionState = RTCPeerConnection.SessionConnectionState.FAILED;
+        connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        connectionState = RTCPeerConnection.SessionConnectionState.DISCONNECTED;
+        connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        connectionState = RTCPeerConnection.SessionConnectionState.CLOSED;
+        connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
   	if(connectionState != null){

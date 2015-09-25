@@ -418,7 +418,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
     this.onSessionConnectionStateChangedListener(this, userID, connectionState);
   }
 
-  if (connectionState === RTCPeerConnection.SessionConnectionState.CLOSED){
+  if (connectionState === Helpers.SessionConnectionState.CLOSED){
     //peer = null;
   }
 }
@@ -496,7 +496,7 @@ WebRTCSession.prototype._answerTimeoutCallback = function (){
   // self._close();
 
   if(typeof this.onSessionConnectionStateChangedListener === 'function'){
-    this.onSessionConnectionStateChangedListener(RTCPeerConnection.SessionConnectionState.CLOSED, userId);
+    this.onSessionConnectionStateChangedListener(Helpers.SessionConnectionState.CLOSED, userId);
   }
 };
 
