@@ -134,7 +134,8 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peer = self._createPeer(userID, 'offer', null);
+    var peer = self._createPeer(userID, 'offer');
+
     self.peerConnections[userID] = peer;
 
     peer.getAndSetLocalSessionDescription(function(err) {
@@ -168,21 +169,26 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peerConnection = self._createPeer(userID, 'answer', extension.sdp);
+    var peerConnection = self._createPeer(userID, 'answer');
     self.peerConnections[userID] = peerConnection;
 
-    peerConnection.getAndSetLocalSessionDescription(function(err) {
-      if (err) {
-        Helpers.trace("getAndSetLocalSessionDescription error: " + err);
-      } else {
+    peerConnection.setRemoteSessionDescription('offer', extension.sdp, function(error){
+      if(error){
+        Helpers.trace("setRemoteSessionDescription error: " + error);
+      }else{
+        peerConnection.getAndSetLocalSessionDescription(function(err) {
+          if (err) {
+            Helpers.trace("getAndSetLocalSessionDescription error: " + err);
+          } else {
+            extension["sessionID"] = self.ID;
+            extension["callType"] = self.callType;
+            extension["callerID"] = self.initiatorID;
+            extension["opponentsIDs"] = self.opponentsIDs;
+            extension["sdp"] = peerConnection.localDescription.sdp;
 
-        extension["sessionID"] = self.ID;
-        extension["callType"] = self.callType;
-        extension["callerID"] = self.initiatorID;
-        extension["opponentsIDs"] = self.opponentsIDs;
-        extension["sdp"] = peerConnection.localDescription.sdp;
-
-        self.signalingProvider.sendMessage(self.initiatorID, extension, SignalingConstants.SignalingType.ACCEPT);
+            self.signalingProvider.sendMessage(self.initiatorID, extension, SignalingConstants.SignalingType.ACCEPT);
+          }
+        });
       }
     });
 
@@ -345,7 +351,9 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   peerConnection._clearDialingTimer();
-  peerConnection.onRemoteSessionDescription('answer', extension.sdp);
+  peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
+
+  });
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
@@ -378,7 +386,7 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
   console.log("processCall");
-  
+
   var extension = extension || {};
 
   extension["sessionID"] = this.ID;

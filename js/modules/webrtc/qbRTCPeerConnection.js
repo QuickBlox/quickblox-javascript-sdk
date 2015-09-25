@@ -21,7 +21,7 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 //   offerToReceiveVideo: 1
 // };
 
-RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, remoteSessionDescription) {
+RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   Helpers.trace("RTCPeerConnection init");
 
   this.delegate = delegate;
@@ -38,11 +38,6 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, r
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
-
-
-  if (this.type === 'answer') {
-    this.onRemoteSessionDescription('offer', remoteSessionDescription);
-  }
 };
 
 RTCPeerConnection.prototype.release = function(){
@@ -50,12 +45,21 @@ RTCPeerConnection.prototype.release = function(){
   this.close();
 }
 
-RTCPeerConnection.prototype.onRemoteSessionDescription = function(type, remoteSessionDescription){
+RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback){
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
-  this.setRemoteDescription(desc);
+
+  function successCallback() {
+    callback(null);
+  }
+  function errorCallback(error) {
+    callback(error);
+  }
+
+  this.setRemoteDescription(desc, successCallback, errorCallback);
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
+  console.log("getAndSetLocalSessionDescription");
   var self = this;
 
   if (self.type === 'offer') {
