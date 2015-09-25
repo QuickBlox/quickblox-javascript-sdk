@@ -3,8 +3,6 @@ var currentSession;
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
-var session;
-
 $(document).ready(function() {
 
   buildUsers('.users-wrap.caller');
@@ -128,6 +126,7 @@ $(document).ready(function() {
     if (currentSession != null){
       var extension = {};
       currentSession.reject(extension);
+      currentSession = null;
     }
   });
 
@@ -138,6 +137,7 @@ $(document).ready(function() {
     if (currentSession != null){
       var extension = {};
       currentSession.stop(extension);
+      currentSession = null;
     }
   });
 
@@ -148,10 +148,10 @@ $(document).ready(function() {
     var action = $(this).data('action');
     if (action === 'mute') {
       $(this).addClass('off').data('action', 'unmute');
-      session.mute('video');
+      currentSession.mute('video');
     } else {
       $(this).removeClass('off').data('action', 'mute');
-      session.unmute('video');
+      currentSession.unmute('video');
     }
   });
 
@@ -162,10 +162,10 @@ $(document).ready(function() {
     var action = $(this).data('action');
     if (action === 'mute') {
       $(this).addClass('off').data('action', 'unmute');
-      session.mute('audio');
+      currentSession.mute('audio');
     } else {
       $(this).removeClass('off').data('action', 'mute');
-      session.unmute('audio');
+      currentSession.unmute('audio');
     }
   });
 });
@@ -194,24 +194,24 @@ QB.webrtc.onCallListener = function(session, extension) {
 };
 
 QB.webrtc.onAcceptCallListener = function(session, extension) {
-  console.log("onAcceptCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
+  console.log("onAcceptCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
   $('#callingSignal')[0].pause();
-  updateInfoMessage(callee.full_name + ' has accepted this call');
+  updateInfoMessage('User has accepted this call');
 };
 
 QB.webrtc.onRejectCallListener = function(session, extension) {
-  console.log("onRejectCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
+  console.log("onRejectCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
   $('#audiocall, #videocall').removeAttr('disabled');
   $('video').attr('src', '');
   $('#callingSignal')[0].pause();
-  updateInfoMessage(callee.full_name + ' has rejected the call. Logged in as ' + caller.full_name);
+  updateInfoMessage('User has rejected the call. Logged in as ' + caller.full_name);
 };
 
 QB.webrtc.onStopCallListener = function(session, extension) {
-  console.log("onStopCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
+  console.log("onStopCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
   updateUIOnHungUp();
 };
@@ -235,20 +235,22 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   // QB.webrtc.SessionConnectionState.FAILED
   // QB.webrtc.SessionConnectionState.DISCONNECTED
   // QB.webrtc.SessionConnectionState.CLOSED
-
-  if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
-    if (typeof callee != 'undefined'){
-      QB.webrtc.stop(callee.id);
-    }
-    updateUIOnHungUp();
-  }else if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-    updateUIOnHungUp();
-  }
+  //
+  // if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+  //   if (typeof callee != 'undefined'){
+  //     QB.webrtc.stop(callee.id);
+  //   }
+  //   updateUIOnHungUp();
+  // }else if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+  //   updateUIOnHungUp();
+  // }
 };
 
 QB.webrtc.onSessionCloseListener = function(session){
   console.log("onSessionCloseListener: " + session);
   updateUIOnHungUp();
+
+  currentSession = null;
 }
 
 QB.webrtc.onUpdateCallListener = function(session, extension) {
@@ -263,12 +265,12 @@ function callWithParams(mediaParams, isOnlyAudio){
 
   // create a session
   //
-  session = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? 2 : 1);
-  console.log("Session: " + session);
+  currentSession = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? 2 : 1);
+  console.log("Session: " + currentSession);
 
   // get local stream
   //
-  session.getUserMedia(mediaParams, function(err, stream) {
+  currentSession.getUserMedia(mediaParams, function(err, stream) {
     if (err) {
       console.log(err);
       updateInfoMessage('Error: devices (camera or microphone) are not found');
@@ -283,7 +285,7 @@ function callWithParams(mediaParams, isOnlyAudio){
       // start call
       //
       var extension = {};
-      session.call(extension);
+      currentSession.call(extension);
     }
   });
 }

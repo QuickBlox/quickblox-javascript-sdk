@@ -45,6 +45,11 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, r
   }
 };
 
+RTCPeerConnection.prototype.release = function(){
+  this._clearDialingTimer();
+  this.close();
+}
+
 RTCPeerConnection.prototype.onRemoteSessionDescription = function(type, remoteSessionDescription){
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
   this.setRemoteDescription(desc);

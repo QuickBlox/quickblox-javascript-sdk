@@ -17,6 +17,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
+        console.log("22");
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');
@@ -35,6 +36,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     delete extension.sessionID;
     delete extension.signalType;
 
+    console.log("33");
     switch (signalType) {
     case SignalingConstants.SignalingType.CALL:
       if (typeof self.delegate._onCallListener === 'function'){

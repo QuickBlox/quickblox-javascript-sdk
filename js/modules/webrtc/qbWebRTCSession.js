@@ -349,7 +349,7 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   peerConnection._clearDialingTimer();
 
-  peerConnection.close();
+  peerConnection.release();
 
   this._closeSessionIfAllConnectionsClosed();
 }
@@ -397,7 +397,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
-  peerConnection.close();
+  peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
@@ -459,7 +459,7 @@ WebRTCSession.prototype._close = function() {
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];
-    peer.close();
+    peer.release();
   }
 
   if (this.localStream) {

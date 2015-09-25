@@ -39,6 +39,7 @@ function WebRTCClient(service, connection) {
 
   var self = this;
   this._onMessage = function(stanza) {
+    console.log("11");
     self.signalingProcessor._onMessage(stanza);
   }
 }
@@ -160,8 +161,8 @@ function WebRTCClient(service, connection) {
 
    Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-   if (typeof this.onRejectListener === 'function'){
-     this.onRejectListener(session, extension);
+   if (typeof this.onRejectCallListener === 'function'){
+     this.onRejectCallListener(session, extension);
    }
  };
 

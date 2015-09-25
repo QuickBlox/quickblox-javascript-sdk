@@ -1827,6 +1827,11 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type, r
   }
 };
 
+RTCPeerConnection.prototype.release = function(){
+  this._clearDialingTimer();
+  this.close();
+}
+
 RTCPeerConnection.prototype.onRemoteSessionDescription = function(type, remoteSessionDescription){
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
   this.setRemoteDescription(desc);
@@ -2014,6 +2019,7 @@ function WebRTCClient(service, connection) {
 
   var self = this;
   this._onMessage = function(stanza) {
+    console.log("11");
     self.signalingProcessor._onMessage(stanza);
   }
 }
@@ -2135,8 +2141,8 @@ function WebRTCClient(service, connection) {
 
    Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-   if (typeof this.onRejectListener === 'function'){
-     this.onRejectListener(session, extension);
+   if (typeof this.onRejectCallListener === 'function'){
+     this.onRejectCallListener(session, extension);
    }
  };
 
@@ -2597,7 +2603,7 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   peerConnection._clearDialingTimer();
 
-  peerConnection.close();
+  peerConnection.release();
 
   this._closeSessionIfAllConnectionsClosed();
 }
@@ -2645,7 +2651,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
-  peerConnection.close();
+  peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
     this.onUserNotAnswerListener(this, peerConnection.userID);
@@ -2707,7 +2713,7 @@ WebRTCSession.prototype._close = function() {
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];
-    peer.close();
+    peer.release();
   }
 
   if (this.localStream) {
@@ -2851,6 +2857,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
+        console.log("22");
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');
@@ -2869,6 +2876,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     delete extension.sessionID;
     delete extension.signalType;
 
+    console.log("33");
     switch (signalType) {
     case SignalingConstants.SignalingType.CALL:
       if (typeof self.delegate._onCallListener === 'function'){
