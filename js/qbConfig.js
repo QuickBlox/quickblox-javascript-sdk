@@ -1,4 +1,4 @@
-/* 
+/*
  * QuickBlox JavaScript SDK
  *
  * Configuration Module
