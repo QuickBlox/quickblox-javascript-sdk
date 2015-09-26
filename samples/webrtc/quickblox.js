@@ -1810,6 +1810,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.sessionID = sessionID;
   this.userID = userID;
   this.type = type;
+  this.sdp = null;
 
   this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
@@ -1862,6 +1863,10 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
     callback(error);
   }
 };
+
+RTCPeerConnection.prototype.updateSDP = function(newSDP){
+  this.sdp = newSDP;
+}
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
@@ -2106,8 +2111,6 @@ function WebRTCClient(service, connection) {
    var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-     
-     session.processOnCall(userID, extension);
 
      this._cleanupExtension(extension);
 
@@ -2117,6 +2120,7 @@ function WebRTCClient(service, connection) {
        this.onCallListener(session, extension);
      }
    }
+   session.processOnCall(userID, extension);
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
@@ -2420,12 +2424,13 @@ WebRTCSession.prototype.accept = function(extension) {
 
   this._clearAnswerTimer();
 
-  // create a peer connection for each opponent
-  this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peerConnection = self._createPeer(userID, 'answer');
-    self.peerConnections[userID] = peerConnection;
-
-    peerConnection.setRemoteSessionDescription('offer', extension.sdp, function(error){
+  // create a peer connection
+  //
+  console.log("this.initiatorID: " + this.initiatorID);
+  var peerConnection = self.peerConnections[this.initiatorID];
+  console.log("peerConnection: " + peerConnection);
+  if(peerConnection){
+    peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
         Helpers.trace("setRemoteSessionDescription error: " + error);
       }else{
@@ -2444,8 +2449,9 @@ WebRTCSession.prototype.accept = function(extension) {
         });
       }
     });
-
-  });
+  }else{
+    Helpers.trace("Can't accept the call, there is no information about peer connection by some reason.");
+  }
 }
 
 /**
@@ -2597,8 +2603,23 @@ WebRTCSession.State = {
 //
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
-  this._clearAnswerTimer();
-  this._startAnswerTimer();
+  if(this.answerTimer == null){
+    this._startAnswerTimer();
+
+      // create a peer connection
+      //
+      var peerConnection = this._createPeer(userID, 'answer');
+      this.peerConnections[userID] = peerConnection;
+      console.log("this.peerConnections: " + this.peerConnections);
+      peerConnection.updateSDP(extension.sdp);
+  }else{
+    // update sdp in peer connection here
+    //
+    var peerConnection = this.peerConnections[userID];
+    if(peerConnection){
+      peerConnection.updateSDP(extension.sdp);
+    }
+  }
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
@@ -2635,7 +2656,11 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
 }
 
+
 //
+///////////
+//
+
 
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
   console.log("processCall");
@@ -2673,6 +2698,7 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   this._closeSessionIfAllConnectionsClosed();
 }
 
+
 //
 ///////////////////////// Delegates (peer connection)  /////////////////////////
 //
@@ -2700,7 +2726,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 //
 
 
-WebRTCSession.prototype._createPeer = function(userID, peerConnectionType, remoteSessionDescription) {
+WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   Helpers.trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
@@ -2715,7 +2741,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType, remot
     iceServers: config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, userID, this.ID, peerConnectionType, remoteSessionDescription);
+  peer.init(this, userID, this.ID, peerConnectionType);
 
   return peer;
 };
@@ -2801,6 +2827,8 @@ WebRTCSession.prototype._startAnswerTimer = function(){
     if(typeof self.onSessionCloseListener === 'function'){
       self.onSessionCloseListener(self);
     }
+
+    self.answerTimer = null;
   };
 
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;

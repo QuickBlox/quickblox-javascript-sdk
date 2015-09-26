@@ -122,8 +122,6 @@ function WebRTCClient(service, connection) {
    var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-     
-     session.processOnCall(userID, extension);
 
      this._cleanupExtension(extension);
 
@@ -133,6 +131,7 @@ function WebRTCClient(service, connection) {
        this.onCallListener(session, extension);
      }
    }
+   session.processOnCall(userID, extension);
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {

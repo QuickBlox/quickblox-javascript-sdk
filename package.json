@@ -1,12 +1,12 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/qbMain.js",
   "license": [
     {
-      "type": "MIT",
+      "type": "Q-munity License",
       "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/LICENSE"
     }
   ],
@@ -18,14 +18,17 @@
     "cloud",
     "api",
     "chat",
-    "communication"
+    "communication",
+    "messaging",
+    "webrtc"
   ],
   "maintainers": [
-    "Igor Khomenko <igor@quickblox.com>"
+    "Igor Khomenko <igor@quickblox.com>",
+    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>"
   ],
   "contributors": [
     "Igor Khomenko <igor@quickblox.com>",
-    "Alex Bass <alex.bass@quickblox.com>"
+    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>"
   ],
   "repository": {
     "type": "git",

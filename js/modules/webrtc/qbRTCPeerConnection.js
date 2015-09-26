@@ -28,6 +28,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.sessionID = sessionID;
   this.userID = userID;
   this.type = type;
+  this.sdp = null;
 
   this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
@@ -80,6 +81,10 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
     callback(error);
   }
 };
+
+RTCPeerConnection.prototype.updateSDP = function(newSDP){
+  this.sdp = newSDP;
+}
 
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
