@@ -22,7 +22,7 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 // };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
-  Helpers.trace("RTCPeerConnection init");
+  Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
 
   this.delegate = delegate;
   this.sessionID = sessionID;
@@ -30,7 +30,6 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.type = type;
   this.sdp = null;
 
-  this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
@@ -57,6 +56,10 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
   }
 
   this.setRemoteDescription(desc, successCallback, errorCallback);
+}
+
+RTCPeerConnection.prototype.addLocalStream = function(localStream){
+    this.addStream(localStream);
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {

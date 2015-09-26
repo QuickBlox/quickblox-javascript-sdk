@@ -17,7 +17,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
-    
+
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');

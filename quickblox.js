@@ -1804,7 +1804,7 @@ var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
 // };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
-  Helpers.trace("RTCPeerConnection init");
+  Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
 
   this.delegate = delegate;
   this.sessionID = sessionID;
@@ -1812,7 +1812,6 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.type = type;
   this.sdp = null;
 
-  this.addStream(this.delegate.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
@@ -1839,6 +1838,10 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
   }
 
   this.setRemoteDescription(desc, successCallback, errorCallback);
+}
+
+RTCPeerConnection.prototype.addLocalStream = function(localStream){
+    this.addStream(localStream);
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
@@ -2345,6 +2348,10 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
       // save local stream
       self.localStream = stream;
 
+      // Add stream to all peer connections
+      //
+      // TODO
+
       if (params.elemId){
         self.attachMediaStream(params.elemId, stream, params.options);
       }
@@ -2610,7 +2617,6 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
       //
       var peerConnection = this._createPeer(userID, 'answer');
       this.peerConnections[userID] = peerConnection;
-      console.log("this.peerConnections: " + this.peerConnections);
       peerConnection.updateSDP(extension.sdp);
   }else{
     // update sdp in peer connection here
@@ -2898,7 +2904,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
-    
+
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');

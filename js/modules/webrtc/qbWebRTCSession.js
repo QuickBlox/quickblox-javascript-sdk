@@ -88,6 +88,10 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
       // save local stream
       self.localStream = stream;
 
+      // Add stream to all peer connections
+      //
+      // TODO
+
       if (params.elemId){
         self.attachMediaStream(params.elemId, stream, params.options);
       }
@@ -353,7 +357,6 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
       //
       var peerConnection = this._createPeer(userID, 'answer');
       this.peerConnections[userID] = peerConnection;
-      console.log("this.peerConnections: " + this.peerConnections);
       peerConnection.updateSDP(extension.sdp);
   }else{
     // update sdp in peer connection here
