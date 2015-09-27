@@ -17,9 +17,9 @@ function WebRTCSignalingProvider(service, connection) {
 
 WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates, extension) {
   var extension = extension || {};
-  extension[iceCandidates] = iceCandidates;
+  extension["iceCandidates"] = iceCandidates;
 
-  this.sendMessage(userId, extension, WebRTCSignaling.SignalingType.CANDIDATE);
+  this.sendMessage(userId, extension, SignalingConstants.SignalingType.CANDIDATE);
 };
 
 WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, signalingType) {

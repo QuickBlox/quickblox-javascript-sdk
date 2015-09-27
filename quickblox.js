@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-26 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-27 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1841,7 +1841,10 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
 }
 
 RTCPeerConnection.prototype.addLocalStream = function(localStream){
-    this.addStream(localStream);
+  if(localStream == null){
+    throw new Error("'RTCPeerConnection.addStream' error: stream is 'null'.");
+  }
+  this.addStream(localStream);
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
@@ -2115,12 +2118,13 @@ function WebRTCClient(service, connection) {
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
-     this._cleanupExtension(extension);
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extensionClone));
 
      if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extension);
+       this.onCallListener(session, extensionClone);
      }
    }
    session.processOnCall(userID, extension);
@@ -2348,10 +2352,6 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
       // save local stream
       self.localStream = stream;
 
-      // Add stream to all peer connections
-      //
-      // TODO
-
       if (params.elemId){
         self.attachMediaStream(params.elemId, stream, params.options);
       }
@@ -2400,6 +2400,8 @@ WebRTCSession.prototype.call = function(extension) {
   this.opponentsIDs.forEach(function(userID, i, arr) {
     var peer = self._createPeer(userID, 'offer');
 
+    peer.addLocalStream(self.localStream);
+
     self.peerConnections[userID] = peer;
 
     peer.getAndSetLocalSessionDescription(function(err) {
@@ -2433,10 +2435,11 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection
   //
-  console.log("this.initiatorID: " + this.initiatorID);
   var peerConnection = self.peerConnections[this.initiatorID];
-  console.log("peerConnection: " + peerConnection);
   if(peerConnection){
+
+    peerConnection.addLocalStream(this.localStream);
+
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
         Helpers.trace("setRemoteSessionDescription error: " + error);
@@ -2684,10 +2687,10 @@ WebRTCSession.prototype.processCall = function(peerConnection, extension) {
 
 WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandidates) {
   var extension = {};
-  extension[sessionID] = this.ID;
-  extension[callType] = this.callType;
-  extension[callerID] = this.initiatorID;
-  extension[opponentsIDs] = this.opponentsIDs;
+  extension["sessionID"] = this.ID;
+  extension["callType"] = this.callType;
+  extension["callerID"] = this.initiatorID;
+  extension["opponentsIDs"] = this.opponentsIDs;
 
   this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
 }
@@ -3060,9 +3063,9 @@ function WebRTCSignalingProvider(service, connection) {
 
 WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates, extension) {
   var extension = extension || {};
-  extension[iceCandidates] = iceCandidates;
+  extension["iceCandidates"] = iceCandidates;
 
-  this.sendMessage(userId, extension, WebRTCSignaling.SignalingType.CANDIDATE);
+  this.sendMessage(userId, extension, SignalingConstants.SignalingType.CANDIDATE);
 };
 
 WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, signalingType) {

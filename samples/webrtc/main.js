@@ -107,11 +107,12 @@ $(document).ready(function() {
         updateInfoMessage(deviceNotFoundError);
 
       } else {
+        console.log("OK");
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
 
         var extension = {};
-        currentSession.accept(extension);
+        // currentSession.accept(extension);
       }
     });
   });
@@ -217,7 +218,7 @@ QB.webrtc.onStopCallListener = function(session, extension) {
 };
 
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
-  QB.webrtc.attachMediaStream('remoteVideo', stream);
+  currentSession.attachMediaStream('remoteVideo', stream);
 };
 
 QB.webrtc.onUserNotAnswerListener = function(session, userId) {

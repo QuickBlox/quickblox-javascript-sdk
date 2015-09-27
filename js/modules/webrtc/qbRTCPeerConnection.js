@@ -59,7 +59,10 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
 }
 
 RTCPeerConnection.prototype.addLocalStream = function(localStream){
-    this.addStream(localStream);
+  if(localStream == null){
+    throw new Error("'RTCPeerConnection.addStream' error: stream is 'null'.");
+  }
+  this.addStream(localStream);
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {

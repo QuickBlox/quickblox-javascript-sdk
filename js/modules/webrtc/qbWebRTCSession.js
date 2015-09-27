@@ -88,10 +88,6 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
       // save local stream
       self.localStream = stream;
 
-      // Add stream to all peer connections
-      //
-      // TODO
-
       if (params.elemId){
         self.attachMediaStream(params.elemId, stream, params.options);
       }
@@ -140,6 +136,8 @@ WebRTCSession.prototype.call = function(extension) {
   this.opponentsIDs.forEach(function(userID, i, arr) {
     var peer = self._createPeer(userID, 'offer');
 
+    peer.addLocalStream(self.localStream);
+
     self.peerConnections[userID] = peer;
 
     peer.getAndSetLocalSessionDescription(function(err) {
@@ -173,10 +171,11 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // create a peer connection
   //
-  console.log("this.initiatorID: " + this.initiatorID);
   var peerConnection = self.peerConnections[this.initiatorID];
-  console.log("peerConnection: " + peerConnection);
   if(peerConnection){
+
+    peerConnection.addLocalStream(this.localStream);
+
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
         Helpers.trace("setRemoteSessionDescription error: " + error);
@@ -424,10 +423,10 @@ WebRTCSession.prototype.processCall = function(peerConnection, extension) {
 
 WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandidates) {
   var extension = {};
-  extension[sessionID] = this.ID;
-  extension[callType] = this.callType;
-  extension[callerID] = this.initiatorID;
-  extension[opponentsIDs] = this.opponentsIDs;
+  extension["sessionID"] = this.ID;
+  extension["callType"] = this.callType;
+  extension["callerID"] = this.initiatorID;
+  extension["opponentsIDs"] = this.opponentsIDs;
 
   this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
 }

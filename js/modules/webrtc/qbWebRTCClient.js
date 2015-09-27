@@ -123,12 +123,13 @@ function WebRTCClient(service, connection) {
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
-     this._cleanupExtension(extension);
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extensionClone));
 
      if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extension);
+       this.onCallListener(session, extensionClone);
      }
    }
    session.processOnCall(userID, extension);
