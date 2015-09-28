@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-27 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-28 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1814,12 +1814,15 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
 
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
+  this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+
+  this.iceCandidates = [];
 };
 
 RTCPeerConnection.prototype.release = function(){
@@ -1874,16 +1877,22 @@ RTCPeerConnection.prototype.updateSDP = function(newSDP){
   this.sdp = newSDP;
 }
 
+RTCPeerConnection.prototype.onSignalingStateCallback = function() {
+  // send candidates
+  //
+  if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
+    this.delegate.processIceCandidates(this, this.iceCandidates);
+    this.iceCandidates.length = 0;
+  }
+};
+
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
 
   if (candidate) {
-    Helpers.trace("onICECandidate: " + JSON.stringify(candidate));
-
     // collecting internally the ice candidates
     // will send a bit later
     //
-    this.iceCandidates = this.iceCandidates || [];
     this.iceCandidates.push({
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
@@ -1891,7 +1900,9 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
     });
   }
 
-  if (this.signalingState === 'stable'){
+  // send candidates
+  //
+  if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
     this.delegate.processIceCandidates(this, this.iceCandidates);
     this.iceCandidates.length = 0;
   }
@@ -1912,7 +1923,12 @@ RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
       sdpMid: iceCandidates[i].sdpMid,
       candidate: iceCandidates[i].candidate
     };
-    this.addIceCandidate(new RTCIceCandidate(candidate));
+    this.addIceCandidate(new RTCIceCandidate(candidate),
+      function() {
+
+      }, function(error){
+        Helpers.traceError("Error on 'addIceCandidate': " + error);
+      });
   }
 };
 
@@ -2172,7 +2188,12 @@ function WebRTCClient(service, connection) {
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
   Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-  session.processOnIceCandidates(userID, extension);
+  var session = this.sessions[sessionID];
+  if(session){
+    session.processOnIceCandidates(userID, extension);
+  }else{
+    Helpers.traceError("Ignore 'OnIceCandidates', there is no information about session " + sessionID + " by some reason.");
+  }
 }
 
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
@@ -2224,6 +2245,12 @@ WebRTCHelpers = {
   trace: function(text) {
     if (config.debug) {
       console.log('[QBWebRTC]:', text);
+    }
+  },
+
+  traceError: function(text) {
+    if (config.debug) {
+      console.error();('[QBWebRTC]:', text);
     }
   },
 
@@ -2442,7 +2469,7 @@ WebRTCSession.prototype.accept = function(extension) {
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
-        Helpers.trace("setRemoteSessionDescription error: " + error);
+        Helpers.traceError("setRemoteSessionDescription error: " + error);
       }else{
         peerConnection.getAndSetLocalSessionDescription(function(err) {
           if (err) {
@@ -2460,7 +2487,7 @@ WebRTCSession.prototype.accept = function(extension) {
       }
     });
   }else{
-    Helpers.trace("Can't accept the call, there is no information about peer connection by some reason.");
+    Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
   }
 }
 
@@ -2633,32 +2660,46 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
-  peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+    peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
 
-  });
+    });
+  }else{
+    Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");
+  }
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
   console.log("processOnReject");
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
-
-  peerConnection.release();
-
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+    peerConnection.release();
+  }else{
+    Helpers.traceError("Ignore 'OnReject', there is no information about peer connection by some reason.");
+  }
   this._closeSessionIfAllConnectionsClosed();
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+  }else{
+    Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+  }
 
   this._close();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection.addCandidates(extension.iceCandidates);
+  if(peerConnection){
+    peerConnection.addCandidates(extension.iceCandidates);
+  }else{
+    Helpers.traceError("Ignore 'OnIceCandidates', there is no information about peer connection by some reason.");
+  }
 }
 
 WebRTCSession.prototype.processOnUpdate = function(userID, extension) {

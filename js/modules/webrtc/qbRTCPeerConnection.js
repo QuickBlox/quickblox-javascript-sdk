@@ -32,12 +32,15 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
 
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
+  this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+
+  this.iceCandidates = [];
 };
 
 RTCPeerConnection.prototype.release = function(){
@@ -92,16 +95,22 @@ RTCPeerConnection.prototype.updateSDP = function(newSDP){
   this.sdp = newSDP;
 }
 
+RTCPeerConnection.prototype.onSignalingStateCallback = function() {
+  // send candidates
+  //
+  if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
+    this.delegate.processIceCandidates(this, this.iceCandidates);
+    this.iceCandidates.length = 0;
+  }
+};
+
 RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
 
   if (candidate) {
-    Helpers.trace("onICECandidate: " + JSON.stringify(candidate));
-
     // collecting internally the ice candidates
     // will send a bit later
     //
-    this.iceCandidates = this.iceCandidates || [];
     this.iceCandidates.push({
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
@@ -109,7 +118,9 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
     });
   }
 
-  if (this.signalingState === 'stable'){
+  // send candidates
+  //
+  if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
     this.delegate.processIceCandidates(this, this.iceCandidates);
     this.iceCandidates.length = 0;
   }
@@ -130,7 +141,12 @@ RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
       sdpMid: iceCandidates[i].sdpMid,
       candidate: iceCandidates[i].candidate
     };
-    this.addIceCandidate(new RTCIceCandidate(candidate));
+    this.addIceCandidate(new RTCIceCandidate(candidate),
+      function() {
+
+      }, function(error){
+        Helpers.traceError("Error on 'addIceCandidate': " + error);
+      });
   }
 };
 

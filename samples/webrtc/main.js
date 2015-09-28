@@ -112,7 +112,7 @@ $(document).ready(function() {
         $('#audiocall, #videocall').attr('disabled', 'disabled');
 
         var extension = {};
-        // currentSession.accept(extension);
+        currentSession.accept(extension);
       }
     });
   });

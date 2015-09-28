@@ -178,7 +178,7 @@ WebRTCSession.prototype.accept = function(extension) {
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
-        Helpers.trace("setRemoteSessionDescription error: " + error);
+        Helpers.traceError("setRemoteSessionDescription error: " + error);
       }else{
         peerConnection.getAndSetLocalSessionDescription(function(err) {
           if (err) {
@@ -196,7 +196,7 @@ WebRTCSession.prototype.accept = function(extension) {
       }
     });
   }else{
-    Helpers.trace("Can't accept the call, there is no information about peer connection by some reason.");
+    Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
   }
 }
 
@@ -369,32 +369,46 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
-  peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+    peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
 
-  });
+    });
+  }else{
+    Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");
+  }
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
   console.log("processOnReject");
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
-
-  peerConnection.release();
-
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+    peerConnection.release();
+  }else{
+    Helpers.traceError("Ignore 'OnReject', there is no information about peer connection by some reason.");
+  }
   this._closeSessionIfAllConnectionsClosed();
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection._clearDialingTimer();
+  if(peerConnection){
+    peerConnection._clearDialingTimer();
+  }else{
+    Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+  }
 
   this._close();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
-  peerConnection.addCandidates(extension.iceCandidates);
+  if(peerConnection){
+    peerConnection.addCandidates(extension.iceCandidates);
+  }else{
+    Helpers.traceError("Ignore 'OnIceCandidates', there is no information about peer connection by some reason.");
+  }
 }
 
 WebRTCSession.prototype.processOnUpdate = function(userID, extension) {

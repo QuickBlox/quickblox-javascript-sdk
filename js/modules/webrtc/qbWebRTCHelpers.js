@@ -28,6 +28,12 @@ WebRTCHelpers = {
     }
   },
 
+  traceError: function(text) {
+    if (config.debug) {
+      console.error();('[QBWebRTC]:', text);
+    }
+  },
+
   getLocalTime: function() {
     var arr = (new Date).toString().split(' ');
     return arr.slice(1,5).join('-');
