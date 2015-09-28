@@ -92,13 +92,15 @@ $(document).ready(function() {
 
     mediaParams = {
       audio: true,
-      video: currentSession.callType === 'video' ? true : false,
+      video: currentSession.callType === "1" ? true : false,
       elemId: 'localVideo',
       options: {
         muted: true,
         mirror: true
       }
     };
+
+    console.log("mediaParams: " + JSON.stringify(mediaParams));
 
     currentSession.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
@@ -218,6 +220,8 @@ QB.webrtc.onStopCallListener = function(session, extension) {
 };
 
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
+  console.log("onRemoteStreamListener: " + stream);
+
   currentSession.attachMediaStream('remoteVideo', stream);
 };
 

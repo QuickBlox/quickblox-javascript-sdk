@@ -178,8 +178,10 @@ WebRTCSession.prototype.accept = function(extension) {
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
-        Helpers.traceError("setRemoteSessionDescription error: " + error);
+        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
       }else{
+        Helpers.trace("'setRemoteSessionDescription' success");
+
         peerConnection.getAndSetLocalSessionDescription(function(err) {
           if (err) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
@@ -372,7 +374,11 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   if(peerConnection){
     peerConnection._clearDialingTimer();
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
-
+      if(error){
+        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+      }else{
+        Helpers.trace("'setRemoteSessionDescription' success");
+      }
     });
   }else{
     Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");

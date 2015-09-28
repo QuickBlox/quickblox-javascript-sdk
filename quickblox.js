@@ -1798,10 +1798,10 @@ var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-// var offerOptions = {
-//   offerToReceiveAudio: 1,
-//   offerToReceiveVideo: 1
-// };
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
+};
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
@@ -1856,7 +1856,7 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
 
   if (self.type === 'offer') {
     // Additional parameters for SDP Constraints
-    // http://www.w3.org/TR/webrtc/#constraints
+    // http://www.w3.org/TR/webrtc/#h-offer-answer-options
     // self.createOffer(successCallback, errorCallback, constraints)
     self.createOffer(successCallback, errorCallback);
   } else {
@@ -1893,18 +1893,17 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
     // collecting internally the ice candidates
     // will send a bit later
     //
-    this.iceCandidates.push({
+    var ICECandidate = {
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
       candidate: candidate.candidate
-    });
-  }
+    };
 
-  // send candidates
-  //
-  if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
-    this.delegate.processIceCandidates(this, this.iceCandidates);
-    this.iceCandidates.length = 0;
+    if(this.signalingState === 'stable'){
+      this.delegate.processIceCandidates(this, [ICECandidate])
+    }else{
+      this.iceCandidates.push(ICECandidate);
+    }
   }
 };
 
@@ -2186,7 +2185,7 @@ function WebRTCClient(service, connection) {
 }
 
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
-  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
 
   var session = this.sessions[sessionID];
   if(session){
@@ -2469,8 +2468,10 @@ WebRTCSession.prototype.accept = function(extension) {
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
-        Helpers.traceError("setRemoteSessionDescription error: " + error);
+        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
       }else{
+        Helpers.trace("'setRemoteSessionDescription' success");
+
         peerConnection.getAndSetLocalSessionDescription(function(err) {
           if (err) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
@@ -2663,7 +2664,11 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   if(peerConnection){
     peerConnection._clearDialingTimer();
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
-
+      if(error){
+        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+      }else{
+        Helpers.trace("'setRemoteSessionDescription' success");
+      }
     });
   }else{
     Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");

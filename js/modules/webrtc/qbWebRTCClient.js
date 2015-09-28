@@ -175,7 +175,7 @@ function WebRTCClient(service, connection) {
 }
 
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
-  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
 
   var session = this.sessions[sessionID];
   if(session){
