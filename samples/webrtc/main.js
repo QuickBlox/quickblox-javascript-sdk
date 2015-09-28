@@ -1,6 +1,15 @@
 var mediaParams, caller, callee;
 var currentSession;
 
+// volume meter variables
+var METER_WIDTH = 100;
+var METER_HEIGHT = 50;
+var audioContext = null;
+var meter = null;
+var canvasContext = null;
+var animationRequestID = null
+
+
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
 $(document).ready(function() {
@@ -117,6 +126,8 @@ $(document).ready(function() {
         updateInfoMessage(deviceNotFoundError);
 
       } else {
+        setupVolumeMeter(stream);
+
         console.log("OK");
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
@@ -264,7 +275,10 @@ QB.webrtc.onSessionCloseListener = function(session){
   console.log("onSessionCloseListener: " + session);
   updateUIOnHungUp();
 
+  clearVolumeMeter();
+
   currentSession = null;
+  localStream = null;
 }
 
 QB.webrtc.onUpdateCallListener = function(session, extension) {
@@ -290,6 +304,8 @@ function callWithParams(mediaParams, isOnlyAudio){
       updateInfoMessage('Error: devices (camera or microphone) are not found');
 
     } else {
+      setupVolumeMeter(stream);
+
       $('.btn_mediacall, #hangup').removeAttr('disabled');
       $('#audiocall, #videocall').attr('disabled', 'disabled');
       updateInfoMessage('Calling...');
@@ -373,4 +389,53 @@ function updateInfoMessage(msg){
 
 function userIcon(hexColorCode) {
   return '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="30" viewBox="0 0 48 48"><path d="M24 30c0 0-16 0-22 14 0 0 10.020 4 22 4s22-4 22-4c-6-14-22-14-22-14zM24 28c6 0 10-6 10-16s-10-10-10-10-10 0-10 10 4 16 10 16z" fill="#' + (hexColorCode || '666') + '"></path></svg>';
+}
+
+function setupVolumeMeter(localStream){
+  // grab our canvas
+  var meterElement = document.getElementById("local-volume-meter");
+  canvasContext = meterElement.getContext("2d");
+
+  // monkeypatch Web Audio
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+  // grab an audio context
+  audioContext = new AudioContext();
+
+  // Create an AudioNode from the stream.
+  var mediaStreamSource = audioContext.createMediaStreamSource(localStream);
+
+  // Create a new volume meter and connect it.
+  meter = createAudioMeter(audioContext);
+  mediaStreamSource.connect(meter);
+
+  // kick off the visual updating
+  drawLoop();
+}
+
+function drawLoop(time) {
+  // clear the background
+  canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+
+  // check if we're currently clipping
+  if (meter.checkClipping()){
+    canvasContext.fillStyle = "red";
+  }else{
+    canvasContext.fillStyle = "green";
+  }
+
+  // draw a bar based on the current volume
+  canvasContext.fillRect(0, 0, meter.volume * METER_WIDTH * 1.4, METER_HEIGHT);
+
+  // set up the next visual callback
+  animationRequestID = window.requestAnimationFrame(drawLoop);
+}
+
+function clearVolumeMeter() {
+  window.cancelAnimationFrame(animationRequestID);
+  animationRequestID = null;
+  canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+  canvasContext = null;
+  mediaStreamSource = null;
+  meter = null;
 }

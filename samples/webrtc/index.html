@@ -50,6 +50,7 @@
       <div class="streams">
         <div class="localControls">
           <span id="callerName"></span><br>
+          <canvas id="local-volume-meter"></canvas>
           <video id="localVideo"></video>
           <div class="mediacall-controls l-flexbox l-flexbox_flexcenter">
             <button class="btn_mediacall btn_camera_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="images/icon-camera-off.png" alt="camera"></button>
@@ -120,5 +121,7 @@
   <script src="../../quickblox.js"></script>
   <script src="config.js"></script>
   <script src="main.js"></script>
+  <!-- Include the volume meter component -->
+  <script src="volume-meter/volume-meter.js"></script>
 </body>
 </html>
