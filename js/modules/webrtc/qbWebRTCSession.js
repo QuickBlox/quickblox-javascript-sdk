@@ -24,6 +24,17 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 
 /**
+ * State of a session
+ */
+WebRTCSession.State = {
+  NEW: 'new',
+  ACTIVE: 'active',
+  HUNGUP: 'hungup',
+  REJECTED: 'rejected'
+};
+
+
+/**
  * Creates a session
  * @param {number} An ID if the call's initiator
  * @param {array} An array with opponents
@@ -48,7 +59,6 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   // We need a way to hide it if sach situation happened."
   //
   this.answerTimer = null;
-
 }
 
 /**
@@ -211,6 +221,8 @@ WebRTCSession.prototype.reject = function(extension) {
 
   Helpers.trace('Reject, extension: ' + JSON.stringify(extension));
 
+  this.state = WebRTCSession.State.REJECTED;
+
   this._clearAnswerTimer();
 
   extension["sessionID"] = this.ID;
@@ -231,6 +243,8 @@ WebRTCSession.prototype.stop = function(extension) {
   var extension = extension || {};
 
   Helpers.trace('Stop, extension: ' + JSON.stringify(extension));
+
+  this.state = WebRTCSession.State.HUNGUP;
 
   this._clearAnswerTimer();
 
@@ -331,22 +345,6 @@ WebRTCSession.filter = function(id, filters) {
 
 
 //
-////////////////////////////////// Enums ///////////////////////////////////////
-//
-
-
-/**
- * State of a session
- */
-WebRTCSession.State = {
-  NEW: 'new',
-  ACTIVE: 'active',
-  HUNGUP: 'hungup',
-  REJECTED: 'rejected'
-};
-
-
-//
 ///////////////////////// Delegates (rtc client)  /////////////////////////
 //
 
@@ -386,7 +384,8 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
-  console.log("processOnReject");
+  this.state = WebRTCSession.State.REJECTED;
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -398,6 +397,8 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
+  this.state = WebRTCSession.State.HUNGUP;
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
