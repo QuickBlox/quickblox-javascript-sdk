@@ -30,7 +30,8 @@ WebRTCSession.State = {
   NEW: 'new',
   ACTIVE: 'active',
   HUNGUP: 'hungup',
-  REJECTED: 'rejected'
+  REJECTED: 'rejected',
+  CLOSED: 'closed'
 };
 
 
