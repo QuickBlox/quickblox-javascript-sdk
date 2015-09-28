@@ -265,6 +265,8 @@ WebRTCSession.prototype.stop = function(extension) {
   }
 
   this._close();
+
+  this.state = WebRTCSession.State.CLOSED;
 }
 
 /**
@@ -385,8 +387,6 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
-  this.state = WebRTCSession.State.REJECTED;
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -398,8 +398,6 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
-  this.state = WebRTCSession.State.HUNGUP;
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -408,6 +406,8 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   }
 
   this._close();
+
+  this.state = WebRTCSession.State.CLOSED;
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
@@ -556,6 +556,8 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
     if(typeof this.onSessionCloseListener === 'function'){
       this.onSessionCloseListener(this);
     }
+
+    this.state = WebRTCSession.State.CLOSED;
   }
 }
 
