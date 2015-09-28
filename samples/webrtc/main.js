@@ -1,4 +1,5 @@
-var mediaParams, caller, callee;
+var caller;
+var callees = {};
 var currentSession;
 
 // volume meter variables
@@ -34,24 +35,28 @@ $(document).ready(function() {
   // Choose recipient
   //
   $(document).on('click', '.choose-recipient button', function() {
-    $('.choose-recipient button').removeClass('active');
-    $(this).addClass('active');
+    var userID = $(this).attr('id');
+    var userName = $(this).attr('data-name');
 
-    callee = {
-      id: $(this).attr('id'),
-      full_name: $(this).attr('data-name'),
-      login: $(this).attr('data-login'),
-      password: $(this).attr('data-password')
-    };
+    if($(this).hasClass('active')){
+      $(this).removeClass('active');
 
-    $('#calleeName').text(callee.full_name);
+      delete callees[userID];
+    }else{
+      $(this).addClass('active');
+
+      callees[userID] = userName;
+    }
+
+    var values = Object.keys(callees).map(function(v) { return callees[v]; });
+    $('#calleesNames').text(values);
   });
 
   // Audio call
   //
   $('#audiocall').on('click', function() {
-    if(callee == null){
-      alert('Please choose a user to call');
+    if(Object.keys(callees).length == 0){
+      alert('Please choose users to call');
       return;
     }
 
@@ -67,8 +72,8 @@ $(document).ready(function() {
   // Video call
   //
   $('#videocall').on('click', function() {
-    if(callee == null){
-      alert('Please choose a user to call');
+    if(Object.keys(callees).length == 0){
+      alert('Please choose users to call');
       return;
     }
 
@@ -99,7 +104,7 @@ $(document).ready(function() {
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
-    mediaParams = {
+    var mediaParams = {
       audio: true,
       video: currentSession.callType === 1 ? true : false,
       // video: {
@@ -117,8 +122,6 @@ $(document).ready(function() {
       }
     };
 
-    console.log("mediaParams: " + JSON.stringify(mediaParams));
-
     currentSession.getUserMedia(mediaParams, function(err, stream) {
       if (err) {
         console.log(err);
@@ -128,7 +131,6 @@ $(document).ready(function() {
       } else {
         setupVolumeMeter(stream);
 
-        console.log("OK");
         $('.btn_mediacall, #hangup').removeAttr('disabled');
         $('#audiocall, #videocall').attr('disabled', 'disabled');
 
@@ -220,23 +222,24 @@ QB.webrtc.onAcceptCallListener = function(session, extension) {
   console.log("onAcceptCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
   $('#callingSignal')[0].pause();
-  updateInfoMessage('User has accepted this call');
+  updateInfoMessage('User has accepted the call');
 };
 
 QB.webrtc.onRejectCallListener = function(session, extension) {
   console.log("onRejectCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
-  $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
-  $('#audiocall, #videocall').removeAttr('disabled');
-  $('video').attr('src', '');
-  $('#callingSignal')[0].pause();
-  updateInfoMessage('User has rejected the call. Logged in as ' + caller.full_name);
+
+  // $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+  // $('#audiocall, #videocall').removeAttr('disabled');
+  // $('video').attr('src', '');
+  // $('#callingSignal')[0].pause();
+  // updateInfoMessage('User has rejected the call. Logged in as ' + caller.full_name);
 };
 
 QB.webrtc.onStopCallListener = function(session, extension) {
   console.log("onStopCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
-  updateUIOnHungUp();
+  // updateUIOnHungUp();
 };
 
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -293,7 +296,7 @@ function callWithParams(mediaParams, isOnlyAudio){
 
   // create a session
   //
-  currentSession = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+  currentSession = QB.webrtc.createNewSession(Object.keys(callees), isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
   console.log("Session: " + currentSession);
 
   // get local stream
@@ -310,6 +313,13 @@ function callWithParams(mediaParams, isOnlyAudio){
       $('#audiocall, #videocall').attr('disabled', 'disabled');
       updateInfoMessage('Calling...');
       $('#callingSignal')[0].play();
+
+      // create video elements for opponents
+      Object.keys(callees).forEach(function(userID, i, arr) {
+
+      });
+      $('#remoteControls')
+
 
 
       // start call
@@ -334,20 +344,13 @@ function updateUIOnHungUp(){
   $('#endCallSignal')[0].play();
 }
 
-function createSession() {
-  QB.createSession(caller, function(err, res) {
-    if (res) {
-      connectChat();
-    }
-  });
-}
-
 function connectChat() {
   updateInfoMessage('Connecting to chat...');
 
   QB.chat.connect({
     jid: QB.chat.helpers.getUserJid(caller.id, QBApp.appId),
     password: caller.password
+
   }, function(err, res) {
     $('.connecting').addClass('hidden');
     $('.chat').removeClass('hidden');
@@ -362,7 +365,8 @@ function chooseRecipient(id) {
   $('.connecting').removeClass('hidden');
   updateInfoMessage('Creating a session...');
   buildUsers('.users-wrap.recipient', id);
-  createSession();
+
+  connectChat();
 }
 
 function buildUsers(el, excludeID) {

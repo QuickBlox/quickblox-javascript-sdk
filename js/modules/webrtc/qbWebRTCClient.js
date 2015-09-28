@@ -57,7 +57,7 @@ function WebRTCClient(service, connection) {
  }
 
   WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider)
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
 
     // set callbacks
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;

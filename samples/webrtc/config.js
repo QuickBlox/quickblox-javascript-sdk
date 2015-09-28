@@ -34,6 +34,13 @@ var QBUsers = [
     password: 'webuser112',
     full_name: 'User 2',
     colour: '11a209'
+  },
+  {
+    id: 5681538,
+    login: 'webuser113',
+    password: 'webuser113',
+    full_name: 'User 3',
+    colour: '51a209'
   }
 ];
 

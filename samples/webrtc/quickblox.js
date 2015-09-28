@@ -1827,7 +1827,9 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
 
 RTCPeerConnection.prototype.release = function(){
   this._clearDialingTimer();
-  this.close();
+  if(this.signalingState !== 'closed'){
+    this.close();
+  }
 }
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback){
@@ -2067,7 +2069,7 @@ function WebRTCClient(service, connection) {
  }
 
   WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider)
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
 
     // set callbacks
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
@@ -2346,7 +2348,7 @@ WebRTCSession.State = {
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signalingProvider) {
+function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signalingProvider, currentUserID) {
   this.ID = (sessionID == null ? generateUUID() : sessionID);
   this.state = WebRTCSession.State.NEW;
   //
@@ -2359,6 +2361,8 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   this.localStream = null;
 
   this.signalingProvider = signalingProvider;
+
+  this.currentUserID = currentUserID;
 
   // we use this timeout to fix next issue:
   // "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
@@ -2515,6 +2519,20 @@ WebRTCSession.prototype.accept = function(extension) {
     });
   }else{
     Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
+  }
+
+
+  // The group call logic starts here
+  if(this.opponentsIDs.length > 1){
+    // here we have to decide to which users the user should call.
+    // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
+    //
+    this.opponentsIDs.forEach(function(userID, i, arr) {
+      if(self.currentUserID > userID){
+        // call to the user
+        // ...
+      }
+    });
   }
 }
 
