@@ -2122,14 +2122,14 @@ function WebRTCClient(service, connection) {
 
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
+
    var session = this.sessions[sessionID];
    if(!session){
      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
      var extensionClone = JSON.parse(JSON.stringify(extension));
      this._cleanupExtension(extensionClone);
-
-     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extensionClone));
 
      if (typeof this.onCallListener === 'function'){
        this.onCallListener(session, extensionClone);
@@ -2139,41 +2139,57 @@ function WebRTCClient(service, connection) {
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
+   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
+
    var session = this.sessions[sessionID];
-   session.processOnAccept(userID, extension);
+   if(session){
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-   this._cleanupExtension(extension);
+     if (typeof this.onAcceptCallListener === 'function'){
+       this.onAcceptCallListener(session, extensionClone);
+     }
 
-   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   if (typeof this.onAcceptCallListener === 'function'){
-     this.onAcceptCallListener(session, extension);
+     session.processOnAccept(userID, extension);
+   }else{
+     Helpers.traceError("Ignore 'onAccept', there is no information about session " + sessionID + " by some reason.");
    }
  };
 
  WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
+   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
+
    var session = this.sessions[sessionID];
-   session.processOnReject(userID, extension);
 
-   this._cleanupExtension(extension);
+   if(session){
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+     if (typeof this.onRejectCallListener === 'function'){
+       this.onRejectCallListener(session, extensionClone);
+     }
 
-   if (typeof this.onRejectCallListener === 'function'){
-     this.onRejectCallListener(session, extension);
+     session.processOnReject(userID, extension);
+   }else{
+     Helpers.traceError("Ignore 'onReject', there is no information about session " + sessionID + " by some reason.");
    }
  };
 
  WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
+   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
+
    var session = this.sessions[sessionID];
-   session.processOnStop(userID, extension);
+   if(session){
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-   this._cleanupExtension(extension);
+     if (typeof this.onStopCallListener === 'function'){
+       this.onStopCallListener(session, extensionClone);
+     }
 
-   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
-   if (typeof this.onStopCallListener === 'function'){
-     this.onStopCallListener(session, extension);
+     session.processOnStop(userID, extension);
+   }else{
+     Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.")
    }
 }
 
@@ -2192,11 +2208,12 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
   var session = WebRTCClient.sessions[sessionId];
-  session.processOnUpdate(userID, extension);
 
   if (typeof this.onUpdateCallListener === 'function'){
     this.onUpdateCallListener(session, extension);
   }
+
+  session.processOnUpdate(userID, extension);
 }
 
 WebRTCClient.prototype._cleanupExtension = function(extension){
@@ -2553,6 +2570,8 @@ WebRTCSession.prototype.stop = function(extension) {
   }
 
   this._close();
+
+  this.state = WebRTCSession.State.CLOSED;
 }
 
 /**
@@ -2673,8 +2692,6 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
-  this.state = WebRTCSession.State.REJECTED;
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -2686,8 +2703,6 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
-  this.state = WebRTCSession.State.HUNGUP;
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -2696,6 +2711,8 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   }
 
   this._close();
+
+  this.state = WebRTCSession.State.CLOSED;
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
@@ -2844,6 +2861,8 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
     if(typeof this.onSessionCloseListener === 'function'){
       this.onSessionCloseListener(this);
     }
+
+    this.state = WebRTCSession.State.CLOSED;
   }
 }
 
