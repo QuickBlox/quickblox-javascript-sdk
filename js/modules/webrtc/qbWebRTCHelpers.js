@@ -61,6 +61,11 @@ WebRTCHelpers.SessionConnectionState = {
   CLOSED: 5
 };
 
+WebRTCHelpers.CallType = {
+  VIDEO: 1,
+  AUDIO: 2
+};
+
 // Download Blob to local file system
 Blob.prototype.download = function() {
   download(this, this.name, this.type);

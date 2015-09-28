@@ -92,7 +92,15 @@ $(document).ready(function() {
 
     mediaParams = {
       audio: true,
-      video: currentSession.callType === "1" ? true : false,
+      video: currentSession.callType === 1 ? true : false,
+      // video: {
+      //       mandatory: {
+      //         maxWidth: 1280,
+      //         maxHeight: 720,
+      //         minWidth: 1280,
+      //         minHeight: 720
+      //       }
+      // },
       elemId: 'localVideo',
       options: {
         muted: true,
@@ -181,10 +189,11 @@ $(document).ready(function() {
 
 QB.webrtc.onCallListener = function(session, extension) {
   console.log("onCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
+  var callType = extension.callType;
 
   currentSession = session;
 
-  $('.incoming-callType').text(currentSession.callType === 'video' ? 'Video' : 'Audio');
+  $('.incoming-callType').text(currentSession.callType === QB.webrtc.CallType.VIDEO ? 'Video' : 'Audio');
 
   $('.caller').text(currentSession.callerID);
 
@@ -270,7 +279,7 @@ function callWithParams(mediaParams, isOnlyAudio){
 
   // create a session
   //
-  currentSession = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? 2 : 1);
+  currentSession = QB.webrtc.createNewSession([callee.id], isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
   console.log("Session: " + currentSession);
 
   // get local stream

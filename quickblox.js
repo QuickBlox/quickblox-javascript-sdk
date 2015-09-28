@@ -2046,15 +2046,8 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
+  this.CallType = Helpers.CallType;
 }
-
- /**
-  * Call type
-  */
- WebRTCClient.CallType = {
-   VIDEO: 'video',
-   AUDIO: 'accept'
- };
 
  /**
   * A map with all sessions the user had/have.
@@ -2280,6 +2273,11 @@ WebRTCHelpers.SessionConnectionState = {
   CLOSED: 5
 };
 
+WebRTCHelpers.CallType = {
+  VIDEO: 1,
+  AUDIO: 2
+};
+
 // Download Blob to local file system
 Blob.prototype.download = function() {
   download(this, this.name, this.type);
@@ -2325,7 +2323,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   //
   this.initiatorID = initiatorID;
   this.opponentsIDs = opponentsIDs;
-  this.callType = callType;
+  this.callType = parseInt(callType);
   //
   this.peerConnections = {};
 

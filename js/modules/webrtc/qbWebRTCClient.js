@@ -36,15 +36,8 @@ function WebRTCClient(service, connection) {
   this.signalingProvider = new WebRTCSignalingProvider(service, connection);
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
+  this.CallType = Helpers.CallType;
 }
-
- /**
-  * Call type
-  */
- WebRTCClient.CallType = {
-   VIDEO: 'video',
-   AUDIO: 'accept'
- };
 
  /**
   * A map with all sessions the user had/have.

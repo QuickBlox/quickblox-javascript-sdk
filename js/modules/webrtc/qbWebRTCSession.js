@@ -35,7 +35,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   //
   this.initiatorID = initiatorID;
   this.opponentsIDs = opponentsIDs;
-  this.callType = callType;
+  this.callType = parseInt(callType);
   //
   this.peerConnections = {};
 
