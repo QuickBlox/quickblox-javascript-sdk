@@ -9,6 +9,7 @@ require('../../../lib/strophe/strophe.min');
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 var Utils = require('../../qbUtils');
+var config = require('../../qbConfig');
 
 function WebRTCSignalingProvider(service, connection) {
   this.service = service;
@@ -39,7 +40,7 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
   // extension.sdp
 
   params = {
-    to: Helpers.getUserJid(userId, this.service.getSession().application_id),
+    to: Helpers.getUserJid(userId, config.creds.appId),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };

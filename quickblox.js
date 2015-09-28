@@ -2724,13 +2724,12 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
+    peerConnection.release();
   }else{
     Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
   }
 
-  this._close();
-
-  this.state = WebRTCSession.State.CLOSED;
+  this._closeSessionIfAllConnectionsClosed();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
@@ -3138,6 +3137,7 @@ require('../../../lib/strophe/strophe.min');
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 var Utils = require('../../qbUtils');
+var config = require('../../qbConfig');
 
 function WebRTCSignalingProvider(service, connection) {
   this.service = service;
@@ -3168,7 +3168,7 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
   // extension.sdp
 
   params = {
-    to: Helpers.getUserJid(userId, this.service.getSession().application_id),
+    to: Helpers.getUserJid(userId, config.creds.appId),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };
@@ -3227,7 +3227,7 @@ WebRTCSignalingProvider.prototype._JStoXML = function(title, obj, msg) {
 
 module.exports = WebRTCSignalingProvider;
 
-},{"../../../lib/strophe/strophe.min":21,"../../qbUtils":19,"./qbWebRTCHelpers":10,"./qbWebRTCSignalingConstants":12}],15:[function(require,module,exports){
+},{"../../../lib/strophe/strophe.min":21,"../../qbConfig":15,"../../qbUtils":19,"./qbWebRTCHelpers":10,"./qbWebRTCSignalingConstants":12}],15:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *

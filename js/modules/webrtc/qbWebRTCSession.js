@@ -417,13 +417,12 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
+    peerConnection.release();
   }else{
     Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
   }
 
-  this._close();
-
-  this.state = WebRTCSession.State.CLOSED;
+  this._closeSessionIfAllConnectionsClosed();
 }
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {

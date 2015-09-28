@@ -129,6 +129,11 @@ $(document).ready(function() {
         updateInfoMessage(deviceNotFoundError);
 
       } else {
+        // create video elements for opponents
+        //
+        var videoEl = "<video id='remoteVideo_" + currentSession.initiatorID + "'></video>";
+        $(videoEl).appendTo('.remoteControls');
+
         setupVolumeMeter(stream);
 
         $('.btn_mediacall, #hangup').removeAttr('disabled');
@@ -245,7 +250,8 @@ QB.webrtc.onStopCallListener = function(session, extension) {
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
   console.log("onRemoteStreamListener: " + stream);
 
-  currentSession.attachMediaStream('remoteVideo', stream);
+  var videoElementID = 'remoteVideo_' + userID;
+  currentSession.attachMediaStream(videoElementID, stream);
 };
 
 QB.webrtc.onUserNotAnswerListener = function(session, userId) {
@@ -315,12 +321,11 @@ function callWithParams(mediaParams, isOnlyAudio){
       $('#callingSignal')[0].play();
 
       // create video elements for opponents
+      //
       Object.keys(callees).forEach(function(userID, i, arr) {
-
+        var videoEl = "<video id='remoteVideo_" + userID + "'></video>";
+        $(videoEl).appendTo('.remoteControls');
       });
-      $('#remoteControls')
-
-
 
       // start call
       //
