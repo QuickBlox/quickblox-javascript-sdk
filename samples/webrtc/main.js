@@ -432,9 +432,13 @@ function drawLoop(time) {
 }
 
 function clearVolumeMeter() {
-  window.cancelAnimationFrame(animationRequestID);
+  if(animationRequestID != null){
+    window.cancelAnimationFrame(animationRequestID);
+  }
   animationRequestID = null;
-  canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+  if(canvasContext != null){
+   canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+  }
   canvasContext = null;
   mediaStreamSource = null;
   meter = null;
