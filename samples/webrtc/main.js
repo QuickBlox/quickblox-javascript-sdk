@@ -141,7 +141,7 @@ $(document).ready(function() {
         });
         //
         opponents.forEach(function(userID, i, arr) {
-          var videoEl = "<video id='remoteVideo_" + userID + "'></video>";
+          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
           $(videoEl).appendTo('.remoteControls');
         });
 
@@ -292,6 +292,8 @@ QB.webrtc.onSessionCloseListener = function(session){
 
   currentSession = null;
   localStream = null;
+
+  $(".remoteVideoClass").remove();
 }
 
 QB.webrtc.onUpdateCallListener = function(session, extension) {
@@ -327,7 +329,7 @@ function callWithParams(mediaParams, isOnlyAudio){
       // create video elements for opponents
       //
       Object.keys(callees).forEach(function(userID, i, arr) {
-        var videoEl = "<video id='remoteVideo_" + userID + "'></video>";
+        var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
         $(videoEl).appendTo('.remoteControls');
       });
 
