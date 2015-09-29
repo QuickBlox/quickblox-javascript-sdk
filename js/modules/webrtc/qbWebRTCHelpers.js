@@ -30,7 +30,7 @@ WebRTCHelpers = {
 
   traceError: function(text) {
     if (config.debug) {
-      console.error();('[QBWebRTC]:', text);
+      console.error('[QBWebRTC]:', text);
     }
   },
 

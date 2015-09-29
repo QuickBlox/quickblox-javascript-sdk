@@ -84,7 +84,6 @@ RTCPeerConnection.prototype.addLocalStream = function(localStream){
 }
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
-  console.log("getAndSetLocalSessionDescription");
   var self = this;
 
   this.state = RTCPeerConnection.State.CONNECTING;
