@@ -131,8 +131,18 @@ $(document).ready(function() {
       } else {
         // create video elements for opponents
         //
-        var videoEl = "<video id='remoteVideo_" + currentSession.initiatorID + "'></video>";
-        $(videoEl).appendTo('.remoteControls');
+        var opponents = [currentSession.initiatorID];
+        currentSession.opponentsIDs.forEach(function(userID, i, arr) {
+          if(userID != currentSession.currentUserID){
+            opponents.push(userID);
+          }
+        });
+        //
+        opponents.forEach(function(userID, i, arr) {
+          var videoEl = "<video id='remoteVideo_" + userID + "'></video>";
+          $(videoEl).appendTo('.remoteControls');
+        });
+
 
         setupVolumeMeter(stream);
 

@@ -45,7 +45,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   this.ID = (sessionID == null ? generateUUID() : sessionID);
   this.state = WebRTCSession.State.NEW;
   //
-  this.initiatorID = initiatorID;
+  this.initiatorID = parseInt(initiatorID);
   this.opponentsIDs = opponentsIDs;
   this.callType = parseInt(callType);
   //
@@ -200,7 +200,6 @@ WebRTCSession.prototype.accept = function(extension) {
 }
 
 WebRTCSession.prototype._acceptInternal = function(userID, extension) {
-  console.log("_acceptInternal");
   var self = this;
 
   // create a peer connection
@@ -227,7 +226,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
             extension["opponentsIDs"] = self.opponentsIDs;
             extension["sdp"] = peerConnection.localDescription.sdp;
 
-            self.signalingProvider.sendMessage(self.userID, extension, SignalingConstants.SignalingType.ACCEPT);
+            self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
           }
         });
       }
@@ -376,48 +375,27 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
-  console.log("processOnCall");
-
-  if(this.state === WebRTCSession.State.ACTIVE){
-
-  }
-
-  // // This is not a main call request. This is to conenct all users in a group call.
-  // //
-  // if(this.opponentsIDs.indexOf(userID) > -1){
-  //   // create a peer connection
-  //   var peerConnection = this._createPeer(userID, 'answer');
-  //   this.peerConnections[userID] = peerConnection;
-  //   peerConnection.updateSDP(extension.sdp);
-  //
-  //   this._acceptInternal(userID, {});
-  //   return;
-  // }
-
-  if(this.answerTimer == null){
-    this._startAnswerTimer();
-
-      // create a peer connection
-      //
-      var peerConnection = this._createPeer(userID, 'answer');
-      this.peerConnections[userID] = peerConnection;
-      peerConnection.updateSDP(extension.sdp);
+  var peerConnection = this.peerConnections[userID];
+  if(peerConnection){
+    peerConnection.updateSDP(extension.sdp);
   }else{
-    // update sdp in peer connection here
-    //
-    var peerConnection = this.peerConnections[userID];
-    if(peerConnection){
-      peerConnection.updateSDP(extension.sdp);
+    // create a peer connection
+    peerConnection = this._createPeer(userID, 'answer');
+    this.peerConnections[userID] = peerConnection;
+    peerConnection.updateSDP(extension.sdp);
+
+    // The group call logic starts here
+    if(this.opponentsIDs.length > 1 && userID !== this.initiatorID){
+      this._acceptInternal(userID, {});
+    }else{
+      this._startAnswerTimer();
     }
   }
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
-  console.log("processOnAccept");
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
-    console.log("processOnAccept2");
     peerConnection._clearDialingTimer();
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){

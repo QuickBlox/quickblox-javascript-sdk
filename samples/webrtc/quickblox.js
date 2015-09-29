@@ -1803,6 +1803,16 @@ var offerOptions = {
   offerToReceiveVideo: 1
 };
 
+RTCPeerConnection.State = {
+  NEW: 1,
+  CONNECTING: 2,
+  CHECKING: 3,
+  CONNECTED: 4,
+  DISCONNECTED: 5,
+  FAILED: 6,
+  CLOSED: 7
+};
+
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
 
@@ -1811,6 +1821,8 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.userID = userID;
   this.type = type;
   this.sdp = null;
+
+  this.state = RTCPeerConnection.State.NEW;
 
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
@@ -1856,6 +1868,8 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
   console.log("getAndSetLocalSessionDescription");
   var self = this;
 
+  this.state = RTCPeerConnection.State.CONNECTING;
+
   if (self.type === 'offer') {
     // Additional parameters for SDP Constraints
     // http://www.w3.org/TR/webrtc/#h-offer-answer-options
@@ -1878,6 +1892,34 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
 RTCPeerConnection.prototype.updateSDP = function(newSDP){
   this.sdp = newSDP;
 }
+
+RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
+  var candidate;
+  for (var i = 0, len = iceCandidates.length; i < len; i++) {
+    candidate = {
+      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
+      sdpMid: iceCandidates[i].sdpMid,
+      candidate: iceCandidates[i].candidate
+    };
+    this.addIceCandidate(new RTCIceCandidate(candidate),
+      function() {
+
+      }, function(error){
+        Helpers.traceError("Error on 'addIceCandidate': " + error);
+      });
+  }
+};
+
+RTCPeerConnection.prototype.toString = function sessionToString() {
+  var ret = 'sessionID: ' + this.sessionID + ', userID:  ' + this.userID + ', type: ' +
+    this.type + ', state: ' + this.state;
+  return ret;
+}
+
+//
+////////////////////////////////// Callbacks ///////////////////////////////////
+//
+
 
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
@@ -1916,23 +1958,6 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
   }
 };
 
-RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
-  var candidate;
-  for (var i = 0, len = iceCandidates.length; i < len; i++) {
-    candidate = {
-      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
-      sdpMid: iceCandidates[i].sdpMid,
-      candidate: iceCandidates[i].candidate
-    };
-    this.addIceCandidate(new RTCIceCandidate(candidate),
-      function() {
-
-      }, function(error){
-        Helpers.traceError("Error on 'addIceCandidate': " + error);
-      });
-  }
-};
-
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
 
@@ -1949,14 +1974,19 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
   	if (newIceConnectionState === 'checking'){
+        this.state = RTCPeerConnection.State.CHECKING;
         connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
+        this.state = RTCPeerConnection.State.CONNECTED;
         connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
+        this.state = RTCPeerConnection.State.FAILED;
         connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
+        this.state = RTCPeerConnection.State.DISCONNECTED;
         connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
+        this.state = RTCPeerConnection.State.CLOSED;
         connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
@@ -2007,6 +2037,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension){
   _dialingCallback(extension);
 }
 
+
 module.exports = RTCPeerConnection;
 
 },{"../../qbConfig":15,"./qbWebRTCHelpers":10}],9:[function(require,module,exports){
@@ -2030,8 +2061,6 @@ var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
-
-// this.session = WebRTCSession;
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -2334,11 +2363,11 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
  * State of a session
  */
 WebRTCSession.State = {
-  NEW: 'new',
-  ACTIVE: 'active',
-  HUNGUP: 'hungup',
-  REJECTED: 'rejected',
-  CLOSED: 'closed'
+  NEW: 1,
+  ACTIVE: 2,
+  HUNGUP: 3,
+  REJECTED: 4,
+  CLOSED: 5
 };
 
 
@@ -2352,7 +2381,7 @@ function WebRTCSession(sessionID, initiatorID, opponentsIDs, callType, signaling
   this.ID = (sessionID == null ? generateUUID() : sessionID);
   this.state = WebRTCSession.State.NEW;
   //
-  this.initiatorID = initiatorID;
+  this.initiatorID = parseInt(initiatorID);
   this.opponentsIDs = opponentsIDs;
   this.callType = parseInt(callType);
   //
@@ -2507,7 +2536,6 @@ WebRTCSession.prototype.accept = function(extension) {
 }
 
 WebRTCSession.prototype._acceptInternal = function(userID, extension) {
-  console.log("_acceptInternal");
   var self = this;
 
   // create a peer connection
@@ -2534,7 +2562,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
             extension["opponentsIDs"] = self.opponentsIDs;
             extension["sdp"] = peerConnection.localDescription.sdp;
 
-            self.signalingProvider.sendMessage(self.userID, extension, SignalingConstants.SignalingType.ACCEPT);
+            self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
           }
         });
       }
@@ -2683,44 +2711,27 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
-  console.log("processOnCall");
-
-  // // This is not a main call request. This is to conenct all users in a group call.
-  // //
-  // if(this.opponentsIDs.indexOf(userID) > -1){
-  //   // create a peer connection
-  //   var peerConnection = this._createPeer(userID, 'answer');
-  //   this.peerConnections[userID] = peerConnection;
-  //   peerConnection.updateSDP(extension.sdp);
-  //
-  //   this._acceptInternal(userID, {});
-  //   return;
-  // }
-
-  if(this.answerTimer == null){
-    this._startAnswerTimer();
-
-      // create a peer connection
-      //
-      var peerConnection = this._createPeer(userID, 'answer');
-      this.peerConnections[userID] = peerConnection;
-      peerConnection.updateSDP(extension.sdp);
+  var peerConnection = this.peerConnections[userID];
+  if(peerConnection){
+    peerConnection.updateSDP(extension.sdp);
   }else{
-    // update sdp in peer connection here
-    //
-    var peerConnection = this.peerConnections[userID];
-    if(peerConnection){
-      peerConnection.updateSDP(extension.sdp);
+    // create a peer connection
+    peerConnection = this._createPeer(userID, 'answer');
+    this.peerConnections[userID] = peerConnection;
+    peerConnection.updateSDP(extension.sdp);
+
+    // The group call logic starts here
+    if(this.opponentsIDs.length > 1 && userID !== this.initiatorID){
+      this._acceptInternal(userID, {});
+    }else{
+      this._startAnswerTimer();
     }
   }
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
-  console.log("processOnAccept");
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
-    console.log("processOnAccept2");
     peerConnection._clearDialingTimer();
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){

@@ -19,8 +19,6 @@ var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 
-// this.session = WebRTCSession;
-
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
 		return WebRTCClient.__instance;
