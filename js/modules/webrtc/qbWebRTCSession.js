@@ -266,7 +266,13 @@ WebRTCSession.prototype.reject = function(extension) {
   extension["callerID"] = this.initiatorID;
   extension["opponentsIDs"] = this.opponentsIDs;
 
-  this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.REJECT);
+  var peersLen = Object.keys(this.peerConnections).length;
+  if(peersLen > 0){
+    for (var key in this.peerConnections) {
+      var peerConnection = this.peerConnections[key];
+      this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.REJECT);
+    }
+  }
 
   this._close();
 }
@@ -295,13 +301,9 @@ WebRTCSession.prototype.stop = function(extension) {
       var peerConnection = this.peerConnections[key];
       this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
     }
-  }else{
-    this.signalingProvider.sendMessage(this.initiatorID, extension, SignalingConstants.SignalingType.STOP);
   }
 
   this._close();
-
-  this.state = WebRTCSession.State.CLOSED;
 }
 
 /**
@@ -390,6 +392,14 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection.updateSDP(extension.sdp);
+
+    // The group call logic starts here
+    if(this.opponentsIDs.length > 1 && userID !== this.initiatorID){
+      if(this.state === WebRTCSession.State.ACTIVE){
+        this._acceptInternal(userID, {});
+      }
+    }
+
   }else{
     // create a peer connection
     peerConnection = this._createPeer(userID, 'answer');
@@ -398,7 +408,9 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
 
     // The group call logic starts here
     if(this.opponentsIDs.length > 1 && userID !== this.initiatorID){
-      this._acceptInternal(userID, {});
+      if(this.state === WebRTCSession.State.ACTIVE){
+        this._acceptInternal(userID, {});
+      }
     }else{
       this._startAnswerTimer();
     }
@@ -555,6 +567,8 @@ WebRTCSession.prototype._close = function() {
   }
 
   this._closeLocalMediaStream();
+
+  this.state = WebRTCSession.State.CLOSED;
 
   if(typeof this.onSessionCloseListener === 'function'){
     this.onSessionCloseListener(this);
