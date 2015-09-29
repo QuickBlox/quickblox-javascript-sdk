@@ -21,6 +21,16 @@ var offerOptions = {
   offerToReceiveVideo: 1
 };
 
+RTCPeerConnection.State = {
+  NEW: 1,
+  CONNECTING: 2,
+  CHECKING: 3,
+  CONNECTED: 4,
+  DISCONNECTED: 5,
+  FAILED: 6,
+  CLOSED: 7
+};
+
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
 
@@ -29,6 +39,8 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.userID = userID;
   this.type = type;
   this.sdp = null;
+
+  this.state = RTCPeerConnection.State.NEW;
 
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onAddRemoteStreamCallback;
@@ -74,6 +86,8 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
   console.log("getAndSetLocalSessionDescription");
   var self = this;
 
+  this.state = RTCPeerConnection.State.CONNECTING;
+
   if (self.type === 'offer') {
     // Additional parameters for SDP Constraints
     // http://www.w3.org/TR/webrtc/#h-offer-answer-options
@@ -96,6 +110,34 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
 RTCPeerConnection.prototype.updateSDP = function(newSDP){
   this.sdp = newSDP;
 }
+
+RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
+  var candidate;
+  for (var i = 0, len = iceCandidates.length; i < len; i++) {
+    candidate = {
+      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
+      sdpMid: iceCandidates[i].sdpMid,
+      candidate: iceCandidates[i].candidate
+    };
+    this.addIceCandidate(new RTCIceCandidate(candidate),
+      function() {
+
+      }, function(error){
+        Helpers.traceError("Error on 'addIceCandidate': " + error);
+      });
+  }
+};
+
+RTCPeerConnection.prototype.toString = function sessionToString() {
+  var ret = 'sessionID: ' + this.sessionID + ', userID:  ' + this.userID + ', type: ' +
+    this.type + ', state: ' + this.state;
+  return ret;
+}
+
+//
+////////////////////////////////// Callbacks ///////////////////////////////////
+//
+
 
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
   // send candidates
@@ -134,23 +176,6 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
   }
 };
 
-RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
-  var candidate;
-  for (var i = 0, len = iceCandidates.length; i < len; i++) {
-    candidate = {
-      sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
-      sdpMid: iceCandidates[i].sdpMid,
-      candidate: iceCandidates[i].candidate
-    };
-    this.addIceCandidate(new RTCIceCandidate(candidate),
-      function() {
-
-      }, function(error){
-        Helpers.traceError("Error on 'addIceCandidate': " + error);
-      });
-  }
-};
-
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
 
@@ -167,14 +192,19 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
   	if (newIceConnectionState === 'checking'){
+        this.state = RTCPeerConnection.State.CHECKING;
         connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
+        this.state = RTCPeerConnection.State.CONNECTED;
         connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'failed'){
+        this.state = RTCPeerConnection.State.FAILED;
         connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
+        this.state = RTCPeerConnection.State.DISCONNECTED;
         connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
+        this.state = RTCPeerConnection.State.CLOSED;
         connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
@@ -224,5 +254,6 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension){
   this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension);
   _dialingCallback(extension);
 }
+
 
 module.exports = RTCPeerConnection;

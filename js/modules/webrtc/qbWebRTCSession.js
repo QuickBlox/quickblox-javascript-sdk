@@ -27,11 +27,11 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
  * State of a session
  */
 WebRTCSession.State = {
-  NEW: 'new',
-  ACTIVE: 'active',
-  HUNGUP: 'hungup',
-  REJECTED: 'rejected',
-  CLOSED: 'closed'
+  NEW: 1,
+  ACTIVE: 2,
+  HUNGUP: 3,
+  REJECTED: 4,
+  CLOSED: 5
 };
 
 
@@ -377,6 +377,10 @@ WebRTCSession.filter = function(id, filters) {
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
   console.log("processOnCall");
+
+  if(this.state === WebRTCSession.State.ACTIVE){
+
+  }
 
   // // This is not a main call request. This is to conenct all users in a group call.
   // //
