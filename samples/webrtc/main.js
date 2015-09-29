@@ -17,6 +17,8 @@ $(document).ready(function() {
 
   buildUsers('.users-wrap.caller');
 
+  $('#audiocall, #videocall').removeAttr('disabled');
+
   // Choose user
   //
   $(document).on('click', '.choose-user button', function() {

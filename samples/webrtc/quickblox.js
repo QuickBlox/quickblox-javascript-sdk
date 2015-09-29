@@ -1803,6 +1803,7 @@ var offerOptions = {
   offerToReceiveVideo: 1
 };
 
+// unused for now
 RTCPeerConnection.State = {
   NEW: 1,
   CONNECTING: 2,
@@ -2878,10 +2879,7 @@ WebRTCSession.prototype._close = function() {
     peer.release();
   }
 
-  if (this.localStream) {
-    this.localStream.stop();
-    this.localStream = null;
-  }
+  this._closeLocalMediaStream();
 
   if(typeof this.onSessionCloseListener === 'function'){
     this.onSessionCloseListener(this);
@@ -2903,17 +2901,26 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
   Helpers.trace("All peer connections closed: " + isAllConnectionsClosed);
 
   if(isAllConnectionsClosed){
-    // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
-    if (this.localStream) {
-      this.localStream.stop();
-      this.localStream = null;
-    }
+    this._closeLocalMediaStream();
 
     if(typeof this.onSessionCloseListener === 'function'){
       this.onSessionCloseListener(this);
     }
 
     this.state = WebRTCSession.State.CLOSED;
+  }
+}
+
+WebRTCSession.prototype._closeLocalMediaStream = function(){
+  // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
+  if (this.localStream) {
+    this.localStream.getAudioTracks().forEach(function (audioTrack) {
+      audioTrack.stop();
+    });
+    this.localStream.getVideoTracks().forEach(function (videoTrack) {
+      videoTrack.stop();
+    });
+    this.localStream = null;
   }
 }
 
