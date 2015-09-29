@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-28 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-29 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2454,23 +2454,24 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   this.opponentsIDs.forEach(function(userID, i, arr) {
-    var peer = self._createPeer(userID, 'offer');
+    self._callInternal(userID, extension);
+  });
+}
 
-    peer.addLocalStream(self.localStream);
+WebRTCSession.prototype._callInternal = function(userID, extension) {
+  var peer = this._createPeer(userID, 'offer');
+  peer.addLocalStream(this.localStream);
+  this.peerConnections[userID] = peer;
 
-    self.peerConnections[userID] = peer;
-
-    peer.getAndSetLocalSessionDescription(function(err) {
-      if (err) {
-        Helpers.trace("getAndSetLocalSessionDescription error: " + err);
-      } else {
-        Helpers.trace("getAndSetLocalSessionDescription success");
-        // let's send call requests to user
-        //
-        peer._startDialingTimer(extension);
-      }
-    });
-
+  peer.getAndSetLocalSessionDescription(function(err) {
+    if (err) {
+      Helpers.trace("getAndSetLocalSessionDescription error: " + err);
+    } else {
+      Helpers.trace("getAndSetLocalSessionDescription success");
+      // let's send call requests to user
+      //
+      peer._startDialingTimer(extension);
+    }
   });
 }
 
@@ -2489,9 +2490,29 @@ WebRTCSession.prototype.accept = function(extension) {
 
   this._clearAnswerTimer();
 
+  this._acceptInternal(this.initiatorID, extension);
+
+  // The group call logic starts here
+  if(this.opponentsIDs.length > 1){
+    // here we have to decide to which users the user should call.
+    // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
+    //
+    this.opponentsIDs.forEach(function(userID, i, arr) {
+      if(self.currentUserID > userID){
+        // call to the user
+        self._callInternal(userID, {});
+      }
+    });
+  }
+}
+
+WebRTCSession.prototype._acceptInternal = function(userID, extension) {
+  console.log("_acceptInternal");
+  var self = this;
+
   // create a peer connection
   //
-  var peerConnection = self.peerConnections[this.initiatorID];
+  var peerConnection = self.peerConnections[userID];
   if(peerConnection){
 
     peerConnection.addLocalStream(this.localStream);
@@ -2506,33 +2527,20 @@ WebRTCSession.prototype.accept = function(extension) {
           if (err) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
           } else {
+
             extension["sessionID"] = self.ID;
             extension["callType"] = self.callType;
             extension["callerID"] = self.initiatorID;
             extension["opponentsIDs"] = self.opponentsIDs;
             extension["sdp"] = peerConnection.localDescription.sdp;
 
-            self.signalingProvider.sendMessage(self.initiatorID, extension, SignalingConstants.SignalingType.ACCEPT);
+            self.signalingProvider.sendMessage(self.userID, extension, SignalingConstants.SignalingType.ACCEPT);
           }
         });
       }
     });
   }else{
     Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
-  }
-
-
-  // The group call logic starts here
-  if(this.opponentsIDs.length > 1){
-    // here we have to decide to which users the user should call.
-    // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
-    //
-    this.opponentsIDs.forEach(function(userID, i, arr) {
-      if(self.currentUserID > userID){
-        // call to the user
-        // ...
-      }
-    });
   }
 }
 
@@ -2675,6 +2683,20 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(userID, extension) {
+  console.log("processOnCall");
+
+  // // This is not a main call request. This is to conenct all users in a group call.
+  // //
+  // if(this.opponentsIDs.indexOf(userID) > -1){
+  //   // create a peer connection
+  //   var peerConnection = this._createPeer(userID, 'answer');
+  //   this.peerConnections[userID] = peerConnection;
+  //   peerConnection.updateSDP(extension.sdp);
+  //
+  //   this._acceptInternal(userID, {});
+  //   return;
+  // }
+
   if(this.answerTimer == null){
     this._startAnswerTimer();
 
@@ -2694,8 +2716,11 @@ WebRTCSession.prototype.processOnCall = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
+  console.log("processOnAccept");
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
+    console.log("processOnAccept2");
     peerConnection._clearDialingTimer();
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){
@@ -2752,8 +2777,6 @@ WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
 
 WebRTCSession.prototype.processCall = function(peerConnection, extension) {
-  console.log("processCall");
-
   var extension = extension || {};
 
   extension["sessionID"] = this.ID;
@@ -3081,7 +3104,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         items = extraParams.childNodes[i].childNodes;
         for (var j = 0, len2 = items.length; j < len2; j++) {
           opponent = items[j].textContent;
-          opponents.push(opponent);
+          opponents.push(parseInt(opponent));
         }
 
       } else {

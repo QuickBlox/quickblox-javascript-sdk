@@ -109,7 +109,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         items = extraParams.childNodes[i].childNodes;
         for (var j = 0, len2 = items.length; j < len2; j++) {
           opponent = items[j].textContent;
-          opponents.push(opponent);
+          opponents.push(parseInt(opponent));
         }
 
       } else {

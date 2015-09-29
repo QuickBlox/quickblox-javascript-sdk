@@ -248,8 +248,6 @@ QB.webrtc.onStopCallListener = function(session, extension) {
 };
 
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
-  console.log("onRemoteStreamListener: " + stream);
-
   var videoElementID = 'remoteVideo_' + userID;
   currentSession.attachMediaStream(videoElementID, stream);
 };
