@@ -255,8 +255,6 @@ QB.webrtc.onRejectCallListener = function(session, extension) {
 
 QB.webrtc.onStopCallListener = function(session, extension) {
   console.log("onStopCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
-
-  // updateUIOnHungUp();
 };
 
 QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -272,22 +270,18 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   console.log("onSessionConnectionStateChangedListener: " + connectionState + ", userID: " + userID);
 
   // possible values of 'connectionState':
-  // RTCPeerConnection.SessionConnectionState
+  //
   // QB.webrtc.SessionConnectionState.UNDEFINED
   // QB.webrtc.SessionConnectionState.CONNECTING
   // QB.webrtc.SessionConnectionState.CONNECTED
   // QB.webrtc.SessionConnectionState.FAILED
   // QB.webrtc.SessionConnectionState.DISCONNECTED
   // QB.webrtc.SessionConnectionState.CLOSED
-  //
-  // if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
-  //   if (typeof callee != 'undefined'){
-  //     QB.webrtc.stop(callee.id);
-  //   }
-  //   updateUIOnHungUp();
-  // }else if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-  //   updateUIOnHungUp();
-  // }
+
+  if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+    var videoElementID = 'remoteVideo_' + userID;
+    session.detachMediaStream(videoElementID);
+  }
 };
 
 QB.webrtc.onSessionCloseListener = function(session){

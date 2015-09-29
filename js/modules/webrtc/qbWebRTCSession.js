@@ -133,6 +133,18 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 };
 
 /**
+ * Detach media stream from audio/video element
+ * @param {string} The Id of an ellement to detach a stream
+ */
+WebRTCSession.prototype.detachMediaStream = function(id){
+  var elem = document.getElementById(id);
+  if (elem) {
+    elem.pause();
+    elem.src = "";
+  }
+}
+
+/**
  * Initiate a call
  * @param {array} A map with custom parameters
  */
