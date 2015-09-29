@@ -281,6 +281,8 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
     var videoElementID = 'remoteVideo_' + userID;
     session.detachMediaStream(videoElementID);
+    console.log("#"+videoElementID);
+    $("#"+videoElementID).css({"background":"none"});
   }
 };
 
