@@ -5,11 +5,12 @@ var QBApp = {
 };
 
 var QBUser = {
-	login: "content_js_login",   
-	password: "content_js_password" 
+ login: "supersample-ios",   
+ password: "supersample-ios" 
 };
 
-var QBConfig = {
+var config = {
+  debug: false
+};
 
-}
-
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
