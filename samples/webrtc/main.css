@@ -124,6 +124,9 @@ html, body {
     border: 1px solid #ccc;
     outline: 0;
   }
+  .remoteControls {
+    overflow-y: scroll;
+  }
   .remoteControls video {
     width: 200px;
     height: 150px;
