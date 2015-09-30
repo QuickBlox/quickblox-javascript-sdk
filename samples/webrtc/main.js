@@ -143,6 +143,11 @@ $(document).ready(function() {
         opponents.forEach(function(userID, i, arr) {
           var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
           $(videoEl).appendTo('.remoteControls');
+
+          var peerState = currentSession.connectionStateForUser(userID);
+          if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
+            clearRemoteVideoView(userID);
+          }
         });
 
 
@@ -279,10 +284,7 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   // QB.webrtc.SessionConnectionState.CLOSED
 
   if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-    var videoElementID = 'remoteVideo_' + userID;
-    session.detachMediaStream(videoElementID);
-    console.log("#"+videoElementID);
-    $("#"+videoElementID).css({"background":"none"});
+    clearRemoteVideoView(userID);
   }
 };
 
@@ -341,6 +343,14 @@ function callWithParams(mediaParams, isOnlyAudio){
       currentSession.call(extension);
     }
   });
+}
+
+function clearRemoteVideoView(userID){
+  if(currentSession !== null){
+    var videoElementID = 'remoteVideo_' + userID;
+    currentSession.detachMediaStream(videoElementID);
+    $("#"+videoElementID).css({"background":"none"});
+  }
 }
 
 function updateUIOnHungUp(){

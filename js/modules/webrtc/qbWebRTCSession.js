@@ -133,6 +133,18 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 };
 
 /**
+ * Gets the state of connection
+ * @param {number} The User Id
+ */
+WebRTCSession.prototype.connectionStateForUser = function(userID){
+  var peerConnection = this.peerConnections[userID];
+  if(peerConnection){
+    return peerConnection.state;
+  }
+  return null;
+}
+
+/**
  * Detach media stream from audio/video element
  * @param {string} The Id of an ellement to detach a stream
  */

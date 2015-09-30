@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-29 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-30 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2061,6 +2061,7 @@ var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
+var RTCPeerConnection = require('./qbRTCPeerConnection');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -2078,6 +2079,7 @@ function WebRTCClient(service, connection) {
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
   this.CallType = Helpers.CallType;
+  this.PeerConnectionState = RTCPeerConnection.State;
 }
 
  /**
@@ -2257,7 +2259,7 @@ WebRTCClient.prototype._cleanupExtension = function(extension){
 
 module.exports = WebRTCClient;
 
-},{"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
+},{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -2467,6 +2469,18 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
     elem.play();
   }
 };
+
+/**
+ * Gets the state of connection
+ * @param {number} The User Id
+ */
+WebRTCSession.prototype.connectionStateForUser = function(userID){
+  var peerConnection = this.peerConnections[userID];
+  if(peerConnection){
+    return peerConnection.state;
+  }
+  return null;
+}
 
 /**
  * Detach media stream from audio/video element

@@ -18,6 +18,7 @@ var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
+var RTCPeerConnection = require('./qbRTCPeerConnection');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -35,6 +36,7 @@ function WebRTCClient(service, connection) {
 
   this.SessionConnectionState = Helpers.SessionConnectionState;
   this.CallType = Helpers.CallType;
+  this.PeerConnectionState = RTCPeerConnection.State;
 }
 
  /**
