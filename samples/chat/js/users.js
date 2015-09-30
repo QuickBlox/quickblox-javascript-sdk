@@ -33,6 +33,7 @@ function retrieveUsers(usersStorage, callback) {
     if (err) {
       console.log(err);
     } else {
+      console.log(result);
 
       mergeUsers(result.items);
 

@@ -13,6 +13,10 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
+// For server-side applications through using npm package 'quickblox' you should include the following lines
+var isBrowser = typeof window !== 'undefined';
+
+
 var taggedForUserUrl = config.urls.blobs + '/tagged';
 
 function ContentProxy(service) {
@@ -61,7 +65,7 @@ ContentProxy.prototype = {
     file = params.file;
     name = params.name || file.name;
     type = params.type || file.type;
-    size = file.size;
+    size = params.size || file.type;
     createParams.name = name;
     createParams.content_type = type;
     if (params.public) { createParams.public = params.public; }
@@ -69,21 +73,41 @@ ContentProxy.prototype = {
     this.create(createParams, function(err,createResult){
       if (err){ callback(err, null); }
       else {
-        var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
+        var uri = parseUri(createResult.blob_object_access.params),
+            uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host };
+        var data;
+        if(isBrowser){
+          data = new FormData();
+        }else{
+          data = {};
+        }
         fileId = createResult.id;
 
         Object.keys(uri.queryKey).forEach(function(val) {
-          data.append(val, decodeURIComponent(uri.queryKey[val]));
+          if(isBrowser){
+            data.append(val, decodeURIComponent(uri.queryKey[val]));
+          }else{
+            data[val] = decodeURIComponent(uri.queryKey[val]);
+          }
         });
-        data.append('file', file, createResult.name);
+
+          if(isBrowser){
+            data.append('file', file, createResult.name);
+          }else{
+            data['file'] = file;
+          }
 
         uploadParams.data = data;
         _this.upload(uploadParams, function(err, result) {
           if (err) { callback(err, null); }
           else {
-            createResult.path = config.ssl ? result.Location.replace('http://', 'https://') : result.Location;
+            if (isBrowser) {
+              createResult.path = config.ssl ? result.Location.replace('http://', 'https://') : result.Location;
+            } else {
+              createResult.path = result.PostResponse.Location;
+            }
             _this.markUploaded({id: fileId, size: size}, function(err, result){
-              if (err) { callback(err, null);}
+              if (err) { callback(err, null); }
               else {
                 callback(null, createResult);
               }
@@ -101,14 +125,21 @@ ContentProxy.prototype = {
                        contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
       if (err) { callback (err, null); }
       else {
-        // AWS S3 doesn't respond with a JSON structure
-        // so parse the xml and return a JSON structure ourselves
-        var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
-        for (i = 0, m = children.length; i < m ; i++){
-          result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+        if (isBrowser) {
+          // AWS S3 doesn't respond with a JSON structure
+          // so parse the xml and return a JSON structure ourselves
+          var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
+          for (i = 0, m = children.length; i < m ; i++) {
+            result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+          }
+          callback (null, result);
+        } else {
+          // for node.js
+          var parseString = require('xml2js').parseString;
+          parseString(xmlDoc, function(err,result) {
+            if (result) { callback (null, result); }
+          });
         }
-
-        callback (null, result);
       }
     });
   },

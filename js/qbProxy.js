@@ -58,6 +58,7 @@ ServiceProxy.prototype = {
 
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
+
     var ajaxCall = {
       url: params.url,
       type: params.type || 'GET',
@@ -102,12 +103,15 @@ ServiceProxy.prototype = {
                           _this.qbInst.session.token ||
                           false;
 
+    console.log("isJSONRequest: " + isJSONRequest);
+    console.log("ajaxCall.url: " + ajaxCall.url);
+
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
-        form: !isJSONRequest ? ajaxCall.data : null,
+        // formData: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
 
@@ -139,10 +143,17 @@ ServiceProxy.prototype = {
     if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
 
+    // link: https://github.com/request/request#multipartform-data-multipart-form-uploads
     if(isBrowser) {
       ajax( ajaxCall );
     } else {
-      request(qbRequest, requestCallback);
+      var r = request(qbRequest, requestCallback);
+      if(!isJSONRequest){
+       var form = r.form();
+       Object.keys(ajaxCall.data).forEach(function(item,i,ar){
+         form.append(item, ajaxCall.data[item]);
+       });
+      }
     }
   }
 
