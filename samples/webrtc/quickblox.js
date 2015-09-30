@@ -2911,7 +2911,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * RtpDataChannels: true
   **********************************************/
   var pcConfig = {
-    iceServers: config.iceServers
+    iceServers: config.webrtc.iceServers || config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);
@@ -3373,29 +3373,29 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 2
   },
-  iceServers: [
-    {
-      'url': 'stun:stun.l.google.com:19302'
-    },
-    {
-      'url': 'stun:turn.quickblox.com',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=udp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=tcp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-  ],
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
+    iceServers: [
+      {
+        'url': 'stun:stun.l.google.com:19302'
+      },
+      {
+        'url': 'stun:turn.quickblox.com',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=udp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=tcp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+    ],
   },
   urls: {
     session: 'session',

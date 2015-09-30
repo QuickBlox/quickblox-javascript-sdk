@@ -24,21 +24,23 @@ var DEFAULTS = {
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 1
   },
-  iceServers: [
-    {
-      'url': 'stun:stun.l.google.com:19302'
-    },
-    {
-      'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
-      'credential': 'testqbtest',
-      'username': 'testqb'
-    },
-    {
-      'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
-      'credential': 'testqbtest',
-      'username': 'testqb'
-    }
-  ],
+  webrtc: {
+    iceServers: [
+      {
+        'url': 'stun:stun.l.google.com:19302'
+      },
+      {
+        'url': 'turn:turnservertest.quickblox.com:3478?transport=udp',
+        'credential': 'testqbtest',
+        'username': 'testqb'
+      },
+      {
+        'url': 'turn:turnservertest.quickblox.com:3478?transport=tcp',
+        'credential': 'testqbtest',
+        'username': 'testqb'
+      }
+    ]
+  },
   urls: {
     session: 'session',
     login: 'login',
