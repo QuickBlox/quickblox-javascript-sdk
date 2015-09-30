@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-29 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-09-30 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2886,7 +2886,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * RtpDataChannels: true
   **********************************************/
   var pcConfig = {
-    iceServers: config.iceServers
+    iceServers: config.webrtc.iceServers || config.iceServers
   };
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);
@@ -3323,29 +3323,29 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 2
   },
-  iceServers: [
-    {
-      'url': 'stun:stun.l.google.com:19302'
-    },
-    {
-      'url': 'stun:turn.quickblox.com',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=udp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=tcp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-  ],
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
+    iceServers: [
+      {
+        'url': 'stun:stun.l.google.com:19302'
+      },
+      {
+        'url': 'stun:turn.quickblox.com',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=udp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=tcp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+    ]
   },
   urls: {
     session: 'session',
