@@ -85,7 +85,11 @@ config.set = function(options) {
         });
       }
     }
-  })
+
+    if(key === 'iceServers') {
+      config.webrtc.iceServers = options[key];
+    }
+  });
 };
 
 module.exports = config;
