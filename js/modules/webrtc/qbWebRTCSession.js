@@ -576,6 +576,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
     iceServers: config.webrtc.iceServers
   };
 
+  console.log("pcConfig: " + JSON.stringify(pcConfig));
+
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);
 

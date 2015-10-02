@@ -86,6 +86,7 @@ config.set = function(options) {
       }
     }
 
+    // backward compatibility: for config.iceServers
     if(key === 'iceServers') {
       config.webrtc.iceServers = options[key];
     }
