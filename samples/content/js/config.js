@@ -10,6 +10,7 @@ var QBUser = {
 };
 
 var CONFIG = {
+
 };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);

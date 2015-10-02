@@ -221,6 +221,14 @@ ContentProxy.prototype = {
       if (err) { callback (err, null); }
       else { callback (null, res); }
     });
+  },
+
+  privateUrl: function (fileId){
+    return "https://api.quickblox.com/blobs/"+fileId+"/download?token="+this.service.getSession().token;
+  },
+
+  publicUrl: function (fileId){
+    return "https://api.quickblox.com/blobs/"+fileId+"/download";
   }
 
 };

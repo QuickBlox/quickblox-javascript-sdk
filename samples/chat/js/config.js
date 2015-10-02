@@ -8,9 +8,7 @@ var config = {
   chatProtocol: {
     websocket: 'wss://chat.quickblox.com:5291',
     active: 2
-  },
-  ssl: true,
-  debug: false
+  }
 };
 
 var QBUser1 = {
