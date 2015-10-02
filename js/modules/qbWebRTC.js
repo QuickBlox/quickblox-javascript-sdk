@@ -76,7 +76,7 @@ function WebRTCProxy(service, conn) {
         extension = self._getExtension(extraParams);
 
     var sessionId = extension.sessionID;
-    
+
     if (delay || extension.moduleIdentifier !== WEBRTC_MODULE_ID) return true;
 
     // clean for users
@@ -85,7 +85,7 @@ function WebRTCProxy(service, conn) {
     switch (extension.signalType) {
     case signalingType.CALL:
       trace('onCall from ' + userId);
-      
+
       if (callers[userId]) {
       	trace('skip onCallListener, a user already got it');
       	return true;
@@ -105,7 +105,7 @@ function WebRTCProxy(service, conn) {
 
       extension.callType = extension.callType === '1' ? 'video' : 'audio';
       delete extension.sdp;
-      
+
       if (typeof self.onCallListener === 'function'){
         self.onCallListener(userId, extension);
       }
@@ -113,7 +113,7 @@ function WebRTCProxy(service, conn) {
       break;
     case signalingType.ACCEPT:
       trace('onAccept from ' + userId);
-        
+
       clearDialingTimerInterval(userId);
       clearCallTimer(userId);
 
@@ -140,7 +140,7 @@ function WebRTCProxy(service, conn) {
       clearCallTimer(userId);
 
       clearCallers(userId);
-      
+
       self._close();
       if (typeof self.onStopCallListener === 'function')
         self.onStopCallListener(userId, extension);
@@ -158,7 +158,7 @@ function WebRTCProxy(service, conn) {
         self.onUpdateCallListener(userId, extension);
       break;
     }
-    
+
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
     return true;
@@ -171,7 +171,7 @@ function WebRTCProxy(service, conn) {
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
         if (extraParams.childNodes[i].tagName === 'iceCandidates') {
-        
+
           // iceCandidates
           items = extraParams.childNodes[i].childNodes;
           for (var j = 0, len2 = items.length; j < len2; j++) {
@@ -216,7 +216,7 @@ function WebRTCProxy(service, conn) {
   this._answerTimeoutCallback = function (userId){
   	clearCallers(userId);
     self._close();
-    
+
     if(typeof self.onSessionStateChangedListener === 'function'){
       self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
     }
@@ -305,7 +305,7 @@ WebRTCProxy.prototype.snapshot = function(id) {
       canvas = document.createElement('canvas'),
       context = canvas.getContext('2d'),
       dataURL, blob;
-  
+
   if (video) {
     canvas.width = video.clientWidth;
     canvas.height = video.clientHeight;
@@ -372,7 +372,7 @@ WebRTCProxy.prototype._createPeer = function(params) {
   };
   peer = new RTCPeerConnection(pcConfig);
   peer.init(this, params);
-  
+
   trace("Peer._createPeer: " + peer + ", sessionID: " + peer.sessionID);
 };
 
@@ -418,7 +418,7 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
   trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
 
   clearAnswerTimer(userId);
-  
+
   var caller = callers[userId];
   if (caller) {
     this._createPeer({
@@ -510,7 +510,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callType = callType === 'video' ? '1' : '2';
   }
 
-  if (type === 'CALL' || type === 'ACCEPT') {    
+  if (type === 'CALL' || type === 'ACCEPT') {
     extension.sdp = peer.localDescription.sdp;
     extension.platform = 'web';
   }
@@ -519,18 +519,18 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     extension.callerID = this.helpers.getIdFromNode(connection.jid);
     extension.opponentsIDs = opponentsIDs;
   }
-  
+
   params = {
     from: connection.jid,
     to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };
-  
+
   msg = $msg(params).c('extraParams', {
     xmlns: Strophe.NS.CLIENT
   });
-  
+
   Object.keys(extension).forEach(function(field) {
     if (field === 'iceCandidates') {
 
@@ -562,7 +562,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
       msg.c(field).t(extension[field]).up();
     }
   });
-  
+
   connection.send(msg);
 };
 
@@ -601,12 +601,12 @@ RTCPeerConnection.prototype.init = function(service, options) {
   this.service = service;
   this.sessionID = options && options.sessionID || Date.now();
   this.type = options && options.description ? 'answer' : 'offer';
-  
+
   this.addStream(this.service.localStream);
   this.onicecandidate = this.onIceCandidateCallback;
   this.onaddstream = this.onRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;  
+  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
   if (this.type === 'answer') {
     this.onRemoteSessionCallback(options.description, 'offer');
@@ -681,7 +681,7 @@ RTCPeerConnection.prototype.onSignalingStateCallback = function() {
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   trace("onIceConnectionStateCallback: " + peer.iceConnectionState);
-  
+
   var newIceConnectionState = peer.iceConnectionState;
 
   // read more about all states:
@@ -693,7 +693,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   // notify user about state changes
   //
   if(typeof peer.service.onSessionStateChangedListener === 'function'){
-	var sessionState = null;	
+	var sessionState = null;
 	if (newIceConnectionState === 'checking'){
       sessionState = peer.service.SessionState.CONNECTING;
 	} else if (newIceConnectionState === 'connected'){
@@ -742,7 +742,7 @@ module.exports = WebRTCProxy;
 ---------------------------------------------------------------------- */
 function trace(text) {
   if (config.debug) {
-    console.log('[QBWebRTC]:', text);
+    Utils.QBLog('[QBWebRTC]', text);
   }
 }
 
@@ -811,11 +811,11 @@ function startCallTimer(userId, callback){
 function dataURItoBlob(dataURI, contentType) {
   var arr = [],
       binary = window.atob(dataURI.split(',')[1]);
-  
+
   for (var i = 0, len = binary.length; i < len; i++) {
     arr.push(binary.charCodeAt(i));
   }
-  
+
   return new Blob([new Uint8Array(arr)], {type: contentType});
 }
 

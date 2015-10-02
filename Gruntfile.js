@@ -31,6 +31,11 @@ module.exports = function (grunt) {
       }
     },
 
+    watch: {
+      files: ['js/*.js', 'js/modules/*.js'],
+      tasks: ['browserify', 'uglify']
+    },
+
     connect: {
       server: {
         options: {
@@ -53,4 +58,6 @@ module.exports = function (grunt) {
   grunt.registerTask('server', [
     'connect'
   ]);
+
+  grunt.loadNpmTasks('grunt-contrib-watch');
 };

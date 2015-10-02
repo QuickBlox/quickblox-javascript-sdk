@@ -16,7 +16,8 @@ function AuthProxy(service) {
 AuthProxy.prototype = {
 
   getSession: function(callback) {
-    if (config.debug) { console.log('AuthProxy.getSession');}
+    Utils.QBLog('[AuthProxy]', 'getSession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -41,8 +42,9 @@ AuthProxy.prototype = {
     // Signature of message with SHA-1 using secret key
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
+
+    Utils.QBLog('[AuthProxy]', 'createSession', message);
     
-    if (config.debug) { console.log('AuthProxy.createSession', message); }
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -56,7 +58,8 @@ AuthProxy.prototype = {
 
   destroySession: function(callback) {
     var _this = this;
-    if (config.debug) { console.log('AuthProxy.destroySession'); }
+    Utils.QBLog('[AuthProxy]', 'destroySession');
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                       function(err, res) {
                         if (err) {
@@ -69,7 +72,8 @@ AuthProxy.prototype = {
   },
 
   login: function(params, callback) {
-    if (config.debug) { console.log('AuthProxy.login', params); }
+    Utils.QBLog('[AuthProxy]', 'login', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -78,10 +82,11 @@ AuthProxy.prototype = {
   },
 
   logout: function(callback) {
-    if (config.debug) { console.log('AuthProxy.logout'); }
+    Utils.QBLog('[AuthProxy]', 'logout');
+
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
-  
+
 };
 
 module.exports = AuthProxy;
@@ -95,7 +100,7 @@ function generateAuthMsg(params) {
     nonce: Utils.randomNonce(),
     timestamp: Utils.unixTime()
   };
-  
+
   // With user authorization
   if (params.login && params.password) {
     message.user = {login: params.login, password: params.password};
@@ -114,7 +119,7 @@ function generateAuthMsg(params) {
       messages.keys.secret = params.keys.secret;
     }
   }
-  
+
   return message;
 }
 
@@ -128,6 +133,6 @@ function signMessage(message, secret) {
       return val + '=' + message[val];
     }
   }).sort().join('&');
-  
+
   return CryptoJS(sessionMsg, secret).toString();
 }

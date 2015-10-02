@@ -13,6 +13,14 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
+// For server-side applications through using npm package 'quickblox' you should include the following lines
+var isBrowser = typeof window !== 'undefined';
+
+if(!isBrowser){
+  var xml2js = require('xml2js');
+}
+
+
 var taggedForUserUrl = config.urls.blobs + '/tagged';
 
 function ContentProxy(service) {
@@ -20,9 +28,10 @@ function ContentProxy(service) {
 }
 
 ContentProxy.prototype = {
-  
+
   create: function(params, callback){
-   if (config.debug) { console.log('ContentProxy.create', params);}
+   Utils.QBLog('[ContentProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: {blob:params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result.blob); }
@@ -34,6 +43,9 @@ ContentProxy.prototype = {
       callback = params;
       params = null;
     }
+
+    Utils.QBLog('[ContentProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -41,6 +53,8 @@ ContentProxy.prototype = {
   },
 
   delete: function(id, callback){
+    Utils.QBLog('[ContentProxy]', 'delete');
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
       if (err) { callback(err,null); }
       else { callback(null, true); }
@@ -49,34 +63,71 @@ ContentProxy.prototype = {
 
   createAndUpload: function(params, callback){
     var createParams= {}, file, name, type, size, fileId, _this = this;
-    if (config.debug) { console.log('ContentProxy.createAndUpload', params);}
+
+    var clonedParams = JSON.parse(JSON.stringify(params));
+    clonedParams.file.data = "...";
+    Utils.QBLog('[ContentProxy]', 'createAndUpload', clonedParams);
+
     file = params.file;
     name = params.name || file.name;
     type = params.type || file.type;
-    size = file.size;
+    size = params.size || file.size;
+
     createParams.name = name;
     createParams.content_type = type;
     if (params.public) { createParams.public = params.public; }
     if (params.tag_list) { createParams.tag_list = params.tag_list; }
+
+    // Create a file object
+    //
     this.create(createParams, function(err,createResult){
-      if (err){ callback(err, null); }
-      else {
-        var uri = parseUri(createResult.blob_object_access.params), uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host }, data = new FormData();
+      if (err) {
+        callback(err, null);
+      } else {
+        var uri = parseUri(createResult.blob_object_access.params);
+        var uploadParams = { url: 'https://' + uri.host };
+        var data;
+        if(isBrowser){
+          data = new FormData();
+        }else{
+          data = {};
+        }
         fileId = createResult.id;
-        
+
         Object.keys(uri.queryKey).forEach(function(val) {
-          data.append(val, decodeURIComponent(uri.queryKey[val]));
+          if(isBrowser){
+            data.append(val, decodeURIComponent(uri.queryKey[val]));
+          }else{
+            data[val] = decodeURIComponent(uri.queryKey[val]);
+          }
         });
-        data.append('file', file, createResult.name);
-        
+
+        if(isBrowser){
+          data.append('file', file, createResult.name);
+        }else{
+          data['file'] = file;
+        }
+
         uploadParams.data = data;
+
+        // Upload the file to Amazon S3
+        //
         _this.upload(uploadParams, function(err, result) {
-          if (err) { callback(err, null); }
-          else {
-            createResult.path = config.ssl ? result.Location.replace('http://', 'https://') : result.Location;
+          if (err) {
+            callback(err, null);
+          } else {
+            if (isBrowser) {
+              createResult.path = result.Location.replace('http://', 'https://');
+            } else {
+              createResult.path = result.PostResponse.Location;
+            }
+
+            // Mark file as uploaded
+            //
             _this.markUploaded({id: fileId, size: size}, function(err, result){
-              if (err) { callback(err, null);}
-              else {
+              if (err) {
+                callback(err, null);
+              } else {
                 callback(null, createResult);
               }
             });
@@ -87,23 +138,37 @@ ContentProxy.prototype = {
   },
 
   upload: function(params, callback){
+    Utils.QBLog('[ContentProxy]', 'upload');
+
     this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
                        contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
-      if (err) { callback (err, null); }
-      else {
-        // AWS S3 doesn't respond with a JSON structure
-        // so parse the xml and return a JSON structure ourselves
-        var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
-        for (i = 0, m = children.length; i < m ; i++){
-          result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
-        } 
-        if (config.debug) { console.log('result', result); }
-        callback (null, result);
+      if (err) {
+        callback (err, null);
+      } else {
+        if (isBrowser) {
+          // AWS S3 doesn't respond with a JSON structure
+          // so parse the xml and return a JSON structure ourselves
+          var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
+          for (i = 0, m = children.length; i < m ; i++) {
+            result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
+          }
+          callback (null, result);
+
+        } else {
+          var parseString = xml2js.parseString;
+          parseString(xmlDoc, function(err,result) {
+            if (result) {
+              callback (null, result);
+            }
+          });
+        }
       }
     });
   },
 
   taggedForCurrentUser: function(callback) {
+    Utils.QBLog('[ContentProxy]', 'taggedForCurrentUser');
+
     this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
       if (err) { callback(err, null); }
       else { callback(null, result); }
@@ -111,6 +176,8 @@ ContentProxy.prototype = {
   },
 
   markUploaded: function (params, callback) {
+    Utils.QBLog('[ContentProxy]', 'markUploaded', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -118,6 +185,8 @@ ContentProxy.prototype = {
   },
 
   getInfo: function (id, callback) {
+    Utils.QBLog('[ContentProxy]', 'getInfo', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -125,27 +194,41 @@ ContentProxy.prototype = {
   },
 
   getFile: function (uid, callback) {
-   this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
+    Utils.QBLog('[ContentProxy]', 'getFile', uid);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
     });
   },
 
   getFileUrl: function (id, callback) {
-   this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
+    Utils.QBLog('[ContentProxy]', 'getFileUrl', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res.blob_object_access.params); }
     });
   },
 
   update: function (params, callback) {
+    Utils.QBLog('[ContentProxy]', 'update', params);
+
     var data = {};
     data.blob = {};
     if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
       if (err) { callback (err, null); }
-      else { callback (null, res); } 
+      else { callback (null, res); }
     });
+  },
+
+  privateUrl: function (fileId){
+    return "https://api.quickblox.com/blobs/"+fileId+"/download?token="+this.service.getSession().token;
+  },
+
+  publicUrl: function (fileId){
+    return "https://api.quickblox.com/blobs/"+fileId+"/download";
   }
 
 };
