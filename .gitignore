@@ -3,3 +3,6 @@
 # npm packages
 node_modules
 npm-debug.log
+
+# *Storm
+.idea/

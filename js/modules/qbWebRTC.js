@@ -166,7 +166,7 @@ function WebRTCProxy(service, conn) {
 
   this._getExtension = function(extraParams) {
     var extension = {}, iceCandidates = [], opponents = [],
-        candidate, oponnent, items, childrenNodes;
+        candidate, opponent, items, childrenNodes;
 
     if (extraParams) {
       for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
@@ -188,8 +188,8 @@ function WebRTCProxy(service, conn) {
           // opponentsIDs
           items = extraParams.childNodes[i].childNodes;
           for (var j = 0, len2 = items.length; j < len2; j++) {
-            oponnent = items[j].textContent;
-            opponents.push(oponnent);
+            opponent = items[j].textContent;
+            opponents.push(opponent);
           }
 
         } else {
@@ -377,12 +377,13 @@ WebRTCProxy.prototype._createPeer = function(params) {
 };
 
 WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
+  var self = this;
+
+  extension = self.helpers.prepareExtension(extension);
 
   trace('Call. userId: ' + opponentsIDs + ", callType: " + callType + ', extension: ' + JSON.stringify(extension));
 
   this._createPeer();
-
-  var self = this;
 
   // For now we support only 1-1 calls.
   //
@@ -413,9 +414,12 @@ WebRTCProxy.prototype.call = function(opponentsIDs, callType, extension) {
 };
 
 WebRTCProxy.prototype.accept = function(userId, extension) {
-  var extension = extension || {};
+  var self = this,
+      ext = extension || {};
 
-  trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  ext = self.helpers.prepareExtension(ext);
+
+  trace('Accept. userId: ' + userId + ', extension: ' + JSON.stringify(ext));
 
   clearAnswerTimer(userId);
   
@@ -428,53 +432,62 @@ WebRTCProxy.prototype.accept = function(userId, extension) {
     // delete callers[userId];
   }
 
-  var self = this;
   peer.opponentId = userId;
 
   peer.getSessionDescription(function(err, res) {
     if (err) {
       trace(err);
     } else {
-      self._sendMessage(userId, extension, 'ACCEPT');
+      self._sendMessage(userId, ext, 'ACCEPT');
     }
   });
 };
 
 WebRTCProxy.prototype.reject = function(userId, extension) {
-  var extension = extension || {};
+  var self = this,
+      ext = extension || {};
 
-  trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  ext = self.helpers.prepareExtension(ext);
+
+  trace('Reject. userId: ' + userId + ', extension: ' + JSON.stringify(ext));
 
   clearAnswerTimer(userId);
 
   if (callers[userId]) {
-    extension.sessionID = callers[userId].sessionID;
+    ext.sessionID = callers[userId].sessionID;
     delete callers[userId];
   }
 
-  this._sendMessage(userId, extension, 'REJECT');
+  this._sendMessage(userId, ext, 'REJECT');
 };
 
 WebRTCProxy.prototype.stop = function(userId, extension) {
-  var extension = extension || {};
+  var self = this,
+      ext = extension || {};
 
-  trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  ext = self.helpers.prepareExtension(ext);
+
+  trace('Stop. userId: ' + userId + ', extension: ' + JSON.stringify(ext));
 
   clearAnswerTimer(userId);
   clearDialingTimerInterval(userId);
   clearCallTimer(userId);
 
-  this._sendMessage(userId, extension, 'STOP');
-  this._close();
+  self._sendMessage(userId, ext, 'STOP');
+  self._close();
 
   clearCallers(userId);
 };
 
 WebRTCProxy.prototype.update = function(userId, extension) {
-  var extension = extension || {};
-  trace('Update. userId: ' + userId + ', extension: ' + JSON.stringify(extension));
+  var self = this,
+      ext = extension || {};
 
-  this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
+  ext = self.helpers.prepareExtension(ext);
+
+  trace('Update. userId: ' + userId + ', extension: ' + JSON.stringify(ext));
+
+  self._sendMessage(userId, ext, 'PARAMETERS_CHANGED');
 };
 
 // close peer connection and local stream
@@ -498,26 +511,28 @@ WebRTCProxy.prototype._sendCandidate = function(userId, iceCandidates) {
 };
 
 WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType, opponentsIDs) {
-  var extension = extension || {},
+  var ext = extension || {},
       self = this,
       msg, params;
 
-  extension.moduleIdentifier = WEBRTC_MODULE_ID;
-  extension.signalType = signalingType[type];
-  extension.sessionID = peer && peer.sessionID || extension.sessionID;
+  ext = self.helpers.prepareExtension(ext);
+
+  ext.moduleIdentifier = WEBRTC_MODULE_ID;
+  ext.signalType = signalingType[type];
+  ext.sessionID = peer && peer.sessionID || ext.sessionID;
 
   if (callType) {
-    extension.callType = callType === 'video' ? '1' : '2';
+    ext.callType = callType === 'video' ? '1' : '2';
   }
 
-  if (type === 'CALL' || type === 'ACCEPT') {    
-    extension.sdp = peer.localDescription.sdp;
-    extension.platform = 'web';
+  if (type === 'CALL' || type === 'ACCEPT') {
+    ext.sdp = peer.localDescription.sdp;
+    ext.platform = 'web';
   }
 
   if (type === 'CALL') {
-    extension.callerID = this.helpers.getIdFromNode(connection.jid);
-    extension.opponentsIDs = opponentsIDs;
+    ext.callerID = this.helpers.getIdFromNode(connection.jid);
+    ext.opponentsIDs = opponentsIDs;
   }
   
   params = {
@@ -531,12 +546,12 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
     xmlns: Strophe.NS.CLIENT
   });
   
-  Object.keys(extension).forEach(function(field) {
+  Object.keys(ext).forEach(function(field) {
     if (field === 'iceCandidates') {
 
       // iceCandidates
       msg = msg.c('iceCandidates');
-      extension[field].forEach(function(candidate) {
+      ext[field].forEach(function(candidate) {
         msg = msg.c('iceCandidate');
         Object.keys(candidate).forEach(function(key) {
           msg.c(key).t(candidate[key]).up();
@@ -549,17 +564,17 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
 
       // opponentsIDs
       msg = msg.c('opponentsIDs');
-      extension[field].forEach(function(opponentId) {
+      ext[field].forEach(function(opponentId) {
         msg = msg.c('opponentID').t(opponentId).up();
       });
       msg.up();
 
-    } else if (typeof extension[field] === 'object') {
+    } else if (typeof ext[field] === 'object') {
 
-      self._JStoXML(field, extension[field], msg);
+      self._JStoXML(field, ext[field], msg);
 
     } else {
-      msg.c(field).t(extension[field]).up();
+      msg.c(field).t(ext[field]).up();
     }
   });
   
@@ -732,6 +747,10 @@ Helpers.prototype = {
   getIdFromNode: function(jid) {
     if (jid.indexOf('@') < 0) return null;
     return parseInt(jid.split('@')[0].split('-')[0]);
+  },
+
+  prepareExtension: function(extension) {
+    return JSON.parse( JSON.stringify(extension).replace(/null/g, "\"\"") );
   }
 
 };
