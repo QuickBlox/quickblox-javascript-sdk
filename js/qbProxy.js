@@ -116,7 +116,6 @@ ServiceProxy.prototype = {
         method: ajaxCall.type,
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
-        // formData: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
 
