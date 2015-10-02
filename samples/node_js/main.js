@@ -11,27 +11,23 @@ var config = {
   // debug: true // logs to console ON (backward compatibility)
   // debug: {mode: 0}  // logs OFF
   // debug: {mode: 1}, // logs to console ON
-  debug: {mode: 2, file: "myfile.log"}  // logs to file ON
+  debug: {mode: 2, file: "app.log"}  // logs to file ON
   // debug: {mode: [1, 2], file: "myfile.log"} // // logs to console and file ON
 };
 
 var QBUser = {
- login: "supersample-ios",
- password: "supersample-ios"
+ login: "nodeuser",
+ password: "nodeuser"
 };
 
-QB.init(92, 'wJHdOcQSxXQGWx5', 'BTFsj7Rtt27DAmT', config);
-
-console.log("QB >>> start");
+QB.init(28287, 'XydaWcf8OO9xhGT', 'JZfqTspCvELAmnW', config);
 
 QB.createSession(QBUser, function(err, result) {
 	if (err) {
-		console.log('QB >>> Something went wrong: ' + err);
+		console.log('QB >>> Something went wrong: ' + JSON.stringify(err));
 	} else {
 		var token   = result.token;
 			  user_id = result.id;
-
-		console.log('QB >>> Session created with id ' + result.id);
 
     var srcIMG = 'wolf.jpg';
 
@@ -39,7 +35,6 @@ QB.createSession(QBUser, function(err, result) {
       fs.readFile(srcIMG, function (err, data) {
         if (err) throw err;
 
-        console.log('QB >>> params collected and send to QB content module');
         QB.content.createAndUpload({file: data, name: 'image.jpg', type: 'image/jpeg', size: stats.size}, function(err, response){
           if (err) {
             console.log(err);

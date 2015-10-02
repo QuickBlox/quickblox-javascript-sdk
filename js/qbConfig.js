@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.13.1',
+  version: '1.14.0',
   creds: {
     appId: '',
     authKey: '',
@@ -57,7 +57,6 @@ var config = {
     chat: 'chat',
     blobs: 'blobs',
     geodata: 'geodata',
-    places: 'places',
     pushtokens: 'push_tokens',
     subscriptions: 'subscriptions',
     events: 'events',

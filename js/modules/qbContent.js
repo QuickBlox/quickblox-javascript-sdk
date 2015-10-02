@@ -16,6 +16,10 @@ var config = require('../qbConfig'),
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
 
+if(!isBrowser){
+  var xml2js = require('xml2js');
+}
+
 
 var taggedForUserUrl = config.urls.blobs + '/tagged';
 
@@ -60,21 +64,28 @@ ContentProxy.prototype = {
   createAndUpload: function(params, callback){
     var createParams= {}, file, name, type, size, fileId, _this = this;
 
-    Utils.QBLog('[ContentProxy]', 'createAndUpload', params);
+    var clonedParams = JSON.parse(JSON.stringify(params));
+    clonedParams.file.data = "...";
+    Utils.QBLog('[ContentProxy]', 'createAndUpload', clonedParams);
 
     file = params.file;
     name = params.name || file.name;
     type = params.type || file.type;
-    size = params.size || file.type;
+    size = params.size || file.size;
+
     createParams.name = name;
     createParams.content_type = type;
     if (params.public) { createParams.public = params.public; }
     if (params.tag_list) { createParams.tag_list = params.tag_list; }
+
+    // Create a file object
+    //
     this.create(createParams, function(err,createResult){
-      if (err){ callback(err, null); }
-      else {
-        var uri = parseUri(createResult.blob_object_access.params),
-            uploadParams = { url: (config.ssl ? 'https://' : 'http://') + uri.host };
+      if (err) {
+        callback(err, null);
+      } else {
+        var uri = parseUri(createResult.blob_object_access.params);
+        var uploadParams = { url: 'https://' + uri.host };
         var data;
         if(isBrowser){
           data = new FormData();
@@ -91,24 +102,32 @@ ContentProxy.prototype = {
           }
         });
 
-          if(isBrowser){
-            data.append('file', file, createResult.name);
-          }else{
-            data['file'] = file;
-          }
+        if(isBrowser){
+          data.append('file', file, createResult.name);
+        }else{
+          data['file'] = file;
+        }
 
         uploadParams.data = data;
+
+        // Upload the file to Amazon S3
+        //
         _this.upload(uploadParams, function(err, result) {
-          if (err) { callback(err, null); }
-          else {
+          if (err) {
+            callback(err, null);
+          } else {
             if (isBrowser) {
-              createResult.path = config.ssl ? result.Location.replace('http://', 'https://') : result.Location;
+              createResult.path = result.Location.replace('http://', 'https://');
             } else {
               createResult.path = result.PostResponse.Location;
             }
+
+            // Mark file as uploaded
+            //
             _this.markUploaded({id: fileId, size: size}, function(err, result){
-              if (err) { callback(err, null); }
-              else {
+              if (err) {
+                callback(err, null);
+              } else {
                 callback(null, createResult);
               }
             });
@@ -123,8 +142,9 @@ ContentProxy.prototype = {
 
     this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
                        contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
-      if (err) { callback (err, null); }
-      else {
+      if (err) {
+        callback (err, null);
+      } else {
         if (isBrowser) {
           // AWS S3 doesn't respond with a JSON structure
           // so parse the xml and return a JSON structure ourselves
@@ -133,11 +153,13 @@ ContentProxy.prototype = {
             result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
           }
           callback (null, result);
+
         } else {
-          // for node.js
-          var parseString = require('xml2js').parseString;
+          var parseString = xml2js.parseString;
           parseString(xmlDoc, function(err,result) {
-            if (result) { callback (null, result); }
+            if (result) {
+              callback (null, result);
+            }
           });
         }
       }

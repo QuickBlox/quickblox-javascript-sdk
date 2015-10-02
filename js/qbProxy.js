@@ -54,7 +54,15 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(params)});
+
+    var clonedParams;
+    if(params.data && params.data.file){
+      clonedParams = JSON.parse(JSON.stringify(params));
+      clonedParams.data.file = "...";
+    }else{
+      clonedParams = params;
+    }
+    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
@@ -102,9 +110,6 @@ ServiceProxy.prototype = {
                           _this.qbInst.session &&
                           _this.qbInst.session.token ||
                           false;
-
-    console.log("isJSONRequest: " + isJSONRequest);
-    console.log("ajaxCall.url: " + ajaxCall.url);
 
       var qbRequest = {
         url: ajaxCall.url,
