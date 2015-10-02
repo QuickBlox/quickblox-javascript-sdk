@@ -7,11 +7,14 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+
 var versionNum = config.version;
 
 // For server-side applications through using npm package 'quickblox' you should include the following lines
 var isBrowser = typeof window !== 'undefined';
-if (!isBrowser) var request = require('request');
+if (!isBrowser) {
+  var request = require('request');
+}
 
 var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
 if (isBrowser && !ajax) {
@@ -23,7 +26,6 @@ function ServiceProxy() {
     config: config,
     session: null
   };
-  if (config.debug) { console.log('ServiceProxy', this.qbInst); }
 }
 
 ServiceProxy.prototype = {
@@ -35,7 +37,7 @@ ServiceProxy.prototype = {
   getSession: function() {
     return this.qbInst.session;
   },
-  
+
   handleResponse: function(error, response, next, retry) {
     // can add middleware here...
     var _this = this;
@@ -52,9 +54,19 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
-    if (config.debug) { console.log('ServiceProxy', params.type || 'GET', params); }
+
+    var clonedParams;
+    if(params.data && params.data.file){
+      clonedParams = JSON.parse(JSON.stringify(params));
+      clonedParams.data.file = "...";
+    }else{
+      clonedParams = params;
+    }
+    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
+
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
+
     var ajaxCall = {
       url: params.url,
       type: params.type || 'GET',
@@ -62,9 +74,8 @@ ServiceProxy.prototype = {
       data: params.data || ' ',
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
-        if (config.debug) { console.log('ServiceProxy.ajax beforeSend', jqXHR, settings); }
+
         if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
-          if (config.debug) { console.log('setting headers on request to ' + settings.url); }
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -72,12 +83,14 @@ ServiceProxy.prototype = {
         }
       },
       success: function(data, status, jqHXR) {
-        if (config.debug) { console.log('ServiceProxy.ajax success', data); }
+        Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
+
         if (params.url.indexOf(config.urls.session) === -1) _this.handleResponse(null, data, callback, retry);
         else callback(null, data);
       },
       error: function(jqHXR, status, error) {
-        if (config.debug) { console.log('ServiceProxy.ajax error', jqHXR.status, error, jqHXR.responseText); }
+        Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR.responseText);
+
         var errorMsg = {
           code: jqHXR.status,
           status: status,
@@ -88,25 +101,24 @@ ServiceProxy.prototype = {
         else callback(errorMsg, null);
       }
     };
-  
+
     if(!isBrowser) {
-      
+
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 && 
-                          _this.qbInst && 
-                          _this.qbInst.session && 
+        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+                          _this.qbInst &&
+                          _this.qbInst.session &&
                           _this.qbInst.session.token ||
                           false;
-                          
+
       var qbRequest = {
         url: ajaxCall.url,
         method: ajaxCall.type,
         timeout: config.timeout,
         json: isJSONRequest ? ajaxCall.data : null,
-        form: !isJSONRequest ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
-          
+
       var requestCallback = function(error, response, body) {
         if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
           var errorMsg;
@@ -129,19 +141,26 @@ ServiceProxy.prototype = {
       };
 
     }
-    
+
     // Optional - for example 'multipart/form-data' when sending a file.
     // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
     if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { ajaxCall.contentType = params.contentType; }
     if (typeof params.processData === 'boolean') { ajaxCall.processData = params.processData; }
-    
+
+    // link: https://github.com/request/request#multipartform-data-multipart-form-uploads
     if(isBrowser) {
       ajax( ajaxCall );
     } else {
-      request(qbRequest, requestCallback);
+      var r = request(qbRequest, requestCallback);
+      if(!isJSONRequest){
+       var form = r.form();
+       Object.keys(ajaxCall.data).forEach(function(item,i,ar){
+         form.append(item, ajaxCall.data[item]);
+       });
+      }
     }
   }
-  
+
 };
 
 module.exports = ServiceProxy;

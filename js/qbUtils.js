@@ -7,6 +7,14 @@
 
 var config = require('./qbConfig');
 
+var isBrowser = typeof window !== "undefined";
+var unsupported = "This function isn't supported outside of the browser (...yet)";
+
+if(!isBrowser){
+  var fs = require('fs');
+}
+
+
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
 var ObjectId = {
@@ -56,8 +64,92 @@ var Utils = {
       }
     }
     return data;
-  }
+  },
 
+  QBLog: function(){
+
+    if(this.loggers){
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
+      return;
+    }
+
+    this.loggers = [];
+
+    var consoleLoggerFunction = function(){
+      var logger = function(args){
+        console.log.apply(console, Array.prototype.slice.call(args));
+      }
+      return logger;
+    }
+
+    var fileLoggerFunction = function(){
+      var logger = function(args){
+        if(isBrowser){
+          throw unsupported;
+        }else{
+
+          var data = [];
+          for (var i = 0; i < args.length; i++) {
+            data.push(JSON.stringify(args[i]));
+          }
+          data = data.join(" ");
+
+          var toLog = "\n" + new Date() + ". " + data;
+          fs.appendFile(config.debug.file, toLog, function(err) {
+            if(err) {
+              return console.error("Error while writing log to file. Error: " + err);
+            }
+          });
+        }
+      }
+      return logger;
+    }
+
+    // Build loggers
+    //
+
+    // format "debug: { }"
+    if (typeof config.debug === 'object'){
+
+      if(typeof config.debug.mode === 'number'){
+        if(config.debug.mode == 1){
+          var logger = consoleLoggerFunction();
+          this.loggers.push(logger);
+        }else if(config.debug.mode == 2){
+          var logger = fileLoggerFunction();
+          this.loggers.push(logger);
+        }
+      }else if(typeof config.debug.mode === 'object'){
+        var self = this;
+        config.debug.mode.forEach(function(mode, i, arr) {
+          if (mode === 1){
+            var logger = consoleLoggerFunction();
+            self.loggers.push(logger);
+          }else if (mode === 2){
+            var logger = fileLoggerFunction();
+            self.loggers.push(logger);
+          }
+        });
+      }
+
+    // format "debug: true"
+    // backward compatibility
+    }else if (typeof config.debug === 'boolean'){
+      if(config.debug){
+        var logger = consoleLoggerFunction();
+        this.loggers.push(logger);
+      }
+    }
+
+    if(this.loggers){
+      for(var i=0;i<this.loggers.length;++i){
+        this.loggers[i](arguments);
+      }
+    }
+
+  }
 };
 
 module.exports = Utils;

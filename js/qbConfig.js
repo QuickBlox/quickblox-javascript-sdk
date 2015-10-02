@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.13.1',
+  version: '1.14.0',
   creds: {
     appId: '',
     authKey: '',
@@ -57,7 +57,6 @@ var config = {
     chat: 'chat',
     blobs: 'blobs',
     geodata: 'geodata',
-    places: 'places',
     pushtokens: 'push_tokens',
     subscriptions: 'subscriptions',
     events: 'events',
@@ -69,7 +68,7 @@ var config = {
   },
   ssl: true,
   timeout: null,
-  debug: false,
+  debug: {mode: 0, file: null},
   addISOTime: false
 };
 
@@ -80,12 +79,15 @@ config.set = function(options) {
         config[key] = options[key]
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
-          if(config[key].hasOwnProperty(nextkey))
+          if(config[key].hasOwnProperty(nextkey)){
             config[key][nextkey] = options[key][nextkey];
+          }
         });
       }
     }
   })
+
+
 };
 
 module.exports = config;

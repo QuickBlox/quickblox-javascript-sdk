@@ -13,8 +13,6 @@ var geoFindUrl = config.urls.geodata + '/find';
 function LocationProxy(service){
   this.service = service;
   this.geodata = new GeoProxy(service);
-  this.places = new PlacesProxy(service);
-  if (config.debug) { console.log("LocationProxy", service); }
 }
 
 function GeoProxy(service){
@@ -24,7 +22,8 @@ function GeoProxy(service){
 GeoProxy.prototype = {
 
   create: function(params, callback){
-    if (config.debug) { console.log('GeoProxy.create', {geo_data: params});}
+    Utils.QBLog('[GeoProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result.geo_datum); }
@@ -37,10 +36,12 @@ GeoProxy.prototype = {
       if (params.hasOwnProperty(prop)) {
         if (allowedProps.indexOf(prop)>0) {
           msg[prop] = params[prop];
-        } 
+        }
       }
     }
-    if (config.debug) { console.log('GeoProxy.create', params);}
+
+    Utils.QBLog('[GeoProxy]', 'update', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
                      function(err,res){
                       if (err) { callback(err,null);}
@@ -49,7 +50,8 @@ GeoProxy.prototype = {
   },
 
   get: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.get', id);}
+    Utils.QBLog('[GeoProxy]', 'get', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
        if (err) { callback (err, null); }
        else { callback(null, result.geo_datum); }
@@ -61,12 +63,15 @@ GeoProxy.prototype = {
       callback = params;
       params = undefined;
     }
-    if (config.debug) { console.log('GeoProxy.find', params);}
+
+    Utils.QBLog('[GeoProxy]', 'find', params);
+
     this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
   },
 
   delete: function(id, callback){
-    if (config.debug) { console.log('GeoProxy.delete', id); }
+    Utils.QBLog('[GeoProxy]', 'delete', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
                      function(err,res){
                       if (err) { callback(err, null);}
@@ -75,45 +80,13 @@ GeoProxy.prototype = {
   },
 
   purge: function(days, callback){
-    if (config.debug) { console.log('GeoProxy.purge', days); }
+    Utils.QBLog('[GeoProxy]', 'purge', days);
+
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
                      function(err, res){
                       if (err) { callback(err, null);}
                       else { callback(null, true);}
                      });
-  }
-
-};
-
-function PlacesProxy(service) {
-  this.service = service;
-}
-
-PlacesProxy.prototype = {
-
-  list: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.list', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places)}, callback);
-  },
-
-  create: function(params, callback){
-    if (config.debug) { console.log('PlacesProxy.create', params);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places), data: {place:params}, type: 'POST'}, callback);
-  },
-
-  get: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.get', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id)}, callback);
-  },
-
-  update: function(place, callback){
-    if (config.debug) { console.log('PlacesProxy.update', place);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, place.id), data: {place: place}, type: 'PUT'} , callback);
-  },
-
-  delete: function(id, callback){
-    if (config.debug) { console.log('PlacesProxy.delete', id);}
-    this.service.ajax({url: Utils.getUrl(config.urls.places, id), type: 'DELETE', dataType: 'text'}, callback);
   }
 
 };

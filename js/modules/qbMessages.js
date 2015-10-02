@@ -22,8 +22,10 @@ function TokensProxy(service){
 }
 
 TokensProxy.prototype = {
-  
+
   create: function(params, callback){
+    Utils.QBLog('[TokensProxy]', 'create', params);
+
     var message = {
       push_token: {
         environment: params.environment,
@@ -31,7 +33,7 @@ TokensProxy.prototype = {
       },
       device: { platform: params.platform, udid: params.udid}
     };
-    if (config.debug) { console.log('TokensProxy.create', message);}
+
     this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
                       function(err, data){
                         if (err) { callback(err, null);}
@@ -40,8 +42,9 @@ TokensProxy.prototype = {
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deletePushToken', id); }
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'}, 
+    Utils.QBLog('[TokensProxy]', 'delete', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'},
                       function (err, res) {
                         if (err) {callback(err, null);}
                         else {callback(null, true);}
@@ -59,18 +62,21 @@ function SubscriptionsProxy(service){
 SubscriptionsProxy.prototype = {
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createSubscription', params); }
+    Utils.QBLog('[SubscriptionsProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
   },
 
   list: function(callback) {
-    if (config.debug) { console.log('MessageProxy.listSubscription'); }
+    Utils.QBLog('[SubscriptionsProxy]', 'list');
+
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deleteSubscription', id); }
-    this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'}, 
+    Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
+
+    this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'},
                       function(err, res){
                         if (err) { callback(err, null);}
                         else { callback(null, true);}
@@ -87,34 +93,40 @@ function EventsProxy(service){
 EventsProxy.prototype = {
 
   create: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createEvent', params); }
+    Utils.QBLog('[EventsProxy]', 'create', params);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
 
   list: function(callback) {
-   if (config.debug) { console.log('MessageProxy.listEvents'); }
+    Utils.QBLog('[EventsProxy]', 'list', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
 
   get: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEvent', id); }
+    Utils.QBLog('[EventsProxy]', 'get', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
   },
-  
+
   status: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.getEventStatus', id); }
+    Utils.QBLog('[EventsProxy]', 'status', id);
+
     this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
   },
 
   update: function(params, callback) {
-    if (config.debug) { console.log('MessageProxy.createEvent', params); }
+    Utils.QBLog('[EventsProxy]', 'update', params);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
   },
 
   delete: function(id, callback) {
-    if (config.debug) { console.log('MessageProxy.deleteEvent', id); }
+    Utils.QBLog('[EventsProxy]', 'delete', id);
+    
     this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
   }
 
