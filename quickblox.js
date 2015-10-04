@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-02 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-05 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2499,19 +2499,18 @@ WebRTCSession.prototype.detachMediaStream = function(id){
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.call = function(extension) {
-  Helpers.trace('Call, extension: ' + JSON.stringify(extension));
+  var self = this,
+      ext = _prepareExtension(extension);
 
-  var extension = extension || {};
+  Helpers.trace('Call, extension: ' + JSON.stringify(ext));
 
-  this.state = WebRTCSession.State.ACTIVE;
-
-  var self = this;
+  self.state = WebRTCSession.State.ACTIVE;
 
   // create a peer connection for each opponent
-  this.opponentsIDs.forEach(function(userID, i, arr) {
-    self._callInternal(userID, extension);
+  self.opponentsIDs.forEach(function(userID, i, arr) {
+    self._callInternal(userID, ext);
   });
-}
+};
 
 WebRTCSession.prototype._callInternal = function(userID, extension) {
   console.log("_callInternal " + userID);
@@ -2537,20 +2536,20 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.accept = function(extension) {
-  Helpers.trace('Accept, extension: ' + JSON.stringify(extension));
+  var self = this,
+      ext = _prepareExtension(extension);
 
-  var extension = extension || {};
+  Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
-  this.state = WebRTCSession.State.ACTIVE;
+  self.state = WebRTCSession.State.ACTIVE;
 
-  var self = this;
+  self._clearAnswerTimer();
 
-  this._clearAnswerTimer();
-
-  this._acceptInternal(this.initiatorID, extension);
+  self._acceptInternal(self.initiatorID, ext);
 
   // The group call logic starts here
-  var oppIDs = this._uniqueOpponentsIDsWithoutInitiator();
+  var oppIDs = self._uniqueOpponentsIDsWithoutInitiator();
+
   if(oppIDs.length > 0){
     // here we have to decide to which users the user should call.
     // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
@@ -2562,7 +2561,7 @@ WebRTCSession.prototype.accept = function(extension) {
       }
     });
   }
-}
+};
 
 WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   var self = this;
@@ -2600,71 +2599,76 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   }else{
     Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
   }
-}
+};
 
 /**
  * Reject a call
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.reject = function(extension) {
-  var extension = extension || {};
+  var self = this,
+      ext = _prepareExtension(extension);
 
-  Helpers.trace('Reject, extension: ' + JSON.stringify(extension));
+  Helpers.trace('Reject, extension: ' + JSON.stringify(ext));
 
-  this.state = WebRTCSession.State.REJECTED;
+  self.state = WebRTCSession.State.REJECTED;
 
-  this._clearAnswerTimer();
+  self._clearAnswerTimer();
 
-  extension["sessionID"] = this.ID;
-  extension["callType"] = this.callType;
-  extension["callerID"] = this.initiatorID;
-  extension["opponentsIDs"] = this.opponentsIDs;
+  ext["sessionID"] = self.ID;
+  ext["callType"] = self.callType;
+  ext["callerID"] = self.initiatorID;
+  ext["opponentsIDs"] = self.opponentsIDs;
 
-  var peersLen = Object.keys(this.peerConnections).length;
+  var peersLen = Object.keys(self.peerConnections).length;
   if(peersLen > 0){
-    for (var key in this.peerConnections) {
-      var peerConnection = this.peerConnections[key];
-      this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.REJECT);
+    for (var key in self.peerConnections) {
+      var peerConnection = self.peerConnections[key];
+      self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.REJECT);
     }
   }
 
-  this._close();
-}
+  self._close();
+};
 
 /**
  * Stop a call
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.stop = function(extension) {
-  var extension = extension || {};
+  var self = this,
+      ext = _prepareExtension(extension);
 
-  Helpers.trace('Stop, extension: ' + JSON.stringify(extension));
+  Helpers.trace('Stop, extension: ' + JSON.stringify(ext));
 
-  this.state = WebRTCSession.State.HUNGUP;
+  self.state = WebRTCSession.State.HUNGUP;
 
-  this._clearAnswerTimer();
+  self._clearAnswerTimer();
 
-  extension["sessionID"] = this.ID;
-  extension["callType"] = this.callType;
-  extension["callerID"] = this.initiatorID;
-  extension["opponentsIDs"] = this.opponentsIDs;
+  ext["sessionID"] = self.ID;
+  ext["callType"] = self.callType;
+  ext["callerID"] = self.initiatorID;
+  ext["opponentsIDs"] = self.opponentsIDs;
 
-  var peersLen = Object.keys(this.peerConnections).length;
+  var peersLen = Object.keys(self.peerConnections).length;
   if(peersLen > 0){
-    for (var key in this.peerConnections) {
-      var peerConnection = this.peerConnections[key];
-      this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.STOP);
+    for (var key in self.peerConnections) {
+      var peerConnection = self.peerConnections[key];
+      self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.STOP);
     }
   }
 
-  this._close();
-}
+  self._close();
+};
 
 /**
  * Update a call
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.update = function(extension) {
+  var self = this,
+      ext = {};
+
   Helpers.trace('Update, extension: ' + JSON.stringify(extension));
 
   if(extension == null){
@@ -2672,10 +2676,12 @@ WebRTCSession.prototype.update = function(extension) {
     return;
   }
 
-  for (var key in this.peerConnections) {
-    var peerConnection = this.peerConnections[key];
+  ext = _prepareExtension(extension);
 
-    this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.PARAMETERS_CHANGED);
+  for (var key in self.peerConnections) {
+    var peerConnection = self.peerConnections[key];
+
+    self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.PARAMETERS_CHANGED);
   }
 }
 
@@ -3062,8 +3068,19 @@ function generateUUID(){
     return uuid;
 }
 
-module.exports = WebRTCSession;
+/**
+ * private _prepareExtension - replace property null to empty string
+ * return object with property or empty if extension didn't set
+ */
+function _prepareExtension(extension) {
+  try {
+    return JSON.parse( JSON.stringify(extension).replace(/null/g, "\"\"") );
+  } catch (err) {
+    return {};
+  }
+}
 
+module.exports = WebRTCSession;
 },{"../../qbConfig":15,"../../qbUtils":19,"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSignalingConstants":12}],12:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK

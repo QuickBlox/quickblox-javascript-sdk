@@ -339,8 +339,10 @@ function callWithParams(mediaParams, isOnlyAudio){
 
       // start call
       //
-      var extension = {};
-      currentSession.call(extension);
+      var extension = {
+        customProperty: null
+      };
+      currentSession.call();
     }
   });
 }
