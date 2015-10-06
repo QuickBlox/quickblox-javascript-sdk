@@ -6,6 +6,8 @@
  */
 
 var config = require('./qbConfig');
+var Utils = require('./qbUtils');
+
 var isBrowser = typeof window !== "undefined";
 
 // Actual QuickBlox API starts here
@@ -13,9 +15,10 @@ function QuickBlox() {}
 
 QuickBlox.prototype = {
 
-  init: function(appId, authKey, authSecret, debug) {
-    if (debug && typeof debug === 'boolean') config.debug = debug;
-    else if (debug && typeof debug === 'object') config.set(debug);
+  init: function(appId, authKey, authSecret, configMap) {
+    if (configMap && typeof configMap === 'object') {
+      config.set(configMap);
+    }
 
     var Proxy = require('./qbProxy');
     this.service = new Proxy();
@@ -55,7 +58,6 @@ QuickBlox.prototype = {
       config.creds.authKey = authKey;
       config.creds.authSecret = authSecret;
     }
-    if(console && config.debug) console.log('QuickBlox.init', this);
   },
 
   getSession: function(callback) {

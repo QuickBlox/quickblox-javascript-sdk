@@ -20,13 +20,15 @@ function UsersProxy(service) {
 UsersProxy.prototype = {
 
   listUsers: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'listUsers', params);
+
     var message = {}, filters = [], item;
-    
+
     if (typeof params === 'function' && typeof callback === 'undefined') {
       callback = params;
       params = {};
     }
-    
+
     if (params.filter) {
       if (params.filter instanceof Array) {
         params.filter.forEach(function(el) {
@@ -48,14 +50,15 @@ UsersProxy.prototype = {
     if (params.per_page) {
       message.per_page = params.per_page;
     }
-    
-    if (config.debug) { console.log('UsersProxy.listUsers', message); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
   },
 
   get: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'get', params);
+
     var url;
-    
+
     if (typeof params === 'number') {
       url = params;
       params = {};
@@ -77,8 +80,7 @@ UsersProxy.prototype = {
         params = {};
       }
     }
-    
-    if (config.debug) { console.log('UsersProxy.get', params); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, url), data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -87,7 +89,8 @@ UsersProxy.prototype = {
   },
 
   create: function(params, callback) {
-    if (config.debug) { console.log('UsersProxy.create', params); }
+    Utils.QBLog('[UsersProxy]', 'create', params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -96,7 +99,8 @@ UsersProxy.prototype = {
   },
 
   update: function(id, params, callback) {
-    if (config.debug) { console.log('UsersProxy.update', id, params); }
+    Utils.QBLog('[UsersProxy]', 'update', id, params);
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'PUT', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -105,8 +109,10 @@ UsersProxy.prototype = {
   },
 
   delete: function(params, callback) {
+    Utils.QBLog('[UsersProxy]', 'delete', params);
+
     var url;
-    
+
     if (typeof params === 'number') {
       url = params;
     } else {
@@ -114,13 +120,13 @@ UsersProxy.prototype = {
         url = 'external/' + params.external;
       }
     }
-    
-    if (config.debug) { console.log('UsersProxy.delete', url); }
+
     this.service.ajax({url: Utils.getUrl(config.urls.users, url), type: 'DELETE', dataType: 'text'}, callback);
   },
 
   resetPassword: function(email, callback) {
-    if (config.debug) { console.log('UsersProxy.resetPassword', email); }
+    Utils.QBLog('[UsersProxy]', 'resetPassword', email);
+
     this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}}, callback);
   }
 
@@ -132,14 +138,14 @@ module.exports = UsersProxy;
 ---------------------------------------------------------------------- */
 function generateFilter(obj) {
   var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
-  
+
   if (obj.value instanceof Array) {
     if (type == 'object') {
       type = typeof obj.value[0];
     }
     obj.value = obj.value.toString();
   }
-  
+
   return [type, obj.field, obj.param, obj.value].join(' ');
 }
 

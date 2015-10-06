@@ -1,15 +1,16 @@
 var QBApp = {
-  appId: 92,
-  authKey: 'wJHdOcQSxXQGWx5',
-  authSecret: 'BTFsj7Rtt27DAmT'
+  appId: 28287,
+  authKey: 'XydaWcf8OO9xhGT',
+  authSecret: 'JZfqTspCvELAmnW'
 };
 
 var QBUser = {
-	login: "content_js_login",   
-	password: "content_js_password" 
+ login: "contentuser",
+ password: "contentuser"
 };
 
-var QBConfig = {
+var CONFIG = {
 
-}
+};
 
+QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);

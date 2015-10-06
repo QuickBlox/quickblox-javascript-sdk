@@ -12,16 +12,16 @@ var config = {
 };
 
 var QBUser1 = {
-        id: 5449429,
-        name: 'chatsampleuser111',
-        login: 'chatsampleuser111',
-        pass: 'chatsampleuser111'
+        id: 5449353,
+        name: 'rosteruser111',
+        login: 'rosteruser111',
+        pass: 'rosteruser111'
     },
     QBUser2 = {
-        id: 5449431,
-        name: 'chatsampleuser112',
-        login: 'chatsampleuser112',
-        pass: 'chatsampleuser112'
+        id: 5449354,
+        name: 'rosteruser112',
+        login: 'rosteruser112',
+        pass: 'rosteruser112'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
