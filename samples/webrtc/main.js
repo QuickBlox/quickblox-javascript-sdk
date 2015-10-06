@@ -57,7 +57,7 @@ $(document).ready(function() {
   // Audio call
   //
   $('#audiocall').on('click', function() {
-    $('#audiocall, #videocall').attr('disabled', 'disabled');
+    /* $('#audiocall, #videocall').attr('disabled', 'disabled'); */
 
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
@@ -76,7 +76,7 @@ $(document).ready(function() {
   // Video call
   //
   $('#videocall').on('click', function() {
-    $('#audiocall, #videocall').attr('disabled', 'disabled');
+    /* $('#audiocall, #videocall').attr('disabled', 'disabled'); */
 
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
@@ -317,37 +317,42 @@ function callWithParams(mediaParams, isOnlyAudio){
   // create a session
   //
   currentSession = QB.webrtc.createNewSession(Object.keys(callees), isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
-  console.log("Session: " + currentSession);
 
-  // get local stream
-  //
-  currentSession.getUserMedia(mediaParams, function(err, stream) {
-    if (err) {
-      console.log(err);
-      updateInfoMessage('Error: devices (camera or microphone) are not found');
+  /**
+   * Check session
+   */
+  //if( currentSession ) {
+    // get local stream
+    //
 
-    } else {
-      setupVolumeMeter(stream);
+    currentSession.getUserMedia(mediaParams, function(err, stream) {
+      if (err) {
+        updateInfoMessage('Error: devices (camera or microphone) are not found');
 
-      $('.btn_mediacall, #hangup').removeAttr('disabled');
-      $('#audiocall, #videocall').attr('disabled', 'disabled');
-      updateInfoMessage('Calling...');
-      $('#callingSignal')[0].play();
+      } else {
 
-      // create video elements for opponents
-      //
-      Object.keys(callees).forEach(function(userID, i, arr) {
-        var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
-        $(videoEl).appendTo('.remoteControls');
-      });
+        setupVolumeMeter(stream);
 
-      // start call
-      //
-      var extension = {
-      };
-      currentSession.call(extension);
-    }
-  });
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        $('#audiocall, #videocall').attr('disabled', 'disabled');
+        updateInfoMessage('Calling...');
+        $('#callingSignal')[0].play();
+
+        // create video elements for opponents
+        //
+        Object.keys(callees).forEach(function(userID, i, arr) {
+          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+          $(videoEl).appendTo('.remoteControls');
+        });
+
+        // start call
+        //
+        var extension = {
+        };
+        currentSession.call(extension);
+      }
+    });
+  //}
 }
 
 function clearRemoteVideoView(userID){

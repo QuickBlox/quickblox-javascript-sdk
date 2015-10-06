@@ -53,9 +53,13 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
-   return newSession;
- }
+
+   //if( !this.isExistActiveSession(this.sessions) ) {
+     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+   //} else {
+     //throw new Error('Session already have state "NEW" or "ACTIVE"');
+   //}
+ };
 
   WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
     var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
@@ -85,7 +89,7 @@ function WebRTCClient(service, connection) {
  WebRTCClient.prototype.isSessionActive = function(sessionId){
    var session = this.sessions[sessionId];
 
-   return (session != null && session.state == WebRTCSession.State.ACTIVE);
+   return (session != null && session.state == WebRTCSession.State.ACTIVE || session != null && session.state == WebRTCSession.State.NEW);
  };
 
 /**
