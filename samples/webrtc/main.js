@@ -57,6 +57,8 @@ $(document).ready(function() {
   // Audio call
   //
   $('#audiocall').on('click', function() {
+    $('#audiocall, #videocall').attr('disabled', 'disabled');
+
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
       return;
@@ -74,6 +76,8 @@ $(document).ready(function() {
   // Video call
   //
   $('#videocall').on('click', function() {
+    $('#audiocall, #videocall').attr('disabled', 'disabled');
+
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
       return;
