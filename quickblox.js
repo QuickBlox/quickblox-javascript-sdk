@@ -2228,7 +2228,7 @@ function WebRTCClient(service, connection) {
 /**
  * Check all session and check theirs state
  * @param {object} sessions
- * @returns {boolean} is one of them is
+ * @returns {boolean} is active call exist
  */
 WebRTCClient.prototype.isExistActiveSession = function(sessions){
   var self = this,
@@ -2274,7 +2274,7 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
    Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
    if( self.isExistActiveSession(self.sessions) ) {
-     console.warn('USER IS BUSY');
+     Helpers.trace('User with id ' + userID + 'is busy at now.');
      /* session id */
      extension["sessionID"] = sessionID;
      self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
@@ -8188,8 +8188,8 @@ exports.isBuffer = isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-}).call(this,{"isBuffer":require("/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":34}],44:[function(require,module,exports){
+}).call(this,{"isBuffer":require("C:\\OpenServer\\domains\\quickblox-javascript-sdk\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js")})
+},{"C:\\OpenServer\\domains\\quickblox-javascript-sdk\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js":34}],44:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":39}],45:[function(require,module,exports){
