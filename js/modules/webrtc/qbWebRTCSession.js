@@ -175,7 +175,6 @@ WebRTCSession.prototype.call = function(extension) {
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension) {
-  console.log("_callInternal " + userID);
 
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
@@ -227,8 +226,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
 WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   var self = this;
-
-  console.log("_acceptInternal: " + userID);
 
   // create a peer connection
   //
@@ -528,7 +525,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 }
 
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
-  console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
+  Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
   peerConnection.release();
 
@@ -581,8 +578,6 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   var pcConfig = {
     iceServers: config.webrtc.iceServers
   };
-
-  console.log("pcConfig: " + JSON.stringify(pcConfig));
 
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);

@@ -16,7 +16,6 @@ module.exports = function (grunt) {
       all: {
         files: {
           'quickblox.js': ['js/qbMain.js'],
-          'samples/webrtc/quickblox.js': ['js/qbMain.js'],
         }
       }
     },

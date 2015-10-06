@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-05 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-06 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2542,7 +2542,6 @@ WebRTCSession.prototype.call = function(extension) {
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension) {
-  console.log("_callInternal " + userID);
 
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
@@ -2594,8 +2593,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
 WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   var self = this;
-
-  console.log("_acceptInternal: " + userID);
 
   // create a peer connection
   //
@@ -2895,7 +2892,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 }
 
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
-  console.log("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
+  Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
   peerConnection.release();
 
@@ -2948,8 +2945,6 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   var pcConfig = {
     iceServers: config.webrtc.iceServers
   };
-
-  console.log("pcConfig: " + JSON.stringify(pcConfig));
 
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);
@@ -3110,6 +3105,7 @@ function _prepareExtension(extension) {
 }
 
 module.exports = WebRTCSession;
+
 },{"../../qbConfig":15,"../../qbUtils":19,"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSignalingConstants":12}],12:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK

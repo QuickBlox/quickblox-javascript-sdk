@@ -1,25 +1,24 @@
-QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, QBConfig);
+
+var uploadPages = 0;
+var filesCount = 0;
+var finished = false;
 
 $(document).ready(function(){
 
 QB.createSession(QBUser, function(err, result) {
-	if (err) { 
+	if (err) {
 		console.log('Something went wrong: ' + err);
 	} else {
-		var token = result.token;
-			user_id = result.id;
-			uploadPages = 0;
-			filesCount = 0;
-			finished = false;
+		var user_id = result.id;
 
 		console.log('Session created with id ' + result.id);
 
-		retrieveFiles(token);
+		retrieveFiles();
 
 		// uploading files scroll event
 		$(window).scroll(function() {
 			if  ($(window).scrollTop() == $(document).height() - $(window).height()){
-				retrieveFiles(token);
+				retrieveFiles();
 			}
 		});
 
@@ -38,13 +37,13 @@ QB.createSession(QBUser, function(err, result) {
 				if (err) {
 					console.log(err);
 				} else {
-					console.log(response);	
+					console.log(response);
 
 					$("#progress").fadeOut(400);
 
 					var uploadedFile = response;
 
-					showImage(uploadedFile.id, uploadedFile.name, token, false);
+					showImage(uploadedFile.id, uploadedFile.name, false);
 				}
 			});
 		});
@@ -53,8 +52,8 @@ QB.createSession(QBUser, function(err, result) {
 });
 
 // show image
-function showImage(fileId, fileName, token, toAppend){
-	var imageHTML = "<img src='http://api.quickblox.com/blobs/"+fileId+"/download.xml?token="+token+"' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
+function showImage(fileId, fileName, toAppend){
+	var imageHTML = "<img src='" + QB.content.privateUrl(fileId) + "' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
 	if (toAppend) {
 		$('#pictures').append(imageHTML);
 	} else {
@@ -63,7 +62,7 @@ function showImage(fileId, fileName, token, toAppend){
 }
 
 // get content files
-function retrieveFiles(token) {
+function retrieveFiles() {
 	if (finished != true) {
 		$("#loadwnd").show(0);
 		uploadPages = uploadPages + 1;
@@ -74,7 +73,7 @@ function retrieveFiles(token) {
 			} else {
 				$.each(response.items, function(index, item){
 					var cur = this.blob;
-					showImage(cur.id, cur.name, token, true);
+					showImage(cur.id, cur.name, true);
 				});
 
 				console.log(response);
