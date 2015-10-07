@@ -52,22 +52,28 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
-   return newSession;
+  var isSessionNew = this.isExistNewSession(this.sessions),
+      isSessionActive = this.isExistActiveSession(this.sessions);
+      
+  if(!isSessionNew && !isSessionActive) {
+    return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+  } else {
+    throw new Error('Session already have status "NEW" or "ACTIVE"');
+  }
  }
 
-  WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
+WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
+  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
 
-    // set callbacks
-    newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
-    newSession.onRemoteStreamListener = this.onRemoteStreamListener;
-    newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
-    newSession.onSessionCloseListener = this.onSessionCloseListener;
+  // set callbacks
+  newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
+  newSession.onRemoteStreamListener = this.onRemoteStreamListener;
+  newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+  newSession.onSessionCloseListener = this.onSessionCloseListener;
 
-    this.sessions[newSession.ID] = newSession;
-    return newSession;
-  }
+  this.sessions[newSession.ID] = newSession;
+  return newSession;
+}
 
  /**
   * Deletes a session
@@ -79,11 +85,61 @@ function WebRTCClient(service, connection) {
 
 
  /**
+ * Check all session and find session with status 'NEW'
+ * @param {object} sessions
+ * @returns {boolean} is active call exist
+ */
+WebRTCClient.prototype.isExistNewSession = function(sessions){
+  var self = this,
+      ans = false;
+
+  if(Object.keys(sessions).length > 0) {
+    for(var i in sessions) {
+      if( self.isSessionNew(sessions[i].ID) ) {
+        ans = true; break;
+      }
+    }
+  }
+
+  return ans;
+};
+
+/**
+ * Checks is session new or not
+ * @param {string} Session ID
+ */
+WebRTCClient.prototype.isSessionNew = function(sessionId){
+   var session = this.sessions[sessionId];
+   return (session != null && session.state == WebRTCSession.State.NEW);
+};
+
+/**
+* Check all session and find session with status 'ACTIVE'
+* @param {object} sessions
+* @returns {boolean} is active call exist
+*/
+WebRTCClient.prototype.isExistActiveSession = function(sessions){
+ var self = this,
+     ans = false;
+
+ if(Object.keys(sessions).length > 0) {
+   for(var i in sessions) {
+     if( self.isSessionActive(sessions[i].ID) ) {
+       ans = true; break;
+     }
+   }
+ }
+
+ return ans;
+};
+
+
+ /**
   * Checks is session active or not
   * @param {string} Session ID
   */
  WebRTCClient.prototype.isSessionActive = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
+    var session = this.sessions[sessionId];
     return (session != null && session.state == WebRTCSession.State.ACTIVE);
  };
 
