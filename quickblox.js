@@ -2156,6 +2156,7 @@ var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
+var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -2191,7 +2192,7 @@ function WebRTCClient(service, connection) {
  WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
   var isSessionNew = this.isExistNewSession(this.sessions),
       isSessionActive = this.isExistActiveSession(this.sessions);
-      
+
   if(!isSessionNew && !isSessionActive) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
@@ -2304,22 +2305,33 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
  //
 
 
- WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
+WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+  var self =this;
 
-   var session = this.sessions[sessionID];
-   if(!session){
-     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+  Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+  if( self.isExistNewSession(self.sessions) || self.isExistActiveSession(self.sessions) ) {
+    Helpers.trace('User with id ' + userID + ' is busy at now.');
 
-     if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extensionClone);
-     }
-   }
-   session.processOnCall(userID, extension);
- };
+    extension["sessionID"] = sessionID;
+    self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
+  } else {
+    var session = this.sessions[sessionID];
+
+    if(!session){
+      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+
+      var extensionClone = JSON.parse(JSON.stringify(extension));
+      this._cleanupExtension(extensionClone);
+
+      if (typeof this.onCallListener === 'function'){
+        this.onCallListener(session, extensionClone);
+      }
+    }
+
+    session.processOnCall(userID, extension);
+  }
+};
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
    Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
@@ -2409,7 +2421,7 @@ WebRTCClient.prototype._cleanupExtension = function(extension){
 
 module.exports = WebRTCClient;
 
-},{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
+},{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingConstants":12,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
