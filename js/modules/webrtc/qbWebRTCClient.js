@@ -45,22 +45,41 @@ function WebRTCClient(service, connection) {
   */
  WebRTCClient.prototype.sessions = {};
 
+WebRTCClient.prototype.checkSameArrays = function(exOpponents, currentOpponents) {
+  var ans = false,
+      cOpponents = currentOpponents.sort();
+
+    if(exOpponents.length) {
+      exOpponents.forEach(function(i) {
+        var array = i.sort();
+
+        ans = (array.length == cOpponents.length) && array.every(function(el, index) {
+          return el === cOpponents[index];
+        });
+      });
+  }
+
+  return ans;
+}
+
 /**
  * Creates the new session.
  * @param {number} Initiator ID
  * @param {array} Opponents IDs
  * @param {enum} Call type
  */
- WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
   var isSessionNew = this.isExistNewSession(this.sessions),
-      isSessionActive = this.isExistActiveSession(this.sessions);
-      
-  if(!isSessionNew && !isSessionActive) {
+      isSessionActive = this.isExistActiveSession(this.sessions),
+      opponentsIdNASessions = this.getOpponentsIdNASessions(this.sessions),
+      isIdentifyOpponents = this.checkSameArrays(opponentsIdNASessions, opponentsIDs);
+
+  if(!isSessionNew && !isSessionActive && !isIdentifyOpponents) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
     throw new Error('Session already have status "NEW" or "ACTIVE"');
   }
- }
+}
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
   var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
@@ -82,6 +101,20 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
  WebRTCClient.prototype.clearSession = function(sessionId){
    delete WebRTCClient.sessions[sessionId];
  }
+
+WebRTCClient.prototype.getOpponentsIdNASessions = function(sessions) {
+  var opponents = [];
+
+  if(Object.keys(sessions).length > 0) {
+    for(var i in sessions) {
+      if(sessions[i].status === WebRTCSession.State.NEW || sessions[i].status === WebRTCSession.State.ACTIVE) {
+        opponents.push( sessions[i].opponentsIDs );
+      }
+    }
+  }
+
+  return opponents;
+}
 
 
  /**
