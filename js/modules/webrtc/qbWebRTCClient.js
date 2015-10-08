@@ -19,6 +19,7 @@ var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
+var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -166,20 +167,31 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
 
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+   var self =this;
+
    Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-   var session = this.sessions[sessionID];
-   if(!session){
-     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+   if( self.isExistNewSession(self.sessions) || self.isExistActiveSession(self.sessions) ) {
+     Helpers.trace('User with id ' + userID + ' is busy at now.');
 
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+     extension["sessionID"] = sessionID;
+     self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
+   } else {
+     var session = this.sessions[sessionID];
 
-     if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extensionClone);
+     if(!session){
+       session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+
+       var extensionClone = JSON.parse(JSON.stringify(extension));
+       this._cleanupExtension(extensionClone);
+
+       if (typeof this.onCallListener === 'function'){
+         this.onCallListener(session, extensionClone);
+       }
      }
+
+     session.processOnCall(userID, extension);
    }
-   session.processOnCall(userID, extension);
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
