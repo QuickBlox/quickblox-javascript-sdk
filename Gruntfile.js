@@ -15,7 +15,7 @@ module.exports = function (grunt) {
       },
       all: {
         files: {
-          'quickblox.js': ['js/qbMain.js']
+          'quickblox.js': ['js/qbMain.js'],
         }
       }
     },
@@ -32,8 +32,13 @@ module.exports = function (grunt) {
     },
 
     watch: {
-      files: ['js/*.js', 'js/modules/*.js'],
-      tasks: ['browserify', 'uglify']
+      files: ['js/*.js', 'js/modules/*.js', 'js/modules/webrtc/*.js'],
+      tasks: ['browserify'],
+      options: {
+        spawn: false,
+        debounceDelay: 250,
+        livereload: true
+      }
     },
 
     connect: {
@@ -45,6 +50,15 @@ module.exports = function (grunt) {
           open: true,
           keepalive: true
         }
+      }
+    },
+
+    parallel: {
+      assets: {
+        options: {
+          grunt: true
+        },
+        tasks: ['watch', 'connect']
       }
     }
 
@@ -59,5 +73,8 @@ module.exports = function (grunt) {
     'connect'
   ]);
 
+  grunt.registerTask('server_and_watch', ['parallel']);
+
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-parallel');
 };
