@@ -475,13 +475,18 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var self = this,
       peerConnection = self.peerConnections[userID];
 
-  if( Object.keys(self.peerConnections).length ) {
-      Object.keys(self.peerConnections).forEach(function(key) {
-        self.peerConnections[key]._clearDialingTimer();
-        self.peerConnections[key].release();
-      });
+  if(self.answerTimer === null ) {
+    self.peerConnections[userID]._clearDialingTimer();
+    self.peerConnections[userID].release();
   } else {
-    Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+    if( Object.keys(self.peerConnections).length ) {
+        Object.keys(self.peerConnections).forEach(function(key) {
+          self.peerConnections[key]._clearDialingTimer();
+          self.peerConnections[key].release();
+        });
+    } else {
+      Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+    }
   }
 
   this._closeSessionIfAllConnectionsClosed();

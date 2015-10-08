@@ -225,6 +225,7 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
    Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
 
    var session = this.sessions[sessionID];
+
    if(session){
      var extensionClone = JSON.parse(JSON.stringify(extension));
      this._cleanupExtension(extensionClone);
@@ -306,4 +307,4 @@ function getOpponentsIdNASessions(sessions) {
   }
 
   return opponents;
-}
+};

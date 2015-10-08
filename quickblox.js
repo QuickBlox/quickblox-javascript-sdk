@@ -2362,6 +2362,7 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
    Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
 
    var session = this.sessions[sessionID];
+   console.info(session);
    if(session){
      var extensionClone = JSON.parse(JSON.stringify(extension));
      this._cleanupExtension(extensionClone);
@@ -2443,7 +2444,7 @@ function getOpponentsIdNASessions(sessions) {
   }
 
   return opponents;
-}
+};
 
 },{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
 /*
@@ -2999,13 +3000,18 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var self = this,
       peerConnection = self.peerConnections[userID];
 
-  if( Object.keys(self.peerConnections).length ) {
-      Object.keys(self.peerConnections).forEach(function(key) {
-        self.peerConnections[key]._clearDialingTimer();
-        self.peerConnections[key].release();
-      });
+  if(self.answerTimer === null ) {
+    self.peerConnections[userID]._clearDialingTimer();
+    self.peerConnections[userID].release();
   } else {
-    Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+    if( Object.keys(self.peerConnections).length ) {
+        Object.keys(self.peerConnections).forEach(function(key) {
+          self.peerConnections[key]._clearDialingTimer();
+          self.peerConnections[key].release();
+        });
+    } else {
+      Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+    }
   }
 
   this._closeSessionIfAllConnectionsClosed();
