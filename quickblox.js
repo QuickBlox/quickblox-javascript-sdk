@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-07 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-08 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2156,7 +2156,6 @@ var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
-var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -2189,16 +2188,16 @@ function WebRTCClient(service, connection) {
  * @param {array} Opponents IDs
  * @param {enum} Call type
  */
- WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-  var isSessionNew = this.isExistNewSession(this.sessions),
-      isSessionActive = this.isExistActiveSession(this.sessions);
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+  var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
+      isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
-  if(!isSessionNew && !isSessionActive) {
+  if(!isIdentifyOpponents) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
     throw new Error('Session already have status "NEW" or "ACTIVE"');
   }
- }
+}
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
   var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
@@ -2220,7 +2219,6 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
  WebRTCClient.prototype.clearSession = function(sessionId){
    delete WebRTCClient.sessions[sessionId];
  }
-
 
  /**
  * Check all session and find session with status 'NEW'
@@ -2271,7 +2269,6 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
  return ans;
 };
 
-
  /**
   * Checks is session active or not
   * @param {string} Session ID
@@ -2305,33 +2302,22 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
  //
 
 
-WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-  var self =this;
+ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-  Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
+   var session = this.sessions[sessionID];
+   if(!session){
+     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
-  if( self.isExistNewSession(self.sessions) || self.isExistActiveSession(self.sessions) ) {
-    Helpers.trace('User with id ' + userID + ' is busy at now.');
+     var extensionClone = JSON.parse(JSON.stringify(extension));
+     this._cleanupExtension(extensionClone);
 
-    extension["sessionID"] = sessionID;
-    self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
-  } else {
-    var session = this.sessions[sessionID];
-
-    if(!session){
-      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-
-      var extensionClone = JSON.parse(JSON.stringify(extension));
-      this._cleanupExtension(extensionClone);
-
-      if (typeof this.onCallListener === 'function'){
-        this.onCallListener(session, extensionClone);
-      }
-    }
-
-    session.processOnCall(userID, extension);
-  }
-};
+     if (typeof this.onCallListener === 'function'){
+       this.onCallListener(session, extensionClone);
+     }
+   }
+   session.processOnCall(userID, extension);
+ };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
    Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
@@ -2421,7 +2407,42 @@ WebRTCClient.prototype._cleanupExtension = function(extension){
 
 module.exports = WebRTCClient;
 
-},{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingConstants":12,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
+/**
+  * PRIVATE FUNCTIONS
+  */
+
+function isOpponentsEqual(exOpponents, currentOpponents) {
+  var ans = false,
+      cOpponents = currentOpponents.sort();
+
+    if(exOpponents.length) {
+      exOpponents.forEach(function(i) {
+        var array = i.sort();
+
+        ans = (array.length == cOpponents.length) && array.every(function(el, index) {
+          return el === cOpponents[index];
+        });
+      });
+  }
+
+  return ans;
+};
+
+function getOpponentsIdNASessions(sessions) {
+  var opponents = [];
+
+  if(Object.keys(sessions).length > 0) {
+    for(var i in sessions) {
+      if(sessions[i].status === WebRTCSession.State.NEW || sessions[i].status === WebRTCSession.State.ACTIVE) {
+        opponents.push( sessions[i].opponentsIDs );
+      }
+    }
+  }
+
+  return opponents;
+}
+
+},{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
