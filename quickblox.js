@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-06 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-08 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2188,23 +2188,29 @@ function WebRTCClient(service, connection) {
  * @param {array} Opponents IDs
  * @param {enum} Call type
  */
- WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-   var newSession = this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
-   return newSession;
- }
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+  var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
+      isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
-  WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
-
-    // set callbacks
-    newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
-    newSession.onRemoteStreamListener = this.onRemoteStreamListener;
-    newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
-    newSession.onSessionCloseListener = this.onSessionCloseListener;
-
-    this.sessions[newSession.ID] = newSession;
-    return newSession;
+  if(!isIdentifyOpponents) {
+    return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+  } else {
+    throw new Error('Session already have status "NEW" or "ACTIVE"');
   }
+}
+
+WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
+  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
+
+  // set callbacks
+  newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
+  newSession.onRemoteStreamListener = this.onRemoteStreamListener;
+  newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
+  newSession.onSessionCloseListener = this.onSessionCloseListener;
+
+  this.sessions[newSession.ID] = newSession;
+  return newSession;
+}
 
  /**
   * Deletes a session
@@ -2214,13 +2220,61 @@ function WebRTCClient(service, connection) {
    delete WebRTCClient.sessions[sessionId];
  }
 
+ /**
+ * Check all session and find session with status 'NEW'
+ * @param {object} sessions
+ * @returns {boolean} is active call exist
+ */
+WebRTCClient.prototype.isExistNewSession = function(sessions){
+  var self = this,
+      ans = false;
+
+  if(Object.keys(sessions).length > 0) {
+    for(var i in sessions) {
+      if( self.isSessionNew(sessions[i].ID) ) {
+        ans = true; break;
+      }
+    }
+  }
+
+  return ans;
+};
+
+/**
+ * Checks is session new or not
+ * @param {string} Session ID
+ */
+WebRTCClient.prototype.isSessionNew = function(sessionId){
+   var session = this.sessions[sessionId];
+   return (session != null && session.state == WebRTCSession.State.NEW);
+};
+
+/**
+* Check all session and find session with status 'ACTIVE'
+* @param {object} sessions
+* @returns {boolean} is active call exist
+*/
+WebRTCClient.prototype.isExistActiveSession = function(sessions){
+ var self = this,
+     ans = false;
+
+ if(Object.keys(sessions).length > 0) {
+   for(var i in sessions) {
+     if( self.isSessionActive(sessions[i].ID) ) {
+       ans = true; break;
+     }
+   }
+ }
+
+ return ans;
+};
 
  /**
   * Checks is session active or not
   * @param {string} Session ID
   */
  WebRTCClient.prototype.isSessionActive = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
+    var session = this.sessions[sessionId];
     return (session != null && session.state == WebRTCSession.State.ACTIVE);
  };
 
@@ -2352,6 +2406,41 @@ WebRTCClient.prototype._cleanupExtension = function(extension){
 }
 
 module.exports = WebRTCClient;
+
+/**
+  * PRIVATE FUNCTIONS
+  */
+
+function isOpponentsEqual(exOpponents, currentOpponents) {
+  var ans = false,
+      cOpponents = currentOpponents.sort();
+
+    if(exOpponents.length) {
+      exOpponents.forEach(function(i) {
+        var array = i.sort();
+
+        ans = (array.length == cOpponents.length) && array.every(function(el, index) {
+          return el === cOpponents[index];
+        });
+      });
+  }
+
+  return ans;
+};
+
+function getOpponentsIdNASessions(sessions) {
+  var opponents = [];
+
+  if(Object.keys(sessions).length > 0) {
+    for(var i in sessions) {
+      if(sessions[i].status === WebRTCSession.State.NEW || sessions[i].status === WebRTCSession.State.ACTIVE) {
+        opponents.push( sessions[i].opponentsIDs );
+      }
+    }
+  }
+
+  return opponents;
+}
 
 },{"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSession":11,"./qbWebRTCSignalingProcessor":13,"./qbWebRTCSignalingProvider":14}],10:[function(require,module,exports){
 /*
@@ -4071,20 +4160,22 @@ var rootParent = {}
  */
 Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
   ? global.TYPED_ARRAY_SUPPORT
-  : (function () {
-      function Bar () {}
-      try {
-        var arr = new Uint8Array(1)
-        arr.foo = function () { return 42 }
-        arr.constructor = Bar
-        return arr.foo() === 42 && // typed array instances can be augmented
-            arr.constructor === Bar && // constructor can be set
-            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-      } catch (e) {
-        return false
-      }
-    })()
+  : typedArraySupport()
+
+function typedArraySupport () {
+  function Bar () {}
+  try {
+    var arr = new Uint8Array(1)
+    arr.foo = function () { return 42 }
+    arr.constructor = Bar
+    return arr.foo() === 42 && // typed array instances can be augmented
+        arr.constructor === Bar && // constructor can be set
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+  } catch (e) {
+    return false
+  }
+}
 
 function kMaxLength () {
   return Buffer.TYPED_ARRAY_SUPPORT
@@ -5038,7 +5129,7 @@ Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -5055,7 +5146,7 @@ Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -5069,7 +5160,7 @@ Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -5091,7 +5182,7 @@ Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert
     this[offset + 3] = (value >>> 24)
     this[offset + 2] = (value >>> 16)
     this[offset + 1] = (value >>> 8)
-    this[offset] = value
+    this[offset] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, true)
   }
@@ -5106,7 +5197,7 @@ Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }
@@ -5159,7 +5250,7 @@ Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -5168,7 +5259,7 @@ Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -5182,7 +5273,7 @@ Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) 
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -5194,7 +5285,7 @@ Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
     this[offset + 2] = (value >>> 16)
     this[offset + 3] = (value >>> 24)
@@ -5213,7 +5304,7 @@ Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) 
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }
@@ -8159,8 +8250,8 @@ exports.isBuffer = isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-}).call(this,{"isBuffer":require("/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":34}],44:[function(require,module,exports){
+}).call(this,{"isBuffer":require("D:\\OpenServer\\domains\\quickblox-javascript-sdk\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js")})
+},{"D:\\OpenServer\\domains\\quickblox-javascript-sdk\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js":34}],44:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":39}],45:[function(require,module,exports){
