@@ -17,8 +17,6 @@ $(document).ready(function() {
 
   buildUsers('.users-wrap.caller');
 
-  $('#audiocall, #videocall').removeAttr('disabled');
-
   // Choose user
   //
   $(document).on('click', '.choose-user button', function() {
@@ -57,12 +55,12 @@ $(document).ready(function() {
   // Audio call
   //
   $('#audiocall').on('click', function() {
-    $('#audiocall, #videocall').attr('disabled', 'disabled');
-
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
       return;
     }
+
+    $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
 
     var mediaParams = {
       audio: true,
@@ -76,12 +74,13 @@ $(document).ready(function() {
   // Video call
   //
   $('#videocall').on('click', function() {
-    $('#audiocall, #videocall').attr('disabled', 'disabled');
 
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
       return;
     }
+
+    $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
 
     var mediaParams = {
       audio: true,
@@ -102,6 +101,19 @@ $(document).ready(function() {
     };
 
     callWithParams(mediaParams, false);
+  });
+
+  // Screen sharing
+  //
+  $('#screen_sharing').on('click', function() {
+    if(Object.keys(callees).length == 0){
+      alert('Please choose users to call');
+      return;
+    }
+
+    $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
+
+    callWithScreenSharing();
   });
 
   // Accept call
@@ -158,7 +170,7 @@ $(document).ready(function() {
         setupVolumeMeter(stream);
 
         $('.btn_mediacall, #hangup').removeAttr('disabled');
-        $('#audiocall, #videocall').attr('disabled', 'disabled');
+        $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
 
         var extension = {};
         currentSession.accept(extension);
@@ -322,14 +334,13 @@ function callWithParams(mediaParams, isOnlyAudio){
   //
   currentSession.getUserMedia(mediaParams, function(err, stream) {
     if (err) {
-      console.log(err);
+      console.log("getUserMedia error: " + err);
       updateInfoMessage('Error: devices (camera or microphone) are not found');
 
     } else {
       setupVolumeMeter(stream);
 
       $('.btn_mediacall, #hangup').removeAttr('disabled');
-      $('#audiocall, #videocall').attr('disabled', 'disabled');
       updateInfoMessage('Calling...');
       $('#callingSignal')[0].play();
 
@@ -349,6 +360,50 @@ function callWithParams(mediaParams, isOnlyAudio){
   });
 }
 
+function callWithScreenSharing(){
+
+  // create a session
+  //
+  currentSession = QB.webrtc.createNewSession(Object.keys(callees), QB.webrtc.CallType.VIDEO);
+
+  getScreenId(function (error, sourceId, screenConstraints) {
+    console.log("sourceId: " + sourceId + ", screenConstraints: " + JSON.stringify(screenConstraints));
+
+    if(error) {
+      alert('getScreenId error ' + error + '.');
+      return false;
+    }
+
+    screenConstraints["elemId"] = 'localVideo',
+
+    // get local stream
+    //
+    currentSession.getUserMedia(screenConstraints, function(err, stream) {
+      if (err) {
+        console.log("getUserMedia error: " + err);
+        updateInfoMessage('Error accessing the screen sharing feature');
+      } else {
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        updateInfoMessage('Calling...');
+        $('#callingSignal')[0].play();
+
+        // create video elements for opponents
+        //
+        Object.keys(callees).forEach(function(userID, i, arr) {
+          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+          $(videoEl).appendTo('.remoteControls');
+        });
+
+        // start call
+        //
+        var extension = {
+        };
+        currentSession.call(extension);
+      }
+    });
+  });
+}
+
 function clearRemoteVideoView(userID){
   if(currentSession !== null){
     var videoElementID = 'remoteVideo_' + userID;
@@ -365,7 +420,7 @@ function updateUIOnHungUp(){
   updateInfoMessage('Call is stopped. Logged in as ' + caller.full_name);
 
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
-  $('#audiocall, #videocall').removeAttr('disabled');
+  $('#audiocall, #videocall, #screen_sharing').removeAttr('disabled');
   $('video').attr('src', '');
   $('#callingSignal')[0].pause();
   $('#endCallSignal')[0].play();
