@@ -52,12 +52,10 @@ function WebRTCClient(service, connection) {
  * @param {enum} Call type
  */
 WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
-  var isSessionNew = this.isExistNewSession(this.sessions),
-      isSessionActive = this.isExistActiveSession(this.sessions),
-      opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
+  var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
       isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
-  if(!isSessionNew && !isSessionActive && !isIdentifyOpponents) {
+  if(!isIdentifyOpponents) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
     throw new Error('Session already have status "NEW" or "ACTIVE"');
