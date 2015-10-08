@@ -38,6 +38,8 @@ function WebRTCClient(service, connection) {
   this.SessionConnectionState = Helpers.SessionConnectionState;
   this.CallType = Helpers.CallType;
   this.PeerConnectionState = RTCPeerConnection.State;
+
+  this.sessions = {};
 }
 
  /**
@@ -59,7 +61,7 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
   if(!isIdentifyOpponents) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
-    throw new Error('Session already have status "NEW" or "ACTIVE"');
+    throw new Error("Can't create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.");
   }
 }
 
@@ -307,11 +309,12 @@ function getOpponentsIdNASessions(sessions) {
   var opponents = [];
 
   if(Object.keys(sessions).length > 0) {
-    for(var i in sessions) {
-      if(sessions[i].status === WebRTCSession.State.NEW || sessions[i].status === WebRTCSession.State.ACTIVE) {
-        opponents.push( sessions[i].opponentsIDs );
+    Object.keys(sessions).forEach(function(key, i, arr) {
+      var session = sessions[key];
+      if(session.state === WebRTCSession.State.NEW || session.state === WebRTCSession.State.ACTIVE) {
+        opponents.push(session.opponentsIDs);
       }
-    }
+    });
   }
 
   return opponents;
