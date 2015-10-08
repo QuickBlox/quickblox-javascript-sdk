@@ -77,7 +77,7 @@ $(document).ready(function() {
   //
   $('#videocall').on('click', function() {
     $('#audiocall, #videocall').attr('disabled', 'disabled');
-    
+
     if(Object.keys(callees).length == 0){
       alert('Please choose users to call');
       return;
@@ -317,7 +317,6 @@ function callWithParams(mediaParams, isOnlyAudio){
   // create a session
   //
   currentSession = QB.webrtc.createNewSession(Object.keys(callees), isOnlyAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
-  console.log("Session: " + currentSession);
 
   // get local stream
   //
