@@ -19,6 +19,7 @@ var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
+var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -168,20 +169,30 @@ WebRTCClient.prototype.isExistActiveSession = function(sessions){
 
 
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
+  Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-   var session = this.sessions[sessionID];
-   if(!session){
-     session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+  if(this.isExistNewSession(this.sessions) || this.isExistActiveSession(this.sessions) ) {
+    Helpers.trace('User with id ' + userID + ' is busy at the moment.');
 
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+    delete extension.sdp;
+    delete extension.platform;
+    extension["sessionID"] = sessionID;
 
-     if (typeof this.onCallListener === 'function'){
-       this.onCallListener(session, extensionClone);
-     }
-   }
-   session.processOnCall(userID, extension);
+    this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
+  } else {
+    var session = this.sessions[sessionID];
+    if(!session){
+      session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+
+      var extensionClone = JSON.parse(JSON.stringify(extension));
+      this._cleanupExtension(extensionClone);
+
+      if (typeof this.onCallListener === 'function'){
+        this.onCallListener(session, extensionClone);
+      }
+    }
+    session.processOnCall(userID, extension);
+  }
  };
 
  WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
