@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-08 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-09 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2224,91 +2224,38 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
  }
 
  /**
- * Check all session and find session with status 'NEW'
- * @param {object} sessions
- * @returns {boolean} is active call exist
+ * Check all session and find session with status 'NEW' or 'ACTIVE' which ID != provided
+ * @param {string} session ID
+ * @returns {boolean} if active or new session exist
  */
-WebRTCClient.prototype.isExistNewSession = function(sessions){
-  var self = this,
-      ans = false;
+WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessionID){
 
-  if(Object.keys(sessions).length > 0) {
-    for(var i in sessions) {
-      if( self.isSessionNew(sessions[i].ID) ) {
-        ans = true; break;
+  var self = this;
+  var exist = false;
+
+  if(Object.keys(self.sessions).length > 0) {
+    Object.keys(self.sessions).forEach(function(key, i, arr) {
+      var session = self.sessions[key];
+      if(session.state === WebRTCSession.State.NEW || session.state === WebRTCSession.State.ACTIVE) {
+        if(session.ID !== sessionID){
+          exist = true;
+          // break; // break doesn't work in 'forEach', need to find another way
+        }
       }
-    }
+    });
   }
-
-  return ans;
+  return exist;
 };
-
-/**
- * Checks is session new or not
- * @param {string} Session ID
- */
-WebRTCClient.prototype.isSessionNew = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == WebRTCSession.State.NEW);
-};
-
-/**
-* Check all session and find session with status 'ACTIVE'
-* @param {object} sessions
-* @returns {boolean} is active call exist
-*/
-WebRTCClient.prototype.isExistActiveSession = function(sessions){
- var self = this,
-     ans = false;
-
- if(Object.keys(sessions).length > 0) {
-   for(var i in sessions) {
-     if( self.isSessionActive(sessions[i].ID) ) {
-       ans = true; break;
-     }
-   }
- }
-
- return ans;
-};
-
- /**
-  * Checks is session active or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionActive = function(sessionId){
-    var session = this.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.ACTIVE);
- };
-
- /**
-  * Checks is session rejected or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionRejected = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.REJECTED);
- };
-
- /**
-  * Checks is session hung up or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionHungUp = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.HUNGUP);
- };
 
 
  //
  /////////////////////////// Delegate (signaling) //////////////////////////////
  //
 
-
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-  if(this.isExistNewSession(this.sessions) || this.isExistActiveSession(this.sessions) ) {
+  if(this.isExistNewOrActiveSessionExceptSessionID(sessionID)) {
     Helpers.trace('User with id ' + userID + ' is busy at the moment.');
 
     delete extension.sdp;
@@ -4174,20 +4121,22 @@ var rootParent = {}
  */
 Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
   ? global.TYPED_ARRAY_SUPPORT
-  : (function () {
-      function Bar () {}
-      try {
-        var arr = new Uint8Array(1)
-        arr.foo = function () { return 42 }
-        arr.constructor = Bar
-        return arr.foo() === 42 && // typed array instances can be augmented
-            arr.constructor === Bar && // constructor can be set
-            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-      } catch (e) {
-        return false
-      }
-    })()
+  : typedArraySupport()
+
+function typedArraySupport () {
+  function Bar () {}
+  try {
+    var arr = new Uint8Array(1)
+    arr.foo = function () { return 42 }
+    arr.constructor = Bar
+    return arr.foo() === 42 && // typed array instances can be augmented
+        arr.constructor === Bar && // constructor can be set
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+  } catch (e) {
+    return false
+  }
+}
 
 function kMaxLength () {
   return Buffer.TYPED_ARRAY_SUPPORT
@@ -5141,7 +5090,7 @@ Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -5158,7 +5107,7 @@ Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -5172,7 +5121,7 @@ Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -5194,7 +5143,7 @@ Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert
     this[offset + 3] = (value >>> 24)
     this[offset + 2] = (value >>> 16)
     this[offset + 1] = (value >>> 8)
-    this[offset] = value
+    this[offset] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, true)
   }
@@ -5209,7 +5158,7 @@ Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }
@@ -5262,7 +5211,7 @@ Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -5271,7 +5220,7 @@ Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -5285,7 +5234,7 @@ Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) 
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -5297,7 +5246,7 @@ Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
     this[offset + 2] = (value >>> 16)
     this[offset + 3] = (value >>> 24)
@@ -5316,7 +5265,7 @@ Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) 
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }

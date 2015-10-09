@@ -87,91 +87,38 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
  }
 
  /**
- * Check all session and find session with status 'NEW'
- * @param {object} sessions
- * @returns {boolean} is active call exist
+ * Check all session and find session with status 'NEW' or 'ACTIVE' which ID != provided
+ * @param {string} session ID
+ * @returns {boolean} if active or new session exist
  */
-WebRTCClient.prototype.isExistNewSession = function(sessions){
-  var self = this,
-      ans = false;
+WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessionID){
 
-  if(Object.keys(sessions).length > 0) {
-    for(var i in sessions) {
-      if( self.isSessionNew(sessions[i].ID) ) {
-        ans = true; break;
+  var self = this;
+  var exist = false;
+
+  if(Object.keys(self.sessions).length > 0) {
+    Object.keys(self.sessions).forEach(function(key, i, arr) {
+      var session = self.sessions[key];
+      if(session.state === WebRTCSession.State.NEW || session.state === WebRTCSession.State.ACTIVE) {
+        if(session.ID !== sessionID){
+          exist = true;
+          // break; // break doesn't work in 'forEach', need to find another way
+        }
       }
-    }
+    });
   }
-
-  return ans;
+  return exist;
 };
-
-/**
- * Checks is session new or not
- * @param {string} Session ID
- */
-WebRTCClient.prototype.isSessionNew = function(sessionId){
-   var session = this.sessions[sessionId];
-   return (session != null && session.state == WebRTCSession.State.NEW);
-};
-
-/**
-* Check all session and find session with status 'ACTIVE'
-* @param {object} sessions
-* @returns {boolean} is active call exist
-*/
-WebRTCClient.prototype.isExistActiveSession = function(sessions){
- var self = this,
-     ans = false;
-
- if(Object.keys(sessions).length > 0) {
-   for(var i in sessions) {
-     if( self.isSessionActive(sessions[i].ID) ) {
-       ans = true; break;
-     }
-   }
- }
-
- return ans;
-};
-
- /**
-  * Checks is session active or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionActive = function(sessionId){
-    var session = this.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.ACTIVE);
- };
-
- /**
-  * Checks is session rejected or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionRejected = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.REJECTED);
- };
-
- /**
-  * Checks is session hung up or not
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.isSessionHungUp = function(sessionId){
-    var session = WebRTCClient.sessions[sessionId];
-    return (session != null && session.state == WebRTCSession.State.HUNGUP);
- };
 
 
  //
  /////////////////////////// Delegate (signaling) //////////////////////////////
  //
 
-
  WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-  if(this.isExistNewSession(this.sessions) || this.isExistActiveSession(this.sessions) ) {
+  if(this.isExistNewOrActiveSessionExceptSessionID(sessionID)) {
     Helpers.trace('User with id ' + userID + ' is busy at the moment.');
 
     delete extension.sdp;
