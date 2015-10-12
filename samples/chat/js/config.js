@@ -8,20 +8,21 @@ var config = {
   chatProtocol: {
     websocket: 'wss://chat.quickblox.com:5291',
     active: 2
-  }
+  },
+  debug: true
 };
 
 var QBUser1 = {
-        id: 5449429,
-        name: 'chatsampleuser111',
-        login: 'chatsampleuser111',
-        pass: 'chatsampleuser111'
+        id: 5966645,
+        name: 'Zurab',
+        login: 'Zurab',
+        pass: '12121212'
     },
     QBUser2 = {
-        id: 5449431,
-        name: 'chatsampleuser112',
-        login: 'chatsampleuser112',
-        pass: 'chatsampleuser112'
+        id: 5967981,
+        name: 'Gusha',
+        login: 'Gusha',
+        pass: '12121212'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);

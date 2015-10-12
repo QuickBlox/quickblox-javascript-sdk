@@ -62,8 +62,8 @@ function ChatProxy(service, webrtcModule, conn) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         markable = stanza.querySelector('markable'),
-        received = stanza.querySelector('received'),
-        displayed = stanza.querySelector('displayed'),
+        delivered = stanza.querySelector('delivered'),
+        read = stanza.querySelector('read'),
         composing = stanza.querySelector('composing'),
         paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
@@ -72,7 +72,7 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        marker = received || displayed || null,
+        marker = delivered || read || null,
         message, extension, attachments, attach, attributes,
         msg;
 
@@ -146,8 +146,17 @@ function ChatProxy(service, webrtcModule, conn) {
 
     // chat markers
     if (marker) {
-      message.markerType = received ? 'received' : 'displayed';
-      message.markerMessageId = marker.getAttribute('id');
+      if (delivered) {
+        if (typeof self.onMessageListener === 'function' && (delivered === 'delivered' || type === 'chat')) {
+          self.onDeliveredStatusListener(messageId, dialogId, userId);
+        }
+      } else {
+        if (typeof self.onMessageListener === 'function' && (read === 'read' || type === 'chat')) {
+          self.onReadStatusListener(messageId, dialogId, userId);
+        }
+      }
+
+      return true;
     }
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
@@ -235,6 +244,16 @@ function ChatProxy(service, webrtcModule, conn) {
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
+    return true;
+  };
+
+  this.onDeliveredStatusListener = function(messageId, dialogId, userId) {
+
+    return true;
+  };
+
+  this.onReadStatusListener = function(messageId, dialogId, userId) {
+
     return true;
   };
 }
@@ -444,38 +463,46 @@ ChatProxy.prototype = {
     }));
   },
 
-  sendDeliveredMessage: function(jid, messageId) {
+  sendDeliveredStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
-    msg.c('received', {
+    msg.c('delivered', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },
 
-  sendReadMessage: function(jid, messageId) {
+  sendReadStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
-    msg.c('displayed', {
+    msg.c('read', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },
