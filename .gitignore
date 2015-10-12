@@ -6,6 +6,7 @@ npm-debug.log
 
 # *Storm
 .idea/*
+.idea/workspace.xml
 
 # Use command grunt for create quickblox.js
 quickblox.js
