@@ -472,13 +472,18 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
-  var self = this,
-      peerConnection = self.peerConnections[userID];
+  var self = this;
 
+  /**
+   * Check whether there is an active call
+   * If answerTimer === null it's means that we have active call
+   */
+  console.info(self.answerTimer);
   if(self.answerTimer === null ) {
     self.peerConnections[userID]._clearDialingTimer();
     self.peerConnections[userID].release();
   } else {
+    /* No one doesn't take a call */
     if( Object.keys(self.peerConnections).length ) {
       Object.keys(self.peerConnections).forEach(function(key) {
         self.peerConnections[key]._clearDialingTimer();
@@ -488,7 +493,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
       Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
     }
   }
-  
+
   this._closeSessionIfAllConnectionsClosed();
 }
 
