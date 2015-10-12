@@ -205,8 +205,8 @@ function ChatProxy(service, webrtcModule, conn) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         markable = stanza.querySelector('markable'),
-        delivered = stanza.querySelector('delivered'),
-        read = stanza.querySelector('read'),
+        delivered = stanza.querySelector('received'),
+        read = stanza.querySelector('displayed'),
         composing = stanza.querySelector('composing'),
         paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
@@ -290,11 +290,11 @@ function ChatProxy(service, webrtcModule, conn) {
     // chat markers
     if (marker) {
       if (delivered) {
-        if (typeof self.onMessageListener === 'function' && (delivered === 'delivered' || type === 'chat')) {
+        if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
           self.onDeliveredStatusListener(messageId, dialogId, userId);
         }
       } else {
-        if (typeof self.onMessageListener === 'function' && (read === 'read' || type === 'chat')) {
+        if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
           self.onReadStatusListener(messageId, dialogId, userId);
         }
       }
@@ -387,16 +387,6 @@ function ChatProxy(service, webrtcModule, conn) {
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
-    return true;
-  };
-
-  this.onDeliveredStatusListener = function(messageId, dialogId, userId) {
-
-    return true;
-  };
-
-  this.onReadStatusListener = function(messageId, dialogId, userId) {
-
     return true;
   };
 }
@@ -616,7 +606,7 @@ ChatProxy.prototype = {
       id: Utils.getBsonObjectId()
     });
 
-    msg.c('delivered', {
+    msg.c('received', {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: params.messageId
     }).up();
@@ -638,7 +628,7 @@ ChatProxy.prototype = {
       id: Utils.getBsonObjectId()
     });
 
-    msg.c('read', {
+    msg.c('displayed', {
       xmlns: Strophe.NS.CHAT_MARKERS,
       id: params.messageId
     }).up();
