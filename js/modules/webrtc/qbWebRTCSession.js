@@ -472,14 +472,23 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 }
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
-  var peerConnection = this.peerConnections[userID];
-  if(peerConnection){
-    peerConnection._clearDialingTimer();
-    peerConnection.release();
-  }else{
-    Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
-  }
+  var self = this,
+      peerConnection = self.peerConnections[userID];
 
+  if(self.answerTimer === null ) {
+    self.peerConnections[userID]._clearDialingTimer();
+    self.peerConnections[userID].release();
+  } else {
+    if( Object.keys(self.peerConnections).length ) {
+      Object.keys(self.peerConnections).forEach(function(key) {
+        self.peerConnections[key]._clearDialingTimer();
+        self.peerConnections[key].release();
+      });
+    } else {
+      Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
+    }
+  }
+  
   this._closeSessionIfAllConnectionsClosed();
 }
 
@@ -607,8 +616,10 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
   // check if all connections are closed
   //
   var isAllConnectionsClosed = true;
+
   for (var key in this.peerConnections) {
     var peerCon = this.peerConnections[key];
+
     if(peerCon.signalingState !== 'closed'){
       isAllConnectionsClosed = false;
       break;
