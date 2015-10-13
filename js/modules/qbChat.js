@@ -46,11 +46,11 @@ function ChatProxy(service, webrtcModule, conn) {
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
- * - onContactListListener
- * - onSubscribeListener
  * - onMessageTypingListener
  * - onDeliveredStatusListener
  * - onReadStatusListener
+ * - onContactListListener
+ * - onSubscribeListener
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectedListener
@@ -138,7 +138,8 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    // chat markers
+    // fire read/delivered listeners
+    //
     if (marker) {
       if (delivered) {
         if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
@@ -162,10 +163,11 @@ function ChatProxy(service, webrtcModule, conn) {
       delay: delay
     };
 
-    // !delay - this needed to don't duplicate messages from chat 2.0 API history
-    // with typical XMPP behavior of history messages in group chat
-    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay))
+    // fire 'onMessageListener'
+    //
+    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
       self.onMessageListener(userId, message);
+    }
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
