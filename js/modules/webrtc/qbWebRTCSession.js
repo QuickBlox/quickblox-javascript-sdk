@@ -476,7 +476,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 
   /**
    * Check whether there is an active call
-   * If answerTimer === null it's means that we have active call
+   * If answerTimer === null it means that we have an active call
    */
   if(self.answerTimer === null ) {
     self.peerConnections[userID]._clearDialingTimer();
