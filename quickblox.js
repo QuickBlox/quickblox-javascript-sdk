@@ -281,18 +281,6 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    // autosend 'received' status
-    if (markable) {
-      params = {
-        messageId: messageId,
-        userId: userId,
-        dialogId: dialogId
-      };
-
-      self.sendDeliveredStatus(params);
-      return true;
-    }
-
     // chat markers
     if (marker) {
       if (delivered) {
@@ -305,6 +293,18 @@ function ChatProxy(service, webrtcModule, conn) {
         }
       }
 
+      return true;
+    }
+
+    // autosend 'received' status
+    if (markable) {
+      params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+      };
+
+      self.sendDeliveredStatus(params);
       return true;
     }
 
