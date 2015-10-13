@@ -20,40 +20,11 @@ function setupMsgScrollHandler() {
     }
   });
 }
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-function onDeliveredStatus(messageId, dialogId, userId) {
-
-  console.log(messageId);
-  console.log(dialogId);
-  console.log(userId);
-
-  alert('Message delivered!');
-}
-
-function onReadStatus(messageId, dialogId, userId) {
-
-  console.log(messageId);
-  console.log(dialogId);
-  console.log(userId);
-
-  alert('Message read!');
-}
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 // on message listener
+//
 function onMessage(userId, msg) {
-  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    var params = {
-      messageId: msg.id,
-      userId: userId,
-      dialogId: msg.dialog_id
-    };
-
-    QB.chat.sendDeliveredStatus(params);
-    QB.chat.sendReadStatus(params);
-
-  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   // This is a notification about dialog creation
   //
   if (msg.extension.notification_type == 1 && !msg.delay) {

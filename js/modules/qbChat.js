@@ -5,17 +5,6 @@
  *
  */
 
-/*
- * User's callbacks (listener-functions):
- * - onMessageListener
- * - onContactListListener
- * - onSubscribeListener
- * - onConfirmSubscribeListener
- * - onRejectSubscribeListener
- * - onDisconnectedListener
- * - onReconnectListener
- */
-
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
@@ -53,6 +42,20 @@ function ChatProxy(service, webrtcModule, conn) {
 
   // reconnect to chat if it wasn't the logout method
   this._isLogout = false;
+
+/*
+ * User's callbacks (listener-functions):
+ * - onMessageListener
+ * - onContactListListener
+ * - onSubscribeListener
+ * - onMessageTypingListener
+ * - onDeliveredStatusListener
+ * - onReadStatusListener
+ * - onConfirmSubscribeListener
+ * - onRejectSubscribeListener
+ * - onDisconnectedListener
+ * - onReconnectListener
+ */
 
   // stanza callbacks (Message, Presence, IQ)
 
@@ -135,15 +138,6 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    message = {
-      id: messageId,
-      dialog_id: dialogId,
-      type: type,
-      body: (body && body.textContent) || null,
-      extension: extension || null,
-      delay: delay
-    };
-
     // chat markers
     if (marker) {
       if (delivered) {
@@ -158,6 +152,15 @@ function ChatProxy(service, webrtcModule, conn) {
 
       return true;
     }
+
+    message = {
+      id: messageId,
+      dialog_id: dialogId,
+      type: type,
+      body: (body && body.textContent) || null,
+      extension: extension || null,
+      delay: delay
+    };
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
