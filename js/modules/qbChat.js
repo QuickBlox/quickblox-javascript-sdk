@@ -149,7 +149,6 @@ function ChatProxy(service, webrtcModule, conn) {
           self.onReadStatusListener(messageId, dialogId, userId);
         }
       }
-
       return true;
     }
 
@@ -160,7 +159,6 @@ function ChatProxy(service, webrtcModule, conn) {
         userId: userId,
         dialogId: dialogId
       };
-
       self.sendDeliveredStatus(params);
       return true;
     }
