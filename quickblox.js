@@ -303,7 +303,6 @@ function ChatProxy(service, webrtcModule, conn) {
         dialogId: dialogId
       };
       self.sendDeliveredStatus(params);
-      return true;
     }
 
     message = {
