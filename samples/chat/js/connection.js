@@ -56,6 +56,9 @@ function connectToChat(user) {
           // setup scroll events handler
           //
           setupMsgScrollHandler();
+
+          QB.chat.onDeliveredStatusListener = onDeliveredStatus;
+          QB.chat.onReadStatusListener = onReadStatus;
         }
       });
     }

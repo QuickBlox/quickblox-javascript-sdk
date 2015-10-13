@@ -5,17 +5,6 @@
  *
  */
 
-/*
- * User's callbacks (listener-functions):
- * - onMessageListener
- * - onContactListListener
- * - onSubscribeListener
- * - onConfirmSubscribeListener
- * - onRejectSubscribeListener
- * - onDisconnectedListener
- * - onReconnectListener
- */
-
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
@@ -54,6 +43,20 @@ function ChatProxy(service, webrtcModule, conn) {
   // reconnect to chat if it wasn't the logout method
   this._isLogout = false;
 
+/*
+ * User's callbacks (listener-functions):
+ * - onMessageListener
+ * - onContactListListener
+ * - onSubscribeListener
+ * - onMessageTypingListener
+ * - onDeliveredStatusListener
+ * - onReadStatusListener
+ * - onConfirmSubscribeListener
+ * - onRejectSubscribeListener
+ * - onDisconnectedListener
+ * - onReconnectListener
+ */
+
   // stanza callbacks (Message, Presence, IQ)
 
   this._onMessage = function(stanza) {
@@ -62,8 +65,8 @@ function ChatProxy(service, webrtcModule, conn) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         markable = stanza.querySelector('markable'),
-        received = stanza.querySelector('received'),
-        displayed = stanza.querySelector('displayed'),
+        delivered = stanza.querySelector('received'),
+        read = stanza.querySelector('displayed'),
         composing = stanza.querySelector('composing'),
         paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
@@ -72,7 +75,7 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        marker = received || displayed || null,
+        marker = delivered || read || null,
         message, extension, attachments, attach, attributes,
         msg;
 
@@ -135,6 +138,21 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
+    // chat markers
+    if (marker) {
+      if (delivered) {
+        if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
+          self.onDeliveredStatusListener(messageId, dialogId, userId);
+        }
+      } else {
+        if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
+          self.onReadStatusListener(messageId, dialogId, userId);
+        }
+      }
+
+      return true;
+    }
+
     message = {
       id: messageId,
       dialog_id: dialogId,
@@ -143,12 +161,6 @@ function ChatProxy(service, webrtcModule, conn) {
       extension: extension || null,
       delay: delay
     };
-
-    // chat markers
-    if (marker) {
-      message.markerType = received ? 'received' : 'displayed';
-      message.markerMessageId = marker.getAttribute('id');
-    }
 
     // !delay - this needed to don't duplicate messages from chat 2.0 API history
     // with typical XMPP behavior of history messages in group chat
@@ -444,38 +456,46 @@ ChatProxy.prototype = {
     }));
   },
 
-  sendDeliveredMessage: function(jid, messageId) {
+  sendDeliveredStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
     msg.c('received', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },
 
-  sendReadMessage: function(jid, messageId) {
+  sendReadStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
     msg.c('displayed', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },

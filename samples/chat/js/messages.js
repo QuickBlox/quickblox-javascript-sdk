@@ -22,6 +22,7 @@ function setupMsgScrollHandler() {
 }
 
 // on message listener
+//
 function onMessage(userId, msg) {
 
   // This is a notification about dialog creation
@@ -201,7 +202,7 @@ function setupOnMessageListener() {
 
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
-  	showUserIsTypingView(isTyping, userId, dialogId);
+  showUserIsTypingView(isTyping, userId, dialogId);
 }
 
 // start timer after keypress event
