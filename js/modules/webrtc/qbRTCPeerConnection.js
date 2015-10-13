@@ -48,7 +48,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+  // We use this timer interval to dial a user - produce the call requests each N seconds.
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
