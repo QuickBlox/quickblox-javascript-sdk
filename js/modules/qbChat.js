@@ -150,8 +150,17 @@ function ChatProxy(service, webrtcModule, conn) {
           self.onReadStatusListener(messageId, dialogId, userId);
         }
       }
-
       return true;
+    }
+
+    // autosend 'received' status
+    if (markable) {
+      params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+      };
+      self.sendDeliveredStatus(params);
     }
 
     message = {
