@@ -58,7 +58,7 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onReconnectListener
  */
 
-  // stanza callbacks (Message, Presence, IQ)
+  // stanza callbacks (Message, Presence, IQ, SystemNotifications)
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -79,6 +79,8 @@ function ChatProxy(service, webrtcModule, conn) {
         marker = delivered || read || null,
         message, extension, attachments, attach, attributes,
         msg;
+
+    if (invite) return true;
 
     // fire 'is typing' callback
     //
@@ -1023,52 +1025,6 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
-function _parseExtraParams(extraParams) {
-  extension = {},
-  attachments = [];
-  for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-    if (extraParams.childNodes[i].tagName === 'attachment') {
-
-      // attachments
-      attach = {};
-      attributes = extraParams.childNodes[i].attributes;
-      for (var j = 0, len2 = attributes.length; j < len2; j++) {
-        if (attributes[j].name === 'id' || attributes[j].name === 'size')
-          attach[attributes[j].name] = parseInt(attributes[j].value);
-        else
-          attach[attributes[j].name] = attributes[j].value;
-      }
-      attachments.push(attach);
-
-    } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-      dialogId = extraParams.childNodes[i].textContent;
-
-    } else {
-      if (extraParams.childNodes[i].childNodes.length > 1) {
-
-        // Firefox issue with 4K XML node limit:
-        // http://www.coderholic.com/firefox-4k-xml-node-limit/
-        var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-        if (nodeTextContentSize > 4096) {
-          var wholeNodeContent = "";
-          for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-            wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-          }
-          extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-
-        } else {
-          extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-        }
-      } else {
-        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-      }
-    }
-  }
-
-  if (attachments.length > 0)
-    extension.attachments = attachments;
-}
-
 function getError(code, detail) {
   var errorMsg = {
     code: code,
