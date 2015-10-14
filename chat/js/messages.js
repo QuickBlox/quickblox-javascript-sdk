@@ -24,7 +24,6 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-  console.log(msg);
 
   // This is a notification about dialog creation
   //
@@ -191,10 +190,6 @@ function sendMessage(text, attachmentFileId) {
   dialogsMessages.push(msg);
 }
 
-function onSystemMessageListener(msg) {
-  console.log(msg);
-  console.log('______________________________________________________________________________________________________');
-}
 // show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list

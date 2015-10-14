@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-13 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-14 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -189,11 +189,12 @@ function ChatProxy(service, webrtcModule, conn) {
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
- * - onContactListListener
- * - onSubscribeListener
  * - onMessageTypingListener
  * - onDeliveredStatusListener
  * - onReadStatusListener
+ * - onSystemMessageListener
+ * - onContactListListener
+ * - onSubscribeListener
  * - onConfirmSubscribeListener
  * - onRejectSubscribeListener
  * - onDisconnectedListener
@@ -222,56 +223,6 @@ function ChatProxy(service, webrtcModule, conn) {
         message, extension, attachments, attach, attributes,
         msg;
 
-    if (invite) return true;
-
-    // custom parameters
-    // TODO: need rewrite this block
-    if (extraParams) {
-      extension = {};
-      attachments = [];
-      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        if (extraParams.childNodes[i].tagName === 'attachment') {
-
-          // attachments
-          attach = {};
-          attributes = extraParams.childNodes[i].attributes;
-          for (var j = 0, len2 = attributes.length; j < len2; j++) {
-            if (attributes[j].name === 'id' || attributes[j].name === 'size')
-              attach[attributes[j].name] = parseInt(attributes[j].value);
-            else
-              attach[attributes[j].name] = attributes[j].value;
-          }
-          attachments.push(attach);
-
-        } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-          dialogId = extraParams.childNodes[i].textContent;
-
-        } else {
-          if (extraParams.childNodes[i].childNodes.length > 1) {
-
-            // Firefox issue with 4K XML node limit:
-            // http://www.coderholic.com/firefox-4k-xml-node-limit/
-            var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-            if (nodeTextContentSize > 4096) {
-              var wholeNodeContent = "";
-              for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-              }
-              extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-
-            } else {
-              extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-            }
-          } else {
-            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-          }
-        }
-      }
-
-      if (attachments.length > 0)
-        extension.attachments = attachments;
-    }
-
     // fire 'is typing' callback
     //
     if(composing || paused){
@@ -281,7 +232,8 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    // chat markers
+    // fire read/delivered listeners
+    //
     if (marker) {
       if (delivered) {
         if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
@@ -310,14 +262,15 @@ function ChatProxy(service, webrtcModule, conn) {
       dialog_id: dialogId,
       type: type,
       body: (body && body.textContent) || null,
-      extension: extension || null,
+      extension: extraParams ? self._parseExtraParams(extraParams) : null,
       delay: delay
     };
 
-    // !delay - this needed to don't duplicate messages from chat 2.0 API history
-    // with typical XMPP behavior of history messages in group chat
-    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay))
+    // fire 'onMessageListener'
+    //
+    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
       self.onMessageListener(userId, message);
+    }
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -401,6 +354,28 @@ function ChatProxy(service, webrtcModule, conn) {
     // returning false would remove it after it finishes
     return true;
   };
+
+  this._onSystemMessageListener = function(stanza) {
+    var to = stanza.getAttribute('to'),
+        type = stanza.getAttribute('type'),
+        extraParams = stanza.querySelector('extraParams'),
+        delay = stanza.querySelector('delay'),
+        messageId = stanza.getAttribute('id'),
+        message, extension, attachments, attach, attributes;
+
+    message = {
+      id: messageId,
+      type: type,
+      extension: self._parseExtraParams(extraParams),
+      delay: delay
+    };
+
+    if (typeof self.onSystemMessageListener === 'function' && (type === 'headline' || !delay)) {
+      self.onSystemMessageListener(message);
+    }
+
+    return true;
+  };
 }
 
 /* Chat module: Core
@@ -453,6 +428,7 @@ ChatProxy.prototype = {
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
         connection.addHandler(self._onPresence, null, 'presence');
         connection.addHandler(self._onIQ, null, 'iq');
+        connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
 
         // set signaling callbacks
         connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
@@ -559,6 +535,37 @@ ChatProxy.prototype = {
       msg.c('markable', {
         xmlns: Strophe.NS.CHAT_MARKERS
       });
+    }
+
+    connection.send(msg);
+  },
+
+  // send system messages
+  sendSystemMessage: function(jid_or_user_id, message) {
+    if(!isBrowser) throw unsupported;
+
+    var self = this,
+        msg = $msg({
+          id: Utils.getBsonObjectId(),
+          type: 'headline',
+          to: this.helpers.jidOrUserId(jid_or_user_id)
+        });
+
+    // custom parameters
+    if (message.extension) {
+      msg.c('extraParams', {
+        xmlns: Strophe.NS.CLIENT
+      }).c('moduleIdentifier').t('SystemNotifications').up();
+
+      Object.keys(message.extension).forEach(function(field) {
+        if (typeof message.extension[field] === 'object') {
+          self._JStoXML(field, message.extension[field], msg);
+        }else{
+          msg.c(field).t(message.extension[field]).up();
+        }
+      });
+
+      msg.up();
     }
 
     connection.send(msg);
@@ -702,6 +709,50 @@ ChatProxy.prototype = {
       } else {
         extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
       }
+    }
+    return extension;
+  },
+
+  // custom parameters
+  // TODO: need rewrite this block
+  _parseExtraParams: function(extraParams) {
+    extension = {},
+    attachments = [];
+    for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+      if (extraParams.childNodes[i].tagName === 'attachment') {
+        // attachments
+        attach = {};
+        attributes = extraParams.childNodes[i].attributes;
+        for (var j = 0, len2 = attributes.length; j < len2; j++) {
+          if (attributes[j].name === 'id' || attributes[j].name === 'size')
+            attach[attributes[j].name] = parseInt(attributes[j].value);
+          else
+            attach[attributes[j].name] = attributes[j].value;
+        }
+        attachments.push(attach);
+      } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+        dialogId = extraParams.childNodes[i].textContent;
+      } else {
+        if (extraParams.childNodes[i].childNodes.length > 1) {
+          // Firefox issue with 4K XML node limit:
+          // http://www.coderholic.com/firefox-4k-xml-node-limit/
+          var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+          if (nodeTextContentSize > 4096) {
+            var wholeNodeContent = "";
+            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+              wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+            }
+            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+          } else {
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+          }
+        } else {
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+        }
+      }
+    }
+    if (attachments.length > 0) {
+      extension.attachments = attachments;
     }
     return extension;
   },
@@ -1115,6 +1166,51 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
+function _parseExtraParams(extraParams) {
+  extension = {},
+  attachments = [];
+  for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+    if (extraParams.childNodes[i].tagName === 'attachment') {
+
+      // attachments
+      attach = {};
+      attributes = extraParams.childNodes[i].attributes;
+      for (var j = 0, len2 = attributes.length; j < len2; j++) {
+        if (attributes[j].name === 'id' || attributes[j].name === 'size')
+          attach[attributes[j].name] = parseInt(attributes[j].value);
+        else
+          attach[attributes[j].name] = attributes[j].value;
+      }
+      attachments.push(attach);
+
+    } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+      dialogId = extraParams.childNodes[i].textContent;
+
+    } else {
+      if (extraParams.childNodes[i].childNodes.length > 1) {
+
+        // Firefox issue with 4K XML node limit:
+        // http://www.coderholic.com/firefox-4k-xml-node-limit/
+        var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+        if (nodeTextContentSize > 4096) {
+          var wholeNodeContent = "";
+          for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+            wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+          }
+          extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+
+        } else {
+          extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+        }
+      } else {
+        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+      }
+    }
+  }
+
+  if (attachments.length > 0)
+    extension.attachments = attachments;
+}
 
 function getError(code, detail) {
   var errorMsg = {
