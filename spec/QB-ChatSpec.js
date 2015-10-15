@@ -1,26 +1,27 @@
+var LOGIN_TIMEOUT = 5000;
 var MESSAGING_TIMEOUT = 1500;
+var REST_REQUESTS_TIMEOUT = 3000;
 
-describe('QuickBlox SDK - Chat', function() {
+describe('QuickBlox SDK - Chat module', function() {
 
-  describe('Chat XMPP', function() {
+  describe('Chat XMPP (real time messaging)', function() {
 
     // beforeAll
     //
     beforeAll(function(done){
 
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, true);
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
 
       QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
         if(err){
           done.fail("Chat login error: " + err);
         }else{
-          expect(err).toBeNull();
           expect(roster).not.toBeNull();
           done();
         }
       });
 
-    }, 5000);
+    }, LOGIN_TIMEOUT);
 
 
     // 1-1 mesasging
@@ -142,51 +143,58 @@ describe('QuickBlox SDK - Chat', function() {
 
   });
 
-  // describe('Chat REST API', function() {
-  //
-  //   var needsInit = true;
-  //
-  //   var dialog_data = {
-  //     group: {},
-  //     priv_group: {},
-  //     priv: {}
-  //   };
-  //
-  //   beforeEach(function(){
-  //     var done;
-  //     if (needsInit) {
-  //       runs(function(){
-  //         QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-  //         done = false;
-  //         QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-  //           expect(err).toBeNull();
-  //           expect(result).not.toBeNull();
-  //           done = true;
-  //         });
-  //       });
-  //       waitsFor(function(){
-  //         return done;
-  //         },'create session', TIMEOUT);
-  //     }
-  //   });
-  //
-  //   it('can create a dialog (public)', function() {
-  //     var done, error, result;
-  //     runs(function(){
-  //       QB.chat.dialog.create({ name: "Chatroom", type: 1}, function(err, res) {
-  //         error = err;
-  //         result = res;
-  //         done = true;
-  //       });
-  //     });
-  //     waitsFor(function(){ return done; }, 'create chat dialog', TIMEOUT );
-  //     runs(function() {
-  //       expect(error).toBeNull();
-  //       expect(result).not.toBeNull();
-  //       expect(result.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
-  //     });
-  //   });
-  //
+  describe('Chat REST API', function() {
+
+    var dialog_data = {
+      group: {},
+      priv_group: {},
+      priv: {}
+    };
+
+    // beforeAll
+    //
+    beforeAll(function(done){
+
+      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
+
+      QB.createSession({login: QBUser1.login, password: QBUser1.pass},function (err, result){
+        if(err){
+          done.fail("Creat session error: " + err);
+        }else{
+          expect(result).not.toBeNull();
+          expect(result.application_id).toEqual(CONFIG.appId);
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('can create a dialog (group)', function(done) {
+
+      var params = {occupants_ids:[QBUser2.id].join(','),
+                             name: "GroupDialog",
+                             type: 2
+                            }
+      QB.chat.dialog.create(params, function(err, res) {
+
+        if(err){
+          done.fail("Creat dialog error: " + err);
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.type).toEqual(2);
+          expect(res.name).toEqual("GroupDialog");
+          expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
+          var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
+            return a - b;
+          });
+          expect(res.occupants_ids).toEqual(ocuupantsArray);
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
   //   it('can create a dialog (private group)', function() {
   //     var done, error, result;
   //     runs(function(){
@@ -220,6 +228,6 @@ describe('QuickBlox SDK - Chat', function() {
   //       expect(result.occupants_ids.length).toBe(2);
   //     });
   //   });
-  //
-  // });
+
+  });
 });
