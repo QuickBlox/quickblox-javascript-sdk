@@ -62,6 +62,9 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
   // We need a way to hide it if sach situation happened."
   //
   this.answerTimer = null;
+
+  this.startCallTime = 0;
+  this.acceptCallTime = 0;
 }
 
 /**
@@ -198,13 +201,17 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
  */
 WebRTCSession.prototype.accept = function(extension) {
   var self = this,
-      ext = _prepareExtension(extension);
+      ext = _prepareExtension(extension),
+      offerTime = 0;
+
+  self.acceptCallTime = new Date();
+  offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
   self.state = WebRTCSession.State.ACTIVE;
-  
-  self._startOfferTimer();
+
+  self._startOfferTimer(offerTime);
 
   self._clearAnswerTimer();
 
@@ -505,7 +512,7 @@ WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   }else{
     Helpers.traceError("Ignore 'OnIceCandidates', there is no information about peer connection by some reason.");
   }
-}
+};
 
 WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
@@ -564,6 +571,7 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
 };
 
 WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
+  var self = this;
 
   if (typeof this.onSessionConnectionStateChangedListener === 'function'){
     this.onSessionConnectionStateChangedListener(this, userID, connectionState);
@@ -583,6 +591,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   Helpers.trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+
+  this.startCallTime = new Date();
 
   // Additional parameters for RTCPeerConnection options
   // new RTCPeerConnection(pcConfig, options)
@@ -701,11 +711,11 @@ WebRTCSession.prototype._startAnswerTimer = function(){
   this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
 };
 
-WebRTCSession.prototype._startOfferTimer = function() {
+WebRTCSession.prototype._startOfferTimer = function(time) {
   Helpers.trace("_startOfferTimer");
 
   var self = this,
-      waitOfferInterval = config.webrtc.answerTimeInterval*1000,
+      waitOfferInterval = ( config.webrtc.answerTimeInterval - time ) < 0 ? 0 : config.webrtc.answerTimeInterval - time,
       waitTimeoutCallback = function() {
         Helpers.trace("waitTimeoutCallback");
 
@@ -721,8 +731,8 @@ WebRTCSession.prototype._startOfferTimer = function() {
 
         self.offerTimer = null;
       };
-
-  this.offerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval);
+  
+  this.offerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval*1000);
 };
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
