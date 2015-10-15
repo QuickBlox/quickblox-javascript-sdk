@@ -24,7 +24,6 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-  console.log(msg);
 
   // This is a notification about dialog creation
   //
@@ -164,15 +163,7 @@ function sendMessage(text, attachmentFileId) {
   if (currentDialog.type == 3) {
     opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(opponentId, msg);
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    var smsg = {
-      extension: {
-        first_value: 'SOME text',
-        second_value: 'some TEXT'
-      }
-    };
-    QB.chat.sendSystemMessage(opponentId, smsg);
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     $('.list-group-item.active .list-group-item-text').text(msg.body);
 
     if(attachmentFileId == null){
@@ -191,10 +182,6 @@ function sendMessage(text, attachmentFileId) {
   dialogsMessages.push(msg);
 }
 
-function onSystemMessageListener(msg) {
-  console.log(msg);
-  console.log('______________________________________________________________________________________________________');
-}
 // show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
   // add a message to list

@@ -215,21 +215,22 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 
   this._onSystemMessageListener = function(stanza) {
-    var to = stanza.getAttribute('to'),
-        type = stanza.getAttribute('type'),
+    var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         extraParams = stanza.querySelector('extraParams'),
+        moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
-        message, extension, attachments, attach, attributes;
+        message, extension, attributes;
 
-    message = {
-      id: messageId,
-      type: type,
-      extension: self._parseExtraParams(extraParams),
-      delay: delay
-    };
+    if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
 
-    if (typeof self.onSystemMessageListener === 'function' && (type === 'headline' || !delay)) {
+      message = {
+        id: messageId,
+        userId: self.helpers.getIdFromNode(from),
+        extension: self._parseExtraParams(extraParams),
+      };
+
       self.onSystemMessageListener(message);
     }
 
@@ -612,6 +613,9 @@ ChatProxy.prototype = {
     }
     if (attachments.length > 0) {
       extension.attachments = attachments;
+    }
+    if (extension.moduleIdentifier) {
+      delete extension.moduleIdentifier;
     }
     return extension;
   },

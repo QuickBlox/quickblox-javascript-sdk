@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-14 */
+/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-15 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -358,21 +358,22 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 
   this._onSystemMessageListener = function(stanza) {
-    var to = stanza.getAttribute('to'),
-        type = stanza.getAttribute('type'),
+    var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         extraParams = stanza.querySelector('extraParams'),
+        moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
-        message, extension, attachments, attach, attributes;
+        message, extension, attributes;
 
-    message = {
-      id: messageId,
-      type: type,
-      extension: self._parseExtraParams(extraParams),
-      delay: delay
-    };
+    if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
 
-    if (typeof self.onSystemMessageListener === 'function' && (type === 'headline' || !delay)) {
+      message = {
+        id: messageId,
+        userId: self.helpers.getIdFromNode(from),
+        extension: self._parseExtraParams(extraParams),
+      };
+
       self.onSystemMessageListener(message);
     }
 
@@ -755,6 +756,9 @@ ChatProxy.prototype = {
     }
     if (attachments.length > 0) {
       extension.attachments = attachments;
+    }
+    if (extension.moduleIdentifier) {
+      delete extension.moduleIdentifier;
     }
     return extension;
   },
