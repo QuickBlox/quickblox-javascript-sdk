@@ -248,11 +248,11 @@ function ChatProxy(service, webrtcModule, conn) {
     if (marker) {
       if (delivered) {
         if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
-          self.onDeliveredStatusListener(messageId, dialogId, userId);
+          self.onDeliveredStatusListener(delivered.getAttribute('id'), dialogId, userId);
         }
       } else {
         if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-          self.onReadStatusListener(messageId, dialogId, userId);
+          self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
         }
       }
       return true;

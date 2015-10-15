@@ -1,3 +1,5 @@
+var MESSAGING_TIMEOUT = 1500;
+
 describe('QuickBlox SDK - Chat', function() {
 
   describe('Chat XMPP', function() {
@@ -51,7 +53,7 @@ describe('QuickBlox SDK - Chat', function() {
       QB.chat.send(QBUser1.id, message);
       this.messageId = message.id;
 
-    }, 1500);
+    }, MESSAGING_TIMEOUT);
 
 
     // System messages
@@ -82,7 +84,61 @@ describe('QuickBlox SDK - Chat', function() {
       QB.chat.sendSystemMessage(QBUser1.id, message);
       this.messageId = message.id;
 
-    }, 1500);
+    }, MESSAGING_TIMEOUT);
+
+
+    // 'Delivered' status
+    //
+    it("can send and receive 'delivered' status", function(done) {
+
+      var self = this;
+
+      QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
+        expect(messageId).toEqual(self.params.messageId);
+        expect(dialogId).toEqual(self.params.dialogId);
+        expect(userId).toEqual(self.params.userId);
+        self.params = null;
+
+        done();
+      };
+
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+      this.params = params;
+
+      QB.chat.sendDeliveredStatus(params);
+
+    }, MESSAGING_TIMEOUT);
+
+
+    // 'Read' status
+    //
+    it("can send and receive 'read' status", function(done) {
+
+      var self = this;
+
+      QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
+        expect(messageId).toEqual(self.params.messageId);
+        expect(dialogId).toEqual(self.params.dialogId);
+        expect(userId).toEqual(self.params.userId);
+        self.params = null;
+
+        done();
+      };
+
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+      this.params = params;
+
+      QB.chat.sendReadStatus(params);
+
+    }, MESSAGING_TIMEOUT);
 
   });
 
