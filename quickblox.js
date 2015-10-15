@@ -219,11 +219,20 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        marker = delivered || read || null,
-        message, extension, attachments, attach, attributes,
-        msg;
+        marker = delivered || read || null;
 
+
+    // ignore invite messages from MUC
+    //
     if (invite) return true;
+
+
+    // parse extra params
+    var extraParamsParsed = self._parseExtraParams(extraParams);
+    if(extraParamsParsed.dialogId){
+      dialogId = extraParamsParsed.dialogId;
+    }
+
 
     // fire 'is typing' callback
     //
@@ -250,8 +259,9 @@ function ChatProxy(service, webrtcModule, conn) {
     }
 
     // autosend 'received' status
+    //
     if (markable) {
-      params = {
+      var params = {
         messageId: messageId,
         userId: userId,
         dialogId: dialogId
@@ -259,17 +269,16 @@ function ChatProxy(service, webrtcModule, conn) {
       self.sendDeliveredStatus(params);
     }
 
-    message = {
+    // fire 'onMessageListener'
+    //
+    var message = {
       id: messageId,
       dialog_id: dialogId,
       type: type,
       body: (body && body.textContent) || null,
-      extension: extraParams ? self._parseExtraParams(extraParams) : null,
+      extension: extraParamsParsed ? extraParamsParsed.extension : null,
       delay: delay
     };
-
-    // fire 'onMessageListener'
-    //
     if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
       self.onMessageListener(userId, message);
     }
@@ -364,14 +373,18 @@ function ChatProxy(service, webrtcModule, conn) {
         moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
-        message, extension, attributes;
+        message;
 
+    // fire 'onSystemMessageListener'
+    //
     if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
+
+      var extraParamsParsed = self._parseExtraParams(extraParams);
 
       message = {
         id: messageId,
         userId: self.helpers.getIdFromNode(from),
-        extension: self._parseExtraParams(extraParams),
+        extension: extraParamsParsed.extension
       };
 
       self.onSystemMessageListener(message);
@@ -547,9 +560,13 @@ ChatProxy.prototype = {
   sendSystemMessage: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
+    if(message.id == null){
+      message.id = Utils.getBsonObjectId();
+    }
+
     var self = this,
         msg = $msg({
-          id: Utils.getBsonObjectId(),
+          id: message.id,
           type: 'headline',
           to: this.helpers.jidOrUserId(jid_or_user_id)
         });
@@ -716,16 +733,22 @@ ChatProxy.prototype = {
     return extension;
   },
 
-  // custom parameters
-  // TODO: need rewrite this block
   _parseExtraParams: function(extraParams) {
-    extension = {},
-    attachments = [];
+    if(!extraParams){
+      return null;
+    }
+
+    var extension = {};
+    var dialogId;
+
+    var attachments = [];
+
     for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+
+      // parse attachments
       if (extraParams.childNodes[i].tagName === 'attachment') {
-        // attachments
-        attach = {};
-        attributes = extraParams.childNodes[i].attributes;
+        var attach = {};
+        var attributes = extraParams.childNodes[i].attributes;
         for (var j = 0, len2 = attributes.length; j < len2; j++) {
           if (attributes[j].name === 'id' || attributes[j].name === 'size')
             attach[attributes[j].name] = parseInt(attributes[j].value);
@@ -733,8 +756,13 @@ ChatProxy.prototype = {
             attach[attributes[j].name] = attributes[j].value;
         }
         attachments.push(attach);
+
+      // parse 'dialog_id'
       } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
         dialogId = extraParams.childNodes[i].textContent;
+        extension["dialog_id"] = dialogId;
+
+      // parse other user's custom parameters
       } else {
         if (extraParams.childNodes[i].childNodes.length > 1) {
           // Firefox issue with 4K XML node limit:
@@ -754,13 +782,16 @@ ChatProxy.prototype = {
         }
       }
     }
+
     if (attachments.length > 0) {
       extension.attachments = attachments;
     }
+
     if (extension.moduleIdentifier) {
       delete extension.moduleIdentifier;
     }
-    return extension;
+
+    return {extension: extension, dialogId: dialogId};
   },
 
   _autoSendPresence: function() {

@@ -4,9 +4,17 @@
  */
 
 var CONFIG = {
-  appId: '3477',
-  authKey: 'ChRnwEJ3WzxH9O4',
-  authSecret: 'AS546kpUQ2tfbvv',
-  debug: true
+  appId: 92,
+  authKey: 'wJHdOcQSxXQGWx5',
+  authSecret: 'BTFsj7Rtt27DAmT',
+  debug: false
 };
 
+var QBUser1 = {
+        id: 5449429,
+        pass: 'chatsampleuser111'
+    },
+    QBUser2 = {
+        id: 5449431,
+        pass: 'chatsampleuser112'
+    };
