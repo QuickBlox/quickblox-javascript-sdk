@@ -203,6 +203,8 @@ WebRTCSession.prototype.accept = function(extension) {
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
   self.state = WebRTCSession.State.ACTIVE;
+  
+  self._startOfferTimer();
 
   self._clearAnswerTimer();
 
@@ -697,7 +699,31 @@ WebRTCSession.prototype._startAnswerTimer = function(){
 
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
   this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
-}
+};
+
+WebRTCSession.prototype._startOfferTimer = function() {
+  Helpers.trace("_startOfferTimer");
+
+  var self = this,
+      waitOfferInterval = config.webrtc.answerTimeInterval*1000,
+      waitTimeoutCallback = function() {
+        Helpers.trace("waitTimeoutCallback");
+
+        if(Object.keys(self.peerConnections).length > 0) {
+          Object.keys(self.peerConnections).forEach(function(key) {
+            var peerConnection = self.peerConnections[key];
+
+            if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
+              self.processOnNotAnswer(peerConnection);
+            }
+          });
+        }
+
+        self.offerTimer = null;
+      };
+
+  this.offerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval);
+};
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
   var self = this;
