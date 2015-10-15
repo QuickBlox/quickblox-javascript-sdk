@@ -3,9 +3,9 @@ var mediaParams, caller, callee;
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
 $(document).ready(function() {
-  
+
   buildUsers('.users-wrap.caller');
-  
+
   // Choose user
   //
   $(document).on('click', '.choose-user button', function() {
@@ -14,12 +14,12 @@ $(document).ready(function() {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
-      password: $(this).attr('data-password') 
+      password: $(this).attr('data-password')
     };
 
     chooseRecipient(caller.id);
   });
-  
+
 
   // Choose recipient
   //
@@ -31,7 +31,7 @@ $(document).ready(function() {
       id: $(this).attr('id'),
       full_name: $(this).attr('data-name'),
       login: $(this).attr('data-login'),
-      password: $(this).attr('data-password') 
+      password: $(this).attr('data-password')
     };
 
     $('#calleeName').text(callee.full_name);
@@ -188,13 +188,13 @@ QB.webrtc.onCallListener = function(userId, extension) {
   };
 
   $('.incoming-callType').text(extension.callType === 'video' ? 'Video' : 'Audio');
-  
+
   // save a callee
   callee = {
     id: extension.callerID,
     full_name: "User with id " + extension.callerID,
     login: "",
-    password: "" 
+    password: ""
   };
 
   $('.caller').text(callee.full_name);
@@ -319,7 +319,7 @@ function buildUsers(el, excludeID) {
       var userFullName = $('<div>').addClass('name').text(user.full_name).appendTo(userBtn);
       userBtn.appendTo(el);
     }
-  } 
+  }
 }
 
 function updateInfoMessage(msg){

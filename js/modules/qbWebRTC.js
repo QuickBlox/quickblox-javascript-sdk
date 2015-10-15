@@ -477,6 +477,26 @@ WebRTCProxy.prototype.update = function(userId, extension) {
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
+WebRTCProxy.prototype.close = function() {
+  Object.keys(answerTimers).forEach(function(key) {
+    clearAnswerTimer(key);
+  });
+
+  Object.keys(dialingTimerIntervals).forEach(function(key) {
+    clearDialingTimerInterval(key);
+  });
+
+  Object.keys(callTimers).forEach(function(key) {
+    clearCallTimer(key);
+  });
+
+  this._close();
+
+  Object.keys(callers).forEach(function(key) {
+    clearCallers(key);
+  });
+}
+
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
   trace("Peer._close");
