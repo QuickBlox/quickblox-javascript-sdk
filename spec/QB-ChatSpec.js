@@ -145,11 +145,7 @@ describe('QuickBlox SDK - Chat module', function() {
 
   describe('Chat REST API', function() {
 
-    var dialog_data = {
-      group: {},
-      priv_group: {},
-      priv: {}
-    };
+    var dialogId;
 
     // beforeAll
     //
@@ -169,25 +165,32 @@ describe('QuickBlox SDK - Chat module', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
+
+    // Dialog create
+    //
     it('can create a dialog (group)', function(done) {
 
       var params = {occupants_ids:[QBUser2.id].join(','),
-                             name: "GroupDialog",
+                             name: "GroupDialogName",
                              type: 2
                             }
       QB.chat.dialog.create(params, function(err, res) {
 
         if(err){
-          done.fail("Creat dialog error: " + err);
+          done.fail("Creat dialog error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
+          expect(res._id).not.toBeNull();
           expect(res.type).toEqual(2);
-          expect(res.name).toEqual("GroupDialog");
+          expect(res.name).toEqual("GroupDialogName");
           expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
             return a - b;
           });
           expect(res.occupants_ids).toEqual(ocuupantsArray);
+
+          dialogId = res._id;
+
           done();
         }
 
@@ -195,39 +198,63 @@ describe('QuickBlox SDK - Chat module', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
-  //   it('can create a dialog (private group)', function() {
-  //     var done, error, result;
-  //     runs(function(){
-  //       QB.chat.dialog.create({ name: "Chatroom", type: 2, occupants_ids: [239647, 255591, 255603].toString() }, function(err, res) {
-  //         error = err;
-  //         result = res;
-  //         done = true;
-  //       });
-  //     });
-  //     waitsFor(function(){ return done; }, 'create chat dialog', TIMEOUT );
-  //     runs(function() {
-  //       expect(error).toBeNull();
-  //       expect(result).not.toBeNull();
-  //       expect(result.occupants_ids).toContain(239647);
-  //     });
-  //   });
-  //
-  //   it('can create a dialog (one-to-one)', function() {
-  //     var done, error, result;
-  //     runs(function(){
-  //       QB.chat.dialog.create({ type: 3, occupants_ids: 239647 }, function(err, res) {
-  //         error = err;
-  //         result = res;
-  //         done = true;
-  //       });
-  //     });
-  //     waitsFor(function(){ return done; }, 'create chat dialog', TIMEOUT );
-  //     runs(function() {
-  //       expect(error).toBeNull();
-  //       expect(result).not.toBeNull();
-  //       expect(result.occupants_ids.length).toBe(2);
-  //     });
-  //   });
+    // Dialog list
+    //
+    it('can list dialogs', function(done) {
+
+      var filters = null;
+      QB.chat.dialog.list(filters, function(err, res) {
+
+        if(err){
+          done.fail("List dialogs error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.items.length).toBeGreaterThan(0);
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Dialog update
+    //
+    it('can update a dialog (group)', function(done) {
+
+      var toUpdate = {
+          name: "GroupDialogNewName",
+          pull_all: {occupants_ids: [QBUser2.id]}
+        };
+      QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
+
+        if(err){
+          done.fail("Update dialog " + dialogId +  " error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.name).toEqual("GroupDialogNewName");
+          expect(res.occupants_ids).toEqual([QBUser1.id]);
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Dialog delete
+    //
+    it('can delete a dialog (group)', function(done) {
+
+      QB.chat.dialog.delete(dialogId, {}, function(err, res) {
+
+        if(err){
+          done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
+        }else{
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
   });
 });
