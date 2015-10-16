@@ -2811,7 +2811,6 @@ WebRTCSession.prototype.accept = function(extension) {
       ext = _prepareExtension(extension),
       offerTime = 0;
 
-
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
   self.state = WebRTCSession.State.ACTIVE;
@@ -3185,8 +3184,8 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
 WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
   var self = this;
 
-  if (typeof this.onSessionConnectionStateChangedListener === 'function'){
-    this.onSessionConnectionStateChangedListener(this, userID, connectionState);
+  if (typeof self.onSessionConnectionStateChangedListener === 'function'){
+    self.onSessionConnectionStateChangedListener(self, userID, connectionState);
   }
 
   if (connectionState === Helpers.SessionConnectionState.CLOSED){
