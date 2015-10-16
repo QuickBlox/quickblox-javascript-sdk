@@ -883,6 +883,8 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
+    if (params.occupants_ids instanceof Array) params.occupants_ids = params.occupants_ids.join(', ');
+    
     Utils.QBLog('[DialogProxy]', 'create', params);
 
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);

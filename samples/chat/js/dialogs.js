@@ -231,10 +231,10 @@ function createNewDialog() {
     }else{
       dialogName = currentUser.login + ', ' + usersNames.join(', ');
     }
-    dialogOccupants = usersIds.join(',');
+    dialogOccupants = usersIds;
     dialogType = 2;
   } else {
-    dialogOccupants = usersIds.join(',');
+    dialogOccupants = usersIds;
     dialogType = 3;
   }
 
