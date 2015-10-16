@@ -4,9 +4,18 @@
  */
 
 var CONFIG = {
-  appId: '3477',
-  authKey: 'ChRnwEJ3WzxH9O4',
-  authSecret: 'AS546kpUQ2tfbvv',
-  debug: true
+  appId: 29650,
+  authKey: 'WULOyezrmxpOgQ-',
+  authSecret: 'TqQmBFbANJ6cfu4'
 };
 
+var QBUser1 = {
+    id: 6126733,
+    pass: 'js_jasmine1',
+    login: 'js_jasmine1'
+  },
+  QBUser2 = {
+    id: 6126741,
+    pass: 'js_jasmine2',
+    login: 'js_jasmine2'
+  };
