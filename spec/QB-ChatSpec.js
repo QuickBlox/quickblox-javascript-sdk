@@ -1,4 +1,4 @@
-var LOGIN_TIMEOUT = 5000;
+var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 1500;
 var REST_REQUESTS_TIMEOUT = 3000;
 
@@ -140,6 +140,48 @@ describe('QuickBlox SDK - Chat module', function() {
       QB.chat.sendReadStatus(params);
 
     }, MESSAGING_TIMEOUT);
+
+
+    // 'Is typing' status
+    //
+    it("can send and receive 'is typing' status (private)", function(done) {
+
+      QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
+        expect(composing).toEqual(true);
+        expect(userId).toEqual(QBUser1.id);
+        expect(dialogId).toBeNull();
+
+        done();
+      };
+
+      QB.chat.sendIsTypingStatus(QBUser1.id);
+
+    }, MESSAGING_TIMEOUT);
+
+
+    // 'Stop typing' status
+    //
+    it("can send and receive 'stop typing' status (private)", function(done) {
+
+      QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
+        expect(composing).toEqual(false);
+        expect(userId).toEqual(QBUser1.id);
+        expect(dialogId).toBeNull();
+
+        done();
+      };
+
+      QB.chat.sendIsStopTypingStatus(QBUser1.id);
+
+    }, MESSAGING_TIMEOUT);
+
+
+    // afterAll
+    //
+    afterAll(function(done){
+      QB.chat.disconnect();
+      done();
+    }, 1000);
 
   });
 

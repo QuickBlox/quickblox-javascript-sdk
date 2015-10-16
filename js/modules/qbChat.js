@@ -85,9 +85,12 @@ function ChatProxy(service, webrtcModule, conn) {
 
 
     // parse extra params
-    var extraParamsParsed = self._parseExtraParams(extraParams);
-    if(extraParamsParsed.dialogId){
-      dialogId = extraParamsParsed.dialogId;
+    var extraParamsParsed;
+    if(extraParams){
+      extraParamsParsed = self._parseExtraParams(extraParams);
+      if(extraParamsParsed.dialogId){
+        dialogId = extraParamsParsed.dialogId;
+      }
     }
 
 
@@ -915,7 +918,7 @@ DialogProxy.prototype = {
 
   create: function(params, callback) {
     if (params.occupants_ids instanceof Array) params.occupants_ids = params.occupants_ids.join(', ');
-    
+
     Utils.QBLog('[DialogProxy]', 'create', params);
 
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
