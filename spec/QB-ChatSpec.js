@@ -170,7 +170,7 @@ describe('QuickBlox SDK - Chat module', function() {
     //
     it('can create a dialog (group)', function(done) {
 
-      var params = {occupants_ids:[QBUser2.id].join(','),
+      var params = {occupants_ids:[QBUser2.id],
                              name: "GroupDialogName",
                              type: 2
                             }
