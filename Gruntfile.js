@@ -33,7 +33,7 @@ module.exports = function (grunt) {
 
     watch: {
       files: ['js/*.js', 'js/modules/*.js', 'js/modules/webrtc/*.js'],
-      tasks: ['browserify', 'uglify'],
+      tasks: ['browserify'],
       options: {
         spawn: false,
         debounceDelay: 250,
