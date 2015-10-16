@@ -204,14 +204,16 @@ WebRTCSession.prototype.accept = function(extension) {
       ext = _prepareExtension(extension),
       offerTime = 0;
 
-  self.acceptCallTime = new Date();
-  offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
   self.state = WebRTCSession.State.ACTIVE;
 
-  self._startOfferTimer(offerTime);
+  if (!_isUserLast(self.currentUserID, self.opponentsIDs)) {
+    self.acceptCallTime = new Date();
+    offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
+    self._startWaitingOfferOrAnswerTimer(offerTime);
+  }
 
   self._clearAnswerTimer();
 
@@ -418,6 +420,8 @@ WebRTCSession.filter = function(id, filters) {
 
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
+
+  clearTimeout(self.waitingOfferOrAnswerTimer);
 
   var oppIDs = this._uniqueOpponentsIDs();
   oppIDs.forEach(function(opID, i, arr) {
@@ -711,8 +715,8 @@ WebRTCSession.prototype._startAnswerTimer = function(){
   this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
 };
 
-WebRTCSession.prototype._startOfferTimer = function(time) {
-  Helpers.trace("_startOfferTimer");
+WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
+  Helpers.trace("_startWaitingOfferOrAnswerTimer");
 
   var self = this,
       waitOfferInterval = ( config.webrtc.answerTimeInterval - time ) < 0 ? 0 : config.webrtc.answerTimeInterval - time,
@@ -729,10 +733,10 @@ WebRTCSession.prototype._startOfferTimer = function(time) {
           });
         }
 
-        self.offerTimer = null;
+        self.waitingOfferOrAnswerTimer = null;
       };
   
-  this.offerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval*1000);
+  this.waitingOfferOrAnswerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval*1000);
 };
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
@@ -786,6 +790,16 @@ function _prepareExtension(extension) {
   } catch (err) {
     return {};
   }
+}
+
+function _isUserLast(currentUserID, opponentsIDs) {
+  var lastUserID = 0;
+
+  opponentsIDs.forEach(function(el, i, array) {
+    if(el > lastUserID) { lastUserID = el }
+  });
+
+  return lastUserID === currentUserID;
 }
 
 module.exports = WebRTCSession;
