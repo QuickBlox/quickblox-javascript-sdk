@@ -15,13 +15,17 @@ function setupMsgScrollHandler() {
   msgList.scroll(function() {
     if (msgWindow.scrollTop() == msgWindow.height() - msgList.height()){
 
-      var dateSent = dialogsMessages[0].date_sent;
+      var dateSent = null;
+      if(dialogsMessages.length > 0){
+        dateSent = dialogsMessages[0].date_sent;
+      }
       retrieveChatMessages(currentDialog, dateSent);
     }
   });
 }
 
 // on message listener
+//
 function onMessage(userId, msg) {
 
   // This is a notification about dialog creation
@@ -201,7 +205,7 @@ function setupOnMessageListener() {
 
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
-  	showUserIsTypingView(isTyping, userId, dialogId);
+  showUserIsTypingView(isTyping, userId, dialogId);
 }
 
 // start timer after keypress event

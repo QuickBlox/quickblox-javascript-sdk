@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.14.0 - 2015-10-02 */
+/* QuickBlox JavaScript SDK - v1.15.0 - 2015-10-16 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -148,17 +148,6 @@ function signMessage(message, secret) {
  *
  */
 
-/*
- * User's callbacks (listener-functions):
- * - onMessageListener
- * - onContactListListener
- * - onSubscribeListener
- * - onConfirmSubscribeListener
- * - onRejectSubscribeListener
- * - onDisconnectedListener
- * - onReconnectListener
- */
-
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
@@ -197,7 +186,22 @@ function ChatProxy(service, webrtcModule, conn) {
   // reconnect to chat if it wasn't the logout method
   this._isLogout = false;
 
-  // stanza callbacks (Message, Presence, IQ)
+/*
+ * User's callbacks (listener-functions):
+ * - onMessageListener
+ * - onMessageTypingListener
+ * - onDeliveredStatusListener
+ * - onReadStatusListener
+ * - onSystemMessageListener
+ * - onContactListListener
+ * - onSubscribeListener
+ * - onConfirmSubscribeListener
+ * - onRejectSubscribeListener
+ * - onDisconnectedListener
+ * - onReconnectListener
+ */
+
+  // stanza callbacks (Message, Presence, IQ, SystemNotifications)
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -205,8 +209,8 @@ function ChatProxy(service, webrtcModule, conn) {
         type = stanza.getAttribute('type'),
         body = stanza.querySelector('body'),
         markable = stanza.querySelector('markable'),
-        received = stanza.querySelector('received'),
-        displayed = stanza.querySelector('displayed'),
+        delivered = stanza.querySelector('received'),
+        read = stanza.querySelector('displayed'),
         composing = stanza.querySelector('composing'),
         paused = stanza.querySelector('paused'),
         invite = stanza.querySelector('invite'),
@@ -215,59 +219,23 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        marker = received || displayed || null,
-        message, extension, attachments, attach, attributes,
-        msg;
+        marker = delivered || read || null;
 
+
+    // ignore invite messages from MUC
+    //
     if (invite) return true;
 
-    // custom parameters
-    // TODO: need rewrite this block
-    if (extraParams) {
-      extension = {};
-      attachments = [];
-      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        if (extraParams.childNodes[i].tagName === 'attachment') {
 
-          // attachments
-          attach = {};
-          attributes = extraParams.childNodes[i].attributes;
-          for (var j = 0, len2 = attributes.length; j < len2; j++) {
-            if (attributes[j].name === 'id' || attributes[j].name === 'size')
-              attach[attributes[j].name] = parseInt(attributes[j].value);
-            else
-              attach[attributes[j].name] = attributes[j].value;
-          }
-          attachments.push(attach);
-
-        } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-          dialogId = extraParams.childNodes[i].textContent;
-
-        } else {
-          if (extraParams.childNodes[i].childNodes.length > 1) {
-
-            // Firefox issue with 4K XML node limit:
-            // http://www.coderholic.com/firefox-4k-xml-node-limit/
-            var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-            if (nodeTextContentSize > 4096) {
-              var wholeNodeContent = "";
-              for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-              }
-              extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-
-            } else {
-              extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-            }
-          } else {
-            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-          }
-        }
+    // parse extra params
+    var extraParamsParsed;
+    if(extraParams){
+      extraParamsParsed = self._parseExtraParams(extraParams);
+      if(extraParamsParsed.dialogId){
+        dialogId = extraParamsParsed.dialogId;
       }
-
-      if (attachments.length > 0)
-        extension.attachments = attachments;
     }
+
 
     // fire 'is typing' callback
     //
@@ -278,25 +246,45 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    message = {
+    // fire read/delivered listeners
+    //
+    if (marker) {
+      if (delivered) {
+        if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
+          self.onDeliveredStatusListener(delivered.getAttribute('id'), dialogId, userId);
+        }
+      } else {
+        if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
+          self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
+        }
+      }
+      return true;
+    }
+
+    // autosend 'received' status
+    //
+    if (markable) {
+      var params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+      };
+      self.sendDeliveredStatus(params);
+    }
+
+    // fire 'onMessageListener'
+    //
+    var message = {
       id: messageId,
       dialog_id: dialogId,
       type: type,
       body: (body && body.textContent) || null,
-      extension: extension || null,
+      extension: extraParamsParsed ? extraParamsParsed.extension : null,
       delay: delay
     };
-
-    // chat markers
-    if (marker) {
-      message.markerType = received ? 'received' : 'displayed';
-      message.markerMessageId = marker.getAttribute('id');
-    }
-
-    // !delay - this needed to don't duplicate messages from chat 2.0 API history
-    // with typical XMPP behavior of history messages in group chat
-    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay))
+    if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
       self.onMessageListener(userId, message);
+    }
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -380,6 +368,33 @@ function ChatProxy(service, webrtcModule, conn) {
     // returning false would remove it after it finishes
     return true;
   };
+
+  this._onSystemMessageListener = function(stanza) {
+    var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
+        extraParams = stanza.querySelector('extraParams'),
+        moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
+        delay = stanza.querySelector('delay'),
+        messageId = stanza.getAttribute('id'),
+        message;
+
+    // fire 'onSystemMessageListener'
+    //
+    if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
+
+      var extraParamsParsed = self._parseExtraParams(extraParams);
+
+      message = {
+        id: messageId,
+        userId: self.helpers.getIdFromNode(from),
+        extension: extraParamsParsed.extension
+      };
+
+      self.onSystemMessageListener(message);
+    }
+
+    return true;
+  };
 }
 
 /* Chat module: Core
@@ -432,6 +447,7 @@ ChatProxy.prototype = {
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
         connection.addHandler(self._onPresence, null, 'presence');
         connection.addHandler(self._onIQ, null, 'iq');
+        connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
 
         // set signaling callbacks
         connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
@@ -543,6 +559,41 @@ ChatProxy.prototype = {
     connection.send(msg);
   },
 
+  // send system messages
+  sendSystemMessage: function(jid_or_user_id, message) {
+    if(!isBrowser) throw unsupported;
+
+    if(message.id == null){
+      message.id = Utils.getBsonObjectId();
+    }
+
+    var self = this,
+        msg = $msg({
+          id: message.id,
+          type: 'headline',
+          to: this.helpers.jidOrUserId(jid_or_user_id)
+        });
+
+    // custom parameters
+    if (message.extension) {
+      msg.c('extraParams', {
+        xmlns: Strophe.NS.CLIENT
+      }).c('moduleIdentifier').t('SystemNotifications').up();
+
+      Object.keys(message.extension).forEach(function(field) {
+        if (typeof message.extension[field] === 'object') {
+          self._JStoXML(field, message.extension[field], msg);
+        }else{
+          msg.c(field).t(message.extension[field]).up();
+        }
+      });
+
+      msg.up();
+    }
+
+    connection.send(msg);
+  },
+
   // send typing status
   sendIsTypingStatus: function(jid_or_user_id) {
     if(!isBrowser) throw unsupported;
@@ -587,38 +638,46 @@ ChatProxy.prototype = {
     }));
   },
 
-  sendDeliveredMessage: function(jid, messageId) {
+  sendDeliveredStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
     msg.c('received', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },
 
-  sendReadMessage: function(jid, messageId) {
+  sendReadStatus: function(params) {
     if(!isBrowser) throw unsupported;
 
     var msg = $msg({
       from: connection.jid,
-      to: jid,
+      to: this.helpers.jidOrUserId(params.userId),
       type: 'chat',
       id: Utils.getBsonObjectId()
     });
 
     msg.c('displayed', {
       xmlns: Strophe.NS.CHAT_MARKERS,
-      id: messageId
-    });
+      id: params.messageId
+    }).up();
+
+    msg.c('extraParams', {
+      xmlns: Strophe.NS.CLIENT
+    }).c('dialog_id').t(params.dialogId);
 
     connection.send(msg);
   },
@@ -675,6 +734,67 @@ ChatProxy.prototype = {
       }
     }
     return extension;
+  },
+
+  _parseExtraParams: function(extraParams) {
+    if(!extraParams){
+      return null;
+    }
+
+    var extension = {};
+    var dialogId;
+
+    var attachments = [];
+
+    for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+
+      // parse attachments
+      if (extraParams.childNodes[i].tagName === 'attachment') {
+        var attach = {};
+        var attributes = extraParams.childNodes[i].attributes;
+        for (var j = 0, len2 = attributes.length; j < len2; j++) {
+          if (attributes[j].name === 'id' || attributes[j].name === 'size')
+            attach[attributes[j].name] = parseInt(attributes[j].value);
+          else
+            attach[attributes[j].name] = attributes[j].value;
+        }
+        attachments.push(attach);
+
+      // parse 'dialog_id'
+      } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+        dialogId = extraParams.childNodes[i].textContent;
+        extension["dialog_id"] = dialogId;
+
+      // parse other user's custom parameters
+      } else {
+        if (extraParams.childNodes[i].childNodes.length > 1) {
+          // Firefox issue with 4K XML node limit:
+          // http://www.coderholic.com/firefox-4k-xml-node-limit/
+          var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+          if (nodeTextContentSize > 4096) {
+            var wholeNodeContent = "";
+            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+              wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+            }
+            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+          } else {
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+          }
+        } else {
+          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+        }
+      }
+    }
+
+    if (attachments.length > 0) {
+      extension.attachments = attachments;
+    }
+
+    if (extension.moduleIdentifier) {
+      delete extension.moduleIdentifier;
+    }
+
+    return {extension: extension, dialogId: dialogId};
   },
 
   _autoSendPresence: function() {
@@ -940,6 +1060,8 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
+    if (params.occupants_ids instanceof Array) params.occupants_ids = params.occupants_ids.join(', ');
+
     Utils.QBLog('[DialogProxy]', 'create', params);
 
     this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
@@ -1086,7 +1208,6 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
-
 function getError(code, detail) {
   var errorMsg = {
     code: code,
@@ -2353,6 +2474,26 @@ WebRTCProxy.prototype.update = function(userId, extension) {
   this._sendMessage(userId, extension, 'PARAMETERS_CHANGED');
 };
 
+WebRTCProxy.prototype.close = function() {
+  Object.keys(answerTimers).forEach(function(key) {
+    clearAnswerTimer(key);
+  });
+
+  Object.keys(dialingTimerIntervals).forEach(function(key) {
+    clearDialingTimerInterval(key);
+  });
+
+  Object.keys(callTimers).forEach(function(key) {
+    clearCallTimer(key);
+  });
+
+  this._close();
+
+  Object.keys(callers).forEach(function(key) {
+    clearCallers(key);
+  });
+}
+
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
   trace("Peer._close");
@@ -2709,7 +2850,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.14.0',
+  version: '1.15.0',
   creds: {
     appId: '',
     authKey: '',
@@ -3314,20 +3455,22 @@ var rootParent = {}
  */
 Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
   ? global.TYPED_ARRAY_SUPPORT
-  : (function () {
-      function Bar () {}
-      try {
-        var arr = new Uint8Array(1)
-        arr.foo = function () { return 42 }
-        arr.constructor = Bar
-        return arr.foo() === 42 && // typed array instances can be augmented
-            arr.constructor === Bar && // constructor can be set
-            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-      } catch (e) {
-        return false
-      }
-    })()
+  : typedArraySupport()
+
+function typedArraySupport () {
+  function Bar () {}
+  try {
+    var arr = new Uint8Array(1)
+    arr.foo = function () { return 42 }
+    arr.constructor = Bar
+    return arr.foo() === 42 && // typed array instances can be augmented
+        arr.constructor === Bar && // constructor can be set
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+  } catch (e) {
+    return false
+  }
+}
 
 function kMaxLength () {
   return Buffer.TYPED_ARRAY_SUPPORT
@@ -4281,7 +4424,7 @@ Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -4298,7 +4441,7 @@ Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -4312,7 +4455,7 @@ Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -4334,7 +4477,7 @@ Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert
     this[offset + 3] = (value >>> 24)
     this[offset + 2] = (value >>> 16)
     this[offset + 1] = (value >>> 8)
-    this[offset] = value
+    this[offset] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, true)
   }
@@ -4349,7 +4492,7 @@ Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }
@@ -4402,7 +4545,7 @@ Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
-  this[offset] = value
+  this[offset] = (value & 0xff)
   return offset + 1
 }
 
@@ -4411,7 +4554,7 @@ Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
   } else {
     objectWriteUInt16(this, value, offset, true)
@@ -4425,7 +4568,7 @@ Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) 
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
-    this[offset + 1] = value
+    this[offset + 1] = (value & 0xff)
   } else {
     objectWriteUInt16(this, value, offset, false)
   }
@@ -4437,7 +4580,7 @@ Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) 
   offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value
+    this[offset] = (value & 0xff)
     this[offset + 1] = (value >>> 8)
     this[offset + 2] = (value >>> 16)
     this[offset + 3] = (value >>> 24)
@@ -4456,7 +4599,7 @@ Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) 
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
-    this[offset + 3] = value
+    this[offset + 3] = (value & 0xff)
   } else {
     objectWriteUInt32(this, value, offset, false)
   }
