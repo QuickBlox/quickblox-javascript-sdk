@@ -39,6 +39,7 @@ describe('QuickBlox SDK - Chat module', function() {
           param2: "value2"
         });
         expect(receivedMessage.id).toEqual(self.messageId);
+        expect(receivedMessage.markable).toEqual(1);
         self.messageId = null;
 
         done();
@@ -49,7 +50,8 @@ describe('QuickBlox SDK - Chat module', function() {
         extension: {
           param1: "value1",
           param2: "value2"
-        }
+        },
+        markable: 1
       };
       QB.chat.send(QBUser1.id, message);
       this.messageId = message.id;

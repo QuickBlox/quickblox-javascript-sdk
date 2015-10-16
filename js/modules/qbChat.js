@@ -139,6 +139,9 @@ function ChatProxy(service, webrtc, conn) {
       extension: extraParamsParsed ? extraParamsParsed.extension : null,
       delay: delay
     };
+    if (markable) {
+      message.markable = 1;
+    }
     if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
       self.onMessageListener(userId, message);
     }
@@ -407,7 +410,8 @@ ChatProxy.prototype = {
     }
 
     // chat markers
-    if (message.type === 'chat') {
+    //
+    if (message.markable) {
       msg.c('markable', {
         xmlns: Strophe.NS.CHAT_MARKERS
       });
