@@ -215,7 +215,6 @@ QB.webrtc.onAcceptCallListener = function(userId, extension) {
 };
 
 QB.webrtc.onRejectCallListener = function(userId, extension) {
-    throw "We have an error!";
   console.log("onRejectCallListener. userId: " + userId + ". Extension: " + JSON.stringify(extension));
 
   $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
