@@ -202,6 +202,15 @@ WebRTCSession.prototype.accept = function(extension) {
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
+  /*
+   * Check state of current session
+   */
+  if(self.state === WebRTCSession.State.ACTIVE) {
+    Helpers.traceError('Session already active');
+    return;
+  }
+
+  console.info('NEW SESSION');
   self.state = WebRTCSession.State.ACTIVE;
 
   self._clearAnswerTimer();
