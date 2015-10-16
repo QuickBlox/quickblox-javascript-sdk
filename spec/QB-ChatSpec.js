@@ -241,6 +241,25 @@ describe('QuickBlox SDK - Chat module', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Messages list
+    //
+    it('can list messages', function(done) {
+
+      var filters = {chat_dialog_id: dialogId};
+      QB.chat.message.list(filters, function(err, res) {
+
+        if(err){
+          done.fail("List messages error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          // expect(res.items.length).toBeGreaterThan(0);
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Dialog delete
     //
     it('can delete a dialog (group)', function(done) {
