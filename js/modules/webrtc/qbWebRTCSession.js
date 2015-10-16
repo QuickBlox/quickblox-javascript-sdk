@@ -145,7 +145,7 @@ WebRTCSession.prototype.connectionStateForUser = function(userID){
     return peerConnection.state;
   }
   return null;
-}
+};
 
 /**
  * Detach media stream from audio/video element
@@ -157,7 +157,7 @@ WebRTCSession.prototype.detachMediaStream = function(id){
     elem.pause();
     elem.src = "";
   }
-}
+};
 
 /**
  * Initiate a call
@@ -193,7 +193,7 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
       peer._startDialingTimer(extension);
     }
   });
-}
+};
 
 /**
  * Accept a call
@@ -351,7 +351,7 @@ WebRTCSession.prototype.update = function(extension) {
 
     self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.PARAMETERS_CHANGED);
   }
-}
+};
 
 
 /**
@@ -451,7 +451,7 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
       }
     }
   });
-}
+};
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
@@ -467,7 +467,7 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   }else{
     Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");
   }
-}
+};
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
@@ -478,32 +478,33 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
     Helpers.traceError("Ignore 'OnReject', there is no information about peer connection by some reason.");
   }
   this._closeSessionIfAllConnectionsClosed();
-}
+};
 
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var self = this;
 
-  /**
-   * Check whether there is an active call
-   * If answerTimer === null it's means that we have active call
-   */
-  if(self.answerTimer === null ) {
-    self.peerConnections[userID]._clearDialingTimer();
-    self.peerConnections[userID].release();
-  } else {
-    /* No one doesn't take a call */
+  // drop the call if the initiator did it
+  if (userID === self.initiatorID) {
     if( Object.keys(self.peerConnections).length ) {
       Object.keys(self.peerConnections).forEach(function(key) {
         self.peerConnections[key]._clearDialingTimer();
         self.peerConnections[key].release();
       });
     } else {
+      Helpers.traceError("Ignore 'OnStop', there is no information about peer connections by some reason.");
+    }
+  } else {
+    var pc = self.peerConnections[userID];
+    if(pc){
+      pc._clearDialingTimer();
+      pc.release();
+    }else{
       Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
     }
   }
 
   this._closeSessionIfAllConnectionsClosed();
-}
+};
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
@@ -516,7 +517,7 @@ WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
 
 WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
 
-}
+};
 
 
 //
@@ -534,7 +535,7 @@ WebRTCSession.prototype.processCall = function(peerConnection, extension) {
   extension["sdp"] = peerConnection.localDescription.sdp;
 
   this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
-}
+};
 
 WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandidates) {
   var extension = {};
@@ -544,7 +545,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
   extension["opponentsIDs"] = this.opponentsIDs;
 
   this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
-}
+};
 
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
@@ -556,7 +557,7 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   }
 
   this._closeSessionIfAllConnectionsClosed();
-}
+};
 
 
 //
@@ -580,7 +581,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
   if (connectionState === Helpers.SessionConnectionState.CLOSED){
     //peer = null;
   }
-}
+};
 
 //
 //////////////////////////////////// Private ///////////////////////////////////
@@ -653,7 +654,7 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
 
     this.state = WebRTCSession.State.CLOSED;
   }
-}
+};
 
 WebRTCSession.prototype._closeLocalMediaStream = function(){
   // https://developers.google.com/web/updates/2015/07/mediastream-deprecations?hl=en
@@ -666,7 +667,7 @@ WebRTCSession.prototype._closeLocalMediaStream = function(){
     });
     this.localStream = null;
   }
-}
+};
 
 WebRTCSession.prototype._muteStream = function(bool, type) {
   if (type === 'audio' && this.localStream.getAudioTracks().length > 0) {
@@ -691,7 +692,7 @@ WebRTCSession.prototype._clearAnswerTimer = function(){
     clearTimeout(this.answerTimer);
     this.answerTimer = null;
   }
-}
+};
 
 WebRTCSession.prototype._startAnswerTimer = function(){
   Helpers.trace("_startAnswerTimer");
@@ -731,7 +732,7 @@ WebRTCSession.prototype._startOfferTimer = function(time) {
 
         self.offerTimer = null;
       };
-  
+
   this.offerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval*1000);
 };
 
@@ -747,7 +748,7 @@ WebRTCSession.prototype._uniqueOpponentsIDs = function(){
     }
   });
   return opponents;
-}
+};
 
 WebRTCSession.prototype._uniqueOpponentsIDsWithoutInitiator = function(){
   var self = this;
@@ -758,13 +759,13 @@ WebRTCSession.prototype._uniqueOpponentsIDsWithoutInitiator = function(){
     }
   });
   return opponents;
-}
+};
 
 WebRTCSession.prototype.toString = function sessionToString() {
   var ret = 'ID: ' + this.ID + ', initiatorID:  ' + this.initiatorID + ', opponentsIDs: ' +
     this.opponentsIDs + ', state: ' + this.state + ", callType: " + this.callType;
   return ret;
-}
+};
 
 function generateUUID(){
     var d = new Date().getTime();
