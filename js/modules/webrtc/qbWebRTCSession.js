@@ -482,6 +482,9 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
+
+  clearTimeout(this.waitingOfferOrAnswerTimer);
+
   if(peerConnection){
     peerConnection._clearDialingTimer();
     peerConnection.release();
