@@ -119,77 +119,77 @@ $(document).ready(function() {
   // Accept call
   //
   $('#accept').on('click', function() {
-    var $popupIncomingCall = $('#incomingCall');
 
-    if(currentSession.state !== QB.webrtc.SessionConnectionState.CONNECTED) {
-      $popupIncomingCall.modal('hide');
-      $('#ringtoneSignal')[0].pause();
+    $('#accept').attr('disabled', 'disabled');
 
-      var mediaParams = {
-        audio: true,
-        video: currentSession.callType === 1 ? true : false,
-        // video: {
-        //       mandatory: {
-        //         maxWidth: 1280,
-        //         maxHeight: 720,
-        //         minWidth: 1280,
-        //         minHeight: 720
-        //       }
-        // },
-        elemId: 'localVideo',
-        options: {
-          muted: true,
-          mirror: true
-        }
-      };
+    $('#incomingCall').modal('hide');
+    $('#ringtoneSignal')[0].pause();
 
-      currentSession.getUserMedia(mediaParams, function(err, stream) {
+    var mediaParams = {
+      audio: true,
+      video: currentSession.callType === 1 ? true : false,
+      // video: {
+      //       mandatory: {
+      //         maxWidth: 1280,
+      //         maxHeight: 720,
+      //         minWidth: 1280,
+      //         minHeight: 720
+      //       }
+      // },
+      elemId: 'localVideo',
+      options: {
+        muted: true,
+        mirror: true
+      }
+    };
 
-        if (err) {
-          console.log(err);
-          var deviceNotFoundError = 'Devices are not found';
-          updateInfoMessage(deviceNotFoundError);
+    currentSession.getUserMedia(mediaParams, function(err, stream) {
 
-        } else {
-          // create video elements for opponents
-          //
+      if (err) {
+        console.log(err);
+        var deviceNotFoundError = 'Devices are not found';
+        updateInfoMessage(deviceNotFoundError);
 
-          var opponents = [currentSession.initiatorID];
-          currentSession.opponentsIDs.forEach(function(userID, i, arr) {
-            if(userID != currentSession.currentUserID){
-              opponents.push(userID);
+      } else {
+        // create video elements for opponents
+        //
+
+        var opponents = [currentSession.initiatorID];
+        currentSession.opponentsIDs.forEach(function(userID, i, arr) {
+          if(userID != currentSession.currentUserID){
+            opponents.push(userID);
+          }
+        });
+        //
+        opponents.forEach(function(userID, i, arr) {
+          if(!checkVideoEl(userID)) {
+            var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+            $(videoEl).appendTo('.remoteControls');
+
+            var peerState = currentSession.connectionStateForUser(userID);
+            if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
+              clearRemoteVideoView(userID);
             }
-          });
-          //
-          opponents.forEach(function(userID, i, arr) {
-            if(!checkVideoEl(userID)) {
-              var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
-              $(videoEl).appendTo('.remoteControls');
+          }
+        });
 
-              var peerState = currentSession.connectionStateForUser(userID);
-              if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-                clearRemoteVideoView(userID);
-              }
-            }
-          });
+        setupVolumeMeter(stream);
 
-          setupVolumeMeter(stream);
+        $('.btn_mediacall, #hangup').removeAttr('disabled');
+        $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
 
-          $('.btn_mediacall, #hangup').removeAttr('disabled');
-          $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
-
-          var extension = {};
-          currentSession.accept(extension);
-        }
-      });
-    } else {
-      $popupIncomingCall.modal('hide');
-    }
+        var extension = {};
+        currentSession.accept(extension);
+      }
+    });
   });
 
   // Reject
   //
   $('#reject').on('click', function() {
+
+    $('#reject').attr('disabled', 'disabled');
+
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
@@ -258,6 +258,7 @@ QB.webrtc.onCallListener = function(session, extension) {
 
   $('#ringtoneSignal')[0].play();
 
+  $('#accept, #reject').removeAttr('disabled');
   $('#incomingCall').modal({
     backdrop: 'static',
     keyboard: false
