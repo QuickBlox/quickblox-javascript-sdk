@@ -553,6 +553,7 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
+  peerConnection._clearDialingTimer();
   peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
