@@ -2823,11 +2823,9 @@ WebRTCSession.prototype.accept = function(extension) {
 
   self.state = WebRTCSession.State.ACTIVE;
 
-  if (!_isUserLast(self.currentUserID, self.opponentsIDs)) {
-    self.acceptCallTime = new Date();
-    offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
-    self._startWaitingOfferOrAnswerTimer(offerTime);
-  }
+  self.acceptCallTime = new Date();
+  offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
+  self._startWaitingOfferOrAnswerTimer(offerTime);
 
   self._clearAnswerTimer();
 
@@ -3411,18 +3409,7 @@ function _prepareExtension(extension) {
   }
 }
 
-function _isUserLast(currentUserID, opponentsIDs) {
-  var lastUserID = 0;
-
-  opponentsIDs.forEach(function(el, i, array) {
-    if(el > lastUserID) { lastUserID = el }
-  });
-
-  return lastUserID === currentUserID;
-}
-
 module.exports = WebRTCSession;
-
 },{"../../qbConfig":15,"../../qbUtils":19,"./qbRTCPeerConnection":8,"./qbWebRTCHelpers":10,"./qbWebRTCSignalingConstants":12}],12:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
