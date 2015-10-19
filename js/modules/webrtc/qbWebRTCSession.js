@@ -210,7 +210,7 @@ WebRTCSession.prototype.accept = function(extension) {
    * Check state of current session
    */
   if(self.state === WebRTCSession.State.ACTIVE) {
-    Helpers.traceError('Session already active');
+    Helpers.traceError("Can't accept, the session is already active, return.");
     return;
   }
 
@@ -428,7 +428,7 @@ WebRTCSession.filter = function(id, filters) {
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
 
-  clearTimeout(self.waitingOfferOrAnswerTimer);
+  this._clearWaitingOfferOrAnswerTimer();
 
   var oppIDs = this._uniqueOpponentsIDs();
   oppIDs.forEach(function(opID, i, arr) {
@@ -465,6 +465,8 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
+  this._clearWaitingOfferOrAnswerTimer();
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -481,10 +483,9 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 };
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
+  this._clearWaitingOfferOrAnswerTimer();
+
   var peerConnection = this.peerConnections[userID];
-
-  clearTimeout(this.waitingOfferOrAnswerTimer);
-
   if(peerConnection){
     peerConnection._clearDialingTimer();
     peerConnection.release();
@@ -731,14 +732,13 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
   Helpers.trace("_startWaitingOfferOrAnswerTimer");
 
   var self = this,
-      waitOfferInterval = ( config.webrtc.answerTimeInterval - time ) < 0 ? 0 : config.webrtc.answerTimeInterval - time,
-      waitTimeoutCallback = function() {
-        Helpers.trace("waitTimeoutCallback");
+      waitOfferInterval = ( config.webrtc.answerTimeInterval - time ) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
+      waitingOfferOrAnswerTimeoutCallback = function() {
+        Helpers.trace("waitingOfferOrAnswerTimeoutCallback");
 
         if(Object.keys(self.peerConnections).length > 0) {
           Object.keys(self.peerConnections).forEach(function(key) {
             var peerConnection = self.peerConnections[key];
-
             if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
               self.processOnNotAnswer(peerConnection);
             }
@@ -748,8 +748,15 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
         self.waitingOfferOrAnswerTimer = null;
       };
 
-  this.waitingOfferOrAnswerTimer = setTimeout(waitTimeoutCallback, waitOfferInterval*1000);
+  this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, waitOfferInterval*1000);
 };
+
+WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function(time) {
+  if(this.waitingOfferOrAnswerTimer){
+    clearTimeout(this.waitingOfferOrAnswerTimer);
+    this.waitingOfferOrAnswerTimer = null;
+  }
+}
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
   var self = this;
