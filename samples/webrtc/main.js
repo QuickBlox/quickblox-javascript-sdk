@@ -119,6 +119,9 @@ $(document).ready(function() {
   // Accept call
   //
   $('#accept').on('click', function() {
+
+    $('#accept').attr('disabled', 'disabled');
+
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
@@ -141,6 +144,7 @@ $(document).ready(function() {
     };
 
     currentSession.getUserMedia(mediaParams, function(err, stream) {
+
       if (err) {
         console.log(err);
         var deviceNotFoundError = 'Devices are not found';
@@ -149,6 +153,7 @@ $(document).ready(function() {
       } else {
         // create video elements for opponents
         //
+
         var opponents = [currentSession.initiatorID];
         currentSession.opponentsIDs.forEach(function(userID, i, arr) {
           if(userID != currentSession.currentUserID){
@@ -157,15 +162,16 @@ $(document).ready(function() {
         });
         //
         opponents.forEach(function(userID, i, arr) {
-          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
-          $(videoEl).appendTo('.remoteControls');
+          if(!checkVideoEl(userID)) {
+            var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+            $(videoEl).appendTo('.remoteControls');
 
-          var peerState = currentSession.connectionStateForUser(userID);
-          if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-            clearRemoteVideoView(userID);
+            var peerState = currentSession.connectionStateForUser(userID);
+            if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
+              clearRemoteVideoView(userID);
+            }
           }
         });
-
 
         setupVolumeMeter(stream);
 
@@ -178,10 +184,12 @@ $(document).ready(function() {
     });
   });
 
-
   // Reject
   //
   $('#reject').on('click', function() {
+
+    $('#reject').attr('disabled', 'disabled');
+
     $('#incomingCall').modal('hide');
     $('#ringtoneSignal')[0].pause();
 
@@ -250,6 +258,7 @@ QB.webrtc.onCallListener = function(session, extension) {
 
   $('#ringtoneSignal')[0].play();
 
+  $('#accept, #reject').removeAttr('disabled');
   $('#incomingCall').modal({
     backdrop: 'static',
     keyboard: false
@@ -501,20 +510,22 @@ function setupVolumeMeter(localStream){
 
 function drawLoop(time) {
   // clear the background
-  canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+  if(canvasContext) {
+    canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
 
-  // check if we're currently clipping
-  if (meter.checkClipping()){
-    canvasContext.fillStyle = "red";
-  }else{
-    canvasContext.fillStyle = "green";
+    // check if we're currently clipping
+    if (meter.checkClipping()){
+      canvasContext.fillStyle = "red";
+    }else{
+      canvasContext.fillStyle = "green";
+    }
+
+    // draw a bar based on the current volume
+    canvasContext.fillRect(0, 0, meter.volume * METER_WIDTH * 1.4, METER_HEIGHT);
+
+    // set up the next visual callback
+    animationRequestID = window.requestAnimationFrame(drawLoop);
   }
-
-  // draw a bar based on the current volume
-  canvasContext.fillRect(0, 0, meter.volume * METER_WIDTH * 1.4, METER_HEIGHT);
-
-  // set up the next visual callback
-  animationRequestID = window.requestAnimationFrame(drawLoop);
 }
 
 function clearVolumeMeter() {
@@ -528,4 +539,9 @@ function clearVolumeMeter() {
   canvasContext = null;
   mediaStreamSource = null;
   meter = null;
+}
+
+function checkVideoEl(userID) {
+  var videoEl = document.getElementById('remoteVideo_' + userID);
+  return (videoEl !== null);
 }
