@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-16 */
+/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-19 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -3197,7 +3197,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * RtpDataChannels: true
   **********************************************/
   var pcConfig = {
-    iceServers: config.webrtc.iceServers
+    iceServers: _prepareIceServers(config.webrtc.iceServers)
   };
 
   var peer = new RTCPeerConnection(pcConfig);
@@ -3358,6 +3358,20 @@ function _prepareExtension(extension) {
   } catch (err) {
     return {};
   }
+}
+
+function _prepareIceServers(iceServers) {
+  var  iceServersCopy = JSON.parse(JSON.stringify(iceServers));
+
+  Object.keys(iceServersCopy).forEach(function(c, i, a) {
+    if(iceServersCopy[i].hasOwnProperty('url')) {
+      iceServersCopy[i].urls = iceServersCopy[i].url;
+    } else {
+      iceServersCopy[i].url = iceServersCopy[i].urls;
+    }
+  });
+
+  return iceServersCopy;
 }
 
 module.exports = WebRTCSession;
@@ -8352,8 +8366,8 @@ exports.isBuffer = isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-}).call(this,{"isBuffer":require("/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":34}],44:[function(require,module,exports){
+}).call(this,{"isBuffer":require("C:\\OpenServer\\domains\\qb-WEBSDK\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js")})
+},{"C:\\OpenServer\\domains\\qb-WEBSDK\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js":34}],44:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":39}],45:[function(require,module,exports){
