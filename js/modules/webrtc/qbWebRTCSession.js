@@ -173,11 +173,11 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   self.opponentsIDs.forEach(function(userID, i, arr) {
-    self._callInternal(userID, ext);
+    self._callInternal(userID, ext, true);
   });
 };
 
-WebRTCSession.prototype._callInternal = function(userID, extension) {
+WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
 
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
@@ -190,7 +190,7 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
       Helpers.trace("getAndSetLocalSessionDescription success");
       // let's send call requests to user
       //
-      peer._startDialingTimer(extension);
+      peer._startDialingTimer(extension, withOnNotAnswerCallback);
     }
   });
 };
@@ -224,6 +224,7 @@ WebRTCSession.prototype.accept = function(extension) {
   // The group call logic starts here
   var oppIDs = self._uniqueOpponentsIDsWithoutInitiator();
 
+  // in a case of group video chat
   if(oppIDs.length > 0){
 
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
@@ -235,7 +236,7 @@ WebRTCSession.prototype.accept = function(extension) {
     oppIDs.forEach(function(opID, i, arr) {
       if(self.currentUserID > opID){
         // call to the user
-        self._callInternal(opID, {});
+        self._callInternal(opID, {}, false);
       }
     });
   }
@@ -737,10 +738,9 @@ WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
 }
 
 WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
-  Helpers.trace("_startWaitingOfferOrAnswerTimer");
 
   var self = this,
-      waitOfferInterval = ( config.webrtc.answerTimeInterval - time ) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
+      timeout = (config.webrtc.answerTimeInterval - time) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
       waitingOfferOrAnswerTimeoutCallback = function() {
         Helpers.trace("waitingOfferOrAnswerTimeoutCallback");
 
@@ -756,7 +756,9 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
         self.waitingOfferOrAnswerTimer = null;
       };
 
-  this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, waitOfferInterval*1000);
+  Helpers.trace("_startWaitingOfferOrAnswerTimer, timeout: " + timeout);
+
+  this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, timeout*1000);
 };
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){

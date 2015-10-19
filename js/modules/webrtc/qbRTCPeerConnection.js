@@ -51,7 +51,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   // We use this timer interval to dial a user - produce the call requests each N seconds.
   //
   this.dialingTimer = null;
-  this.answerTimeInterval = 0;
+  this.answerTimeInterval = -config.webrtc.dialingTimeInterval*1000;
 
   this.iceCandidates = [];
 };
@@ -226,18 +226,18 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
 
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
-    this.answerTimeInterval = 0;
+    this.answerTimeInterval = -config.webrtc.dialingTimeInterval*1000;
   }
 }
 
-RTCPeerConnection.prototype._startDialingTimer = function(extension){
+RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAnswerCallback){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
 
   Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
 
   var self = this;
 
-  var _dialingCallback = function(extension){
+  var _dialingCallback = function(extension, withOnNotAnswerCallback){
     self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
 
     Helpers.trace("_dialingCallback, answerTimeInterval: " + self.answerTimeInterval);
@@ -245,14 +245,16 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension){
     if(self.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
       self._clearDialingTimer();
 
-      self.delegate.processOnNotAnswer(self);
+      if(withOnNotAnswerCallback){
+        self.delegate.processOnNotAnswer(self);
+      }
     }else{
       self.delegate.processCall(self, extension);
     }
   }
 
-  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension);
-  _dialingCallback(extension);
+  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback);
+  _dialingCallback(extension, withOnNotAnswerCallback);
 }
 
 
