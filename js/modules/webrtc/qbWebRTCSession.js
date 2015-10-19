@@ -201,8 +201,7 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
  */
 WebRTCSession.prototype.accept = function(extension) {
   var self = this,
-      ext = _prepareExtension(extension),
-      offerTime = 0;
+      ext = _prepareExtension(extension);
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
@@ -217,8 +216,6 @@ WebRTCSession.prototype.accept = function(extension) {
   self.state = WebRTCSession.State.ACTIVE;
 
   self.acceptCallTime = new Date();
-  offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
-  self._startWaitingOfferOrAnswerTimer(offerTime);
 
   self._clearAnswerTimer();
 
@@ -228,6 +225,10 @@ WebRTCSession.prototype.accept = function(extension) {
   var oppIDs = self._uniqueOpponentsIDsWithoutInitiator();
 
   if(oppIDs.length > 0){
+
+    var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
+    self._startWaitingOfferOrAnswerTimer(offerTime);
+
     // here we have to decide to which users the user should call.
     // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
     //
@@ -563,6 +564,8 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
+  this._clearWaitingOfferOrAnswerTimer();
+
   peerConnection._clearDialingTimer();
   peerConnection.release();
 
@@ -700,9 +703,8 @@ WebRTCSession.prototype._muteStream = function(bool, type) {
 };
 
 WebRTCSession.prototype._clearAnswerTimer = function(){
-  Helpers.trace("_clearAnswerTimer");
-
   if(this.answerTimer){
+    Helpers.trace("_clearAnswerTimer");
     clearTimeout(this.answerTimer);
     this.answerTimer = null;
   }
@@ -726,6 +728,14 @@ WebRTCSession.prototype._startAnswerTimer = function(){
   this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
 };
 
+WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
+  if(this.waitingOfferOrAnswerTimer){
+    Helpers.trace("_clearWaitingOfferOrAnswerTimer");
+    clearTimeout(this.waitingOfferOrAnswerTimer);
+    this.waitingOfferOrAnswerTimer = null;
+  }
+}
+
 WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
   Helpers.trace("_startWaitingOfferOrAnswerTimer");
 
@@ -748,13 +758,6 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
 
   this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, waitOfferInterval*1000);
 };
-
-WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function(time) {
-  if(this.waitingOfferOrAnswerTimer){
-    clearTimeout(this.waitingOfferOrAnswerTimer);
-    this.waitingOfferOrAnswerTimer = null;
-  }
-}
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
   var self = this;

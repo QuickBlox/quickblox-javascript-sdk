@@ -221,9 +221,9 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
-  Helpers.trace("_clearDialingTimer");
-
   if(this.dialingTimer){
+    Helpers.trace("_clearDialingTimer");
+
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
     this.answerTimeInterval = 0;
