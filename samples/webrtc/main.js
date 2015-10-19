@@ -119,65 +119,73 @@ $(document).ready(function() {
   // Accept call
   //
   $('#accept').on('click', function() {
-    $('#incomingCall').modal('hide');
-    $('#ringtoneSignal')[0].pause();
+    var $popupIncomingCall = $('#incomingCall');
 
-    var mediaParams = {
-      audio: true,
-      video: currentSession.callType === 1 ? true : false,
-      // video: {
-      //       mandatory: {
-      //         maxWidth: 1280,
-      //         maxHeight: 720,
-      //         minWidth: 1280,
-      //         minHeight: 720
-      //       }
-      // },
-      elemId: 'localVideo',
-      options: {
-        muted: true,
-        mirror: true
-      }
-    };
+    if(currentSession.state !== QB.webrtc.SessionConnectionState.CONNECTED) {
+      $popupIncomingCall.modal('hide');
+      $('#ringtoneSignal')[0].pause();
 
-    currentSession.getUserMedia(mediaParams, function(err, stream) {
-      if (err) {
-        console.log(err);
-        var deviceNotFoundError = 'Devices are not found';
-        updateInfoMessage(deviceNotFoundError);
+      var mediaParams = {
+        audio: true,
+        video: currentSession.callType === 1 ? true : false,
+        // video: {
+        //       mandatory: {
+        //         maxWidth: 1280,
+        //         maxHeight: 720,
+        //         minWidth: 1280,
+        //         minHeight: 720
+        //       }
+        // },
+        elemId: 'localVideo',
+        options: {
+          muted: true,
+          mirror: true
+        }
+      };
 
-      } else {
-        // create video elements for opponents
-        //
-        var opponents = [currentSession.initiatorID];
-        currentSession.opponentsIDs.forEach(function(userID, i, arr) {
-          if(userID != currentSession.currentUserID){
-            opponents.push(userID);
-          }
-        });
-        //
-        opponents.forEach(function(userID, i, arr) {
-          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
-          $(videoEl).appendTo('.remoteControls');
+      currentSession.getUserMedia(mediaParams, function(err, stream) {
 
-          var peerState = currentSession.connectionStateForUser(userID);
-          if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-            clearRemoteVideoView(userID);
-          }
-        });
+        if (err) {
+          console.log(err);
+          var deviceNotFoundError = 'Devices are not found';
+          updateInfoMessage(deviceNotFoundError);
 
+        } else {
+          // create video elements for opponents
+          //
 
-        setupVolumeMeter(stream);
+          var opponents = [currentSession.initiatorID];
+          currentSession.opponentsIDs.forEach(function(userID, i, arr) {
+            if(userID != currentSession.currentUserID){
+              opponents.push(userID);
+            }
+          });
+          //
+          opponents.forEach(function(userID, i, arr) {
+            if(!checkVideoEl(userID)) {
+              var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+              $(videoEl).appendTo('.remoteControls');
 
-        $('.btn_mediacall, #hangup').removeAttr('disabled');
-        $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
+              var peerState = currentSession.connectionStateForUser(userID);
+              if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
+                clearRemoteVideoView(userID);
+              }
+            }
+          });
 
-        var extension = {};
-        currentSession.accept(extension);
-      }
-    });
+          setupVolumeMeter(stream);
+
+          $('.btn_mediacall, #hangup').removeAttr('disabled');
+          $('#audiocall, #videocall, #screen_sharing').attr('disabled', 'disabled');
+
+          var extension = {};
+          currentSession.accept(extension);
+        }
+      });
+    } else {
+      $popupIncomingCall.modal('hide');
+    }
   });
-
 
   // Reject
   //
@@ -501,20 +509,22 @@ function setupVolumeMeter(localStream){
 
 function drawLoop(time) {
   // clear the background
-  canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
+  if(canvasContext) {
+    canvasContext.clearRect(0, 0, METER_WIDTH, METER_HEIGHT);
 
-  // check if we're currently clipping
-  if (meter.checkClipping()){
-    canvasContext.fillStyle = "red";
-  }else{
-    canvasContext.fillStyle = "green";
+    // check if we're currently clipping
+    if (meter.checkClipping()){
+      canvasContext.fillStyle = "red";
+    }else{
+      canvasContext.fillStyle = "green";
+    }
+
+    // draw a bar based on the current volume
+    canvasContext.fillRect(0, 0, meter.volume * METER_WIDTH * 1.4, METER_HEIGHT);
+
+    // set up the next visual callback
+    animationRequestID = window.requestAnimationFrame(drawLoop);
   }
-
-  // draw a bar based on the current volume
-  canvasContext.fillRect(0, 0, meter.volume * METER_WIDTH * 1.4, METER_HEIGHT);
-
-  // set up the next visual callback
-  animationRequestID = window.requestAnimationFrame(drawLoop);
 }
 
 function clearVolumeMeter() {
@@ -528,4 +538,9 @@ function clearVolumeMeter() {
   canvasContext = null;
   mediaStreamSource = null;
   meter = null;
+}
+
+function checkVideoEl(userID) {
+  var videoEl = document.getElementById('remoteVideo_' + userID);
+  return (videoEl !== null);
 }

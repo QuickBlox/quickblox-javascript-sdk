@@ -2809,6 +2809,14 @@ WebRTCSession.prototype.accept = function(extension) {
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
+  /*
+   * Check state of current session
+   */
+  if(self.state === WebRTCSession.State.ACTIVE) {
+    Helpers.traceError('Session already active');
+    return;
+  }
+
   self.state = WebRTCSession.State.ACTIVE;
 
   self._clearAnswerTimer();
@@ -8352,8 +8360,8 @@ exports.isBuffer = isBuffer;
 function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
-}).call(this,{"isBuffer":require("/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"/Users/igorkhomenko/workspace/quickblox-javascript-sdk/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":34}],44:[function(require,module,exports){
+}).call(this,{"isBuffer":require("C:\\OpenServer\\domains\\qb-WEBSDK\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js")})
+},{"C:\\OpenServer\\domains\\qb-WEBSDK\\node_modules\\grunt-browserify\\node_modules\\browserify\\node_modules\\insert-module-globals\\node_modules\\is-buffer\\index.js":34}],44:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":39}],45:[function(require,module,exports){
