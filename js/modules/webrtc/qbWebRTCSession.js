@@ -62,6 +62,9 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
   // We need a way to hide it if sach situation happened."
   //
   this.answerTimer = null;
+
+  this.startCallTime = 0;
+  this.acceptCallTime = 0;
 }
 
 /**
@@ -170,11 +173,11 @@ WebRTCSession.prototype.call = function(extension) {
 
   // create a peer connection for each opponent
   self.opponentsIDs.forEach(function(userID, i, arr) {
-    self._callInternal(userID, ext);
+    self._callInternal(userID, ext, true);
   });
 };
 
-WebRTCSession.prototype._callInternal = function(userID, extension) {
+WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
 
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
@@ -187,7 +190,7 @@ WebRTCSession.prototype._callInternal = function(userID, extension) {
       Helpers.trace("getAndSetLocalSessionDescription success");
       // let's send call requests to user
       //
-      peer._startDialingTimer(extension);
+      peer._startDialingTimer(extension, withOnNotAnswerCallback);
     }
   });
 };
@@ -206,11 +209,13 @@ WebRTCSession.prototype.accept = function(extension) {
    * Check state of current session
    */
   if(self.state === WebRTCSession.State.ACTIVE) {
-    Helpers.traceError('Session already active');
+    Helpers.traceError("Can't accept, the session is already active, return.");
     return;
   }
 
   self.state = WebRTCSession.State.ACTIVE;
+
+  self.acceptCallTime = new Date();
 
   self._clearAnswerTimer();
 
@@ -219,14 +224,19 @@ WebRTCSession.prototype.accept = function(extension) {
   // The group call logic starts here
   var oppIDs = self._uniqueOpponentsIDsWithoutInitiator();
 
+  // in a case of group video chat
   if(oppIDs.length > 0){
+
+    var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
+    self._startWaitingOfferOrAnswerTimer(offerTime);
+
     // here we have to decide to which users the user should call.
     // We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
     //
     oppIDs.forEach(function(opID, i, arr) {
       if(self.currentUserID > opID){
         // call to the user
-        self._callInternal(opID, {});
+        self._callInternal(opID, {}, false);
       }
     });
   }
@@ -418,6 +428,8 @@ WebRTCSession.filter = function(id, filters) {
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
 
+  this._clearWaitingOfferOrAnswerTimer();
+
   var oppIDs = this._uniqueOpponentsIDs();
   oppIDs.forEach(function(opID, i, arr) {
 
@@ -453,6 +465,8 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
+  this._clearWaitingOfferOrAnswerTimer();
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -469,6 +483,8 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 };
 
 WebRTCSession.prototype.processOnReject = function(userID, extension) {
+  this._clearWaitingOfferOrAnswerTimer();
+
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -549,6 +565,9 @@ WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandi
 WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   Helpers.trace("Answer timeout callback for session " + this.ID + " for user " + peerConnection.userID);
 
+  this._clearWaitingOfferOrAnswerTimer();
+
+  peerConnection._clearDialingTimer();
   peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
@@ -571,9 +590,10 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
 };
 
 WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
+  var self = this;
 
-  if (typeof this.onSessionConnectionStateChangedListener === 'function'){
-    this.onSessionConnectionStateChangedListener(this, userID, connectionState);
+  if (typeof self.onSessionConnectionStateChangedListener === 'function'){
+    self.onSessionConnectionStateChangedListener(self, userID, connectionState);
   }
 
   if (connectionState === Helpers.SessionConnectionState.CLOSED){
@@ -590,6 +610,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   Helpers.trace("_createPeer");
 
   if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+
+  this.startCallTime = new Date();
 
   // Additional parameters for RTCPeerConnection options
   // new RTCPeerConnection(pcConfig, options)
@@ -682,9 +704,8 @@ WebRTCSession.prototype._muteStream = function(bool, type) {
 };
 
 WebRTCSession.prototype._clearAnswerTimer = function(){
-  Helpers.trace("_clearAnswerTimer");
-
   if(this.answerTimer){
+    Helpers.trace("_clearAnswerTimer");
     clearTimeout(this.answerTimer);
     this.answerTimer = null;
   }
@@ -706,6 +727,38 @@ WebRTCSession.prototype._startAnswerTimer = function(){
 
   var answerTimeInterval = config.webrtc.answerTimeInterval*1000;
   this.answerTimer = setTimeout(answerTimeoutCallback, answerTimeInterval);
+};
+
+WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
+  if(this.waitingOfferOrAnswerTimer){
+    Helpers.trace("_clearWaitingOfferOrAnswerTimer");
+    clearTimeout(this.waitingOfferOrAnswerTimer);
+    this.waitingOfferOrAnswerTimer = null;
+  }
+}
+
+WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
+
+  var self = this,
+      timeout = (config.webrtc.answerTimeInterval - time) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
+      waitingOfferOrAnswerTimeoutCallback = function() {
+        Helpers.trace("waitingOfferOrAnswerTimeoutCallback");
+
+        if(Object.keys(self.peerConnections).length > 0) {
+          Object.keys(self.peerConnections).forEach(function(key) {
+            var peerConnection = self.peerConnections[key];
+            if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
+              self.processOnNotAnswer(peerConnection);
+            }
+          });
+        }
+
+        self.waitingOfferOrAnswerTimer = null;
+      };
+
+  Helpers.trace("_startWaitingOfferOrAnswerTimer, timeout: " + timeout);
+
+  this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, timeout*1000);
 };
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
