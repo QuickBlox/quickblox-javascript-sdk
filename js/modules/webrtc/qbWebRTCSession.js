@@ -720,7 +720,6 @@ WebRTCSession.prototype._startAnswerTimer = function(){
 
     if(typeof self.onSessionCloseListener === 'function'){
       self._close();
-      self.onSessionCloseListener(self);
     }
 
     self.answerTimer = null;
