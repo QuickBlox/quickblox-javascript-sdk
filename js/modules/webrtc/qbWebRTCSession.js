@@ -607,9 +607,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 
 
 WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
-  Helpers.trace("_createPeer");
-
-  if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+  if (!RTCPeerConnection) throw new Error('_createPeer error: RTCPeerConnection() is not supported in your browser');
 
   this.startCallTime = new Date();
 
@@ -620,8 +618,10 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * RtpDataChannels: true
   **********************************************/
   var pcConfig = {
-    iceServers: config.webrtc.iceServers
+    iceServers: _prepareIceServers(config.webrtc.iceServers)
   };
+
+  Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
 
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);
@@ -813,6 +813,20 @@ function _prepareExtension(extension) {
   } catch (err) {
     return {};
   }
+}
+
+function _prepareIceServers(iceServers) {
+  var  iceServersCopy = JSON.parse(JSON.stringify(iceServers));
+
+  Object.keys(iceServersCopy).forEach(function(c, i, a) {
+    if(iceServersCopy[i].hasOwnProperty('url')) {
+      iceServersCopy[i].urls = iceServersCopy[i].url;
+    } else {
+      iceServersCopy[i].url = iceServersCopy[i].urls;
+    }
+  });
+
+  return iceServersCopy;
 }
 
 module.exports = WebRTCSession;
