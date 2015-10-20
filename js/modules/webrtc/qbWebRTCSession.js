@@ -719,6 +719,7 @@ WebRTCSession.prototype._startAnswerTimer = function(){
     Helpers.trace("_answerTimeoutCallback");
 
     if(typeof self.onSessionCloseListener === 'function'){
+      self._close();
       self.onSessionCloseListener(self);
     }
 

@@ -5,14 +5,14 @@
  *
  */
 
- /*
-  * User's callbacks (listener-functions):
-  * - onCallListener(session, extension)
-  * - onAcceptCallListener(session, extension)
-  * - onRejectCallListener(session, extension)
-  * - onStopCallListener(session, extension)
-  * - onUpdateCallListener(session, extension)
-  */
+/*
+ * User's callbacks (listener-functions):
+ * - onCallListener(session, extension)
+ * - onAcceptCallListener(session, extension)
+ * - onRejectCallListener(session, extension)
+ * - onStopCallListener(session, extension)
+ * - onUpdateCallListener(session, extension)
+ */
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
@@ -42,11 +42,11 @@ function WebRTCClient(service, connection) {
   this.sessions = {};
 }
 
- /**
-  * A map with all sessions the user had/have.
-  * @type {Object.<string, Object>}
-  */
- WebRTCClient.prototype.sessions = {};
+/**
+ * A map with all sessions the user had/have.
+ * @type {Object.<string, Object>}
+ */
+WebRTCClient.prototype.sessions = {};
 
 /**
  * Creates the new session.
@@ -63,7 +63,7 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
   } else {
     throw new Error("Can't create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.");
   }
-}
+};
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
   var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
@@ -76,17 +76,17 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
 
   this.sessions[newSession.ID] = newSession;
   return newSession;
-}
+};
 
- /**
-  * Deletes a session
-  * @param {string} Session ID
-  */
- WebRTCClient.prototype.clearSession = function(sessionId){
-   delete WebRTCClient.sessions[sessionId];
- }
+/**
+ * Deletes a session
+ * @param {string} Session ID
+ */
+WebRTCClient.prototype.clearSession = function(sessionId){
+  delete WebRTCClient.sessions[sessionId];
+};
 
- /**
+/**
  * Check all session and find session with status 'NEW' or 'ACTIVE' which ID != provided
  * @param {string} session ID
  * @returns {boolean} if active or new session exist
@@ -110,12 +110,11 @@ WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessi
   return exist;
 };
 
+/**
+ * DELEGATE (signaling)
+ */
 
- //
- /////////////////////////// Delegate (signaling) //////////////////////////////
- //
-
- WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
   if(this.isExistNewOrActiveSessionExceptSessionID(sessionID)) {
@@ -140,73 +139,76 @@ WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessi
     }
     session.processOnCall(userID, extension);
   }
- };
+};
 
- WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
-   Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
+WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
+  Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
 
-   var session = this.sessions[sessionID];
-   if(session){
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+  var session = this.sessions[sessionID];
 
-     if (typeof this.onAcceptCallListener === 'function'){
-       this.onAcceptCallListener(session, extensionClone);
-     }
+  if(session){
+    var extensionClone = JSON.parse(JSON.stringify(extension));
+    this._cleanupExtension(extensionClone);
 
-     session.processOnAccept(userID, extension);
-   }else{
-     Helpers.traceError("Ignore 'onAccept', there is no information about session " + sessionID + " by some reason.");
-   }
- };
+    if (typeof this.onAcceptCallListener === 'function'){
+      this.onAcceptCallListener(session, extensionClone);
+    }
 
- WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
-   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
+    session.processOnAccept(userID, extension);
+  }else{
+    Helpers.traceError("Ignore 'onAccept', there is no information about session " + sessionID + " by some reason.");
+  }
+};
 
-   var session = this.sessions[sessionID];
+WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
+  Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
 
-   if(session){
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+  var session = this.sessions[sessionID];
 
-     if (typeof this.onRejectCallListener === 'function'){
-       this.onRejectCallListener(session, extensionClone);
-     }
+  if(session){
+    var extensionClone = JSON.parse(JSON.stringify(extension));
+    this._cleanupExtension(extensionClone);
 
-     session.processOnReject(userID, extension);
-   }else{
-     Helpers.traceError("Ignore 'onReject', there is no information about session " + sessionID + " by some reason.");
-   }
- };
+    if (typeof this.onRejectCallListener === 'function'){
+     this.onRejectCallListener(session, extensionClone);
+    }
 
- WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
-   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
+    session.processOnReject(userID, extension);
+  }else{
+    Helpers.traceError("Ignore 'onReject', there is no information about session " + sessionID + " by some reason.");
+  }
+};
 
-   var session = this.sessions[sessionID];
-   if(session){
-     var extensionClone = JSON.parse(JSON.stringify(extension));
-     this._cleanupExtension(extensionClone);
+WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
+  Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
 
-     if (typeof this.onStopCallListener === 'function'){
-       this.onStopCallListener(session, extensionClone);
-     }
+  var session = this.sessions[sessionID];
 
-     session.processOnStop(userID, extension);
-   }else{
-     Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.")
-   }
-}
+  if(session){
+    var extensionClone = JSON.parse(JSON.stringify(extension));
+    this._cleanupExtension(extensionClone);
+
+    if (typeof this.onStopCallListener === 'function'){
+      this.onStopCallListener(session, extensionClone);
+    }
+
+    session.processOnStop(userID, extension);
+  }else{
+    Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.")
+  }
+};
 
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
   Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
 
   var session = this.sessions[sessionID];
+
   if(session){
     session.processOnIceCandidates(userID, extension);
   }else{
     Helpers.traceError("Ignore 'OnIceCandidates', there is no information about session " + sessionID + " by some reason.");
   }
-}
+};
 
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
@@ -218,7 +220,7 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   }
 
   session.processOnUpdate(userID, extension);
-}
+};
 
 WebRTCClient.prototype._cleanupExtension = function(extension){
   delete extension.platform;
@@ -226,14 +228,13 @@ WebRTCClient.prototype._cleanupExtension = function(extension){
   delete extension.opponentsIDs;
   delete extension.callerID;
   delete extension.callType;
-}
+};
 
 module.exports = WebRTCClient;
 
 /**
   * PRIVATE FUNCTIONS
   */
-
 function isOpponentsEqual(exOpponents, currentOpponents) {
   var ans = false,
       cOpponents = currentOpponents.sort();
@@ -249,7 +250,7 @@ function isOpponentsEqual(exOpponents, currentOpponents) {
   }
 
   return ans;
-};
+}
 
 function getOpponentsIdNASessions(sessions) {
   var opponents = [];
