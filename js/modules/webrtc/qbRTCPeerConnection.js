@@ -48,7 +48,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  // We use this timer interval to dial a user - produce the call reqeusts each N seconds.
+  // We use this timer interval to dial a user - produce the call requests each N seconds.
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
@@ -221,38 +221,44 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
-  Helpers.trace("_clearDialingTimer");
-
   if(this.dialingTimer){
+    Helpers.trace("_clearDialingTimer");
+
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
     this.answerTimeInterval = 0;
   }
 }
 
-RTCPeerConnection.prototype._startDialingTimer = function(extension){
+RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAnswerCallback){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
 
   Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
 
   var self = this;
 
-  var _dialingCallback = function(extension){
-    self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+  var _dialingCallback = function(extension, withOnNotAnswerCallback, skipIncrement){
+    if(!skipIncrement){
+      self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+    }
 
     Helpers.trace("_dialingCallback, answerTimeInterval: " + self.answerTimeInterval);
 
     if(self.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
       self._clearDialingTimer();
 
-      self.delegate.processOnNotAnswer(self);
+      if(withOnNotAnswerCallback){
+        self.delegate.processOnNotAnswer(self);
+      }
     }else{
       self.delegate.processCall(self, extension);
     }
   }
 
-  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension);
-  _dialingCallback(extension);
+  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback, false);
+
+  // call for the 1st time
+  _dialingCallback(extension, withOnNotAnswerCallback, true);
 }
 
 
