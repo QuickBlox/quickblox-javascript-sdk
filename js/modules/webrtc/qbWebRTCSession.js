@@ -607,9 +607,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 
 
 WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
-  Helpers.trace("_createPeer");
-
-  if (!RTCPeerConnection) throw new Error('RTCPeerConnection() is not supported in your browser');
+  if (!RTCPeerConnection) throw new Error('_createPeer error: RTCPeerConnection() is not supported in your browser');
 
   this.startCallTime = new Date();
 
@@ -622,6 +620,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   var pcConfig = {
     iceServers: _prepareIceServers(config.webrtc.iceServers)
   };
+
+  Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
 
   var peer = new RTCPeerConnection(pcConfig);
   peer.init(this, userID, this.ID, peerConnectionType);

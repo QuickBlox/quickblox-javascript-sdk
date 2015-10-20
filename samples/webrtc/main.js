@@ -238,6 +238,9 @@ $(document).ready(function() {
       currentSession.unmute('audio');
     }
   });
+
+  $('#audiocall, #videocall, #screen_sharing').removeAttr('disabled');
+
 });
 
 
