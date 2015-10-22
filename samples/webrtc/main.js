@@ -144,7 +144,6 @@ $(document).ready(function() {
     };
 
     currentSession.getUserMedia(mediaParams, function(err, stream) {
-
       if (err) {
         console.log(err);
         var deviceNotFoundError = 'Devices are not found';
@@ -163,7 +162,7 @@ $(document).ready(function() {
         //
         opponents.forEach(function(userID, i, arr) {
           if(!checkVideoEl(userID)) {
-            var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+            var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
             $(videoEl).appendTo('.remoteControls');
 
             var peerState = currentSession.connectionStateForUser(userID);
@@ -311,6 +310,14 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   // QB.webrtc.SessionConnectionState.DISCONNECTED
   // QB.webrtc.SessionConnectionState.CLOSED
 
+  if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED){
+    showRemoteVideoView(userID);
+  }
+
+  if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+    hideRemoteVideoView(userID);
+  }
+
   if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
     clearRemoteVideoView(userID);
   }
@@ -359,7 +366,7 @@ function callWithParams(mediaParams, isOnlyAudio){
       // create video elements for opponents
       //
       Object.keys(callees).forEach(function(userID, i, arr) {
-        var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+        var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
         $(videoEl).appendTo('.remoteControls');
       });
 
@@ -402,7 +409,7 @@ function callWithScreenSharing(){
         // create video elements for opponents
         //
         Object.keys(callees).forEach(function(userID, i, arr) {
-          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+          var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
           $(videoEl).appendTo('.remoteControls');
         });
 
@@ -421,6 +428,22 @@ function clearRemoteVideoView(userID){
     var videoElementID = 'remoteVideo_' + userID;
     currentSession.detachMediaStream(videoElementID);
     $("#"+videoElementID).css({"background":"none"});
+  }
+}
+
+function hideRemoteVideoView(userID) {
+  var $video = $('#remoteVideo_' + userID);
+
+  if(currentSession !== null && $video.length){
+    $video.parents('.remoteVideoWrap').addClass('wait');
+  }
+}
+
+function showRemoteVideoView(userID) {
+  var $video = $('#remoteVideo_' + userID);
+
+  if(currentSession !== null && $video.length){
+    $video.parents('.remoteVideoWrap').removeClass('wait');
   }
 }
 

@@ -127,6 +127,23 @@ html, body {
   .remoteControls {
     overflow-y: scroll;
   }
+  .remoteVideoWrap {
+    position: relative;
+    display: inline-block;
+  }
+  .remoteVideoWrap.wait:before {
+    content: " ";
+
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    background: rgba(255,255,255, .9) url('images/loader2.gif') no-repeat center;
+    z-index: 1;
+  }
   .remoteControls video {
     width: 200px;
     height: 150px;
@@ -149,7 +166,6 @@ html, body {
   .remoteControls {
     height: 320px;
   }
-
 #local-volume-meter {
   position:absolute;
   float:left;
