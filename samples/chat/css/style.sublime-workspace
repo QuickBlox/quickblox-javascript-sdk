@@ -1,0 +1,614 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"l",
+				"Lukhanin"
+			],
+			[
+				"v",
+				"Vladislav"
+			],
+			[
+				"le",
+				"letter-spacing"
+			],
+			[
+				"la",
+				"letter-spacing"
+			],
+			[
+				"im",
+				"important"
+			],
+			[
+				"ma",
+				"margin-bottom"
+			],
+			[
+				"vi",
+				"visible-xs"
+			],
+			[
+				"pa",
+				"padding-bottom"
+			],
+			[
+				"i",
+				"important"
+			],
+			[
+				"fo",
+				"font-weight"
+			],
+			[
+				"te",
+				"text-transform"
+			],
+			[
+				"ba",
+				"background"
+			],
+			[
+				"o",
+				"overflow"
+			],
+			[
+				"bo",
+				"border-top"
+			],
+			[
+				"bor",
+				"border-image"
+			],
+			[
+				"b",
+				"background-color"
+			],
+			[
+				"min",
+				"min-width"
+			],
+			[
+				"padi",
+				"padding"
+			],
+			[
+				"d",
+				"display"
+			],
+			[
+				"mar",
+				"margin-left"
+			],
+			[
+				"tex",
+				"text-transform"
+			],
+			[
+				"rgb",
+				"rgba()"
+			],
+			[
+				"a",
+				"auto"
+			],
+			[
+				"h",
+				"h4	Tag"
+			],
+			[
+				"se",
+				"section	Tag"
+			],
+			[
+				"bord",
+				"border-bottom"
+			],
+			[
+				"co",
+				"color"
+			],
+			[
+				"di",
+				"display"
+			],
+			[
+				"al",
+				"alt	Attr"
+			],
+			[
+				"u",
+				"ul	Tag"
+			],
+			[
+				"he",
+				"header	Tag"
+			],
+			[
+				"s",
+				"style	Attr"
+			],
+			[
+				"ro",
+				"rosterJid"
+			],
+			[
+				"dia",
+				"dialogIda"
+			],
+			[
+				"sk",
+				"skipPage"
+			],
+			[
+				"con",
+				"console"
+			],
+			[
+				"wid",
+				"width"
+			],
+			[
+				"un",
+				"undefined"
+			],
+			[
+				"mess",
+				"messages-list"
+			],
+			[
+				"cu",
+				"currentDialog"
+			],
+			[
+				"user",
+				"userHtml"
+			],
+			[
+				"to",
+				"toUpdate"
+			],
+			[
+				"re",
+				"remove"
+			],
+			[
+				"usr",
+				"userId"
+			],
+			[
+				"e",
+				"else"
+			],
+			[
+				"tr",
+				"true"
+			],
+			[
+				"fu",
+				"function"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 352.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"JSHint: Set `node` Path"
+			]
+		],
+		"width": 416.0
+	},
+	"console":
+	{
+		"height": 267.0,
+		"history":
+		[
+			"git add -A",
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/vladl/AppData/Roaming/Sublime Text 3/Packages/Sublime-JSHint/JSHint.sublime-settings",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/webrtc/peer-to-peer/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/js/modules/qbWebRTC.js",
+		"/C/Work-QB/quickblox-javascript-sdk/js/qbUtils.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/config.js",
+		"/C/Work-QB/quickblox-javascript-sdk/js/modules/qbChat.js",
+		"/C/Work-QB/quickblox-javascript-sdk/.gitignore",
+		"/C/Work-QB/quickblox-javascript-sdk/spec/QB-ChatSpec.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/js/qbConfig.js",
+		"/C/Work-QB/survey-generator/style.css",
+		"/C/Work-QB/survey-generator/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/package.json",
+		"/C/Work-QB/survey-generator/js/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/webrtc/peer-to-peer/main.css",
+		"/C/Work-QB/survey-generator/.gitignore",
+		"/C/Users/vladl/Downloads/calls.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/webrtc/peer-to-peer/config.js",
+		"/C/Work-QB/quickblox-javascript-sdk/README.md",
+		"/C/Work-QB/Docs/html_layout/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/content/index.html",
+		"/C/Work-QB/survey-generator/survey-generator/index.html",
+		"/C/Work-QB/survey-generator/survey-generator/style.css",
+		"/C/Work-QB/survey-generator/README.md",
+		"/C/Work-QB/quickblox-javascript-sdk/Gruntfile.js",
+		"/C/q-municate-web/package.json",
+		"/C/Work-QB/survey-generator/survey-generator/js/main.js",
+		"/C/Work-QB/survey-generator/quickblox.js",
+		"/C/Work-QB/survey-generator/survey-generator/js/config.js",
+		"/C/Work-QB/Docs/html_layout/style.css",
+		"/C/Work-QB/survey-generator/Gruntfile.js",
+		"/C/Work-QB/survey-generator/bower.json",
+		"/C/Work-QB/survey-generator/js/qbProxy.js",
+		"/C/Work-QB/survey-generator/js/qbUtils.js",
+		"/C/Work-QB/survey-generator/plugins/chat/package.json",
+		"/C/Work-QB/survey-generator/js/qbMain.js",
+		"/C/Work-QB/survey-generator/plugins/chat/quickblox.chat.js",
+		"/C/Work-QB/survey-generator/package.json",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/node_js/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/bower.json",
+		"/C/Work-QB/quickblox-javascript-sdk/js/modules/qbContent.js",
+		"/C/Work-QB/survey-generator/samples/webrtc/peer-to-peer/main.js",
+		"/C/Work-QB/survey-generator/samples/customobjects/js/config.js",
+		"/C/Users/vladl/Downloads/comments/css/style.css",
+		"/C/Users/vladl/AppData/Local/Temp/Rar$DIa0.512/quickblox.js",
+		"/C/Work-QB/quickblox-javascript-sdk/js/modules/qbData.js",
+		"/C/Work-QB/quickblox-javascript-sdk/quickblox.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/webrtc/peer-to-peer/index.html",
+		"/C/build.prop",
+		"/C/Users/vladl/Downloads/Device. Lenovo K910L Vibe Z/MIUI V6 (KitKat)/system/build.prop",
+		"/C/Users/vladl/Downloads/liveclinic.com-1443623020435",
+		"/C/Users/vladl/Downloads/comments/index.html",
+		"/C/Users/vladl/AppData/Local/Temp/Rar$DIa0.054/jquery.xml2json.js",
+		"/C/Work-QB/reactjsapp/app/bower_components/quickblox/quickblox.js",
+		"/C/Users/vladl/AppData/Local/Temp/Rar$DIa0.028/xml2jsobj.js",
+		"/C/Work-QB/config.js",
+		"/C/Users/vladl/Downloads/Device. Lenovo K910L Vibe Z/MIUI V6 (KitKat)/META-INF/com/google/android/update-binary",
+		"/C/Users/vladl/Downloads/Device. Lenovo K910L Vibe Z/MIUI V6 (KitKat)/META-INF/com/miui/relink",
+		"/C/Users/vladl/Downloads/liveclinic.com-1443543694733",
+		"/C/Users/vladl/Downloads/Device. Lenovo K910L Vibe Z/MIUI V6 (KitKat)/META-INF/com/android/metadata",
+		"/C/ReactJS_my/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/connection.js",
+		"/C/Work-QB/reactjsapp/bower.json",
+		"/C/q-municate-web/.gitignore",
+		"/C/q-municate-web/test/bower.json",
+		"/C/q-municate-web/test/spec/test.js",
+		"/C/ReactJS_my/main.js",
+		"/C/q-municate-web/app/scripts/app.js",
+		"/C/q-municate-web/test/.bowerrc",
+		"/C/q-municate-web/.yo-rc.json",
+		"/C/q-municate-web/.bowerrc",
+		"/C/q-municate-web/Gruntfile.js",
+		"/C/q-municate-web/node_modules/phantomjs/install.js",
+		"/C/q-municate-web/node_modules/grunt-lib-phantomjs/package.json",
+		"/C/Work-QB/q-municate-web/bower.json",
+		"/C/Work-QB/q-municate-web1/package.json",
+		"/C/reactjsapp/package.json",
+		"/C/q-municate-web/node_modules/phantomjs/package.json",
+		"/C/reactjsapp/app/index.html",
+		"/C/reactjsapp/Gruntfile.js",
+		"/C/reactjsapp/node_modules/grunt-cli/package.json",
+		"/C/reactjsapp/bower.json",
+		"/C/reactjs-hello/package.json",
+		"/C/ReactJS_my/app/jsx/main.jsx",
+		"/C/ReactJS_my/bower.json",
+		"/C/ReactJS_my/package.json",
+		"/C/ReactJS_my/node_modules/react/package.json",
+		"/C/ReactJS_my/messages.js",
+		"/C/Work-QB/Docs/.gitignore",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/dialogs.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/messages.js",
+		"/C/Work-QB/q-municate-web/package.json",
+		"/C/Work-QB/q-municate-web/node_modules/requirejs/require.js",
+		"/C/Work-QB/q-municate-web/node_modules/requirejs/package.json",
+		"/C/Work-QB/q-municate-web/node_modules/requirejs/bin/r.js",
+		"/C/Work-QB/DocQuickBlox/style.css",
+		"/C/Work-QB/DocQuickBlox/index.html",
+		"/C/Work-QB/Documentation QuickBlox/style.css",
+		"/C/Work-QB/Documentation QuickBlox/index.html",
+		"/C/Users/vladl/Downloads/touch-swipe/demo3.html",
+		"/C/Users/vladl/Downloads/touch-swipe/demo1.html",
+		"/C/Users/vladl/Downloads/touch-swipe/jquery.touchSwipe.min.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/users.js",
+		"/C/Work-QB/Documentation QuickBlox/12.css",
+		"/C/Users/vladl/Downloads/quickblox-javascript-sdk-master/samples/chat/js/messages.js",
+		"/C/Users/vladl/Downloads/config (1).js",
+		"/C/Users/vladl/Downloads/config.js",
+		"/C/Users/vladl/Downloads/IssueMessaging.js",
+		"/C/Work-QB/Documentation QuickBlox/css/reset.min.css",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/customobjects/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/users/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/css/style.css",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/content/js/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/ui_helpers.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/config.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/index.html",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/content/js/config.js",
+		"/C/Work-QB/quickblox-javascript-sdk/quickblox.min.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/users/main.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/chat/js/roster.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/js/config.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/js/connection.js",
+		"/C/Work-QB/quickblox-javascript-sdk/samples/roster/js/users.js",
+		"/C/Work-QB/q-municate-web/app/bower_components/quickblox/.bower.json",
+		"/C/Work-QB/q-municate-web/app/bower_components/quickblox/quickblox.js",
+		"/C/Work-QB/q-municate-web/.yo-rc.json",
+		"/C/Work-QB/q-municate-web/app/bower_components/quickblox/bower.json"
+	],
+	"find":
+	{
+		"height": 22.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"require",
+			"'",
+			"localStream",
+			"MediaStream",
+			"MediaStream.",
+			"MediaStream.a",
+			"MediaStream.stop()",
+			"getUserMedia",
+			"MediaStream",
+			"QB.webrtc.accept",
+			"create",
+			"entrada",
+			"Cannot",
+			"Cannot read",
+			"img src=\"",
+			"src=\"",
+			"s-bar-submenu",
+			"dark",
+			"z-index",
+			"shadow",
+			"shadow-wrap",
+			"footer-logo",
+			"-nav",
+			"margin",
+			".main-content",
+			"sidebar",
+			"container",
+			"nav-menu",
+			"init",
+			"\n  ",
+			"\n    ",
+			"\n  ",
+			"\n    ",
+			"-3",
+			"3",
+			"xz",
+			"<br><br>",
+			"\n  margin: 0 auto;",
+			" active",
+			"nav",
+			"Bootstrap",
+			"\n  text-decoration: none;",
+			"\n  font-family: 'Open Sans', sans-serif;",
+			"menu-item",
+			"menu-item menu-item-type-post_type menu-item-object-page menu-item",
+			"menu-item menu-item-type-custom menu-item-object-custom menu-item",
+			"\n  opacity: 100%;",
+			"E",
+			"h5 class=\"\"",
+			"sider",
+			"h4",
+			"4",
+			"div",
+			"</li>",
+			"v-menu-items\">",
+			"'",
+			"iceServers",
+			"push",
+			"pre-scrollable",
+			"getUserJid",
+			"roster",
+			"// callback function",
+			"jid",
+			"submit",
+			">roster",
+			"\"click",
+			"click",
+			"SubscribeListener",
+			"_on",
+			"entrada",
+			"listener",
+			"listner",
+			"getIdFromNode",
+			"getAndShowNewDialog",
+			"Listener",
+			"onConfirmSubscribeListener",
+			"retrievePushUsers",
+			"addItem",
+			"quickuser",
+			"entrada",
+			"isMessageForCurrentDialog",
+			"isMessageListener",
+			"notifyOccupants\\",
+			"notifyOccupants",
+			"$('#dialogs-list').prepend(dialogHtml)",
+			"getAndShowNewDialog",
+			"pastDialogUI",
+			"event",
+			"message",
+			"append",
+			"notifyOccupants",
+			"xs",
+			"notification_type",
+			"updateDialogsList",
+			"onMessage",
+			"append",
+			"buildDialogHtml",
+			"users",
+			"sendDeliveredMessage",
+			"sendDe",
+			"overflo",
+			".pre-scrollable",
+			"list-group",
+			"pre",
+			"for-",
+			");\n",
+			".mCustomScrollbar",
+			"no-messages-label",
+			"helpers",
+			"byjid",
+			"jidby",
+			"getRoomJid",
+			"stanza",
+			"sendIQ",
+			"getUniqueId",
+			"iq",
+			"leave",
+			"addHandler",
+			"mucProxy",
+			"self",
+			"ajaxDownloading(",
+			"mCustomScrollbar",
+			"messageScrollbar",
+			"ajaxDownloading(",
+			"ajax",
+			"objDom",
+			"nicescroll",
+			"update"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 22.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "style.sublime-project",
+	"replace":
+	{
+		"height": 40.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

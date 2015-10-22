@@ -1025,7 +1025,7 @@ MucProxy.prototype = {
       type: "get"
     }).c("query", {
       xmlns: 'http://jabber.org/protocol/disco#items'
-    })
+    });
 
     connection.sendIQ(iq, function(stanza) {
       var items = stanza.getElementsByTagName('item');
