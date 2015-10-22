@@ -1,3 +1,4 @@
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -976,6 +977,12 @@ MessageProxy.prototype = {
     Utils.QBLog('[MessageProxy]', 'delete', id);
 
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  },
+
+  unread: function(params, callback) {
+    Utils.QBLog('[MessageProxy]', 'unread', params);
+
+    this.service.ajax({url: Utils.getUrl(messageUrl+'/unread'), data: params}, callback);
   }
 
 };
