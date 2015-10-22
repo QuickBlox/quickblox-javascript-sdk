@@ -5,6 +5,19 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    notify: {
+      browserify: {
+        options: {
+          message: '"Browserify task is done "'
+        }
+      },
+      uglify: {
+        options: {
+          message: '"Uglify task is done"'
+        }
+      }
+    },
+
     browserify: {
       options: {
         banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
@@ -15,7 +28,7 @@ module.exports = function (grunt) {
       },
       all: {
         files: {
-          'quickblox.js': ['js/qbMain.js'],
+          'quickblox.js': ['js/qbMain.js']
         }
       }
     },
@@ -33,7 +46,7 @@ module.exports = function (grunt) {
 
     watch: {
       files: ['js/*.js', 'js/modules/*.js', 'js/modules/webrtc/*.js'],
-      tasks: ['browserify', 'uglify'],
+      tasks: ['browserify', 'notify:browserify', 'uglify', 'notify:uglify'],
       options: {
         spawn: false,
         debounceDelay: 250,
@@ -61,20 +74,16 @@ module.exports = function (grunt) {
         tasks: ['watch', 'connect']
       }
     }
-
   });
 
   grunt.registerTask('default', [
     'browserify',
     'uglify'
   ]);
-
-  grunt.registerTask('server', [
-    'connect'
-  ]);
-
+  grunt.registerTask('server', ['connect']);
   grunt.registerTask('server_and_watch', ['parallel']);
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-parallel');
+  grunt.loadNpmTasks('grunt-notify');
 };
