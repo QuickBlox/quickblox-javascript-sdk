@@ -38,8 +38,5 @@
     "npm-debug.log",
     "Gruntfile.js",
     "package.json"
-  ],
-  "dependencies": {
-    "quickblox": "~1.15.1"
-  }
+  ]
 }

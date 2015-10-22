@@ -12,6 +12,37 @@ $(document).ready(function() {
     console.log('Session create callback', err, result);
   });
 
+  // Init Twitter Digits
+  //
+  $('#digits-sdk').load(function () {
+    Digits.init({ consumerKey: digitsKey })
+      .done(function() {
+        console.log('Digits initialized.');
+      })
+      .fail(function() {
+        console.log('Digits failed to initialize.');
+      });
+
+    // Login user twitter digits
+    $('#sign_in_twitter_digits').on('click', function() {
+      Digits.logIn()
+      .done(function(loginResponse) {
+        var params = {
+          provider: 'twitter_digits',
+          twitter_digits: loginResponse.oauth_echo_headers
+        };
+
+        // login with twitter_digits params
+        QB.login(params, function(err, user){
+          if (user) {
+            $('#output_place').val(JSON.stringify(user));
+          }else{
+            $('#output_place').val(JSON.stringify(err));
+          }
+        });
+      });
+    });
+  });
 
   // Create user
   //
@@ -95,7 +126,6 @@ $(document).ready(function() {
     });
   });
 
-
   // Get users 
   //
   $('#get_by').on('click', function() {
@@ -104,13 +134,13 @@ $(document).ready(function() {
 
     var params;
 
-    var request_for_many_user = false
+    var request_for_many_user = false;
 
     switch (filter_type) {
       // all users, no filters<
       case "1":
         params = { page: '1', per_page: '100'};
-        request_for_many_user = true
+        request_for_many_user = true;
         break;
 
       // by id
@@ -158,11 +188,11 @@ $(document).ready(function() {
         // More info about filters here 
         // http://quickblox.com/developers/Users#Filters
         params = {filter: { field: 'login', param: 'in', value: ["sam33","ivan_gram"] }};
-        request_for_many_user = true
+        request_for_many_user = true;
         break;
     }
 
-    console.log("filter_value: " + filter_value)
+    console.log("filter_value: " + filter_value);
 
     if(request_for_many_user){
       QB.users.listUsers(params, function(err, result){
@@ -172,10 +202,10 @@ $(document).ready(function() {
           $('#output_place').val(JSON.stringify(err));
         }
 
-        console.log("current_page: " + result.current_page)
-        console.log("per_page: " + result.per_page)
-        console.log("total_entries: " + result.total_entries)
-        console.log("count: " + result.items.length)
+        console.log("current_page: " + result.current_page);
+        console.log("per_page: " + result.per_page);
+        console.log("total_entries: " + result.total_entries);
+        console.log("count: " + result.items.length);
 
         $("#progressModal").modal("hide");
 
@@ -196,7 +226,6 @@ $(document).ready(function() {
     }
   });
 
-
   // Update user
   //
   $('#update').on('click', function() {
@@ -215,7 +244,6 @@ $(document).ready(function() {
       $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
-
 
   // Delete user
   //
@@ -250,7 +278,6 @@ $(document).ready(function() {
     });
   });
 
-
   // Reset email
   //
   $('#reset').on('click', function() {
@@ -268,6 +295,4 @@ $(document).ready(function() {
       $("html, body").animate({ scrollTop: 0 }, "slow");
     });
   });
-
-
 });

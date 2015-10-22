@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuickBlox JavaScript Users code sample</title>
+  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h1 style="font-size:36px;text-align:center;">JavaScript Users Twitter Digits code sample</h1>
+      <p style="margin-top:20px;text-align:center;">Powered by QuickBlox</p>
+    </div>
+    <div class="row">
+      <div class="col-sm-6" style="padding:50px;">
+
+        <!-- User TWITTER_DIGITS login -->
+        <div class="row">
+          <h3 style="text-align:center;">User Sign In with Twitter Digits</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">        
+              <div class="twitter-btn" style="padding:20px;">
+                <button type="button" class="btn btn-primary digits-button center-block" id="sign_in_social">Sign with Twitter Digits</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="col-sm-6">
+        <h3>Output</h3>
+        <textarea readonly class="form-control" rows="7" id="output_place"></textarea>
+      </div>
+    </div>
+
+    <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/master/samples/users_twitter_digits"
+    style="position:absolute;top:2%;right:13%;font-size:0.85em;color:grey;">View source on GitHub</a>
+
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://cdn.digits.com/1/sdk.js" id="digits-sdk" async></script><!-- TWITTER_DIGITS SDK -->
+  <script src="../../quickblox.js"></script>
+  <script src="config.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

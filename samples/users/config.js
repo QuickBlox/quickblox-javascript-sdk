@@ -4,3 +4,4 @@ var QBApp = {
   authSecret: 'BTFsj7Rtt27DAmT'
 };
 
+var digitsKey = 'uH2aUsd3BP0qLpTezVnqXyZAk';
