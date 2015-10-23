@@ -80,9 +80,9 @@ var Utils = {
     var consoleLoggerFunction = function(){
       var logger = function(args){
         console.log.apply(console, Array.prototype.slice.call(args));
-      }
+      };
       return logger;
-    }
+    };
 
     var fileLoggerFunction = function(){
       var logger = function(args){
@@ -103,9 +103,9 @@ var Utils = {
             }
           });
         }
-      }
+      };
       return logger;
-    }
+    };
 
     // Build loggers
     //
