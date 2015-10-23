@@ -81,7 +81,7 @@ module.exports = function (grunt) {
     'uglify'
   ]);
   grunt.registerTask('server', ['connect']);
-  grunt.registerTask('server_and_watch', ['parallel']);
+  grunt.registerTask('develop', ['parallel']);
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-parallel');
