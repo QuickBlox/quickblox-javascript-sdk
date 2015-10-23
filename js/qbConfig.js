@@ -76,7 +76,7 @@ config.set = function(options) {
   Object.keys(options).forEach(function(key) {
     if(key !== 'set' && config.hasOwnProperty(key)) {
       if(typeof options[key] !== 'object') {
-        config[key] = options[key]
+        config[key] = options[key];
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
           if(config[key].hasOwnProperty(nextkey)){
@@ -85,7 +85,7 @@ config.set = function(options) {
         });
       }
     }
-  })
+  });
 
 
 };

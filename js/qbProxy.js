@@ -42,7 +42,7 @@ ServiceProxy.prototype = {
     // can add middleware here...
     var _this = this;
     if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-      config.on.sessionExpired(function(){next(error,response)}, retry);
+      config.on.sessionExpired(function(){next(error,response);}, retry);
     } else {
       if (error) {
         next(error, null);
@@ -65,7 +65,7 @@ ServiceProxy.prototype = {
     Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
     var _this = this,
-        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
+        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback); };
 
     var ajaxCall = {
       url: params.url,
