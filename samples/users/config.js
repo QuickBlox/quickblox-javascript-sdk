@@ -3,4 +3,3 @@ var QBApp = {
   authKey: 'wJHdOcQSxXQGWx5',
   authSecret: 'BTFsj7Rtt27DAmT'
 };
-
