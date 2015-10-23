@@ -1080,7 +1080,7 @@ DialogProxy.prototype = {
 
   delete: function(id, params_or_callback, callback) {
     Utils.QBLog('[DialogProxy]', 'delete', id);
-
+    
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
