@@ -58,7 +58,7 @@ module.exports = function (grunt) {
       server: {
         options: {
           // protocol: 'https',
-          hostname: 'localhost',
+          hostname: '192.168.1.138',
           port: 8080,
           open: true,
           keepalive: true
@@ -81,7 +81,7 @@ module.exports = function (grunt) {
     'uglify'
   ]);
   grunt.registerTask('server', ['connect']);
-  grunt.registerTask('server_and_watch', ['parallel']);
+  grunt.registerTask('develop', ['parallel']);
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-parallel');
