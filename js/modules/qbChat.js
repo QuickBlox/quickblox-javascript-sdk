@@ -973,10 +973,14 @@ MessageProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
   },
 
-  delete: function(id, callback) {
-    Utils.QBLog('[MessageProxy]', 'delete', id);
-
-    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  delete: function(id, params_or_callback, callback) {
+    Utils.QBLog('[DialogProxy]', 'delete', id);
+    
+    if (arguments.length == 2) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+    } else if (arguments.length == 3) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+    }
   },
 
   unread: function(params, callback) {
