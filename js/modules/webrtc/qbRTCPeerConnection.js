@@ -29,7 +29,8 @@ RTCPeerConnection.State = {
   CONNECTED: 4,
   DISCONNECTED: 5,
   FAILED: 6,
-  CLOSED: 7
+  CLOSED: 7,
+  COMPLETED: 8
 };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
@@ -197,7 +198,10 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   	} else if (newIceConnectionState === 'connected'){
         this.state = RTCPeerConnection.State.CONNECTED;
         connectionState = Helpers.SessionConnectionState.CONNECTED;
-  	} else if (newIceConnectionState === 'failed'){
+  	} else if (newIceConnectionState === 'completed'){
+      this.state = RTCPeerConnection.State.COMPLETED;
+      connectionState = Helpers.SessionConnectionState.COMPLETED;
+    } else if (newIceConnectionState === 'failed'){
         this.state = RTCPeerConnection.State.FAILED;
         connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){

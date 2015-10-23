@@ -58,7 +58,8 @@ WebRTCHelpers.SessionConnectionState = {
   CONNECTED: 2,
   FAILED: 3,
   DISCONNECTED: 4,
-  CLOSED: 5
+  CLOSED: 5,
+  COMPLETED: 6
 };
 
 WebRTCHelpers.CallType = {

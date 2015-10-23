@@ -596,6 +596,14 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
     self.onSessionConnectionStateChangedListener(self, userID, connectionState);
   }
 
+  if (connectionState === Helpers.SessionConnectionState.CONNECTED || connectionState === Helpers.SessionConnectionState.COMPLETED) {
+    self._clearWaitingReconnectTimer();
+  }
+
+  if (connectionState === Helpers.SessionConnectionState.DISCONNECTED) {
+    self._startWaitingReconnectTimer(userID);
+  }
+
   if (connectionState === Helpers.SessionConnectionState.CLOSED){
     //peer = null;
   }
@@ -759,6 +767,30 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
   Helpers.trace("_startWaitingOfferOrAnswerTimer, timeout: " + timeout);
 
   this.waitingOfferOrAnswerTimer = setTimeout(waitingOfferOrAnswerTimeoutCallback, timeout*1000);
+};
+
+WebRTCSession.prototype._clearWaitingReconnectTimer = function() {
+  if(this.waitingReconnectTimeoutCallback){
+    Helpers.trace("_clearWaitingReconnectTimer");
+    clearTimeout(this.waitingReconnectTimeoutCallback);
+    this.waitingReconnectTimeoutCallback = null;
+  }
+};
+
+WebRTCSession.prototype._startWaitingReconnectTimer = function(opponentID) {
+  var self = this,
+      waitingReconnectTimeoutCallback = function() {
+        Helpers.trace("waitingReconnectTimeoutCallback");
+
+        clearTimeout(self.waitingReconnectTimeoutCallback);
+
+        self.peerConnections[opponentID]._clearDialingTimer();
+        self.peerConnections[opponentID].release();
+
+        self._closeSessionIfAllConnectionsClosed();
+      };
+
+  this.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, 30000);
 };
 
 WebRTCSession.prototype._uniqueOpponentsIDs = function(){
