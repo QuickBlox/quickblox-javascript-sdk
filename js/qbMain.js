@@ -38,13 +38,13 @@ QuickBlox.prototype = {
       var conn = new Connection();
 
       // add WebRTC API
-      var WebRTC = require('./modules/qbWebRTC');
-      this.webrtc = new WebRTC(this.service, conn || null);
+      var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+      this.webrtc = new WebRTCClient(this.service, conn || null);
     }
 
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
-    this.chat = new Chat(this.service, this.webrtc || null, conn || null);
+    this.chat = new Chat(this.service, this.webrtc.signalingProcessor || null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
     this.messages = new Messages(this.service);

@@ -26,29 +26,29 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291', // With SSL
     active: 2
   },
-  iceServers: [
-    {
-      'url': 'stun:stun.l.google.com:19302'
-    },
-    {
-      'url': 'stun:turn.quickblox.com',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=udp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-    {
-      'url': 'turn:turn.quickblox.com:3478?transport=tcp',
-      'username': 'quickblox',
-      'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-    },
-  ],
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
+    iceServers: [
+      {
+        'url': 'stun:stun.l.google.com:19302'
+      },
+      {
+        'url': 'stun:turn.quickblox.com',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=udp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      },
+      {
+        'url': 'turn:turn.quickblox.com:3478?transport=tcp',
+        'username': 'quickblox',
+        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+      }
+    ]
   },
   urls: {
     session: 'session',
@@ -85,9 +85,12 @@ config.set = function(options) {
         });
       }
     }
-  })
-
-
+    
+    // backward compatibility: for config.iceServers
+    if(key === 'iceServers') {
+      config.webrtc.iceServers = options[key];
+    }
+  });
 };
 
 module.exports = config;
