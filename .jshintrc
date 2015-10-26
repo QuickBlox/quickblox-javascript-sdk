@@ -1,0 +1,6 @@
+{
+  "browser"    : true,
+  "browserify" : true,
+  "jasmine"    : true,
+  "jquery"     : true
+}
