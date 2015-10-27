@@ -29,6 +29,7 @@ var config = {
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
+    disconnectTimeInterval: 30,
     iceServers: [
       {
         'url': 'stun:stun.l.google.com:19302'
