@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-16 */
+/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-27 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -178,13 +178,13 @@ function ChatProxy(service, webrtcModule, conn) {
   if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
+
+    this._isLogout = false;
+    this._isDisconnected = false;
   }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers;
-
-  // reconnect to chat if it wasn't the logout method
-  this._isLogout = false;
 
 /*
  * User's callbacks (listener-functions):
@@ -423,6 +423,7 @@ ChatProxy.prototype = {
     }
 
     connection.connect(userJid, params.password, function(status) {
+
       switch (status) {
       case Strophe.Status.ERROR:
         err = getError(422, 'Status.ERROR - An error has occurred');
@@ -446,6 +447,8 @@ ChatProxy.prototype = {
       case Strophe.Status.CONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
+        self._isDisconnected = false;
+
         connection.addHandler(self._onMessage, null, 'message', 'chat');
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
         connection.addHandler(self._onPresence, null, 'presence');
@@ -466,6 +469,7 @@ ChatProxy.prototype = {
             connection.send($pres().tree());
             connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
+
             if (typeof callback === 'function') {
               callback(null, roster);
             } else {
@@ -477,8 +481,11 @@ ChatProxy.prototype = {
                 self.muc.join(rooms[i]);
               }
 
-              if (typeof self.onReconnectListener === 'function')
+              console.log("111");
+              if (typeof self.onReconnectListener === 'function'){
+                console.log("222");
                 self.onReconnectListener();
+              }
             }
           });
         });
@@ -489,11 +496,15 @@ ChatProxy.prototype = {
         break;
       case Strophe.Status.DISCONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
+
         connection.reset();
 
-        if (typeof self.onDisconnectedListener === 'function'){
+        // fire 'onDisconnectedListener' only once
+        if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
           self.onDisconnectedListener();
         }
+
+        self._isDisconnected = true;
 
         // reconnect to chat
         if (!self._isLogout) self.connect(params);
