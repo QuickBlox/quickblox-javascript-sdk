@@ -6,6 +6,7 @@ describe('Session API', function() {
   //
   beforeAll(function (){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
     expect(QB.service.qbInst.config.creds.authKey).toEqual(CREDENTIALS.authKey);
     expect(QB.service.qbInst.config.creds.authSecret).toEqual(CREDENTIALS.authSecret);
