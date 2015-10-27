@@ -308,16 +308,55 @@ describe('Chat API', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {}, function(err, res) {
+      QB.chat.dialog.delete(dialogId, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
+          dialogId = null;
         }else{
           done();
+          dialogId = null;
         }
 
       });
     }, REST_REQUESTS_TIMEOUT);
+
+
+    // Dialog delete (multiple)
+    //
+    it('can delete multiple dialogs', function(done) {
+
+      // create a dialog first
+      var params = {occupants_ids:[QBUser2.id],
+                             name: "GroupDialogName",
+                             type: 2
+                            }
+      QB.chat.dialog.create(params, function(err, res) {
+        if(err){
+          done.fail("Creat dialog error: " + JSON.stringify(err));
+        }else{
+          dialogId = res._id;
+
+          QB.chat.dialog.delete([dialogId, "notExistentDialogId"], {force: 1}, function(err, res) {
+            if(err){
+              done.fail("Delete multiple dialogs error: " + JSON.stringify(err));
+
+              dialogId = null;
+            }else{
+              var resJSON = JSON.parse(res);
+
+              expect(resJSON.SuccessfullyDeleted.ids).toEqual([dialogId]);
+              expect(resJSON.NotFound.ids).toEqual(["notExistentDialogId"]);
+
+              done();
+              dialogId = null;
+            }
+          });
+
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
 
   });
 });
