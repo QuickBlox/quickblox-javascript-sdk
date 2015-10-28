@@ -190,6 +190,7 @@ describe('Chat API', function() {
   describe('REST API', function() {
 
     var dialogId;
+    var messageId;
 
     // beforeAll
     //
@@ -285,6 +286,31 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Can create a message
+    //
+    it('can create a mesasge', function(done) {
+
+      var params = {chat_dialog_id: dialogId,
+                           message: "hello world",
+                   };
+      QB.chat.message.create(params, function(err, res) {
+
+        if(err){
+          done.fail("Create a mesasge error: " + JSON.stringify(err));
+        }else{
+          expect(res._id).not.toBeNull();
+          expect(res.message).toEqual("hello world");
+          expect(res.chat_dialog_id).toEqual(dialogId);
+
+          messageId = res._id;
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Messages list
     //
     it('can list messages', function(done) {
@@ -296,7 +322,8 @@ describe('Chat API', function() {
           done.fail("List messages error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          // expect(res.items.length).toBeGreaterThan(0);
+          expect(res.items.length).toBeGreaterThan(0);
+
           done();
         }
 
@@ -324,11 +351,31 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Message delete
+    //
+    it('can delete a message', function(done) {
+
+      console.log("messageId: " + messageId);
+
+      QB.chat.message.delete(messageId, {force: 1}, function(err, res) {
+
+        if(err){
+          done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
+        }else{
+          done();
+        }
+
+        messageId = null;
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Dialog delete
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {}, function(err, res) {
+      QB.chat.dialog.delete(dialogId, {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
