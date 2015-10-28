@@ -1,0 +1,31 @@
+{
+  "strict"     : false,
+  "devel"      : true,
+  "browser"    : true,
+  "browserify" : true,
+  "jasmine"    : true,
+  "jquery"     : true,
+  "predef"     : [
+    "jasmine",
+    "describe",
+    "xdescribe",
+    "before",
+    "beforeEach",
+    "beforeAll",
+    "afterAll",
+    "after",
+    "afterEach",
+    "it",
+    "xit",
+    "it",
+    "fail",
+    "inject",
+    "expect",
+    "spyOn",
+    
+    "QB",
+    "CONFIG",
+    "QBApp",
+    "QBUsers"
+  ]
+}

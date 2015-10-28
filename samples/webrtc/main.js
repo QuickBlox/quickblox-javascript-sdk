@@ -163,7 +163,7 @@ $(document).ready(function() {
         //
         opponents.forEach(function(userID, i, arr) {
           if(!checkVideoEl(userID)) {
-            var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+            var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
             $(videoEl).appendTo('.remoteControls');
 
             var peerState = currentSession.connectionStateForUser(userID);
@@ -311,6 +311,14 @@ QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, co
   // QB.webrtc.SessionConnectionState.DISCONNECTED
   // QB.webrtc.SessionConnectionState.CLOSED
 
+  if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
+    showRemoteVideoView(userID);
+  }
+
+  if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+    hideRemoteVideoView(userID);
+  }
+
   if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
     clearRemoteVideoView(userID);
   }
@@ -325,12 +333,10 @@ QB.webrtc.onSessionCloseListener = function(session){
   currentSession = null;
   localStream = null;
 
-  $(".remoteVideoClass").remove();
-}
+  $(".remoteVideoWrap").remove();
+};
 
-QB.webrtc.onUpdateCallListener = function(session, extension) {
-
-}
+QB.webrtc.onUpdateCallListener = function(session, extension) {};
 
 //
 // Helpers
@@ -359,7 +365,7 @@ function callWithParams(mediaParams, isOnlyAudio){
       // create video elements for opponents
       //
       Object.keys(callees).forEach(function(userID, i, arr) {
-        var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+        var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
         $(videoEl).appendTo('.remoteControls');
       });
 
@@ -402,7 +408,7 @@ function callWithScreenSharing(){
         // create video elements for opponents
         //
         Object.keys(callees).forEach(function(userID, i, arr) {
-          var videoEl = "<video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video>";
+          var videoEl = "<div class='remoteVideoWrap'><video class='remoteVideoClass' id='remoteVideo_" + userID + "'></video></div>";
           $(videoEl).appendTo('.remoteControls');
         });
 
@@ -414,6 +420,22 @@ function callWithScreenSharing(){
       }
     });
   });
+}
+
+function hideRemoteVideoView(userID) {
+  var $video = $('#remoteVideo_' + userID);
+
+  if(currentSession !== null && $video.length){
+    $video.parents('.remoteVideoWrap').addClass('wait');
+  }
+}
+
+function showRemoteVideoView(userID) {
+  var $video = $('#remoteVideo_' + userID);
+
+  if(currentSession !== null && $video.length){
+    $video.parents('.remoteVideoWrap').removeClass('wait');
+  }
 }
 
 function clearRemoteVideoView(userID){

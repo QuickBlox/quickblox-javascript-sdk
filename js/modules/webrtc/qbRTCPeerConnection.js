@@ -29,7 +29,8 @@ RTCPeerConnection.State = {
   CONNECTED: 4,
   DISCONNECTED: 5,
   FAILED: 6,
-  CLOSED: 7
+  CLOSED: 7,
+  COMPLETED: 8
 };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
@@ -52,6 +53,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+  this.reconnectTimer = 0;
 
   this.iceCandidates = [];
 };
@@ -191,13 +193,17 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   //
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
+
   	if (newIceConnectionState === 'checking'){
         this.state = RTCPeerConnection.State.CHECKING;
         connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
         this.state = RTCPeerConnection.State.CONNECTED;
         connectionState = Helpers.SessionConnectionState.CONNECTED;
-  	} else if (newIceConnectionState === 'failed'){
+  	} else if (newIceConnectionState === 'completed'){
+      this.state = RTCPeerConnection.State.COMPLETED;
+      connectionState = Helpers.SessionConnectionState.COMPLETED;
+    } else if (newIceConnectionState === 'failed'){
         this.state = RTCPeerConnection.State.FAILED;
         connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
@@ -214,6 +220,32 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   }
 };
 
+RTCPeerConnection.prototype.clearWaitingReconnectTimer = function() {
+  if(this.waitingReconnectTimeoutCallback){
+    Helpers.trace('_clearWaitingReconnectTimer');
+    clearTimeout(this.waitingReconnectTimeoutCallback);
+    this.waitingReconnectTimeoutCallback = null;
+  }
+};
+
+RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
+  var self = this,
+      timeout = config.webrtc.disconnectTimeInterval * 1000,
+      waitingReconnectTimeoutCallback = function() {
+        Helpers.trace('waitingReconnectTimeoutCallback');
+
+        clearTimeout(self.waitingReconnectTimeoutCallback);
+
+        self._clearDialingTimer();
+        self.release();
+
+        self.delegate._closeSessionIfAllConnectionsClosed();
+      };
+
+  Helpers.trace('_startWaitingReconnectTimer, timeout: ' + timeout);
+
+  this.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+};
 
 //
 /////////////////////////////////// Private ////////////////////////////////////
@@ -222,18 +254,18 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
   if(this.dialingTimer){
-    Helpers.trace("_clearDialingTimer");
+    Helpers.trace('_clearDialingTimer');
 
     clearInterval(this.dialingTimer);
     this.dialingTimer = null;
     this.answerTimeInterval = 0;
   }
-}
+};
 
 RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAnswerCallback){
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
 
-  Helpers.trace("_startDialingTimer, dialingTimeInterval: " + dialingTimeInterval);
+  Helpers.trace('_startDialingTimer, dialingTimeInterval: ' + dialingTimeInterval);
 
   var self = this;
 
@@ -242,7 +274,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
       self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
     }
 
-    Helpers.trace("_dialingCallback, answerTimeInterval: " + self.answerTimeInterval);
+    Helpers.trace('_dialingCallback, answerTimeInterval: ' + self.answerTimeInterval);
 
     if(self.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
       self._clearDialingTimer();
@@ -253,13 +285,12 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
     }else{
       self.delegate.processCall(self, extension);
     }
-  }
+  };
 
   this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback, false);
 
   // call for the 1st time
   _dialingCallback(extension, withOnNotAnswerCallback, true);
-}
-
+};
 
 module.exports = RTCPeerConnection;
