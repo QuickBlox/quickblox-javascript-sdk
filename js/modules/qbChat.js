@@ -36,13 +36,13 @@ function ChatProxy(service, webrtcModule, conn) {
   if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
+
+    this._isLogout = false;
+    this._isDisconnected = false;
   }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers();
-
-  // reconnect to chat if it wasn't the logout method
-  this._isLogout = false;
 
 /*
  * User's callbacks (listener-functions):
@@ -281,6 +281,7 @@ ChatProxy.prototype = {
     }
 
     connection.connect(userJid, params.password, function(status) {
+
       switch (status) {
       case Strophe.Status.ERROR:
         err = getError(422, 'Status.ERROR - An error has occurred');
@@ -304,6 +305,8 @@ ChatProxy.prototype = {
       case Strophe.Status.CONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
+        self._isDisconnected = false;
+
         connection.addHandler(self._onMessage, null, 'message', 'chat');
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
         connection.addHandler(self._onPresence, null, 'presence');
@@ -324,6 +327,7 @@ ChatProxy.prototype = {
             connection.send($pres().tree());
             connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
+
             if (typeof callback === 'function') {
               callback(null, roster);
             } else {
@@ -335,8 +339,10 @@ ChatProxy.prototype = {
                 self.muc.join(rooms[i]);
               }
 
-              if (typeof self.onReconnectListener === 'function')
+              // fire 'onReconnectListener'
+              if (typeof self.onReconnectListener === 'function'){
                 self.onReconnectListener();
+              }
             }
           });
         });
@@ -347,11 +353,15 @@ ChatProxy.prototype = {
         break;
       case Strophe.Status.DISCONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
+
         connection.reset();
 
-        if (typeof self.onDisconnectedListener === 'function'){
+        // fire 'onDisconnectedListener' only once
+        if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
           self.onDisconnectedListener();
         }
+
+        self._isDisconnected = true;
 
         // reconnect to chat
         if (!self._isLogout) self.connect(params);

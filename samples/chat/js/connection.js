@@ -56,10 +56,25 @@ function connectToChat(user) {
           // setup scroll events handler
           //
           setupMsgScrollHandler();
+
+          // setup reconnection callbacks
+          //
+          QB.chat.onDisconnectedListener = onDisconnectedListener;
+          QB.chat.onReconnectListener = onReconnectListener;
         }
       });
     }
   });
+}
+
+// reconnection listeners
+
+function onDisconnectedListener(){
+  console.log("onDisconnectedListener");
+}
+
+function onReconnectListener(){
+  console.log("onReconnectListener");
 }
 
 // niceScroll() - ON
