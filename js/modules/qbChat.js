@@ -1,3 +1,4 @@
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -41,7 +42,7 @@ function ChatProxy(service, webrtcModule, conn) {
   }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 
 /*
  * User's callbacks (listener-functions):
@@ -98,7 +99,7 @@ function ChatProxy(service, webrtcModule, conn) {
     //
     if(composing || paused){
       if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(composing != null, userId, dialogId);
+        self.onMessageTypingListener(composing !== null, userId, dialogId);
       }
       return true;
     }
@@ -375,7 +376,7 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id == null){
+    if(message.id === null){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -434,7 +435,7 @@ ChatProxy.prototype = {
   sendSystemMessage: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id == null){
+    if(message.id === null){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -634,7 +635,7 @@ ChatProxy.prototype = {
       // parse 'dialog_id'
       } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
         dialogId = extraParams.childNodes[i].textContent;
-        extension["dialog_id"] = dialogId;
+        extension['dialog_id'] = dialogId;
 
       // parse other user's custom parameters
       } else {
@@ -707,7 +708,7 @@ ChatProxy.prototype = {
 ---------------------------------------------------------------------- */
 function RosterProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 RosterProxy.prototype = {
@@ -840,7 +841,7 @@ RosterProxy.prototype = {
 ---------------------------------------------------------------------- */
 function MucProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 MucProxy.prototype = {
@@ -892,7 +893,7 @@ MucProxy.prototype = {
       type: "get"
     }).c("query", {
       xmlns: 'http://jabber.org/protocol/disco#items'
-    })
+    });
 
     connection.sendIQ(iq, function(stanza) {
       var items = stanza.getElementsByTagName('item');
@@ -914,7 +915,7 @@ MucProxy.prototype = {
 
 function DialogProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 DialogProxy.prototype = {
@@ -946,7 +947,7 @@ DialogProxy.prototype = {
 
   delete: function(id, params_or_callback, callback) {
     Utils.QBLog('[DialogProxy]', 'delete', id);
-
+    
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
@@ -959,7 +960,7 @@ DialogProxy.prototype = {
 
 function MessageProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 MessageProxy.prototype = {
@@ -982,10 +983,20 @@ MessageProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
   },
 
-  delete: function(id, callback) {
-    Utils.QBLog('[MessageProxy]', 'delete', id);
+  delete: function(id, params_or_callback, callback) {
+    Utils.QBLog('[DialogProxy]', 'delete', id);
+    
+    if (arguments.length == 2) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+    } else if (arguments.length == 3) {
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+    }
+  },
 
-    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+  unread: function(params, callback) {
+    Utils.QBLog('[MessageProxy]', 'unread', params);
+
+    this.service.ajax({url: Utils.getUrl(messageUrl+'/unread'), data: params}, callback);
   }
 
 };
@@ -1067,7 +1078,7 @@ Helpers.prototype = {
 
   getUserIdFromRoomJid: function(jid) {
     var arrayElements = jid.toString().split('/');
-    if(arrayElements.length == 0){
+    if(arrayElements.length === 0){
       return null;
     }
     return arrayElements[arrayElements.length-1];
@@ -1092,5 +1103,5 @@ function getError(code, detail) {
 }
 
 function getLocalTime() {
-  return (new Date).toTimeString().split(' ')[0];
+  return (new Date()).toTimeString().split(' ')[0];
 }

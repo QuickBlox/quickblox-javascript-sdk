@@ -74,7 +74,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
                          limit: 10};
 
   // if we would like to load the previous history
-  if(beforeDateSent != null){
+  if(beforeDateSent !== null){
     params.date_sent = {lt: beforeDateSent};
   }else{
     currentDialog = dialog;
@@ -84,7 +84,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
   QB.chat.message.list(params, function(err, messages) {
     if (messages) {
 
-      if(messages.items.length == 0) {
+      if(messages.items.length === 0) {
         $("#no-messages-label").removeClass('hide');
       } else {
         $("#no-messages-label").addClass('hide');
@@ -123,7 +123,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
 // sending messages after confirmation
 function clickSendMessage() {
   var currentText = $('#message_text').val().trim();
-  if (currentText.length == 0){
+  if (currentText.length === 0){
     return;
   }
 
@@ -159,7 +159,7 @@ function sendMessage(text, attachmentFileId) {
     },
     senderId: currentUser.id,
   };
-  if(attachmentFileId != null){
+  if(attachmentFileId !== null){
     msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
   }
 
@@ -169,7 +169,7 @@ function sendMessage(text, attachmentFileId) {
 
     $('.list-group-item.active .list-group-item-text').text(msg.body);
 
-    if(attachmentFileId == null){
+    if(attachmentFileId === null){
       showMessage(currentUser.id, msg);
     } else {
       showMessage(currentUser.id, msg, attachmentFileId);
@@ -275,7 +275,7 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
-	if (dialogId == currentDialog._id || (dialogId == null && currentDialog.type == 3 && opponentId == userId)) {
+	if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
 		return true;
 	}
 	return false;
