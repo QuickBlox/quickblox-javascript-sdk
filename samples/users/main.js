@@ -14,35 +14,40 @@ $(document).ready(function() {
   // Init Twitter Digits
   //
 
-  var digitsKey = 'uH2aUsd3BP0qLpTezVnqXyZAk'; 
+  var digitsKey = 'uH2aUsd3BP0qLpTezVnqXyZAk';
 
   $('#digits-sdk').load(function () {
     Digits.init({ consumerKey: digitsKey })
       .done(function() {
         console.log('Digits initialized.');
       })
-      .fail(function() {
-        console.log('Digits failed to initialize.');
+      .fail(function(error) {
+        console.log('Digits failed to initialize: ' + JSON.stringify(error));
       });
 
     // Login user twitter digits
     $('#sign_in_twitter_digits').on('click', function() {
       Digits.logIn()
-      .done(function(loginResponse) {
-        var params = {
-          provider: 'twitter_digits',
-          twitter_digits: loginResponse.oauth_echo_headers
-        };
+        .done(function(loginResponse) {
 
-        // login with twitter_digits params
-        QB.login(params, function(err, user){
-          if (user) {
-            $('#output_place').val(JSON.stringify(user));
-          }else{
-            $('#output_place').val(JSON.stringify(err));
-          }
+          var params = {
+            provider: 'twitter_digits',
+            twitter_digits: loginResponse.oauth_echo_headers
+          };
+
+          // login with twitter_digits params
+          QB.login(params, function(err, user){
+            if (user) {
+              $('#output_place').val(JSON.stringify(user));
+            }else{
+              $('#output_place').val(JSON.stringify(err));
+            }
+          });
+
+        })
+        .fail(function(error) {
+          console.log('Digits failed to login: ' + JSON.stringify(error));
         });
-      });
     });
   });
 
@@ -92,7 +97,7 @@ $(document).ready(function() {
   // Login user with social provider
   //
   $('#sign_in_social').on('click', function() {
-    
+
     var provider = $('#usr_sgn_n_social_provider').val();
     var token = $('#usr_sgn_n_social_token').val();
     var secret = $('#usr_sgn_n_social_secret').val();
@@ -128,7 +133,7 @@ $(document).ready(function() {
     });
   });
 
-  // Get users 
+  // Get users
   //
   $('#get_by').on('click', function() {
     var filter_value = $('#usrs_get_by_filter').val();
@@ -187,7 +192,7 @@ $(document).ready(function() {
 
       // custom filters
       case "10":
-        // More info about filters here 
+        // More info about filters here
         // http://quickblox.com/developers/Users#Filters
         params = {filter: { field: 'login', param: 'in', value: ["sam33","ivan_gram"] }};
         request_for_many_user = true;
