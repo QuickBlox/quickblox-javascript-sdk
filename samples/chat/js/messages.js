@@ -198,10 +198,6 @@ function showMessage(userId, msg, attachmentFileId) {
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
-//
-function setupOnMessageListener() {
-  QB.chat.onMessageListener = onMessage;
-}
 
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
@@ -211,8 +207,6 @@ function onMessageTyping(isTyping, userId, dialogId) {
 // start timer after keypress event
 var isTypingTimerId;
 function setupIsTypingHandler() {
-  QB.chat.onMessageTypingListener = onMessageTyping;
-
   $("#message_text").focus().keyup(function(){
 
 		if (typeof isTypingTimerId === 'undefined') {
