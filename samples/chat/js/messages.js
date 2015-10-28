@@ -27,41 +27,24 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-
-  // This is a notification about dialog creation
+  // check if it's a mesasges for current dialog
   //
-  if (msg.extension.notification_type == 1 && !msg.delay) {
-    getAndShowNewDialog(msg.dialog_id);
+  if (isMessageForCurrentDialog(userId, msg.dialog_id)){
+    dialogsMessages.push(msg);
 
-  // This is a notification about dialog update
-  //
-  } else if (msg.extension.notification_type == 2 && !msg.delay) {
-    getAndUpdateDialog(msg.dialog_id);
-
+    // сheck if it's an attachment
+    //
+    var messageAttachmentFileId = null;
+    if (msg.extension.hasOwnProperty("attachments")) {
+      if(msg.extension.attachments.length > 0) {
+        messageAttachmentFileId = msg.extension.attachments[0].id;
+      }
+    }
+    showMessage(userId, msg, messageAttachmentFileId);
+  }  
   // Here we process the regular messages
   //
-  } else {
-
-    // check if it's a mesasges for current dialog
-    //
-    if (isMessageForCurrentDialog(userId, msg.dialog_id)){
-
-      dialogsMessages.push(msg);
-
-      // сheck if it's an attachment
-      //
-      var messageAttachmentFileId = null;
-      if (msg.extension.hasOwnProperty("attachments")) {
-        if(msg.extension.attachments.length > 0) {
-          messageAttachmentFileId = msg.extension.attachments[0].id;
-        }
-      }
-
-      showMessage(userId, msg, messageAttachmentFileId);
-    }
-
-    updateDialogsList(msg.dialog_id, msg.body);
-  }
+  updateDialogsList(msg.dialog_id, msg.body);
 }
 
 function retrieveChatMessages(dialog, beforeDateSent){
