@@ -304,6 +304,26 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Unread messages count
+    //
+    it('can request unread messages count', function(done) {
+
+      var params = {chat_dialog_ids: [dialogId]};
+      QB.chat.message.unreadCount(params, function(err, res) {
+
+        if(err){
+          done.fail("Request unread messages count error: " + JSON.stringify(err));
+        }else{
+          expect(res["total"]).toEqual(0);
+          expect(res[dialogId]).toEqual(0);
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Dialog delete
     //
     it('can delete a dialog (group)', function(done) {
@@ -312,23 +332,6 @@ describe('Chat API', function() {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
-        }else{
-          done();
-        }
-
-      });
-    }, REST_REQUESTS_TIMEOUT);
-
-
-    // Unread messages count
-    //
-    it('can request unread messages count', function(done) {
-
-      var params = {};
-      QB.chat.message.unreadCount(params, function(err, res) {
-
-        if(err){
-          done.fail("Request unread messages count error: " + JSON.stringify(err));
         }else{
           done();
         }
