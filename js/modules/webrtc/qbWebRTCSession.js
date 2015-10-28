@@ -595,18 +595,6 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
   if (typeof self.onSessionConnectionStateChangedListener === 'function'){
     self.onSessionConnectionStateChangedListener(self, userID, connectionState);
   }
-
-  if (connectionState === Helpers.SessionConnectionState.CONNECTED || connectionState === Helpers.SessionConnectionState.COMPLETED) {
-    self.peerConnections[userID].clearWaitingReconnectTimer();
-  }
-
-  if (connectionState === Helpers.SessionConnectionState.DISCONNECTED) {
-    self.peerConnections[userID].startWaitingReconnectTimer();
-  }
-
-  if (connectionState === Helpers.SessionConnectionState.CLOSED){
-    //peer = null;
-  }
 };
 
 //

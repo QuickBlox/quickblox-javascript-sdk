@@ -53,6 +53,8 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+
+  // timer to detect network blips
   this.reconnectTimer = 0;
 
   this.iceCandidates = [];
@@ -195,23 +197,26 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   	var connectionState = null;
 
   	if (newIceConnectionState === 'checking'){
-        this.state = RTCPeerConnection.State.CHECKING;
-        connectionState = Helpers.SessionConnectionState.CONNECTING;
+      this.state = RTCPeerConnection.State.CHECKING;
+      connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        this.state = RTCPeerConnection.State.CONNECTED;
-        connectionState = Helpers.SessionConnectionState.CONNECTED;
+      this._clearWaitingReconnectTimer();
+      this.state = RTCPeerConnection.State.CONNECTED;
+      connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'completed'){
+      this._clearWaitingReconnectTimer();
       this.state = RTCPeerConnection.State.COMPLETED;
       connectionState = Helpers.SessionConnectionState.COMPLETED;
     } else if (newIceConnectionState === 'failed'){
-        this.state = RTCPeerConnection.State.FAILED;
-        connectionState = Helpers.SessionConnectionState.FAILED;
+      this.state = RTCPeerConnection.State.FAILED;
+      connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        this.state = RTCPeerConnection.State.DISCONNECTED;
-        connectionState = Helpers.SessionConnectionState.DISCONNECTED;
+      this._startWaitingReconnectTimer();
+      this.state = RTCPeerConnection.State.DISCONNECTED;
+      connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        this.state = RTCPeerConnection.State.CLOSED;
-        connectionState = Helpers.SessionConnectionState.CLOSED;
+      this.state = RTCPeerConnection.State.CLOSED;
+      connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
   	if(connectionState != null){
@@ -220,7 +225,13 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   }
 };
 
-RTCPeerConnection.prototype.clearWaitingReconnectTimer = function() {
+
+//
+/////////////////////////////////// Private ////////////////////////////////////
+//
+
+
+RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
   if(this.waitingReconnectTimeoutCallback){
     Helpers.trace('_clearWaitingReconnectTimer');
     clearTimeout(this.waitingReconnectTimeoutCallback);
@@ -228,7 +239,7 @@ RTCPeerConnection.prototype.clearWaitingReconnectTimer = function() {
   }
 };
 
-RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
+RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
   var self = this,
       timeout = config.webrtc.disconnectTimeInterval * 1000,
       waitingReconnectTimeoutCallback = function() {
@@ -246,11 +257,6 @@ RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
 
   this.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
 };
-
-//
-/////////////////////////////////// Private ////////////////////////////////////
-//
-
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
   if(this.dialingTimer){
