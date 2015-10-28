@@ -93,7 +93,7 @@ function WebRTCProxy(service, conn) {
 
       // run caller availability timer and run again for this user
       clearAnswerTimer(userId);
-      if(peer === null){
+      if(peer == null){
         startAnswerTimer(userId, self._answerTimeoutCallback);
       }
       //
@@ -726,7 +726,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
       sessionState = peer.service.SessionState.CLOSED;
 	}
 
-	if(sessionState !== null){
+	if(sessionState != null){
       peer.service.onSessionStateChangedListener(sessionState);
     }
   }

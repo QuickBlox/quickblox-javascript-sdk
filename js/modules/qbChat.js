@@ -99,7 +99,7 @@ function ChatProxy(service, webrtcModule, conn) {
     //
     if(composing || paused){
       if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(composing !== null, userId, dialogId);
+        self.onMessageTypingListener(composing != null, userId, dialogId);
       }
       return true;
     }
@@ -376,7 +376,7 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id === null){
+    if(!message.id){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -435,7 +435,7 @@ ChatProxy.prototype = {
   sendSystemMessage: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id === null){
+    if(!message.id){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -947,7 +947,7 @@ DialogProxy.prototype = {
 
   delete: function(id, params_or_callback, callback) {
     Utils.QBLog('[DialogProxy]', 'delete', id);
-    
+
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
@@ -985,7 +985,7 @@ MessageProxy.prototype = {
 
   delete: function(id, params_or_callback, callback) {
     Utils.QBLog('[DialogProxy]', 'delete', id);
-    
+
     if (arguments.length == 2) {
       this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
     } else if (arguments.length == 3) {
@@ -993,8 +993,8 @@ MessageProxy.prototype = {
     }
   },
 
-  unread: function(params, callback) {
-    Utils.QBLog('[MessageProxy]', 'unread', params);
+  unreadCount: function(params, callback) {
+    Utils.QBLog('[MessageProxy]', 'unreadCount', params);
 
     this.service.ajax({url: Utils.getUrl(messageUrl+'/unread'), data: params}, callback);
   }
@@ -1078,7 +1078,7 @@ Helpers.prototype = {
 
   getUserIdFromRoomJid: function(jid) {
     var arrayElements = jid.toString().split('/');
-    if(arrayElements.length === 0){
+    if(arrayElements.length == 0){
       return null;
     }
     return arrayElements[arrayElements.length-1];

@@ -319,5 +319,22 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
+
+    // Unread messages count
+    //
+    it('can request unread messages count', function(done) {
+
+      var params = {};
+      QB.chat.message.unreadCount(params, function(err, res) {
+
+        if(err){
+          done.fail("Request unread messages count error: " + JSON.stringify(err));
+        }else{
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
   });
 });
