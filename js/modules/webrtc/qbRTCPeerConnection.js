@@ -247,7 +247,6 @@ RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
 
         clearTimeout(self.waitingReconnectTimeoutCallback);
 
-        self._clearDialingTimer();
         self.release();
 
         self.delegate._closeSessionIfAllConnectionsClosed();
