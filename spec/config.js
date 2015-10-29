@@ -4,10 +4,15 @@
  *
  */
 
-var CONFIG = {
+var CREDENTIALS =  {
   appId: 29650,
   authKey: 'WULOyezrmxpOgQ-',
   authSecret: 'TqQmBFbANJ6cfu4'
+};
+
+var CONFIG = {
+  debug: {mode: 1, file: null}
+  // debug: {mode: 2, file: "awesome.log"}
 };
 
 var QBUser1 = {

@@ -2,19 +2,19 @@ var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 1500;
 var REST_REQUESTS_TIMEOUT = 3000;
 
-describe('QuickBlox SDK - Chat module', function() {
+describe('Chat API', function() {
 
-  describe('Chat XMPP (real time messaging)', function() {
+  describe('XMPP (real time messaging)', function() {
 
     // beforeAll
     //
     beforeAll(function(done){
 
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
       QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
         if(err){
-          done.fail("Chat login error: " + err);
+          done.fail("Chat login error: " + JSON.stringify(err));
         }else{
           expect(roster).not.toBeNull();
           done();
@@ -187,7 +187,7 @@ describe('QuickBlox SDK - Chat module', function() {
 
   });
 
-  describe('Chat REST API', function() {
+  describe('REST API', function() {
 
     var dialogId;
 
@@ -195,14 +195,14 @@ describe('QuickBlox SDK - Chat module', function() {
     //
     beforeAll(function(done){
 
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
       QB.createSession({login: QBUser1.login, password: QBUser1.pass},function (err, result){
         if(err){
           done.fail("Creat session error: " + err);
         }else{
           expect(result).not.toBeNull();
-          expect(result.application_id).toEqual(CONFIG.appId);
+          expect(result.application_id).toEqual(CREDENTIALS.appId);
           done();
         }
 
@@ -308,16 +308,55 @@ describe('QuickBlox SDK - Chat module', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {}, function(err, res) {
+      QB.chat.dialog.delete(dialogId, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
+          dialogId = null;
         }else{
           done();
+          dialogId = null;
         }
 
       });
     }, REST_REQUESTS_TIMEOUT);
+
+
+    // Dialog delete (multiple)
+    //
+    it('can delete multiple dialogs', function(done) {
+
+      // create a dialog first
+      var params = {occupants_ids:[QBUser2.id],
+                             name: "GroupDialogName",
+                             type: 2
+                            }
+      QB.chat.dialog.create(params, function(err, res) {
+        if(err){
+          done.fail("Creat dialog error: " + JSON.stringify(err));
+        }else{
+          dialogId = res._id;
+
+          QB.chat.dialog.delete([dialogId, "notExistentDialogId"], {force: 1}, function(err, res) {
+            if(err){
+              done.fail("Delete multiple dialogs error: " + JSON.stringify(err));
+
+              dialogId = null;
+            }else{
+              var resJSON = JSON.parse(res);
+
+              expect(resJSON.SuccessfullyDeleted.ids).toEqual([dialogId]);
+              expect(resJSON.NotFound.ids).toEqual(["notExistentDialogId"]);
+
+              done();
+              dialogId = null;
+            }
+          });
+
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
 
   });
 });
