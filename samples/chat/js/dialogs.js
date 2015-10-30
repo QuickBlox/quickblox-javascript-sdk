@@ -76,6 +76,7 @@ function retrieveChatDialogs() {
 
         //  and trigger the 1st dialog
         //
+        console.log(resDialogs.items[0]._id);
         triggerDialog(resDialogs.items[0]._id);
 
         // hide login form

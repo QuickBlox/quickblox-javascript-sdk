@@ -41,17 +41,13 @@ function connectToChat(user) {
           console.log(err);
         } else {
           console.log(roster);
-          // setup message listeners
-          //
-          setupAllListeners();
-
           // load chat dialogs
           //
           retrieveChatDialogs();
 
-          // setup 'isTyping' events handler and listener
+          // setup message listeners
           //
-          setupIsTypingHandler();
+          setupAllListeners();
 
           // setup scroll events handler
           //
@@ -63,11 +59,13 @@ function connectToChat(user) {
 }
 
 function setupAllListeners() {
-  QB.chat.onDisconnectedListener = onDisconnectedListener;
-  QB.chat.onReconnectListener = onReconnectListener;
-  QB.chat.onMessageListener = onMessage;
-  QB.chat.onSystemMessageListener = onSystem;
-  QB.chat.onMessageTypingListener = onMessageTyping;
+  QB.chat.onDisconnectedListener    = onDisconnectedListener;
+  QB.chat.onReconnectListener       = onReconnectListener;
+  QB.chat.onMessageListener         = onMessage;
+  QB.chat.onSystemMessageListener   = onSystem;
+  QB.chat.onDeliveredStatusListener = onDelivered;
+  QB.chat.onReadStatusListener      = onRead;
+  setupIsTypingHandler();
 }
 
 // reconnection listeners
