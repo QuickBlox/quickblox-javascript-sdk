@@ -48,7 +48,6 @@ describe('QuickBlox SDK - WebRTC', function() {
       if(err){
         done.fail("Chat login error: " + JSON.stringify(err));
       }else{
-        console.info(roster);
         session = QB.webrtc.createNewSession( getAllCalees(QBUsers) );
         done();
       }
