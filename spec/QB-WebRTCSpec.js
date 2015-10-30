@@ -1,7 +1,7 @@
 'use strict';
 
 describe('QuickBlox SDK - WebRTC', function() {
-  var session = {},
+  var session,
       LOGIN_TIMEOUT = 10000;
 
   /**
@@ -36,6 +36,9 @@ describe('QuickBlox SDK - WebRTC', function() {
       if(err) {
         done.fail('getUserMedia: No access to mic or camera;');
       } else {
+        session.call({});
+
+        expect(session.state).toEqual(2);
         done();
       }
     });
@@ -44,23 +47,24 @@ describe('QuickBlox SDK - WebRTC', function() {
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
-    QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
+    QB.chat.connect({userId: QBUser2.id, password: QBUser2.pass}, function(err, roster) {
       if(err){
         done.fail("Chat login error: " + JSON.stringify(err));
       }else{
-        session = QB.webrtc.createNewSession( getAllCalees(QBUsers), 2, QBUser1.id );
         done();
       }
     });
   }, LOGIN_TIMEOUT);
 
-  it('can create session;', function() {
+  it('should create the session;', function() {
+    session = QB.webrtc.createNewSession( getAllCalees(QBUsers), 2, QBUser2.id );
+
     expect(session).not.toBeNull();
     expect(session.ID).not.toBeNull();
     expect(session.opponentsIDs).toEqual( jasmine.any(Array) );
   });
 
-  it('can\'t create a session with the same opponents;', function() {
+  it('should not create a session with the same opponents;', function() {
     var errorString = 'Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.';
 
     expect(function() {
@@ -68,16 +72,15 @@ describe('QuickBlox SDK - WebRTC', function() {
     }).toThrow( new Error(errorString) );
   });
 
-  it('can call;', function(done) {
+  it('should create the call;', function(done) {
     getUserMediaAndCall(session, done);
-    
-    session.call({});
-    expect(session.state).toEqual( QB.webrtc.SessionConnectionState.CONNECTING );
   });
 
-  it('can reject session;', function() {
-    session.reject();
+  it('should stop the session;', function(done) {
+    session.stop({});
 
-    expect(session.state).toEqual( QB.webrtc.SessionConnectionState.CLOSED );
+    expect(session.state).toEqual(5);
+
+    done();
   });
 });
