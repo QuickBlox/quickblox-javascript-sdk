@@ -104,7 +104,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
           var messageSenderLogin = getUserLoginById(messageSenderId);
-          console.log(item);
+
           // send read status
           if (item.read_ids.length === 1 && messageSenderId !== currentUser.id && currentDialog.type === 3) {
             sendRead(messageSenderId, messageId, currentDialog._id);
