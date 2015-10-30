@@ -1,6 +1,23 @@
 
 var dialogs = {};
 
+function onSystem(notes) {
+  if (!notes.delay) {
+    switch (notes.extension.notification_type) {
+      case "1":
+        // This is a notification about dialog creation
+        getAndShowNewDialog(notes.extension.dialog_id);
+        break;
+      case "2":
+        // This is a notification about dialog update
+        getAndUpdateDialog(notes.extension.dialog_id);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 function retrieveChatDialogs() {
   // get the chat dialogs list
   //
@@ -308,7 +325,7 @@ function notifyOccupants(dialogOccupants, dialogId, notificationType) {
         }
       };
 
-      QB.chat.send(itemOccupanId, msg);
+      QB.chat.sendSystemMessage(itemOccupanId, msg);
     }
   });
 }
@@ -345,9 +362,6 @@ function getAndShowNewDialog(newDialogId) {
 function getAndUpdateDialog(updatedDialogId) {
   // get the dialog and users
   //
-
-console.log("getAndUpdateDialog");
-
   var dialogAlreadyExist = dialogs[updatedDialogId] !== null;
   console.log("dialog " + updatedDialogId + " already exist: " + dialogAlreadyExist);
 

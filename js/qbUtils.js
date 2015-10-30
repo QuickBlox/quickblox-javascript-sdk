@@ -33,7 +33,7 @@ var Utils = {
   },
 
   getUrl: function(base, id) {
-    var protocol = config.ssl ? 'https://' : 'http://';
+    var protocol = 'https://';
     var resource = id ? '/' + id : '';
     return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
   },
