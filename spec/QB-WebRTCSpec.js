@@ -1,7 +1,7 @@
 'use strict';
 
 describe('QuickBlox SDK - WebRTC', function() {
-  var session = null,
+  var session = {},
       LOGIN_TIMEOUT = 10000;
 
   /**
@@ -48,33 +48,30 @@ describe('QuickBlox SDK - WebRTC', function() {
       if(err){
         done.fail("Chat login error: " + JSON.stringify(err));
       }else{
-        session = QB.webrtc.createNewSession( getAllCalees(QBUsers) );
+        session = QB.webrtc.createNewSession( getAllCalees(QBUsers), 2, QBUser1.id );
         done();
       }
     });
   }, LOGIN_TIMEOUT);
 
-  it('can create session;', function(done) {
+  it('can create session;', function() {
     expect(session).not.toBeNull();
     expect(session.ID).not.toBeNull();
     expect(session.opponentsIDs).toEqual( jasmine.any(Array) );
-
-    done();
   });
 
-  it('trying create session one more time with the same opponents;', function(done) {
+  it('can\'t create a session with the same opponents;', function() {
     var errorString = 'Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.';
 
     expect(function() {
       QB.webrtc.createNewSession( getAllCalees(QBUsers) );
     }).toThrow( new Error(errorString) );
-
-    done();
   });
 
   it('can call;', function(done) {
     getUserMediaAndCall(session, done);
-
+    
+    session.call({});
     expect(session.state).toEqual( QB.webrtc.SessionConnectionState.CONNECTING );
   });
 
