@@ -24,6 +24,18 @@ var ObjectId = {
 };
 
 var Utils = {
+  safeCallbackCall: function() {
+    if(!isBrowser) throw unsupported;
+    
+    var listener = Array.prototype.shift.apply(arguments);
+
+    try {
+      listener.apply(null, arguments);
+    } catch (err) {
+      console.error('Error in the listener: ' + err);
+    } 
+  },
+
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
   },
