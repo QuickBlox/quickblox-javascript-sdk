@@ -129,7 +129,7 @@ function clickSendMessage() {
 
   $('#message_text').val('').focus();
 
-  sendMessage(currentText, null);
+sendMessage(currentText, null);
 }
 
 function clickSendAttachments(inputFile) {

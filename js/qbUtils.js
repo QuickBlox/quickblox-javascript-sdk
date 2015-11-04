@@ -29,10 +29,17 @@ var Utils = {
     
     var listenerString = arguments[0].toString(),
         listenerName = listenerString.split('(')[0].split(' ')[1],
-        listenerCall = Array.prototype.shift.apply(arguments);
+        argumentsArr = [],
+        listenerCall;
 
     try {
-      listenerCall.apply(null, arguments);
+      for (var i = 0; i < arguments.length; i++) {
+        argumentsArr.push(arguments[i]);
+      }
+
+      listenerCall = argumentsArr.shift();
+
+      listenerCall.apply(null, argumentsArr);
     } catch (err) {
       console.error('Error in the ' + listenerName + ': ' + err);
     } 
