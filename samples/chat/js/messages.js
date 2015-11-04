@@ -62,6 +62,7 @@ function onMessage(userId, msg) {
 
     updateDialogsList(msg.dialog_id, msg.body);
   }
+  throw '123123123';
 }
 
 function retrieveChatMessages(dialog, beforeDateSent){
@@ -206,6 +207,7 @@ function setupOnMessageListener() {
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
   showUserIsTypingView(isTyping, userId, dialogId);
+  throw '123123123';
 }
 
 // start timer after keypress event

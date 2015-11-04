@@ -26,13 +26,13 @@ var ObjectId = {
 var Utils = {
   safeCallbackCall: function() {
     if(!isBrowser) throw unsupported;
-    
-    var listener = Array.prototype.shift.apply(arguments);
+    var listenerName = arguments[0].toString().split('(')[0].split(' ')[1],
+        listenerCall = Array.prototype.shift.apply(arguments);
 
     try {
-      listener.apply(null, arguments);
+      listenerCall.apply(null, arguments);
     } catch (err) {
-      console.error('Error in the listener: ' + err);
+      console.error('Error in the ' + listenerName + ': ' + err);
     } 
   },
 
