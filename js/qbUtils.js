@@ -26,7 +26,9 @@ var ObjectId = {
 var Utils = {
   safeCallbackCall: function() {
     if(!isBrowser) throw unsupported;
-    var listenerName = arguments[0].toString().split('(')[0].split(' ')[1],
+    
+    var listenerString = arguments[0].toString(),
+        listenerName = listenerString.split('(')[0].split(' ')[1],
         listenerCall = Array.prototype.shift.apply(arguments);
 
     try {
