@@ -52,7 +52,7 @@ function onMessage(userId, msg) {
   updateDialogsList(msg.dialog_id, msg.body);
 }
 
-function sendRead(userId, messageId, dialogId) {
+function sendReadStatus(userId, messageId, dialogId) {
   var params = {
     messageId: messageId,
     userId: userId,
@@ -61,11 +61,11 @@ function sendRead(userId, messageId, dialogId) {
   QB.chat.sendReadStatus(params);
 }
 
-function onDelivered(messageId) {
+function onDeliveredStatusListener(messageId) {
   $('#delivered_'+messageId).fadeIn(200);
 }
 
-function onRead(messageId) {
+function onReadStatusListener(messageId) {
   $('#delivered_'+messageId).fadeOut(100);
   $('#read_'+messageId).fadeIn(200);
 }
@@ -104,10 +104,10 @@ function retrieveChatMessages(dialog, beforeDateSent){
           var messageSenderId = item.sender_id;
           var messageDateSent = new Date(item.date_sent*1000);
           var messageSenderLogin = getUserLoginById(messageSenderId);
-          console.log(item);
+
           // send read status
           if (item.read_ids.length === 1 && messageSenderId !== currentUser.id && currentDialog.type === 3) {
-            sendRead(messageSenderId, messageId, currentDialog._id);
+            sendReadStatus(messageSenderId, messageId, currentDialog._id);
           }
 
           var messageAttachmentFileId = null;
@@ -295,8 +295,9 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
+  var result = false;
   if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
-    return true;
+  result = true;
   }
-  return false;
+  return result;
 }

@@ -62,9 +62,9 @@ function setupAllListeners() {
   QB.chat.onDisconnectedListener    = onDisconnectedListener;
   QB.chat.onReconnectListener       = onReconnectListener;
   QB.chat.onMessageListener         = onMessage;
-  QB.chat.onSystemMessageListener   = onSystem;
-  QB.chat.onDeliveredStatusListener = onDelivered;
-  QB.chat.onReadStatusListener      = onRead;
+  QB.chat.onSystemMessageListener   = onSystemMessageListener;
+  QB.chat.onDeliveredStatusListener = onDeliveredStatusListener;
+  QB.chat.onReadStatusListener      = onReadStatusListener;
   setupIsTypingHandler();
 }
 
