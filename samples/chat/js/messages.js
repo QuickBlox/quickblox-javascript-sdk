@@ -129,7 +129,7 @@ function clickSendMessage() {
 
   $('#message_text').val('').focus();
 
-sendMessage(currentText, null);
+  sendMessage(currentText, null);
 }
 
 function clickSendAttachments(inputFile) {
@@ -275,8 +275,9 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
+  var result = false;
 	if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 }
