@@ -116,7 +116,7 @@ function generateAuthMsg(params) {
       message.keys = {token: params.keys.token};
     }
     if (params.keys && params.keys.secret) {
-      messages.keys.secret = params.keys.secret;
+      message.keys.secret = params.keys.secret;
     }
   }
 

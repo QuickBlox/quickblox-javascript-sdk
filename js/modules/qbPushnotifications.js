@@ -1,57 +1,24 @@
 /*
  * QuickBlox JavaScript SDK
  *
- * Messages Module
+ * Push Notifications Module
  *
  */
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-function MessagesProxy(service) {
+function PushnotificationsProxy(service) {
   this.service = service;
-  this.tokens = new TokensProxy(service);
   this.subscriptions = new SubscriptionsProxy(service);
   this.events = new EventsProxy(service);
 }
 
-// Push Tokens
-
-function TokensProxy(service){
-  this.service = service;
+function b64EncodeUnicode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return String.fromCharCode('0x' + p1);
+  }));
 }
-
-TokensProxy.prototype = {
-
-  create: function(params, callback){
-    Utils.QBLog('[TokensProxy]', 'create', params);
-
-    var message = {
-      push_token: {
-        environment: params.environment,
-        client_identification_sequence: params.client_identification_sequence
-      },
-      device: { platform: params.platform, udid: params.udid}
-    };
-
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
-                      function(err, data){
-                        if (err) { callback(err, null);}
-                        else { callback(null, data.push_token); }
-                      });
-  },
-
-  delete: function(id, callback) {
-    Utils.QBLog('[TokensProxy]', 'delete', id);
-
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'},
-                      function (err, res) {
-                        if (err) {callback(err, null);}
-                        else {callback(null, true);}
-                        });
-  }
-
-};
 
 // Subscriptions
 
@@ -95,12 +62,14 @@ EventsProxy.prototype = {
   create: function(params, callback) {
     Utils.QBLog('[EventsProxy]', 'create', params);
 
+    params.message = b64EncodeUnicode(params.message);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
 
   list: function(callback) {
-    Utils.QBLog('[EventsProxy]', 'list', params);
+    Utils.QBLog('[EventsProxy]', 'list');
 
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
@@ -120,6 +89,8 @@ EventsProxy.prototype = {
   update: function(params, callback) {
     Utils.QBLog('[EventsProxy]', 'update', params);
 
+    params.message = b64EncodeUnicode(params.message);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
   },
@@ -132,4 +103,4 @@ EventsProxy.prototype = {
 
 };
 
-module.exports = MessagesProxy;
+module.exports = PushnotificationsProxy;

@@ -41,34 +41,34 @@ function connectToChat(user) {
           console.log(err);
         } else {
           console.log(roster);
-          // setup message listeners
-          //
-          setupOnMessageListener();
-
           // load chat dialogs
           //
           retrieveChatDialogs();
 
-          // setup 'isTyping' events handler and listener
+          // setup message listeners
           //
-          setupIsTypingHandler();
+          setupAllListeners();
 
           // setup scroll events handler
           //
           setupMsgScrollHandler();
-
-          // setup reconnection callbacks
-          //
-          QB.chat.onDisconnectedListener = onDisconnectedListener;
-          QB.chat.onReconnectListener = onReconnectListener;
         }
       });
     }
   });
 }
 
-// reconnection listeners
+function setupAllListeners() {
+  QB.chat.onDisconnectedListener    = onDisconnectedListener;
+  QB.chat.onReconnectListener       = onReconnectListener;
+  QB.chat.onMessageListener         = onMessage;
+  QB.chat.onSystemMessageListener   = onSystem;
+  QB.chat.onDeliveredStatusListener = onDelivered;
+  QB.chat.onReadStatusListener      = onRead;
+  setupIsTypingHandler();
+}
 
+// reconnection listeners
 function onDisconnectedListener(){
   console.log("onDisconnectedListener");
 }
@@ -76,6 +76,7 @@ function onDisconnectedListener(){
 function onReconnectListener(){
   console.log("onReconnectListener");
 }
+
 
 // niceScroll() - ON
 $(document).ready(

@@ -1,4 +1,4 @@
-var currentDialog;
+var currentDialog = {};
 var opponentId;
 
 var dialogsMessages = [];
@@ -27,41 +27,47 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-
-  // This is a notification about dialog creation
+  // check if it's a mesasges for current dialog
   //
-  if (msg.extension.notification_type == 1 && !msg.delay) {
-    getAndShowNewDialog(msg.dialog_id);
+  if (isMessageForCurrentDialog(userId, msg.dialog_id)){
+    dialogsMessages.push(msg);
 
-  // This is a notification about dialog update
-  //
-  } else if (msg.extension.notification_type == 2 && !msg.delay) {
-    getAndUpdateDialog(msg.dialog_id);
-
-  // Here we process the regular messages
-  //
-  } else {
-
-    // check if it's a mesasges for current dialog
-    //
-    if (isMessageForCurrentDialog(userId, msg.dialog_id)){
-
-      dialogsMessages.push(msg);
-
-      // сheck if it's an attachment
-      //
-      var messageAttachmentFileId = null;
-      if (msg.extension.hasOwnProperty("attachments")) {
-        if(msg.extension.attachments.length > 0) {
-          messageAttachmentFileId = msg.extension.attachments[0].id;
-        }
-      }
-
-      showMessage(userId, msg, messageAttachmentFileId);
+    if (msg.markable === 1) {
+      sendRead(userId, msg.id, msg.dialog_id);
     }
 
-    updateDialogsList(msg.dialog_id, msg.body);
-  }
+    // сheck if it's an attachment
+    //
+    var messageAttachmentFileId = null;
+    if (msg.extension.hasOwnProperty("attachments")) {
+      if(msg.extension.attachments.length > 0) {
+        messageAttachmentFileId = msg.extension.attachments[0].id;
+      }
+    }
+
+    showMessage(userId, msg, messageAttachmentFileId);
+  }  
+  // Here we process the regular messages
+  //
+  updateDialogsList(msg.dialog_id, msg.body);
+}
+
+function sendRead(userId, messageId, dialogId) {
+  var params = {
+    messageId: messageId,
+    userId: userId,
+    dialogId: dialogId
+  };
+  QB.chat.sendReadStatus(params);
+}
+
+function onDelivered(messageId) {
+  $('#delivered_'+messageId).fadeIn(200);
+}
+
+function onRead(messageId) {
+  $('#delivered_'+messageId).fadeOut(100);
+  $('#read_'+messageId).fadeIn(200);
 }
 
 function retrieveChatMessages(dialog, beforeDateSent){
@@ -99,6 +105,11 @@ function retrieveChatMessages(dialog, beforeDateSent){
           var messageDateSent = new Date(item.date_sent*1000);
           var messageSenderLogin = getUserLoginById(messageSenderId);
 
+          // send read status
+          if (item.read_ids.length === 1 && messageSenderId !== currentUser.id && currentDialog.type === 3) {
+            sendRead(messageSenderId, messageId, currentDialog._id);
+          }
+
           var messageAttachmentFileId = null;
           if (item.hasOwnProperty("attachments")) {
             if(item.attachments.length > 0) {
@@ -109,6 +120,18 @@ function retrieveChatMessages(dialog, beforeDateSent){
           var messageHtml = buildMessageHTML(messageText, messageSenderLogin, messageDateSent, messageAttachmentFileId, messageId);
 
           $('#messages-list').prepend(messageHtml);
+
+          // Get read and delivered statuses from server and show
+          if (item.delivered_ids.length > 1 && messageSenderId === currentUser.id) {
+            $('#delivered_'+messageId).fadeIn(200);
+          } else if (item.read_ids.length > 1 && messageSenderId === currentUser.id) {
+            $('#delivered_'+messageId).fadeOut(100);
+            $('#read_'+messageId).fadeIn(200);
+          } else if (messageSenderId === currentUser.id) {
+            $('#read_'+messageId).fadeIn(200);
+          }
+
+          if (i > 5) {$('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));}
         });
       }
     }else{
@@ -152,18 +175,19 @@ function clickSendAttachments(inputFile) {
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
   var msg = {
-    type: currentDialog.type == 3 ? 'chat' : 'groupchat',
+    type: currentDialog.type === 3 ? 'chat' : 'groupchat',
     body: text,
     extension: {
       save_to_history: 1,
     },
     senderId: currentUser.id,
+    markable: 1
   };
   if(attachmentFileId !== null){
     msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
   }
 
-  if (currentDialog.type == 3) {
+  if (currentDialog.type === 3) {
     opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(opponentId, msg);
 
@@ -198,10 +222,6 @@ function showMessage(userId, msg, attachmentFileId) {
   mydiv.scrollTop(mydiv.prop('scrollHeight'));
 }
 
-//
-function setupOnMessageListener() {
-  QB.chat.onMessageListener = onMessage;
-}
 
 // show typing status in chat or groupchat
 function onMessageTyping(isTyping, userId, dialogId) {
@@ -215,68 +235,68 @@ function setupIsTypingHandler() {
 
   $("#message_text").focus().keyup(function(){
 
-		if (typeof isTypingTimerId === 'undefined') {
+    if (typeof isTypingTimerId === 'undefined') {
 
       // send 'is typing' status
-   		sendTypingStatus();
+      sendTypingStatus();
 
-			// start is typing timer
-	  	isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
-		} else {
+      // start is typing timer
+      isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
+    } else {
 
-			// start is typing timer again
-			clearTimeout(isTypingTimerId);
-			isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
-		}
+      // start is typing timer again
+      clearTimeout(isTypingTimerId);
+      isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
+    }
   });
 }
 
 // delete timer and send 'stop typing' status
 function isTypingTimeoutCallback() {
-	isTypingTimerId = undefined;
-	sendStopTypinStatus();
+  isTypingTimerId = undefined;
+  sendStopTypinStatus();
 }
 
 // send 'is typing' status
 function sendTypingStatus() {
-	if (currentDialog.type == 3) {
-	  QB.chat.sendIsTypingStatus(opponentId);
-	} else {
-	  QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
-	}
+  if (currentDialog.type == 3) {
+    QB.chat.sendIsTypingStatus(opponentId);
+  } else {
+    QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
+  }
 }
 
 // send 'stop typing' status
 function sendStopTypinStatus() {
-	if (currentDialog.type == 3) {
-		QB.chat.sendIsStopTypingStatus(opponentId);
-	} else {
-		QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
-	}
+  if (currentDialog.type == 3) {
+    QB.chat.sendIsStopTypingStatus(opponentId);
+  } else {
+    QB.chat.sendIsStopTypingStatus(currentDialog.xmpp_room_jid);
+  }
 }
 
 // show or hide typing status to other users
 function showUserIsTypingView(isTyping, userId, dialogId) {
-	if(isMessageForCurrentDialog(userId, dialogId)){
+  if(isMessageForCurrentDialog(userId, dialogId)){
 
-	  if (!isTyping) {
-	    $('#'+userId+'_typing').remove();
-	  } else if (userId != currentUser.id) {
-	  	var userLogin = getUserLoginById(userId);
-	    var typingUserHtml = buildTypingUserHtml(userId, userLogin);
-	    $('#messages-list').append(typingUserHtml);
-	  }
+    if (!isTyping) {
+      $('#'+userId+'_typing').remove();
+    } else if (userId != currentUser.id) {
+      var userLogin = getUserLoginById(userId);
+      var typingUserHtml = buildTypingUserHtml(userId, userLogin);
+      $('#messages-list').append(typingUserHtml);
+    }
 
-	  // scroll to bottom
-	  var mydiv = $('#messages-list');
-	  mydiv.scrollTop(mydiv.prop('scrollHeight'));
-	}
+    // scroll to bottom
+    var mydiv = $('#messages-list');
+    mydiv.scrollTop(mydiv.prop('scrollHeight'));
+  }
 }
 
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
-	if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
-		return true;
-	}
-	return false;
+  if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
+    return true;
+  }
+  return false;
 }
