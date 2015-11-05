@@ -127,7 +127,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
           } else if (item.read_ids.length > 1 && messageSenderId === currentUser.id) {
             $('#delivered_'+messageId).fadeOut(100);
             $('#read_'+messageId).fadeIn(200);
-          } else if (messageSenderId === currentUser.id) {
+          } else if (messageSenderId === currentUser.id && currentDialog.type !== 3) {
             $('#read_'+messageId).fadeIn(200);
           }
 
