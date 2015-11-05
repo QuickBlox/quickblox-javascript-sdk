@@ -14,6 +14,12 @@ function PushnotificationsProxy(service) {
   this.events = new EventsProxy(service);
 }
 
+function b64EncodeUnicode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return String.fromCharCode('0x' + p1);
+  }));
+}
+
 // Subscriptions
 
 function SubscriptionsProxy(service){
@@ -56,6 +62,8 @@ EventsProxy.prototype = {
   create: function(params, callback) {
     Utils.QBLog('[EventsProxy]', 'create', params);
 
+    params.message = b64EncodeUnicode(params.message);
+
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
@@ -80,6 +88,8 @@ EventsProxy.prototype = {
 
   update: function(params, callback) {
     Utils.QBLog('[EventsProxy]', 'update', params);
+
+    params.message = b64EncodeUnicode(params.message);
 
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
