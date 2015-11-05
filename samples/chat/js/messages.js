@@ -33,7 +33,7 @@ function onMessage(userId, msg) {
     dialogsMessages.push(msg);
 
     if (msg.markable === 1) {
-      sendRead(userId, msg.id, msg.dialog_id);
+      sendReadStatus(userId, msg.id, msg.dialog_id);
     }
 
     // сheck if it's an attachment
