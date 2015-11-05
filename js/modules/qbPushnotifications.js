@@ -69,7 +69,7 @@ EventsProxy.prototype = {
   },
 
   list: function(callback) {
-    Utils.QBLog('[EventsProxy]', 'list', params);
+    Utils.QBLog('[EventsProxy]', 'list');
 
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
