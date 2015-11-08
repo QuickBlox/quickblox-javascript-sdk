@@ -25,6 +25,7 @@ var messageUrl = config.urls.chat + '/Message';
 var connection,
     webrtc,
     roster = {},
+    blocklist = {},
     joinedRooms = {};
 
 function ChatProxy(service, webrtcModule, conn) {
@@ -35,6 +36,7 @@ function ChatProxy(service, webrtcModule, conn) {
   this.service = service;
   if(isBrowser) {
     this.roster = new RosterProxy(service);
+    this.blocklist = new BlocklistProxy(service);
     this.muc = new MucProxy(service);
 
     this._isLogout = false;
@@ -829,6 +831,98 @@ RosterProxy.prototype = {
     });
 
     connection.send(pres);
+  }
+
+};
+
+/* Chat module: Blocklist
+ *
+ * Blocking Command
+ * http://xmpp.org/extensions/xep-0191.html
+ * default - Mutual Subscription
+ *
+---------------------------------------------------------------------- */
+function BlocklistProxy(service) {
+  this.service = service;
+  this.helpers = new Helpers();
+}
+
+BlocklistProxy.prototype = {
+
+  get: function(callback) {
+    var iq, self = this,
+        items, userId, blocklist = [];
+
+    iq = $iq({
+      type: 'get',
+      id: connection.getUniqueId('blocklist')
+    }).c('blocklist', {
+      xmlns: 'urn:xmpp:blocking'
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      items = stanza.getElementsByTagName('item');
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getIdFromNode(items[i].getAttribute('jid'));
+        blocklist.push(userId);
+      }
+      callback(blocklist);
+    });
+  },
+
+  block: function(jidOrUserId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.jidOrUserId(jidOrUserId),
+        userId = this.helpers.getIdFromNode(userJid);
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('block')
+    }).c('block', {
+      xmlns: 'urn:xmpp:blocking'
+    }).c('item', {
+      jid: userJid
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback(userId);
+    });
+  },
+
+  unblock: function(jidOrUserId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.jidOrUserId(jidOrUserId),
+        userId = this.helpers.getIdFromNode(userJid);
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('unblock')
+    }).c('unblock', {
+      xmlns: 'urn:xmpp:blocking'
+    }).c('item', {
+      jid: userJid
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback(userId);
+    });
+  },
+
+  unblockAll: function(callback) {
+    var iq, self = this;
+
+    iq = $iq({
+      type: 'set',
+      id: connection.getUniqueId('unblock')
+    }).c('unblock', {
+      xmlns: 'urn:xmpp:blocking'
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback("All users are unblocked");
+    });
   }
 
 };
