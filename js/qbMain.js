@@ -29,7 +29,7 @@ QuickBlox.prototype = {
         Chat = require('./modules/qbChat'),
         Content = require('./modules/qbContent'),
         Location = require('./modules/qbLocation'),
-        Messages = require('./modules/qbMessages'),
+        PushNotifications = require('./modules/qbPushNotifications'),
         Data = require('./modules/qbData');
 
     if (isBrowser) {
@@ -47,7 +47,7 @@ QuickBlox.prototype = {
     this.chat = new Chat(this.service, this.webrtc || null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
-    this.messages = new Messages(this.service);
+    this.pushnotifications = new PushNotifications(this.service);
     this.data = new Data(this.service);
 
     // Initialization by outside token
