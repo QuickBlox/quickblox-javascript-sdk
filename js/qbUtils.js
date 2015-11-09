@@ -24,6 +24,27 @@ var ObjectId = {
 };
 
 var Utils = {
+  safeCallbackCall: function() {
+    if(!isBrowser) throw unsupported;
+    
+    var listenerString = arguments[0].toString(),
+        listenerName = listenerString.split('(')[0].split(' ')[1],
+        argumentsCopy = [],
+        listenerCall;
+
+      for (var i = 0; i < arguments.length; i++) {
+        argumentsCopy.push(arguments[i]);
+      }
+
+      listenerCall = argumentsCopy.shift();
+
+    try {
+      listenerCall.apply(null, argumentsCopy);
+    } catch (err) {
+      console.error('Error in the ' + listenerName + ': ' + err);
+    } 
+  },
+
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
   },
