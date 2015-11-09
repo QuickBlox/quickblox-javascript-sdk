@@ -320,3 +320,10 @@ a.pull_push.active  {
 	width: 100%;
 	padding: 0;
 }
+
+.icon-small {
+  position: absolute;
+  right: 15px;
+  top: 30px;
+  display: none;
+}
