@@ -853,7 +853,7 @@ BlocklistProxy.prototype = {
 
   get: function(callback) {
     var iq, self = this,
-        items, userId, blocklist = [];
+        blocklist = [];
 
     iq = $iq({
       type: 'get',
@@ -862,20 +862,41 @@ BlocklistProxy.prototype = {
       xmlns: Strophe.NS.BLOCKING_COMMAND
     });
 
-    connection.sendIQ(iq, function(stanza) {
-      items = stanza.getElementsByTagName('item');
-      for (var i = 0, len = items.length; i < len; i++) {
-        userId = self.helpers.getIdFromNode(items[i].getAttribute('jid'));
-        blocklist.push(userId);
+    connection.sendIQ(iq, function(stanzaResult) {
+      var items = stanzaResult.getElementsByTagName('blocklist')[0].getElementsByTagName('item');
+
+      var index;
+      for (index = 0; index < items.length; ++index) {
+        var item = items[index];
+        var userId = self.helpers.getIdFromNode(item.getAttribute('jid'));
+        if(userId){
+          blocklist.push(userId);
+        }
       }
-      callback(blocklist);
+
+      callback(null, blocklist);
+
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject, null);
+      }else{
+        callback(getError(408), null)
+      }
     });
+
   },
 
-  block: function(jidOrUserId, callback) {
+  block: function(userId, callback) {
     var iq, self = this,
-        userJid = this.helpers.jidOrUserId(jidOrUserId),
-        userId = this.helpers.getIdFromNode(userJid);
+        userJid = this.helpers.getUserJid(userId),
+        userJidGroupChat = this.helpers.getUserNickWithMucDomain(userId);
+
+    // JID Matching info http://xmpp.org/extensions/xep-0191.html#matching
+    //
+    // we use the following:
+    // 1-1 chat block: <user@domain> (any resource matches)
+    // Group chat block: <domain/resource> (only that resource matches)
 
     iq = $iq({
       from: connection.jid,
@@ -885,17 +906,27 @@ BlocklistProxy.prototype = {
       xmlns: Strophe.NS.BLOCKING_COMMAND
     }).c('item', {
       jid: userJid
+    }).up().c('item', {
+      jid: userJidGroupChat
     });
 
-    connection.sendIQ(iq, function(stanza) {
-      callback(userId);
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
     });
+
   },
 
-  unblock: function(jidOrUserId, callback) {
+  unblock: function(userId, callback) {
     var iq, self = this,
-        userJid = this.helpers.jidOrUserId(jidOrUserId),
-        userId = this.helpers.getIdFromNode(userJid);
+        userJid = this.helpers.getUserJid(userId),
+        userJidGroupChat = this.helpers.getUserNickWithMucDomain(userId);
 
     iq = $iq({
       from: connection.jid,
@@ -905,11 +936,21 @@ BlocklistProxy.prototype = {
       xmlns: Strophe.NS.BLOCKING_COMMAND
     }).c('item', {
       jid: userJid
+    }).up().c('item', {
+      jid: userJidGroupChat
     });
 
-    connection.sendIQ(iq, function(stanza) {
-      callback(userId);
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
     });
+
   },
 
   unblockAll: function(callback) {
@@ -922,9 +963,17 @@ BlocklistProxy.prototype = {
       xmlns: Strophe.NS.BLOCKING_COMMAND
     });
 
-    connection.sendIQ(iq, function(stanza) {
-      callback("All users are unblocked");
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
     });
+
   }
 
 };
@@ -1140,8 +1189,15 @@ Helpers.prototype = {
     return recipient;
   },
 
-  getUserJid: function(id, appId) {
-    return id + '-' + appId + '@' + config.endpoints.chat;
+  getUserJid: function(userId, appId) {
+    if(!appId){
+      return userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    }
+    return userId + '-' + appId + '@' + config.endpoints.chat;
+  },
+
+  getUserNickWithMucDomain: function(userId) {
+    return config.endpoints.muc + '/' + userId;
   },
 
   getIdFromNode: function(jid) {
@@ -1190,15 +1246,37 @@ module.exports = ChatProxy;
 
 /* Private
 ----------------------------------------------------------------------------- */
+function getErrorFromXMLNode(stanzaError) {
+  var errorElement = stanzaError.getElementsByTagName('error')[0];
+  var errorCode = parseInt(errorElement.getAttribute('code'));
+  var errorText = errorElement.getElementsByTagName('text')[0].textContent;
+  return getError(errorCode, errorText);
+}
+
 function getError(code, detail) {
   var errorMsg = {
     code: code,
     status: 'error',
-    message: code === 401 ? 'Unauthorized' : 'Unprocessable Entity',
     detail: detail
   };
 
-  Utils.QBLog('[ChatProxy]', 'error: ', detail);
+  var msg;
+  switch (code) {
+    case 401:
+      msg = 'Unauthorized';
+      break;
+    case 422:
+      msg = 'Unprocessable Entity';
+      break;
+    case 408:
+      msg = 'Timeout';
+      break;
+    default:
+      msg = 'Bad request'; // 400
+  }
+
+  errorMsg['message'] = msg;
+
   return errorMsg;
 }
 

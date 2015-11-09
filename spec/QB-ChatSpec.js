@@ -1,5 +1,6 @@
 var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 1500;
+var IQ_TIMEOUT = 1000;
 var REST_REQUESTS_TIMEOUT = 3000;
 
 describe('Chat API', function() {
@@ -10,7 +11,7 @@ describe('Chat API', function() {
     //
     beforeAll(function(done){
 
-      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
       QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
         if(err){
@@ -22,7 +23,7 @@ describe('Chat API', function() {
       });
 
     }, LOGIN_TIMEOUT);
-    
+
 
     // 1-1 mesasging
     //
@@ -176,6 +177,46 @@ describe('Chat API', function() {
       QB.chat.sendIsStopTypingStatus(QBUser1.id);
 
     }, MESSAGING_TIMEOUT);
+
+
+    describe('Block List API', function() {
+      // Block user
+      //
+      it("can block a user", function(done) {
+
+        var testUserId = 111;
+        QB.chat.blocklist.block(testUserId, function(error){
+          expect(error).toBeNull();
+          done();
+        });
+
+      }, IQ_TIMEOUT);
+
+      // Get block list
+      //
+      it("can get block list", function(done) {
+
+        QB.chat.blocklist.get(function(error, result){
+          expect(error).toBeNull();
+          done();
+        });
+
+      }, IQ_TIMEOUT);
+
+
+      // Unblock a user
+      //
+      it("can unblock a user", function(done) {
+
+        var testUserId = 111;
+        QB.chat.blocklist.unblock(testUserId, function(error){
+          expect(error).toBeNull();
+          done();
+        });
+
+      }, IQ_TIMEOUT);
+
+    });
 
 
     // afterAll
