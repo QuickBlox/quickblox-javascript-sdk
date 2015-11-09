@@ -1,16 +1,16 @@
 
 var dialogs = {};
 
-function onSystemMessageListener(notes) {
-  if (!notes.delay) {
-    switch (notes.extension.notification_type) {
+function onSystemMessageListener(message) {
+  if (!message.delay) {
+    switch (message.extension.notification_type) {
       case "1":
         // This is a notification about dialog creation
-        getAndShowNewDialog(notes.extension.dialog_id);
+        getAndShowNewDialog(message.extension.dialog_id);
         break;
       case "2":
         // This is a notification about dialog update
-        getAndUpdateDialog(notes.extension.dialog_id);
+        getAndUpdateDialog(message.extension.dialog_id);
         break;
       default:
         break;

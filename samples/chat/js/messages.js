@@ -90,6 +90,8 @@ function retrieveChatMessages(dialog, beforeDateSent){
   QB.chat.message.list(params, function(err, messages) {
     if (messages) {
 
+      console.log(messages);
+
       if(messages.items.length === 0) {
         $("#no-messages-label").removeClass('hide');
       } else {
@@ -106,7 +108,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
           var messageSenderLogin = getUserLoginById(messageSenderId);
 
           // send read status
-          if (item.read_ids.length === 1 && messageSenderId !== currentUser.id && currentDialog.type === 3) {
+          if (item.read_ids.indexOf(currentUser.id) === -1) {
             sendReadStatus(messageSenderId, messageId, currentDialog._id);
           }
 
@@ -121,14 +123,14 @@ function retrieveChatMessages(dialog, beforeDateSent){
 
           $('#messages-list').prepend(messageHtml);
 
-          // Get read and delivered statuses from server and show
-          if (item.delivered_ids.length > 1 && messageSenderId === currentUser.id) {
-            $('#delivered_'+messageId).fadeIn(200);
-          } else if (item.read_ids.length > 1 && messageSenderId === currentUser.id) {
+
+          // Show delivered statuses
+          if (item.read_ids.length > 1 && messageSenderId === currentUser.id) {
             $('#delivered_'+messageId).fadeOut(100);
             $('#read_'+messageId).fadeIn(200);
-          } else if (messageSenderId === currentUser.id && currentDialog.type !== 3) {
-            $('#read_'+messageId).fadeIn(200);
+          } else if (item.delivered_ids.length > 1 && messageSenderId === currentUser.id) {
+            $('#delivered_'+messageId).fadeIn(100);
+            $('#read_'+messageId).fadeOut(200);
           }
 
           if (i > 5) {$('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));}
