@@ -346,8 +346,6 @@ function getAndUpdateDialog(updatedDialogId) {
   // get the dialog and users
   //
 
-console.log("getAndUpdateDialog");
-
   var dialogAlreadyExist = dialogs[updatedDialogId] !== null;
   console.log("dialog " + updatedDialogId + " already exist: " + dialogAlreadyExist);
 
