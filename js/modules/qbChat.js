@@ -17,6 +17,7 @@ if (isBrowser) {
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
+  Strophe.addNamespace('BLOCKING_COMMAND', 'urn:xmpp:blocking');
 }
 
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -36,6 +37,7 @@ function ChatProxy(service, webrtcModule, conn) {
   if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
+    this.blocklist = new BlocklistProxy(service);
 
     this._isLogout = false;
     this._isDisconnected = false;
@@ -258,8 +260,9 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 }
 
+
 /* Chat module: Core
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
 
   connect: function(params, callback) {
@@ -699,13 +702,14 @@ ChatProxy.prototype = {
 
 };
 
+
 /* Chat module: Roster
  *
  * Integration of Roster Items and Presence Subscriptions
  * http://xmpp.org/rfcs/rfc3921.html#int
  * default - Mutual Subscription
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function RosterProxy(service) {
   this.service = service;
   this.helpers = new Helpers();
@@ -833,12 +837,105 @@ RosterProxy.prototype = {
 
 };
 
+
+/* Chat module: Blocklist
+ *
+ * Blocking Command
+ * http://xmpp.org/extensions/xep-0191.html
+ *
+----------------------------------------------------------------------------- */
+function BlocklistProxy(service) {
+  this.service = service;
+  this.helpers = new Helpers();
+}
+
+BlocklistProxy.prototype = {
+
+  get: function(callback) {
+    var iq, self = this,
+        items, userId, blocklist = [];
+
+    iq = $iq({
+      type: 'get',
+      id: connection.getUniqueId('get_blocklist')
+    }).c('blocklist', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      items = stanza.getElementsByTagName('item');
+      for (var i = 0, len = items.length; i < len; i++) {
+        userId = self.helpers.getIdFromNode(items[i].getAttribute('jid'));
+        blocklist.push(userId);
+      }
+      callback(blocklist);
+    });
+  },
+
+  block: function(jidOrUserId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.jidOrUserId(jidOrUserId),
+        userId = this.helpers.getIdFromNode(userJid);
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('block_user')
+    }).c('block', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    }).c('item', {
+      jid: userJid
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback(userId);
+    });
+  },
+
+  unblock: function(jidOrUserId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.jidOrUserId(jidOrUserId),
+        userId = this.helpers.getIdFromNode(userJid);
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('unblock_user')
+    }).c('unblock', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    }).c('item', {
+      jid: userJid
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback(userId);
+    });
+  },
+
+  unblockAll: function(callback) {
+    var iq, self = this;
+
+    iq = $iq({
+      type: 'set',
+      id: connection.getUniqueId('unblock_all')
+    }).c('unblock', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    });
+
+    connection.sendIQ(iq, function(stanza) {
+      callback("All users are unblocked");
+    });
+  }
+
+};
+
+
 /* Chat module: Group Chat
  *
  * Multi-User Chat
  * http://xmpp.org/extensions/xep-0045.html
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function MucProxy(service) {
   this.service = service;
   this.helpers = new Helpers();
@@ -908,8 +1005,9 @@ MucProxy.prototype = {
 
 };
 
+
 /* Chat module: History
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 
 // Dialogs
 
@@ -1001,8 +1099,9 @@ MessageProxy.prototype = {
 
 };
 
+
 /* Helpers
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function Helpers() {}
 
 Helpers.prototype = {
@@ -1088,8 +1187,9 @@ Helpers.prototype = {
 
 module.exports = ChatProxy;
 
+
 /* Private
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function getError(code, detail) {
   var errorMsg = {
     code: code,
