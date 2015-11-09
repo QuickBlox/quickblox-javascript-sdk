@@ -46,7 +46,7 @@ function onMessage(userId, msg) {
     }
 
     showMessage(userId, msg, messageAttachmentFileId);
-  }  
+  }
   // Here we process the regular messages
   //
   updateDialogsList(msg.dialog_id, msg.body);
@@ -296,8 +296,8 @@ function showUserIsTypingView(isTyping, userId, dialogId) {
 // filter for current dialog
 function isMessageForCurrentDialog(userId, dialogId) {
   var result = false;
-  if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
-  result = true;
-  }
-  return result;
+	if (dialogId == currentDialog._id || (dialogId === null && currentDialog.type == 3 && opponentId == userId)) {
+		result = true;
+	}
+	return result;
 }

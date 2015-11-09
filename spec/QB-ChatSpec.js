@@ -22,7 +22,7 @@ describe('Chat API', function() {
       });
 
     }, LOGIN_TIMEOUT);
-
+    
 
     // 1-1 mesasging
     //
