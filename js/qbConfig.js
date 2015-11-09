@@ -20,10 +20,8 @@ var config = {
     s3Bucket: 'qbprod'
   },
   chatProtocol: {
-    // bosh: 'http://chat.quickblox.com:5280',
-    bosh: 'https://chat.quickblox.com:5281', // With SSL
-    // websocket: 'ws://chat.quickblox.com:5290',
-    websocket: 'wss://chat.quickblox.com:5291', // With SSL
+    bosh: 'https://chat.quickblox.com:5281',
+    websocket: 'wss://chat.quickblox.com:5291', 
     active: 2
   },
   iceServers: [
@@ -66,7 +64,6 @@ var config = {
   on: {
     sessionExpired: null
   },
-  ssl: true,
   timeout: null,
   debug: {mode: 0, file: null},
   addISOTime: false
