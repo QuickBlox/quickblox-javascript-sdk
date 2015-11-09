@@ -12,6 +12,13 @@ function PushNotificationsProxy(service) {
   this.service = service;
   this.subscriptions = new SubscriptionsProxy(service);
   this.events = new EventsProxy(service);
+
+  this.base64Encode = function(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
+  }
+
 }
 
 // Subscriptions
@@ -61,7 +68,7 @@ EventsProxy.prototype = {
   },
 
   list: function(callback) {
-    Utils.QBLog('[EventsProxy]', 'list', params);
+    Utils.QBLog('[EventsProxy]', 'list');
 
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
