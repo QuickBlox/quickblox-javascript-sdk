@@ -1,28 +1,24 @@
 var QBApp = {
-  appId: 92,
-  authKey: 'wJHdOcQSxXQGWx5',
-  authSecret: 'BTFsj7Rtt27DAmT'
+  appId: 28287,
+  authKey: 'XydaWcf8OO9xhGT',
+  authSecret: 'JZfqTspCvELAmnW'
 };
 
 var config = {
-  chatProtocol: {
-    websocket: 'wss://chat.quickblox.com:5291',
-    active: 2
-  },
   debug: true
 };
 
 var QBUser1 = {
-        id: 5449429,
-        name: 'chatsampleuser111',
-        login: 'chatsampleuser111',
-        pass: 'chatsampleuser111'
+        id: 6729114,
+        name: 'quickuser',
+        login: 'chatusr11',
+        pass: 'chatusr11'
     },
     QBUser2 = {
-        id: 5449431,
-        name: 'chatsampleuser112',
-        login: 'chatsampleuser112',
-        pass: 'chatsampleuser112'
+        id: 6729119,
+        name: 'bloxuser',
+        login: 'chatusr22',
+        pass: 'chatusr22'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
