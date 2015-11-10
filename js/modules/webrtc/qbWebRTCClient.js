@@ -54,19 +54,27 @@ WebRTCClient.prototype.sessions = {};
  * @param {array} Opponents IDs
  * @param {enum} Call type
  */
-WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
   var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
-      isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
+      callerID = cID || Helpers.getIdFromNode(this.connection.jid),
+      isIdentifyOpponents = false,
+      callType = ct || 2;
 
-  if(!isIdentifyOpponents) {
-    return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
+  if( !opponentsIDs ) {
+    throw new Error('Can\'t create a session without the opponentsIDs.');
+  }
+
+  isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
+
+  if( !isIdentifyOpponents ) {
+    return this._createAndStoreSession(null, callerID, opponentsIDs, callType);
   } else {
-    throw new Error("Can't create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.");
+    throw new Error('Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.');
   }
 };
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
+  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid));
 
   // set callbacks
   newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;

@@ -178,7 +178,6 @@ WebRTCSession.prototype.call = function(extension) {
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
-
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
   this.peerConnections[userID] = peer;
