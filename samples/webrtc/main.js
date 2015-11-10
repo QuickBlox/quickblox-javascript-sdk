@@ -248,7 +248,7 @@ $(document).ready(function() {
 //
 
 if (!QB.webrtc) {
-  updateInfoMessage('Webrtc is not avaible');
+  updateInfoMessage('WebRTC is not available in your browser');
 } else {
   QB.webrtc.onCallListener = function(session, extension) {
     console.log("onCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
