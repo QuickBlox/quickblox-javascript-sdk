@@ -14,7 +14,6 @@ var animationRequestID = null;
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
 $(document).ready(function() {
-
   buildUsers('.users-wrap.caller');
 
   // Choose user
@@ -248,96 +247,98 @@ $(document).ready(function() {
 // Callbacks
 //
 
+if (!QB.webrtc) {
+  updateInfoMessage('Webrtc is not avaible');
+} else {
+  QB.webrtc.onCallListener = function(session, extension) {
+    console.log("onCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
+    var callType = extension.callType;
 
-QB.webrtc.onCallListener = function(session, extension) {
-  console.log("onCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
-  var callType = extension.callType;
+    currentSession = session;
 
-  currentSession = session;
+    $('.incoming-callType').text(currentSession.callType === QB.webrtc.CallType.VIDEO ? 'Video' : 'Audio');
 
-  $('.incoming-callType').text(currentSession.callType === QB.webrtc.CallType.VIDEO ? 'Video' : 'Audio');
+    $('.caller').text(currentSession.callerID);
 
-  $('.caller').text(currentSession.callerID);
+    $('#ringtoneSignal')[0].play();
 
-  $('#ringtoneSignal')[0].play();
+    $('#accept, #reject').removeAttr('disabled');
+    $('#incomingCall').modal({
+      backdrop: 'static',
+      keyboard: false
+    });
+  };
 
-  $('#accept, #reject').removeAttr('disabled');
-  $('#incomingCall').modal({
-    backdrop: 'static',
-    keyboard: false
-  });
-};
+  QB.webrtc.onAcceptCallListener = function(session, extension) {
+    console.log("onAcceptCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
-QB.webrtc.onAcceptCallListener = function(session, extension) {
-  console.log("onAcceptCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
+    $('#callingSignal')[0].pause();
+    updateInfoMessage('User has accepted the call');
+  };
 
-  $('#callingSignal')[0].pause();
-  updateInfoMessage('User has accepted the call');
-};
-
-QB.webrtc.onRejectCallListener = function(session, extension) {
-  console.log("onRejectCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
+  QB.webrtc.onRejectCallListener = function(session, extension) {
+    console.log("onRejectCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
 
 
-  // $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
-  // $('#audiocall, #videocall').removeAttr('disabled');
-  // $('video').attr('src', '');
-  // $('#callingSignal')[0].pause();
-  // updateInfoMessage('User has rejected the call. Logged in as ' + caller.full_name);
-};
+    // $('.btn_mediacall, #hangup').attr('disabled', 'disabled');
+    // $('#audiocall, #videocall').removeAttr('disabled');
+    // $('video').attr('src', '');
+    // $('#callingSignal')[0].pause();
+    // updateInfoMessage('User has rejected the call. Logged in as ' + caller.full_name);
+  };
 
-QB.webrtc.onStopCallListener = function(session, extension) {
-  console.log("onStopCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
-};
+  QB.webrtc.onStopCallListener = function(session, extension) {
+    console.log("onStopCallListener. session: " + session + ". Extension: " + JSON.stringify(extension));
+  };
 
-QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
-  var videoElementID = 'remoteVideo_' + userID;
-  currentSession.attachMediaStream(videoElementID, stream);
-};
+  QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
+    var videoElementID = 'remoteVideo_' + userID;
+    currentSession.attachMediaStream(videoElementID, stream);
+  };
 
-QB.webrtc.onUserNotAnswerListener = function(session, userId) {
-  console.log("onUserNotAnswerListener. userId: " + userId);
-};
+  QB.webrtc.onUserNotAnswerListener = function(session, userId) {
+    console.log("onUserNotAnswerListener. userId: " + userId);
+  };
 
-QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
-  console.log("onSessionConnectionStateChangedListener: " + connectionState + ", userID: " + userID);
+  QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
+    console.log("onSessionConnectionStateChangedListener: " + connectionState + ", userID: " + userID);
 
-  // possible values of 'connectionState':
-  //
-  // QB.webrtc.SessionConnectionState.UNDEFINED
-  // QB.webrtc.SessionConnectionState.CONNECTING
-  // QB.webrtc.SessionConnectionState.CONNECTED
-  // QB.webrtc.SessionConnectionState.FAILED
-  // QB.webrtc.SessionConnectionState.DISCONNECTED
-  // QB.webrtc.SessionConnectionState.CLOSED
+    // possible values of 'connectionState':
+    //
+    // QB.webrtc.SessionConnectionState.UNDEFINED
+    // QB.webrtc.SessionConnectionState.CONNECTING
+    // QB.webrtc.SessionConnectionState.CONNECTED
+    // QB.webrtc.SessionConnectionState.FAILED
+    // QB.webrtc.SessionConnectionState.DISCONNECTED
+    // QB.webrtc.SessionConnectionState.CLOSED
 
-  if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
-    showRemoteVideoView(userID);
-  }
+    if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
+      showRemoteVideoView(userID);
+    }
 
-  if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
-    hideRemoteVideoView(userID);
-  }
+    if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+      hideRemoteVideoView(userID);
+    }
 
-  if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-    clearRemoteVideoView(userID);
-  }
-};
+    if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+      clearRemoteVideoView(userID);
+    }
+  };
 
-QB.webrtc.onSessionCloseListener = function(session){
-  console.log("onSessionCloseListener: " + session);
-  updateUIOnHungUp();
+  QB.webrtc.onSessionCloseListener = function(session){
+    console.log("onSessionCloseListener: " + session);
+    updateUIOnHungUp();
 
-  clearVolumeMeter();
+    clearVolumeMeter();
 
-  currentSession = null;
-  localStream = null;
+    currentSession = null;
+    localStream = null;
 
-  $(".remoteVideoWrap").remove();
-};
+    $(".remoteVideoWrap").remove();
+  };
 
-QB.webrtc.onUpdateCallListener = function(session, extension) {};
-
+  QB.webrtc.onUpdateCallListener = function(session, extension) {};
+}
 //
 // Helpers
 //

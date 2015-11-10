@@ -14,7 +14,6 @@ if(!isBrowser){
   var fs = require('fs');
 }
 
-
 // The object for type MongoDB.Bson.ObjectId
 // http://docs.mongodb.org/manual/reference/object-id/
 var ObjectId = {
@@ -148,7 +147,19 @@ var Utils = {
         this.loggers[i](arguments);
       }
     }
+  },
+  isWebRTCAvailble: function() {
+    /** Shims */
+    var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection,
+        IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate,
+        SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription,
+        isAvaible = true;
 
+    if(!RTCPeerConnection || !IceCandidate || !SessionDescription) {
+      isAvaible = false;
+    }
+
+    return isAvaible;
   }
 };
 
