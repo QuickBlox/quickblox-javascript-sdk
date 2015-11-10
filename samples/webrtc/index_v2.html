@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>QuickBlox JavaScript WebRTC sample</title>
+
+    <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="wrapper j-wrapper">
+        <header class="header">
+            <div class="header_inner clearfix">
+                <div class="logo">
+                    <img class="log_img" src="images/Logo_qb.svg"></img>
+                </div>
+
+                <h2 class="header_title">JavaScript WebRTC Sample</h2>
+            </div>
+        </header>
+
+        <aside class="console">
+            <div class="console_inner">
+                <p class="console_txt j-console"></p>
+            </div>
+        </aside>
+
+        <main class="main j-main">
+            <div class="main_inner">
+                <h5 class="main_title j-main_title"></h5>
+
+                <aside class="users">
+                    <ul class="users_list j-users_list">
+
+                    </ul>
+                </aside>
+
+                <div class="pl j-pl hidden">
+                    <div class="pl_inner clearfix">
+                        <aside class="pl_caller">
+                            <div>
+                                <button class="pl_btn j-call">Start Call</button>
+                            </div>
+
+                            <div class="pl_caller_inner">
+                                <p class="pl_caller_name">
+                                    You
+                                    <span class="j-caller_name"></span>
+                                </p>
+
+                                <div class="pl_video_wrap">
+                                    <video id="localVideo" class="qb-video">
+                                    </video>
+                                </div>
+                            </div>
+
+                            <div class="pl_caller_filter">
+                                <div class="pl_select">
+                                    <select class="pl_select_inner">
+                                        <option value="no">No Filter</option>
+                                        <option value="good">Filter Good</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <div class="main_video">
+                            <video class="main_screen qb-video">
+                            </video>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer j-footer invisible">
+            <div class="footer_inner">
+                <h4>
+                    <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc" class="link">Source</a>
+                </h4>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Templates -->
+    <script type="text/template" id="user_tpl">
+        <li class="users_item">
+            <button class="users_user j-user" data-id="<%= id %>" data-login="<%= login %>" data-password="<%= password %>" data-name="<%= full_name %>">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  width="33" height="32" viewBox="0 0 33 32" version="1.1">
+                  <g id="Slice" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <g transform="translate(-84.000000, -152.000000)" fill="#000000">
+                      <g id="user" transform="translate(84.000000, 152.000000)">
+                        <path fill="#<%=colour%>" d="M16.75 16C21.17 16 24.75 12.42 24.75 8 24.75 3.58 21.17 0 16.75 0 12.33 0 8.75 3.58 8.75 8 8.75 12.42 12.33 16 16.75 16L16.75 16ZM16.75 20C11.41 20 0.75 22.68 0.75 28L0.75 32 32.75 32 32.75 28C32.75 22.68 22.09 20 16.75 20L16.75 20Z" id="Shape-Copy" sketch:type="MSShapeGroup"/>
+                      </g>
+                    </g>
+                  </g>
+                </svg>
+
+                <p class="user_name"><%= full_name %></p>
+            </button>
+
+            <i class="users_btn_unchecked"></i>
+        </li>
+    </script>
+
+    <script type="text/template" id="login_tpl">
+        Login in as <%= name %> 
+        <button class='logout link j-logout'>Logout</button>
+    </script>
+    
+    <!-- Script -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+    <script src="volume-meter/volume-meter.js"></script>
+
+    <script src="../../quickblox.min.js"></script>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+
+    <!-- Screen sharing -->
+    <script src="https://cdn.rawgit.com/muaz-khan/WebRTC-Experiment/master/getScreenId.js/getScreenId.js"></script>
+</body>
+</html>

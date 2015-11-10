@@ -48,6 +48,8 @@ $(document).ready(function() {
       callees[userID] = userName;
     }
 
+    console.info(callees);
+
     var values = Object.keys(callees).map(function(v) { return callees[v]; });
     $('#calleesNames').text(values);
   });
