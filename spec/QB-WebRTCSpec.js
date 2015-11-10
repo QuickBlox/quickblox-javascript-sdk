@@ -1,6 +1,6 @@
 'use strict';
 
-describe('QuickBlox SDK - WebRTC', function() {
+describe('WebRTC API', function() {
   var session,
       LOGIN_TIMEOUT = 10000;
 
@@ -11,38 +11,13 @@ describe('QuickBlox SDK - WebRTC', function() {
   function getAllCalees(users) {
     var arr = [];
 
-    users.forEach(function(el) { 
-      arr.push(el.id); 
+    users.forEach(function(el) {
+      arr.push(el.id);
     });
 
     return arr;
   }
 
-  /**
-   * [getUserMedia - wrapper for made async in jasmine]
-   */
-  function getUserMediaAndCall(session, done) {
-    var mediaParams = {
-      audio: true,
-      video: true,
-      elemId: 'localVideo',
-      options: {
-        muted: true,
-        mirror: true
-      }
-    };
-
-    session.getUserMedia(mediaParams, function(err, stream) {
-      if(err) {
-        done.fail('getUserMedia: No access to mic or camera;');
-      } else {
-        session.call({});
-
-        expect(session.state).toEqual(2);
-        done();
-      }
-    });
-  }
 
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
@@ -56,7 +31,8 @@ describe('QuickBlox SDK - WebRTC', function() {
     });
   }, LOGIN_TIMEOUT);
 
-  it('should create the session;', function() {
+
+  it('can create a session', function() {
     session = QB.webrtc.createNewSession( getAllCalees(QBUsers), 2, QBUser2.id );
 
     expect(session).not.toBeNull();
@@ -64,7 +40,8 @@ describe('QuickBlox SDK - WebRTC', function() {
     expect(session.opponentsIDs).toEqual( jasmine.any(Array) );
   });
 
-  it('should not create a session with the same opponents;', function() {
+
+  it('can not create a session with the same opponents', function() {
     var errorString = 'Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.';
 
     expect(function() {
@@ -72,15 +49,41 @@ describe('QuickBlox SDK - WebRTC', function() {
     }).toThrow( new Error(errorString) );
   });
 
-  it('should create the call;', function(done) {
-    getUserMediaAndCall(session, done);
+
+  it('can get user media', function(done) {
+    var mediaParams = {
+      audio: true,
+      video: true,
+      options: {
+        muted: true,
+        mirror: true
+      }
+    };
+
+    session.getUserMedia(mediaParams, function(err, stream) {
+      if(err) {
+        done.fail('getUserMedia: No access to mic or camera;');
+      } else {
+        expect(stream).not.toBeNull();
+        done();
+      }
+    });
   });
 
-  it('should stop the session;', function(done) {
+  it('can call', function(done) {
+    session.call({});
+
+    expect(session.state).toEqual(2);
+    done();
+  });
+
+
+  it('can stop the session', function(done) {
     session.stop({});
 
     expect(session.state).toEqual(5);
 
     done();
   });
+
 });
