@@ -43,7 +43,7 @@ QB.createSession(QBUser, function(err, result) {
 
 					var uploadedFile = response;
 
-					showImage(uploadedFile.id, uploadedFile.name, false);
+					showImage(uploadedFile.uid, uploadedFile.name, false);
 				}
 			});
 		});
@@ -52,8 +52,8 @@ QB.createSession(QBUser, function(err, result) {
 });
 
 // show image
-function showImage(fileId, fileName, toAppend){
-	var imageHTML = "<img src='" + QB.content.privateUrl(fileId) + "' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
+function showImage(fileUID, fileName, toAppend){
+	var imageHTML = "<img src='" + QB.content.privateUrl(fileUID) + "' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
 	if (toAppend) {
 		$('#pictures').append(imageHTML);
 	} else {
@@ -73,7 +73,7 @@ function retrieveFiles() {
 			} else {
 				$.each(response.items, function(index, item){
 					var cur = this.blob;
-					showImage(cur.id, cur.name, true);
+					showImage(cur.uid, cur.name, true);
 				});
 
 				console.log(response);
