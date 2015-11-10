@@ -17,6 +17,7 @@ if (isBrowser) {
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
+  Strophe.addNamespace('BLOCKING_COMMAND', 'urn:xmpp:blocking');
 }
 
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -36,6 +37,7 @@ function ChatProxy(service, webrtcModule, conn) {
   if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
+    this.blocklist = new BlocklistProxy(service);
 
     this._isLogout = false;
     this._isDisconnected = false;
@@ -258,8 +260,9 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 }
 
+
 /* Chat module: Core
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
 
   connect: function(params, callback) {
@@ -699,13 +702,14 @@ ChatProxy.prototype = {
 
 };
 
+
 /* Chat module: Roster
  *
  * Integration of Roster Items and Presence Subscriptions
  * http://xmpp.org/rfcs/rfc3921.html#int
  * default - Mutual Subscription
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function RosterProxy(service) {
   this.service = service;
   this.helpers = new Helpers();
@@ -833,12 +837,154 @@ RosterProxy.prototype = {
 
 };
 
+
+/* Chat module: Blocklist
+ *
+ * Blocking Command
+ * http://xmpp.org/extensions/xep-0191.html
+ *
+----------------------------------------------------------------------------- */
+function BlocklistProxy(service) {
+  this.service = service;
+  this.helpers = new Helpers();
+}
+
+BlocklistProxy.prototype = {
+
+  get: function(callback) {
+    var iq, self = this,
+        blocklist = [];
+
+    iq = $iq({
+      type: 'get',
+      id: connection.getUniqueId('get_blocklist')
+    }).c('blocklist', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    });
+
+    connection.sendIQ(iq, function(stanzaResult) {
+      var items = stanzaResult.getElementsByTagName('blocklist')[0].getElementsByTagName('item');
+
+      var index;
+      for (index = 0; index < items.length; ++index) {
+        var item = items[index];
+        var userId = self.helpers.getIdFromNode(item.getAttribute('jid'));
+        if(userId){
+          blocklist.push(userId);
+        }
+      }
+
+      callback(null, blocklist);
+
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject, null);
+      }else{
+        callback(getError(408), null)
+      }
+    });
+
+  },
+
+  block: function(userId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.getUserJid(userId),
+        userJidGroupChat = this.helpers.getUserNickWithMucDomain(userId);
+
+    // JID Matching info http://xmpp.org/extensions/xep-0191.html#matching
+    //
+    // we use the following:
+    // 1-1 chat block: <user@domain> (any resource matches)
+    // Group chat block: <domain/resource> (only that resource matches)
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('block_user')
+    }).c('block', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    }).c('item', {
+      jid: userJid
+    }).up().c('item', {
+      jid: userJidGroupChat
+    });
+
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
+    });
+
+  },
+
+  unblock: function(userId, callback) {
+    var iq, self = this,
+        userJid = this.helpers.getUserJid(userId),
+        userJidGroupChat = this.helpers.getUserNickWithMucDomain(userId);
+
+    iq = $iq({
+      from: connection.jid,
+      type: 'set',
+      id: connection.getUniqueId('unblock_user')
+    }).c('unblock', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    }).c('item', {
+      jid: userJid
+    }).up().c('item', {
+      jid: userJidGroupChat
+    });
+
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
+    });
+
+  },
+
+  unblockAll: function(callback) {
+    var iq, self = this;
+
+    iq = $iq({
+      type: 'set',
+      id: connection.getUniqueId('unblock_all')
+    }).c('unblock', {
+      xmlns: Strophe.NS.BLOCKING_COMMAND
+    });
+
+    connection.sendIQ(iq, function(stanzaResult) {
+      callback(null);
+    }, function(stanzaError){
+      if(stanzaError){
+        var errorObject = getErrorFromXMLNode(stanzaError);
+        callback(errorObject);
+      }else{
+        callback(getError(408))
+      }
+    });
+
+  }
+
+};
+
+
 /* Chat module: Group Chat
  *
  * Multi-User Chat
  * http://xmpp.org/extensions/xep-0045.html
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function MucProxy(service) {
   this.service = service;
   this.helpers = new Helpers();
@@ -908,8 +1054,9 @@ MucProxy.prototype = {
 
 };
 
+
 /* Chat module: History
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 
 // Dialogs
 
@@ -1001,8 +1148,9 @@ MessageProxy.prototype = {
 
 };
 
+
 /* Helpers
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function Helpers() {}
 
 Helpers.prototype = {
@@ -1041,8 +1189,15 @@ Helpers.prototype = {
     return recipient;
   },
 
-  getUserJid: function(id, appId) {
-    return id + '-' + appId + '@' + config.endpoints.chat;
+  getUserJid: function(userId, appId) {
+    if(!appId){
+      return userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    }
+    return userId + '-' + appId + '@' + config.endpoints.chat;
+  },
+
+  getUserNickWithMucDomain: function(userId) {
+    return config.endpoints.muc + '/' + userId;
   },
 
   getIdFromNode: function(jid) {
@@ -1088,17 +1243,40 @@ Helpers.prototype = {
 
 module.exports = ChatProxy;
 
+
 /* Private
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
+function getErrorFromXMLNode(stanzaError) {
+  var errorElement = stanzaError.getElementsByTagName('error')[0];
+  var errorCode = parseInt(errorElement.getAttribute('code'));
+  var errorText = errorElement.getElementsByTagName('text')[0].textContent;
+  return getError(errorCode, errorText);
+}
+
 function getError(code, detail) {
   var errorMsg = {
     code: code,
     status: 'error',
-    message: code === 401 ? 'Unauthorized' : 'Unprocessable Entity',
     detail: detail
   };
 
-  Utils.QBLog('[ChatProxy]', 'error: ', detail);
+  var msg;
+  switch (code) {
+    case 401:
+      msg = 'Unauthorized';
+      break;
+    case 422:
+      msg = 'Unprocessable Entity';
+      break;
+    case 408:
+      msg = 'Timeout';
+      break;
+    default:
+      msg = 'Bad request'; // 400
+  }
+
+  errorMsg['message'] = msg;
+
   return errorMsg;
 }
 
