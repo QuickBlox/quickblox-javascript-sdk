@@ -1,3 +1,4 @@
+'use strict';
 /*
  * Config file used to test SDK
  *
@@ -24,3 +25,42 @@ var QBUser1 = {
     pass: 'js_jasmine2',
     login: 'js_jasmine2'
   };
+
+var QBUsers = [
+  {
+    id: 5395743,
+    login: 'webuser111',
+    password: 'webuser111',
+    full_name: 'User 1'
+  },
+  {
+    id: 5395747,
+    login: 'webuser112',
+    password: 'webuser112',
+    full_name: 'User 2'
+  },
+  {
+    id: 5681538,
+    login: 'webuser113',
+    password: 'webuser113',
+    full_name: 'User 3'
+  },
+  {
+    id: 5719859,
+    login: 'webuser114',
+    password: 'webuser114',
+    full_name: 'User 4'
+  },
+  {
+    id: 5719860,
+    login: 'webuser115',
+    password: 'webuser115',
+    full_name: 'User 5'
+  },
+  {
+    id: 5719866,
+    login: 'webuser116',
+    password: 'webuser116',
+    full_name: 'User 6'
+  }
+];

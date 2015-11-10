@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-27 */
+/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-29 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -2064,6 +2064,8 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   //
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+
+  // timer to detect network blips
   this.reconnectTimer = 0;
 
   this.iceCandidates = [];
@@ -2206,23 +2208,26 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   	var connectionState = null;
 
   	if (newIceConnectionState === 'checking'){
-        this.state = RTCPeerConnection.State.CHECKING;
-        connectionState = Helpers.SessionConnectionState.CONNECTING;
+      this.state = RTCPeerConnection.State.CHECKING;
+      connectionState = Helpers.SessionConnectionState.CONNECTING;
   	} else if (newIceConnectionState === 'connected'){
-        this.state = RTCPeerConnection.State.CONNECTED;
-        connectionState = Helpers.SessionConnectionState.CONNECTED;
+      this._clearWaitingReconnectTimer();
+      this.state = RTCPeerConnection.State.CONNECTED;
+      connectionState = Helpers.SessionConnectionState.CONNECTED;
   	} else if (newIceConnectionState === 'completed'){
+      this._clearWaitingReconnectTimer();
       this.state = RTCPeerConnection.State.COMPLETED;
       connectionState = Helpers.SessionConnectionState.COMPLETED;
     } else if (newIceConnectionState === 'failed'){
-        this.state = RTCPeerConnection.State.FAILED;
-        connectionState = Helpers.SessionConnectionState.FAILED;
+      this.state = RTCPeerConnection.State.FAILED;
+      connectionState = Helpers.SessionConnectionState.FAILED;
   	} else if (newIceConnectionState === 'disconnected'){
-        this.state = RTCPeerConnection.State.DISCONNECTED;
-        connectionState = Helpers.SessionConnectionState.DISCONNECTED;
+      this._startWaitingReconnectTimer();
+      this.state = RTCPeerConnection.State.DISCONNECTED;
+      connectionState = Helpers.SessionConnectionState.DISCONNECTED;
   	} else if (newIceConnectionState === 'closed'){
-        this.state = RTCPeerConnection.State.CLOSED;
-        connectionState = Helpers.SessionConnectionState.CLOSED;
+      this.state = RTCPeerConnection.State.CLOSED;
+      connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
   	if(connectionState != null){
@@ -2231,7 +2236,13 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   }
 };
 
-RTCPeerConnection.prototype.clearWaitingReconnectTimer = function() {
+
+//
+/////////////////////////////////// Private ////////////////////////////////////
+//
+
+
+RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
   if(this.waitingReconnectTimeoutCallback){
     Helpers.trace('_clearWaitingReconnectTimer');
     clearTimeout(this.waitingReconnectTimeoutCallback);
@@ -2239,7 +2250,7 @@ RTCPeerConnection.prototype.clearWaitingReconnectTimer = function() {
   }
 };
 
-RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
+RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
   var self = this,
       timeout = config.webrtc.disconnectTimeInterval * 1000,
       waitingReconnectTimeoutCallback = function() {
@@ -2247,7 +2258,6 @@ RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
 
         clearTimeout(self.waitingReconnectTimeoutCallback);
 
-        self._clearDialingTimer();
         self.release();
 
         self.delegate._closeSessionIfAllConnectionsClosed();
@@ -2257,11 +2267,6 @@ RTCPeerConnection.prototype.startWaitingReconnectTimer = function() {
 
   this.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
 };
-
-//
-/////////////////////////////////// Private ////////////////////////////////////
-//
-
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
   if(this.dialingTimer){
@@ -2305,6 +2310,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 };
 
 module.exports = RTCPeerConnection;
+
 },{"../../qbConfig":15,"./qbWebRTCHelpers":10}],9:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
@@ -2362,19 +2368,26 @@ WebRTCClient.prototype.sessions = {};
  * @param {array} Opponents IDs
  * @param {enum} Call type
  */
-WebRTCClient.prototype.createNewSession = function(opponentsIDs, callType) {
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct) {
   var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
-      isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
+      callType = ct || 2,
+      isIdentifyOpponents = false;
 
-  if(!isIdentifyOpponents) {
+  if( !opponentsIDs ) {
+    throw new Error('Can\'t create a session without the opponentsIDs.');
+  }
+
+  isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
+
+  if( !isIdentifyOpponents ) {
     return this._createAndStoreSession(null, Helpers.getIdFromNode(this.connection.jid), opponentsIDs, callType);
   } else {
-    throw new Error("Can't create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.");
+    throw new Error('Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.');
   }
 };
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid))
+  var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid));
 
   // set callbacks
   newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
@@ -2832,7 +2845,6 @@ WebRTCSession.prototype.call = function(extension) {
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
-
   var peer = this._createPeer(userID, 'offer');
   peer.addLocalStream(this.localStream);
   this.peerConnections[userID] = peer;
@@ -3141,7 +3153,6 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
-    peerConnection._clearDialingTimer();
     peerConnection.release();
   }else{
     Helpers.traceError("Ignore 'OnReject', there is no information about peer connection by some reason.");
@@ -3156,7 +3167,6 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   if (userID === self.initiatorID) {
     if( Object.keys(self.peerConnections).length ) {
       Object.keys(self.peerConnections).forEach(function(key) {
-        self.peerConnections[key]._clearDialingTimer();
         self.peerConnections[key].release();
       });
     } else {
@@ -3165,7 +3175,6 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
   } else {
     var pc = self.peerConnections[userID];
     if(pc){
-      pc._clearDialingTimer();
       pc.release();
     }else{
       Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
@@ -3221,7 +3230,6 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 
   this._clearWaitingOfferOrAnswerTimer();
 
-  peerConnection._clearDialingTimer();
   peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
@@ -3248,18 +3256,6 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
 
   if (typeof self.onSessionConnectionStateChangedListener === 'function'){
     self.onSessionConnectionStateChangedListener(self, userID, connectionState);
-  }
-
-  if (connectionState === Helpers.SessionConnectionState.CONNECTED || connectionState === Helpers.SessionConnectionState.COMPLETED) {
-    self.peerConnections[userID].clearWaitingReconnectTimer();
-  }
-
-  if (connectionState === Helpers.SessionConnectionState.DISCONNECTED) {
-    self.peerConnections[userID].startWaitingReconnectTimer();
-  }
-
-  if (connectionState === Helpers.SessionConnectionState.CLOSED){
-    //peer = null;
   }
 };
 
