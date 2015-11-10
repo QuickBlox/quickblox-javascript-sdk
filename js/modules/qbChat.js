@@ -101,7 +101,7 @@ function ChatProxy(service, webrtcModule, conn) {
     //
     if(composing || paused){
       if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(composing != null, userId, dialogId);
+        Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
       }
       return true;
     }
@@ -111,11 +111,11 @@ function ChatProxy(service, webrtcModule, conn) {
     if (marker) {
       if (delivered) {
         if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
-          self.onDeliveredStatusListener(delivered.getAttribute('id'), dialogId, userId);
+          Utils.safeCallbackCall(self.onDeliveredStatusListener, delivered.getAttribute('id'), dialogId, userId);
         }
       } else {
         if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-          self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
+          Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
         }
       }
       return true;
@@ -146,7 +146,7 @@ function ChatProxy(service, webrtcModule, conn) {
       message.markable = 1;
     }
     if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
-      self.onMessageListener(userId, message);
+      Utils.safeCallbackCall(self.onMessageListener, userId, message);
     }
 
     // we must return true to keep the handler alive
@@ -161,7 +161,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
     if (!type) {
       if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-        self.onContactListListener(userId);
+        Utils.safeCallbackCall(self.onContactListListener, userId);
     } else {
 
       // subscriptions callbacks
@@ -178,7 +178,7 @@ function ChatProxy(service, webrtcModule, conn) {
           });
         } else {
           if (typeof self.onSubscribeListener === 'function')
-            self.onSubscribeListener(userId);
+            Utils.safeCallbackCall(self.onSubscribeListener, userId);
         }
         break;
       case 'subscribed':
@@ -193,7 +193,7 @@ function ChatProxy(service, webrtcModule, conn) {
             ask: null
           };
           if (typeof self.onConfirmSubscribeListener === 'function')
-            self.onConfirmSubscribeListener(userId);
+            Utils.safeCallbackCall(self.onConfirmSubscribeListener, userId);
         }
         break;
       case 'unsubscribed':
@@ -202,7 +202,7 @@ function ChatProxy(service, webrtcModule, conn) {
           ask: null
         };
         if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+          Utils.safeCallbackCall(self.onRejectSubscribeListener, userId);
         break;
       case 'unsubscribe':
         roster[userId] = {
@@ -214,7 +214,7 @@ function ChatProxy(service, webrtcModule, conn) {
         break;
       case 'unavailable':
         if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-          self.onContactListListener(userId, type);
+          Utils.safeCallbackCall(self.onContactListListener, userId, type);
         break;
       }
 
@@ -253,7 +253,7 @@ function ChatProxy(service, webrtcModule, conn) {
         extension: extraParamsParsed.extension
       };
 
-      self.onSystemMessageListener(message);
+      Utils.safeCallbackCall(self.onSystemMessageListener, message);
     }
 
     return true;
@@ -343,7 +343,7 @@ ChatProxy.prototype = {
 
               // fire 'onReconnectListener'
               if (typeof self.onReconnectListener === 'function'){
-                self.onReconnectListener();
+                Utils.safeCallbackCall(self.onReconnectListener);
               }
             }
           });
@@ -360,7 +360,7 @@ ChatProxy.prototype = {
 
         // fire 'onDisconnectedListener' only once
         if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
-          self.onDisconnectedListener();
+          Utils.safeCallbackCall(self.onDisconnectedListener);
         }
 
         self._isDisconnected = true;
