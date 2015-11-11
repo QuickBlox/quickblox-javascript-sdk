@@ -32,6 +32,7 @@ describe('Chat API', function() {
       var self = this;
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
+
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual("chat");
         expect(userId).toEqual(QBUser1.id);
