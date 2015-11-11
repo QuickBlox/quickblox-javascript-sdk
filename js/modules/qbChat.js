@@ -18,6 +18,7 @@ if (isBrowser) {
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
   Strophe.addNamespace('BLOCKING_COMMAND', 'urn:xmpp:blocking');
+  Strophe.addNamespace('CHAT_STATES', 'http://jabber.org/protocol/chatstates');
 }
 
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -480,7 +481,7 @@ ChatProxy.prototype = {
     });
 
     msg.c('composing', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
+      xmlns: Strophe.NS.CHAT_STATES
     });
 
     connection.send(msg);
@@ -497,7 +498,7 @@ ChatProxy.prototype = {
     });
 
     msg.c('paused', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
+      xmlns: Strophe.NS.CHAT_STATES
     });
 
     connection.send(msg);
