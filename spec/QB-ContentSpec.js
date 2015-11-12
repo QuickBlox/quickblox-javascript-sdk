@@ -15,16 +15,26 @@ describe('Content API', function() {
       } else {
         expect(session).not.toBeNull();
         token = session.token;
-        
         done();
       }
     });
 
-  }, REST_REQUEST_TIMEOUT);
+  });
 
+  it('can list content objects', function(done) {
+    QB.content.list(function(err, res) {
+      if (err) {
+        done.fail("List content objects error: " + JSON.stringify(err));
+      }else{
+        expect(result).not.toBeNull();
+        expect(result.items.length).toBeGreaterThan(0);
+        done();
+      }
+    });
+  });
 
-  // Private Url
-  //
+  
+
   it('can access privat URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         privateURL = QB.content.privateUrl(fileUID);
@@ -33,8 +43,6 @@ describe('Content API', function() {
   });
 
 
-  // Private Url
-  //
   it('can access public URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         publicUrl = QB.content.publicUrl(fileUID);

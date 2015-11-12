@@ -56,7 +56,7 @@ describe('Users API', function() {
     });
   });
 
-  describe('Create, update & delete Users', function(){
+  describe('Create, update & delete Users', function(done){
 
     var user, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
 
@@ -93,7 +93,7 @@ describe('Users API', function() {
       });
     });
 
-    it('can delete a user (' + login + ')', function() {
+    it('can delete a user (' + login + ')', function(done) {
       QB.users.delete(user.id, function(err, res){
         if (err) {
           done.fail("Delete user error: " + JSON.stringify(err));
