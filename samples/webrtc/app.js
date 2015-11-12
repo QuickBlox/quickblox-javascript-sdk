@@ -434,10 +434,12 @@
                 console.log('Extension: ' + JSON.stringify(extension));
             console.groupEnd();
 
+            var userInfo = _.findWhere(QBUsers, {id: session.initiatorID});
+
             app.currentSession = session;
 
             /** set name of caller */
-            $('.j-ic_initiator').text( app.currentSession.initiatorID );
+            $('.j-ic_initiator').text( userInfo.full_name );
 
             $(ui.modal.income_call).modal({
                 backdrop: 'static',
