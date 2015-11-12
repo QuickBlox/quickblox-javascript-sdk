@@ -423,7 +423,7 @@ time, mark, audio, video {
     }
 
     .main_video_vid {
-        min-height: 380px;
+        min-height: 430px;
     }
 }
 
@@ -464,6 +464,16 @@ time, mark, audio, video {
 
 .callees__callee_inner {
     margin: 0 0 10px 0;
+}
+
+.callees__callee_video {
+    border: 4px solid transparent;
+
+    transition: border-color .3s ease;
+}
+
+.callees__callee_video.active {
+    border-color: #41cc44;
 }
 
 @media all and (min-width: 780px) {

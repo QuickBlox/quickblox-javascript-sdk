@@ -1,7 +1,7 @@
-// ;(function(window, $) {
-//     'use strict';
+;(function(window, $) {
+    'use strict';
     /** when DOM is ready */
-    // $(function() {
+    $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -324,15 +324,33 @@
             }
         });
 
+        /** set main video */
+        $(document).on('click', '.j-callees__callee_video', function() {
+            var $that = $(this),
+                userID = +($(this).data('user'));
+
+            if( app.currentSession.peerConnections[userID].stream ) {
+                if( $that.hasClass('active') ) {
+                    $that.removeClass('active');
+                    app.currentSession.detachMediaStream('main_video');
+                } else {
+                    $('.j-callees__callee_video').removeClass('active');
+                    $that.addClass('active');
+                    
+                    app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userID].stream);
+                }
+            }
+        });
+
         /** Change filter for filter */
         $(document).on('change', '.j-filter', function() {
             var val = $.trim( $(this).val() ),
-                $localVideo = $('#localVideo');
+                $video = $('.fw-video');
 
-            $localVideo.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
+            $video.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
             
             if(val !== 'no') {
-                $localVideo.addClass( val );
+                $video.addClass( val );
             }
         });
 
@@ -390,6 +408,8 @@
 
             /** delete callee video elements */
             $('.j-callee').remove();
+            /** clear main video */
+            app.currentSession.detachMediaStream('main_video');
         };
 
         QB.webrtc.onUserNotAnswerListener = function(session, userId) {
@@ -457,6 +477,8 @@
                 console.log('Session: ' + session);
             console.groupEnd();
 
+            app.currentSession.peerConnections[userID].stream = stream;
+
             app.currentSession.attachMediaStream('remote_video_' + userID, stream);
         };
 
@@ -486,5 +508,5 @@
                 ui.toggleRemoteVideoView(userID, 'clear');
             }
         };
-//     });
-// }(window, jQuery));
+    });
+}(window, jQuery));

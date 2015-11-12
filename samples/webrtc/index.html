@@ -109,7 +109,7 @@
                         </aside>
 
                         <div class="main_video">
-                            <video class="main_video_vid fw-video">
+                            <video id="main_video" class="j-main_video_vid main_video_vid fw-video">
                             </video>
                         </div>
                     </div>
@@ -213,7 +213,7 @@
     <script type="text/template" id="callee_video">
         <div class="callees__callee j-callee">
             <div class="callees__callee_inner">
-                <video class="callees__callee_video fw-video fw-video-wait" id="remote_video_<%=userID%>"></video>
+                <video class="j-callees__callee_video callees__callee_video fw-video fw-video-wait" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
             </div>
 
             <p class="callees__callee_name"><%=name%></p>
@@ -230,8 +230,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
-    <script src="volume-meter/volume-meter.js"></script>
 
     <script src="../../quickblox.min.js"></script>
 
