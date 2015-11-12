@@ -218,6 +218,7 @@ $(document).ready(function() {
   //
   $('.btn_camera_off').on('click', function() {
     var action = $(this).data('action');
+    
     if (action === 'mute') {
       $(this).addClass('off').data('action', 'unmute');
       currentSession.mute('video');
