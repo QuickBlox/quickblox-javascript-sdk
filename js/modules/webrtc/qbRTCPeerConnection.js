@@ -21,7 +21,6 @@ var offerOptions = {
   offerToReceiveVideo: 1
 };
 
-// unused for now
 RTCPeerConnection.State = {
   NEW: 1,
   CONNECTING: 2,

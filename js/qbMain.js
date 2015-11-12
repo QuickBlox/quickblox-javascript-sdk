@@ -23,7 +23,7 @@ QuickBlox.prototype = {
     var Proxy = require('./qbProxy');
     this.service = new Proxy();
 
-    // include dependencies
+    /** include dependencies */
     var Auth = require('./modules/qbAuth'),
         Users = require('./modules/qbUsers'),
         Chat = require('./modules/qbChat'),
@@ -33,13 +33,17 @@ QuickBlox.prototype = {
         Data = require('./modules/qbData');
 
     if (isBrowser) {
-      // create Strophe Connection object
+      /** create Strophe Connection object */
       var Connection = require('./qbStrophe');
       var conn = new Connection();
 
-      // add WebRTC API
-      var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
-      this.webrtc = new WebRTCClient(this.service, conn || null);
+      /** add WebRTC API if API is avaible */
+      if( Utils.isWebRTCAvailble() ) {
+        var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+        this.webrtc = new WebRTCClient(this.service, conn || null);
+      } else {
+        this.webrtc = false;
+      }
     }
 
     this.auth = new Auth(this.service);
