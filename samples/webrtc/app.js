@@ -324,6 +324,18 @@
             }
         });
 
+        /** Change filter for filter */
+        $(document).on('change', '.j-filter', function() {
+            var val = $.trim( $(this).val() ),
+                $localVideo = $('#localVideo');
+
+            $localVideo.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
+            
+            if(val !== 'no') {
+                $localVideo.addClass( val );
+            }
+        });
+
         $(window).on('resize', function() {
             ui.setPositionFooter();
         });
