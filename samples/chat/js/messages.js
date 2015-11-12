@@ -27,6 +27,7 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
+
   // check if it's a mesasges for current dialog
   //
   if (isMessageForCurrentDialog(userId, msg.dialog_id)){

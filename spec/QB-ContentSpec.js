@@ -1,61 +1,45 @@
-describe('QuickBlox SDK - Content', function() {
-  var needsInit = true;
+var REST_REQUEST_TIMEOUT = 3000;
+var token;
 
-  beforeEach(function(){
-    var done;
-    if (needsInit) {
-      runs(function(){
-        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-        done = false;
-        QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-          expect(err).toBeNull();
-          expect(result).not.toBeNull();
-          done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-        },'create session', TIMEOUT);
-    }
+describe('Content API', function() {
+
+  // beforeAll
+  //
+  beforeAll(function(done){
+
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+
+    QB.createSession(QBUser1, function(err, session) {
+      if (err) {
+        done.fail("Create session error: " + JSON.stringify(err));
+      } else {
+        expect(session).not.toBeNull();
+        token = session.token;
+        
+        done();
+      }
+    });
+
+  }, REST_REQUEST_TIMEOUT);
+
+
+  // Private Url
+  //
+  it('can access privat URL', function() {
+    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
+        privateURL = QB.content.privateUrl(fileUID);
+
+    expect(privateURL).toEqual("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token="+token);
   });
 
-  describe('Basic CRUD functions', function() {
 
-    it('can create a content object', function() {
-      var done,error, result;
-      runs(function(){
-        var data = {content_type: 'image/png', name: 'myAvatar.png', public: true, tag_list: 'user_pics,avatar'};
-        QB.content.create(data, function(err, res) {
-          error = err;
-          result = res;
-          done = true;
-        });
-      });
-      waitsFor(function(){ return done; }, 'create content instance', TIMEOUT );
-      runs(function() {
-        expect(error).toBeNull();
-        expect(result).not.toBeNull();
-        expect(result.name).toBe('myAvatar.png');
-      });
-    });
+  // Private Url
+  //
+  it('can access public URL', function() {
+    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
+        publicUrl = QB.content.publicUrl(fileUID);
 
-    it('can list content objects', function() {
-      var done,error, result;
-      runs(function(){
-        QB.content.list(function(err, res) {
-          error = err;
-          result = res;
-          done = true;
-        });
-      });
-      waitsFor(function(){ return done; }, 'create content instance', TIMEOUT );
-      runs(function() {
-        expect(error).toBeNull();
-        expect(result).not.toBeNull();
-        expect(result.items.length).toBeGreaterThan(0);
-      });
-    });
-
+    expect(publicUrl).toEqual("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000");
   });
 
 });
