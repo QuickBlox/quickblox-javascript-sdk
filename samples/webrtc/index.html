@@ -1,135 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QuickBlox JavaScript WebRTC sample</title>
-  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>QuickBlox JavaScript WebRTC sample</title>
+
+    <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <!-- use http://una.im/CSSgram/ for filters -->
+    <link rel="stylesheet" href="https://cssgram-cssgram.netdna-ssl.com/cssgram.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrapper webrtcp2p">
-    <header class="header">
-      <div class="center">
-        <h1 class="title">
-          <a href="http://quickblox.com/"><img class="logo" src="images/logo-quickblox.png" alt="QuickBlox Samples"></a>
-          JavaScript WebRTC Sample
-        </h1>
-      </div>
-    </header>
+    <div class="wrapper j-wrapper">
+        <header class="header">
+            <div class="fw-inner clearfix">
+                <div class="header__logo">
+                    <img class="header__logo_img" src="images/Logo_qb.svg">
+                    </img>
+                </div>
 
-    <section class="info">
-      <p id="infoMessage" class="center">
-        Login as any user on this computer and another user on another computer
-      </p>
-    </section>
+                <h2 class="header__title">JavaScript WebRTC Sample</h2>
+            </div>
+        </header>
 
-    <section class="choose-user center">
-      <h3 class="light text-center">Choose a user to login with.</h3>
-      <div class="users-wrap caller">
-        <!-- Append users here -->
-      </div>
-    </section>
+        <aside class="console">
+            <div class="fw-inner">
+                <p class="console__txt j-console">
+                </p>
+            </div>
+        </aside>
 
-    <section class="connecting center hidden">
-      <div class="spinner">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-        <div class="bounce3"></div>
-      </div>
-    </section>
+        <main class="main j-main">
+            <div class="fw-inner">
+                <aside class="users">
+                    <h5 class="users__title j-users__title"></h5>
 
-    <section class="chat center hidden">
-      <section class="choose-recipient center">
-        <h3 class="light text-center">Choose users to call</h3>
-        <div class="users-wrap recipient">
-          <!-- Append users here -->
+                    <ul class="users__list j-users__list"></ul>
+                </aside>
+
+                <div class="pl j-pl hidden">
+                    <div class="clearfix">
+                        <aside class="caller">
+                            <div>
+                                <button class="caller__call j-call">Start Call</button>
+                                <button class="caller__call caller__call-hangup j-hangup hidden">End Call</button>
+                            </div>
+
+                            <div class="caller__inner">
+                                <p class="caller__name">
+                                    You
+                                </p>
+
+                                <div class="caller__action">
+                                    <video id="localVideo" class="fw-video">
+                                    </video>
+
+                                    <div class="caller__ctrl">
+                                        <button class="caller__ctrl_btn caller__ctrl_btn-cam j-caller__ctrl" data-target="video">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" version="1.1">
+                                              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <g transform="translate(-290.000000, -80.000000)">
+                                                  <g transform="translate(288.000000, 78.000000)">
+                                                    <path d="M0 0L24 0 24 24 0 24 0 0Z"/>
+                                                    <path class="svg_icon" d="M21 6.5L17 10.5 17 7C17 6.45 16.55 6 16 6L9.82 6 21 17.18 21 6.5 21 6.5ZM3.27 2L2 3.27 4.73 6 4 6C3.45 6 3 6.45 3 7L3 17C3 17.55 3.45 18 4 18L16 18C16.21 18 16.39 17.92 16.54 17.82L19.73 21 21 19.73 3.27 2 3.27 2Z"/>
+                                                  </g>
+                                                </g>
+                                              </g>
+                                            </svg>
+                                        </button>
+
+                                        <button class="caller__ctrl_btn caller__ctrl_btn-mic j-caller__ctrl" data-target="audio">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" version="1.1">
+                                              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                <g transform="translate(-347.000000, -80.000000)">
+                                                  <g transform="translate(344.000000, 78.000000)">
+                                                    <path d="M0 0L24 0 24 24 0 24 0 0Z"/>
+                                                    <path class="svg_icon" d="M19 11L17.3 11C17.3 11.74 17.14 12.43 16.87 13.05L18.1 14.28C18.66 13.3 19 12.19 19 11L19 11ZM14.98 11.17C14.98 11.11 15 11.06 15 11L15 5C15 3.34 13.66 2 12 2 10.34 2 9 3.34 9 5L9 5.18 14.98 11.17 14.98 11.17ZM4.27 3L3 4.27 9.01 10.28 9.01 11C9.01 12.66 10.34 14 12 14 12.22 14 12.44 13.97 12.65 13.92L14.31 15.58C13.6 15.91 12.81 16.1 12 16.1 9.24 16.1 6.7 14 6.7 11L5 11C5 14.41 7.72 17.23 11 17.72L11 21 13 21 13 17.72C13.91 17.59 14.77 17.27 15.54 16.82L19.73 21 21 19.73 4.27 3 4.27 3Z"/>
+                                                  </g>
+                                                </g>
+                                              </g>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="caller__filter">
+                                        <select class="caller__filter_select j-filter">
+                                            <option value="no">No Filter</option>
+                                            <option value="aden">Aden</option>
+                                            <option value="reyes">Reyes</option>
+                                            <option value="perpetua">Perpetua</option>
+                                            <option value="inkwell">Inkwell</option>
+                                            <option value="toaster">Toaster</option>
+                                            <option value="walden">Walden</option>
+                                            <option value="hudson">Hudson</option>
+                                            <option value="gingham">Gingham</option>
+                                            <option value="mayfair">Mayfair</option>
+                                            <option value="lofi">Lofi</option>
+                                            <option value="xpro2">Xpro2</option>
+                                            <option value="_1977">1977</option>
+                                            <option value="brooklyn">Brooklyn</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <div class="main_video">
+                            <video class="main_video_vid fw-video">
+                            </video>
+                        </div>
+                    </div>
+
+                    <div class="callees j-callees">
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer j-footer invisible">
+            <div class="footer__inner">
+                <h4>
+                    <a class="fw-link" href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc">
+                        Source
+                    </a>
+                </h4>
+            </div>
+        </footer>
+
+        <!-- MODALS -->
+        <div class="modal fade" id="error_no_calles" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Error</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="text-danger">Please choose users to call</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </section>
-      <div class="streams">
-        <div class="localControls">
-          <span id="callerName"></span><br>
-          <canvas id="local-volume-meter"></canvas>
-          <video id="localVideo"></video>
-          <div class="mediacall-controls l-flexbox l-flexbox_flexcenter">
-            <button class="btn_mediacall btn_camera_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="images/icon-camera-off.png" alt="camera"></button>
-            <button class="btn_mediacall btn_mic_off" data-action="mute" disabled><img class="btn-icon_mediacall" src="images/icon-mic-off.png" alt="mic"></button>
-          </div>
+
+        <div class="modal fade" id="income_call" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>Call from user with id: <strong class="j-ic_initiator"></strong></h4>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default j-decline">Decline</button>
+                        <button type="button" class="btn btn-primary j-accept">Accept</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="remoteControls">
-          <span id="calleesNames"></span><br>
-          <!-- <video id="remoteVideo"></video> -->
-        </div>
-      </div>
-      <div class="controls">
-        <button id="audiocall" type="button" class="btn btn-default">
-          <img class="icon-audiocall" src="images/icon-audiocall.png" alt="QuickBlox Samples">Audio call
-        </button>
-        <button id="videocall" type="button" class="btn btn-default">
-          <img class="icon-videocall" src="images/icon-videocall.png" alt="QuickBlox Samples">Video call
-        </button>
-        <button id="screen_sharing" type="button" class="btn btn-default">
-          Screen sharing
-        </button>
-        <button id="hangup" type="button" class="btn btn-default" disabled>
-          <img class="icon-hangup" src="images/icon-hangup.png" alt="QuickBlox Samples">Hangup
-        </button>
-      </div>
-    </section>
 
-    <div class="push"></div>
+        <!-- SOUNDS -->
+        <audio id="callingSignal" loop preload="auto">
+            <source src="audio/calling.ogg"></source>
+            <source src="audio/calling.mp3"></source>
+        </audio>
 
-  </div>
+        <audio id="ringtoneSignal" loop preload="auto">
+            <source src="audio/ringtone.ogg"></source>
+            <source src="audio/ringtone.mp3"></source>
+        </audio>
 
-  <footer class="footer">
-    <div class="center">
-      Source:
-      <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc">
-        https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc
-      </a>
+        <audio id="endCallSignal" preload="auto">
+            <source src="audio/end_of_call.ogg"></source>
+            <source src="audio/end_of_call.mp3"></source>
+        </audio>
     </div>
-  </footer>
 
-  <section id="incomingCall" class="incoming modal fade">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span class="info-notice"><span class="incoming-callType"></span> Call from <span class="caller"></span></span>
+    <!-- TEMPLATES -->
+    <script type="text/template" id="user_tpl">
+        <li class="users__item">
+            <button class="users__user j-user" data-id="<%= id %>" data-login="<%= login %>" data-password="<%= password %>" data-name="<%= full_name %>">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  width="33" height="32" viewBox="0 0 33 32" version="1.1">
+                  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <g transform="translate(-84.000000, -152.000000)" fill="#000000">
+                      <g transform="translate(84.000000, 152.000000)">
+                        <path fill="#<%=colour%>" d="M16.75 16C21.17 16 24.75 12.42 24.75 8 24.75 3.58 21.17 0 16.75 0 12.33 0 8.75 3.58 8.75 8 8.75 12.42 12.33 16 16.75 16L16.75 16ZM16.75 20C11.41 20 0.75 22.68 0.75 28L0.75 32 32.75 32 32.75 28C32.75 22.68 22.09 20 16.75 20L16.75 20Z" />
+                      </g>
+                    </g>
+                  </g>
+                </svg>
+
+                <p class="user__name"><%= full_name %></p>
+            </button>
+
+            <i class="users__btn_unchecked"></i>
+        </li>
+    </script>
+
+    <script type="text/template" id="login_tpl">
+        Login in as <%= name %> 
+        <button class='fw-link j-logout'>Logout</button>
+    </script>
+
+    <script type="text/template" id="device_not_found">
+        Error: devices (camera or microphone) are not found.
+        &emsp;Login&nbsp;in&nbsp;as&nbsp;<%=name%>
+        <button class='fw-link j-logout'>Logout</button>
+    </script>
+
+    <script type="text/template" id="callee_video">
+        <div class="callees__callee j-callee">
+            <div class="callees__callee_inner">
+                <video class="callees__callee_video fw-video fw-video-wait" id="remote_video_<%=userID%>"></video>
+            </div>
+
+            <p class="callees__callee_name"><%=name%></p>
         </div>
-        <div class="modal-body">
-          <div class="incoming-call-controls l-flexbox l-flexbox_flexcenter">
-            <button id="reject" class="btn btn-default btn_decline">Decline</button>
-            <button id="accept" class="btn btn-default btn_accept">Accept</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    </script>
 
-  <audio id="callingSignal" loop>
-    <source src="audio/calling.ogg"></source>
-    <source src="audio/calling.mp3"></source>
-  </audio>
+    <script type="text/template" id="call_stop">
+        Call is stopped.&emsp;
+        Login&nbsp;in&nbsp;as&nbsp;<%=name%>
+        <button class='fw-link j-logout'>Logout</button>
+    </script>
 
-  <audio id="ringtoneSignal" loop>
-    <source src="audio/ringtone.ogg"></source>
-    <source src="audio/ringtone.mp3"></source>
-  </audio>
+    <!-- SCRIPT -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-  <audio id="endCallSignal">
-    <source src="audio/end_of_call.ogg"></source>
-    <source src="audio/end_of_call.mp3"></source>
-  </audio>
+    <script src="volume-meter/volume-meter.js"></script>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-  <script src="../../quickblox.min.js"></script>
-  <script src="config.js"></script>
-  <script src="main.js"></script>
-  <!-- Volume meter component -->
-  <script src="volume-meter/volume-meter.js"></script>
-  <!-- Screen sharing -->
-  <script src="https://cdn.rawgit.com/muaz-khan/WebRTC-Experiment/master/getScreenId.js/getScreenId.js"></script>
+    <script src="../../quickblox.min.js"></script>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
