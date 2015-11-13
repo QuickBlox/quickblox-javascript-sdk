@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.15.1 - 2015-10-16 */
+/* QuickBlox JavaScript SDK - v1.15.2 - 2015-11-13 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -1454,12 +1454,12 @@ ContentProxy.prototype = {
     });
   },
 
-  privateUrl: function (fileId){
-    return "https://api.quickblox.com/blobs/"+fileId+"/download?token="+this.service.getSession().token;
+  privateUrl: function (fileUID){
+    return "https://" + config.endpoints.api + "/blobs/" + fileUID + "?token=" + this.service.getSession().token;
   },
 
-  publicUrl: function (fileId){
-    return "https://api.quickblox.com/blobs/"+fileId+"/download";
+  publicUrl: function (fileUID){
+    return "https://" + config.endpoints.api + "/blobs/" + fileUID;
   }
 
 };
@@ -2854,7 +2854,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.15.1',
+  version: '1.15.2',
   creds: {
     appId: '',
     authKey: '',
