@@ -421,6 +421,8 @@
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                 console.groupEnd();
+
+                $('.j-callee_status_' + userId).text('User not answer');
             };
 
             QB.webrtc.onUpdateCallListener = function(session, extension) {
@@ -464,18 +466,22 @@
               ui.updateMsg({msg: 'accept_call'});
             };
 
-            QB.webrtc.onRejectCallListener = function(session, extension) {
+            QB.webrtc.onRejectCallListener = function(session, extension, userId) {
                 console.group('onRejectCallListener.');
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
+
+                $('.j-callee_status_' + userId).text('Reject');
             };
 
-            QB.webrtc.onStopCallListener = function(session, extension) {
+            QB.webrtc.onStopCallListener = function(session, extension, userId) {
                 console.group('onStopCallListener.');
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
+
+                $('.j-callee_status_' + userId).text('Hang up');
             };
 
             QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -496,8 +502,21 @@
                     console.log('Extension: ' + JSON.stringify(connectionState));
                 console.groupEnd();
 
-                if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
+                var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
+                    $calleeStatus = $('.j-callee_status_' + userID);
+
+                if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
+                    $calleeStatus.text(connectionStateName);
+                }
+
+                if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED) {
                     ui.toggleRemoteVideoView(userID, 'show');
+                    $calleeStatus.text(connectionStateName);
+                }
+
+                if(connectionState === QB.webrtc.SessionConnectionState.COMPLETED) {
+                    ui.toggleRemoteVideoView(userID, 'show');
+                    $calleeStatus.text(connectionStateName);
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
@@ -507,6 +526,7 @@
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                     ui.toggleRemoteVideoView(userID, 'clear');
                     $(ui.modal.income_call).modal('hide');
+                    document.getElementById(ui.sounds.rington).pause();
                 }
             };
         }

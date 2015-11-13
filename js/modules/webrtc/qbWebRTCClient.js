@@ -178,7 +178,7 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onRejectCallListener === 'function'){
-     this.onRejectCallListener(session, extensionClone);
+     this.onRejectCallListener(session, extensionClone, userID);
     }
 
     session.processOnReject(userID, extension);
@@ -197,7 +197,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
-      this.onStopCallListener(session, extensionClone);
+      this.onStopCallListener(session, extensionClone, userID);
     }
 
     session.processOnStop(userID, extension);
