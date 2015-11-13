@@ -13,7 +13,7 @@ describe('Chat API', function() {
 
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
-      QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
+      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
         if(err){
           done.fail("Chat login error: " + JSON.stringify(err));
         }else{
@@ -240,7 +240,7 @@ describe('Chat API', function() {
 
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
-      QB.createSession({login: QBUser1.login, password: QBUser1.pass},function (err, result){
+      QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
         if(err){
           done.fail("Creat session error: " + err);
         }else{

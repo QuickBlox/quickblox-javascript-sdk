@@ -12,53 +12,50 @@ describe('Users API', function() {
         expect(result).not.toBeNull();
         done();
       }
-    });
+    }, 3000);
 
   });
 
-  it('can list users', function(done){
+  it('can list users', function(){
     QB.users.listUsers(function(err, res){
       if(err){
-        done.fail("List users error: " + JSON.stringify(err));
+        fail("List users error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBeGreaterThan(0);
-        done();
       }
     });
   });
 
-  it('can filter users by email', function(done) {
+  it('can filter users by email', function() {
     var params = {filter: { field: 'email', param: 'eq', value: 'nobody@nowhere.com' }};
 
     QB.users.listUsers(params, function(err, res){
       if (err) {
-        done.fail("Filter users by email error: " + JSON.stringify(err));
+        fail("Filter users by email error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(0);
-        done();
       }
     });
   });
 
-  it('can filter users by login', function(done) {
+  it('can filter users by login', function() {
     var params = {filter: { field: 'login', param: 'eq', value: 'js_jasmine1' }};
     QB.users.listUsers(params, function(err, res){
       if (err) {
-        done.fail("Filter users by login error: " + JSON.stringify(err));
+        fail("Filter users by login error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(1);
         expect(res.items[0].user.id).toBe(6126733);
-        done();
       }
     });
   });
 
-  describe('Create, update & delete Users', function(done){
+  describe('Create, update & delete Users', function(){
 
-    var user, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
+    var userId, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
 
     it('can create a user (' + login + ')', function(done) {
       var params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
@@ -69,38 +66,36 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.full_name).toBe('QuickBlox Test');
-          user = res;
+          userId = res.id;
           done();
         }
       });
-    });
+    }, 3000);
 
-    it('can update a user (' + login + ')', function(done) {
+    it('can update a user (' + login + ')', function() {
       QB.login({login: login, password: 'someSecret'}, function(err, res){
         if (err) {
-          done.fail("User login error: " + JSON.stringify(err));
+          fail("User login error: " + JSON.stringify(err));
         }else{
-          QB.users.update(user.id, {full_name: 'Updated QuickBlox Test'}, function(err, updated){
+          QB.users.update(userId, {full_name: 'Updated QuickBlox Test'}, function(err, updated){
             if (err) {
-              done.fail("Update user error: " + JSON.stringify(err));
+              fail("Update user error: " + JSON.stringify(err));
             }else{
               expect(updated).not.toBeNull();
               expect(updated.full_name).toBe('Updated QuickBlox Test');
             }
           });
-          done();
         }
       });
     });
 
-    it('can delete a user (' + login + ')', function(done) {
-      QB.users.delete(user.id, function(err, res){
+    it('can delete a user (' + login + ')', function() {
+      QB.users.delete(userId, function(err, res){
         if (err) {
-          done.fail("Delete user error: " + JSON.stringify(err));
+          fail("Delete user error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
           expect(res).toBe(' ');
-          done();
         }
       });
     });
@@ -121,7 +116,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, 1500);
 
     it('can get users by email', function(done) {
       var params = { 'email': 'js_jasmine2@quickblox.com' };
@@ -135,7 +130,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, 1500);
 
     it('can get users by id', function(done) {
       var params = 6126741;
@@ -149,7 +144,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, 1500);
 
   });
 });
