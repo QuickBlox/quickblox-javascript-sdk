@@ -358,157 +358,154 @@
             ui.setPositionFooter();
         });
 
-        /**
-         * QB Event listener:
-         * chat:
-         * - onDisconnectedListener
-         * webrtc:
-         * - onSessionCloseListener
-         * - onUserNotAnswerListener
-         * - onUpdateCallListener
-         * - onCallListener
-         * - onAcceptCallListener
-         * - onRejectCallListener
-         * - onStopCallListener
-         * - onRemoteStreamListener
-         * - onUserNotAnswerListener
-         * - onSessionConnectionStateChangedListener
-         */
-        QB.chat.onDisconnectedListener = function() {
-            console.log('onDisconnectedListener.');
+        /** Before use WebRTC checking is WebRTC is avaible */
+        if (!QB.webrtc) {
+            ui.updateMsg( {msg: 'webrtc_not_avaible'} );
+        } else {
+            /**
+             * QB Event listener:
+             * chat:
+             * - onDisconnectedListener
+             * webrtc:
+             * - onSessionCloseListener
+             * - onUserNotAnswerListener
+             * - onUpdateCallListener
+             * - onCallListener
+             * - onAcceptCallListener
+             * - onRejectCallListener
+             * - onStopCallListener
+             * - onRemoteStreamListener
+             * - onSessionConnectionStateChangedListener
+             */
+            QB.chat.onDisconnectedListener = function() {
+                console.log('onDisconnectedListener.');
 
-            app.caller = {};
-            app.callees = [];
+                app.caller = {};
+                app.callees = [];
 
-            initializeUI();
-            ui.$panel.addClass('hidden');
+                initializeUI();
+                ui.$panel.addClass('hidden');
 
-            /** delete callee video elements */
-            $('.j-callee').remove();
+                /** delete callee video elements */
+                $('.j-callee').remove();
 
-            ui.setPositionFooter();
-        };
+                ui.setPositionFooter();
+            };
 
-        QB.webrtc.onSessionCloseListener = function(session){
-            console.log('onSessionCloseListener: ' + session);
+            QB.webrtc.onSessionCloseListener = function(session){
+                console.log('onSessionCloseListener: ' + session);
 
-            /** pause play call sound */
-            document.getElementById(ui.sounds.call).pause();
-            document.getElementById(ui.sounds.end).play();
+                /** pause play call sound */
+                document.getElementById(ui.sounds.call).pause();
+                document.getElementById(ui.sounds.end).play();
 
-            ui.showCallBtn();
+                ui.showCallBtn();
 
-            ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
 
-            /** delete blob from myself video */
-            document.getElementById('localVideo').src = '';
+                /** delete blob from myself video */
+                document.getElementById('localVideo').src = '';
 
-            /** disable controls (mute cam/min) */
-            ui.$ctrlBtn.removeClass('active');
+                /** disable controls (mute cam/min) */
+                ui.$ctrlBtn.removeClass('active');
 
-            /** delete callee video elements */
-            $('.j-callee').remove();
-            /** clear main video */
-            app.currentSession.detachMediaStream('main_video');
-        };
+                /** delete callee video elements */
+                $('.j-callee').remove();
+                /** clear main video */
+                app.currentSession.detachMediaStream('main_video');
+            };
 
-        QB.webrtc.onUserNotAnswerListener = function(session, userId) {
-            console.group('onUserNotAnswerListener.');
-                console.log('UserId: ' + userId);
-                console.log('Session: ' + session);
-            console.groupEnd();
+            QB.webrtc.onUserNotAnswerListener = function(session, userId) {
+                console.group('onUserNotAnswerListener.');
+                    console.log('UserId: ' + userId);
+                    console.log('Session: ' + session);
+                console.groupEnd();
 
-            app.currentSession.stop({});
-        };
+                app.currentSession.stop({});
+            };
 
-        QB.webrtc.onUpdateCallListener = function(session, extension) {
-            console.group('onUpdateCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + extension);
-            console.groupEnd();
-        };
+            QB.webrtc.onUpdateCallListener = function(session, extension) {
+                console.group('onUpdateCallListener.');
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + extension);
+                console.groupEnd();
+            };
 
-        QB.webrtc.onCallListener = function(session, extension) {
-            console.group('onCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
-            console.groupEnd();
+            QB.webrtc.onCallListener = function(session, extension) {
+                console.group('onCallListener.');
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + JSON.stringify(extension));
+                console.groupEnd();
 
-            var userInfo = _.findWhere(QBUsers, {id: session.initiatorID});
+                var userInfo = _.findWhere(QBUsers, {id: session.initiatorID});
 
-            app.currentSession = session;
+                app.currentSession = session;
 
-            /** set name of caller */
-            $('.j-ic_initiator').text( userInfo.full_name );
+                /** set name of caller */
+                $('.j-ic_initiator').text( userInfo.full_name );
 
-            $(ui.modal.income_call).modal({
-                backdrop: 'static',
-                keyboard: false
-            });
+                $(ui.modal.income_call).modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
 
-            document.getElementById(ui.sounds.rington).play();
-        };
+                document.getElementById(ui.sounds.rington).play();
+            };
 
-        QB.webrtc.onAcceptCallListener = function(session, extension) {
-            console.group('onAcceptCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
-            console.groupEnd();
+            QB.webrtc.onAcceptCallListener = function(session, extension) {
+                console.group('onAcceptCallListener.');
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + JSON.stringify(extension));
+                console.groupEnd();
 
-          document.getElementById(ui.sounds.call).pause();
-          ui.updateMsg({msg: 'accept_call'});
-        };
+              document.getElementById(ui.sounds.call).pause();
+              ui.updateMsg({msg: 'accept_call'});
+            };
 
-        QB.webrtc.onRejectCallListener = function(session, extension) {
-            console.group('onRejectCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
-            console.groupEnd();
-        };
+            QB.webrtc.onRejectCallListener = function(session, extension) {
+                console.group('onRejectCallListener.');
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + JSON.stringify(extension));
+                console.groupEnd();
+            };
 
-        QB.webrtc.onStopCallListener = function(session, extension) {
-            console.group('onStopCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
-            console.groupEnd();
-        };
+            QB.webrtc.onStopCallListener = function(session, extension) {
+                console.group('onStopCallListener.');
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + JSON.stringify(extension));
+                console.groupEnd();
+            };
 
-        QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
-            console.group('onRemoteStreamListener.');
-                console.log('userID: ' + userID);
-                console.log('Session: ' + session);
-            console.groupEnd();
+            QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
+                console.group('onRemoteStreamListener.');
+                    console.log('userID: ' + userID);
+                    console.log('Session: ' + session);
+                console.groupEnd();
 
-            app.currentSession.peerConnections[userID].stream = stream;
+                app.currentSession.peerConnections[userID].stream = stream;
 
-            app.currentSession.attachMediaStream('remote_video_' + userID, stream);
-        };
+                app.currentSession.attachMediaStream('remote_video_' + userID, stream);
+            };
 
-        QB.webrtc.onUserNotAnswerListener = function(session, userId) {
-            console.group('onUserNotAnswerListener.');
-                console.log('Session: ' + session);
-                console.log('UserId: ' + userId);
-            console.groupEnd();
-        };
+            QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
+                console.group('onSessionConnectionStateChangedListener.');
+                    console.log('UserID: ' + userID);
+                    console.log('Session: ' + session);
+                    console.log('Extension: ' + JSON.stringify(connectionState));
+                console.groupEnd();
 
-        QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
-            console.group('onSessionConnectionStateChangedListener.');
-                console.log('UserID: ' + userID);
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(connectionState));
-            console.groupEnd();
+                if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
+                    ui.toggleRemoteVideoView(userID, 'show');
+                }
 
-            if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED || connectionState === QB.webrtc.SessionConnectionState.COMPLETED){
-                ui.toggleRemoteVideoView(userID, 'show');
-            }
+                if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+                    ui.toggleRemoteVideoView(userID, 'hide');
+                }
 
-            if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
-                ui.toggleRemoteVideoView(userID, 'hide');
-            }
-
-            if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-                ui.toggleRemoteVideoView(userID, 'clear');
-            }
-        };
+                if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+                    ui.toggleRemoteVideoView(userID, 'clear');
+                }
+            };
+        }
     });
 }(window, jQuery));
