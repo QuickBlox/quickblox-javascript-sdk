@@ -421,8 +421,6 @@
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                 console.groupEnd();
-
-                app.currentSession.stop({});
             };
 
             QB.webrtc.onUpdateCallListener = function(session, extension) {
@@ -437,6 +435,9 @@
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
+
+                /** close previous modal if his is exist */
+                $(ui.modal.income_call).modal('hide');
 
                 var userInfo = _.findWhere(QBUsers, {id: session.initiatorID});
 
@@ -505,6 +506,7 @@
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                     ui.toggleRemoteVideoView(userID, 'clear');
+                    $(ui.modal.income_call).modal('hide');
                 }
             };
         }
