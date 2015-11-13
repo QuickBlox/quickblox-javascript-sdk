@@ -86,18 +86,19 @@
                         .append(msg);
                 },
                 toggleRemoteVideoView: function(userID, action) {
-                  var $video = $('#remote_video_' + userID);
+                    var $video = $('#remote_video_' + userID);
 
-                  if(_.isEmpty(app.currentSession) && $video.length){
-                    if(action === 'show') {
-                        $video.parents('.j-callee').removeClass('callees__callee-wait');
-                    } else if(action === 'hide') {
-                        $video.parents('.j-callee').addClass('callees__callee-wait');
-                    } else if(action === 'clear') {
-                        /** detachMediaStream take videoElementId */
-                        app.currentSession.detachMediaStream( 'remote_video_' + userID);
+                    if(!_.isEmpty(app.currentSession) && $video.length){
+                        if(action === 'show') {
+                            $video.parents('.j-callee').removeClass('callees__callee-wait');
+                        } else if(action === 'hide') {
+                            $video.parents('.j-callee').addClass('callees__callee-wait');
+                        } else if(action === 'clear') {
+                            /** detachMediaStream take videoElementId */
+                            app.currentSession.detachMediaStream('remote_video_' + userID);
+                            $video.removeClass('fw-video-wait');
+                        }
                     }
-                  }
                 }
             },
             app = {
