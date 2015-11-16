@@ -16,16 +16,18 @@ describe('Users API', function() {
 
   });
 
-  it('can list users', function(){
+  it('can list users', function(done){
     QB.users.listUsers(function(err, res){
       if(err){
-        fail("List users error: " + JSON.stringify(err));
+        done.fail("List users error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBeGreaterThan(0);
+        console.info('can list users');
+        done();
       }
     });
-  });
+  }, 1500);
 
   it('can filter users by email', function() {
     var params = {filter: { field: 'email', param: 'eq', value: 'nobody@nowhere.com' }};
@@ -36,19 +38,22 @@ describe('Users API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(0);
+        console.info('can filter users by email');
       }
     });
   });
 
-  it('can filter users by login', function() {
+  it('can filter users by login', function(done) {
     var params = {filter: { field: 'login', param: 'eq', value: 'js_jasmine1' }};
     QB.users.listUsers(params, function(err, res){
       if (err) {
-        fail("Filter users by login error: " + JSON.stringify(err));
+        done.fail("Filter users by login error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(1);
         expect(res.items[0].user.id).toBe(6126733);
+        console.info('can filter users by login');
+        done();
       }
     });
   });
@@ -67,15 +72,16 @@ describe('Users API', function() {
           expect(res).not.toBeNull();
           expect(res.full_name).toBe('QuickBlox Test');
           userId = res.id;
+          console.info('can create a user (' + login + ')');
           done();
         }
       });
     }, 3000);
 
-    it('can update a user (' + login + ')', function() {
+    it('can update a user (' + login + ')', function(done) {
       QB.login({login: login, password: 'someSecret'}, function(err, res){
         if (err) {
-          fail("User login error: " + JSON.stringify(err));
+          done.fail("User login error: " + JSON.stringify(err));
         }else{
           QB.users.update(userId, {full_name: 'Updated QuickBlox Test'}, function(err, updated){
             if (err) {
@@ -83,19 +89,23 @@ describe('Users API', function() {
             }else{
               expect(updated).not.toBeNull();
               expect(updated.full_name).toBe('Updated QuickBlox Test');
+              console.info('can update a user (' + login + ')');
+              done();
             }
           });
         }
       });
     });
 
-    it('can delete a user (' + login + ')', function() {
+    it('can delete a user (' + login + ')', function(done) {
       QB.users.delete(userId, function(err, res){
         if (err) {
-          fail("Delete user error: " + JSON.stringify(err));
+          done.fail("Delete user error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
           expect(res).toBe(' ');
+          console.info('can delete a user (' + login + ')');
+          done();
         }
       });
     });
@@ -113,10 +123,11 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.id).toBe(6126741);
+          console.info('can get users by login');
           done();
         }
       });
-    }, 1500);
+    });
 
     it('can get users by email', function(done) {
       var params = { 'email': 'js_jasmine2@quickblox.com' };
@@ -127,10 +138,11 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.id).toBe(6126741);
+          console.info('can get users by email');
           done();
         }
       });
-    }, 1500);
+    });
 
     it('can get users by id', function(done) {
       var params = 6126741;
@@ -141,10 +153,11 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.login).toBe('js_jasmine2');
+          console.info('can get users by id');
           done();
         }
       });
-    }, 1500);
+    });
 
   });
 });
