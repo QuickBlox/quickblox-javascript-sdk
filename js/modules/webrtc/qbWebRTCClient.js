@@ -159,7 +159,7 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onAcceptCallListener === 'function'){
-      this.onAcceptCallListener(session, extensionClone);
+      this.onAcceptCallListener(session, extensionClone, userID);
     }
 
     session.processOnAccept(userID, extension);
@@ -224,7 +224,7 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   var session = WebRTCClient.sessions[sessionId];
 
   if (typeof this.onUpdateCallListener === 'function'){
-    this.onUpdateCallListener(session, extension);
+    this.onUpdateCallListener(session, extension, userID);
   }
 
   session.processOnUpdate(userID, extension);

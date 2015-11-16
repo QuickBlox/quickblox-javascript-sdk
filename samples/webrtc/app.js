@@ -425,8 +425,9 @@
                 $('.j-callee_status_' + userId).text('User not answer');
             };
 
-            QB.webrtc.onUpdateCallListener = function(session, extension) {
+            QB.webrtc.onUpdateCallListener = function(session, extension, userId) {
                 console.group('onUpdateCallListener.');
+                    console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                     console.log('Extension: ' + extension);
                 console.groupEnd();
@@ -456,8 +457,9 @@
                 document.getElementById(ui.sounds.rington).play();
             };
 
-            QB.webrtc.onAcceptCallListener = function(session, extension) {
+            QB.webrtc.onAcceptCallListener = function(session, extension, userId) {
                 console.group('onAcceptCallListener.');
+                    console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
@@ -468,6 +470,7 @@
 
             QB.webrtc.onRejectCallListener = function(session, extension, userId) {
                 console.group('onRejectCallListener.');
+                    console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
@@ -477,6 +480,7 @@
 
             QB.webrtc.onStopCallListener = function(session, extension, userId) {
                 console.group('onStopCallListener.');
+                    console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
