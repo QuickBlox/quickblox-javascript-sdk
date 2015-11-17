@@ -16,8 +16,7 @@ var config = {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com',
-    turn: 'turnserver.quickblox.com',
-    s3Bucket: 'qbprod'
+    turn: 'turnserver.quickblox.com'
   },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',
