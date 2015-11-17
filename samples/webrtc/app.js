@@ -536,7 +536,7 @@
 
                 if(connectionState === QB.webrtc.SessionConnectionState.COMPLETED) {
                     ui.toggleRemoteVideoView(userID, 'show');
-                    $calleeStatus.text(connectionStateName);
+                    $calleeStatus.text('connected');
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
