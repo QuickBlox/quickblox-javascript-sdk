@@ -180,46 +180,6 @@ describe('Chat API', function() {
     }, MESSAGING_TIMEOUT);
 
 
-    describe('Block List API', function() {
-      // Block user
-      //
-      it("can block a user", function(done) {
-
-        var testUserId = 111;
-        QB.chat.blocklist.block(testUserId, function(error){
-          expect(error).toBeNull();
-          done();
-        });
-
-      }, IQ_TIMEOUT);
-
-      // Get block list
-      //
-      it("can get block list", function(done) {
-
-        QB.chat.blocklist.get(function(error, result){
-          expect(error).toBeNull();
-          done();
-        });
-
-      }, IQ_TIMEOUT);
-
-
-      // Unblock a user
-      //
-      it("can unblock a user", function(done) {
-
-        var testUserId = 111;
-        QB.chat.blocklist.unblock(testUserId, function(error){
-          expect(error).toBeNull();
-          done();
-        });
-
-      }, IQ_TIMEOUT);
-
-    });
-
-
     // afterAll
     //
     afterAll(function(done){
@@ -417,7 +377,7 @@ describe('Chat API', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {force: 1}, function(err, res) {
+      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
