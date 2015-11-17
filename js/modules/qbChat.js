@@ -62,7 +62,7 @@ function ChatProxy(service, webrtcModule, conn) {
  */
 
   // stanza callbacks (Message, Presence, IQ, SystemNotifications)
-
+  //
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
         to = stanza.getAttribute('to'),
