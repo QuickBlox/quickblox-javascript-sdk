@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.15.2",
+  "version": "1.16.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/qbMain.js",
   "license": [
@@ -37,7 +37,8 @@
   },
   "dependencies": {
     "crypto-js": "3.1.2-2",
-    "request": "^2.48.0"
+    "request": "^2.48.0",
+    "xml2js": "^0.4.13"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

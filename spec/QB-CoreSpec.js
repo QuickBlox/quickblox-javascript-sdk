@@ -1,253 +1,208 @@
-describe('QuickBlox SDK - Basic functions', function() {
-  var done;
+var REST_REQUESTS_TIMEOUT = 3000;
 
-  it('can be instantiate', function(){
-    expect(QB).not.toBeNull();
+describe('Session API', function() {
+
+
+  // Load config
+  //
+  beforeAll(function (){
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+
+    expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
+    expect(QB.service.qbInst.config.creds.authKey).toEqual(CREDENTIALS.authKey);
+    expect(QB.service.qbInst.config.creds.authSecret).toEqual(CREDENTIALS.authSecret);
+    expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
   });
 
-  describe('Default settings', function(){
-    var needsInit = true;
 
-    beforeEach(function (){
-      if (needsInit){
-        QB.init(DEFAULTS.creds.appId, DEFAULTS.creds.authKey, DEFAULTS.creds.authSecret, DEFAULTS.debug);
-        needsInit = false;
+  // Create a session
+  //
+  it('can create a session', function(done){
+    QB.createSession(function (err, session){
+      if(err){
+        done.fail("Create a session error: " + JSON.stringify(err));
+      }else{
+        expect(session).not.toBeNull();
+        expect(session.application_id).toEqual(CREDENTIALS.appId);
+        done();
       }
     });
-    it('knows api endpoints and paths', function(){
-      expect(QB.service.qbInst.config.urls).toEqual(DEFAULTS.urls);
-    });
-    it('has the correct default config', function(){
-      expect(QB.service.qbInst.config.creds).toEqual(DEFAULTS.creds);
-    });
-    it('has debug off by default', function(){
-      expect(QB.service.qbInst.config.debug).toBe(DEFAULTS.debug);
-    });
-  });
+  }, REST_REQUESTS_TIMEOUT);
 
-  describe('Configuration values', function(){
-    it('can load a config', function(){
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      expect(QB.service.qbInst.config.creds.appId).toEqual(CONFIG.appId);
-      expect(QB.service.qbInst.config.creds.authKey).toEqual(CONFIG.authKey);
-      expect(QB.service.qbInst.config.creds.authSecret).toEqual(CONFIG.authSecret);
-      expect(QB.service.qbInst.config.debug).toBe(CONFIG.debug);
-    });
-  });
 
-  describe('Session functions', function(){
-    var needsInit = true;
+  // Create a User session
+  //
+  it('can create a User session', function(done){
 
-    beforeEach(function (){
-      if (needsInit){
-        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-        needsInit = false;
+    QB.createSession(QBUser1, function (err, session){
+      if(err){
+        done.fail("Create a User session error: " + JSON.stringify(err));
+      }else{
+        expect(session).not.toBeNull();
+        expect(session.application_id).toEqual(CREDENTIALS.appId);
+        expect(session.user_id).toEqual(QBUser1.id);
+        done();
       }
     });
-
-    it('can create an API session', function(){
-      var done = false, session, error;
-      runs(function(){
-        QB.createSession(function (err, result){
-          error = err;
-          session = result;
-          done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create session', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(session).not.toBeNull();
-        console.log('session',session);
-        expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
-      });
-    });
-
-    it('can create an User session', function(){
-      var done = false, session, error;
-      runs(function(){
-        QB.createSession({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-          error = err;
-          session = result;
-          done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create session', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(session).not.toBeNull();
-        console.log('session',session);
-        expect(session.application_id).toBe(parseInt(CONFIG.appId,10));
-        expect(session.user_id).toBe(548154);
-      });
-    });
+  }, REST_REQUESTS_TIMEOUT);
 
 
-    it('can destroy a session', function(){
-      var done = false;
-      runs(function(){
-        QB.createSession(function (err, result){
-          expect(err).toBe(null);
-          QB.destroySession(function (err, result){
-            done = true;
-            expect(err).toBeNull();
-          });
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'delete session', TIMEOUT);
-      runs(function(){
-        expect(QB.service.qbInst.session).toBeNull();
-      });
-    });
+  // Destroy a session
+  //
+  it('can destroy a session', function(done){
 
-    it('can login a user', function(){
-      var done = false, user, error;
-      runs(function(){
-        QB.createSession(function (err, result){
-          expect(err).toBe(null);
-          QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-            error = err;
-            user = result;
-            done = true;
-          });
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'login user', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(user).not.toBeNull();
-        expect(user.login).toBe(VALID_USER);
-        expect(user.website).toBe('http://quickblox.com');
-      });
-    });
-
-    it('can login a user when initialised with just a valid token', function(){
-      var done = false, session, error;
-      needsInit = true;
-      runs(function(){
-        QB.createSession(function (err, result){
-          error = err;
-          if (err) {
-            done = true;
-          } else {
-            QB.init(result.token);
-            console.log(JSON.stringify(result));
-            QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-              error = err;
-              user = result;
-              done = true;
-            });
+    QB.createSession(function (err, result){
+      if(err){
+        done.fail("Destroy session error1: " + JSON.stringify(err));
+      }else{
+        QB.destroySession(function (err, result){
+          if(err){
+            done.fail("Destroy session error2: " + JSON.stringify(err));
+          }else{
+            expect(QB.service.qbInst.session).toBeNull();
+            done()
           }
         });
-      });
-      waitsFor(function(){
-        return done;
-      },'create session', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(user).not.toBeNull();
-        expect(user.login).toBe(VALID_USER);
-        expect(user.website).toBe('http://quickblox.com');
-      });
-    });
-
-    it('cannot login an invalid user', function(){
-      var done = false, result, error;
-      runs(function(){
-        QB.login({login: INVALID_USER, password: INVALID_PASSWORD}, function (err, res){
-          error = err;
-          result = res;
-          done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'invalid login user', TIMEOUT);
-      runs(function(){
-        expect(error).not.toBeNull();
-        expect(error.message).toBe('Unauthorized');
-      });
-    });
-
-    it('can logout a user', function(){
-      var done = false, user, error;
-      runs(function(){
-        QB.createSession(function (err, result){
-          expect(err).toBe(null);
-          QB.login({login: VALID_USER, password: VALID_PASSWORD}, function (err, result){
-            QB.logout(function(err, result){
-              error = err;
-              user = result;
-              done = true;
-            });
-          });
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'logout user', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-      });
-    });
-
-  });
-
-  describe('Social Integration', function(){
-    var needsInit = true;
-
-    beforeEach(function(){
-      if (needsInit){
-        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-        needsInit= false;
       }
     });
+  }, REST_REQUESTS_TIMEOUT);
 
-    it('Can create a session for a facebook user', function(){
-      var done = false, accessToken, result, error;
-      runs(function() {
-        FB.init({
-          appId: '143947239147878',
-          status: true,
-          cookie: true,
+
+  // Login a user
+  //
+  it('can login a user', function(done){
+
+    QB.createSession(function (err, result){
+      if(err){
+        done.fail("Login user error1: " + JSON.stringify(err));
+      }else{
+        QB.login(QBUser1, function (err, user){
+          if(err){
+            done.fail("Login user error2: " + JSON.stringify(err));
+          }else{
+            expect(user).not.toBeNull();
+            expect(user.login).toEqual(QBUser1.login);
+            expect(user.id).toEqual(QBUser1.id);
+            done()
+          }
         });
-        FB.getLoginStatus(function(response) {
-          if (response.status === 'connected') {
-            accessToken = response.authResponse.accessToken;
-            QB.createSession({provider:'facebook', keys: {token: accessToken}}, function(e,r){error = e; result = r; done = true;});
-          } else {
-            FB.Event.subscribe('auth.authResponseChange', function(response) {
-              if (response.status === 'connected'){
-                accessToken = response.authResponse.accessToken;
-                QB.createSession({provider:'facebook', keys: {token: accessToken}}, function(e,r){error = e; result = r; done = true;});
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+
+  // Login a user when initialised with just a valid token
+  //
+  it('can login a user when initialised with just a valid token', function(done){
+
+    QB.createSession(function (err, session){
+      if(err){
+        done.fail("Login user when initialised with just a valid token error1: " + JSON.stringify(err));
+      }else{
+        QB.init(session.token);
+
+        QB.login(QBUser1, function (err, user){
+          if(err){
+            done.fail("Login user when initialised with just a valid token error2: " + JSON.stringify(err));
+          }else{
+            expect(user).not.toBeNull();
+            expect(user.login).toEqual(QBUser1.login);
+            expect(user.id).toEqual(QBUser1.id);
+            done();
+          }
+        });
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+
+  // Logout a user
+  //
+  it('can logout a user', function(done){
+
+    QB.createSession(function (err, result){
+      if(err){
+        done.fail("Logout user error1: " + JSON.stringify(err));
+      }else{
+        QB.login(QBUser1, function (err, user){
+          if(err){
+            done.fail("Logout user error2: " + JSON.stringify(err));
+          }else{
+            QB.logout(function(err, result){
+              if(err){
+                done.fail("Logout user error3: " + JSON.stringify(err));
+              }else{
+                done();
               }
             });
-            FB.login();
           }
         });
-      });
-
-      waitsFor(function(){
-        return done;
-      },'facebook user', TIMEOUT);
-
-      runs(function(){
-        expect(error).toBeNull();
-        expect(result).not.toBeNull();
-        expect(result.token.length).toBeGreaterThan(0);
-        expect(result.id).toBeGreaterThan(0);
-        expect(result.nonce).toBeGreaterThan(0);
-      });
+      }
     });
+  }, REST_REQUESTS_TIMEOUT);
 
+
+  // Connect to custom domains
+  //
+  it('can connect to custom domains', function(){
+
+    // Test old way to set domains
+    //
+    var CUSTOMCONFIG = {
+      endpoints: {
+        api: 'apicustomdomain.quickblox.com',
+        chat: 'chatcustomdomain.quickblox.com',
+        muc: 'muc.chatcustomdomain.quickblox.com'
+      },
+      chatProtocol: {
+        bosh: 'https://chatcustomdomain.quickblox.com:5281',
+        websocket: 'wss://chatcustomdomain.quickblox.com:5291'
+      }
+    };
+
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CUSTOMCONFIG);
+
+    expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chatcustomdomain.quickblox.com');
+    expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chatcustomdomain.quickblox.com:5281');
+    expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain.quickblox.com:5291');
+
+
+    // Test new way to set domains
+    //
+    var CUSTOMCONFIG2 = {
+      endpoints: {
+         api: 'apicustomdomain2.quickblox.com',
+        chat: 'chatcustomdomain2.quickblox.com'
+      }
+    };
+
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CUSTOMCONFIG2);
+
+    expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chatcustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chatcustomdomain2.quickblox.com:5281');
+    expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain2.quickblox.com:5291');
+
+
+    // return back to default domains
+    //
+    var DEFAULTCONFIG = {
+      endpoints: {
+        api: 'api.quickblox.com',
+        chat: 'chat.quickblox.com'
+      }
+    };
+
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, DEFAULTCONFIG);
+
+    expect(QB.service.qbInst.config.endpoints.api).toEqual('api.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.chat).toEqual('chat.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chat.quickblox.com');
+    expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chat.quickblox.com:5281');
+    expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chat.quickblox.com:5291');
   });
 
 });

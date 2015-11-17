@@ -1,4 +1,4 @@
-/* QuickBlox JavaScript SDK - v1.15.2 - 2015-11-13 */
+/* QuickBlox JavaScript SDK - v1.16.0 - 2015-11-17 */
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.QB = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
@@ -47,7 +47,7 @@ AuthProxy.prototype = {
     message.signature = signMessage(message, config.creds.authSecret);
 
     Utils.QBLog('[AuthProxy]', 'createSession', message);
-    
+
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -119,7 +119,7 @@ function generateAuthMsg(params) {
       message.keys = {token: params.keys.token};
     }
     if (params.keys && params.keys.secret) {
-      messages.keys.secret = params.keys.secret;
+      message.keys.secret = params.keys.secret;
     }
   }
 
@@ -141,6 +141,7 @@ function signMessage(message, secret) {
 }
 
 },{"../qbConfig":9,"../qbUtils":13,"crypto-js/hmac-sha1":17}],2:[function(require,module,exports){
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -159,6 +160,8 @@ if (isBrowser) {
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
+  Strophe.addNamespace('BLOCKING_COMMAND', 'urn:xmpp:blocking');
+  Strophe.addNamespace('CHAT_STATES', 'http://jabber.org/protocol/chatstates');
 }
 
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -178,13 +181,13 @@ function ChatProxy(service, webrtcModule, conn) {
   if(isBrowser) {
     this.roster = new RosterProxy(service);
     this.muc = new MucProxy(service);
+
+    this._isLogout = false;
+    this._isDisconnected = false;
   }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
-  this.helpers = new Helpers;
-
-  // reconnect to chat if it wasn't the logout method
-  this._isLogout = false;
+  this.helpers = new Helpers();
 
 /*
  * User's callbacks (listener-functions):
@@ -241,7 +244,7 @@ function ChatProxy(service, webrtcModule, conn) {
     //
     if(composing || paused){
       if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-        self.onMessageTypingListener(composing != null, userId, dialogId);
+        Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
       }
       return true;
     }
@@ -251,11 +254,11 @@ function ChatProxy(service, webrtcModule, conn) {
     if (marker) {
       if (delivered) {
         if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
-          self.onDeliveredStatusListener(delivered.getAttribute('id'), dialogId, userId);
+          Utils.safeCallbackCall(self.onDeliveredStatusListener, delivered.getAttribute('id'), dialogId, userId);
         }
       } else {
         if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-          self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
+          Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
         }
       }
       return true;
@@ -286,7 +289,7 @@ function ChatProxy(service, webrtcModule, conn) {
       message.markable = 1;
     }
     if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
-      self.onMessageListener(userId, message);
+      Utils.safeCallbackCall(self.onMessageListener, userId, message);
     }
 
     // we must return true to keep the handler alive
@@ -301,7 +304,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
     if (!type) {
       if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-        self.onContactListListener(userId);
+        Utils.safeCallbackCall(self.onContactListListener, userId);
     } else {
 
       // subscriptions callbacks
@@ -318,7 +321,7 @@ function ChatProxy(service, webrtcModule, conn) {
           });
         } else {
           if (typeof self.onSubscribeListener === 'function')
-            self.onSubscribeListener(userId);
+            Utils.safeCallbackCall(self.onSubscribeListener, userId);
         }
         break;
       case 'subscribed':
@@ -333,7 +336,7 @@ function ChatProxy(service, webrtcModule, conn) {
             ask: null
           };
           if (typeof self.onConfirmSubscribeListener === 'function')
-            self.onConfirmSubscribeListener(userId);
+            Utils.safeCallbackCall(self.onConfirmSubscribeListener, userId);
         }
         break;
       case 'unsubscribed':
@@ -342,7 +345,7 @@ function ChatProxy(service, webrtcModule, conn) {
           ask: null
         };
         if (typeof self.onRejectSubscribeListener === 'function')
-          self.onRejectSubscribeListener(userId);
+          Utils.safeCallbackCall(self.onRejectSubscribeListener, userId);
         break;
       case 'unsubscribe':
         roster[userId] = {
@@ -354,7 +357,7 @@ function ChatProxy(service, webrtcModule, conn) {
         break;
       case 'unavailable':
         if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-          self.onContactListListener(userId, type);
+          Utils.safeCallbackCall(self.onContactListListener, userId, type);
         break;
       }
 
@@ -393,15 +396,16 @@ function ChatProxy(service, webrtcModule, conn) {
         extension: extraParamsParsed.extension
       };
 
-      self.onSystemMessageListener(message);
+      Utils.safeCallbackCall(self.onSystemMessageListener, message);
     }
 
     return true;
   };
 }
 
+
 /* Chat module: Core
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
 
   connect: function(params, callback) {
@@ -423,6 +427,7 @@ ChatProxy.prototype = {
     }
 
     connection.connect(userJid, params.password, function(status) {
+
       switch (status) {
       case Strophe.Status.ERROR:
         err = getError(422, 'Status.ERROR - An error has occurred');
@@ -446,6 +451,8 @@ ChatProxy.prototype = {
       case Strophe.Status.CONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
+        self._isDisconnected = false;
+
         connection.addHandler(self._onMessage, null, 'message', 'chat');
         connection.addHandler(self._onMessage, null, 'message', 'groupchat');
         connection.addHandler(self._onPresence, null, 'presence');
@@ -466,6 +473,7 @@ ChatProxy.prototype = {
             connection.send($pres().tree());
             connection.addTimedHandler(55 * 1000, self._autoSendPresence);
 
+
             if (typeof callback === 'function') {
               callback(null, roster);
             } else {
@@ -477,8 +485,10 @@ ChatProxy.prototype = {
                 self.muc.join(rooms[i]);
               }
 
-              if (typeof self.onReconnectListener === 'function')
-                self.onReconnectListener();
+              // fire 'onReconnectListener'
+              if (typeof self.onReconnectListener === 'function'){
+                Utils.safeCallbackCall(self.onReconnectListener);
+              }
             }
           });
         });
@@ -489,11 +499,15 @@ ChatProxy.prototype = {
         break;
       case Strophe.Status.DISCONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
+
         connection.reset();
 
-        if (typeof self.onDisconnectedListener === 'function'){
-          self.onDisconnectedListener();
+        // fire 'onDisconnectedListener' only once
+        if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
+          Utils.safeCallbackCall(self.onDisconnectedListener);
         }
+
+        self._isDisconnected = true;
 
         // reconnect to chat
         if (!self._isLogout) self.connect(params);
@@ -508,7 +522,7 @@ ChatProxy.prototype = {
   send: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id == null){
+    if(!message.id){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -567,7 +581,7 @@ ChatProxy.prototype = {
   sendSystemMessage: function(jid_or_user_id, message) {
     if(!isBrowser) throw unsupported;
 
-    if(message.id == null){
+    if(!message.id){
       message.id = Utils.getBsonObjectId();
     }
 
@@ -609,7 +623,7 @@ ChatProxy.prototype = {
     });
 
     msg.c('composing', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
+      xmlns: Strophe.NS.CHAT_STATES
     });
 
     connection.send(msg);
@@ -626,7 +640,7 @@ ChatProxy.prototype = {
     });
 
     msg.c('paused', {
-      xmlns: 'http://jabber.org/protocol/chatstates'
+      xmlns: Strophe.NS.CHAT_STATES
     });
 
     connection.send(msg);
@@ -767,7 +781,7 @@ ChatProxy.prototype = {
       // parse 'dialog_id'
       } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
         dialogId = extraParams.childNodes[i].textContent;
-        extension["dialog_id"] = dialogId;
+        extension['dialog_id'] = dialogId;
 
       // parse other user's custom parameters
       } else {
@@ -831,16 +845,17 @@ ChatProxy.prototype = {
 
 };
 
+
 /* Chat module: Roster
  *
  * Integration of Roster Items and Presence Subscriptions
  * http://xmpp.org/rfcs/rfc3921.html#int
  * default - Mutual Subscription
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function RosterProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 RosterProxy.prototype = {
@@ -965,15 +980,16 @@ RosterProxy.prototype = {
 
 };
 
+
 /* Chat module: Group Chat
  *
  * Multi-User Chat
  * http://xmpp.org/extensions/xep-0045.html
  *
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function MucProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 MucProxy.prototype = {
@@ -1025,7 +1041,7 @@ MucProxy.prototype = {
       type: "get"
     }).c("query", {
       xmlns: 'http://jabber.org/protocol/disco#items'
-    })
+    });
 
     connection.sendIQ(iq, function(stanza) {
       var items = stanza.getElementsByTagName('item');
@@ -1040,14 +1056,15 @@ MucProxy.prototype = {
 
 };
 
+
 /* Chat module: History
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 
 // Dialogs
 
 function DialogProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 DialogProxy.prototype = {
@@ -1081,9 +1098,9 @@ DialogProxy.prototype = {
     Utils.QBLog('[DialogProxy]', 'delete', id);
 
     if (arguments.length == 2) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE'}, params_or_callback);
     } else if (arguments.length == 3) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback}, callback);
     }
   }
 };
@@ -1092,7 +1109,7 @@ DialogProxy.prototype = {
 
 function MessageProxy(service) {
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 }
 
 MessageProxy.prototype = {
@@ -1115,16 +1132,27 @@ MessageProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
   },
 
-  delete: function(id, callback) {
-    Utils.QBLog('[MessageProxy]', 'delete', id);
+  delete: function(id, params_or_callback, callback) {
+    Utils.QBLog('[DialogProxy]', 'delete', id);
 
-    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, callback);
+    if (arguments.length == 2) {
+      this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+    } else if (arguments.length == 3) {
+      this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+    }
+  },
+
+  unreadCount: function(params, callback) {
+    Utils.QBLog('[MessageProxy]', 'unreadCount', params);
+
+    this.service.ajax({url: Utils.getUrl(messageUrl+'/unread'), data: params}, callback);
   }
 
 };
 
+
 /* Helpers
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
 function Helpers() {}
 
 Helpers.prototype = {
@@ -1163,8 +1191,15 @@ Helpers.prototype = {
     return recipient;
   },
 
-  getUserJid: function(id, appId) {
-    return id + '-' + appId + '@' + config.endpoints.chat;
+  getUserJid: function(userId, appId) {
+    if(!appId){
+      return userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+    }
+    return userId + '-' + appId + '@' + config.endpoints.chat;
+  },
+
+  getUserNickWithMucDomain: function(userId) {
+    return config.endpoints.muc + '/' + userId;
   },
 
   getIdFromNode: function(jid) {
@@ -1210,22 +1245,45 @@ Helpers.prototype = {
 
 module.exports = ChatProxy;
 
+
 /* Private
----------------------------------------------------------------------- */
+----------------------------------------------------------------------------- */
+function getErrorFromXMLNode(stanzaError) {
+  var errorElement = stanzaError.getElementsByTagName('error')[0];
+  var errorCode = parseInt(errorElement.getAttribute('code'));
+  var errorText = errorElement.getElementsByTagName('text')[0].textContent;
+  return getError(errorCode, errorText);
+}
+
 function getError(code, detail) {
   var errorMsg = {
     code: code,
     status: 'error',
-    message: code === 401 ? 'Unauthorized' : 'Unprocessable Entity',
     detail: detail
   };
 
-  Utils.QBLog('[ChatProxy]', 'error: ', detail);
+  var msg;
+  switch (code) {
+    case 401:
+      msg = 'Unauthorized';
+      break;
+    case 422:
+      msg = 'Unprocessable Entity';
+      break;
+    case 408:
+      msg = 'Timeout';
+      break;
+    default:
+      msg = 'Bad request'; // 400
+  }
+
+  errorMsg['message'] = msg;
+
   return errorMsg;
 }
 
 function getLocalTime() {
-  return (new Date).toTimeString().split(' ')[0];
+  return (new Date()).toTimeString().split(' ')[0];
 }
 
 },{"../../lib/strophe/strophe.min":15,"../qbConfig":9,"../qbUtils":13}],3:[function(require,module,exports){
@@ -1708,57 +1766,25 @@ module.exports = LocationProxy;
 /*
  * QuickBlox JavaScript SDK
  *
- * Messages Module
+ * Push Notifications Module
  *
  */
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-function MessagesProxy(service) {
+function PushNotificationsProxy(service) {
   this.service = service;
-  this.tokens = new TokensProxy(service);
   this.subscriptions = new SubscriptionsProxy(service);
   this.events = new EventsProxy(service);
-}
 
-// Push Tokens
-
-function TokensProxy(service){
-  this.service = service;
-}
-
-TokensProxy.prototype = {
-
-  create: function(params, callback){
-    Utils.QBLog('[TokensProxy]', 'create', params);
-
-    var message = {
-      push_token: {
-        environment: params.environment,
-        client_identification_sequence: params.client_identification_sequence
-      },
-      device: { platform: params.platform, udid: params.udid}
-    };
-
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens), type: 'POST', data: message},
-                      function(err, data){
-                        if (err) { callback(err, null);}
-                        else { callback(null, data.push_token); }
-                      });
-  },
-
-  delete: function(id, callback) {
-    Utils.QBLog('[TokensProxy]', 'delete', id);
-
-    this.service.ajax({url: Utils.getUrl(config.urls.pushtokens, id), type: 'DELETE', dataType:'text'},
-                      function (err, res) {
-                        if (err) {callback(err, null);}
-                        else {callback(null, true);}
-                        });
+  this.base64Encode = function(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
   }
 
-};
+}
 
 // Subscriptions
 
@@ -1807,7 +1833,7 @@ EventsProxy.prototype = {
   },
 
   list: function(callback) {
-    Utils.QBLog('[EventsProxy]', 'list', params);
+    Utils.QBLog('[EventsProxy]', 'list');
 
     this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
   },
@@ -1833,13 +1859,13 @@ EventsProxy.prototype = {
 
   delete: function(id, callback) {
     Utils.QBLog('[EventsProxy]', 'delete', id);
-    
+
     this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
   }
 
 };
 
-module.exports = MessagesProxy;
+module.exports = PushNotificationsProxy;
 
 },{"../qbConfig":9,"../qbUtils":13}],7:[function(require,module,exports){
 /*
@@ -1864,7 +1890,7 @@ function UsersProxy(service) {
 UsersProxy.prototype = {
 
   listUsers: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'listUsers', params);
+    Utils.QBLog('[UsersProxy]', 'listUsers', arguments.length > 1 ? params : "");
 
     var message = {}, filters = [], item;
 
@@ -2067,7 +2093,7 @@ function WebRTCProxy(service, conn) {
   connection = conn;
 
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -2496,7 +2522,7 @@ WebRTCProxy.prototype.close = function() {
   Object.keys(callers).forEach(function(key) {
     clearCallers(key);
   });
-}
+};
 
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
@@ -2506,7 +2532,12 @@ WebRTCProxy.prototype._close = function() {
     peer.close();
   }
   if (this.localStream) {
-    this.localStream.stop();
+    this.localStream.getAudioTracks().forEach(function (audioTrack) {
+      audioTrack.stop();
+    });
+    this.localStream.getVideoTracks().forEach(function (videoTrack) {
+      videoTrack.stop();
+    });
     this.localStream = null;
   }
 };
@@ -2768,7 +2799,7 @@ function trace(text) {
 }
 
 function getLocalTime() {
-  var arr = (new Date).toString().split(' ');
+  var arr = (new Date()).toString().split(' ');
   return arr.slice(1,5).join('-');
 }
 
@@ -2854,7 +2885,7 @@ Blob.prototype.download = function() {
  */
 
 var config = {
-  version: '1.15.2',
+  version: '1.16.0',
   creds: {
     appId: '',
     authKey: '',
@@ -2863,15 +2894,11 @@ var config = {
   endpoints: {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
-    muc: 'muc.chat.quickblox.com',
-    turn: 'turnserver.quickblox.com',
-    s3Bucket: 'qbprod'
+    muc: 'muc.chat.quickblox.com'
   },
   chatProtocol: {
-    // bosh: 'http://chat.quickblox.com:5280',
-    bosh: 'https://chat.quickblox.com:5281', // With SSL
-    // websocket: 'ws://chat.quickblox.com:5290',
-    websocket: 'wss://chat.quickblox.com:5291', // With SSL
+    bosh: 'https://chat.quickblox.com:5281',
+    websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
   iceServers: [
@@ -2914,17 +2941,22 @@ var config = {
   on: {
     sessionExpired: null
   },
-  ssl: true,
   timeout: null,
   debug: {mode: 0, file: null},
   addISOTime: false
 };
 
 config.set = function(options) {
+  if (typeof options.endpoints === 'object' && options.endpoints.chat) {
+    config.endpoints.muc = 'muc.'+options.endpoints.chat;
+    config.chatProtocol.bosh = 'https://'+options.endpoints.chat+':5281';
+    config.chatProtocol.websocket = 'wss://'+options.endpoints.chat+':5291';
+  }
+
   Object.keys(options).forEach(function(key) {
     if(key !== 'set' && config.hasOwnProperty(key)) {
       if(typeof options[key] !== 'object') {
-        config[key] = options[key]
+        config[key] = options[key];
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
           if(config[key].hasOwnProperty(nextkey)){
@@ -2933,7 +2965,7 @@ config.set = function(options) {
         });
       }
     }
-  })
+  });
 
 
 };
@@ -2972,7 +3004,7 @@ QuickBlox.prototype = {
         Chat = require('./modules/qbChat'),
         Content = require('./modules/qbContent'),
         Location = require('./modules/qbLocation'),
-        Messages = require('./modules/qbMessages'),
+        PushNotifications = require('./modules/qbPushNotifications'),
         Data = require('./modules/qbData');
 
     if (isBrowser) {
@@ -2990,7 +3022,7 @@ QuickBlox.prototype = {
     this.chat = new Chat(this.service, this.webrtc || null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
-    this.messages = new Messages(this.service);
+    this.pushnotifications = new PushNotifications(this.service);
     this.data = new Data(this.service);
 
     // Initialization by outside token
@@ -3030,7 +3062,7 @@ QB.QuickBlox = QuickBlox;
 
 module.exports = QB;
 
-},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbMessages":6,"./modules/qbUsers":7,"./modules/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12,"./qbUtils":13}],11:[function(require,module,exports){
+},{"./modules/qbAuth":1,"./modules/qbChat":2,"./modules/qbContent":3,"./modules/qbData":4,"./modules/qbLocation":5,"./modules/qbPushNotifications":6,"./modules/qbUsers":7,"./modules/qbWebRTC":8,"./qbConfig":9,"./qbProxy":11,"./qbStrophe":12,"./qbUtils":13}],11:[function(require,module,exports){
 /*
  * QuickBlox JavaScript SDK
  *
@@ -3075,7 +3107,7 @@ ServiceProxy.prototype = {
     // can add middleware here...
     var _this = this;
     if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-      config.on.sessionExpired(function(){next(error,response)}, retry);
+      config.on.sessionExpired(function(){next(error,response);}, retry);
     } else {
       if (error) {
         next(error, null);
@@ -3098,7 +3130,7 @@ ServiceProxy.prototype = {
     Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
     var _this = this,
-        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
+        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback); };
 
     var ajaxCall = {
       url: params.url,
@@ -3108,7 +3140,7 @@ ServiceProxy.prototype = {
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
 
-        if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
+        if (settings.url.indexOf('s3.amazonaws.com') === -1) {
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -3138,7 +3170,7 @@ ServiceProxy.prototype = {
     if(!isBrowser) {
 
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+        makingQBRequest = params.url.indexOf('s3.amazonaws.com') === -1 &&
                           _this.qbInst &&
                           _this.qbInst.session &&
                           _this.qbInst.session.token ||
@@ -3261,6 +3293,30 @@ var ObjectId = {
 };
 
 var Utils = {
+  safeCallbackCall: function() {
+    if(!isBrowser) throw unsupported;
+
+    var listenerString = arguments[0].toString(),
+        listenerName = listenerString.split('(')[0].split(' ')[1],
+        argumentsCopy = [], listenerCall;
+
+      for (var i = 0; i < arguments.length; i++) {
+        argumentsCopy.push(arguments[i]);
+      }
+
+      listenerCall = argumentsCopy.shift();
+
+    try {
+      listenerCall.apply(null, argumentsCopy);
+    } catch (err) {
+      if (listenerName === '') {
+        console.error('Error: ' + err);
+      }else{
+        console.error('Error in listener ' + listenerName + ': ' + err);
+      }
+    }
+  },
+
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
   },
@@ -3270,9 +3326,8 @@ var Utils = {
   },
 
   getUrl: function(base, id) {
-    var protocol = config.ssl ? 'https://' : 'http://';
     var resource = id ? '/' + id : '';
-    return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
+    return 'https://' + config.endpoints.api + '/' + base + resource + config.urls.type;
   },
 
   // Generating BSON ObjectId and converting it to a 24 character string representation
@@ -3317,9 +3372,9 @@ var Utils = {
     var consoleLoggerFunction = function(){
       var logger = function(args){
         console.log.apply(console, Array.prototype.slice.call(args));
-      }
+      };
       return logger;
-    }
+    };
 
     var fileLoggerFunction = function(){
       var logger = function(args){
@@ -3340,9 +3395,9 @@ var Utils = {
             }
           });
         }
-      }
+      };
       return logger;
-    }
+    };
 
     // Build loggers
     //

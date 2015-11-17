@@ -1,13 +1,15 @@
 // build html for messages
-function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId, messageId){
+function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachmentFileId, messageId, status){
   var messageAttach;
   if(attachmentFileId){
-      messageAttach = "<img src='http://api.quickblox.com/blobs/"+attachmentFileId+"/download.xml?token="+token+"' alt='attachment' class='attachments img-responsive' />"
+      messageAttach = '<img src="http://api.quickblox.com/blobs/'+attachmentFileId+'/download.xml?token='+token+'" alt="attachment" class="attachments img-responsive" />';
   }
+  var delivered = '<img class="icon-small" src="images/delivered.jpg" alt="" id="delivered_'+messageId+'">';
+  var read = '<img class="icon-small" src="images/read.jpg" alt="" id="read_'+messageId+'">';
 
   var messageHtml = '<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+"'"+messageId+"'"+')">'+'<time datetime="'+messageDateSent+
                     '" class="pull-right">'+jQuery.timeago(messageDateSent)+'</time>'+'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+
-                    '<p class="list-group-item-text">'+(messageAttach ? messageAttach : messageText)+'</p>'+'</div>';
+                    '<p class="list-group-item-text">'+(messageAttach ? messageAttach : messageText)+'</p>'+delivered+read+'</div>';
   return messageHtml;
 }
 
@@ -17,7 +19,7 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
       UnreadMessagesCountHide = '<span class="badge" style="display: none;">'+dialogUnreadMessagesCount+'</span>';
 
   var dialogHtml = '<a href="#" class="list-group-item inactive" id='+'"'+dialogId+'"'+' onclick="triggerDialog('+"'"+dialogId+"'"+')">'+
-                   (dialogUnreadMessagesCount == 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+'<h4 class="list-group-item-heading">'+
+                   (dialogUnreadMessagesCount === 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+'<h4 class="list-group-item-heading">'+
                    dialogIcon+'&nbsp;&nbsp;&nbsp;<span>'+dialogName+'</span></h4>'+'<p class="list-group-item-text last-message">'+
                    (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
   return dialogHtml;

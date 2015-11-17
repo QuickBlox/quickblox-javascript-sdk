@@ -1,20 +1,21 @@
 var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 1500;
+var IQ_TIMEOUT = 1000;
 var REST_REQUESTS_TIMEOUT = 3000;
 
-describe('QuickBlox SDK - Chat module', function() {
+describe('Chat API', function() {
 
-  describe('Chat XMPP (real time messaging)', function() {
+  describe('XMPP (real time messaging)', function() {
 
     // beforeAll
     //
     beforeAll(function(done){
 
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
-      QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
+      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
         if(err){
-          done.fail("Chat login error: " + err);
+          done.fail("Chat login error: " + JSON.stringify(err));
         }else{
           expect(roster).not.toBeNull();
           done();
@@ -31,6 +32,7 @@ describe('QuickBlox SDK - Chat module', function() {
       var self = this;
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
+
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual("chat");
         expect(userId).toEqual(QBUser1.id);
@@ -187,22 +189,23 @@ describe('QuickBlox SDK - Chat module', function() {
 
   });
 
-  describe('Chat REST API', function() {
+  describe('REST API', function() {
 
     var dialogId;
+    var messageId;
 
     // beforeAll
     //
     beforeAll(function(done){
 
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
-      QB.createSession({login: QBUser1.login, password: QBUser1.pass},function (err, result){
+      QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
         if(err){
           done.fail("Creat session error: " + err);
         }else{
           expect(result).not.toBeNull();
-          expect(result.application_id).toEqual(CONFIG.appId);
+          expect(result.application_id).toEqual(CREDENTIALS.appId);
           done();
         }
 
@@ -285,6 +288,31 @@ describe('QuickBlox SDK - Chat module', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Can create a message
+    //
+    it('can create a mesasge', function(done) {
+
+      var params = {chat_dialog_id: dialogId,
+                           message: "hello world",
+                   };
+      QB.chat.message.create(params, function(err, res) {
+
+        if(err){
+          done.fail("Create a mesasge error: " + JSON.stringify(err));
+        }else{
+          expect(res._id).not.toBeNull();
+          expect(res.message).toEqual("hello world");
+          expect(res.chat_dialog_id).toEqual(dialogId);
+
+          messageId = res._id;
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Messages list
     //
     it('can list messages', function(done) {
@@ -296,9 +324,50 @@ describe('QuickBlox SDK - Chat module', function() {
           done.fail("List messages error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          // expect(res.items.length).toBeGreaterThan(0);
+          expect(res.items.length).toBeGreaterThan(0);
+
           done();
         }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Unread messages count
+    //
+    it('can request unread messages count', function(done) {
+
+      var params = {chat_dialog_ids: [dialogId]};
+      QB.chat.message.unreadCount(params, function(err, res) {
+
+        if(err){
+          done.fail("Request unread messages count error: " + JSON.stringify(err));
+        }else{
+          expect(res["total"]).toEqual(0);
+          expect(res[dialogId]).toEqual(0);
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Message delete
+    //
+    it('can delete a message', function(done) {
+
+      console.log("messageId: " + messageId);
+
+      QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
+
+        if(err){
+          done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
+        }else{
+          done();
+        }
+
+        messageId = null;
 
       });
     }, REST_REQUESTS_TIMEOUT);
@@ -308,11 +377,15 @@ describe('QuickBlox SDK - Chat module', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {}, function(err, res) {
+      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
         }else{
+          expect(res["SuccessfullyDeleted"]["ids"]).toEqual([dialogId]);
+          expect(res["NotFound"]["ids"]).toEqual(["notExistentId"]);
+          expect(res["WrongPermissions"]["ids"]).toEqual([]);
+
           done();
         }
 

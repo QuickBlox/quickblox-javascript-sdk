@@ -20,7 +20,7 @@ function UsersProxy(service) {
 UsersProxy.prototype = {
 
   listUsers: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'listUsers', params);
+    Utils.QBLog('[UsersProxy]', 'listUsers', arguments.length > 1 ? params : "");
 
     var message = {}, filters = [], item;
 

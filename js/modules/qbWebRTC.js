@@ -66,7 +66,7 @@ function WebRTCProxy(service, conn) {
   connection = conn;
 
   this.service = service;
-  this.helpers = new Helpers;
+  this.helpers = new Helpers();
 
   this._onMessage = function(stanza) {
     var from = stanza.getAttribute('from'),
@@ -495,7 +495,7 @@ WebRTCProxy.prototype.close = function() {
   Object.keys(callers).forEach(function(key) {
     clearCallers(key);
   });
-}
+};
 
 // close peer connection and local stream
 WebRTCProxy.prototype._close = function() {
@@ -505,7 +505,12 @@ WebRTCProxy.prototype._close = function() {
     peer.close();
   }
   if (this.localStream) {
-    this.localStream.stop();
+    this.localStream.getAudioTracks().forEach(function (audioTrack) {
+      audioTrack.stop();
+    });
+    this.localStream.getVideoTracks().forEach(function (videoTrack) {
+      videoTrack.stop();
+    });
     this.localStream = null;
   }
 };
@@ -767,7 +772,7 @@ function trace(text) {
 }
 
 function getLocalTime() {
-  var arr = (new Date).toString().split(' ');
+  var arr = (new Date()).toString().split(' ');
   return arr.slice(1,5).join('-');
 }
 

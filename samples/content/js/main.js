@@ -49,8 +49,8 @@ QB.createSession(QBUser, function(err, result) {
 });
 
 // show image
-function showImage(fileUid, fileName, toAppend){
-	var imageHTML = "<img src='" + QB.content.privateUrl(fileUid) + "' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
+function showImage(fileUID, fileName, toAppend){
+	var imageHTML = "<img src='" + QB.content.privateUrl(fileUID) + "' alt='"+fileName+"' class='animals img-responsive col-md-4 col-sm-6 col-xs-12' />";
 	if (toAppend) {
 		$('#pictures').append(imageHTML);
 	} else {
