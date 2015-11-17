@@ -265,7 +265,7 @@ time, mark, audio, video {
     .users__user-active:active {
         background: #fff;
     }
-    .users__user-active ~ .users__btn_unchecked {
+    .users__user-active .users__btn_unchecked {
         visibility: visible;
         opacity:1;
     }
