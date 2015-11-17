@@ -467,6 +467,8 @@ time, mark, audio, video {
 }
 
 .callees__callee_status {
+    margin: 0 0 3px 0;
+    
     font-size: 11px;
     text-transform: uppercase;
     text-align: center;
