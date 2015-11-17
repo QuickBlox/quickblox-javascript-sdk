@@ -8,10 +8,10 @@
 /*
  * User's callbacks (listener-functions):
  * - onCallListener(session, extension)
- * - onAcceptCallListener(session, extension)
- * - onRejectCallListener(session, extension)
- * - onStopCallListener(session, extension)
- * - onUpdateCallListener(session, extension)
+ * - onAcceptCallListener(session, userID, extension)
+ * - onRejectCallListener(session, userID, extension)
+ * - onStopCallListener(session, userID, extension)
+ * - onUpdateCallListener(session, userID, extension)
  */
 
 var WebRTCSession = require('./qbWebRTCSession');
@@ -159,7 +159,7 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onAcceptCallListener === 'function'){
-      this.onAcceptCallListener(session, extensionClone, userID);
+      this.onAcceptCallListener(session, userID, extensionClone);
     }
 
     session.processOnAccept(userID, extension);
@@ -178,7 +178,7 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onRejectCallListener === 'function'){
-     this.onRejectCallListener(session, extensionClone, userID);
+     this.onRejectCallListener(session, userID, extensionClone);
     }
 
     session.processOnReject(userID, extension);
@@ -197,7 +197,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
-      this.onStopCallListener(session, extensionClone, userID);
+      this.onStopCallListener(session, userID, extensionClone);
     }
 
     session.processOnStop(userID, extension);
@@ -224,7 +224,7 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   var session = WebRTCClient.sessions[sessionId];
 
   if (typeof this.onUpdateCallListener === 'function'){
-    this.onUpdateCallListener(session, extension, userID);
+    this.onUpdateCallListener(session, userID, extension);
   }
 
   session.processOnUpdate(userID, extension);

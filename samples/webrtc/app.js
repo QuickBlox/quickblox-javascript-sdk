@@ -6,7 +6,7 @@
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
                 $cl: $('.j-console'),
-                
+
                 $panel: $('.j-pl'),
                 $callees: $('.j-callees'),
 
@@ -28,7 +28,7 @@
                     var $footer = $('.j-footer'),
                         invisibleClassName = 'invisible',
                         footerFixedClassName = 'footer-fixed';
-                    
+
                     if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
                         $footer.addClass(footerFixedClassName);
                     } else {
@@ -80,7 +80,7 @@
                     } else {
                         msg = _.template( $('#' + params.msg).html() )(params.obj);
                     }
-                    
+
                     this.$cl
                         .empty()
                         .append(msg);
@@ -209,7 +209,7 @@
                 $('#error_no_calles').modal();
             } else {
                 app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
-                
+
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                     if (err) {
                         ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
@@ -258,7 +258,7 @@
             $(ui.modal.income_call).modal('hide');
 
             ui.hideCallBtn();
-            
+
             document.getElementById(ui.sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
@@ -279,7 +279,7 @@
                     opponents.forEach(function(userID, i, arr) {
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(QBUsers, {id: userID});
-                      
+
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({userID: userID, name: userInfo.full_name});
 
@@ -337,7 +337,7 @@
                 } else {
                     $('.j-callees__callee_video').removeClass('active');
                     $that.addClass('active');
-                    
+
                     app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userID].stream);
                 }
             }
@@ -349,7 +349,7 @@
                 $video = $('.fw-video');
 
             $video.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
-            
+
             if(val !== 'no') {
                 $video.addClass( val );
             }
@@ -425,7 +425,7 @@
                 $('.j-callee_status_' + userId).text('User not answer');
             };
 
-            QB.webrtc.onUpdateCallListener = function(session, extension, userId) {
+            QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
                 console.group('onUpdateCallListener.');
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
@@ -457,7 +457,7 @@
                 document.getElementById(ui.sounds.rington).play();
             };
 
-            QB.webrtc.onAcceptCallListener = function(session, extension, userId) {
+            QB.webrtc.onAcceptCallListener = function(session, userId, extension) {
                 console.group('onAcceptCallListener.');
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
@@ -468,7 +468,7 @@
               ui.updateMsg({msg: 'accept_call'});
             };
 
-            QB.webrtc.onRejectCallListener = function(session, extension, userId) {
+            QB.webrtc.onRejectCallListener = function(session, userId, extension) {
                 console.group('onRejectCallListener.');
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
@@ -478,7 +478,7 @@
                 $('.j-callee_status_' + userId).text('Reject');
             };
 
-            QB.webrtc.onStopCallListener = function(session, extension, userId) {
+            QB.webrtc.onStopCallListener = function(session, userId, extension) {
                 console.group('onStopCallListener.');
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
