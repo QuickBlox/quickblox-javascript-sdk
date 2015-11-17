@@ -75,7 +75,7 @@ ServiceProxy.prototype = {
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
 
-        if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
+        if (settings.url.indexOf('s3.amazonaws.com') === -1) {
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -105,7 +105,7 @@ ServiceProxy.prototype = {
     if(!isBrowser) {
 
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+        makingQBRequest = params.url.indexOf('s3.amazonaws.com') === -1 &&
                           _this.qbInst &&
                           _this.qbInst.session &&
                           _this.qbInst.session.token ||
