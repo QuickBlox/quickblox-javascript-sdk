@@ -104,8 +104,10 @@
             app = {
                 caller: {},
                 callees: {},
-                currentSession: {}
-            };
+                currentSession: {},
+                mainVideo: 0
+            },
+            remoteStreamCounter = 0;
 
         function initializeUI() {
             ui.createUsers(QBUsers, ui.$usersList);
@@ -333,12 +335,15 @@
             if( app.currentSession.peerConnections[userID].stream ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
+                
                     app.currentSession.detachMediaStream('main_video');
+                    app.mainVideo = 0;
                 } else {
                     $('.j-callees__callee_video').removeClass('active');
                     $that.addClass('active');
 
                     app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userID].stream);
+                    app.mainVideo = userID;
                 }
             }
         });
@@ -383,6 +388,8 @@
 
                 app.caller = {};
                 app.callees = [];
+                app.mainVideo = 0;
+                remoteStreamCounter = 0;
 
                 initializeUI();
                 ui.$panel.addClass('hidden');
@@ -414,6 +421,8 @@
                 $('.j-callee').remove();
                 /** clear main video */
                 app.currentSession.detachMediaStream('main_video');
+                app.mainVideo = 0;
+                remoteStreamCounter = 0;
             };
 
             QB.webrtc.onUserNotAnswerListener = function(session, userId) {
@@ -497,6 +506,13 @@
                 app.currentSession.peerConnections[userID].stream = stream;
 
                 app.currentSession.attachMediaStream('remote_video_' + userID, stream);
+               
+                if( remoteStreamCounter === 0) {
+                    $('#remote_video_' + userID).click();
+                    
+                    app.mainVideo = userID;
+                    ++remoteStreamCounter;
+                }
             };
 
             QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
@@ -528,6 +544,9 @@
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+                    if(app.mainVideo === userID) {
+                        $('#remote_video_' + userID).removeClass('active');
+                    }
                     ui.toggleRemoteVideoView(userID, 'clear');
                     $(ui.modal.income_call).modal('hide');
                     document.getElementById(ui.sounds.rington).pause();
