@@ -142,16 +142,17 @@ describe('Session API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
 
-  // Connect to custom domain
+  // Connect to custom domains
   //
-  it('can connect to custom domain', function(){
+  it('can connect to custom domains', function(){
+
+    // Test old way to set domains
+    //
     var CUSTOMCONFIG = {
       endpoints: {
         api: 'apicustomdomain.quickblox.com',
         chat: 'chatcustomdomain.quickblox.com',
-        muc: 'muc.chatcustomdomain.quickblox.com',
-        turn: 'turnserver.quickblox.com',
-        s3Bucket: "qb-custom"
+        muc: 'muc.chatcustomdomain.quickblox.com'
       },
       chatProtocol: {
         bosh: 'https://chatcustomdomain.quickblox.com:5281',
@@ -164,20 +165,44 @@ describe('Session API', function() {
     expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain.quickblox.com');
     expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain.quickblox.com');
     expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chatcustomdomain.quickblox.com');
-    expect(QB.service.qbInst.config.endpoints.turn).toEqual('turnserver.quickblox.com');
-    expect(QB.service.qbInst.config.endpoints.s3Bucket).toEqual('qb-custom');
     expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chatcustomdomain.quickblox.com:5281');
     expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain.quickblox.com:5291');
 
+
+    // Test new way to set domains
+    //
+    var CUSTOMCONFIG2 = {
+      endpoints: {
+         api: 'apicustomdomain2.quickblox.com',
+        chat: 'chatcustomdomain2.quickblox.com'
+      }
+    };
+
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CUSTOMCONFIG2);
+
+    expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chatcustomdomain2.quickblox.com');
+    expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chatcustomdomain2.quickblox.com:5281');
+    expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain2.quickblox.com:5291');
+
+
+    // return back to default domains
+    //
     var DEFAULTCONFIG = {
       endpoints: {
         api: 'api.quickblox.com',
-        chat: 'chat.quickblox.com',
-        s3Bucket: "qbprod"
+        chat: 'chat.quickblox.com'
       }
     };
 
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, DEFAULTCONFIG);
+
+    expect(QB.service.qbInst.config.endpoints.api).toEqual('api.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.chat).toEqual('chat.quickblox.com');
+    expect(QB.service.qbInst.config.endpoints.muc).toEqual('muc.chat.quickblox.com');
+    expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chat.quickblox.com:5281');
+    expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chat.quickblox.com:5291');
   });
 
 });

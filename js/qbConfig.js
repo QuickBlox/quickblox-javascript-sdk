@@ -15,8 +15,7 @@ var config = {
   endpoints: {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
-    muc: 'muc.chat.quickblox.com',
-    turn: 'turnserver.quickblox.com'
+    muc: 'muc.chat.quickblox.com'
   },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',
@@ -69,12 +68,12 @@ var config = {
 };
 
 config.set = function(options) {
-  if (typeof options.endpoints === 'object') {
+  if (typeof options.endpoints === 'object' && options.endpoints.chat) {
     config.endpoints.muc = 'muc.'+options.endpoints.chat;
     config.chatProtocol.bosh = 'https://'+options.endpoints.chat+':5281';
     config.chatProtocol.websocket = 'wss://'+options.endpoints.chat+':5291';
   }
-  
+
   Object.keys(options).forEach(function(key) {
     if(key !== 'set' && config.hasOwnProperty(key)) {
       if(typeof options[key] !== 'object') {
