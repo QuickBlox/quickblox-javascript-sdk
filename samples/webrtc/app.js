@@ -351,7 +351,7 @@
         /** Change filter for filter */
         $(document).on('change', '.j-filter', function() {
             var val = $.trim( $(this).val() ),
-                $video = $('.fw-video');
+                $video = $('#localVideo');
 
             $video.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
 
@@ -473,8 +473,8 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-              document.getElementById(ui.sounds.call).pause();
-              ui.updateMsg({msg: 'accept_call'});
+                document.getElementById(ui.sounds.call).pause();
+                ui.updateMsg({msg: 'accept_call'});
             };
 
             QB.webrtc.onRejectCallListener = function(session, userId, extension) {
