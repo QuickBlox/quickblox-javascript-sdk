@@ -1,3 +1,4 @@
+var REST_REQUESTS_TIMEOUT = 3000;
 
 describe('Users API', function() {
 
@@ -12,7 +13,7 @@ describe('Users API', function() {
         expect(result).not.toBeNull();
         done();
       }
-    }, 3000);
+    }, REST_REQUESTS_TIMEOUT);
 
   });
 
@@ -27,7 +28,7 @@ describe('Users API', function() {
         done();
       }
     });
-  }, 1500);
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can filter users by email', function() {
     var params = {filter: { field: 'email', param: 'eq', value: 'nobody@nowhere.com' }};
@@ -41,7 +42,7 @@ describe('Users API', function() {
         console.info('can filter users by email');
       }
     });
-  });
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can filter users by login', function(done) {
     var params = {filter: { field: 'login', param: 'eq', value: 'js_jasmine1' }};
@@ -56,7 +57,7 @@ describe('Users API', function() {
         done();
       }
     });
-  });
+  }, REST_REQUESTS_TIMEOUT);
 
   describe('Create, update & delete Users', function(){
 
@@ -64,7 +65,7 @@ describe('Users API', function() {
 
     it('can create a user (' + login + ')', function(done) {
       var params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
-      
+
       QB.users.create(params, function(err, res){
         if (err) {
           done.fail("Create user error: " + JSON.stringify(err));
@@ -76,7 +77,7 @@ describe('Users API', function() {
           done();
         }
       });
-    }, 3000);
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can update a user (' + login + ')', function(done) {
       QB.login({login: login, password: 'someSecret'}, function(err, res){
@@ -95,7 +96,7 @@ describe('Users API', function() {
           });
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can delete a user (' + login + ')', function(done) {
       QB.users.delete(userId, function(err, res){
@@ -109,8 +110,7 @@ describe('Users API', function() {
         }
       });
     });
-
-  });
+  }, REST_REQUESTS_TIMEOUT);
 
   describe('Get Users', function(){
 
@@ -127,7 +127,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can get users by email', function(done) {
       var params = { 'email': 'js_jasmine2@quickblox.com' };
@@ -142,7 +142,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can get users by id', function(done) {
       var params = 6126741;
@@ -157,7 +157,7 @@ describe('Users API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
   });
 });

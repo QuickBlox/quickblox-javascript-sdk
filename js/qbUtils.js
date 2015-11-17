@@ -26,7 +26,7 @@ var ObjectId = {
 var Utils = {
   safeCallbackCall: function() {
     if(!isBrowser) throw unsupported;
-    
+
     var listenerString = arguments[0].toString(),
         listenerName = listenerString.split('(')[0].split(' ')[1],
         argumentsCopy = [], listenerCall;
@@ -43,9 +43,9 @@ var Utils = {
       if (listenerName === '') {
         console.error('Error: ' + err);
       }else{
-        console.error('Error in the ' + listenerName + ': ' + err);
+        console.error('Error in listener ' + listenerName + ': ' + err);
       }
-    } 
+    }
   },
 
   randomNonce: function() {

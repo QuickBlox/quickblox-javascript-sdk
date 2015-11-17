@@ -1,3 +1,5 @@
+var REST_REQUESTS_TIMEOUT = 3000;
+
 describe('Content API', function() {
   var token,
       data = {};
@@ -16,7 +18,7 @@ describe('Content API', function() {
         done();
       }
     });
-  }, 3000);
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can create and upload files', function(done) {
     var d = new Date(2015, 10, 13, 14, 30, 30, 600),
@@ -34,7 +36,7 @@ describe('Content API', function() {
         done();
       }
     });
-  });
+  }, 5000);
 
   it('can list content objects', function(done) {
     QB.content.list(function(err, res) {
@@ -47,7 +49,7 @@ describe('Content API', function() {
         done();
       }
     });
-  }); 
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can delete content objects', function(done) {
     QB.content.createAndUpload(data, function(err, response) {
@@ -66,7 +68,7 @@ describe('Content API', function() {
         });
       }
     });
-  });
+  }, 7000);
 
   it('can get file information by ID', function(done) {
     QB.content.getInfo(2917985, function(err, res) {
@@ -74,36 +76,13 @@ describe('Content API', function() {
         done.fail("Get file information by ID error: " + JSON.stringify(err));
       }else{
         expect(res).not.toBeNull();
+        expect(res.blob.id).toEqual(2917985);
         expect(res.blob.size).toBe(15);
         console.info('can get file information by ID');
         done();
       }
     });
-  });
-
-  it('can get file URL by ID', function(done) {
-    QB.content.getFileUrl(2917985, function(err, res) {
-      if (err) {
-        done.fail("Get file URL by ID error: " + JSON.stringify(err));
-      }else{
-        expect(res).not.toBeNull();
-        console.info('can get file URL by ID');
-        done();
-      }
-    });
-  });
-
-  // it('can get file by UID', function(done) {
-  //   QB.content.getFile('97f5802dcbd34a59a4921d73f6baedd000', function(err, res) {
-  //     if (err) {
-  //       done.fail("Get file by UID error: " + JSON.stringify(err));
-  //     }else{
-  //       expect(res).not.toBeNull();
-  //       console.info('can get file by UID');
-  //       done();
-  //     }
-  //   });
-  // });
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can access private URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
@@ -112,7 +91,6 @@ describe('Content API', function() {
     expect(privateURL).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token="+token);
     console.info('can access private URL');
   });
-
 
   it('can access public URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
