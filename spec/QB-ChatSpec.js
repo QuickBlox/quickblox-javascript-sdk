@@ -359,7 +359,7 @@ describe('Chat API', function() {
 
       console.log("messageId: " + messageId);
 
-      QB.chat.message.delete(messageId, {force: 1}, function(err, res) {
+      QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
@@ -382,6 +382,10 @@ describe('Chat API', function() {
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
         }else{
+          expect(res["SuccessfullyDeleted"]["ids"]).toEqual([dialogId]);
+          expect(res["NotFound"]["ids"]).toEqual(["notExistentId"]);
+          expect(res["WrongPermissions"]["ids"]).toEqual([]);
+
           done();
         }
 
