@@ -1,4 +1,4 @@
-var REST_REQUESTS_TIMEOUT = 10000;
+var REST_REQUESTS_TIMEOUT = 3000;
 
 describe('Location API', function() {
 
