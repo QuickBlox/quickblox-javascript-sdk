@@ -64,11 +64,11 @@ var QBUsers = [
 var MESSAGES = {
   'login': 'Login as any user on this computer and another user on another computer.',
   'create_session': 'Creating a session...',
-  'connect': 'Connecting to chat...',
+  'connect': 'Connecting...',
   'connect_error': 'Something wrong with connect to chat. Check user info.',
   'login_as': 'Logged in as ',
   'title_login': 'Choose a user to login with:',
-  'title_callee': 'Choose a users to call:',
+  'title_callee': 'Choose users to call:',
   'calling': 'Calling...',
   'accept_call': 'User has accepted the call',
   'webrtc_not_avaible': 'WebRTC is not available in your browser'
