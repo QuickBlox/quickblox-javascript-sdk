@@ -505,7 +505,12 @@ WebRTCProxy.prototype._close = function() {
     peer.close();
   }
   if (this.localStream) {
-    this.localStream.stop();
+    this.localStream.getAudioTracks().forEach(function (audioTrack) {
+      audioTrack.stop();
+    });
+    this.localStream.getVideoTracks().forEach(function (videoTrack) {
+      videoTrack.stop();
+    });
     this.localStream = null;
   }
 };

@@ -29,8 +29,7 @@ var Utils = {
 
     var listenerString = arguments[0].toString(),
         listenerName = listenerString.split('(')[0].split(' ')[1],
-        argumentsCopy = [],
-        listenerCall;
+        argumentsCopy = [], listenerCall;
 
       for (var i = 0; i < arguments.length; i++) {
         argumentsCopy.push(arguments[i]);
@@ -41,7 +40,11 @@ var Utils = {
     try {
       listenerCall.apply(null, argumentsCopy);
     } catch (err) {
-      console.error('Exception in ' + listenerName + ': ' + err);
+      if (listenerName === '') {
+        console.error('Error: ' + err);
+      }else{
+        console.error('Error in listener ' + listenerName + ': ' + err);
+      }
     }
   },
 
