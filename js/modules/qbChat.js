@@ -955,9 +955,9 @@ DialogProxy.prototype = {
     Utils.QBLog('[DialogProxy]', 'delete', id);
 
     if (arguments.length == 2) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', dataType: 'text'}, params_or_callback);
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE'}, params_or_callback);
     } else if (arguments.length == 3) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback, dataType: 'text'}, callback);
+      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback}, callback);
     }
   }
 };
