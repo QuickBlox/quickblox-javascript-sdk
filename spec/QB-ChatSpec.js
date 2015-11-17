@@ -377,7 +377,7 @@ describe('Chat API', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, {force: 1}, function(err, res) {
+      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
