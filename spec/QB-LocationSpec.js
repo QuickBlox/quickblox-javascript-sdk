@@ -1,149 +1,118 @@
-describe('QuickBlox SDK - Location', function() {
+var REST_REQUESTS_TIMEOUT = 10000;
 
-  beforeEach(function(){
-    var done;
-    runs(function(){
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      done = false;
-      QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-        expect(err).toBeNull();
-        expect(result).not.toBeNull();
-        done = true;
-      });
+describe('Location API', function() {
+
+  beforeAll(function(done){
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+
+    QB.createSession(QBUser1, function(err, session) {
+      if (err) {
+        done.fail("Create session error: " + JSON.stringify(err));
+      } else {
+        expect(session).not.toBeNull();
+        token = session.token;
+        done();
+      }
     });
-    waitsFor(function(){
-      return done;
-      },'create session', TIMEOUT);
+  }, REST_REQUESTS_TIMEOUT);
+
+  it('can create geodata', function(done){
+    //coordinates of Big Ben from http://www.openstreetmap.org/?way=123557148#map=18/51.50065/-0.12525
+    var params = {latitude: 51.50065, longitude:-0.12525, status: 'Under the clocktower'};
+    QB.location.geodata.create(params, function(err, res){
+      if (err) {
+        done.fail("Create geodata error: " + JSON.stringify(err));
+      } else {
+        expect(res).not.toBeNull();
+        expect(res.id).toBeGreaterThan(0);
+        console.info('can create geodata');
+        done();
+      }
+    });
   });
 
-  describe('GeoData', function(){
-    it('can create geodata', function(){
-      var geoData;
-      //coordinates of Big Ben from http://www.openstreetmap.org/?way=123557148#map=18/51.50065/-0.12525
-      runs(function(){
-        done = false;
-        var params = {latitude: 51.50065, longitude:-0.12525, status: 'Under the clocktower'};
-        QB.location.geodata.create(params, function(err,result){
-          geoData = result;
-          done = true;
-          expect(err).toBeNull();
+  it('can get existing geodata', function(done){
+    QB.location.geodata.create({latitude: 51.50332, longitude:-0.12805, status: 'Keeping \'em in line'}, function(err, res){
+      if (err) {
+        done.fail("Create geodata error: " + JSON.stringify(err));
+      } else {
+        QB.location.geodata.get(res.id, function(err, result){
+          if (err) {
+            done.fail("Get existing geodata error: " + JSON.stringify(err));
+          } else {
+            expect(result).not.toBeNull();
+            expect(result.status).toBe("Keeping 'em in line");
+            console.info('can get existing geodata');
+            done();
+          }
         });
-      });
-      waitsFor(function(){
-        return done;
-      },'create geodata', TIMEOUT);
-      runs(function(){
-        expect(geoData).not.toBeNull();
-        expect(geoData.id).toBeGreaterThan(0);
-      });
+      }  
     });
+  });
 
-    it('can get existing geodata', function(){
-      var geoData;
-      runs(function(){
-        done = false;
-        QB.location.geodata.create({latitude: 51.50332, longitude:-0.12805, status: 'Keeping \'em in line'}, function(err,result){
-          QB.location.geodata.get(result.id, function(err,result){
-            geoData = result;
-            done = true;
-            expect(err).toBeNull();
-          });
+  it('can update existing geodata', function(done){
+    QB.location.geodata.create({latitude: 51.50332, longitude:-0.12805, status: 'Waiting outside'}, function(err, res){
+      if (err) {
+        done.fail("Create geodata error: " + JSON.stringify(err));
+      } else {
+        res.status='Still waiting';
+        QB.location.geodata.update(res, function(err, result){
+          if (err) {
+            done.fail("Update existing geodata error: " + JSON.stringify(err));
+          } else {
+            expect(result).not.toBeNull();
+            expect(result.status).toBe("Still waiting");
+            console.info('can update existing geodata');
+            done();
+          }
         });
-      });
-      waitsFor(function(){
-        return done;
-      },'create geodata', TIMEOUT);
-      runs(function(){
-        expect(geoData).not.toBeNull();
-        expect(geoData.status).toBe("Keeping 'em in line");
-      });
+      }
     });
+  });
 
-    it('can update existing geodata', function(){
-      var result, error;
-      runs(function(){
-        done = false;
-        QB.location.geodata.create({latitude: 51.50332, longitude:-0.12805, status: 'Waiting outside'}, function(err,res){
-          res.status='Still waiting';
-          QB.location.geodata.update(res, function(err,res){
-            result = res;
-            error = err;
-            done = true;
-          });
+  it('can delete existing geodata', function(done){
+    QB.location.geodata.list(function(err, res) {
+      if (err) {
+        done.fail("List geodata error: " + JSON.stringify(err));
+      } else {
+        QB.location.geodata.delete(res.items[0].geo_datum.id, function(err, result){
+          if (err) {
+            done.fail("Delete existing existing geodata error: " + JSON.stringify(err));
+          } else {
+            expect(result).not.toBeNull();
+            expect(result).toBe(true);
+            console.info('can delete existing geodata');
+            done();
+          }
         });
-      });
-      waitsFor(function(){
-        return done;
-      },'update geodata', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
+      }
+    });
+  });
+
+  it('can list geodata', function(done){
+    QB.location.geodata.list(function(err, res) {
+      if (err) {
+        done.fail("List geodata error: " + JSON.stringify(err));
+      } else {
+        expect(res).not.toBeNull();
+        expect(res.items.length).toBeGreaterThan(0);
+        console.info('can delete existing geodata');
+        done();
+      }
+    });
+  });
+
+  it('can purge geodata', function(done){
+    QB.location.geodata.purge(7, function(err, result){
+      if (err) {
+        done.fail("Purge geodata error: " + JSON.stringify(err));
+      } else {
         expect(result).not.toBeNull();
-        expect(result.status).toBe("Still waiting");
-      });
+        expect(result).toBe(true);
+        console.info('can purge geodata');
+        done();
+      }
     });
-
-    it('can delete existing geodata', function(){
-      var error, deleted;
-      runs(function(){
-        done = false;
-        QB.location.geodata.list(function(err,result){
-          QB.location.geodata.delete(result.items[0].geo_datum.id, function(err,res){
-            error = err;
-            deleted = res;
-            done = true;
-          });
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'delete geodata', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(deleted).toBe(true);
-      });
-    });
-
-
-    it('can list geodata', function(){
-      var geoData;
-      runs(function(){
-        done = false;
-        QB.location.geodata.list(function(err,result){
-          geoData = result;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'list geodata', TIMEOUT);
-      runs(function(){
-        expect(geoData).not.toBeNull();
-        expect(geoData.items.length).toBeGreaterThan(0);
-      });
-    });
-
-    it('can purge geodata', function(){
-      var error, purged;
-      runs(function(){
-        done = false;
-        QB.location.geodata.purge(7,function(err,result){
-          done = true;
-          error = err;
-          purged = result;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'list geodata', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
-        expect(purged).toBe(true);
-      });
-    });
-
-
-
   });
 
 });
