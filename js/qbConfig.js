@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.15.1',
+  version: '1.16.0',
   creds: {
     appId: '',
     authKey: '',
@@ -21,7 +21,7 @@ var config = {
   },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',
-    websocket: 'wss://chat.quickblox.com:5291', 
+    websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
   iceServers: [
