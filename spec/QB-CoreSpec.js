@@ -33,7 +33,7 @@ describe('Session API', function() {
   //
   it('can create a User session', function(done){
 
-    QB.createSession({login: QBUser1.login, password: QBUser1.pass}, function (err, session){
+    QB.createSession(QBUser1, function (err, session){
       if(err){
         done.fail("Create a User session error: " + JSON.stringify(err));
       }else{
@@ -75,7 +75,7 @@ describe('Session API', function() {
       if(err){
         done.fail("Login user error1: " + JSON.stringify(err));
       }else{
-        QB.login({login: QBUser1.login, password: QBUser1.pass}, function (err, user){
+        QB.login(QBUser1, function (err, user){
           if(err){
             done.fail("Login user error2: " + JSON.stringify(err));
           }else{
@@ -100,7 +100,7 @@ describe('Session API', function() {
       }else{
         QB.init(session.token);
 
-        QB.login({login: QBUser1.login, password: QBUser1.pass}, function (err, user){
+        QB.login(QBUser1, function (err, user){
           if(err){
             done.fail("Login user when initialised with just a valid token error2: " + JSON.stringify(err));
           }else{
@@ -123,7 +123,7 @@ describe('Session API', function() {
       if(err){
         done.fail("Logout user error1: " + JSON.stringify(err));
       }else{
-        QB.login({login: QBUser1.login, password: QBUser1.pass}, function (err, user){
+        QB.login(QBUser1, function (err, user){
           if(err){
             done.fail("Logout user error2: " + JSON.stringify(err));
           }else{
