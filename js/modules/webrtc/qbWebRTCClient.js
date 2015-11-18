@@ -221,13 +221,11 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-  var session = WebRTCClient.sessions[sessionId];
+  var session = this.sessions[sessionID];
 
   if (typeof this.onUpdateCallListener === 'function'){
     this.onUpdateCallListener(session, userID, extension);
   }
-
-  session.processOnUpdate(userID, extension);
 };
 
 WebRTCClient.prototype._cleanupExtension = function(extension){

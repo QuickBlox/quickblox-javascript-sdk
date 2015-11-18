@@ -448,19 +448,7 @@ time, mark, audio, video {
     .callees__callee:nth-child(2n) {
         padding: 0 0 0 0;
     }
-    .callees__callee-wait {
-        content: " ";
-        display: block;
-
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        left: 0;
-
-        background: #bfbfbf url('images/loader3.gif') no-repeat center;
-        z-index: 9;
-    }
+    
 
 .callees__callee_inner {
     margin: 0 0 10px 0;
@@ -479,10 +467,22 @@ time, mark, audio, video {
 
     transition: border-color .3s ease;
 }
+    .callees__callee_video.active {
+        border-color: #41cc44;
+    }
+    .callees__callee-wait .callees__callee_video:before{
+        content: " ";
+        display: block;
 
-.callees__callee_video.active {
-    border-color: #41cc44;
-}
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+
+        background: #bfbfbf url('images/loader3.gif') no-repeat center;
+        z-index: 9;
+    }
 
 @media all and (min-width: 780px) {
     .callees__callee {

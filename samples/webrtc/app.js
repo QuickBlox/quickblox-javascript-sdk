@@ -99,6 +99,13 @@
                             $video.removeClass('fw-video-wait');
                         }
                     }
+                },
+                changeFilter: function(selector, filterName) {
+                    var classesNameAll = 'aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
+                   
+                    $(selector)
+                        .removeClass(classesNameAll)
+                        .addClass( filterName );
                 }
             },
             app = {
@@ -350,13 +357,12 @@
 
         /** Change filter for filter */
         $(document).on('change', '.j-filter', function() {
-            var val = $.trim( $(this).val() ),
-                $video = $('#localVideo');
+            var val = $.trim( $(this).val() );
 
-            $video.removeClass('aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn');
+            ui.changeFilter('#localVideo', val);
 
-            if(val !== 'no') {
-                $video.addClass( val );
+            if(!_.isEmpty( app.currentSession)) {
+                app.currentSession.update({filter: val});
             }
         });
 
@@ -438,8 +444,13 @@
                 console.group('onUpdateCallListener.');
                     console.log('UserId: ' + userId);
                     console.log('Session: ' + session);
-                    console.log('Extension: ' + extension);
+                    console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
+
+                ui.changeFilter('#remote_video_' + userId, extension.filter);
+                if (app.mainVideo === userId) {
+                    ui.changeFilter('#main_video', extension.filter);
+                }
             };
 
             QB.webrtc.onCallListener = function(session, extension) {
@@ -472,9 +483,13 @@
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
+                
+                var filterName = $.trim( $('.j-filter').val() );
 
                 document.getElementById(ui.sounds.call).pause();
                 ui.updateMsg({msg: 'accept_call'});
+
+                app.currentSession.update({filter: filterName});
             };
 
             QB.webrtc.onRejectCallListener = function(session, userId, extension) {
@@ -519,7 +534,7 @@
                 console.group('onSessionConnectionStateChangedListener.');
                     console.log('UserID: ' + userID);
                     console.log('Session: ' + session);
-                    console.log('Extension: ' + JSON.stringify(connectionState));
+                    console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
