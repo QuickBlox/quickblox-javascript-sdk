@@ -57,6 +57,7 @@ function retrieveChatDialogs() {
         if (item.type != 3) {
           QB.chat.muc.join(item.xmpp_room_jid, function() {
              console.log("Joined dialog "+dialogId);
+             console.log(item)
           });
         }
 
