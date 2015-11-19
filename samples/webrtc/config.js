@@ -18,46 +18,32 @@ var CONFIG = {
 
 var QBUsers = [
   {
-    id: 5395743,
-    login: 'webuser111',
-    password: 'webuser111',
+    id: 6970356,
+    login: 'dev_user_1',
+    password: 'dev_user_1',
     full_name: 'User 1',
     colour: 'ffaa00'
   },
   {
-    id: 5395747,
-    login: 'webuser112',
-    password: 'webuser112',
+    id: 6970368,
+    login: 'dev_user_2',
+    password: 'dev_user_2',
     full_name: 'User 2',
     colour: '0890ff'
   },
   {
-    id: 5681538,
-    login: 'webuser113',
-    password: 'webuser113',
+    id: 6970375,
+    login: 'dev_user_3',
+    password: 'dev_user_3',
     full_name: 'User 3',
     colour: 'ff03a6'
   },
   {
-    id: 5719859,
-    login: 'webuser114',
-    password: 'webuser114',
+    id: 6970379,
+    login: 'dev_user_4',
+    password: 'dev_user_4',
     full_name: 'User 4',
     colour: '60e27a'
-  },
-  {
-    id: 5719860,
-    login: 'webuser115',
-    password: 'webuser115',
-    full_name: 'User 5',
-    colour: '5e55de'
-  },
-  {
-    id: 5719866,
-    login: 'webuser116',
-    password: 'webuser116',
-    full_name: 'User 6',
-    colour: 'b831b7'
   }
 ];
 
