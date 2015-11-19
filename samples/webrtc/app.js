@@ -437,7 +437,7 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('User not answer');
+                $('.j-callee_status_' + userId).text('User doesn’t answer');
             };
 
             QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
