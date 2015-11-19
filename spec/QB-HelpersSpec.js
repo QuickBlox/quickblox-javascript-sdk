@@ -8,6 +8,7 @@ describe('Helpers', function() {
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
   });
 
+
   it("can generate user's jid", function() {
     var userJid = QB.chat.helpers.getUserJid(5, 29650);
     expect(userJid).toEqual("5-29650@chat.quickblox.com");
