@@ -8,10 +8,10 @@
 /*
  * User's callbacks (listener-functions):
  * - onCallListener(session, extension)
- * - onAcceptCallListener(session, extension)
- * - onRejectCallListener(session, extension)
- * - onStopCallListener(session, extension)
- * - onUpdateCallListener(session, extension)
+ * - onAcceptCallListener(session, userID, extension)
+ * - onRejectCallListener(session, userID, extension)
+ * - onStopCallListener(session, userID, extension)
+ * - onUpdateCallListener(session, userID, extension)
  */
 
 var WebRTCSession = require('./qbWebRTCSession');
@@ -159,7 +159,7 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onAcceptCallListener === 'function'){
-      this.onAcceptCallListener(session, extensionClone);
+      this.onAcceptCallListener(session, userID, extensionClone);
     }
 
     session.processOnAccept(userID, extension);
@@ -178,7 +178,7 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onRejectCallListener === 'function'){
-     this.onRejectCallListener(session, extensionClone);
+     this.onRejectCallListener(session, userID, extensionClone);
     }
 
     session.processOnReject(userID, extension);
@@ -197,7 +197,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
-      this.onStopCallListener(session, extensionClone);
+      this.onStopCallListener(session, userID, extensionClone);
     }
 
     session.processOnStop(userID, extension);
@@ -221,13 +221,11 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
-  var session = WebRTCClient.sessions[sessionId];
+  var session = this.sessions[sessionID];
 
   if (typeof this.onUpdateCallListener === 'function'){
-    this.onUpdateCallListener(session, extension);
+    this.onUpdateCallListener(session, userID, extension);
   }
-
-  session.processOnUpdate(userID, extension);
 };
 
 WebRTCClient.prototype._cleanupExtension = function(extension){

@@ -22,41 +22,54 @@ var QBUsers = [
     login: 'webuser111',
     password: 'webuser111',
     full_name: 'User 1',
-    colour: 'FD8209'
+    colour: 'ffaa00'
   },
   {
     id: 5395747,
     login: 'webuser112',
     password: 'webuser112',
     full_name: 'User 2',
-    colour: '11a209'
+    colour: '0890ff'
   },
   {
     id: 5681538,
     login: 'webuser113',
     password: 'webuser113',
     full_name: 'User 3',
-    colour: '11a2a9'
+    colour: 'ff03a6'
   },
   {
     id: 5719859,
     login: 'webuser114',
     password: 'webuser114',
     full_name: 'User 4',
-    colour: '51c209'
+    colour: '60e27a'
   },
   {
     id: 5719860,
     login: 'webuser115',
     password: 'webuser115',
     full_name: 'User 5',
-    colour: '511209'
+    colour: '5e55de'
   },
   {
     id: 5719866,
     login: 'webuser116',
     password: 'webuser116',
     full_name: 'User 6',
-    colour: '01e209'
+    colour: 'b831b7'
   }
 ];
+
+var MESSAGES = {
+  'login': 'Login as any user on this computer and another user on another computer.',
+  'create_session': 'Creating a session...',
+  'connect': 'Connecting...',
+  'connect_error': 'Something wrong with connect to chat. Check user info.',
+  'login_as': 'Logged in as ',
+  'title_login': 'Choose a user to login with:',
+  'title_callee': 'Choose users to call:',
+  'calling': 'Calling...',
+  'accept_call': 'User has accepted the call',
+  'webrtc_not_avaible': 'WebRTC is not available in your browser'
+};

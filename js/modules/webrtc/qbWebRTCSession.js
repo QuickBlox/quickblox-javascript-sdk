@@ -353,6 +353,7 @@ WebRTCSession.prototype.update = function(extension) {
   }
 
   ext = _prepareExtension(extension);
+  ext.sessionID = this.ID;
 
   for (var key in self.peerConnections) {
     var peerConnection = self.peerConnections[key];
@@ -525,11 +526,6 @@ WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
     Helpers.traceError("Ignore 'OnIceCandidates', there is no information about peer connection by some reason.");
   }
 };
-
-WebRTCSession.prototype.processOnUpdate = function(userID, extension) {
-
-};
-
 
 //
 ///////////
