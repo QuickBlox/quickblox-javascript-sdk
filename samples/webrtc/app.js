@@ -14,6 +14,7 @@
                 $btnHangup: $('.j-hangup'),
 
                 $ctrlBtn: $('.j-caller__ctrl'),
+                filterClassName: '.j-filter',
 
                 modal: {
                     'income_call': '#income_call'
@@ -356,7 +357,7 @@
         });
 
         /** Change filter for filter */
-        $(document).on('change', '.j-filter', function() {
+        $(document).on('change', ui.filterClassName, function() {
             var val = $.trim( $(this).val() );
 
             ui.changeFilter('#localVideo', val);
@@ -484,7 +485,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
                 
-                var filterName = $.trim( $('.j-filter').val() );
+                var filterName = $.trim( $(ui.filterClassName).val() );
 
                 document.getElementById(ui.sounds.call).pause();
                 ui.updateMsg({msg: 'accept_call'});
@@ -576,7 +577,7 @@
                     if( isCallEnded ) {
                         ui.changeFilter('#localVideo', 'no');
                         ui.changeFilter('#main_video', 'no');
-                        $('.j-filter').val('no');
+                        $(ui.filterClassName).val('no');
                     }
                 }
             };

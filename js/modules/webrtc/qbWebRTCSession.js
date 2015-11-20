@@ -251,30 +251,28 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   if(peerConnection){
     peerConnection.addLocalStream(this.localStream);
 
-    if(peerConnection.sdp) {
-      peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
-        if(error){
-          Helpers.traceError("'setRemoteSessionDescription' error: " + error);
-        }else{
-          Helpers.trace("'setRemoteSessionDescription' success");
+    peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
+      if(error){
+        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+      }else{
+        Helpers.trace("'setRemoteSessionDescription' success");
 
-          peerConnection.getAndSetLocalSessionDescription(function(err) {
-            if (err) {
-              Helpers.trace("getAndSetLocalSessionDescription error: " + err);
-            } else {
+        peerConnection.getAndSetLocalSessionDescription(function(err) {
+          if (err) {
+            Helpers.trace("getAndSetLocalSessionDescription error: " + err);
+          } else {
 
-              extension["sessionID"] = self.ID;
-              extension["callType"] = self.callType;
-              extension["callerID"] = self.initiatorID;
-              extension["opponentsIDs"] = self.opponentsIDs;
-              extension["sdp"] = peerConnection.localDescription.sdp;
+            extension["sessionID"] = self.ID;
+            extension["callType"] = self.callType;
+            extension["callerID"] = self.initiatorID;
+            extension["opponentsIDs"] = self.opponentsIDs;
+            extension["sdp"] = peerConnection.localDescription.sdp;
 
-              self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
-            }
-          });
-        }
-      });
-    }
+            self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
+          }
+        });
+      }
+    });
   }else{
     Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
   }
@@ -438,18 +436,14 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 
     var peerConnection = self.peerConnections[opID];
     if(peerConnection){
-
-      if(opID == callerID){
-        peerConnection.updateSDP(extension.sdp);
-      }
+      peerConnection.updateSDP(extension.sdp);
 
       // The group call logic starts here
       if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
         self._acceptInternal(callerID, {});
       }
 
-    }else{
-
+    } else {
       // create peer connections for each opponent
       var peerConnection;
       if(opID != callerID && self.currentUserID > opID){
@@ -473,6 +467,7 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
+
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){
         Helpers.traceError("'setRemoteSessionDescription' error: " + error);
