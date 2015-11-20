@@ -1,7 +1,7 @@
-;(function(window, $) {
+// ;(function(window, $) {
     'use strict';
     /** when DOM is ready */
-    $(function() {
+    // $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -449,7 +449,7 @@
                 console.groupEnd();
 
                 ui.changeFilter('#remote_video_' + userId, extension.filter);
-                if (app.mainVideo === userId) {
+                if (+(app.mainVideo) === userId) {
                     ui.changeFilter('#main_video', extension.filter);
                 }
             };
@@ -582,5 +582,5 @@
                 }
             };
         }
-    });
-}(window, jQuery));
+    // });
+// }(window, jQuery));
