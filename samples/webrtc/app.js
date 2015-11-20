@@ -101,7 +101,7 @@
                     }
                 },
                 changeFilter: function(selector, filterName) {
-                    var classesNameAll = 'aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
+                    var classesNameAll = 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
                    
                     $(selector)
                         .removeClass(classesNameAll)
@@ -437,7 +437,7 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('User doesn’t answer');
+                $('.j-callee_status_' + userId).text('No Answer');
             };
 
             QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
@@ -499,7 +499,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('Reject');
+                $('.j-callee_status_' + userId).text('Rejected');
             };
 
             QB.webrtc.onStopCallListener = function(session, userId, extension) {
@@ -537,6 +537,8 @@
                     console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
+                var isCallEnded = false;
+
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
                     $calleeStatus = $('.j-callee_status_' + userID);
 
@@ -565,6 +567,17 @@
                     ui.toggleRemoteVideoView(userID, 'clear');
                     $(ui.modal.income_call).modal('hide');
                     document.getElementById(ui.sounds.rington).pause();
+
+                    isCallEnded = _.every(app.currentSession.peerConnections, function(i) { 
+                        return i.iceConnectionState === 'closed';
+                    });
+
+                    /** remove filters */
+                    if( isCallEnded ) {
+                        ui.changeFilter('#localVideo', 'no');
+                        ui.changeFilter('#main_video', 'no');
+                        $('.j-filter').val('no');
+                    }
                 }
             };
         }

@@ -247,31 +247,34 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   // create a peer connection
   //
   var peerConnection = this.peerConnections[userID];
+
   if(peerConnection){
     peerConnection.addLocalStream(this.localStream);
 
-    peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
-      if(error){
-        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
-      }else{
-        Helpers.trace("'setRemoteSessionDescription' success");
+    if(peerConnection.sdp) {
+      peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
+        if(error){
+          Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+        }else{
+          Helpers.trace("'setRemoteSessionDescription' success");
 
-        peerConnection.getAndSetLocalSessionDescription(function(err) {
-          if (err) {
-            Helpers.trace("getAndSetLocalSessionDescription error: " + err);
-          } else {
+          peerConnection.getAndSetLocalSessionDescription(function(err) {
+            if (err) {
+              Helpers.trace("getAndSetLocalSessionDescription error: " + err);
+            } else {
 
-            extension["sessionID"] = self.ID;
-            extension["callType"] = self.callType;
-            extension["callerID"] = self.initiatorID;
-            extension["opponentsIDs"] = self.opponentsIDs;
-            extension["sdp"] = peerConnection.localDescription.sdp;
+              extension["sessionID"] = self.ID;
+              extension["callType"] = self.callType;
+              extension["callerID"] = self.initiatorID;
+              extension["opponentsIDs"] = self.opponentsIDs;
+              extension["sdp"] = peerConnection.localDescription.sdp;
 
-            self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
-          }
-        });
-      }
-    });
+              self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
+            }
+          });
+        }
+      });
+    }
   }else{
     Helpers.traceError("Can't accept the call, there is no information about peer connection by some reason.");
   }
