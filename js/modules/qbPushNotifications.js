@@ -67,10 +67,15 @@ EventsProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
 
-  list: function(callback) {
-    Utils.QBLog('[EventsProxy]', 'list');
+  list: function(params, callback) {
+    if (typeof params === 'function' && typeof callback ==='undefined') {
+      callback = params;
+      params = null;
+    }
+    
+    Utils.QBLog('[EventsProxy]', 'list', params);
 
-    this.service.ajax({url: Utils.getUrl(config.urls.events)}, callback);
+    this.service.ajax({url: Utils.getUrl(config.urls.events), data: params}, callback);
   },
 
   get: function(id, callback) {
@@ -83,13 +88,6 @@ EventsProxy.prototype = {
     Utils.QBLog('[EventsProxy]', 'status', id);
 
     this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
-  },
-
-  update: function(params, callback) {
-    Utils.QBLog('[EventsProxy]', 'update', params);
-
-    var message = {event: params};
-    this.service.ajax({url: Utils.getUrl(config.urls.events, params.id), type: 'PUT', data: message}, callback);
   },
 
   delete: function(id, callback) {
