@@ -51,11 +51,12 @@ var MESSAGES = {
   'login': 'Login as any user on this computer and another user on another computer.',
   'create_session': 'Creating a session...',
   'connect': 'Connecting...',
-  'connect_error': 'Something wrong with connect to chat. Check user info.',
+  'connect_error': 'Something wrong with connect to chat. Check internet connection or user info and trying again.',
   'login_as': 'Logged in as ',
   'title_login': 'Choose a user to login with:',
   'title_callee': 'Choose users to call:',
   'calling': 'Calling...',
   'accept_call': 'User has accepted the call',
-  'webrtc_not_avaible': 'WebRTC is not available in your browser'
+  'webrtc_not_avaible': 'WebRTC is not available in your browser',
+  'no_internet': 'Please check your Internet connection and try again'
 };

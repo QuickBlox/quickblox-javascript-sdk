@@ -64,6 +64,10 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
     throw new Error('Can\'t create a session without the opponentsIDs.');
   }
 
+  if( !window.navigator.onLine ) {
+    throw new Error('Check internet connection.');
+  }
+
   isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
   if( !isIdentifyOpponents ) {

@@ -115,13 +115,18 @@
                 currentSession: {},
                 mainVideo: 0
             },
-            remoteStreamCounter = 0;
+            remoteStreamCounter = 0,
+            authorizationing = false;
 
-        function initializeUI() {
+        function initializeUI(arg) {
+            var params = arg || {};
+
             ui.createUsers(QBUsers, ui.$usersList);
-
-            ui.updateMsg({msg: 'login'});
             ui.$usersTitle.text(MESSAGES.title_login);
+            
+            if(!params.withoutUpdMsg) {
+                ui.updateMsg({msg: 'login'});
+            }
         }
 
         /**
@@ -145,6 +150,7 @@
 
             /** if app.caller is not exist create caller, if no - add callees */
             if( _.isEmpty(app.caller) ) {
+                authorizationing = true;
                 ui.togglePreloadMain('show');
                 /**
                  * id: + for convert to number type
@@ -178,6 +184,8 @@
                         ui.$panel.removeClass('hidden');
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
+
+                        authorizationing = false;
                     }
                 });
             } else {
@@ -215,6 +223,10 @@
                     elemId: 'localVideo'
                 };
 
+            if(!window.navigator.onLine) {
+                ui.updateMsg({msg: 'no_internet'});
+            }
+
             if ( _.isEmpty(app.callees) ) {
                 $('#error_no_calles').modal();
             } else {
@@ -238,7 +250,15 @@
 
                         ui.hideCallBtn();
 
-                        app.currentSession.call({});
+                        app.currentSession.call({}, function(error) {
+                            /** 
+                             * check internet connection
+                             * if error not equal false that means we are offline
+                             */
+                            if(error) {
+                                console.warn('We are offline.');
+                            }
+                        });
                     }
                 });
             }
@@ -371,7 +391,7 @@
             ui.setPositionFooter();
         });
 
-        /** Before use WebRTC checking is WebRTC is avaible */
+        /** Before use WebRTC checking WebRTC is avaible */
         if (!QB.webrtc) {
             ui.updateMsg( {msg: 'webrtc_not_avaible'} );
         } else {
@@ -393,18 +413,23 @@
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
 
+                var initUIParams = authorizationing ? {withoutUpdMsg: true} : {};
+
                 app.caller = {};
                 app.callees = [];
                 app.mainVideo = 0;
                 remoteStreamCounter = 0;
 
-                initializeUI();
+                ui.togglePreloadMain('hide');
+                initializeUI(initUIParams);
                 ui.$panel.addClass('hidden');
 
                 /** delete callee video elements */
                 $('.j-callee').remove();
 
                 ui.setPositionFooter();
+
+                authorizationing = false;
             };
 
             QB.webrtc.onSessionCloseListener = function(session){

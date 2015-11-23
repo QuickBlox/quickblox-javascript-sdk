@@ -74,9 +74,15 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  if (!getUserMedia) {
+  
+  if(!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
+
+  if(!window.navigator.onLine) {
+    throw new Error('Check internet connection.');
+  }
+
   getUserMedia = getUserMedia.bind(navigator);
 
   var self = this;
@@ -163,22 +169,28 @@ WebRTCSession.prototype.detachMediaStream = function(id){
  * Initiate a call
  * @param {array} A map with custom parameters
  */
-WebRTCSession.prototype.call = function(extension) {
+WebRTCSession.prototype.call = function(extension, callback) {
   var self = this,
-      ext = _prepareExtension(extension);
+      ext = _prepareExtension(extension),
+      isOnlineline = window.navigator.onLine;
 
   Helpers.trace('Call, extension: ' + JSON.stringify(ext));
 
-  self.state = WebRTCSession.State.ACTIVE;
+  if(isOnlineline) {
+    self.state = WebRTCSession.State.ACTIVE;
 
-  // create a peer connection for each opponent
-  self.opponentsIDs.forEach(function(userID, i, arr) {
-    self._callInternal(userID, ext, true);
-  });
+    // create a peer connection for each opponent
+    self.opponentsIDs.forEach(function(userID, i, arr) {
+      self._callInternal(userID, ext, true);
+    });
+  }
+
+  callback(!isOnlineline);
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
   var peer = this._createPeer(userID, 'offer');
+
   peer.addLocalStream(this.localStream);
   this.peerConnections[userID] = peer;
 
