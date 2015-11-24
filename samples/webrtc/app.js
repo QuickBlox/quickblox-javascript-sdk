@@ -328,12 +328,11 @@
 
         /** Reject */
         $(document).on('click', '.j-decline', function() {
-            $(ui.modal.income_call).modal('hide');
-            document.getElementById(ui.sounds.rington).pause();
-
             if (!_.isEmpty(app.currentSession)) {
                 app.currentSession.reject({});
-                app.currentSession = {};
+
+                $(ui.modal.income_call).modal('hide');
+                document.getElementById(ui.sounds.rington).pause();
             }
         });
 
@@ -587,14 +586,20 @@
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+                    ui.toggleRemoteVideoView(userID, 'clear');
+                    document.getElementById(ui.sounds.rington).pause();
+                    
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
                     }
-                    ui.toggleRemoteVideoView(userID, 'clear');
-                    $(ui.modal.income_call).modal('hide');
-                    document.getElementById(ui.sounds.rington).pause();
 
-                    isCallEnded = _.every(app.currentSession.peerConnections, function(i) { 
+                    if( !_.isEmpty(app.currentSession) ) {
+                        if ( Object.keys(app.currentSession.peerConnections).length === 1 || userID === app.currentSession.initiatorID) {
+                            $(ui.modal.income_call).modal('hide');
+                        }
+                    }
+
+                    isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
                         return i.iceConnectionState === 'closed';
                     });
 

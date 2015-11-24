@@ -310,6 +310,7 @@ WebRTCSession.prototype.reject = function(extension) {
   ext["opponentsIDs"] = self.opponentsIDs;
 
   var peersLen = Object.keys(self.peerConnections).length;
+  
   if(peersLen > 0){
     for (var key in self.peerConnections) {
       var peerConnection = self.peerConnections[key];
@@ -441,8 +442,6 @@ WebRTCSession.filter = function(id, filters) {
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
 
-  this._clearWaitingOfferOrAnswerTimer();
-
   var oppIDs = this._uniqueOpponentsIDs();
   oppIDs.forEach(function(opID, i, arr) {
 
@@ -507,6 +506,8 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var self = this;
 
+  this._clearAnswerTimer();
+
   // drop the call if the initiator did it
   if (userID === self.initiatorID) {
     if( Object.keys(self.peerConnections).length ) {
@@ -530,6 +531,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
+
   if(peerConnection){
     peerConnection.addCandidates(extension.iceCandidates);
   }else{
