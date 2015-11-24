@@ -121,9 +121,9 @@ function ChatProxy(service, webrtcModule, conn) {
       return true;
     }
 
-    // autosend 'received' status
+    // autosend 'received' status (ignore messages from self)
     //
-    if (markable) {
+    if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
       var params = {
         messageId: messageId,
         userId: userId,

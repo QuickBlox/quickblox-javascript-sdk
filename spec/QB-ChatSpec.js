@@ -7,6 +7,9 @@ describe('Chat API', function() {
 
   describe('XMPP (real time messaging)', function() {
 
+    var messageId;
+
+
     // beforeAll
     //
     beforeAll(function(done){
@@ -29,8 +32,6 @@ describe('Chat API', function() {
     //
     it('can send and receive private messages', function(done) {
 
-      var self = this;
-
       QB.chat.onMessageListener = function(userId, receivedMessage){
 
         expect(receivedMessage).not.toBeNull();
@@ -40,9 +41,9 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         });
-        expect(receivedMessage.id).toEqual(self.messageId);
+        expect(receivedMessage.id).toEqual(messageId);
         expect(receivedMessage.markable).toEqual(1);
-        self.messageId = null;
+        messageId = null;
 
         done();
       };
@@ -53,10 +54,11 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         },
+        body: "hello amigo",
         markable: 1
       };
       QB.chat.send(QBUser1.id, message);
-      this.messageId = message.id;
+      messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -65,8 +67,6 @@ describe('Chat API', function() {
     //
     it('can send and receive system messages', function(done) {
 
-      var self = this;
-
       QB.chat.onSystemMessageListener = function(receivedMessage){
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.userId).toEqual(QBUser1.id);
@@ -74,8 +74,8 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         });
-        expect(receivedMessage.id).toEqual(self.messageId);
-        self.messageId = null;
+        expect(receivedMessage.id).toEqual(messageId);
+        messageId = null;
 
         done();
       };
@@ -87,7 +87,7 @@ describe('Chat API', function() {
         }
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
-      this.messageId = message.id;
+      messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -96,23 +96,19 @@ describe('Chat API', function() {
     //
     it("can send and receive 'delivered' status", function(done) {
 
-      var self = this;
-
-      QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
-        expect(messageId).toEqual(self.params.messageId);
-        expect(dialogId).toEqual(self.params.dialogId);
-        expect(userId).toEqual(self.params.userId);
-        self.params = null;
-
-        done();
-      };
-
       var params = {
         messageId: "507f1f77bcf86cd799439011",
         userId: QBUser1.id,
-        dialogId: "507f191e810c19729de860ea"
+        dialogId: "507f191e810c19729de86012"
       };
-      this.params = params;
+
+      QB.chat.onDeliveredStatusListener = function(msgId, dialogId, userId){
+        expect(msgId).toEqual("507f1f77bcf86cd799439011");
+        expect(dialogId).toEqual("507f191e810c19729de86012");
+        expect(userId).toEqual(QBUser1.id);
+
+        done();
+      };
 
       QB.chat.sendDeliveredStatus(params);
 
@@ -123,23 +119,19 @@ describe('Chat API', function() {
     //
     it("can send and receive 'read' status", function(done) {
 
-      var self = this;
+      var params = {
+        messageId: "507f1f77bcf86cd799439022",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de86023"
+      };
 
-      QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
-        expect(messageId).toEqual(self.params.messageId);
-        expect(dialogId).toEqual(self.params.dialogId);
-        expect(userId).toEqual(self.params.userId);
-        self.params = null;
+      QB.chat.onReadStatusListener = function(msgId, dialogId, userId){
+        expect(msgId).toEqual("507f1f77bcf86cd799439022");
+        expect(dialogId).toEqual("507f191e810c19729de86023");
+        expect(userId).toEqual(QBUser1.id);
 
         done();
       };
-
-      var params = {
-        messageId: "507f1f77bcf86cd799439011",
-        userId: QBUser1.id,
-        dialogId: "507f191e810c19729de860ea"
-      };
-      this.params = params;
 
       QB.chat.sendReadStatus(params);
 
@@ -217,10 +209,17 @@ describe('Chat API', function() {
     //
     it('can create a dialog (group)', function(done) {
 
+      var customParams = {
+        class_name: "JasmineDialogCustomParams",
+        age: 1,
+        name: "challeng"
+      }
       var params = {occupants_ids:[QBUser2.id],
                              name: "GroupDialogName",
-                             type: 2
+                             type: 2,
+                             data: customParams
                             }
+
       QB.chat.dialog.create(params, function(err, res) {
 
         if(err){
@@ -235,6 +234,7 @@ describe('Chat API', function() {
             return a - b;
           });
           expect(res.occupants_ids).toEqual(ocuupantsArray);
+          expect(res.data).toEqual(customParams);
 
           dialogId = res._id;
 
@@ -268,10 +268,18 @@ describe('Chat API', function() {
     //
     it('can update a dialog (group)', function(done) {
 
+      var customParams = {
+        class_name: "JasmineDialogCustomParams",
+        age: 2,
+        name: "challeng2"
+      }
+
       var toUpdate = {
           name: "GroupDialogNewName",
-          pull_all: {occupants_ids: [QBUser2.id]}
+          pull_all: {occupants_ids: [QBUser2.id]},
+          data: customParams
         };
+
       QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
 
         if(err){
@@ -280,6 +288,7 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res.name).toEqual("GroupDialogNewName");
           expect(res.occupants_ids).toEqual([QBUser1.id]);
+          expect(res.data).toEqual(customParams);
 
           done();
         }
