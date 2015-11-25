@@ -79,10 +79,6 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
 
-  if(!window.navigator.onLine) {
-    throw new Error('Check internet connection.');
-  }
-
   getUserMedia = getUserMedia.bind(navigator);
 
   var self = this;
@@ -441,6 +437,8 @@ WebRTCSession.filter = function(id, filters) {
 
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
+
+  this._clearWaitingOfferOrAnswerTimer();
 
   var oppIDs = this._uniqueOpponentsIDs();
   oppIDs.forEach(function(opID, i, arr) {
