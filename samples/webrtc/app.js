@@ -106,6 +106,12 @@
                     $(selector)
                         .removeClass(classesNameAll)
                         .addClass( filterName );
+                },
+                callTime: 0,
+                updTimer: function() {
+                    this.callTime += 1000;
+                    $('#timer').removeClass('hidden')
+                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
                 }
             },
             app = {
@@ -114,7 +120,8 @@
                 currentSession: {},
                 mainVideo: 0
             },
-            remoteStreamCounter = 0;
+            remoteStreamCounter = 0,
+            callTimer;
 
         function initializeUI() {
             ui.createUsers(QBUsers, ui.$usersList);
@@ -528,6 +535,10 @@
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
                 }
+
+                if(!callTimer) {
+                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+                }
             };
 
             QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
@@ -538,7 +549,8 @@
                 console.groupEnd();
 
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
-                    $calleeStatus = $('.j-callee_status_' + userID);
+                    $calleeStatus = $('.j-callee_status_' + userID),
+                    isCallEnded = false;
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
                     $calleeStatus.text(connectionStateName);
@@ -562,9 +574,22 @@
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
                     }
+
                     ui.toggleRemoteVideoView(userID, 'clear');
                     $(ui.modal.income_call).modal('hide');
                     document.getElementById(ui.sounds.rington).pause();
+
+                    isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
+                        return i.iceConnectionState === 'closed';
+                    });
+
+                    if( _.isEmpty(app.currentSession) || isCallEnded ) {
+                        if(callTimer) {
+                            clearInterval(callTimer);
+                            callTimer = null;
+                            ui.callTime = 0;
+                        }
+                    }
                 }
             };
         }

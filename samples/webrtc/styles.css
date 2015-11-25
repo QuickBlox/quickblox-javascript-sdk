@@ -416,6 +416,22 @@ time, mark, audio, video {
 /**
  * MAIN VIDEO
  */
+.main_video {
+    position: relative;
+}
+
+.main_video__timer {
+    display: inline-block;
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    padding: 10px;
+    
+    border-radius: 8px;
+    background: rgba(0,0,0, .5);
+    color: #fff;
+}
+
 @media all and (min-width: 780px) {
     .main_video {
         float: left;
