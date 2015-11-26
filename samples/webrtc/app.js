@@ -1,7 +1,7 @@
-// ;(function(window, $) {
+;(function(window, $) {
     'use strict';
     /** when DOM is ready */
-    // $(function() {
+    $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -14,7 +14,6 @@
                 $btnHangup: $('.j-hangup'),
 
                 $ctrlBtn: $('.j-caller__ctrl'),
-                filterClassName: '.j-filter',
 
                 modal: {
                     'income_call': '#income_call'
@@ -102,11 +101,17 @@
                     }
                 },
                 changeFilter: function(selector, filterName) {
-                    var classesNameAll = 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
+                    var classesNameAll = 'aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
                    
                     $(selector)
                         .removeClass(classesNameAll)
                         .addClass( filterName );
+                },
+                callTime: 0,
+                updTimer: function() {
+                    this.callTime += 1000;
+                    $('#timer').removeClass('hidden')
+                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
                 }
             },
             app = {
@@ -116,17 +121,13 @@
                 mainVideo: 0
             },
             remoteStreamCounter = 0,
-            authorizationing = false;
+            callTimer;
 
-        function initializeUI(arg) {
-            var params = arg || {};
-
+        function initializeUI() {
             ui.createUsers(QBUsers, ui.$usersList);
+
+            ui.updateMsg({msg: 'login'});
             ui.$usersTitle.text(MESSAGES.title_login);
-            
-            if(!params.withoutUpdMsg) {
-                ui.updateMsg({msg: 'login'});
-            }
         }
 
         /**
@@ -150,7 +151,6 @@
 
             /** if app.caller is not exist create caller, if no - add callees */
             if( _.isEmpty(app.caller) ) {
-                authorizationing = true;
                 ui.togglePreloadMain('show');
                 /**
                  * id: + for convert to number type
@@ -184,8 +184,6 @@
                         ui.$panel.removeClass('hidden');
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
-
-                        authorizationing = false;
                     }
                 });
             } else {
@@ -223,10 +221,6 @@
                     elemId: 'localVideo'
                 };
 
-            if(!window.navigator.onLine) {
-                ui.updateMsg({msg: 'no_internet'});
-            }
-
             if ( _.isEmpty(app.callees) ) {
                 $('#error_no_calles').modal();
             } else {
@@ -236,25 +230,21 @@
                     if (err) {
                         ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
                     } else {
-                        app.currentSession.call({}, function(error) {
-                            if(error) {
-                                console.warn(error.detail);
-                            } else {
-                                var compiled = _.template( $('#callee_video').html() );
+                        var compiled = _.template( $('#callee_video').html() );
 
-                                ui.updateMsg({msg: 'calling'});
-                                document.getElementById(ui.sounds.call).play();
+                        ui.updateMsg({msg: 'calling'});
+                        document.getElementById(ui.sounds.call).play();
 
-                                /** create video elements for callees */
-                                Object.keys(app.callees).forEach(function(userID, i, arr) {
-                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
-                                });
-
-                                ui.$callees.append(videoElems);
-
-                                ui.hideCallBtn();
-                            }
+                        /** create video elements for callees */
+                        Object.keys(app.callees).forEach(function(userID, i, arr) {
+                            videoElems += compiled({userID: userID, name: app.callees[userID] });
                         });
+
+                        ui.$callees.append(videoElems);
+
+                        ui.hideCallBtn();
+
+                        app.currentSession.call({});
                     }
                 });
             }
@@ -324,11 +314,12 @@
 
         /** Reject */
         $(document).on('click', '.j-decline', function() {
+            $(ui.modal.income_call).modal('hide');
+            document.getElementById(ui.sounds.rington).pause();
+
             if (!_.isEmpty(app.currentSession)) {
                 app.currentSession.reject({});
-
-                $(ui.modal.income_call).modal('hide');
-                document.getElementById(ui.sounds.rington).pause();
+                app.currentSession = {};
             }
         });
 
@@ -372,7 +363,7 @@
         });
 
         /** Change filter for filter */
-        $(document).on('change', ui.filterClassName, function() {
+        $(document).on('change', '.j-filter', function() {
             var val = $.trim( $(this).val() );
 
             ui.changeFilter('#localVideo', val);
@@ -386,7 +377,7 @@
             ui.setPositionFooter();
         });
 
-        /** Before use WebRTC checking WebRTC is avaible */
+        /** Before use WebRTC checking is WebRTC is avaible */
         if (!QB.webrtc) {
             ui.updateMsg( {msg: 'webrtc_not_avaible'} );
         } else {
@@ -408,23 +399,18 @@
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
 
-                var initUIParams = authorizationing ? {withoutUpdMsg: true} : {};
-
                 app.caller = {};
                 app.callees = [];
                 app.mainVideo = 0;
                 remoteStreamCounter = 0;
 
-                ui.togglePreloadMain('hide');
-                initializeUI(initUIParams);
+                initializeUI();
                 ui.$panel.addClass('hidden');
 
                 /** delete callee video elements */
                 $('.j-callee').remove();
 
                 ui.setPositionFooter();
-
-                authorizationing = false;
             };
 
             QB.webrtc.onSessionCloseListener = function(session){
@@ -458,7 +444,7 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('No Answer');
+                $('.j-callee_status_' + userId).text('User not answer');
             };
 
             QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
@@ -469,7 +455,7 @@
                 console.groupEnd();
 
                 ui.changeFilter('#remote_video_' + userId, extension.filter);
-                if (+(app.mainVideo) === userId) {
+                if (app.mainVideo === userId) {
                     ui.changeFilter('#main_video', extension.filter);
                 }
             };
@@ -505,7 +491,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
                 
-                var filterName = $.trim( $(ui.filterClassName).val() );
+                var filterName = $.trim( $('.j-filter').val() );
 
                 document.getElementById(ui.sounds.call).pause();
                 ui.updateMsg({msg: 'accept_call'});
@@ -520,7 +506,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('Rejected');
+                $('.j-callee_status_' + userId).text('Reject');
             };
 
             QB.webrtc.onStopCallListener = function(session, userId, extension) {
@@ -549,6 +535,10 @@
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
                 }
+
+                if(!callTimer) {
+                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+                }
             };
 
             QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
@@ -558,10 +548,9 @@
                     console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
-                var isCallEnded = false;
-
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
-                    $calleeStatus = $('.j-callee_status_' + userID);
+                    $calleeStatus = $('.j-callee_status_' + userID),
+                    isCallEnded = false;
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
                     $calleeStatus.text(connectionStateName);
@@ -584,10 +573,6 @@
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                     ui.toggleRemoteVideoView(userID, 'clear');
                     document.getElementById(ui.sounds.rington).pause();
-                    
-                    if(app.mainVideo === userID) {
-                        $('#remote_video_' + userID).removeClass('active');
-                    }
 
                     if( !_.isEmpty(app.currentSession) ) {
                         if ( Object.keys(app.currentSession.peerConnections).length === 1 || userID === app.currentSession.initiatorID) {
@@ -595,18 +580,31 @@
                         }
                     }
 
+                    if(app.mainVideo === userID) {
+                        $('#remote_video_' + userID).removeClass('active');
+                    }
+
+
                     isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
                         return i.iceConnectionState === 'closed';
                     });
-
+    
                     /** remove filters */
                     if( isCallEnded ) {
                         ui.changeFilter('#localVideo', 'no');
                         ui.changeFilter('#main_video', 'no');
                         $(ui.filterClassName).val('no');
                     }
+
+                    if( _.isEmpty(app.currentSession) || isCallEnded ) {
+                        if(callTimer) {
+                            clearInterval(callTimer);
+                            callTimer = null;
+                            ui.callTime = 0;
+                        }
+                    }
                 }
             };
         }
-    // });
-// }(window, jQuery));
+    });
+}(window, jQuery));
