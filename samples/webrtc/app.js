@@ -107,6 +107,13 @@
                     $(selector)
                         .removeClass(classesNameAll)
                         .addClass( filterName );
+                },
+                callTime: 0,
+                updTimer: function() {
+                    this.callTime += 1000;
+
+                    $('#timer').removeClass('hidden')
+                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
                 }
             },
             app = {
@@ -116,7 +123,8 @@
                 mainVideo: 0
             },
             remoteStreamCounter = 0,
-            authorizationing = false;
+            authorizationing = false,
+            callTimer;
 
         function initializeUI(arg) {
             var params = arg || {};
@@ -531,6 +539,10 @@
                 console.groupEnd();
 
                 $('.j-callee_status_' + userId).text('Hang up');
+
+                if(!callTimer) {
+                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+                }
             };
 
             QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -558,10 +570,9 @@
                     console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
-                var isCallEnded = false;
-
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
-                    $calleeStatus = $('.j-callee_status_' + userID);
+                    $calleeStatus = $('.j-callee_status_' + userID),
+                    isCallEnded = false;
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
                     $calleeStatus.text(connectionStateName);
@@ -604,6 +615,14 @@
                         ui.changeFilter('#localVideo', 'no');
                         ui.changeFilter('#main_video', 'no');
                         $(ui.filterClassName).val('no');
+                    }
+
+                    if( _.isEmpty(app.currentSession) || isCallEnded ) {
+                        if(callTimer) {
+                            clearInterval(callTimer);
+                            callTimer = null;
+                            ui.callTime = 0;
+                        }
                     }
                 }
             };
