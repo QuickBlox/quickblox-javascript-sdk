@@ -571,17 +571,30 @@
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+                    ui.toggleRemoteVideoView(userID, 'clear');
+                    document.getElementById(ui.sounds.rington).pause();
+
+                    if( !_.isEmpty(app.currentSession) ) {
+                        if ( Object.keys(app.currentSession.peerConnections).length === 1 || userID === app.currentSession.initiatorID) {
+                            $(ui.modal.income_call).modal('hide');
+                        }
+                    }
+
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
                     }
 
-                    ui.toggleRemoteVideoView(userID, 'clear');
-                    $(ui.modal.income_call).modal('hide');
-                    document.getElementById(ui.sounds.rington).pause();
 
                     isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
                         return i.iceConnectionState === 'closed';
                     });
+    
+                    /** remove filters */
+                    if( isCallEnded ) {
+                        ui.changeFilter('#localVideo', 'no');
+                        ui.changeFilter('#main_video', 'no');
+                        $(ui.filterClassName).val('no');
+                    }
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
                         if(callTimer) {

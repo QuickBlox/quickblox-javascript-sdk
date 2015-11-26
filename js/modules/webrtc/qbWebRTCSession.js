@@ -74,9 +74,11 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  if (!getUserMedia) {
+  
+  if(!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
+
   getUserMedia = getUserMedia.bind(navigator);
 
   var self = this;
@@ -163,22 +165,34 @@ WebRTCSession.prototype.detachMediaStream = function(id){
  * Initiate a call
  * @param {array} A map with custom parameters
  */
-WebRTCSession.prototype.call = function(extension) {
+WebRTCSession.prototype.call = function(extension, callback) {
   var self = this,
-      ext = _prepareExtension(extension);
+      ext = _prepareExtension(extension),
+      isOnlineline = window.navigator.onLine,
+      error = null;
 
   Helpers.trace('Call, extension: ' + JSON.stringify(ext));
 
-  self.state = WebRTCSession.State.ACTIVE;
+  if(isOnlineline) {
+    self.state = WebRTCSession.State.ACTIVE;
 
-  // create a peer connection for each opponent
-  self.opponentsIDs.forEach(function(userID, i, arr) {
-    self._callInternal(userID, ext, true);
-  });
+    // create a peer connection for each opponent
+    self.opponentsIDs.forEach(function(userID, i, arr) {
+      self._callInternal(userID, ext, true);
+    });
+  } else {
+    self.state = WebRTCSession.State.CLOSED;
+    error = Utils.getError(408, 'Call.ERROR - ERR_INTERNET_DISCONNECTED');
+  }
+
+  if (typeof callback === 'function') {
+    callback(error);
+  }
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
   var peer = this._createPeer(userID, 'offer');
+
   peer.addLocalStream(this.localStream);
   this.peerConnections[userID] = peer;
 
@@ -247,6 +261,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   // create a peer connection
   //
   var peerConnection = this.peerConnections[userID];
+
   if(peerConnection){
     peerConnection.addLocalStream(this.localStream);
 
@@ -297,6 +312,7 @@ WebRTCSession.prototype.reject = function(extension) {
   ext["opponentsIDs"] = self.opponentsIDs;
 
   var peersLen = Object.keys(self.peerConnections).length;
+  
   if(peersLen > 0){
     for (var key in self.peerConnections) {
       var peerConnection = self.peerConnections[key];
@@ -435,18 +451,14 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 
     var peerConnection = self.peerConnections[opID];
     if(peerConnection){
-
-      if(opID == callerID){
-        peerConnection.updateSDP(extension.sdp);
-      }
+      peerConnection.updateSDP(extension.sdp);
 
       // The group call logic starts here
       if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
         self._acceptInternal(callerID, {});
       }
 
-    }else{
-
+    } else {
       // create peer connections for each opponent
       var peerConnection;
       if(opID != callerID && self.currentUserID > opID){
@@ -470,6 +482,7 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
+
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){
         Helpers.traceError("'setRemoteSessionDescription' error: " + error);
@@ -497,6 +510,8 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
 WebRTCSession.prototype.processOnStop = function(userID, extension) {
   var self = this;
 
+  this._clearAnswerTimer();
+
   // drop the call if the initiator did it
   if (userID === self.initiatorID) {
     if( Object.keys(self.peerConnections).length ) {
@@ -520,6 +535,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 
 WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
+
   if(peerConnection){
     peerConnection.addCandidates(extension.iceCandidates);
   }else{
