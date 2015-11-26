@@ -1,7 +1,7 @@
-// ;(function(window, $) {
+;(function(window, $) {
     'use strict';
     /** when DOM is ready */
-    // $(function() {
+    $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -107,6 +107,13 @@
                     $(selector)
                         .removeClass(classesNameAll)
                         .addClass( filterName );
+                },
+                callTime: 0,
+                updTimer: function() {
+                    this.callTime += 1000;
+
+                    $('#timer').removeClass('hidden')
+                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
                 }
             },
             app = {
@@ -116,7 +123,8 @@
                 mainVideo: 0
             },
             remoteStreamCounter = 0,
-            authorizationing = false;
+            authorizationing = false,
+            callTimer;
 
         function initializeUI(arg) {
             var params = arg || {};
@@ -549,6 +557,10 @@
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
                 }
+
+                if(!callTimer) {
+                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+                }
             };
 
             QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
@@ -558,10 +570,9 @@
                     console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
-                var isCallEnded = false;
-
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
-                    $calleeStatus = $('.j-callee_status_' + userID);
+                    $calleeStatus = $('.j-callee_status_' + userID),
+                    isCallEnded = false;
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
                     $calleeStatus.text(connectionStateName);
@@ -605,8 +616,16 @@
                         ui.changeFilter('#main_video', 'no');
                         $(ui.filterClassName).val('no');
                     }
+
+                    if( _.isEmpty(app.currentSession) || isCallEnded ) {
+                        if(callTimer) {
+                            clearInterval(callTimer);
+                            callTimer = null;
+                            ui.callTime = 0;
+                        }
+                    }
                 }
             };
         }
-    // });
-// }(window, jQuery));
+    });
+}(window, jQuery));
