@@ -283,7 +283,7 @@ ChatProxy.prototype = {
 
       switch (status) {
       case Strophe.Status.ERROR:
-        err = getError(422, 'Status.ERROR - An error has occurred');
+        err = Utils.getError(422, 'Status.ERROR - An error has occurred');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTING:
@@ -291,14 +291,14 @@ ChatProxy.prototype = {
         Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
         break;
       case Strophe.Status.CONNFAIL:
-        err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
+        err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.AUTHENTICATING:
         Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
-        err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
+        err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTED:
@@ -1079,18 +1079,6 @@ module.exports = ChatProxy;
 
 /* Private
 ---------------------------------------------------------------------- */
-function getError(code, detail) {
-  var errorMsg = {
-    code: code,
-    status: 'error',
-    message: code === 401 ? 'Unauthorized' : 'Unprocessable Entity',
-    detail: detail
-  };
-
-  Utils.QBLog('[ChatProxy]', 'error: ', detail);
-  return errorMsg;
-}
-
 function getLocalTime() {
   return (new Date).toTimeString().split(' ')[0];
 }

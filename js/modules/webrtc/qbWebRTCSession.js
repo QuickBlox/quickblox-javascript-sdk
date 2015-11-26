@@ -168,7 +168,8 @@ WebRTCSession.prototype.detachMediaStream = function(id){
 WebRTCSession.prototype.call = function(extension, callback) {
   var self = this,
       ext = _prepareExtension(extension),
-      isOnlineline = window.navigator.onLine;
+      isOnlineline = window.navigator.onLine,
+      error = null;
 
   Helpers.trace('Call, extension: ' + JSON.stringify(ext));
 
@@ -179,9 +180,14 @@ WebRTCSession.prototype.call = function(extension, callback) {
     self.opponentsIDs.forEach(function(userID, i, arr) {
       self._callInternal(userID, ext, true);
     });
+  } else {
+    self.state = WebRTCSession.State.CLOSED;
+    error = Utils.getError(408, 'Call.ERROR - ERR_INTERNET_DISCONNECTED');
   }
 
-  callback(!isOnlineline);
+  if (typeof callback === 'function') {
+    callback(error, null);
+  }
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {

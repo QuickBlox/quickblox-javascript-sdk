@@ -236,27 +236,23 @@
                     if (err) {
                         ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
                     } else {
-                        var compiled = _.template( $('#callee_video').html() );
-
-                        ui.updateMsg({msg: 'calling'});
-                        document.getElementById(ui.sounds.call).play();
-
-                        /** create video elements for callees */
-                        Object.keys(app.callees).forEach(function(userID, i, arr) {
-                            videoElems += compiled({userID: userID, name: app.callees[userID] });
-                        });
-
-                        ui.$callees.append(videoElems);
-
-                        ui.hideCallBtn();
-
                         app.currentSession.call({}, function(error) {
-                            /** 
-                             * check internet connection
-                             * if error not equal false that means we are offline
-                             */
                             if(error) {
-                                console.warn('We are offline.');
+                                console.warn(error.detail);
+                            } else {
+                                var compiled = _.template( $('#callee_video').html() );
+
+                                ui.updateMsg({msg: 'calling'});
+                                document.getElementById(ui.sounds.call).play();
+
+                                /** create video elements for callees */
+                                Object.keys(app.callees).forEach(function(userID, i, arr) {
+                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                });
+
+                                ui.$callees.append(videoElems);
+
+                                ui.hideCallBtn();
                             }
                         });
                     }
