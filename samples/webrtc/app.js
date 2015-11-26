@@ -1,7 +1,7 @@
-;(function(window, $) {
+// ;(function(window, $) {
     'use strict';
     /** when DOM is ready */
-    $(function() {
+    // $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -14,6 +14,7 @@
                 $btnHangup: $('.j-hangup'),
 
                 $ctrlBtn: $('.j-caller__ctrl'),
+                filterClassName: '.j-filter',
 
                 modal: {
                     'income_call': '#income_call'
@@ -101,7 +102,7 @@
                     }
                 },
                 changeFilter: function(selector, filterName) {
-                    var classesNameAll = 'aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
+                    var classesNameAll = 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
                    
                     $(selector)
                         .removeClass(classesNameAll)
@@ -114,13 +115,18 @@
                 currentSession: {},
                 mainVideo: 0
             },
-            remoteStreamCounter = 0;
+            remoteStreamCounter = 0,
+            authorizationing = false;
 
-        function initializeUI() {
+        function initializeUI(arg) {
+            var params = arg || {};
+
             ui.createUsers(QBUsers, ui.$usersList);
-
-            ui.updateMsg({msg: 'login'});
             ui.$usersTitle.text(MESSAGES.title_login);
+            
+            if(!params.withoutUpdMsg) {
+                ui.updateMsg({msg: 'login'});
+            }
         }
 
         /**
@@ -144,6 +150,7 @@
 
             /** if app.caller is not exist create caller, if no - add callees */
             if( _.isEmpty(app.caller) ) {
+                authorizationing = true;
                 ui.togglePreloadMain('show');
                 /**
                  * id: + for convert to number type
@@ -177,6 +184,8 @@
                         ui.$panel.removeClass('hidden');
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
+
+                        authorizationing = false;
                     }
                 });
             } else {
@@ -214,6 +223,10 @@
                     elemId: 'localVideo'
                 };
 
+            if(!window.navigator.onLine) {
+                ui.updateMsg({msg: 'no_internet'});
+            }
+
             if ( _.isEmpty(app.callees) ) {
                 $('#error_no_calles').modal();
             } else {
@@ -223,21 +236,25 @@
                     if (err) {
                         ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
                     } else {
-                        var compiled = _.template( $('#callee_video').html() );
+                        app.currentSession.call({}, function(error) {
+                            if(error) {
+                                console.warn(error.detail);
+                            } else {
+                                var compiled = _.template( $('#callee_video').html() );
 
-                        ui.updateMsg({msg: 'calling'});
-                        document.getElementById(ui.sounds.call).play();
+                                ui.updateMsg({msg: 'calling'});
+                                document.getElementById(ui.sounds.call).play();
 
-                        /** create video elements for callees */
-                        Object.keys(app.callees).forEach(function(userID, i, arr) {
-                            videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                /** create video elements for callees */
+                                Object.keys(app.callees).forEach(function(userID, i, arr) {
+                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                });
+
+                                ui.$callees.append(videoElems);
+
+                                ui.hideCallBtn();
+                            }
                         });
-
-                        ui.$callees.append(videoElems);
-
-                        ui.hideCallBtn();
-
-                        app.currentSession.call({});
                     }
                 });
             }
@@ -307,12 +324,11 @@
 
         /** Reject */
         $(document).on('click', '.j-decline', function() {
-            $(ui.modal.income_call).modal('hide');
-            document.getElementById(ui.sounds.rington).pause();
-
             if (!_.isEmpty(app.currentSession)) {
                 app.currentSession.reject({});
-                app.currentSession = {};
+
+                $(ui.modal.income_call).modal('hide');
+                document.getElementById(ui.sounds.rington).pause();
             }
         });
 
@@ -356,7 +372,7 @@
         });
 
         /** Change filter for filter */
-        $(document).on('change', '.j-filter', function() {
+        $(document).on('change', ui.filterClassName, function() {
             var val = $.trim( $(this).val() );
 
             ui.changeFilter('#localVideo', val);
@@ -370,7 +386,7 @@
             ui.setPositionFooter();
         });
 
-        /** Before use WebRTC checking is WebRTC is avaible */
+        /** Before use WebRTC checking WebRTC is avaible */
         if (!QB.webrtc) {
             ui.updateMsg( {msg: 'webrtc_not_avaible'} );
         } else {
@@ -392,18 +408,23 @@
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
 
+                var initUIParams = authorizationing ? {withoutUpdMsg: true} : {};
+
                 app.caller = {};
                 app.callees = [];
                 app.mainVideo = 0;
                 remoteStreamCounter = 0;
 
-                initializeUI();
+                ui.togglePreloadMain('hide');
+                initializeUI(initUIParams);
                 ui.$panel.addClass('hidden');
 
                 /** delete callee video elements */
                 $('.j-callee').remove();
 
                 ui.setPositionFooter();
+
+                authorizationing = false;
             };
 
             QB.webrtc.onSessionCloseListener = function(session){
@@ -437,7 +458,7 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('User not answer');
+                $('.j-callee_status_' + userId).text('No Answer');
             };
 
             QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
@@ -448,7 +469,7 @@
                 console.groupEnd();
 
                 ui.changeFilter('#remote_video_' + userId, extension.filter);
-                if (app.mainVideo === userId) {
+                if (+(app.mainVideo) === userId) {
                     ui.changeFilter('#main_video', extension.filter);
                 }
             };
@@ -484,7 +505,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
                 
-                var filterName = $.trim( $('.j-filter').val() );
+                var filterName = $.trim( $(ui.filterClassName).val() );
 
                 document.getElementById(ui.sounds.call).pause();
                 ui.updateMsg({msg: 'accept_call'});
@@ -499,7 +520,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('Reject');
+                $('.j-callee_status_' + userId).text('Rejected');
             };
 
             QB.webrtc.onStopCallListener = function(session, userId, extension) {
@@ -537,6 +558,8 @@
                     console.log('Сonnection state: ' + connectionState);
                 console.groupEnd();
 
+                var isCallEnded = false;
+
                 var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
                     $calleeStatus = $('.j-callee_status_' + userID);
 
@@ -559,14 +582,31 @@
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+                    ui.toggleRemoteVideoView(userID, 'clear');
+                    document.getElementById(ui.sounds.rington).pause();
+                    
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
                     }
-                    ui.toggleRemoteVideoView(userID, 'clear');
-                    $(ui.modal.income_call).modal('hide');
-                    document.getElementById(ui.sounds.rington).pause();
+
+                    if( !_.isEmpty(app.currentSession) ) {
+                        if ( Object.keys(app.currentSession.peerConnections).length === 1 || userID === app.currentSession.initiatorID) {
+                            $(ui.modal.income_call).modal('hide');
+                        }
+                    }
+
+                    isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
+                        return i.iceConnectionState === 'closed';
+                    });
+
+                    /** remove filters */
+                    if( isCallEnded ) {
+                        ui.changeFilter('#localVideo', 'no');
+                        ui.changeFilter('#main_video', 'no');
+                        $(ui.filterClassName).val('no');
+                    }
                 }
             };
         }
-    });
-}(window, jQuery));
+    // });
+// }(window, jQuery));

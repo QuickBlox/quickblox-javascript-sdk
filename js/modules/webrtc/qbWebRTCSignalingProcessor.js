@@ -17,7 +17,6 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   var self = this;
 
   this._onMessage = function(stanza) {
-
     var from = stanza.getAttribute('from');
     var extraParams = stanza.querySelector('extraParams');
     var delay = stanza.querySelector('delay');
@@ -37,42 +36,42 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
     delete extension.signalType;
 
     switch (signalType) {
-    case SignalingConstants.SignalingType.CALL:
-      if (typeof self.delegate._onCallListener === 'function'){
-        self.delegate._onCallListener(userId, sessionId, extension);
-      }
+      case SignalingConstants.SignalingType.CALL:
+        if (typeof self.delegate._onCallListener === 'function'){
+          self.delegate._onCallListener(userId, sessionId, extension);
+        }
 
-      break;
-    case SignalingConstants.SignalingType.ACCEPT:
-      if (typeof self.delegate._onAcceptListener === 'function'){
-        self.delegate._onAcceptListener(userId, sessionId, extension);
-      }
+        break;
+      case SignalingConstants.SignalingType.ACCEPT:
+        if (typeof self.delegate._onAcceptListener === 'function'){
+          self.delegate._onAcceptListener(userId, sessionId, extension);
+        }
 
-      break;
-    case SignalingConstants.SignalingType.REJECT:
-      if (typeof self.delegate._onRejectListener === 'function'){
-        self.delegate._onRejectListener(userId, sessionId, extension);
-      }
+        break;
+      case SignalingConstants.SignalingType.REJECT:
+        if (typeof self.delegate._onRejectListener === 'function'){
+          self.delegate._onRejectListener(userId, sessionId, extension);
+        }
 
-      break;
-    case SignalingConstants.SignalingType.STOP:
-      if (typeof self.delegate._onStopListener === 'function'){
-        self.delegate._onStopListener(userId, sessionId, extension);
-      }
+        break;
+      case SignalingConstants.SignalingType.STOP:
+        if (typeof self.delegate._onStopListener === 'function'){
+          self.delegate._onStopListener(userId, sessionId, extension);
+        }
 
-      break;
-    case SignalingConstants.SignalingType.CANDIDATE:
-      if (typeof self.delegate._onIceCandidatesListener === 'function'){
-        self.delegate._onIceCandidatesListener(userId, sessionId, extension);
-      }
+        break;
+      case SignalingConstants.SignalingType.CANDIDATE:
+        if (typeof self.delegate._onIceCandidatesListener === 'function'){
+          self.delegate._onIceCandidatesListener(userId, sessionId, extension);
+        }
 
-      break;
-    case SignalingConstants.SignalingType.PARAMETERS_CHANGED:
-      if (typeof self.delegate._onUpdateListener === 'function'){
-        self.delegate._onUpdateListener(userId, sessionId, extension);
-      }
+        break;
+      case SignalingConstants.SignalingType.PARAMETERS_CHANGED:
+        if (typeof self.delegate._onUpdateListener === 'function'){
+          self.delegate._onUpdateListener(userId, sessionId, extension);
+        }
 
-      break;
+        break;
     }
 
     // we must return true to keep the handler alive
@@ -147,8 +146,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
       }
     }
     return extension;
-  }
-
+  };
 }
 
 module.exports = WebRTCSignalingProcessor;

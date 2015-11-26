@@ -160,6 +160,43 @@ var Utils = {
     }
 
     return isAvaible;
+  },
+  getError: function(code, detail, moduleName) {
+    var errorMsg = {
+      code: code,
+      status: 'error',
+      detail: detail
+    };
+
+    switch(code){
+      case 401:
+        errorMsg.message = 'Unauthorized';
+        break;
+
+      case 403:
+        errorMsg.message = 'Forbidden';
+        break;
+
+      case 408:
+        errorMsg.message = 'Request Timeout';
+        break;
+
+      case 422:
+        errorMsg.message = 'Unprocessable Entity';
+        break;
+
+      case 502:
+        errorMsg.message = 'Bad Gateway';
+        break;
+
+      default:
+        errorMsg.message = 'Unknown error';
+        break;
+    }
+
+    this.QBLog('[' + moduleName + ']', 'error: ', detail);
+
+    return errorMsg;
   }
 };
 
