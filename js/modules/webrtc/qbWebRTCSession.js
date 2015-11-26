@@ -186,7 +186,7 @@ WebRTCSession.prototype.call = function(extension, callback) {
   }
 
   if (typeof callback === 'function') {
-    callback(error, null);
+    callback(error);
   }
 };
 
