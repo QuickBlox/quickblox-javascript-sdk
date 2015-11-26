@@ -1,7 +1,7 @@
-// ;(function(window, $) {
+;(function(window, $) {
     'use strict';
     /** when DOM is ready */
-    // $(function() {
+    $(function() {
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
@@ -539,10 +539,6 @@
                 console.groupEnd();
 
                 $('.j-callee_status_' + userId).text('Hang up');
-
-                if(!callTimer) {
-                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
-                }
             };
 
             QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -560,6 +556,10 @@
                     
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
+                }
+
+                if(!callTimer) {
+                    callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
                 }
             };
 
@@ -627,5 +627,5 @@
                 }
             };
         }
-    // });
-// }(window, jQuery));
+    });
+}(window, jQuery));
