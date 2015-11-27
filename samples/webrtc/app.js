@@ -273,6 +273,8 @@
             if(!_.isEmpty(app.currentSession)) {
                 app.currentSession.stop({});
                 app.currentSession = {};
+
+                ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
             }
         });
 
@@ -324,6 +326,7 @@
                     });
 
                     ui.$callees.append(videoElems);
+                    ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
 
                     app.currentSession.accept({});
                 }
