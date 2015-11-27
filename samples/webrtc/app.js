@@ -593,6 +593,7 @@
 
                 if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
                     ui.toggleRemoteVideoView(userID, 'hide');
+                    $calleeStatus.text('Hung Up');
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
