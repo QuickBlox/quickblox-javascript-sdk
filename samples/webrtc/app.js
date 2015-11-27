@@ -538,7 +538,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('Hang up');
+                $('.j-callee_status_' + userId).text('Hung Up');
             };
 
             QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
