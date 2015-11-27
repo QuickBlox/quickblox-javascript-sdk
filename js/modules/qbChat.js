@@ -938,7 +938,21 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, stanzaResult);
+      var allNames = [], namesList = {},
+          defaultList = stanzaResult.getElementsByTagName('default'),
+          activeList = stanzaResult.getElementsByTagName('active'),
+          allLists = stanzaResult.getElementsByTagName('list'),
+          defaultName = defaultList[0].getAttribute('name'),
+          activeName = activeList[0].getAttribute('name');
+      for (var i = 0, len = allLists.length; i < len; i++) {
+        allNames.push(allLists[i].getAttribute('name'));
+      }
+      namesList = {
+        'default': defaultName,
+        'active': activeName,
+        'names': allNames
+      };
+      callback(null, namesList);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
@@ -1012,7 +1026,7 @@ PrivacyListProxy.prototype = {
 
     listKeys = Object.keys(listObj);
 
-    for (var index = 0, i = 1, j = 2, len = listKeys.length; index < len; index++, i=i+2, j=j+2) {
+    for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
       userId = listKeys[index];
       userAction = listObj[userId];
       userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
@@ -1022,19 +1036,19 @@ PrivacyListProxy.prototype = {
         type: 'jid',
         value: userJid,
         action: userAction,
-        order: i
+        order: i+1
       }).up();
 
       iq.c('item', {
         type: 'jid',
         value: userMuc,
         action: userAction,
-        order: j
+        order: i+2
       }).up();
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, stanzaResult);
+      callback(null, null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
@@ -1059,15 +1073,13 @@ PrivacyListProxy.prototype = {
       list.items = updatedArray;
       createList = list;
 
-      self.create(createList, null);
-    });
-
-    self.getList(list.name, function(error, response) {
-      if (error) {
-        callback(error, null);
-      }else{
-        callback(null, response);
-      }
+      self.create(createList, function(error, response) {
+        if (error) {
+          callback(error, null);
+        }else{
+          callback(null, createList);
+        }
+      });
     });
   },
 
@@ -1083,7 +1095,7 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, stanzaResult);
+      callback(null, null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
@@ -1106,7 +1118,7 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, stanzaResult);
+      callback(null, null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
@@ -1125,11 +1137,11 @@ PrivacyListProxy.prototype = {
     }).c('query', {
       xmlns: Strophe.NS.PRIVACY_LIST
     }).c('active', {
-      name: name
+      name: name ? name : ''
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, stanzaResult);
+      callback(null, null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
