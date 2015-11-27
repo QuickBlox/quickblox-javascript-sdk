@@ -929,9 +929,7 @@ function PrivacyListProxy(service) {
 PrivacyListProxy.prototype = {
 
   getNames: function(callback) {
-    var iq, self = this;
-
-    iq = $iq({
+    var iq = $iq({
       from: connection.jid,
       type: 'get',
       id: connection.getUniqueId('getlist')
@@ -968,9 +966,9 @@ PrivacyListProxy.prototype = {
 
     connection.sendIQ(iq, function(stanzaResult) {
       items = stanzaResult.getElementsByTagName('item');
-      for (var i = 0, index = 0, len = items.length; i < len; index++, i=i+2) {
+      for (var i = 0, len = items.length; i < len; i=i+2) {
         userJid = items[i].getAttribute('value'),
-        userId = QB.chat.helpers.getIdFromNode(userJid);
+        userId = self.helpers.getIdFromNode(userJid);
         usersList.push({
           user_id: userId,
           action: items[i].getAttribute('action')
@@ -1074,9 +1072,7 @@ PrivacyListProxy.prototype = {
   },
 
   delete: function(name, callback) {
-    var iq, self = this;
-
-    iq = $iq({
+    var iq = $iq({
       from: connection.jid,
       type: 'set',
       id: connection.getUniqueId('remove')
@@ -1099,9 +1095,7 @@ PrivacyListProxy.prototype = {
   },
 
   setAsDefault: function(name, callback) {
-    var iq, self = this;
-
-    iq = $iq({
+    var iq = $iq({
       from: connection.jid,
       type: 'set',
       id: connection.getUniqueId('default')
@@ -1124,9 +1118,7 @@ PrivacyListProxy.prototype = {
   },
 
   setAsActive: function(name, callback) {
-    var iq, self = this;
-
-    iq = $iq({
+    var iq = $iq({
       from: connection.jid,
       type: 'set',
       id: connection.getUniqueId('active')
