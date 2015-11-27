@@ -22,7 +22,7 @@ time, mark, audio, video {
     vertical-align: baseline;
 }
 
-.wrapper {
+body {
     font: 400 15px/1 'Open Sans', sans-serif;
     color: #404040;
 }

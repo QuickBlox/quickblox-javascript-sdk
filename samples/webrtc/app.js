@@ -501,10 +501,7 @@
                 /** set name of caller */
                 $('.j-ic_initiator').text( userInfo.full_name );
 
-                $(ui.modal.income_call).modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
+                $(ui.modal.income_call).modal('show');
 
                 document.getElementById(ui.sounds.rington).play();
             };
