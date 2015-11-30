@@ -932,7 +932,7 @@ PrivacyListProxy.prototype = {
     var iq = $iq({
       from: connection.jid,
       type: 'get',
-      id: connection.getUniqueId('getlist')
+      id: connection.getUniqueId('getNames')
     }).c('query', {
       xmlns: Strophe.NS.PRIVACY_LIST
     });
