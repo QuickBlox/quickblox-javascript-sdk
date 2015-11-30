@@ -626,6 +626,8 @@
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
                         if(callTimer) {
+                            $('#timer').addClass('hidden');
+                            
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;
