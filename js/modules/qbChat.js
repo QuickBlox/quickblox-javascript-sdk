@@ -1048,13 +1048,13 @@ PrivacyListProxy.prototype = {
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, null);
+      callback(null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject, null);
+        callback(errorObject);
       }else{
-        callback(getError(408), null);
+        callback(getError(408));
       }
     });
   },
@@ -1095,13 +1095,13 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, null);
+      callback(null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject, null);
+        callback(errorObject);
       }else{
-        callback(getError(408), null);
+        callback(getError(408));
       }
     });
   },
@@ -1118,13 +1118,13 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, null);
+      callback(null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject, null);
+        callback(errorObject);
       }else{
-        callback(getError(408), null);
+        callback(getError(408));
       }
     });
   },
@@ -1141,13 +1141,13 @@ PrivacyListProxy.prototype = {
     });
 
     connection.sendIQ(iq, function(stanzaResult) {
-      callback(null, null);
+      callback(null);
     }, function(stanzaError){
       if(stanzaError){
         var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject, null);
+        callback(errorObject);
       }else{
-        callback(getError(408), null);
+        callback(getError(408));
       }
     });
   }

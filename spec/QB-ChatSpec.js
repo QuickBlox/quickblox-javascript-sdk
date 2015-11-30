@@ -419,11 +419,11 @@ describe('Chat API', function() {
               {user_id: 1010101, action: "allow"}
             ];
             list = {name: "test", items: usersObj};
-        QB.chat.privacylist.create(list, function(error, response) {
+        QB.chat.privacylist.create(list, function(error) {
           if(error){
             done.fail("Create or update list error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
+            expect(error).toBe(null);
             QB.chat.privacylist.getList("test", function(error, response) {
               if(error){
                 done.fail("Get list by name error: " + JSON.stringify(error));
@@ -469,16 +469,16 @@ describe('Chat API', function() {
               {user_id: 1011101, action: "allow"}
             ];
             list = {name: "test", items: usersObj};
-        QB.chat.privacylist.create(list, function(error, response) {
+        QB.chat.privacylist.create(list, function(error) {
           if(error){
             done.fail("Create or update list error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
-            QB.chat.privacylist.delete("test", function(error, response) {
+            expect(error).toBe(null);
+            QB.chat.privacylist.delete("test", function(error) {
               if(error){
                 done.fail("Delete list by name error: " + JSON.stringify(error));
               }else{
-                expect(response).toBe(null);
+                expect(error).toBe(null);
                 console.info("can delete list by name");
                 done();
               }
@@ -488,11 +488,11 @@ describe('Chat API', function() {
       });  
 
       it("can declines the use of active lists", function(done) {
-        QB.chat.privacylist.setAsActive("", function(error, response) {
+        QB.chat.privacylist.setAsActive("", function(error) {
           if(error){
             done.fail("Declines the use of active lists error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
+            expect(error).toBe(null);
             QB.chat.privacylist.getNames(function(error, response) {
               if(error){
                 done.fail("Get list's by name error: " + JSON.stringify(error));
@@ -507,11 +507,11 @@ describe('Chat API', function() {
       });
 
       it("can set active list", function(done) {
-        QB.chat.privacylist.setAsActive("public",function(error, response) {
+        QB.chat.privacylist.setAsActive("public",function(error) {
           if(error){
             done.fail("Set active list error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
+            expect(error).toBe(null);
             console.info("can set active list");
             done();
           }
@@ -519,11 +519,11 @@ describe('Chat API', function() {
       });
 
       it("can declines the use of default lists", function(done) {
-        QB.chat.privacylist.setAsDefault("", function(error, response) {
+        QB.chat.privacylist.setAsDefault("", function(error) {
           if(error){
             done.fail("Declines the use of default lists error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
+            expect(error).toBe(null);
             QB.chat.privacylist.getNames(function(err, res) {
               if(err){
                 done.fail("Get list's by name error: " + JSON.stringify(err));
@@ -538,11 +538,11 @@ describe('Chat API', function() {
       });
 
       it("can set default list", function(done) {
-        QB.chat.privacylist.setAsDefault("block", function(error, response) {
+        QB.chat.privacylist.setAsDefault("block", function(error) {
           if(error){
             done.fail("Set default list error: " + JSON.stringify(error));
           }else{
-            expect(response).toBe(null);
+            expect(error).toBe(null);
             console.info("can set default list");
             done();
           }
