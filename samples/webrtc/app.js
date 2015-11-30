@@ -182,7 +182,13 @@
                     password: app.caller.password
                 }, function(err, res) {
                     if(err !== null) {
+                        app.caller = {};
+
                         ui.updateMsg( {msg: 'connect_error'} );
+
+                        initializeUI({withoutUpdMsg: true});
+                        ui.setPositionFooter();
+                        ui.togglePreloadMain('hide');
                     } else {
                         ui.createUsers(usersWithoutCaller, ui.$usersList);
 
@@ -192,9 +198,9 @@
                         ui.$panel.removeClass('hidden');
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
-
-                        authorizationing = false;
                     }
+
+                    authorizationing = false;
                 });
             } else {
                 user.id = +$.trim( $el.data('id') );
