@@ -20,5 +20,5 @@ var QBUser1 = {
 };
 
 var CONFIG = {
-  debug: {mode: 1, file: null}
+  debug: {mode: 0, file: null}
 };
