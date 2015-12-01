@@ -227,6 +227,22 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 
   this._onIQ = function(stanza) {
+    // var type = stanza.getAttribute('type'),
+    //     typeId = stanza.getAttribute('id').split(':')[1];
+
+    // if (typeof self.onListEditListener === 'function' && typeId === 'push') {
+    //   var listName = (stanza.getElementsByTagName('list')[0]).getAttribute('name');
+
+    //   var iq = $iq({
+    //     from: connection.jid,
+    //     type: 'result',
+    //     id: connection.getUniqueId('push')
+    //   });
+
+    //   connection.sendIQ(iq);
+
+    //   Utils.safeCallbackCall(self.onListEditListener(listName));
+    // }
 
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
@@ -1037,14 +1053,22 @@ PrivacyListProxy.prototype = {
         value: userJid,
         action: userAction,
         order: i+1
-      }).up();
+      }).c('message', {
+      }).up().c('presence-in', {
+      }).up().c('presence-out', {
+      }).up().c('iq', {
+      }).up().up();
 
       iq.c('item', {
         type: 'jid',
         value: userMuc,
         action: userAction,
         order: i+2
-      }).up();
+      }).c('message', {
+      }).up().c('presence-in', {
+      }).up().c('presence-out', {
+      }).up().c('iq', {
+      }).up().up(); 
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
@@ -1061,25 +1085,27 @@ PrivacyListProxy.prototype = {
 
   update: function(list, callback) {
     var self = this,
-        createList,
         oldArray = [],
         newArray = [],
         updatedArray = [];
 
     self.getList(list.name, function(error, response) {
-      oldArray = response.items;
-      newArray = list.items;
-      updatedArray = $.merge(oldArray, newArray);
-      list.items = updatedArray;
-      createList = list;
-
-      self.create(createList, function(error, response) {
-        if (error) {
-          callback(error, null);
-        }else{
-          callback(null, createList);
-        }
-      });
+      if (error) {
+        callback(error, null);
+      }else{
+        oldArray = response.items;
+        newArray = list.items;
+        updatedArray = $.merge(oldArray, newArray);
+        list.items = updatedArray;
+        createList = list;
+        self.create(createList, function(error, response) {
+          if (error) {
+            callback(error, null);
+          }else{
+            callback(null, createList);
+          }
+        });
+      }
     });
   },
 
