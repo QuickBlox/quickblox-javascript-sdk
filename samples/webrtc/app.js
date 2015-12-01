@@ -182,7 +182,13 @@
                     password: app.caller.password
                 }, function(err, res) {
                     if(err !== null) {
+                        app.caller = {};
+
                         ui.updateMsg( {msg: 'connect_error'} );
+
+                        initializeUI({withoutUpdMsg: true});
+                        ui.setPositionFooter();
+                        ui.togglePreloadMain('hide');
                     } else {
                         ui.createUsers(usersWithoutCaller, ui.$usersList);
 
@@ -192,9 +198,9 @@
                         ui.$panel.removeClass('hidden');
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
-
-                        authorizationing = false;
                     }
+
+                    authorizationing = false;
                 });
             } else {
                 user.id = +$.trim( $el.data('id') );
@@ -273,6 +279,8 @@
             if(!_.isEmpty(app.currentSession)) {
                 app.currentSession.stop({});
                 app.currentSession = {};
+
+                ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
             }
         });
 
@@ -324,6 +332,7 @@
                     });
 
                     ui.$callees.append(videoElems);
+                    ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
 
                     app.currentSession.accept({});
                 }
@@ -498,10 +507,7 @@
                 /** set name of caller */
                 $('.j-ic_initiator').text( userInfo.full_name );
 
-                $(ui.modal.income_call).modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
+                $(ui.modal.income_call).modal('show');
 
                 document.getElementById(ui.sounds.rington).play();
             };
@@ -538,7 +544,7 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                $('.j-callee_status_' + userId).text('Hang up');
+                $('.j-callee_status_' + userId).text('Hung Up');
             };
 
             QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
@@ -590,6 +596,7 @@
 
                 if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
                     ui.toggleRemoteVideoView(userID, 'hide');
+                    $calleeStatus.text('Hung Up');
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
@@ -619,6 +626,8 @@
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
                         if(callTimer) {
+                            $('#timer').addClass('hidden');
+                            
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;

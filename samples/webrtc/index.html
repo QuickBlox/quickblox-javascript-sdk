@@ -133,37 +133,6 @@
             </div>
         </footer>
 
-        <!-- MODALS -->
-        <div class="modal fade" id="error_no_calles" tabindex="-1">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">Error</h4>
-                    </div>
-
-                    <div class="modal-body">
-                        <p class="text-danger">Please choose users to call</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="income_call" tabindex="-1">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4>Call from <strong class="j-ic_initiator"></strong></h4>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default j-decline">Decline</button>
-                        <button type="button" class="btn btn-primary j-accept">Accept</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- SOUNDS -->
         <audio id="callingSignal" loop preload="auto">
             <source src="audio/calling.ogg"></source>
@@ -179,6 +148,37 @@
             <source src="audio/end_of_call.ogg"></source>
             <source src="audio/end_of_call.mp3"></source>
         </audio>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal fade" id="error_no_calles" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Error</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p class="text-danger">Please choose users to call</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="income_call" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Call from <strong class="j-ic_initiator"></strong></h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default j-decline">Decline</button>
+                    <button type="button" class="btn btn-primary j-accept">Accept</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- TEMPLATES -->
@@ -204,6 +204,10 @@
     <script type="text/template" id="login_tpl">
         Login in as <%= name %>
         <button class='fw-link j-logout'>Logout</button>
+    </script>
+
+    <script type="text/template" id="during_call">
+        Login in as <%= name %>
     </script>
 
     <script type="text/template" id="device_not_found">
