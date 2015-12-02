@@ -7,9 +7,6 @@ describe('Chat API', function() {
 
   describe('XMPP (real time messaging)', function() {
 
-    var messageId;
-
-
     // beforeAll
     //
     beforeAll(function(done){
@@ -32,6 +29,8 @@ describe('Chat API', function() {
     //
     it('can send and receive private messages', function(done) {
 
+      var self = this;
+
       QB.chat.onMessageListener = function(userId, receivedMessage){
 
         expect(receivedMessage).not.toBeNull();
@@ -41,9 +40,9 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         });
-        expect(receivedMessage.id).toEqual(messageId);
+        expect(receivedMessage.id).toEqual(self.messageId);
         expect(receivedMessage.markable).toEqual(1);
-        messageId = null;
+        self.messageId = null;
 
         done();
       };
@@ -54,11 +53,10 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         },
-        body: "hello amigo",
         markable: 1
       };
       QB.chat.send(QBUser1.id, message);
-      messageId = message.id;
+      this.messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -67,6 +65,8 @@ describe('Chat API', function() {
     //
     it('can send and receive system messages', function(done) {
 
+      var self = this;
+
       QB.chat.onSystemMessageListener = function(receivedMessage){
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.userId).toEqual(QBUser1.id);
@@ -74,8 +74,8 @@ describe('Chat API', function() {
           param1: "value1",
           param2: "value2"
         });
-        expect(receivedMessage.id).toEqual(messageId);
-        messageId = null;
+        expect(receivedMessage.id).toEqual(self.messageId);
+        self.messageId = null;
 
         done();
       };
@@ -87,7 +87,7 @@ describe('Chat API', function() {
         }
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
-      messageId = message.id;
+      this.messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -96,19 +96,23 @@ describe('Chat API', function() {
     //
     it("can send and receive 'delivered' status", function(done) {
 
-      var params = {
-        messageId: "507f1f77bcf86cd799439011",
-        userId: QBUser1.id,
-        dialogId: "507f191e810c19729de86012"
-      };
+      var self = this;
 
-      QB.chat.onDeliveredStatusListener = function(msgId, dialogId, userId){
-        expect(msgId).toEqual("507f1f77bcf86cd799439011");
-        expect(dialogId).toEqual("507f191e810c19729de86012");
-        expect(userId).toEqual(QBUser1.id);
+      QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
+        expect(messageId).toEqual(self.params.messageId);
+        expect(dialogId).toEqual(self.params.dialogId);
+        expect(userId).toEqual(self.params.userId);
+        self.params = null;
 
         done();
       };
+
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+      this.params = params;
 
       QB.chat.sendDeliveredStatus(params);
 
@@ -119,19 +123,23 @@ describe('Chat API', function() {
     //
     it("can send and receive 'read' status", function(done) {
 
-      var params = {
-        messageId: "507f1f77bcf86cd799439022",
-        userId: QBUser1.id,
-        dialogId: "507f191e810c19729de86023"
-      };
+      var self = this;
 
-      QB.chat.onReadStatusListener = function(msgId, dialogId, userId){
-        expect(msgId).toEqual("507f1f77bcf86cd799439022");
-        expect(dialogId).toEqual("507f191e810c19729de86023");
-        expect(userId).toEqual(QBUser1.id);
+      QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
+        expect(messageId).toEqual(self.params.messageId);
+        expect(dialogId).toEqual(self.params.dialogId);
+        expect(userId).toEqual(self.params.userId);
+        self.params = null;
 
         done();
       };
+
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+      this.params = params;
 
       QB.chat.sendReadStatus(params);
 
@@ -209,17 +217,10 @@ describe('Chat API', function() {
     //
     it('can create a dialog (group)', function(done) {
 
-      var customParams = {
-        class_name: "JasmineDialogCustomParams",
-        age: 1,
-        name: "challeng"
-      }
       var params = {occupants_ids:[QBUser2.id],
                              name: "GroupDialogName",
-                             type: 2,
-                             data: customParams
+                             type: 2
                             }
-
       QB.chat.dialog.create(params, function(err, res) {
 
         if(err){
@@ -234,7 +235,6 @@ describe('Chat API', function() {
             return a - b;
           });
           expect(res.occupants_ids).toEqual(ocuupantsArray);
-          expect(res.data).toEqual(customParams);
 
           dialogId = res._id;
 
@@ -268,18 +268,10 @@ describe('Chat API', function() {
     //
     it('can update a dialog (group)', function(done) {
 
-      var customParams = {
-        class_name: "JasmineDialogCustomParams",
-        age: 2,
-        name: "challeng2"
-      }
-
       var toUpdate = {
           name: "GroupDialogNewName",
-          pull_all: {occupants_ids: [QBUser2.id]},
-          data: customParams
+          pull_all: {occupants_ids: [QBUser2.id]}
         };
-
       QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
 
         if(err){
@@ -288,7 +280,6 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res.name).toEqual("GroupDialogNewName");
           expect(res.occupants_ids).toEqual([QBUser1.id]);
-          expect(res.data).toEqual(customParams);
 
           done();
         }
@@ -402,4 +393,188 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
   });
+
+  // Privacy list
+  //
+  describe("Privacy list", function() {
+
+    beforeAll(function(done){
+
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+
+      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
+        if(err){
+          done.fail("Chat login error: " + JSON.stringify(err));
+        }else{
+          expect(roster).not.toBeNull();
+          done();
+        }
+      });
+
+    }, LOGIN_TIMEOUT);
+
+      it("can create new list with items", function(done) {
+        var usersObj = [
+              {user_id: 1111111, action: "deny"},
+              {user_id: 1010101, action: "allow"}
+            ];
+            list = {name: "test", items: usersObj};
+        QB.chat.privacylist.create(list, function(error) {
+          if(error){
+            done.fail("Create or update list error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            QB.chat.privacylist.getList("test", function(error, response) {
+              if(error){
+                done.fail("Get list by name error: " + JSON.stringify(error));
+              }else{
+                expect(response.name).toBe("test");
+                expect(response.items.length).toBeGreaterThan(0);
+                console.info("can create new list with items");
+                done();
+              }
+            });
+          }
+        });   
+      });  
+
+      it("can update list by name", function(done) {
+        var userAction = "allow",
+            usersArr = [
+              {user_id: 1999991, action: "allow"},
+              {user_id: 7777777, action: "allow"},
+              {user_id: 8888888, action: userAction},
+              {user_id: 9999999, action: userAction},
+            ],
+            list = {name: "private", items: usersArr};
+        QB.chat.privacylist.update(list, function(error, response) {
+          if(error){
+            done.fail("Update list error: " + JSON.stringify(error));
+          }else{
+            var a = response.items;
+            expect(response.name).toBe("private");
+            expect(a[a.length-1].user_id).toBe(9999999);
+            expect(a[a.length-1].action).toBe(userAction);
+            console.info("can update list by name");
+            done();
+          }
+        });
+      });
+      
+      it("can delete list by name", function(done) {
+        var usersObj = [
+              {user_id: 1111111, action: "deny"},
+              {user_id: 1010101, action: "allow"},
+              {user_id: 1000001, action: "deny"},
+              {user_id: 1011101, action: "allow"}
+            ];
+            list = {name: "test", items: usersObj};
+        QB.chat.privacylist.create(list, function(error) {
+          if(error){
+            done.fail("Create or update list error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            QB.chat.privacylist.delete("test", function(error) {
+              if(error){
+                done.fail("Delete list by name error: " + JSON.stringify(error));
+              }else{
+                expect(error).toBe(null);
+                console.info("can delete list by name");
+                done();
+              }
+            });
+          }
+        });
+      });  
+
+      it("can declines the use of active lists", function(done) {
+        QB.chat.privacylist.setAsActive("", function(error) {
+          if(error){
+            done.fail("Declines the use of active lists error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            QB.chat.privacylist.getNames(function(error, response) {
+              if(error){
+                done.fail("Get list's by name error: " + JSON.stringify(error));
+              }else{
+                expect(response.active).toBe("");
+                console.info("can declines the use of active lists");
+                done();
+              }
+            });
+          }
+        });
+      });
+
+      it("can set active list", function(done) {
+        QB.chat.privacylist.setAsActive("public",function(error) {
+          if(error){
+            done.fail("Set active list error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            console.info("can set active list");
+            done();
+          }
+        });
+      });
+
+      it("can declines the use of default lists", function(done) {
+        QB.chat.privacylist.setAsDefault("", function(error) {
+          if(error){
+            done.fail("Declines the use of default lists error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            QB.chat.privacylist.getNames(function(err, res) {
+              if(err){
+                done.fail("Get list's by name error: " + JSON.stringify(err));
+              }else{
+                expect(res.default).toBe("");
+                console.info("can declines the use of default lists");
+                done();
+              }
+            });
+          }
+        });
+      });
+
+      it("can set default list", function(done) {
+        QB.chat.privacylist.setAsDefault("block", function(error) {
+          if(error){
+            done.fail("Set default list error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+            console.info("can set default list");
+            done();
+          }
+        });
+      });
+
+      it("can get list's by name", function(done) {
+        QB.chat.privacylist.getList("private", function(error, response) {
+          if(error){
+            done.fail("Get list's by name error: " + JSON.stringify(error));
+          }else{
+            expect(response.name).toBe("private");
+            expect(response.items.length).toBeGreaterThan(0);
+            console.info("can get list's by name");
+            done();
+          }
+        });
+      });
+
+      it("can get names of Privacy list", function(done) {
+        QB.chat.privacylist.getNames(function(error, response) {
+          if(error){
+            done.fail("Get names of Privacy list error: " + JSON.stringify(error));
+          }else{
+            var lists = response.names;
+            expect(lists.length).toBeGreaterThan(0);
+            console.info("can get names of Privacy list");
+            done();
+          }
+        });
+      });
+
+  });
+
 });
