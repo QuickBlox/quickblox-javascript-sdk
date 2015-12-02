@@ -180,6 +180,153 @@ describe('Chat API', function() {
     }, MESSAGING_TIMEOUT);
 
 
+    // Privacy lists API
+    //
+    describe("Privacy list", function() {
+
+      // Create
+      //
+      it("can create new list with items", function(done) {
+        var usersObj = [
+              {user_id: 1111111, action: "deny"},
+              {user_id: 1010101, action: "allow"}
+            ];
+            list = {name: "test", items: usersObj};
+
+        QB.chat.privacylist.create(list, function(error) {
+          if(error){
+            done.fail("Create or update list error: " + JSON.stringify(error));
+          }else{
+            expect(error).toBe(null);
+
+            console.info("can create new list with items");
+            done();
+          }
+        });
+      });
+
+      // Update
+      //
+      it("can update list by name", function(done) {
+        var usersArr = [
+              {user_id: 1999991, action: "allow"},
+            ],
+            list = {name: "test", items: usersArr};
+
+        QB.chat.privacylist.update(list, function(error, response) {
+          if(error){
+            done.fail("Update list error: " + JSON.stringify(error));
+          }else{
+            expect(response.name).toBe("test");
+            var items = response.items;
+            expect(items.length).toEqual(3);
+
+            console.info("can update list by name");
+            done();
+          }
+        });
+      });
+
+      // Set 'active' list
+      //
+      it("can set active list", function(done) {
+        QB.chat.privacylist.setAsActive("test", function(error) {
+          if(error){
+            done.fail("Set active list error: " + JSON.stringify(error));
+          }else{
+            console.info("can set active list");
+            done();
+          }
+        });
+      });
+
+      // Reset 'active' list
+      //
+      it("can declines the use of active lists", function(done) {
+        QB.chat.privacylist.setAsActive("", function(error) {
+          if(error){
+            done.fail("Declines the use of active lists error: " + JSON.stringify(error));
+          }else{
+            console.info("can declines the use of active lists");
+            done();
+          }
+        });
+      });
+
+      // set 'default' list
+      //
+      it("can set default list", function(done) {
+        QB.chat.privacylist.setAsDefault("test", function(error) {
+          if(error){
+            done.fail("Set default list error: " + JSON.stringify(error));
+          }else{
+            console.info("can set default list");
+            done();
+          }
+        });
+      });
+
+      // Reset 'default' list
+      //
+      it("can declines the use of default lists", function(done) {
+        QB.chat.privacylist.setAsDefault("", function(error) {
+          if(error){
+            done.fail("Declines the use of default lists error: " + JSON.stringify(error));
+          }else{
+            console.info("can declines the use of default lists");
+            done();
+          }
+        });
+      });
+
+      // Get list
+      //
+      it("can get list by name", function(done) {
+        QB.chat.privacylist.getList("test", function(error, response) {
+          if(error){
+            done.fail("Get list by name error: " + JSON.stringify(error));
+          }else{
+            expect(response.name).toBe("test");
+            expect(response.items.length).toEqual(3);
+
+            console.info("can get list by name");
+            done();
+          }
+        });
+      });
+
+      // Get names
+      //
+      it("can get names of privacy lists", function(done) {
+        QB.chat.privacylist.getNames(function(error, response) {
+          if(error){
+            done.fail("Get names of privacy lists error: " + JSON.stringify(error));
+          }else{
+            var lists = response.names;
+            expect(lists.length).toBeGreaterThan(0);
+
+            console.info("can get names of privacy lists");
+            done();
+          }
+        });
+      });
+
+      // Delete list
+      //
+      it("can delete list by name", function(done) {
+        QB.chat.privacylist.delete("test", function(error) {
+          if(error){
+            done.fail("Delete list by name error: " + JSON.stringify(error));
+          }else{
+            console.info("can delete list by name");
+            done();
+          }
+        });
+      });
+
+    });
+
+
     // afterAll
     //
     afterAll(function(done){
@@ -391,189 +538,6 @@ describe('Chat API', function() {
 
       });
     }, REST_REQUESTS_TIMEOUT);
-
-  });
-
-  // Privacy list
-  //
-  describe("Privacy list", function() {
-
-    beforeAll(function(done){
-
-      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
-
-      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
-        if(err){
-          done.fail("Chat login error: " + JSON.stringify(err));
-        }else{
-          expect(roster).not.toBeNull();
-          done();
-        }
-      });
-
-    }, LOGIN_TIMEOUT);
-
-      it("can create new list with items", function(done) {
-        var usersObj = [
-              {user_id: 1111111, action: "deny"},
-              {user_id: 1010101, action: "allow"}
-            ];
-            list = {name: "test", items: usersObj};
-        QB.chat.privacylist.create(list, function(error) {
-          if(error){
-            done.fail("Create or update list error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            QB.chat.privacylist.getList("test", function(error, response) {
-              if(error){
-                done.fail("Get list by name error: " + JSON.stringify(error));
-              }else{
-                expect(response.name).toBe("test");
-                expect(response.items.length).toBeGreaterThan(0);
-                console.info("can create new list with items");
-                done();
-              }
-            });
-          }
-        });   
-      });  
-
-      it("can update list by name", function(done) {
-        var userAction = "allow",
-            usersArr = [
-              {user_id: 1999991, action: "allow"},
-              {user_id: 7777777, action: "allow"},
-              {user_id: 8888888, action: userAction},
-              {user_id: 9999999, action: userAction},
-            ],
-            list = {name: "private", items: usersArr};
-        QB.chat.privacylist.update(list, function(error, response) {
-          if(error){
-            done.fail("Update list error: " + JSON.stringify(error));
-          }else{
-            var a = response.items;
-            expect(response.name).toBe("private");
-            expect(a[a.length-1].user_id).toBe(9999999);
-            expect(a[a.length-1].action).toBe(userAction);
-            console.info("can update list by name");
-            done();
-          }
-        });
-      });
-      
-      it("can delete list by name", function(done) {
-        var usersObj = [
-              {user_id: 1111111, action: "deny"},
-              {user_id: 1010101, action: "allow"},
-              {user_id: 1000001, action: "deny"},
-              {user_id: 1011101, action: "allow"}
-            ];
-            list = {name: "test", items: usersObj};
-        QB.chat.privacylist.create(list, function(error) {
-          if(error){
-            done.fail("Create or update list error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            QB.chat.privacylist.delete("test", function(error) {
-              if(error){
-                done.fail("Delete list by name error: " + JSON.stringify(error));
-              }else{
-                expect(error).toBe(null);
-                console.info("can delete list by name");
-                done();
-              }
-            });
-          }
-        });
-      });  
-
-      it("can declines the use of active lists", function(done) {
-        QB.chat.privacylist.setAsActive("", function(error) {
-          if(error){
-            done.fail("Declines the use of active lists error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            QB.chat.privacylist.getNames(function(error, response) {
-              if(error){
-                done.fail("Get list's by name error: " + JSON.stringify(error));
-              }else{
-                expect(response.active).toBe("");
-                console.info("can declines the use of active lists");
-                done();
-              }
-            });
-          }
-        });
-      });
-
-      it("can set active list", function(done) {
-        QB.chat.privacylist.setAsActive("public",function(error) {
-          if(error){
-            done.fail("Set active list error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            console.info("can set active list");
-            done();
-          }
-        });
-      });
-
-      it("can declines the use of default lists", function(done) {
-        QB.chat.privacylist.setAsDefault("", function(error) {
-          if(error){
-            done.fail("Declines the use of default lists error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            QB.chat.privacylist.getNames(function(err, res) {
-              if(err){
-                done.fail("Get list's by name error: " + JSON.stringify(err));
-              }else{
-                expect(res.default).toBe("");
-                console.info("can declines the use of default lists");
-                done();
-              }
-            });
-          }
-        });
-      });
-
-      it("can set default list", function(done) {
-        QB.chat.privacylist.setAsDefault("block", function(error) {
-          if(error){
-            done.fail("Set default list error: " + JSON.stringify(error));
-          }else{
-            expect(error).toBe(null);
-            console.info("can set default list");
-            done();
-          }
-        });
-      });
-
-      it("can get list's by name", function(done) {
-        QB.chat.privacylist.getList("private", function(error, response) {
-          if(error){
-            done.fail("Get list's by name error: " + JSON.stringify(error));
-          }else{
-            expect(response.name).toBe("private");
-            expect(response.items.length).toBeGreaterThan(0);
-            console.info("can get list's by name");
-            done();
-          }
-        });
-      });
-
-      it("can get names of Privacy list", function(done) {
-        QB.chat.privacylist.getNames(function(error, response) {
-          if(error){
-            done.fail("Get names of Privacy list error: " + JSON.stringify(error));
-          }else{
-            var lists = response.names;
-            expect(lists.length).toBeGreaterThan(0);
-            console.info("can get names of Privacy list");
-            done();
-          }
-        });
-      });
 
   });
 
