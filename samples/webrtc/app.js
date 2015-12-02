@@ -268,6 +268,7 @@
                                 ui.$callees.append(videoElems);
 
                                 ui.hideCallBtn();
+                                ui.setPositionFooter();
                             }
                         });
                     }
