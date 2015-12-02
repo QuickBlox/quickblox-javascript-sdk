@@ -1084,26 +1084,26 @@ PrivacyListProxy.prototype = {
   },
 
   update: function(list, callback) {
-    var self = this, copyList = list;
+    var self = this
 
-    self.getList(copyList.name, function(error, response) {
+    self.getList(list.name, function(error, response) {
       if (error) {
         callback(error, null);
       }else{
-        var oldArray = response.items,
+        var copyList = (JSON.parse(JSON.stringify(list))),
+            oldArray = response.items,
             newArray = copyList.items,
-            updatedArray = [],
-            createList = {};
+            updatedArray = [], createdList = {};
 
         updatedArray = $.merge(oldArray, newArray);
         copyList.items = updatedArray;
-        createList = copyList;
+        createdList = copyList;
 
-        self.create(createList, function(error, response) {
+        self.create(createdList, function(err, result) {
           if (error) {
-            callback(error, null);
+            callback(err, null);
           }else{
-            callback(null, createList);
+            callback(null, result);
           }
         });
       }
