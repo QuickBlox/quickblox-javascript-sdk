@@ -298,7 +298,7 @@ WebRTCProxy.prototype.attachMediaStream = function(id, stream, options) {
     }
     elem.play();
   } else {
-    throw new Error('Unable to attach media stream, element ' + elemId  + ' is undefined');
+    throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
   }
 };
 
