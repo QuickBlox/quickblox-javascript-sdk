@@ -1097,8 +1097,8 @@ PrivacyListProxy.prototype = {
         newArray = list.items;
         updatedArray = $.merge(oldArray, newArray);
         list.items = updatedArray;
-        createList = list;
-        self.create(createList, function(error, response) {
+
+        self.create(list, function(error, response) {
           if (error) {
             callback(error, null);
           }else{
