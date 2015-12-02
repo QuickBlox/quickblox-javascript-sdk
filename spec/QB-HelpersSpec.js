@@ -31,7 +31,7 @@ describe('Helpers', function() {
     console.info("can get type chat from jid or from user's id");
   });
 
-  it("can get recipient id from privat chat", function() {
+  it("can get recipient id for privat dialog", function() {
   	var occupantsIds = [100500, 707070];
   	var userId = 100500;
     var recipientId = QB.chat.helpers.getRecipientId(occupantsIds, userId);
@@ -44,7 +44,7 @@ describe('Helpers', function() {
     expect(userNick).toEqual("muc.chat.quickblox.com/100500");
     console.info("can get user nick with muc domain");
   });
-  
+
   it("can get id from node", function() {
     var userId = QB.chat.helpers.getIdFromNode("100500-29650@chat.quickblox.com");
     expect(userId).toEqual(100500);
@@ -95,4 +95,3 @@ describe('Helpers', function() {
   });
 
 });
-

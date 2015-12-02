@@ -15,6 +15,7 @@ describe('Content API', function() {
       } else {
         expect(session).not.toBeNull();
         token = session.token;
+
         done();
       }
     });
@@ -79,11 +80,14 @@ describe('Content API', function() {
         expect(res.blob.id).toEqual(2917985);
         expect(res.blob.size).toBe(15);
         console.info('can get file information by ID');
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
+  // Private Url
+  //
   it('can access private URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         privateURL = QB.content.privateUrl(fileUID);
@@ -92,12 +96,12 @@ describe('Content API', function() {
     console.info('can access private URL');
   });
 
+  // Public Url
+  //
   it('can access public URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         publicUrl = QB.content.publicUrl(fileUID);
 
-    expect(publicUrl).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000");
-    console.info('can access public URL');
+    expect(publicUrl).toEqual("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000");
   });
-
 });
