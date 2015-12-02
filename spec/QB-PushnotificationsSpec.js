@@ -1,172 +1,186 @@
-describe('QuickBlox SDK - Messages', function() {
-  var session, needsInit = true;
+var REST_REQUESTS_TIMEOUT = 3000;
 
-  beforeEach(function(){
-    var done;
-    if (needsInit){
-      QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-      runs(function(){
-        done = false;
-        QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-            expect(err).toBeNull();
-            session = result;
-            expect(session).not.toBeNull();
-            needsInit = false;
-            done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create session', TIMEOUT);
-    }
-  });
+describe("PushNotifications API", function() {
+  var params;
 
-  describe('Tokens', function(){
-    var pushToken;
-    it('can create a push token', function(){
-      var done;
-      runs(function(){
-        done = false;
-        params = {environment: 'production', client_identification_sequence: 'aw03O90yoKaKhr3NsVjUNdzP732d0sPlIbIUJsLJqoy0EqjVMCEg76fJH0WHIsrn', platform: 'iOS', udid: '5f5930e927660e6e7d8ff0548b3c404a4d16c04f'};
-        QB.messages.tokens.create(params, function(err, res){
-          pushToken = res;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create push token', TIMEOUT);
-      runs(function(){
-        expect(pushToken).not.toBeNull();
-        expect(pushToken.id).toBeGreaterThan(0);
+  beforeAll(function(done){
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+
+    QB.createSession(QBUser1, function(err, session) {
+      if (err) {
+        done.fail("Create session error: " + JSON.stringify(err));
+      } else {
+        expect(session).not.toBeNull();
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+  describe("Subscriptions", function(){
+
+    it("can create a subscription", function(done){
+      params = {
+        notification_channels: "gcm",
+        device: {
+          platform: "android",
+          udid: "jasmineUnique"
+        },
+        push_token: {
+          environment: "development",
+          client_identification_sequence:"APA91bH91emYD8BYyveyO0C9M--p8xW9yTr1k_Nzr8-SfjCfSIljzYqNIX9fK9JxPsWm3NQ6P-"+
+                                         "zCDkdtktVLEYJI5CLfg_3_auErc_29piz2zLHp5OjK0RdFnod-j0Pclo-a57FaKWxvNSr_EBwbP"+
+                                         "_oFDuXo1x0ucQ"
+        }
+      };
+      QB.pushnotifications.subscriptions.create(params, function(err, res){
+        if (err) {
+          done.fail("Create a subscription error: " + JSON.stringify(err));
+        } else {
+          expect(res).not.toBeNull();
+          expect(res[0].subscription.device.platform.name).toBe("android");
+          console.info("can create a subscription");
+          done();
+        }
       });
     });
 
-    it('can delete a push token', function(){
-      var done;
-      runs(function(){
-        done = false;
-        expect(pushToken).not.toBeNull();
-        QB.messages.tokens.delete(pushToken.id, function(err, res){
-          expect(err).toBeNull();
-          done = true;
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'delete push token', TIMEOUT);
-    });
-  });
-
-  describe('Subscriptions', function(){
-    it('can create a subscription', function(){
-      var subscription, done;
-      runs(function(){
-        done = false;
-        params = {notification_channels: 'apns'};
-        QB.messages.subscriptions.create(params, function(err, res){
-          subscription = res;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create subscription', TIMEOUT);
-      runs(function(){
-        expect(subscription).not.toBeNull();
-        expect(subscription.token).not.toBeNull();
+    it("can list a subscription", function(done){
+      QB.pushnotifications.subscriptions.list(function(err, result){
+        if (err) {
+          done.fail("List a subscription error: " + JSON.stringify(err));
+        } else {
+          expect(result).not.toBeNull();
+          expect(result[0].subscription.device.udid).toBe("jasmineUnique");
+          console.info("can list a subscription");
+          done();
+        }
       });
     });
 
-    it('can list subscriptions', function(){
-      var done, result;
-      runs(function(){
-        done = false;
-        QB.messages.subscriptions.list(function(err, res){
-          result = res;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'list subscriptions', TIMEOUT);
-      runs(function(){
-        console.log('subscriptions',result);
-        expect(result).not.toBeNull();
-        expect(result.length).not.toBeNull();
-      });
-    });
-
-    it('can delete subscription', function(){
-      var done, error, subscription, id;
-      runs(function(){
-        done = false;
-        QB.messages.subscriptions.list(function(err, res) {
-          if (res && !err) {
-            id = res[0].subscription.id;
-            console.log(res[0], id);
-            QB.messages.subscriptions.delete(id, function(err, res){
-              error = err;
-              done = true;
-            });
-          }
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'delete subscription', TIMEOUT);
-      runs(function(){
-        expect(error).toBeNull();
+    it("can delete subscription", function(done){
+      QB.pushnotifications.subscriptions.list(function(err, result){
+        if (err) {
+          done.fail("List a subscription error: " + JSON.stringify(err));
+        } else {
+          var subscriptionId = result[0].subscription.id;
+          QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
+            if (err) {
+              done.fail("Delete subscription error: " + JSON.stringify(err));
+            } else {
+              expect(res).not.toBeNull();
+              expect(res).toBe(true);
+              console.info("can delete subscription");
+              done();
+            }
+          });
+        }
       });
     });
 
   });
 
-  /*describe('Events', function(){
-    it('can create a pull event', function(){
-      var done, result;
-      runs(function(){
-      done = false;
-        params = {notification_type: 'pull', environment:'production', message: window.btoa('QuickBlox JavaScript SDK Spec Event'),
-            user: { id : [239647, 245530]},
-            end_date:  Math.floor((Date.now() / 1000) +(24*60*60)).toString()};
-        QB.messages.events.create(params, function(err, res){
-          result = res;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'create pull event', TIMEOUT * 3);
-      runs(function(){
-        expect(result).not.toBeNull();
-        expect(result.token).not.toBeNull();
+  describe("Events", function(){
+    var eventId;
+
+    beforeAll(function(done){
+      QB.pushnotifications.subscriptions.create(params, function(err, res){
+        if (err) {
+          done.fail("Create a subscription error: " + JSON.stringify(err));
+        } else {
+          expect(res).not.toBeNull();
+          done();
+        }
       });
     });
 
-    it('can get pull events', function(){
-      var done, result;
-      runs(function(){
-      done = false;
-        QB.messages.events.pullEvents(function(err, res){
-          result = res;
-          done = true;
-          expect(err).toBeNull();
-        });
-      });
-      waitsFor(function(){
-        return done;
-      },'get pull events', TIMEOUT * 3);
-      runs(function(){
-        expect(result).not.toBeNull();
-        expect(result.length).not.toBeNull();
+    it("can create event", function(done){
+      var params = {
+        notification_type: "push",
+        push_type: "gcm",
+        user: {ids: [QBUser1.id]},
+        environment: "development",
+        message: QB.pushnotifications.base64Encode("hello QuickBlox!")
+      };
+
+      QB.pushnotifications.events.create(params, function(err, response) {
+        if (err) {
+          done.fail("Create event error: " + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.message).toBe("data.message=aGVsbG8rUXVpY2tCbG94JTIx");
+          console.info("can create event");
+          done();
+        }
       });
     });
-  });*/
+
+    it("can list events", function(done){
+      QB.pushnotifications.events.list({page: "1", per_page: "25"}, function(err, response) {
+        if (err) {
+          done.fail("List events error: " + JSON.stringify(err));
+        } else {
+          eventId = response.items[0].event.id;
+          expect(response).not.toBeNull();
+          expect(response.items.length).toBeGreaterThan(0);
+          console.info("can list events");
+          done();
+        }
+      });
+    });
+
+    it("can get event by id", function(done){
+      QB.pushnotifications.events.get(eventId, function(err, response) {
+        if (err) {
+          done.fail("Get event by id error: " + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.id).toBe(eventId);
+          console.info("can get event by id");
+          done();
+        }
+      });
+    });
+
+    it("can get event's status by id", function(done){
+      QB.pushnotifications.events.status(eventId, function(err, response) {
+        if (err) {
+          done.fail("Get event's status by id error: " + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.id).toBe(eventId);
+          console.info("can get event's status by id");
+          done();
+        }
+      });
+    });
+
+    it("can delete event", function(done){
+      QB.pushnotifications.events.delete(eventId, function(err, response) {
+        expect(response).toBeNull();
+        console.info("can delete event");
+        done();
+      });
+    });
+
+    afterAll(function(done){
+      QB.pushnotifications.subscriptions.list(function(err, result){
+        if (err) {
+          done.fail("List a subscription error: " + JSON.stringify(err));
+        } else {
+          var subscriptionId = result[0].subscription.id;
+          QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
+            if (err) {
+              done.fail("Delete subscription error: " + JSON.stringify(err));
+            } else {
+              expect(res).not.toBeNull();
+              done();
+            }
+          });
+        }
+      });
+    });
+
+  });
 
 });
 
