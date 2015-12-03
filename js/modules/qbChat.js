@@ -1084,7 +1084,7 @@ PrivacyListProxy.prototype = {
   },
 
   update: function(list, callback) {
-    var self = this
+    var self = this;
 
     self.getList(list.name, function(error, response) {
       if (error) {
@@ -1093,10 +1093,9 @@ PrivacyListProxy.prototype = {
         var copyList = (JSON.parse(JSON.stringify(list))),
             oldArray = response.items,
             newArray = copyList.items,
-            updatedArray = [], createdList = {};
+            createdList = {};
 
-        updatedArray = $.merge(oldArray, newArray);
-        copyList.items = updatedArray;
+        copyList.items = $.merge(oldArray, newArray);
         createdList = copyList;
 
         self.create(createdList, function(err, result) {
