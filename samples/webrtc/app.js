@@ -122,6 +122,7 @@
                 currentSession: {},
                 mainVideo: 0
             },
+            takedCallCallee = [],
             remoteStreamCounter = 0,
             authorizationing = false,
             callTimer;
@@ -267,6 +268,7 @@
                                 ui.$callees.append(videoElems);
 
                                 ui.hideCallBtn();
+                                ui.setPositionFooter();
                             }
                         });
                     }
@@ -518,13 +520,20 @@
                     console.log('Session: ' + session);
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
-                
-                var filterName = $.trim( $(ui.filterClassName).val() );
+
+                var userInfo = _.findWhere(QBUsers, {id: userId}),
+                    filterName = $.trim( $(ui.filterClassName).val() );
 
                 document.getElementById(ui.sounds.call).pause();
-                ui.updateMsg({msg: 'accept_call'});
 
                 app.currentSession.update({filter: filterName});
+
+                /** update list of callee who take call */
+                takedCallCallee.push(userInfo);
+                
+                if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
+                    ui.updateMsg( {msg: 'accept_call', obj: {users: takedCallCallee }} );
+                }
             };
 
             QB.webrtc.onRejectCallListener = function(session, userId, extension) {
@@ -622,6 +631,14 @@
                         ui.changeFilter('#localVideo', 'no');
                         ui.changeFilter('#main_video', 'no');
                         $(ui.filterClassName).val('no');
+
+                        takedCallCallee = [];
+                    }
+
+                    if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
+                        /** get array if users without user who ends call */
+                        takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id !== +userID; });
+                        ui.updateMsg( {msg: 'accept_call', obj: {users: takedCallCallee }} );
                     }
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
