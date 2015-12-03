@@ -5,7 +5,13 @@ var QBApp = {
 };
 
 var config = {
-  debug: true
+  chatProtocol: {
+    active: 2
+  },
+  debug: {
+    mode: 0,
+    file: null
+  }
 };
 
 var QBUser1 = {
