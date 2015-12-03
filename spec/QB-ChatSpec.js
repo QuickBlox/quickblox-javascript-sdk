@@ -214,7 +214,7 @@ describe('Chat API', function() {
             ],
             list = {name: "test", items: usersArr};
 
-        QB.chat.privacylist.update(list, function(error, response) {
+        QB.chat.privacylist.update(list, function(error) {
           if(error){
             done.fail("Update list error: " + JSON.stringify(error));
           }else{
