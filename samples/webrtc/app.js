@@ -224,6 +224,10 @@
             QB.chat.disconnect();
             /** see others in onDisconnectedListener */
         });
+        
+        window.onbeforeunload = function() {
+            QB.chat.disconnect();
+        };
 
         /** Call */
         $(document).on('click', '.j-call', function(e) {
