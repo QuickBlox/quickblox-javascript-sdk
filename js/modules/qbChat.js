@@ -275,6 +275,22 @@ function ChatProxy(service, webrtcModule, conn) {
 
     return true;
   };
+
+  this._onMessageErrorListener = function(stanza) {
+    console.log(stanza);
+    var type = stanza.getAttribute('type'),
+        error = stanza.querySelector('text').textContent;
+
+    // fire 'onMessageErrorListener'
+    //
+    if (typeof self.onMessageErrorListener === 'function' && type === 'error') {
+      Utils.safeCallbackCall(self.onMessageErrorListener, messageId, error);
+    }
+    
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  };
 }
 
 
@@ -332,6 +348,7 @@ ChatProxy.prototype = {
         connection.addHandler(self._onPresence, null, 'presence');
         connection.addHandler(self._onIQ, null, 'iq');
         connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
+        connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
 
         // set signaling callbacks
         connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
