@@ -223,12 +223,12 @@ ContentProxy.prototype = {
     });
   },
 
-  privateUrl: function (fileId){
-    return "https://api.quickblox.com/blobs/"+fileId+"/download?token="+this.service.getSession().token;
+  privateUrl: function (fileUID){
+    return "https://" + config.endpoints.api + "/blobs/" + fileUID + "?token=" + this.service.getSession().token;
   },
 
-  publicUrl: function (fileId){
-    return "https://api.quickblox.com/blobs/"+fileId+"/download";
+  publicUrl: function (fileUID){
+    return "https://" + config.endpoints.api + "/blobs/" + fileUID;
   }
 
 };

@@ -8,6 +8,9 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
+// For server-side applications through using npm package 'quickblox' you should include the following lines
+var isBrowser = typeof window !== 'undefined';
+
 function DataProxy(service){
   this.service = service;
 }
@@ -60,26 +63,20 @@ DataProxy.prototype = {
     Utils.QBLog('[DataProxy]', 'uploadFile', className, params);
 
     var formData;
-    formData = new FormData();
-    formData.append('field_name', params.field_name);
-    formData.append('file', params.file);
+
+    if(isBrowser){
+      formData = new FormData();
+      formData.append('field_name', params.field_name);
+      formData.append('file', params.file);
+    }else{
+      formData = {};
+      formData['field_name'] = params.field_name;
+      formData['file'] = params.file;
+    }
+
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
                       contentType: false, processData: false, type:'POST'}, function(err, result){
                         if (err) { callback(err, null);}
-                        else { callback (err, result); }
-                      });
-  },
-
-  updateFile: function(className, params, callback) {
-    Utils.QBLog('[DataProxy]', 'updateFile', className, params);
-
-    var formData;
-    formData = new FormData();
-    formData.append('field_name', params.field_name);
-    formData.append('file', params.file);
-    this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
-                      contentType: false, processData: false, type: 'POST'}, function(err, result) {
-                        if (err) { callback (err, null); }
                         else { callback (err, result); }
                       });
   },

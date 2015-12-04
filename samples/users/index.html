@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>QuickBlox JavaScript Users code sample</title>
-  <link rel="shortcut icon" href="http://quickblox.com/favicon.ico">
+  <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 </head>
 <body>
@@ -22,17 +22,17 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_p_lgn">Login:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_sgn_p_lgn" placeholder="Enter login">
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_p_pwd">Password:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="password" class="form-control" id="usr_sgn_p_pwd" placeholder="Enter password">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="sign_up" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -46,17 +46,17 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_n_lgn">Login:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_sgn_n_lgn" placeholder="Enter login">
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_n_pwd">Password:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="password" class="form-control" id="usr_sgn_n_pwd" placeholder="Enter password">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="sign_in" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -70,25 +70,37 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_n_social_provider">Social provider:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_sgn_n_social_provider" placeholder="facebook or twitter">
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_n_social_token">Social token:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_sgn_n_social_token" placeholder="Enter social token">
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_sgn_n_social_secret">Social secret:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_sgn_n_social_secret" placeholder="Enter social secret">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="sign_in_social" data-toggle="modal" data-target="#progressModal">Try</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- User TWITTER_DIGITS login -->
+        <div class="row">
+          <h3>User Sign In with Twitter Digits</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="button" class="btn btn-primary digits-button" id="sign_in_twitter_digits">Try</button>
               </div>
             </div>
           </form>
@@ -98,7 +110,7 @@
         <div class="row">
           <h3>User Sign Out</h3>
           <form class="form-horizontal" role="form">
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="sign_out" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -113,7 +125,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="sel_filter_for_users">Select filter:</label>
-              <div class="col-sm-6"> 
+              <div class="col-sm-6">
                 <select class="form-control" id="sel_filter_for_users">
                   <option value="1" selected="selected">all users, no filters</option>
                   <option value="2">by id</option>
@@ -130,11 +142,11 @@
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usrs_get_by_filter">Filter value:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usrs_get_by_filter" placeholder="Enter a value for filter:">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="get_by" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -148,17 +160,17 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_upd_id">User ID:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_upd_id" placeholder="Enter user id to update">
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_upd_full_name">New full name:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_upd_full_name" placeholder="Enter new value for fullname">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="update" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -172,7 +184,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="sel_filter_for_delete_user">Delete user by:</label>
-              <div class="col-sm-6"> 
+              <div class="col-sm-6">
                 <select class="form-control" id="sel_filter_for_delete_user">
                   <option value="1" selected="selected">by id</option>
                   <option value="2">by external id</option>
@@ -181,11 +193,11 @@
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_delete_id">Id:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_delete_id" placeholder="User id (or external id):">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="delete_by" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -199,11 +211,11 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <label class="control-label col-sm-2" for="usr_rst_email">User email:</label>
-              <div class="col-sm-6">          
+              <div class="col-sm-6">
                 <input type="text" class="form-control" id="usr_rst_email" placeholder="Enter email to reset a password:">
               </div>
             </div>
-            <div class="form-group">        
+            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <button type="button" class="btn btn-primary" id="reset" data-toggle="modal" data-target="#progressModal">Try</button>
               </div>
@@ -242,6 +254,7 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://cdn.digits.com/1/sdk.js" id="digits-sdk" async></script><!-- TWITTER_DIGITS SDK -->
   <script src="../../quickblox.min.js"></script>
   <script src="config.js"></script>
   <script src="main.js"></script>

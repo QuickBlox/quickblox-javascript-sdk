@@ -6,7 +6,8 @@
  */
 
 var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+    Utils = require('../qbUtils'),
+    util = require('util');
 
 var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
 var NUMBER_FIELDS = ['id', 'external_user_id'];
@@ -20,7 +21,7 @@ function UsersProxy(service) {
 UsersProxy.prototype = {
 
   listUsers: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'listUsers', params);
+    Utils.QBLog('[UsersProxy]', 'listUsers', arguments.length > 1 ? params : "");
 
     var message = {}, filters = [], item;
 
@@ -139,7 +140,7 @@ module.exports = UsersProxy;
 function generateFilter(obj) {
   var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
 
-  if (obj.value instanceof Array) {
+  if (obj.value instanceof Array || util.isArray(obj.value)) {
     if (type == 'object') {
       type = typeof obj.value[0];
     }
