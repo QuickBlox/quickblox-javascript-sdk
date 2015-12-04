@@ -197,8 +197,6 @@ describe('Chat API', function() {
           if(error){
             done.fail("Create or update list error: " + JSON.stringify(error));
           }else{
-            expect(error).toBe(null);
-
             console.info("can create new list with items");
             done();
           }
@@ -218,8 +216,6 @@ describe('Chat API', function() {
           if(error){
             done.fail("Update list error: " + JSON.stringify(error));
           }else{
-            expect(error).toBe(null);
-
             console.info("can update list by name");
             done();
           }
