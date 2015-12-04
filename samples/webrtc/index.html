@@ -201,6 +201,21 @@
         </li>
     </script>
 
+    
+    <script type="text/template" id="accept_call">
+        <%  _.each(users, function(el, i, list) { %>
+            <% if(list.length === 1){ %>
+                <b><%= el.full_name %></b> has accepted the call
+            <% } else { %>
+                <% if( (i+1) === list.length) { %>
+                    <b><%= el.full_name %></b> have accepted the call
+                <% } else { %>
+                    <b><%= el.full_name %></b>,
+                <% } %>
+            <% } %>
+        <% }); %> 
+    </script>
+
     <script type="text/template" id="login_tpl">
         Login in as <%= name %>
         <button class='fw-link j-logout'>Logout</button>
