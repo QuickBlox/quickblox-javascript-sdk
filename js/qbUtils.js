@@ -23,6 +23,30 @@ var ObjectId = {
 };
 
 var Utils = {
+  safeCallbackCall: function() {
+    if(!isBrowser) throw unsupported;
+
+    var listenerString = arguments[0].toString(),
+        listenerName = listenerString.split('(')[0].split(' ')[1],
+        argumentsCopy = [], listenerCall;
+
+      for (var i = 0; i < arguments.length; i++) {
+        argumentsCopy.push(arguments[i]);
+      }
+
+      listenerCall = argumentsCopy.shift();
+
+    try {
+      listenerCall.apply(null, argumentsCopy);
+    } catch (err) {
+      if (listenerName === '') {
+        console.error('Error: ' + err);
+      }else{
+        console.error('Error in listener ' + listenerName + ': ' + err);
+      }
+    }
+  },
+
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
   },
@@ -32,9 +56,8 @@ var Utils = {
   },
 
   getUrl: function(base, id) {
-    var protocol = config.ssl ? 'https://' : 'http://';
     var resource = id ? '/' + id : '';
-    return protocol + config.endpoints.api + '/' + base + resource + config.urls.type;
+    return 'https://' + config.endpoints.api + '/' + base + resource + config.urls.type;
   },
 
   // Generating BSON ObjectId and converting it to a 24 character string representation
@@ -79,9 +102,9 @@ var Utils = {
     var consoleLoggerFunction = function(){
       var logger = function(args){
         console.log.apply(console, Array.prototype.slice.call(args));
-      }
+      };
       return logger;
-    }
+    };
 
     var fileLoggerFunction = function(){
       var logger = function(args){
@@ -102,9 +125,9 @@ var Utils = {
             }
           });
         }
-      }
+      };
       return logger;
-    }
+    };
 
     // Build loggers
     //

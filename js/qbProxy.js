@@ -42,7 +42,7 @@ ServiceProxy.prototype = {
     // can add middleware here...
     var _this = this;
     if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-      config.on.sessionExpired(function(){next(error,response)}, retry);
+      config.on.sessionExpired(function(){next(error,response);}, retry);
     } else {
       if (error) {
         next(error, null);
@@ -65,7 +65,7 @@ ServiceProxy.prototype = {
     Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
     var _this = this,
-        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback) };
+        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback); };
 
     var ajaxCall = {
       url: params.url,
@@ -75,7 +75,7 @@ ServiceProxy.prototype = {
       timeout: config.timeout,
       beforeSend: function(jqXHR, settings) {
 
-        if (settings.url.indexOf('://' + config.endpoints.s3Bucket) === -1) {
+        if (settings.url.indexOf('s3.amazonaws.com') === -1) {
           if (_this.qbInst.session && _this.qbInst.session.token) {
             jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
             jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
@@ -105,7 +105,7 @@ ServiceProxy.prototype = {
     if(!isBrowser) {
 
       var isJSONRequest = ajaxCall.dataType === 'json',
-        makingQBRequest = params.url.indexOf('://' + config.endpoints.s3Bucket) === -1 &&
+        makingQBRequest = params.url.indexOf('s3.amazonaws.com') === -1 &&
                           _this.qbInst &&
                           _this.qbInst.session &&
                           _this.qbInst.session.token ||

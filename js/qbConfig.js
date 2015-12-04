@@ -6,7 +6,7 @@
  */
 
 var config = {
-  version: '1.15.1',
+  version: '1.17.0',
   creds: {
     appId: '',
     authKey: '',
@@ -15,15 +15,11 @@ var config = {
   endpoints: {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
-    muc: 'muc.chat.quickblox.com',
-    turn: 'turnserver.quickblox.com',
-    s3Bucket: 'qbprod'
+    muc: 'muc.chat.quickblox.com'
   },
   chatProtocol: {
-    // bosh: 'http://chat.quickblox.com:5280',
-    bosh: 'https://chat.quickblox.com:5281', // With SSL
-    // websocket: 'ws://chat.quickblox.com:5290',
-    websocket: 'wss://chat.quickblox.com:5291', // With SSL
+    bosh: 'https://chat.quickblox.com:5281',
+    websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
   webrtc: {
@@ -67,17 +63,22 @@ var config = {
   on: {
     sessionExpired: null
   },
-  ssl: true,
   timeout: null,
   debug: {mode: 0, file: null},
   addISOTime: false
 };
 
 config.set = function(options) {
+  if (typeof options.endpoints === 'object' && options.endpoints.chat) {
+    config.endpoints.muc = 'muc.'+options.endpoints.chat;
+    config.chatProtocol.bosh = 'https://'+options.endpoints.chat+':5281';
+    config.chatProtocol.websocket = 'wss://'+options.endpoints.chat+':5291';
+  }
+
   Object.keys(options).forEach(function(key) {
     if(key !== 'set' && config.hasOwnProperty(key)) {
       if(typeof options[key] !== 'object') {
-        config[key] = options[key]
+        config[key] = options[key];
       } else {
         Object.keys(options[key]).forEach(function(nextkey) {
           if(config[key].hasOwnProperty(nextkey)){
@@ -86,7 +87,7 @@ config.set = function(options) {
         });
       }
     }
-    
+
     // backward compatibility: for config.iceServers
     if(key === 'iceServers') {
       config.webrtc.iceServers = options[key];

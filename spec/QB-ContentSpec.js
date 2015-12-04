@@ -1,61 +1,107 @@
-describe('QuickBlox SDK - Content', function() {
-  var needsInit = true;
+var REST_REQUESTS_TIMEOUT = 3000;
 
-  beforeEach(function(){
-    var done;
-    if (needsInit) {
-      runs(function(){
-        QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret, CONFIG.debug);
-        done = false;
-        QB.createSession({login: VALID_USER, password: VALID_PASSWORD},function (err, result){
-          expect(err).toBeNull();
-          expect(result).not.toBeNull();
-          done = true;
+describe('Content API', function() {
+  var token,
+      data = {};
+
+  // beforeAll
+  //
+  beforeAll(function(done){
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+
+    QB.createSession(QBUser1, function(err, session) {
+      if (err) {
+        done.fail("Create session error: " + JSON.stringify(err));
+      } else {
+        expect(session).not.toBeNull();
+        token = session.token;
+
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+  it('can create and upload files', function(done) {
+    var d = new Date(2015, 10, 13, 14, 30, 30, 600),
+        genFile = new File(["Hello QuickBlox"], "QB.txt", {type: "text/plain", lastModified: d});
+
+    data = {name: genFile.name, file: genFile, type: genFile.type, size: genFile.size, public: false};
+
+    QB.content.createAndUpload(data, function(err, res) {
+      if (err) {
+        done.fail("Create and upload files error: " + JSON.stringify(err));
+      }else{
+        expect(res).not.toBeNull();
+        expect(res.name).toBe('QB.txt');
+        console.info('can create and upload files');
+        done();
+      }
+    });
+  }, 5000);
+
+  it('can list content objects', function(done) {
+    QB.content.list(function(err, res) {
+      if (err) {
+        done.fail("List content objects error: " + JSON.stringify(err));
+      }else{
+        expect(res).not.toBeNull();
+        expect(res.items.length).toBeGreaterThan(0);
+        console.info('can list content objects');
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+  it('can delete content objects', function(done) {
+    QB.content.createAndUpload(data, function(err, response) {
+      if (err) {
+        done.fail("Create and upload files error: " + JSON.stringify(err));
+      }else{
+        var elemId = response.id;
+        QB.content.delete(elemId, function(err, result) {
+          if (err) {
+            done.fail("Delete content objects error: " + JSON.stringify(err));
+          }else{
+            expect(result).toEqual(true);
+            console.info('can delete content objects');
+            done();
+          }
         });
-      });
-      waitsFor(function(){
-        return done;
-        },'create session', TIMEOUT);
-    }
+      }
+    });
+  }, 7000);
+
+  it('can get file information by ID', function(done) {
+    QB.content.getInfo(2917985, function(err, res) {
+      if (err) {
+        done.fail("Get file information by ID error: " + JSON.stringify(err));
+      }else{
+        expect(res).not.toBeNull();
+        expect(res.blob.id).toEqual(2917985);
+        expect(res.blob.size).toBe(15);
+        console.info('can get file information by ID');
+
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+  // Private Url
+  //
+  it('can access private URL', function() {
+    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
+        privateURL = QB.content.privateUrl(fileUID);
+
+    expect(privateURL).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token="+token);
+    console.info('can access private URL');
   });
 
-  describe('Basic CRUD functions', function() {
+  // Public Url
+  //
+  it('can access public URL', function() {
+    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
+        publicUrl = QB.content.publicUrl(fileUID);
 
-    it('can create a content object', function() {
-      var done,error, result;
-      runs(function(){
-        var data = {content_type: 'image/png', name: 'myAvatar.png', public: true, tag_list: 'user_pics,avatar'};
-        QB.content.create(data, function(err, res) {
-          error = err;
-          result = res;
-          done = true;
-        });
-      });
-      waitsFor(function(){ return done; }, 'create content instance', TIMEOUT );
-      runs(function() {
-        expect(error).toBeNull();
-        expect(result).not.toBeNull();
-        expect(result.name).toBe('myAvatar.png');
-      });
-    });
-
-    it('can list content objects', function() {
-      var done,error, result;
-      runs(function(){
-        QB.content.list(function(err, res) {
-          error = err;
-          result = res;
-          done = true;
-        });
-      });
-      waitsFor(function(){ return done; }, 'create content instance', TIMEOUT );
-      runs(function() {
-        expect(error).toBeNull();
-        expect(result).not.toBeNull();
-        expect(result.items.length).toBeGreaterThan(0);
-      });
-    });
-
+    expect(publicUrl).toEqual("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000");
   });
-
 });

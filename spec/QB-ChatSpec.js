@@ -1,5 +1,6 @@
 var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 1500;
+var IQ_TIMEOUT = 1000;
 var REST_REQUESTS_TIMEOUT = 3000;
 
 describe('Chat API', function() {
@@ -10,9 +11,9 @@ describe('Chat API', function() {
     //
     beforeAll(function(done){
 
-      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
-      QB.chat.connect({userId: QBUser1.id, password: QBUser1.pass}, function(err, roster) {
+      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
         if(err){
           done.fail("Chat login error: " + JSON.stringify(err));
         }else{
@@ -31,6 +32,7 @@ describe('Chat API', function() {
       var self = this;
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
+
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual("chat");
         expect(userId).toEqual(QBUser1.id);
@@ -178,6 +180,147 @@ describe('Chat API', function() {
     }, MESSAGING_TIMEOUT);
 
 
+    // Privacy lists API
+    //
+    describe("Privacy list", function() {
+
+      // Create
+      //
+      it("can create new list with items", function(done) {
+        var usersObj = [
+              {user_id: 1111111, action: "deny"},
+              {user_id: 1010101, action: "allow"}
+            ];
+            list = {name: "test", items: usersObj};
+
+        QB.chat.privacylist.create(list, function(error) {
+          if(error){
+            done.fail("Create or update list error: " + JSON.stringify(error));
+          }else{
+            console.info("can create new list with items");
+            done();
+          }
+        });
+      });
+
+      // Update
+      //
+      it("can update list by name", function(done) {
+        var usersArr = [
+              {user_id: 1999991, action: "allow"},
+              {user_id: 1010101, action: "deny"}
+            ],
+            list = {name: "test", items: usersArr};
+
+        QB.chat.privacylist.update(list, function(error) {
+          if(error){
+            done.fail("Update list error: " + JSON.stringify(error));
+          }else{
+            console.info("can update list by name");
+            done();
+          }
+        });
+      });
+
+      // Set 'active' list
+      //
+      it("can set active list", function(done) {
+        QB.chat.privacylist.setAsActive("test", function(error) {
+          if(error){
+            done.fail("Set active list error: " + JSON.stringify(error));
+          }else{
+            console.info("can set active list");
+            done();
+          }
+        });
+      });
+
+      // Reset 'active' list
+      //
+      it("can declines the use of active lists", function(done) {
+        QB.chat.privacylist.setAsActive("", function(error) {
+          if(error){
+            done.fail("Declines the use of active lists error: " + JSON.stringify(error));
+          }else{
+            console.info("can declines the use of active lists");
+            done();
+          }
+        });
+      });
+
+      // set 'default' list
+      //
+      it("can set default list", function(done) {
+        QB.chat.privacylist.setAsDefault("test", function(error) {
+          if(error){
+            done.fail("Set default list error: " + JSON.stringify(error));
+          }else{
+            console.info("can set default list");
+            done();
+          }
+        });
+      });
+
+      // Reset 'default' list
+      //
+      it("can declines the use of default lists", function(done) {
+        QB.chat.privacylist.setAsDefault("", function(error) {
+          if(error){
+            done.fail("Declines the use of default lists error: " + JSON.stringify(error));
+          }else{
+            console.info("can declines the use of default lists");
+            done();
+          }
+        });
+      });
+
+      // Get list
+      //
+      it("can get list by name", function(done) {
+        QB.chat.privacylist.getList("test", function(error, response) {
+          if(error){
+            done.fail("Get list by name error: " + JSON.stringify(error));
+          }else{
+            expect(response.name).toBe("test");
+            expect(response.items.length).toEqual(3);
+
+            console.info("can get list by name");
+            done();
+          }
+        });
+      });
+
+      // Get names
+      //
+      it("can get names of privacy lists", function(done) {
+        QB.chat.privacylist.getNames(function(error, response) {
+          if(error){
+            done.fail("Get names of privacy lists error: " + JSON.stringify(error));
+          }else{
+            var lists = response.names;
+            expect(lists.length).toBeGreaterThan(0);
+            console.info("can get names of privacy lists");
+            done();
+          }
+        });
+      });
+
+      // Delete list
+      //
+      it("can delete list by name", function(done) {
+        QB.chat.privacylist.delete("test", function(error) {
+          if(error){
+            done.fail("Delete list by name error: " + JSON.stringify(error));
+          }else{
+            console.info("can delete list by name");
+            done();
+          }
+        });
+      });
+
+    });
+
+
     // afterAll
     //
     afterAll(function(done){
@@ -190,6 +333,7 @@ describe('Chat API', function() {
   describe('REST API', function() {
 
     var dialogId;
+    var messageId;
 
     // beforeAll
     //
@@ -197,7 +341,7 @@ describe('Chat API', function() {
 
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
-      QB.createSession({login: QBUser1.login, password: QBUser1.pass},function (err, result){
+      QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
         if(err){
           done.fail("Creat session error: " + err);
         }else{
@@ -285,6 +429,31 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
 
+    // Can create a message
+    //
+    it('can create a mesasge', function(done) {
+
+      var params = {chat_dialog_id: dialogId,
+                           message: "hello world",
+                   };
+      QB.chat.message.create(params, function(err, res) {
+
+        if(err){
+          done.fail("Create a mesasge error: " + JSON.stringify(err));
+        }else{
+          expect(res._id).not.toBeNull();
+          expect(res.message).toEqual("hello world");
+          expect(res.chat_dialog_id).toEqual(dialogId);
+
+          messageId = res._id;
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
     // Messages list
     //
     it('can list messages', function(done) {
@@ -296,9 +465,50 @@ describe('Chat API', function() {
           done.fail("List messages error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          // expect(res.items.length).toBeGreaterThan(0);
+          expect(res.items.length).toBeGreaterThan(0);
+
           done();
         }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Unread messages count
+    //
+    it('can request unread messages count', function(done) {
+
+      var params = {chat_dialog_ids: [dialogId]};
+      QB.chat.message.unreadCount(params, function(err, res) {
+
+        if(err){
+          done.fail("Request unread messages count error: " + JSON.stringify(err));
+        }else{
+          expect(res["total"]).toEqual(0);
+          expect(res[dialogId]).toEqual(0);
+
+          done();
+        }
+
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+
+    // Message delete
+    //
+    it('can delete a message', function(done) {
+
+      console.log("messageId: " + messageId);
+
+      QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
+
+        if(err){
+          done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
+        }else{
+          done();
+        }
+
+        messageId = null;
 
       });
     }, REST_REQUESTS_TIMEOUT);
@@ -308,55 +518,21 @@ describe('Chat API', function() {
     //
     it('can delete a dialog (group)', function(done) {
 
-      QB.chat.dialog.delete(dialogId, function(err, res) {
+      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
 
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
-          dialogId = null;
         }else{
+          expect(res["SuccessfullyDeleted"]["ids"]).toEqual([dialogId]);
+          expect(res["NotFound"]["ids"]).toEqual(["notExistentId"]);
+          expect(res["WrongPermissions"]["ids"]).toEqual([]);
+
           done();
-          dialogId = null;
         }
 
       });
     }, REST_REQUESTS_TIMEOUT);
-
-
-    // Dialog delete (multiple)
-    //
-    it('can delete multiple dialogs', function(done) {
-
-      // create a dialog first
-      var params = {occupants_ids:[QBUser2.id],
-                             name: "GroupDialogName",
-                             type: 2
-                            }
-      QB.chat.dialog.create(params, function(err, res) {
-        if(err){
-          done.fail("Creat dialog error: " + JSON.stringify(err));
-        }else{
-          dialogId = res._id;
-
-          QB.chat.dialog.delete([dialogId, "notExistentDialogId"], {force: 1}, function(err, res) {
-            if(err){
-              done.fail("Delete multiple dialogs error: " + JSON.stringify(err));
-
-              dialogId = null;
-            }else{
-              var resJSON = JSON.parse(res);
-
-              expect(resJSON.SuccessfullyDeleted.ids).toEqual([dialogId]);
-              expect(resJSON.NotFound.ids).toEqual(["notExistentDialogId"]);
-
-              done();
-              dialogId = null;
-            }
-          });
-
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
-
 
   });
+
 });
