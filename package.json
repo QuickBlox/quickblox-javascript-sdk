@@ -1,12 +1,12 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "1.16.1",
+  "version": "1.17.0",
   "homepage": "http://quickblox.com/developers/Javascript",
   "main": "js/qbMain.js",
   "license": [
     {
-      "type": "MIT",
+      "type": "BSD",
       "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/LICENSE"
     }
   ],
