@@ -115,22 +115,6 @@ describe('Сustom Objects API', function() {
       });
     });
 
-    it ('can update a file in existing record', function(done){
-      paramsFile.file = new File(["Hello QuickBlox cars"], "volvo.txt", {type: "text/plain",
-                        lastModified: new Date(2015, 10, 19, 17, 00, 00, 600)});
-
-      QB.data.updateFile('cars', paramsFile, function(err, res) {
-        if (err) {
-          done.fail("Upload a file to an existing record error: " + JSON.stringify(err));
-        } else {
-          expect(res).not.toBeNull();
-          expect(res.name).toBe("volvo.txt");
-          console.info('can update a file in existing record');
-          done();
-        }
-      });
-    });
-
     it ('can dawnload a file from existing record', function(done){
       paramsFor = {
         id: paramsFile.id,
@@ -203,5 +187,3 @@ describe('Сustom Objects API', function() {
   });
 
 });
-
-
