@@ -251,7 +251,7 @@ WebRTCSession.prototype.accept = function(extension) {
     oppIDs.forEach(function(opID, i, arr) {
       if(self.currentUserID > opID){
         // call to the user
-        self._callInternal(opID, {}, false);
+        self._callInternal(opID, {}, true);
       }
     });
   }
