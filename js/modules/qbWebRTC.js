@@ -107,7 +107,7 @@ function WebRTCProxy(service, conn) {
       delete extension.sdp;
 
       if (typeof self.onCallListener === 'function'){
-        self.onCallListener(userId, extension);
+        Utils.safeCallbackCall(self.onCallListener, userId, extension);
       }
 
       break;
@@ -121,7 +121,7 @@ function WebRTCProxy(service, conn) {
         peer.onRemoteSessionCallback(extension.sdp, 'answer');
       delete extension.sdp;
       if (typeof self.onAcceptCallListener === 'function')
-        self.onAcceptCallListener(userId, extension);
+        Utils.safeCallbackCall(self.onAcceptCallListener, userId, extension);
       break;
     case signalingType.REJECT:
       trace('onReject from ' + userId);
@@ -131,7 +131,7 @@ function WebRTCProxy(service, conn) {
 
       self._close();
       if (typeof self.onRejectCallListener === 'function')
-        self.onRejectCallListener(userId, extension);
+        Utils.safeCallbackCall(self.onRejectCallListener, userId, extension);
       break;
     case signalingType.STOP:
       trace('onStop from ' + userId);
@@ -143,7 +143,7 @@ function WebRTCProxy(service, conn) {
 
       self._close();
       if (typeof self.onStopCallListener === 'function')
-        self.onStopCallListener(userId, extension);
+        Utils.safeCallbackCall(self.onStopCallListener, userId, extension);
       break;
     case signalingType.CANDIDATE:
       if (typeof peer === 'object') {
@@ -155,7 +155,7 @@ function WebRTCProxy(service, conn) {
     case signalingType.PARAMETERS_CHANGED:
       trace('onUpdateCall from ' + userId);
       if (typeof self.onUpdateCallListener === 'function')
-        self.onUpdateCallListener(userId, extension);
+        Utils.safeCallbackCall(self.onUpdateCallListener, userId, extension);
       break;
     }
 
@@ -218,7 +218,7 @@ function WebRTCProxy(service, conn) {
     self._close();
 
     if(typeof self.onSessionStateChangedListener === 'function'){
-      self.onSessionStateChangedListener(self.SessionState.CLOSED, userId);
+      Utils.safeCallbackCall(self.onSessionStateChangedListener, self.SessionState.CLOSED, userId);
     }
   };
 
@@ -231,7 +231,7 @@ function WebRTCProxy(service, conn) {
     self._close();
 
     if(typeof self.onUserNotAnswerListener === 'function'){
-      self.onUserNotAnswerListener(userId);
+      Utils.safeCallbackCall(self.onUserNotAnswerListener, userId);
     }
   };
 }
@@ -684,7 +684,7 @@ RTCPeerConnection.prototype.onRemoteSessionCallback = function(sessionDescriptio
 // handler of remote media stream
 RTCPeerConnection.prototype.onRemoteStreamCallback = function(event) {
   if (typeof peer.service.onRemoteStreamListener === 'function')
-    peer.service.onRemoteStreamListener(event.stream);
+   Utils.safeCallbackCall(peer.service.onRemoteStreamListener, event.stream);
 };
 
 RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
@@ -734,7 +734,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 	}
 
 	if(sessionState != null){
-      peer.service.onSessionStateChangedListener(sessionState);
+      Utils.safeCallbackCall(peer.service.onSessionStateChangedListener, sessionState);
     }
   }
 
