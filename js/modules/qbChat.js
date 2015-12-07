@@ -25,13 +25,13 @@ var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
 
 var connection,
-    webrtcSignalingProcessor,
+    webrtc,
     roster = {},
     joinedRooms = {};
 
-function ChatProxy(service, webrtc, conn) {
+function ChatProxy(service, webrtcModule, conn) {
   var self = this;
-  webrtcSignalingProcessor = webrtc;
+  webrtc = webrtcModule;
   connection = conn;
 
   this.service = service;
@@ -50,6 +50,7 @@ function ChatProxy(service, webrtc, conn) {
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
+ * - onMessageErrorListener(messageId, error)
  * - onMessageTypingListener
  * - onDeliveredStatusListener
  * - onReadStatusListener
@@ -275,6 +276,29 @@ function ChatProxy(service, webrtc, conn) {
 
     return true;
   };
+
+  this._onMessageErrorListener = function(stanza) {
+
+
+// <error code="503" type="cancel">
+//   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
+//   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
+// </error>
+
+    var messageId = stanza.getAttribute('id');
+    //
+    var error = getErrorFromXMLNode(stanza);
+
+    // fire 'onMessageErrorListener'
+    //
+    if (typeof self.onMessageErrorListener === 'function') {
+      Utils.safeCallbackCall(self.onMessageErrorListener, messageId, error);
+    }
+
+    // we must return true to keep the handler alive
+    // returning false would remove it after it finishes
+    return true;
+  };
 }
 
 
@@ -304,7 +328,7 @@ ChatProxy.prototype = {
 
       switch (status) {
       case Strophe.Status.ERROR:
-        err = Utils.getError(422, 'Status.ERROR - An error has occurred');
+        err = getError(422, 'Status.ERROR - An error has occurred');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTING:
@@ -312,14 +336,14 @@ ChatProxy.prototype = {
         Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
         break;
       case Strophe.Status.CONNFAIL:
-        err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed');
+        err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.AUTHENTICATING:
         Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
-        err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
+        err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTED:
@@ -332,9 +356,10 @@ ChatProxy.prototype = {
         connection.addHandler(self._onPresence, null, 'presence');
         connection.addHandler(self._onIQ, null, 'iq');
         connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
+        connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
 
         // set signaling callbacks
-        connection.addHandler(webrtcSignalingProcessor._onMessage, null, 'message', 'headline');
+        connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
 
         // enable carbons
         self._enableCarbons(function() {
@@ -933,7 +958,7 @@ MucProxy.prototype = {
 
 /* Chat module: Privacy list
  *
- * Privacy list 
+ * Privacy list
  * http://xmpp.org/extensions/xep-0016.html
  *
 ----------------------------------------------------------------------------- */
@@ -1068,7 +1093,7 @@ PrivacyListProxy.prototype = {
       }).up().c('presence-in', {
       }).up().c('presence-out', {
       }).up().c('iq', {
-      }).up().up(); 
+      }).up().up();
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
