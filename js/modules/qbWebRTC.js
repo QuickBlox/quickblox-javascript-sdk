@@ -549,7 +549,7 @@ WebRTCProxy.prototype._sendMessage = function(userId, extension, type, callType,
 
   params = {
     from: connection.jid,
-    to: this.helpers.getUserJid(userId, this.service.getSession().application_id),
+    to: this.helpers.getUserJid(userId, config.creds.appId),
     type: 'headline',
     id: Utils.getBsonObjectId()
   };
