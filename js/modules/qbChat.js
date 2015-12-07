@@ -269,6 +269,8 @@ ChatProxy.prototype = {
     if(!isBrowser) throw unsupported;
 
     Utils.QBLog('[ChatProxy]', 'connect', params);
+    config.creds.appId = params.jid.match(/^\d+-(\d+)@.*$/)[1];
+    this.service.getSession().application_id = config.creds.appId;
 
     var self = this,
         err, rooms;
