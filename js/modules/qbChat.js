@@ -50,6 +50,7 @@ function ChatProxy(service, webrtcModule, conn) {
 /*
  * User's callbacks (listener-functions):
  * - onMessageListener
+ * - onMessageErrorListener(messageId, error)
  * - onMessageTypingListener
  * - onDeliveredStatusListener
  * - onReadStatusListener
@@ -277,16 +278,23 @@ function ChatProxy(service, webrtcModule, conn) {
   };
 
   this._onMessageErrorListener = function(stanza) {
-    console.log(stanza);
-    var type = stanza.getAttribute('type'),
-        error = stanza.querySelector('text').textContent;
+
+
+// <error code="503" type="cancel">
+//   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
+//   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
+// </error>
+
+    var messageId = stanza.getAttribute('id');
+    //
+    var error = getErrorFromXMLNode(stanza);
 
     // fire 'onMessageErrorListener'
     //
-    if (typeof self.onMessageErrorListener === 'function' && type === 'error') {
+    if (typeof self.onMessageErrorListener === 'function') {
       Utils.safeCallbackCall(self.onMessageErrorListener, messageId, error);
     }
-    
+
     // we must return true to keep the handler alive
     // returning false would remove it after it finishes
     return true;
@@ -950,7 +958,7 @@ MucProxy.prototype = {
 
 /* Chat module: Privacy list
  *
- * Privacy list 
+ * Privacy list
  * http://xmpp.org/extensions/xep-0016.html
  *
 ----------------------------------------------------------------------------- */
@@ -1085,7 +1093,7 @@ PrivacyListProxy.prototype = {
       }).up().c('presence-in', {
       }).up().c('presence-out', {
       }).up().c('iq', {
-      }).up().up(); 
+      }).up().up();
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
@@ -1413,6 +1421,9 @@ function getError(code, detail) {
       break;
     case 408:
       msg = 'Timeout';
+      break;
+    case 503:
+      msg = 'Service not available';
       break;
     default:
       msg = 'Bad request'; // 400
