@@ -3,9 +3,17 @@ var REST_REQUESTS_TIMEOUT = 3000;
 describe('Session API', function() {
 
 
-  // Load config
+  // can Init (simple)
   //
-  beforeAll(function (){
+  it('can init SDK with session token and appId', function(){
+    QB.init("56655ac9a0eb476d92002b66", CREDENTIALS.appId);
+
+    expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
+  });
+
+  // can Init
+  //
+  it('can init SDK with appId, authKey, authSecret, config', function(){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
@@ -47,70 +55,17 @@ describe('Session API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
 
-  // Destroy a session
-  //
-  it('can destroy a session', function(done){
-
-    QB.createSession(function (err, result){
-      if(err){
-        done.fail("Destroy session error1: " + JSON.stringify(err));
-      }else{
-        QB.destroySession(function (err, result){
-          if(err){
-            done.fail("Destroy session error2: " + JSON.stringify(err));
-          }else{
-            expect(QB.service.qbInst.session).toBeNull();
-            done()
-          }
-        });
-      }
-    });
-  }, REST_REQUESTS_TIMEOUT);
-
-
   // Login a user
   //
   it('can login a user', function(done){
-
-    QB.createSession(function (err, result){
+    QB.login(QBUser1, function (err, user){
       if(err){
-        done.fail("Login user error1: " + JSON.stringify(err));
+        done.fail("Login user error2: " + JSON.stringify(err));
       }else{
-        QB.login(QBUser1, function (err, user){
-          if(err){
-            done.fail("Login user error2: " + JSON.stringify(err));
-          }else{
-            expect(user).not.toBeNull();
-            expect(user.login).toEqual(QBUser1.login);
-            expect(user.id).toEqual(QBUser1.id);
-            done()
-          }
-        });
-      }
-    });
-  }, REST_REQUESTS_TIMEOUT);
-
-
-  // Login a user when initialised with just a valid token
-  //
-  it('can login a user when initialised with just a valid token', function(done){
-
-    QB.createSession(function (err, session){
-      if(err){
-        done.fail("Login user when initialised with just a valid token error1: " + JSON.stringify(err));
-      }else{
-        QB.init(session.token);
-
-        QB.login(QBUser1, function (err, user){
-          if(err){
-            done.fail("Login user when initialised with just a valid token error2: " + JSON.stringify(err));
-          }else{
-            expect(user).not.toBeNull();
-            expect(user.login).toEqual(QBUser1.login);
-            expect(user.id).toEqual(QBUser1.id);
-            done();
-          }
-        });
+        expect(user).not.toBeNull();
+        expect(user.login).toEqual(QBUser1.login);
+        expect(user.id).toEqual(QBUser1.id);
+        done()
       }
     });
   }, REST_REQUESTS_TIMEOUT);
@@ -119,24 +74,26 @@ describe('Session API', function() {
   // Logout a user
   //
   it('can logout a user', function(done){
-
-    QB.createSession(function (err, result){
+    QB.logout(function(err, result){
       if(err){
-        done.fail("Logout user error1: " + JSON.stringify(err));
+        done.fail("Logout user error3: " + JSON.stringify(err));
       }else{
-        QB.login(QBUser1, function (err, user){
-          if(err){
-            done.fail("Logout user error2: " + JSON.stringify(err));
-          }else{
-            QB.logout(function(err, result){
-              if(err){
-                done.fail("Logout user error3: " + JSON.stringify(err));
-              }else{
-                done();
-              }
-            });
-          }
-        });
+        expect(null).toBeNull(); // we just have to have some expectations.
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+
+  // Destroy a session
+  //
+  it('can destroy a session', function(done){
+    QB.destroySession(function (err, result){
+      if(err){
+        done.fail("Destroy session error2: " + JSON.stringify(err));
+      }else{
+        expect(QB.service.qbInst.session).toBeNull();
+        done()
       }
     });
   }, REST_REQUESTS_TIMEOUT);

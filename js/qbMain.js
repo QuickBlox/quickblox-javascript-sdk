@@ -15,7 +15,7 @@ function QuickBlox() {}
 
 QuickBlox.prototype = {
 
-  init: function(appId, authKey, authSecret, configMap) {
+  init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
     if (configMap && typeof configMap === 'object') {
       config.set(configMap);
     }
@@ -51,11 +51,16 @@ QuickBlox.prototype = {
     this.data = new Data(this.service);
 
     // Initialization by outside token
-    if (typeof appId === 'string' && !authKey && !authSecret) {
-      this.service.setSession({ token: appId });
+    if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
+
+      if(typeof authKeyOrAppId === 'number'){
+        config.creds.appId = authKeyOrAppId;
+      }
+
+      this.service.setSession({ token: appIdOrToken });
     } else {
-      config.creds.appId = appId;
-      config.creds.authKey = authKey;
+      config.creds.appId = appIdOrToken;
+      config.creds.authKey = authKeyOrAppId;
       config.creds.authSecret = authSecret;
     }
   },
