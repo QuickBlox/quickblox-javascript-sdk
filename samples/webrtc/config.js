@@ -5,14 +5,11 @@ var QBApp = {
 };
 
 var CONFIG = {
-  chatProtocol: {
-    active: 2,
-  },
   debug: true,
   webrtc: {
-    answerTimeInterval: 25,
+    answerTimeInterval: 30,
     dialingTimeInterval: 5,
-    disconnectTimeInterval: 25
+    disconnectTimeInterval: 30
   }
 };
 
