@@ -101,11 +101,10 @@
                         }
                     }
                 },
+                classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
                 changeFilter: function(selector, filterName) {
-                    var classesNameAll = 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn';
-                   
                     $(selector)
-                        .removeClass(classesNameAll)
+                        .removeClass(this.classesNameFilter)
                         .addClass( filterName );
                 },
                 callTime: 0,
@@ -372,18 +371,29 @@
         /** set main video */
         $(document).on('click', '.j-callees__callee_video', function() {
             var $that = $(this),
-                userID = +($(this).data('user'));
+                userID = +($(this).data('user')),
+                classesName = [],
+                activeClass = [];
 
             if( app.currentSession.peerConnections[userID].stream ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
                 
                     app.currentSession.detachMediaStream('main_video');
+                    ui.changeFilter('#main_video', 'no');
                     app.mainVideo = 0;
                 } else {
                     $('.j-callees__callee_video').removeClass('active');
                     $that.addClass('active');
 
+                    ui.changeFilter('#main_video', 'no');
+
+                    activeClass = _.intersection($that.attr('class').split(/\s+/), ui.classesNameFilter.split(/\s+/) );
+
+                    /** set filter to main video if exist */
+                    if(activeClass.length) {
+                        ui.changeFilter('#main_video', activeClass[0]);
+                    }
                     app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userID].stream);
                     app.mainVideo = userID;
                 }
@@ -605,7 +615,7 @@
 
                 if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
                     ui.toggleRemoteVideoView(userID, 'hide');
-                    $calleeStatus.text('Hung Up');
+                    $calleeStatus.text('disconnected');
                 }
 
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){

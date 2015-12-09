@@ -113,9 +113,18 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
 
       } else {
         if (extraParams.childNodes[i].childNodes.length > 1) {
+          var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
 
-          extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-
+          if (nodeTextContentSize > 4096) {
+            var wholeNodeContent = "";
+            
+            for(var t=0; t<extraParams.childNodes[i].childNodes.length; ++t){
+              wholeNodeContent += extraParams.childNodes[i].childNodes[t].textContent;
+            }
+            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+          }else {
+            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+          }
         } else {
 
           extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
