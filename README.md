@@ -52,6 +52,12 @@ var QB2 = new QuickBlox();
 
 [QuickBlox JavaScript SDK, zip archive](https://github.com/QuickBlox/quickblox-javascript-sdk/archive/gh-pages.zip)
 
+# Browsers support
+
+| IE   | Firefox | Chrome | Safari | Opera | Android Browser | Blackberry Browser | Opera Mobile | Chrome for Android | Firefox for Android |
+|:----:|:-------:|:------:|:------:|:-----:|:---------------:|:------------------:|:------------:|:------------------:|:------------------------:|
+| 10+  |  4+     | 13+    |  6+    |  12+	 |       4.4+	     |         10+        |	     12+	    |         35+        |	         30+             |
+
 # Documentation
 
 You can look at it here http://quickblox.com/developers/Javascript
