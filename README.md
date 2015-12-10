@@ -1,5 +1,4 @@
-QuickBlox JavaScript SDK
-=================
+# QuickBlox JavaScript SDK
 
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
@@ -7,8 +6,8 @@ easier to access the QuickBlox cloud communication backend platform.
 [https://quickblox.com](QuickBlox) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
 
 
-Install
-----------------
+# Install
+
 **Dependencies for browser**
 
 For correct work of JS SDK you must include the [jQuery](http://jquery.com/) library in your html before `quickblox.js`, like so:
