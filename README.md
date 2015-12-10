@@ -2,16 +2,11 @@ QuickBlox JavaScript SDK
 =================
 
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
-easier to access the QuickBlox cloud backend platform.
+easier to access the QuickBlox cloud communication backend platform.
 
-For use inside browsers, a window scoped variable called `QB` is created.
+QuickBlox is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
 
-Most functions, with the notable exception of init, take a callback
-parameter which gets called with an error and result parameter (ala node.js).
-
-If the call was sucessful then result will contain the reply from the
-QuickBlox platform. Similarly, if something went wrong then the error
-parameter will give you a description of what the problem was.
+[http://quickblox.com http://quickblox.com]
 
 Install
 ----------------
