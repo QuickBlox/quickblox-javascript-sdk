@@ -4,9 +4,8 @@ QuickBlox JavaScript SDK
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
 
-QuickBlox is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
+[https://quickblox.com](QuickBlox) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
 
-[https://quickblox.com](https://quickblox.com)
 
 Install
 ----------------
