@@ -224,11 +224,11 @@
     return answ;
   }
 
-/**
- * set configuration variables in global
- */
-window.QBApp = QBApp;
-window.CONFIG = CONFIG;
-window.QBUsers = QBUsers;
-window.MESSAGES = MESSAGES;
+  /**
+   * set configuration variables in global
+   */
+  window.QBApp = QBApp;
+  window.CONFIG = CONFIG;
+  window.QBUsers = QBUsers;
+  window.MESSAGES = MESSAGES;
 }(window));
