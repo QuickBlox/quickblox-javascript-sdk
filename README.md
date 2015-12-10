@@ -8,7 +8,7 @@ easier to access the QuickBlox cloud communication backend platform.
 
 # Install
 
-**Dependencies for browser**
+## Dependencies for browser
 
 For the library to work, you need to include either [jQuery](http://jquery.com/) or [Zepto](http://zeptojs.com/) in your html before `quickblox.min.js`, like so:
 
@@ -19,17 +19,25 @@ For correct work of JS SDK you must include the  library in your html before `qu
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.17.2/quickblox.min.js"></script>
 ```
 
-**Bower**
+## Bower and RequireJS
+
+If you use bower package manager for your project, you can install JS SDK through bower:
 
 ```
 bower install quickblox --save
 ```
 
-**Node.js and NPM**
+When you use **RequireJS**, you are able to use quickblox as AMD module. SDK supports [UMD (Universal Module Definition)](https://github.com/umdjs/umd) pattern for JavaScript modules. So it is possible to use SDK everywhere (as browser global variable, with AMD module loader like RequireJS or as CommonJS module for Node.js environment).
+
+## Node.js and NPM integration
+
+Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like that:
 
 ```
 npm install quickblox --save
 ```
+
+And you're ready to go:
 
 ```javascript
 var QB = require('quickblox');
