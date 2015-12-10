@@ -6,7 +6,7 @@ easier to access the QuickBlox cloud communication backend platform.
 
 QuickBlox is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
 
-[http://quickblox.com http://quickblox.com]
+(https://quickblox.com)[https://quickblox.com]
 
 Install
 ----------------
