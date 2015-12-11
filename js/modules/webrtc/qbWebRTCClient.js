@@ -190,10 +190,10 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
 WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) {
   Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
 
-  var session = this.sessions[sessionID];
-
-  if(session){
-    var extensionClone = JSON.parse(JSON.stringify(extension));
+  var session = this.sessions[sessionID],
+      extensionClone = JSON.parse(JSON.stringify(extension));
+  
+  if( session && (session.state === 1 || session.state === 2) ){
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
@@ -202,7 +202,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
 
     session.processOnStop(userID, extension);
   }else{
-    Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.")
+    Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.");
   }
 };
 
