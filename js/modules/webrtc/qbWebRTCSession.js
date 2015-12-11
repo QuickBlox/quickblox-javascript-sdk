@@ -257,17 +257,19 @@ WebRTCSession.prototype.accept = function(extension) {
   }
 };
 
-WebRTCSession.prototype._acceptInternal = function(userID, extension) {
-  var self = this;
-
-  // create a peer connection
-  //
-  var peerConnection = this.peerConnections[userID];
+WebRTCSession.prototype._acceptInternal = function(userID, extension, sdp) {
+  var self = this,
+      peerConnection = self.peerConnections[userID];
 
   if(peerConnection){
     peerConnection.addLocalStream(this.localStream);
-
-    peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
+    
+    /** 
+     * Warning: MAGIC
+     * this.peerConnections[userID].spd is null, but must be filled
+     * in group when call from not caller.
+     */
+    peerConnection.setRemoteSessionDescription('offer', sdp ? sdp:peerConnection.sdp, function(error){
       if(error){
         Helpers.traceError("'setRemoteSessionDescription[offer]' error: " + error);
       }else{
@@ -444,22 +446,21 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
-  var self = this;
+  var self = this,
+      oppIDs = self._uniqueOpponentsIDs();
 
   this._clearWaitingOfferOrAnswerTimer();
 
-  var oppIDs = this._uniqueOpponentsIDs();
-  oppIDs.forEach(function(opID, i, arr) {
 
+  oppIDs.forEach(function(opID, i, arr) {
     var peerConnection = self.peerConnections[opID];
+
     if(peerConnection){
       peerConnection.updateSDP(extension.sdp);
-
       // The group call logic starts here
       if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
-        self._acceptInternal(callerID, {});
+        self._acceptInternal(callerID, {}, peerConnection.sdp);
       }
-
     } else {
       // create peer connections for each opponent
       var peerConnection;
@@ -469,7 +470,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
         peerConnection = self._createPeer(opID, 'answer');
       }
       self.peerConnections[opID] = peerConnection;
-
       if(opID == callerID){
         peerConnection.updateSDP(extension.sdp);
         self._startAnswerTimer();
