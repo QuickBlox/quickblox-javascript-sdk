@@ -172,7 +172,6 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
 
   var session = this.sessions[sessionID];
-
   if(session){
     var extensionClone = JSON.parse(JSON.stringify(extension));
     this._cleanupExtension(extensionClone);
@@ -193,7 +192,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
   var session = this.sessions[sessionID],
       extensionClone = JSON.parse(JSON.stringify(extension));
   
-  if( session && session.state === WebRTCSession.State.ACTIVE ){
+  if( session && (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW) ){
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
