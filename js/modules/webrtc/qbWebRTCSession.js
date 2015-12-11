@@ -269,7 +269,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
       if(error){
-        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+        Helpers.traceError("'setRemoteSessionDescription[offer]' error: " + error);
       }else{
         Helpers.trace("'setRemoteSessionDescription' success");
 
@@ -487,7 +487,7 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 
     peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
       if(error){
-        Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+        Helpers.traceError("'setRemoteSessionDescription[answer]' error: " + error);
       }else{
         Helpers.trace("'setRemoteSessionDescription' success");
       }

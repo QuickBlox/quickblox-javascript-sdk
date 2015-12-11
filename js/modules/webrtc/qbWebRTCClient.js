@@ -139,7 +139,6 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
       session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
       var extensionClone = JSON.parse(JSON.stringify(extension));
-      this._cleanupExtension(extensionClone);
 
       if (typeof this.onCallListener === 'function'){
         this.onCallListener(session, extensionClone);
