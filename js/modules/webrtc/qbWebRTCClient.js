@@ -193,7 +193,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
   var session = this.sessions[sessionID],
       extensionClone = JSON.parse(JSON.stringify(extension));
   
-  if( session && (session.state === 1 || session.state === 2) ){
+  if( session && session.state === WebRTCSession.State.ACTIVE ){
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
