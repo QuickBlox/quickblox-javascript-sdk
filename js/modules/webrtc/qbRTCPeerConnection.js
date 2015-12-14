@@ -39,7 +39,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.sessionID = sessionID;
   this.userID = userID;
   this.type = type;
-  this.sdp = null;
+  this.remoteSDP = null;
 
   this.state = RTCPeerConnection.State.NEW;
 
@@ -64,7 +64,18 @@ RTCPeerConnection.prototype.release = function(){
   if(this.signalingState !== 'closed'){
     this.close();
   }
-}
+};
+
+RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
+  if(!newSDP){
+    throw new Error("sdp string can't be empty.");
+  }
+  this.remoteSDP = newSDP;
+};
+
+RTCPeerConnection.prototype.getRemoteSDP = function(){
+  return this.remoteSDP;
+};
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback){
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
@@ -109,10 +120,6 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
     callback(error);
   }
 };
-
-RTCPeerConnection.prototype.updateSDP = function(newSDP){
-  this.sdp = newSDP;
-}
 
 RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
   var candidate;

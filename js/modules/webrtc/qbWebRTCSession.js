@@ -74,7 +74,7 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  
+
   if(!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
@@ -267,7 +267,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   if(peerConnection){
     peerConnection.addLocalStream(this.localStream);
 
-    peerConnection.setRemoteSessionDescription('offer', peerConnection.sdp, function(error){
+    peerConnection.setRemoteSessionDescription('offer', peerConnection.getRemoteSDP(), function(error){
       if(error){
         Helpers.traceError("'setRemoteSessionDescription' error: " + error);
       }else{
@@ -314,7 +314,7 @@ WebRTCSession.prototype.reject = function(extension) {
   ext["opponentsIDs"] = self.opponentsIDs;
 
   var peersLen = Object.keys(self.peerConnections).length;
-  
+
   if(peersLen > 0){
     for (var key in self.peerConnections) {
       var peerConnection = self.peerConnections[key];
@@ -449,17 +449,19 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   this._clearWaitingOfferOrAnswerTimer();
 
   var oppIDs = this._uniqueOpponentsIDs();
-  oppIDs.forEach(function(opID, i, arr) {
+    oppIDs.forEach(function(opID, i, arr) {
 
     var peerConnection = self.peerConnections[opID];
     if(peerConnection){
-      peerConnection.updateSDP(extension.sdp);
+      if(opID == callerID){
+        peerConnection.updateRemoteSDP(extension.sdp);
 
-      // The group call logic starts here
-      if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
-        self._acceptInternal(callerID, {});
+        // The group call logic starts here
+        if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
+          self._acceptInternal(callerID, {});
+        }
+
       }
-
     } else {
       // create peer connections for each opponent
       var peerConnection;
@@ -468,14 +470,16 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
       }else{
         peerConnection = self._createPeer(opID, 'answer');
       }
+
       self.peerConnections[opID] = peerConnection;
 
       if(opID == callerID){
-        peerConnection.updateSDP(extension.sdp);
+        peerConnection.updateRemoteSDP(extension.sdp);
         self._startAnswerTimer();
       }
     }
   });
+
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
