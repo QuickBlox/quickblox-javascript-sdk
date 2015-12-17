@@ -132,8 +132,8 @@
             ui.createUsers(QBUsers, ui.$usersList);
             ui.$usersTitle.text(MESSAGES.title_login);
             
-            if(!params.withoutUpdMsg) {
-                ui.updateMsg({msg: 'login'});
+            if(!params.withoutUpdMsg || params.msg) {
+                ui.updateMsg({msg: params.msg});
             }
         }
 
@@ -142,15 +142,15 @@
          */
         ui.setPositionFooter();
 
-        initializeUI();
+        initializeUI({withoutUpdMsg: false, msg: 'login'});
 
         QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
         /**
          * EVENTS
          */
-        /** Choose caller */
-        $(document).on('click', '.j-user', function() {
+        /** Choose caller or callees */
+        $(document).on('click', '.j-user', function(e) {
             var $el = $(this),
                 usersWithoutCaller = [],
                 user = {},
@@ -184,9 +184,6 @@
                     if(err !== null) {
                         app.caller = {};
 
-                        ui.updateMsg( {msg: 'connect_error'} );
-
-                        initializeUI({withoutUpdMsg: true});
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
                     } else {
@@ -436,8 +433,7 @@
              */
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
-
-                var initUIParams = authorizationing ? {withoutUpdMsg: true} : {};
+                var initUIParams = authorizationing ? {withoutUpdMsg: false, msg: 'no_internet'} : {};
 
                 app.caller = {};
                 app.callees = [];
@@ -452,7 +448,6 @@
                 $('.j-callee').remove();
 
                 ui.setPositionFooter();
-
                 authorizationing = false;
             };
 
@@ -465,7 +460,9 @@
 
                 ui.showCallBtn();
 
-                ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                if(session.opponentsIDs.length > 1) {
+                    ui.updateMsg({msg: 'p2p_call_stop', obj: {name: app.caller.full_name}});
+                }
 
                 /** delete blob from myself video */
                 document.getElementById('localVideo').src = '';
@@ -487,6 +484,20 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: +userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'not answered'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('No Answer');
             };
 
@@ -553,6 +564,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'rejected the call'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('Rejected');
             };
 
@@ -563,6 +588,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'hung up the call'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('Hung Up');
             };
 
