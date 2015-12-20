@@ -372,7 +372,7 @@
                 classesName = [],
                 activeClass = [];
 
-            if( app.currentSession.peerConnections[userID].stream ) {
+            if( app.currentSession.peerConnections[userID].stream && !_.isEmpty( $that.attr('src')) ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
                 
@@ -461,7 +461,7 @@
                 ui.showCallBtn();
 
                 if(session.opponentsIDs.length > 1) {
-                    ui.updateMsg({msg: 'p2p_call_stop', obj: {name: app.caller.full_name}});
+                    ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
                 }
 
                 /** delete blob from myself video */
@@ -663,6 +663,10 @@
                     
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
+
+                        ui.changeFilter('#main_video', 'no');
+                        app.currentSession.detachMediaStream('main_video');
+                        app.mainVideo = 0;
                     }
 
                     if( !_.isEmpty(app.currentSession) ) {
