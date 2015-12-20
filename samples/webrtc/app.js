@@ -433,7 +433,7 @@
              */
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
-                var initUIParams = authorizationing ? {withoutUpdMsg: false, msg: 'no_internet'} : {};
+                var initUIParams = authorizationing ? {withoutUpdMsg: false, msg: 'no_internet'} : {withoutUpdMsg: false, msg: 'login'};
 
                 app.caller = {};
                 app.callees = [];

@@ -154,7 +154,7 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
 
   var session = this.sessions[sessionID];
 
-  if(session){
+  if(session || (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)){
     var extensionClone = JSON.parse(JSON.stringify(extension));
     this._cleanupExtension(extensionClone);
 
