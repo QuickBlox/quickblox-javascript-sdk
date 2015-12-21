@@ -135,6 +135,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
     this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
   } else {
     var session = this.sessions[sessionID];
+
     if(!session){
       session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
@@ -154,15 +155,19 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
 
   var session = this.sessions[sessionID];
 
-  if(session || (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)){
-    var extensionClone = JSON.parse(JSON.stringify(extension));
-    this._cleanupExtension(extensionClone);
+  if(session){
+    if(session.state === WebRTCSession.State.ACTIVE ) {
+      var extensionClone = JSON.parse(JSON.stringify(extension));
+      this._cleanupExtension(extensionClone);
 
-    if (typeof this.onAcceptCallListener === 'function'){
-      this.onAcceptCallListener(session, userID, extensionClone);
+      if (typeof this.onAcceptCallListener === 'function'){
+        this.onAcceptCallListener(session, userID, extensionClone);
+      }
+
+      session.processOnAccept(userID, extension);
+    } else {
+      Helpers.traceWarning("Ignore 'onAccept', the session( " + sessionID + " ) has invalid state.");
     }
-
-    session.processOnAccept(userID, extension);
   }else{
     Helpers.traceError("Ignore 'onAccept', there is no information about session " + sessionID + " by some reason.");
   }
@@ -212,7 +217,11 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
   var session = this.sessions[sessionID];
 
   if(session){
-    session.processOnIceCandidates(userID, extension);
+    if(session.state === WebRTCSession.State.ACTIVE) {
+      session.processOnIceCandidates(userID, extension);
+    } else {
+      Helpers.traceWarning('Ignore \'OnIceCandidates\', the session ( ' + sessionID + ' ) has invalid state.');
+    }
   }else{
     Helpers.traceError("Ignore 'OnIceCandidates', there is no information about session " + sessionID + " by some reason.");
   }

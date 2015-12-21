@@ -244,7 +244,7 @@
                 app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || stream.getAudioTracks().length || stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
                         ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
                         app.currentSession.stop({});
                     } else {
