@@ -153,7 +153,7 @@ WebRTCSession.prototype.connectionStateForUser = function(userID){
 
 /**
  * Detach media stream from audio/video element
- * @param {string} The Id of an ellement to detach a stream
+ * @param {string} The Id of an element to detach a stream
  */
 WebRTCSession.prototype.detachMediaStream = function(id){
   var elem = document.getElementById(id);
