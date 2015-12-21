@@ -330,6 +330,7 @@
                     });
 
                     ui.$callees.append(videoElems);
+                    ui.setPositionFooter();
                     ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
 
                     app.currentSession.accept({});
