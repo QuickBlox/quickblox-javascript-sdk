@@ -220,9 +220,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
-  /*
-   * Check state of current session
-   */
   if(self.state === WebRTCSession.State.ACTIVE) {
     Helpers.traceError("Can't accept, the session is already active, return.");
     return;
@@ -241,7 +238,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // in a case of group video chat
   if(oppIDs.length > 0){
-
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
     self._startWaitingOfferOrAnswerTimer(offerTime);
 
@@ -446,8 +442,6 @@ WebRTCSession.filter = function(id, filters) {
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this;
 
-  this._clearWaitingOfferOrAnswerTimer();
-
   var oppIDs = this._uniqueOpponentsIDs();
     oppIDs.forEach(function(opID, i, arr) {
 
@@ -483,7 +477,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
-  this._clearWaitingOfferOrAnswerTimer();
 
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
@@ -744,10 +737,9 @@ WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
     clearTimeout(this.waitingOfferOrAnswerTimer);
     this.waitingOfferOrAnswerTimer = null;
   }
-}
+};
 
 WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
-
   var self = this,
       timeout = (config.webrtc.answerTimeInterval - time) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
       waitingOfferOrAnswerTimeoutCallback = function() {
@@ -756,7 +748,8 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
         if(Object.keys(self.peerConnections).length > 0) {
           Object.keys(self.peerConnections).forEach(function(key) {
             var peerConnection = self.peerConnections[key];
-            if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
+
+            if(peerConnection.state === RTCPeerConnection.State.CONNECTING || peerConnection.state === RTCPeerConnection.State.NEW) {
               self.processOnNotAnswer(peerConnection);
             }
           });

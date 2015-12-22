@@ -659,6 +659,7 @@
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;
+                            ui.setPositionFooter();
                         }
                     }
                 }
