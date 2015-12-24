@@ -153,7 +153,7 @@ WebRTCSession.prototype.connectionStateForUser = function(userID){
 
 /**
  * Detach media stream from audio/video element
- * @param {string} The Id of an ellement to detach a stream
+ * @param {string} The Id of an element to detach a stream
  */
 WebRTCSession.prototype.detachMediaStream = function(id){
   var elem = document.getElementById(id);
@@ -444,17 +444,17 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
-  var self = this;
+  var self = this,
+      oppIDs = self._uniqueOpponentsIDs();
 
-  this._clearWaitingOfferOrAnswerTimer();
+  self._clearWaitingOfferOrAnswerTimer();
 
-  var oppIDs = this._uniqueOpponentsIDs();
-    oppIDs.forEach(function(opID, i, arr) {
-
-    var peerConnection = self.peerConnections[opID];
-    if(peerConnection){
+  oppIDs.forEach(function(opID, i, arr) {
+    var pConn = self.peerConnections[opID];
+    
+    if(pConn){
       if(opID == callerID){
-        peerConnection.updateRemoteSDP(extension.sdp);
+        pConn.updateRemoteSDP(extension.sdp);
 
         // The group call logic starts here
         if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
@@ -479,7 +479,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
       }
     }
   });
-
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {

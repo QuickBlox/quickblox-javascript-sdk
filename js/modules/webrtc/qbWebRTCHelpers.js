@@ -28,6 +28,12 @@ WebRTCHelpers = {
     }
   },
 
+  traceWarning: function(text) {
+    if (config.debug) {
+      console.warn('[QBWebRTC]:', text);
+    }
+  },
+
   traceError: function(text) {
     if (config.debug) {
       console.error('[QBWebRTC]:', text);
