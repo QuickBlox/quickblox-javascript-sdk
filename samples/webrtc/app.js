@@ -419,7 +419,7 @@
             ui.setPositionFooter();
         });
 
-        /** Before use WebRTC checking WebRTC is avaible */
+        /** Before use WebRTC checking WebRTC is available */
         if (!QB.webrtc) {
             ui.updateMsg( {msg: 'webrtc_not_avaible'} );
         } else {
