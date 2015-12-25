@@ -447,8 +447,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this,
       oppIDs = self._uniqueOpponentsIDs();
 
-  self._clearWaitingOfferOrAnswerTimer();
-
   oppIDs.forEach(function(opID, i, arr) {
     var pConn = self.peerConnections[opID];
     
