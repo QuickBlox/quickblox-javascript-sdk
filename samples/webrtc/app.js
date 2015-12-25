@@ -121,7 +121,6 @@
                 currentSession: {},
                 mainVideo: 0
             },
-            isDeviceAccess = true,
             takedCallCallee = [],
             remoteStreamCounter = 0,
             authorizationing = false,
@@ -133,8 +132,8 @@
             ui.createUsers(QBUsers, ui.$usersList);
             ui.$usersTitle.text(MESSAGES.title_login);
             
-            if(!params.withoutUpdMsg) {
-                ui.updateMsg({msg: 'login'});
+            if(!params.withoutUpdMsg || params.msg) {
+                ui.updateMsg({msg: params.msg});
             }
         }
 
@@ -143,15 +142,15 @@
          */
         ui.setPositionFooter();
 
-        initializeUI();
+        initializeUI({withoutUpdMsg: false, msg: 'login'});
 
         QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
 
         /**
          * EVENTS
          */
-        /** Choose caller */
-        $(document).on('click', '.j-user', function() {
+        /** Choose caller or callees */
+        $(document).on('click', '.j-user', function(e) {
             var $el = $(this),
                 usersWithoutCaller = [],
                 user = {},
@@ -185,9 +184,6 @@
                     if(err !== null) {
                         app.caller = {};
 
-                        ui.updateMsg( {msg: 'connect_error'} );
-
-                        initializeUI({withoutUpdMsg: true});
                         ui.setPositionFooter();
                         ui.togglePreloadMain('hide');
                     } else {
@@ -240,40 +236,40 @@
 
             if(!window.navigator.onLine) {
                 ui.updateMsg({msg: 'no_internet'});
+            }
 
+            if ( _.isEmpty(app.callees) ) {
+                $('#error_no_calles').modal();
             } else {
-                if ( _.isEmpty(app.callees) ) {
-                    $('#error_no_calles').modal();
-                } else {
-                    app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
-                    app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                        if (err) {
-                            ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
-                        } else {
-                            app.currentSession.call({}, function(error) {
-                                if(error) {
-                                    console.warn(error.detail);
-                                } else {
-                                    var compiled = _.template( $('#callee_video').html() );
+                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                        ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                        app.currentSession.stop({});
+                    } else {
+                        app.currentSession.call({}, function(error) {
+                            if(error) {
+                                console.warn(error.detail);
+                            } else {
+                                var compiled = _.template( $('#callee_video').html() );
 
-                                    ui.updateMsg({msg: 'calling'});
-                                    document.getElementById(ui.sounds.call).play();
+                                ui.updateMsg({msg: 'calling'});
+                                document.getElementById(ui.sounds.call).play();
 
-                                    /** create video elements for callees */
-                                    Object.keys(app.callees).forEach(function(userID, i, arr) {
-                                        videoElems += compiled({userID: userID, name: app.callees[userID] });
-                                    });
+                                /** create video elements for callees */
+                                Object.keys(app.callees).forEach(function(userID, i, arr) {
+                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                });
 
-                                    ui.$callees.append(videoElems);
+                                ui.$callees.append(videoElems);
 
-                                    ui.hideCallBtn();
-                                    ui.setPositionFooter();
-                                }
-                            });
-                        }
-                    });
-                }
+                                ui.hideCallBtn();
+                                ui.setPositionFooter();
+                            }
+                        });
+                    }
+                });
             }
         });
 
@@ -302,18 +298,16 @@
 
             $(ui.modal.income_call).modal('hide');
 
+            ui.hideCallBtn();
+
             document.getElementById(ui.sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err) {
                     ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
-                    isDeviceAccess = false;
-                    app.currentSession.stop({});
                 } else {
                     var opponents = [app.currentSession.initiatorID],
                         compiled = _.template( $('#callee_video').html() );
-
-                    ui.hideCallBtn();
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach( function(userID, i, arr) {
@@ -337,6 +331,7 @@
                     });
 
                     ui.$callees.append(videoElems);
+                    ui.setPositionFooter();
                     ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
 
                     app.currentSession.accept({});
@@ -379,7 +374,7 @@
                 classesName = [],
                 activeClass = [];
 
-            if( app.currentSession.peerConnections[userID].stream ) {
+            if( app.currentSession.peerConnections[userID].stream && !_.isEmpty( $that.attr('src')) ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
                 
@@ -419,7 +414,7 @@
             ui.setPositionFooter();
         });
 
-        /** Before use WebRTC checking WebRTC is available */
+        /** Before use WebRTC checking WebRTC is avaible */
         if (!QB.webrtc) {
             ui.updateMsg( {msg: 'webrtc_not_avaible'} );
         } else {
@@ -440,8 +435,7 @@
              */
             QB.chat.onDisconnectedListener = function() {
                 console.log('onDisconnectedListener.');
-
-                var initUIParams = authorizationing ? {withoutUpdMsg: true} : {};
+                var initUIParams = authorizationing ? {withoutUpdMsg: false, msg: 'no_internet'} : {withoutUpdMsg: false, msg: 'login'};
 
                 app.caller = {};
                 app.callees = [];
@@ -456,7 +450,6 @@
                 $('.j-callee').remove();
 
                 ui.setPositionFooter();
-
                 authorizationing = false;
             };
 
@@ -469,9 +462,7 @@
 
                 ui.showCallBtn();
 
-                if(!isDeviceAccess) {
-                    isDeviceAccess = true;
-                } else {
+                if(session.opponentsIDs.length > 1) {
                     ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
                 }
 
@@ -495,6 +486,20 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: +userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'not answered'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('No Answer');
             };
 
@@ -561,6 +566,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'rejected the call'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('Rejected');
             };
 
@@ -571,6 +590,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
+                var userInfo = _.findWhere(QBUsers, {id: userId});
+
+                /** It's for p2p call */
+                if(session.opponentsIDs.length === 1) {
+                    ui.updateMsg({
+                        msg: 'p2p_call_stop',
+                        obj: {
+                            name: userInfo.full_name,
+                            reason: 'hung up the call'
+                        }
+                    });
+                }
+
+                /** It's for groups call */
                 $('.j-callee_status_' + userId).text('Hung Up');
             };
 
@@ -632,6 +665,10 @@
                     
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
+
+                        ui.changeFilter('#main_video', 'no');
+                        app.currentSession.detachMediaStream('main_video');
+                        app.mainVideo = 0;
                     }
 
                     if( !_.isEmpty(app.currentSession) ) {
@@ -656,6 +693,7 @@
                     if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
                         /** get array if users without user who ends call */
                         takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id !== +userID; });
+                        ui.updateMsg( {msg: 'accept_call', obj: {users: takedCallCallee }} );
                     }
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
@@ -665,7 +703,6 @@
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;
-                            ui.setPositionFooter();
                         }
                     }
                 }

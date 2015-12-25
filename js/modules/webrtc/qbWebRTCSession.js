@@ -153,7 +153,7 @@ WebRTCSession.prototype.connectionStateForUser = function(userID){
 
 /**
  * Detach media stream from audio/video element
- * @param {string} The Id of an ellement to detach a stream
+ * @param {string} The Id of an element to detach a stream
  */
 WebRTCSession.prototype.detachMediaStream = function(id){
   var elem = document.getElementById(id);
@@ -220,6 +220,9 @@ WebRTCSession.prototype.accept = function(extension) {
 
   Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
 
+  /*
+   * Check state of current session
+   */
   if(self.state === WebRTCSession.State.ACTIVE) {
     Helpers.traceError("Can't accept, the session is already active, return.");
     return;
@@ -238,6 +241,7 @@ WebRTCSession.prototype.accept = function(extension) {
 
   // in a case of group video chat
   if(oppIDs.length > 0){
+
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
     self._startWaitingOfferOrAnswerTimer(offerTime);
 
@@ -440,15 +444,15 @@ WebRTCSession.filter = function(id, filters) {
 //
 
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
-  var self = this;
+  var self = this,
+      oppIDs = self._uniqueOpponentsIDs();
 
-  var oppIDs = this._uniqueOpponentsIDs();
-    oppIDs.forEach(function(opID, i, arr) {
-
-    var peerConnection = self.peerConnections[opID];
-    if(peerConnection){
+  oppIDs.forEach(function(opID, i, arr) {
+    var pConn = self.peerConnections[opID];
+    
+    if(pConn){
       if(opID == callerID){
-        peerConnection.updateRemoteSDP(extension.sdp);
+        pConn.updateRemoteSDP(extension.sdp);
 
         // The group call logic starts here
         if(callerID != self.initiatorID && self.state === WebRTCSession.State.ACTIVE){
@@ -473,10 +477,10 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
       }
     }
   });
-
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
+  this._clearWaitingOfferOrAnswerTimer();
 
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
@@ -737,9 +741,10 @@ WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
     clearTimeout(this.waitingOfferOrAnswerTimer);
     this.waitingOfferOrAnswerTimer = null;
   }
-};
+}
 
 WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
+
   var self = this,
       timeout = (config.webrtc.answerTimeInterval - time) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
       waitingOfferOrAnswerTimeoutCallback = function() {
@@ -748,8 +753,7 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
         if(Object.keys(self.peerConnections).length > 0) {
           Object.keys(self.peerConnections).forEach(function(key) {
             var peerConnection = self.peerConnections[key];
-
-            if(peerConnection.state === RTCPeerConnection.State.CONNECTING || peerConnection.state === RTCPeerConnection.State.NEW) {
+            if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
               self.processOnNotAnswer(peerConnection);
             }
           });
