@@ -158,58 +158,62 @@
                 classNameCheckedUser = 'users__user-active';
 
             /** if app.caller is not exist create caller, if no - add callees */
-            if( _.isEmpty(app.caller) ) {
-                authorizationing = true;
-                ui.togglePreloadMain('show');
-                /**
-                 * id: + for convert to number type
-                 */
-                app.caller = {
-                    id: +$.trim( $el.data('id') ),
-                    login: $.trim( $el.data('login') ),
-                    password: $.trim( $el.data('password') ),
-                    full_name: $.trim( $el.data('name') )
-                };
-
-                usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
-
-                ui.$usersList.empty();
-
-                ui.updateMsg( {msg: 'create_session'} );
-                ui.updateMsg( {msg: 'connect'} );
-
-                QB.chat.connect({
-                    jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
-                    password: app.caller.password
-                }, function(err, res) {
-                    if(err !== null) {
-                        app.caller = {};
-
-                        ui.setPositionFooter();
-                        ui.togglePreloadMain('hide');
-                    } else {
-                        ui.createUsers(usersWithoutCaller, ui.$usersList);
-
-                        ui.$usersTitle.text(MESSAGES.title_callee);
-                        ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
-
-                        ui.$panel.removeClass('hidden');
-                        ui.setPositionFooter();
-                        ui.togglePreloadMain('hide');
-                    }
-
-                    authorizationing = false;
-                });
+            if(!window.navigator.onLine) {
+                ui.updateMsg({msg: 'no_internet'});
             } else {
-                user.id = +$.trim( $el.data('id') );
-                user.name = $.trim( $el.data('name') );
+                if(_.isEmpty(app.caller)) {
+                    authorizationing = true;
+                    ui.togglePreloadMain('show');
+                    /**
+                     * id: + for convert to number type
+                     */
+                    app.caller = {
+                        id: +$.trim( $el.data('id') ),
+                        login: $.trim( $el.data('login') ),
+                        password: $.trim( $el.data('password') ),
+                        full_name: $.trim( $el.data('name') )
+                    };
 
-                if ($el.hasClass(classNameCheckedUser)) {
-                    delete app.callees[user.id];
-                    $el.removeClass(classNameCheckedUser);
+                    usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
+
+                    ui.$usersList.empty();
+
+                    ui.updateMsg( {msg: 'connect'} );
+
+                    QB.chat.connect({
+                        jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
+                        password: app.caller.password
+                    }, function(err, res) {
+                        if(err !== null) {
+                            app.caller = {};
+
+                            ui.setPositionFooter();
+                            ui.togglePreloadMain('hide');
+                            QB.chat.disconnect();
+                        } else {
+                            ui.createUsers(usersWithoutCaller, ui.$usersList);
+
+                            ui.$usersTitle.text(MESSAGES.title_callee);
+                            ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
+
+                            ui.$panel.removeClass('hidden');
+                            ui.setPositionFooter();
+                            ui.togglePreloadMain('hide');
+                        }
+
+                        authorizationing = false;
+                    });
                 } else {
-                    app.callees[user.id] = user.name;
-                    $el.addClass(classNameCheckedUser);
+                    user.id = +$.trim( $el.data('id') );
+                    user.name = $.trim( $el.data('name') );
+
+                    if ($el.hasClass(classNameCheckedUser)) {
+                        delete app.callees[user.id];
+                        $el.removeClass(classNameCheckedUser);
+                    } else {
+                        app.callees[user.id] = user.name;
+                        $el.addClass(classNameCheckedUser);
+                    }
                 }
             }
 
@@ -241,8 +245,8 @@
                 if ( _.isEmpty(app.callees) ) {
                     $('#error_no_calles').modal();
                 } else {
+                    ui.updateMsg( {msg: 'create_session'} );
                     app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
-
                     app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                         if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
                             ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
