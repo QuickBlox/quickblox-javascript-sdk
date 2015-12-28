@@ -1,16 +1,12 @@
-/*
+/**
  * QuickBlox JavaScript SDK
- *
  * WebRTC Module (WebRTC helpers)
- *
  */
 
- var config = require('../../qbConfig');
- var download = require('../../../lib/download/download.min');
+var config = require('../../qbConfig');
+var download = require('../../../lib/download/download.min');
 
-function WebRTCHelpers() {
-
-}
+var WebRTCHelpers = {};
 
 WebRTCHelpers = {
   getUserJid: function(id, appId) {
@@ -41,7 +37,7 @@ WebRTCHelpers = {
   },
 
   getLocalTime: function() {
-    var arr = (new Date).toString().split(' ');
+    var arr = new Date().toString().split(' ');
     return arr.slice(1,5).join('-');
   },
 
@@ -58,6 +54,10 @@ WebRTCHelpers = {
   }
 };
 
+/**
+ * [SessionConnectionState]
+ * @type {Object}
+ */
 WebRTCHelpers.SessionConnectionState = {
   UNDEFINED: 0,
   CONNECTING: 1,
@@ -68,12 +68,16 @@ WebRTCHelpers.SessionConnectionState = {
   COMPLETED: 6
 };
 
+/**
+ * [CallType]
+ * @type {Object}
+ */
 WebRTCHelpers.CallType = {
   VIDEO: 1,
   AUDIO: 2
 };
 
-// Download Blob to local file system
+/** Download Blob to local file system */
 Blob.prototype.download = function() {
   download(this, this.name, this.type);
 };

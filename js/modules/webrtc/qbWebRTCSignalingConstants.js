@@ -1,13 +1,9 @@
-/*
+/**
  * QuickBlox JavaScript SDK
- *
  * WebRTC Module (WebRTC signaling constants)
- *
  */
 
-function WebRTCSignalingConstants() {
-
-}
+function WebRTCSignalingConstants() {}
 
 WebRTCSignalingConstants.MODULE_ID = "WebRTCVideoChat";
 

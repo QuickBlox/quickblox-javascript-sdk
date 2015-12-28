@@ -1,11 +1,10 @@
-/*
+/**
  * QuickBlox JavaScript SDK
- *
  * WebRTC Module (WebRTC signaling processor)
- *
  */
 
 require('../../../lib/strophe/strophe.min');
+
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 var Utils = require('../../qbUtils');
@@ -16,28 +15,27 @@ function WebRTCSignalingProvider(service, connection) {
   this.connection = connection;
 }
 
-WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates, extension) {
-  var extension = extension || {};
+WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates, ext) {
+  var extension = ext || {};
   extension["iceCandidates"] = iceCandidates;
 
   this.sendMessage(userId, extension, SignalingConstants.SignalingType.CANDIDATE);
 };
 
-WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, signalingType) {
-  var extension = extension || {},
+WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingType) {
+  var extension = ext || {},
       self = this,
       msg, params;
 
-  // basic parameters
-  //
+  /** basic parameters */
   extension.moduleIdentifier = SignalingConstants.MODULE_ID;
   extension.signalType = signalingType;
-  // extension.sessionID
-  // extension.callType
+  /** extension.sessionID */
+  /** extension.callType */
   extension.platform = 'web';
-  // extension.callerID
-  // extension.opponentsIDs
-  // extension.sdp
+  /** extension.callerID */
+  /** extension.opponentsIDs */
+  /** extension.sdp */
 
   params = {
     to: Helpers.getUserJid(userId, config.creds.appId),
@@ -52,7 +50,7 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
   Object.keys(extension).forEach(function(field) {
     if (field === 'iceCandidates') {
 
-      // iceCandidates
+      /** iceCandidates */
       msg = msg.c('iceCandidates');
       extension[field].forEach(function(candidate) {
         msg = msg.c('iceCandidate');
@@ -64,8 +62,7 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
       msg.up();
 
     } else if (field === 'opponentsIDs') {
-
-      // opponentsIDs
+      /** opponentsIDs */
       msg = msg.c('opponentsIDs');
       extension[field].forEach(function(opponentId) {
         msg = msg.c('opponentID').t(opponentId).up();
@@ -73,7 +70,6 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
       msg.up();
 
     } else if (typeof extension[field] === 'object') {
-
       self._JStoXML(field, extension[field], msg);
 
     } else {
@@ -84,7 +80,7 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, extension, sign
   this.connection.send(msg);
 };
 
-// TODO: the magic
+/** TODO: the magic */
 WebRTCSignalingProvider.prototype._JStoXML = function(title, obj, msg) {
   var self = this;
   msg.c(title);

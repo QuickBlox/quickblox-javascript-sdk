@@ -1,18 +1,12 @@
-/*
+/**
  * QuickBlox JavaScript SDK
- *
  * WebRTC Module (WebRTC peer connection model)
- *
  */
 
-// Modules
-//
+/** Modules */
 var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
-// Variable
-//
-// cross-browser polyfill
 var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
@@ -48,12 +42,11 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  // We use this timer interval to dial a user - produce the call requests each N seconds.
-  //
+  /** We use this timer interval to dial a user - produce the call requests each N seconds. */
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
 
-  // timer to detect network blips
+  /** timer to detect network blips */
   this.reconnectTimer = 0;
 
   this.iceCandidates = [];
@@ -61,6 +54,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
 
 RTCPeerConnection.prototype.release = function(){
   this._clearDialingTimer();
+
   if(this.signalingState !== 'closed'){
     this.close();
   }
@@ -69,8 +63,9 @@ RTCPeerConnection.prototype.release = function(){
 RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
   if(!newSDP){
     throw new Error("sdp string can't be empty.");
+  } else {
+    this.remoteSDP = newSDP;
   }
-  this.remoteSDP = newSDP;
 };
 
 RTCPeerConnection.prototype.getRemoteSDP = function(){
@@ -88,19 +83,20 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
   }
 
   this.setRemoteDescription(desc, successCallback, errorCallback);
-}
+};
 
 RTCPeerConnection.prototype.addLocalStream = function(localStream){
-  if(localStream == null){
+  if(localStream){
+    this.addStream(localStream);
+  } else {
     throw new Error("'RTCPeerConnection.addStream' error: stream is 'null'.");
   }
-  this.addStream(localStream);
-}
+};
 
 RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
   var self = this;
 
-  this.state = RTCPeerConnection.State.CONNECTING;
+  self.state = RTCPeerConnection.State.CONNECTING;
 
   if (self.type === 'offer') {
     // Additional parameters for SDP Constraints
@@ -123,35 +119,31 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
 
 RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
   var candidate;
+
   for (var i = 0, len = iceCandidates.length; i < len; i++) {
     candidate = {
       sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
       sdpMid: iceCandidates[i].sdpMid,
       candidate: iceCandidates[i].candidate
     };
-    this.addIceCandidate(new RTCIceCandidate(candidate),
-      function() {
-
-      }, function(error){
+    this.addIceCandidate(
+      new RTCIceCandidate(candidate),
+      function() {},
+      function(error){
         Helpers.traceError("Error on 'addIceCandidate': " + error);
-      });
+      }
+    );
   }
 };
 
 RTCPeerConnection.prototype.toString = function sessionToString() {
-  var ret = 'sessionID: ' + this.sessionID + ', userID:  ' + this.userID + ', type: ' +
-    this.type + ', state: ' + this.state;
-  return ret;
-}
+  return 'sessionID: ' + this.sessionID + ', userID:  ' + this.userID + ', type: ' + this.type + ', state: ' + this.state;
+};
 
-//
-////////////////////////////////// Callbacks ///////////////////////////////////
-//
-
-
+/**
+ * CALLBACKS
+ */
 RTCPeerConnection.prototype.onSignalingStateCallback = function() {
-  // send candidates
-  //
   if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
     this.delegate.processIceCandidates(this, this.iceCandidates);
     this.iceCandidates.length = 0;
@@ -162,9 +154,10 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
   var candidate = event.candidate;
 
   if (candidate) {
-    // collecting internally the ice candidates
-    // will send a bit later
-    //
+    /**
+     * collecting internally the ice candidates
+     * will send a bit later
+     */
     var ICECandidate = {
       sdpMLineIndex: candidate.sdpMLineIndex,
       sdpMid: candidate.sdpMid,
@@ -172,14 +165,14 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
     };
 
     if(this.signalingState === 'stable'){
-      this.delegate.processIceCandidates(this, [ICECandidate])
+      this.delegate.processIceCandidates(this, [ICECandidate]);
     }else{
       this.iceCandidates.push(ICECandidate);
     }
   }
 };
 
-// handler of remote media stream
+/** handler of remote media stream */
 RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
   if (typeof this.delegate._onRemoteStreamListener === 'function'){
     this.delegate._onRemoteStreamListener(this.userID, event.stream);
@@ -187,18 +180,17 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
+  var newIceConnectionState = this.iceConnectionState;
+  
   Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
 
-  var newIceConnectionState = this.iceConnectionState;
 
-  // read more about all states:
-  // http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
-  //
-  // 'disconnected' happens in a case when a user has killed an application (for example, on iOS/Android via task manager).
-  // So we should notify our user about it.
-
-  // notify user about state changes
-  //
+  /**
+   * read more about all states:
+   * http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
+   * 'disconnected' happens in a case when a user has killed an application (for example, on iOS/Android via task manager).
+   * So we should notify our user about it.
+   */
   if(typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
   	var connectionState = null;
 
@@ -225,18 +217,15 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
       connectionState = Helpers.SessionConnectionState.CLOSED;
   	}
 
-  	if(connectionState != null){
+  	if(connectionState){
       this.delegate._onSessionConnectionStateChangedListener(this.userID, connectionState);
     }
   }
 };
 
-
-//
-/////////////////////////////////// Private ////////////////////////////////////
-//
-
-
+/**
+ * PRIVATE
+ */
 RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
   if(this.waitingReconnectTimeoutCallback){
     Helpers.trace('_clearWaitingReconnectTimer');
@@ -260,7 +249,7 @@ RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
 
   Helpers.trace('_startWaitingReconnectTimer, timeout: ' + timeout);
 
-  this.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+  self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
 };
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
@@ -274,11 +263,10 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
 };
 
 RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAnswerCallback){
+  var self = this;
   var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
 
   Helpers.trace('_startDialingTimer, dialingTimeInterval: ' + dialingTimeInterval);
-
-  var self = this;
 
   var _dialingCallback = function(extension, withOnNotAnswerCallback, skipIncrement){
     if(!skipIncrement){
@@ -298,7 +286,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
     }
   };
 
-  this.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback, false);
+  self.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback, false);
 
   // call for the 1st time
   _dialingCallback(extension, withOnNotAnswerCallback, true);

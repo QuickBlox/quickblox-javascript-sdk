@@ -121,6 +121,7 @@
                 currentSession: {},
                 mainVideo: 0
             },
+            isDeviceAccess = true,
             takedCallCallee = [],
             remoteStreamCounter = 0,
             authorizationing = false,
@@ -157,58 +158,62 @@
                 classNameCheckedUser = 'users__user-active';
 
             /** if app.caller is not exist create caller, if no - add callees */
-            if( _.isEmpty(app.caller) ) {
-                authorizationing = true;
-                ui.togglePreloadMain('show');
-                /**
-                 * id: + for convert to number type
-                 */
-                app.caller = {
-                    id: +$.trim( $el.data('id') ),
-                    login: $.trim( $el.data('login') ),
-                    password: $.trim( $el.data('password') ),
-                    full_name: $.trim( $el.data('name') )
-                };
-
-                usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
-
-                ui.$usersList.empty();
-
-                ui.updateMsg( {msg: 'create_session'} );
-                ui.updateMsg( {msg: 'connect'} );
-
-                QB.chat.connect({
-                    jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
-                    password: app.caller.password
-                }, function(err, res) {
-                    if(err !== null) {
-                        app.caller = {};
-
-                        ui.setPositionFooter();
-                        ui.togglePreloadMain('hide');
-                    } else {
-                        ui.createUsers(usersWithoutCaller, ui.$usersList);
-
-                        ui.$usersTitle.text(MESSAGES.title_callee);
-                        ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
-
-                        ui.$panel.removeClass('hidden');
-                        ui.setPositionFooter();
-                        ui.togglePreloadMain('hide');
-                    }
-
-                    authorizationing = false;
-                });
+            if(!window.navigator.onLine) {
+                ui.updateMsg({msg: 'no_internet'});
             } else {
-                user.id = +$.trim( $el.data('id') );
-                user.name = $.trim( $el.data('name') );
+                if(_.isEmpty(app.caller)) {
+                    authorizationing = true;
+                    ui.togglePreloadMain('show');
+                    /**
+                     * id: + for convert to number type
+                     */
+                    app.caller = {
+                        id: +$.trim( $el.data('id') ),
+                        login: $.trim( $el.data('login') ),
+                        password: $.trim( $el.data('password') ),
+                        full_name: $.trim( $el.data('name') )
+                    };
 
-                if ($el.hasClass(classNameCheckedUser)) {
-                    delete app.callees[user.id];
-                    $el.removeClass(classNameCheckedUser);
+                    usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
+
+                    ui.$usersList.empty();
+
+                    ui.updateMsg( {msg: 'connect'} );
+
+                    QB.chat.connect({
+                        jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
+                        password: app.caller.password
+                    }, function(err, res) {
+                        if(err !== null) {
+                            app.caller = {};
+
+                            ui.setPositionFooter();
+                            ui.togglePreloadMain('hide');
+                            QB.chat.disconnect();
+                        } else {
+                            ui.createUsers(usersWithoutCaller, ui.$usersList);
+
+                            ui.$usersTitle.text(MESSAGES.title_callee);
+                            ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
+
+                            ui.$panel.removeClass('hidden');
+                            ui.setPositionFooter();
+                            ui.togglePreloadMain('hide');
+                        }
+
+                        authorizationing = false;
+                    });
                 } else {
-                    app.callees[user.id] = user.name;
-                    $el.addClass(classNameCheckedUser);
+                    user.id = +$.trim( $el.data('id') );
+                    user.name = $.trim( $el.data('name') );
+
+                    if ($el.hasClass(classNameCheckedUser)) {
+                        delete app.callees[user.id];
+                        $el.removeClass(classNameCheckedUser);
+                    } else {
+                        app.callees[user.id] = user.name;
+                        $el.addClass(classNameCheckedUser);
+                    }
                 }
             }
 
@@ -236,40 +241,40 @@
 
             if(!window.navigator.onLine) {
                 ui.updateMsg({msg: 'no_internet'});
-            }
-
-            if ( _.isEmpty(app.callees) ) {
-                $('#error_no_calles').modal();
             } else {
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+                if ( _.isEmpty(app.callees) ) {
+                    $('#error_no_calles').modal();
+                } else {
+                    ui.updateMsg( {msg: 'create_session'} );
+                    app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+                    app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                        if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                            ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                            app.currentSession.stop({});
+                        } else {
+                            app.currentSession.call({}, function(error) {
+                                if(error) {
+                                    console.warn(error.detail);
+                                } else {
+                                    var compiled = _.template( $('#callee_video').html() );
 
-                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                        ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
-                        app.currentSession.stop({});
-                    } else {
-                        app.currentSession.call({}, function(error) {
-                            if(error) {
-                                console.warn(error.detail);
-                            } else {
-                                var compiled = _.template( $('#callee_video').html() );
+                                    ui.updateMsg({msg: 'calling'});
+                                    document.getElementById(ui.sounds.call).play();
 
-                                ui.updateMsg({msg: 'calling'});
-                                document.getElementById(ui.sounds.call).play();
+                                    /** create video elements for callees */
+                                    Object.keys(app.callees).forEach(function(userID, i, arr) {
+                                        videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                    });
 
-                                /** create video elements for callees */
-                                Object.keys(app.callees).forEach(function(userID, i, arr) {
-                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
-                                });
+                                    ui.$callees.append(videoElems);
 
-                                ui.$callees.append(videoElems);
-
-                                ui.hideCallBtn();
-                                ui.setPositionFooter();
-                            }
-                        });
-                    }
-                });
+                                    ui.hideCallBtn();
+                                    ui.setPositionFooter();
+                                }
+                            });
+                        }
+                    });
+                }
             }
         });
 
@@ -298,16 +303,18 @@
 
             $(ui.modal.income_call).modal('hide');
 
-            ui.hideCallBtn();
-
             document.getElementById(ui.sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err) {
                     ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                    isDeviceAccess = false;
+                    app.currentSession.stop({});
                 } else {
                     var opponents = [app.currentSession.initiatorID],
                         compiled = _.template( $('#callee_video').html() );
+
+                    ui.hideCallBtn();
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach( function(userID, i, arr) {
@@ -331,8 +338,8 @@
                     });
 
                     ui.$callees.append(videoElems);
-                    ui.setPositionFooter();
                     ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
+                    ui.setPositionFooter();
 
                     app.currentSession.accept({});
                 }
@@ -462,9 +469,14 @@
 
                 ui.showCallBtn();
 
-                if(session.opponentsIDs.length > 1) {
-                    ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                 if(!isDeviceAccess) {
+                    isDeviceAccess = true;
+                } else {
+                    if(session.opponentsIDs.length > 1) {
+                        ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                    }
                 }
+
 
                 /** delete blob from myself video */
                 document.getElementById('localVideo').src = '';
@@ -612,7 +624,6 @@
                     console.log('userID: ' + userID);
                     console.log('Session: ' + session);
                 console.groupEnd();
-
                 app.currentSession.peerConnections[userID].stream = stream;
 
                 app.currentSession.attachMediaStream('remote_video_' + userID, stream);
