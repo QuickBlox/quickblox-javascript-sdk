@@ -236,40 +236,40 @@
 
             if(!window.navigator.onLine) {
                 ui.updateMsg({msg: 'no_internet'});
-            }
-
-            if ( _.isEmpty(app.callees) ) {
-                $('#error_no_calles').modal();
             } else {
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+                if ( _.isEmpty(app.callees) ) {
+                    $('#error_no_calles').modal();
+                } else {
+                    app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
-                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                        ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
-                        app.currentSession.stop({});
-                    } else {
-                        app.currentSession.call({}, function(error) {
-                            if(error) {
-                                console.warn(error.detail);
-                            } else {
-                                var compiled = _.template( $('#callee_video').html() );
+                    app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                        if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                            ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                            app.currentSession.stop({});
+                        } else {
+                            app.currentSession.call({}, function(error) {
+                                if(error) {
+                                    console.warn(error.detail);
+                                } else {
+                                    var compiled = _.template( $('#callee_video').html() );
 
-                                ui.updateMsg({msg: 'calling'});
-                                document.getElementById(ui.sounds.call).play();
+                                    ui.updateMsg({msg: 'calling'});
+                                    document.getElementById(ui.sounds.call).play();
 
-                                /** create video elements for callees */
-                                Object.keys(app.callees).forEach(function(userID, i, arr) {
-                                    videoElems += compiled({userID: userID, name: app.callees[userID] });
-                                });
+                                    /** create video elements for callees */
+                                    Object.keys(app.callees).forEach(function(userID, i, arr) {
+                                        videoElems += compiled({userID: userID, name: app.callees[userID] });
+                                    });
 
-                                ui.$callees.append(videoElems);
+                                    ui.$callees.append(videoElems);
 
-                                ui.hideCallBtn();
-                                ui.setPositionFooter();
-                            }
-                        });
-                    }
-                });
+                                    ui.hideCallBtn();
+                                    ui.setPositionFooter();
+                                }
+                            });
+                        }
+                    });
+                }
             }
         });
 
