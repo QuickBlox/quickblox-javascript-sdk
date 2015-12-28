@@ -461,6 +461,8 @@ body {
     display: inline-block;
     position: relative;
     width: 50%;
+
+    padding-top: 14px;
     padding-right: 10px;
 
     vertical-align: top;
@@ -473,11 +475,14 @@ body {
     
 
 .callees__callee_inner {
+    position: relative;
     margin: 0 0 10px 0;
 }
 
 .callees__callee_status {
-    margin: 0 0 3px 0;
+    position: absolute;
+    width: 100%;
+    top: -14px;
     
     font-size: 11px;
     text-transform: uppercase;
@@ -493,7 +498,7 @@ body {
     .callees__callee_video.active {
         border-color: #41cc44;
     }
-    .callees__callee-wait .callees__callee_video:before{
+    .callees__callee-wait .callees__callee_inner:before{
         content: " ";
         display: block;
 

@@ -167,8 +167,9 @@ WebRTCSession.prototype.detachMediaStream = function(id){
 };
 
 /**
- * Initiate a call
- * @param {array} A map with custom parameters
+ * [Initiate a call]
+ * @param  {object}   extension [custom parametrs]
+ * @param  {Function} callback  
  */
 WebRTCSession.prototype.call = function(extension, callback) {
   var self = this,
@@ -224,6 +225,12 @@ WebRTCSession.prototype.accept = function(extension) {
 
   if(self.state === WebRTCSession.State.ACTIVE) {
     Helpers.traceError("Can't accept, the session is already active, return.");
+    return;
+  }
+
+  if(self.state === WebRTCSession.State.CLOSED) {
+    Helpers.traceError("Can't accept, the session is already closed, return.");
+    self.stop({});
     return;
   }
 

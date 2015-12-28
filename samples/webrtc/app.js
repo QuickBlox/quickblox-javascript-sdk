@@ -334,8 +334,8 @@
                     });
 
                     ui.$callees.append(videoElems);
-                    ui.setPositionFooter();
                     ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
+                    ui.setPositionFooter();
 
                     app.currentSession.accept({});
                 }
@@ -620,7 +620,6 @@
                     console.log('userID: ' + userID);
                     console.log('Session: ' + session);
                 console.groupEnd();
-
                 app.currentSession.peerConnections[userID].stream = stream;
 
                 app.currentSession.attachMediaStream('remote_video_' + userID, stream);
