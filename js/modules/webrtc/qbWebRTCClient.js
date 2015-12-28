@@ -1,8 +1,6 @@
-/*
+/**
  * QuickBlox JavaScript SDK
- *
  * WebRTC Module (WebRTC client)
- *
  */
 
 /*
@@ -50,9 +48,9 @@ WebRTCClient.prototype.sessions = {};
 
 /**
  * Creates the new session.
- * @param {number} Initiator ID
- * @param {array} Opponents IDs
- * @param {enum} Call type
+ * @param  {array} opponentsIDs Opponents IDs
+ * @param  {number} ct          Call type
+ * @param  {number} cID         Initiator ID
  */
 WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
   var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
@@ -76,7 +74,7 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
   var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid));
 
-  // set callbacks
+  /** set callbacks */
   newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
   newSession.onRemoteStreamListener = this.onRemoteStreamListener;
   newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
@@ -100,7 +98,6 @@ WebRTCClient.prototype.clearSession = function(sessionId){
  * @returns {boolean} if active or new session exist
  */
 WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessionID){
-
   var self = this;
   var exist = false;
 
@@ -115,13 +112,13 @@ WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessi
       }
     });
   }
+
   return exist;
 };
 
 /**
  * DELEGATE (signaling)
  */
-
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
   Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
@@ -146,14 +143,15 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
         this.onCallListener(session, extensionClone);
       }
     }
+
     session.processOnCall(userID, extension);
   }
 };
 
 WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
-  Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
-
   var session = this.sessions[sessionID];
+
+  Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
 
   if(session){
     if(session.state === WebRTCSession.State.ACTIVE ) {
@@ -174,9 +172,9 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
 };
 
 WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
-  Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
-
   var session = this.sessions[sessionID];
+
+  Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
 
   if(session){
     var extensionClone = JSON.parse(JSON.stringify(extension));
@@ -212,9 +210,9 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
 };
 
 WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, extension) {
-  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
-
   var session = this.sessions[sessionID];
+
+  Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
 
   if(session){
     if(session.state === WebRTCSession.State.ACTIVE) {
@@ -228,9 +226,9 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
 };
 
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
-  Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
-
   var session = this.sessions[sessionID];
+
+  Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
   if (typeof this.onUpdateCallListener === 'function'){
     this.onUpdateCallListener(session, userID, extension);

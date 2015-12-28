@@ -1,4 +1,4 @@
-/*
+/**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC peer connection model)
  */
