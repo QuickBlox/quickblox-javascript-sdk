@@ -121,6 +121,7 @@
                 currentSession: {},
                 mainVideo: 0
             },
+            isDeviceAccess = true,
             takedCallCallee = [],
             remoteStreamCounter = 0,
             authorizationing = false,
@@ -298,16 +299,18 @@
 
             $(ui.modal.income_call).modal('hide');
 
-            ui.hideCallBtn();
-
             document.getElementById(ui.sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err) {
                     ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                    isDeviceAccess = false;
+                    app.currentSession.stop({});
                 } else {
                     var opponents = [app.currentSession.initiatorID],
                         compiled = _.template( $('#callee_video').html() );
+
+                    ui.hideCallBtn();
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach( function(userID, i, arr) {
@@ -462,9 +465,14 @@
 
                 ui.showCallBtn();
 
-                if(session.opponentsIDs.length > 1) {
-                    ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                 if(!isDeviceAccess) {
+                    isDeviceAccess = true;
+                } else {
+                    if(session.opponentsIDs.length > 1) {
+                        ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                    }
                 }
+
 
                 /** delete blob from myself video */
                 document.getElementById('localVideo').src = '';
