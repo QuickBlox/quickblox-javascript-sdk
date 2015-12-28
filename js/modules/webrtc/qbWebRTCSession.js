@@ -447,8 +447,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
   var self = this,
       oppIDs = self._uniqueOpponentsIDs();
 
-  self._clearWaitingOfferOrAnswerTimer();
-
   oppIDs.forEach(function(opID, i, arr) {
     var pConn = self.peerConnections[opID];
     
@@ -482,8 +480,6 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 };
 
 WebRTCSession.prototype.processOnAccept = function(userID, extension) {
-  this._clearWaitingOfferOrAnswerTimer();
-
   var peerConnection = this.peerConnections[userID];
   if(peerConnection){
     peerConnection._clearDialingTimer();
@@ -743,10 +739,9 @@ WebRTCSession.prototype._clearWaitingOfferOrAnswerTimer = function() {
     clearTimeout(this.waitingOfferOrAnswerTimer);
     this.waitingOfferOrAnswerTimer = null;
   }
-}
+};
 
 WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
-
   var self = this,
       timeout = (config.webrtc.answerTimeInterval - time) < 0 ? 1 : config.webrtc.answerTimeInterval - time,
       waitingOfferOrAnswerTimeoutCallback = function() {
@@ -755,7 +750,7 @@ WebRTCSession.prototype._startWaitingOfferOrAnswerTimer = function(time) {
         if(Object.keys(self.peerConnections).length > 0) {
           Object.keys(self.peerConnections).forEach(function(key) {
             var peerConnection = self.peerConnections[key];
-            if(peerConnection.state !== RTCPeerConnection.State.CONNECTED) {
+            if(peerConnection.state === RTCPeerConnection.State.CONNECTING || peerConnection.state === RTCPeerConnection.State.NEW) {
               self.processOnNotAnswer(peerConnection);
             }
           });
