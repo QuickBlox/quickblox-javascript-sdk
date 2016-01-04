@@ -113,7 +113,7 @@
 
             ui.createUsers(QBUsers, ui.$usersList);
             ui.$usersTitle.text(MESSAGES.title_login);
-            
+
             if(!params.withoutUpdMsg || params.msg) {
                 qbApp.MsgBoard.update(params.msg);
             }
@@ -365,7 +365,7 @@
             if( app.currentSession.peerConnections[userID].stream && !_.isEmpty( $that.attr('src')) ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
-                
+
                     app.currentSession.detachMediaStream('main_video');
                     ui.changeFilter('#main_video', 'no');
                     app.mainVideo = 0;
@@ -479,11 +479,19 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: +userId});
+                var userInfo = _.findWhere(QBUsers, {id: +userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    qbApp.MsgBoard.update('p2p_call_stop', {name: userInfo.full_name, reason: 'not answered'});
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'not answered'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -540,7 +548,7 @@
 
                 /** update list of callee who take call */
                 takedCallCallee.push(userInfo);
-                
+
                 if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
                     qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
                 }
@@ -553,11 +561,19 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: userId});
+                var userInfo = _.findWhere(QBUsers, {id: userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    qbApp.MsgBoard.update('p2p_call_stop', {name: userInfo.full_name, reason: 'rejected the call'});
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'rejected the call'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -571,11 +587,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: userId});
+                /** It's for p2p call */
+                var userInfo = _.findWhere(QBUsers, {id: userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    qbApp.MsgBoard.update('p2p_call_stop', {name: userInfo.full_name, reason: 'hung up the call'});
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'hung up the call'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -590,10 +615,10 @@
                 app.currentSession.peerConnections[userID].stream = stream;
 
                 app.currentSession.attachMediaStream('remote_video_' + userID, stream);
-               
+
                 if( remoteStreamCounter === 0) {
                     $('#remote_video_' + userID).click();
-                    
+
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
                 }
@@ -636,7 +661,7 @@
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                     ui.toggleRemoteVideoView(userID, 'clear');
                     document.getElementById(ui.sounds.rington).pause();
-                    
+
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
 
@@ -673,7 +698,7 @@
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
                         if(callTimer) {
                             $('#timer').addClass('hidden');
-                            
+
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;
