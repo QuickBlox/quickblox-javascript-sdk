@@ -691,7 +691,8 @@
 
                     if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
                         /** get array if users without user who ends call */
-                        takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id !== +userID; });
+                        takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id === +userID; });
+
                         qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
                     }
 
