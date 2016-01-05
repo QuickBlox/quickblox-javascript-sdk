@@ -5,7 +5,6 @@
         var ui = {
                 $usersTitle: $('.j-users__title'),
                 $usersList: $('.j-users__list'),
-                $cl: $('.j-console'),
 
                 $panel: $('.j-pl'),
                 $callees: $('.j-callees'),
@@ -68,24 +67,6 @@
                     this.$btnHangup.removeClass('hidden');
                     this.$btnCall.addClass('hidden');
                 },
-                /**
-                 * [updateMsg update massage for user]
-                 * @param  {[string]} msg_name [key for MESSAGES object / name(id) of template]
-                 * @param  {[object]} obj      [additional paramets for compiled template]
-                 */
-                updateMsg: function(params) {
-                    var msg = '';
-
-                    if(MESSAGES[params.msg]) {
-                        msg = MESSAGES[params.msg];
-                    } else {
-                        msg = _.template( $('#' + params.msg).html() )(params.obj);
-                    }
-
-                    this.$cl
-                        .empty()
-                        .append(msg);
-                },
                 toggleRemoteVideoView: function(userID, action) {
                     var $video = $('#remote_video_' + userID);
 
@@ -132,9 +113,9 @@
 
             ui.createUsers(QBUsers, ui.$usersList);
             ui.$usersTitle.text(MESSAGES.title_login);
-            
+
             if(!params.withoutUpdMsg || params.msg) {
-                ui.updateMsg({msg: params.msg});
+                qbApp.MsgBoard.update(params.msg);
             }
         }
 
@@ -159,7 +140,7 @@
 
             /** if app.caller is not exist create caller, if no - add callees */
             if(!window.navigator.onLine) {
-                ui.updateMsg({msg: 'no_internet'});
+                qbApp.MsgBoard.update('no_internet');
             } else {
                 if(_.isEmpty(app.caller)) {
                     authorizationing = true;
@@ -178,7 +159,7 @@
 
                     ui.$usersList.empty();
 
-                    ui.updateMsg( {msg: 'connect'} );
+                    qbApp.MsgBoard.update('connect');
 
                     QB.chat.connect({
                         jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
@@ -194,7 +175,7 @@
                             ui.createUsers(usersWithoutCaller, ui.$usersList);
 
                             ui.$usersTitle.text(MESSAGES.title_callee);
-                            ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
+                            qbApp.MsgBoard.update('login_tpl', {name: app.caller.full_name});
 
                             ui.$panel.removeClass('hidden');
                             ui.setPositionFooter();
@@ -240,16 +221,16 @@
                 };
 
             if(!window.navigator.onLine) {
-                ui.updateMsg({msg: 'no_internet'});
+                qbApp.MsgBoard.update('no_internet');
             } else {
                 if ( _.isEmpty(app.callees) ) {
                     $('#error_no_calles').modal();
                 } else {
-                    ui.updateMsg( {msg: 'create_session'} );
+                    qbApp.MsgBoard.update('create_session');
                     app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
                     app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                         if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                            ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                            qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name});
                             app.currentSession.stop({});
                         } else {
                             app.currentSession.call({}, function(error) {
@@ -258,7 +239,7 @@
                                 } else {
                                     var compiled = _.template( $('#callee_video').html() );
 
-                                    ui.updateMsg({msg: 'calling'});
+                                    qbApp.MsgBoard.update('calling');
                                     document.getElementById(ui.sounds.call).play();
 
                                     /** create video elements for callees */
@@ -284,7 +265,7 @@
                 app.currentSession.stop({});
                 app.currentSession = {};
 
-                ui.updateMsg( {msg: 'login_tpl', obj: {name: app.caller.full_name}} );
+                qbApp.MsgBoard.update('login_tpl', {name: app.caller.full_name});
             }
         });
 
@@ -307,7 +288,7 @@
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err) {
-                    ui.updateMsg({msg: 'device_not_found', obj: {name: app.caller.full_name}});
+                    qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name});
                     isDeviceAccess = false;
                     app.currentSession.stop({});
                 } else {
@@ -338,7 +319,7 @@
                     });
 
                     ui.$callees.append(videoElems);
-                    ui.updateMsg( {msg: 'during_call', obj: {name: app.caller.full_name}} );
+                    qbApp.MsgBoard.update('during_call', {name: app.caller.full_name});
                     ui.setPositionFooter();
 
                     app.currentSession.accept({});
@@ -384,7 +365,7 @@
             if( app.currentSession.peerConnections[userID].stream && !_.isEmpty( $that.attr('src')) ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
-                
+
                     app.currentSession.detachMediaStream('main_video');
                     ui.changeFilter('#main_video', 'no');
                     app.mainVideo = 0;
@@ -423,7 +404,7 @@
 
         /** Before use WebRTC checking WebRTC is avaible */
         if (!QB.webrtc) {
-            ui.updateMsg( {msg: 'webrtc_not_avaible'} );
+            qbApp.MsgBoard.update('webrtc_not_avaible');
         } else {
             /**
              * QB Event listener:
@@ -473,7 +454,7 @@
                     isDeviceAccess = true;
                 } else {
                     if(session.opponentsIDs.length > 1) {
-                        ui.updateMsg({msg: 'call_stop', obj: {name: app.caller.full_name}});
+                        qbApp.MsgBoard.update('call_stop', {name: app.caller.full_name});
                     }
                 }
 
@@ -498,17 +479,19 @@
                     console.log('Session: ' + session);
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: +userId});
+                var userInfo = _.findWhere(QBUsers, {id: +userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    ui.updateMsg({
-                        msg: 'p2p_call_stop',
-                        obj: {
-                            name: userInfo.full_name,
-                            reason: 'not answered'
-                        }
-                    });
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'not answered'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -565,9 +548,9 @@
 
                 /** update list of callee who take call */
                 takedCallCallee.push(userInfo);
-                
+
                 if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
-                    ui.updateMsg( {msg: 'accept_call', obj: {users: takedCallCallee }} );
+                    qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
                 }
             };
 
@@ -578,17 +561,19 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: userId});
+                var userInfo = _.findWhere(QBUsers, {id: userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    ui.updateMsg({
-                        msg: 'p2p_call_stop',
-                        obj: {
-                            name: userInfo.full_name,
-                            reason: 'rejected the call'
-                        }
-                    });
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'rejected the call'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -602,17 +587,20 @@
                     console.log('Extension: ' + JSON.stringify(extension));
                 console.groupEnd();
 
-                var userInfo = _.findWhere(QBUsers, {id: userId});
+                /** It's for p2p call */
+                var userInfo = _.findWhere(QBUsers, {id: userId}),
+                    currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
 
                 /** It's for p2p call */
                 if(session.opponentsIDs.length === 1) {
-                    ui.updateMsg({
-                        msg: 'p2p_call_stop',
-                        obj: {
-                            name: userInfo.full_name,
-                            reason: 'hung up the call'
-                        }
-                    });
+                    qbApp.MsgBoard.update(
+                      'p2p_call_stop',
+                      {
+                        name: userInfo.full_name,
+                        currentName: currentUserInfo.full_name,
+                        reason: 'hung up the call'
+                      }
+                    );
                 }
 
                 /** It's for groups call */
@@ -627,10 +615,10 @@
                 app.currentSession.peerConnections[userID].stream = stream;
 
                 app.currentSession.attachMediaStream('remote_video_' + userID, stream);
-               
+
                 if( remoteStreamCounter === 0) {
                     $('#remote_video_' + userID).click();
-                    
+
                     app.mainVideo = userID;
                     ++remoteStreamCounter;
                 }
@@ -673,7 +661,7 @@
                 if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                     ui.toggleRemoteVideoView(userID, 'clear');
                     document.getElementById(ui.sounds.rington).pause();
-                    
+
                     if(app.mainVideo === userID) {
                         $('#remote_video_' + userID).removeClass('active');
 
@@ -703,14 +691,15 @@
 
                     if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
                         /** get array if users without user who ends call */
-                        takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id !== +userID; });
-                        ui.updateMsg( {msg: 'accept_call', obj: {users: takedCallCallee }} );
+                        takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id === +userID; });
+
+                        qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
                     }
 
                     if( _.isEmpty(app.currentSession) || isCallEnded ) {
                         if(callTimer) {
                             $('#timer').addClass('hidden');
-                            
+
                             clearInterval(callTimer);
                             callTimer = null;
                             ui.callTime = 0;

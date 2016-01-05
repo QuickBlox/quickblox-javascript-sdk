@@ -26,12 +26,7 @@
             </div>
         </header>
 
-        <aside class="console">
-            <div class="fw-inner">
-                <p class="console__txt j-console">
-                </p>
-            </div>
-        </aside>
+        <aside class="msg_board" id="msg_board"></aside>
 
         <main class="main j-main">
             <div class="fw-inner">
@@ -201,7 +196,6 @@
         </li>
     </script>
 
-
     <script type="text/template" id="accept_call">
         <%  _.each(users, function(el, i, list) { %>
             <% if(list.length === 1){ %>
@@ -250,7 +244,7 @@
 
     <script type="text/template" id="p2p_call_stop">
         <%=name%> has <%=reason%>. Call is stopped.&emsp;
-        Login&nbsp;in&nbsp;as&nbsp;<%=name%>
+        Login&nbsp;in&nbsp;as&nbsp;<%=currentName%>
         <button class='fw-link j-logout'>Logout</button>
     </script>
 
@@ -262,6 +256,7 @@
     <script src="../../quickblox.js"></script>
 
     <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script src="js/msgBoard.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
