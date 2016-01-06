@@ -16,7 +16,7 @@ For correct work of JS SDK you must include the  library in your html before `qu
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/1.17.2/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.0.0/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -80,6 +80,7 @@ These modules are combined through [browserify](http://browserify.org/) into a s
   * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/bower.json
   * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/package.json
 * Rebuild SDK: `grunt`
+* Update README.md
 * Commit your changes to git repository and create a new "git tag" for new version. This action updates SDK for GIT and also for bower package manager.
 * `npm publish`. This action updates SDK for node package manager, but maybe you will be needed some author credentials for it (you should be in owner list)
 * Update QuickBlox developers section
