@@ -89,7 +89,7 @@ describe('Сustom Objects API', function() {
   });
 
 
-  describe('Custom Objects with files', function(done) {
+  describe('Custom Objects with files', function() {
     var paramsFile, paramsFor;
 
     it ('can upload a file to an existing record', function(done){
