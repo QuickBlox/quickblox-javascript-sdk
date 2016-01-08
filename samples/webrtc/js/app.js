@@ -119,11 +119,14 @@
             }
         }
 
-        function checkAccessPermission(err) {
-          if(err && err.name === 'PermissionDeniedError' && !err.message) {
-            alert('Failed to get access to your camera or microphone. Please check your hardware configuration.');
-          } else if(err) {
-            alert(err.message);
+        function showErrorAccessPermission(error) {
+          var errorTitle = 'Error: ',
+            errorMsg = 'Failed to get access to your camera or microphone. Please check your hardware configuration.';
+
+          if(error && error.message) {
+            alert(errorTitle + error.message);
+          } else {
+            alert(errorTitle + errorMsg);
           }
         }
 
@@ -136,7 +139,7 @@
         /** Before use WebRTC checking WebRTC is avaible */
         if (!QB.webrtc) {
           qbApp.MsgBoard.update('webrtc_not_avaible');
-          alert(window.MESSAGES.webrtc_not_avaible);
+          alert('Error: ' + window.MESSAGES.webrtc_not_avaible);
           return;
         }
 
@@ -246,18 +249,14 @@
 
               app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                  if(err && err.name === 'PermissionDeniedError' && !err.message) {
-                    alert('Failed to get access to your camera or microphone. Please check your hardware configuration.');
-                  } else if(err) {
-                    alert(err.message);
-                  }
+                  showErrorAccessPermission(err);
 
-                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name});
+                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name}, true);
                   app.currentSession.stop({});
                 } else {
                   app.currentSession.call({}, function(error) {
                     if(error) {
-                        checkAccessPermission(error);
+                        console.warn(error.detail);
                     } else {
                       var compiled = _.template( $('#callee_video').html() );
 
@@ -310,9 +309,9 @@
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                  checkAccessPermission(err);
+                  showErrorAccessPermission(err);
 
-                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name});
+                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name}, true);
                   isDeviceAccess = false;
                   app.currentSession.stop({});
                 } else {
