@@ -31,12 +31,14 @@
              * In first we trying found msg in MESSAGES object
              * then tpl with id like msg_title
              */
-            if(MESSAGES[msg_title]) {
-                msg = MESSAGES[msg_title];
-            } else if(!!document.querySelector('#' + msg_title)) {
-                msg = _.template( document.querySelector('#' + msg_title).innerHTML )(params);
-            } else {
-                throw new Error('[msgBoard] Not found msg with name '+ msg_title);
+            try {
+              msg = _.template( document.querySelector('#' + msg_title).innerHTML )(params);
+            } catch(e) {
+              if(MESSAGES[msg_title]) {
+                  msg = MESSAGES[msg_title];
+              } else {
+                msg = msg_title;
+              }
             }
 
             msgBoardEl.innerHTML = '';

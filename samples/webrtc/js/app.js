@@ -249,10 +249,17 @@
 
               app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                  showErrorAccessPermission(err);
+                  var errorMsg = '';
 
-                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name}, true);
+                  if(err && err.message) {
+                    errorMsg += 'Error: ' + err.message;
+                  } else {
+                    errorMsg += 'device_not_found';
+                  }
                   app.currentSession.stop({});
+
+                  showErrorAccessPermission(err);
+                  qbApp.MsgBoard.update(errorMsg, {name: app.caller.full_name}, true);
                 } else {
                   app.currentSession.call({}, function(error) {
                     if(error) {
@@ -309,9 +316,17 @@
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                  var errorMsg = '';
+
+                  if(err && err.message) {
+                    errorMsg += 'Error: ' + err.message;
+                  } else {
+                    errorMsg += 'device_not_found';
+                  }
+
                   showErrorAccessPermission(err);
 
-                  qbApp.MsgBoard.update('device_not_found', {name: app.caller.full_name}, true);
+                  qbApp.MsgBoard.update(errorMsg, {name: app.caller.full_name}, true);
                   isDeviceAccess = false;
                   app.currentSession.stop({});
                 } else {

@@ -172,9 +172,12 @@ body {
     color: #808080;
 }
 
-.msg_board .error span {
+.msg_board .error {
   color: #ff2d55;
 }
+  .msg_board span.text {
+    color: #808080;
+  }
 
 .msg_board .fw-link {
     padding: 0;
