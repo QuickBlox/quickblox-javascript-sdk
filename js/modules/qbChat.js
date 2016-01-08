@@ -1361,6 +1361,10 @@ Helpers.prototype = {
     return jid.split('@')[0].split('_')[1];
   },
 
+  getRoomJidFromDialogId: function(dialogId) {
+    return config.creds.appId + '_' + dialogId + '@' + config.endpoints.muc;
+  },
+
   getRoomJid: function(jid) {
     if(!isBrowser) throw unsupported;
     return jid + '/' + this.getIdFromNode(connection.jid);
