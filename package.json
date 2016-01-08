@@ -24,11 +24,13 @@
   ],
   "maintainers": [
     "Igor Khomenko <igor@quickblox.com>",
-    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>"
+    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
+    "Dima Lobanov <dmytro.lobanov@injoit.com>"
   ],
   "contributors": [
     "Igor Khomenko <igor@quickblox.com>",
-    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>"
+    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
+    "Dima Lobanov <dmytro.lobanov@injoit.com>"
   ],
   "repository": {
     "type": "git",
