@@ -32,6 +32,7 @@ QuickBlox.prototype = {
         PushNotifications = require('./modules/qbPushNotifications'),
         Data = require('./modules/qbData');
 
+    this.webrtc = false;
     if (isBrowser) {
       /** create Strophe Connection object */
       var Connection = require('./qbStrophe');
@@ -41,8 +42,6 @@ QuickBlox.prototype = {
       if( Utils.isWebRTCAvailble() ) {
         var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
         this.webrtc = new WebRTCClient(this.service, conn || null);
-      } else {
-        this.webrtc = false;
       }
     }
 
