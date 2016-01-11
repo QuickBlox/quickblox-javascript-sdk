@@ -35,7 +35,7 @@
   };
 
   /** set QBApp */
-  var QBApp = usersQuery === 'prod' ? QBAppProd : QBAppDefault;
+  var QBApp = usersQuery === 'qa' ? QBAppDefault : usersQuery === 'dev' ? QBAppDefault : QBAppProd;
 
   var QBUsersQA = [
     {
@@ -185,7 +185,7 @@
   ];
 
   /** set QBUsers */
-  var QBUsers = usersQuery === 'prod' ? QBUsersProd : usersQuery === 'dev' ? QBUsersDev : QBUsersQA;
+  var QBUsers = usersQuery === 'qa' ? QBUsersQA : usersQuery === 'dev' ? QBUsersDev : QBUsersProd;
 
   var MESSAGES = {
     'login': 'Login as any user on this computer and another user on another computer.',
