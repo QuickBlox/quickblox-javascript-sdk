@@ -13,23 +13,32 @@
         /**
          * [updateMsg]
          * @param  {[String]} msg_title [key for MESSAGES object / id of template]
-         * @param  {[Objetc]} params    [custom params for compiled template]
+         * @param  {[Object]} params    [custom params for compiled template]
+         * @param  {[boolean]} isError  [flag is Error - add className to html]
          */
-        var updateMsg = function(msg_title, params) {
+        var updateMsg = function(msg_title, params, isError) {
             var msg = '',
-                msgFrag = document.createElement('div');
+                msgFrag = document.createElement('div'),
+                className = 'fw-inner';
 
-            msgFrag.className = 'fw-inner';
+            if(isError) {
+              className += ' error';
+            }
+
+            msgFrag.className = className;
+
             /**
              * In first we trying found msg in MESSAGES object
              * then tpl with id like msg_title
              */
-            if(MESSAGES[msg_title]) {
-                msg = MESSAGES[msg_title];
-            } else if(!!document.querySelector('#' + msg_title)) {
-                msg = _.template( document.querySelector('#' + msg_title).innerHTML )(params);
-            } else {
-                throw new Error('[msgBoard] Not found msg with name '+ msg_title);
+            try {
+              msg = _.template( document.querySelector('#' + msg_title).innerHTML )(params);
+            } catch(e) {
+              if(MESSAGES[msg_title]) {
+                  msg = MESSAGES[msg_title];
+              } else {
+                msg = msg_title;
+              }
             }
 
             msgBoardEl.innerHTML = '';

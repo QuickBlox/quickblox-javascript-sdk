@@ -57,6 +57,12 @@ describe('Helpers', function() {
     console.info("can get dialog id from node");
   });
 
+  it("can get room jid from dialog id", function() {
+    var roomJid = QB.chat.helpers.getRoomJidFromDialogId("5640ada2a28f9a76540006b6");
+    expect(roomJid).toEqual("29650_5640ada2a28f9a76540006b6@muc.chat.quickblox.com");
+    console.info("can get room jid from dialog id");
+  });
+
   it("can get roomJid from jid", function(done) {
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if (err) {

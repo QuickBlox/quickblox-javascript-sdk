@@ -44,11 +44,13 @@ QuickBlox.prototype = {
       } else {
         this.webrtc = false;
       }
+    } else {
+      this.webrtc = false;
     }
 
     this.auth = new Auth(this.service);
     this.users = new Users(this.service);
-    this.chat = new Chat(this.service, this.webrtc.signalingProcessor || null, conn || null);
+    this.chat = new Chat(this.service, this.webrtc ? this.webrtc.signalingProcessor : null, conn || null);
     this.content = new Content(this.service);
     this.location = new Location(this.service);
     this.pushnotifications = new PushNotifications(this.service);
