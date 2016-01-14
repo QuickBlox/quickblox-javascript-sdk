@@ -1,4 +1,4 @@
-var LOGIN_TIMEOUT = 10000;
+var LOGIN_TIMEOUT = 5000;
 
 describe('Helpers', function() {
 
@@ -67,13 +67,15 @@ describe('Helpers', function() {
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if (err) {
         done.fail("Connection to chat error: " + JSON.stringify(err));
-      } else {
-        var roomJid = QB.chat.helpers.getRoomJid("28287_5640ada2a28f9a76540006b6@muc.chat.quickblox.com");
-        expect(roomJid).toEqual("28287_5640ada2a28f9a76540006b6@muc.chat.quickblox.com/6126733");
-        console.info("can get roomJid from jid");
-        done();
       }
     });
+
+    var roomJid = QB.chat.helpers.getRoomJid("28287_5640ada2a28f9a76540006b6@muc.chat.quickblox.com");
+
+    expect(roomJid).toEqual("28287_5640ada2a28f9a76540006b6@muc.chat.quickblox.com/6126733");
+
+    console.info("can get roomJid from jid");
+    done();
   }, LOGIN_TIMEOUT);
 
   it("can get id from resource", function() {
