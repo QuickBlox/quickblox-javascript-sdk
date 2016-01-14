@@ -1,11 +1,8 @@
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Content API', function() {
+  var REST_REQUESTS_TIMEOUT = 3000;
   var token,
       data = {};
 
-  // beforeAll
-  //
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
@@ -22,6 +19,7 @@ describe('Content API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   it('can create and upload files', function(done) {
+
     var d = new Date(2015, 10, 13, 14, 30, 30, 600),
         genFile = new File(["Hello QuickBlox"], "QB.txt", {type: "text/plain", lastModified: d});
 
@@ -33,6 +31,7 @@ describe('Content API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.name).toBe('QB.txt');
+
         console.info('can create and upload files');
         done();
       }
@@ -46,6 +45,7 @@ describe('Content API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBeGreaterThan(0);
+
         console.info('can list content objects');
         done();
       }
@@ -58,11 +58,13 @@ describe('Content API', function() {
         done.fail("Create and upload files error: " + JSON.stringify(err));
       }else{
         var elemId = response.id;
+
         QB.content.delete(elemId, function(err, result) {
           if (err) {
             done.fail("Delete content objects error: " + JSON.stringify(err));
           }else{
             expect(result).toEqual(true);
+
             console.info('can delete content objects');
             done();
           }
@@ -79,15 +81,13 @@ describe('Content API', function() {
         expect(res).not.toBeNull();
         expect(res.blob.id).toEqual(2917985);
         expect(res.blob.size).toBe(15);
-        console.info('can get file information by ID');
 
+        console.info('can get file information by ID');
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-  // Private Url
-  //
   it('can access private URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         privateURL = QB.content.privateUrl(fileUID);
@@ -96,8 +96,6 @@ describe('Content API', function() {
     console.info('can access private URL');
   });
 
-  // Public Url
-  //
   it('can access public URL', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         publicUrl = QB.content.publicUrl(fileUID);

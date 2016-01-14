@@ -1,18 +1,12 @@
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Session API', function() {
+  var REST_REQUESTS_TIMEOUT = 3000;
 
-
-  // can Init (simple)
-  //
   it('can init SDK with session token and appId', function(){
     QB.init("56655ac9a0eb476d92002b66", CREDENTIALS.appId);
 
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
   });
 
-  // can Init
-  //
   it('can init SDK with appId, authKey, authSecret, config', function(){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
@@ -22,9 +16,6 @@ describe('Session API', function() {
     expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
   });
 
-
-  // Create a session
-  //
   it('can create a session', function(done){
     QB.createSession(function (err, session){
       if(err){
@@ -32,16 +23,13 @@ describe('Session API', function() {
       }else{
         expect(session).not.toBeNull();
         expect(session.application_id).toEqual(CREDENTIALS.appId);
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-
-  // Create a User session
-  //
   it('can create a User session', function(done){
-
     QB.createSession(QBUser1, function (err, session){
       if(err){
         done.fail("Create a User session error: " + JSON.stringify(err));
@@ -49,14 +37,12 @@ describe('Session API', function() {
         expect(session).not.toBeNull();
         expect(session.application_id).toEqual(CREDENTIALS.appId);
         expect(session.user_id).toEqual(QBUser1.id);
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-
-  // Login a user
-  //
   it('can login a user', function(done){
     QB.login(QBUser1, function (err, user){
       if(err){
@@ -65,46 +51,38 @@ describe('Session API', function() {
         expect(user).not.toBeNull();
         expect(user.login).toEqual(QBUser1.login);
         expect(user.id).toEqual(QBUser1.id);
-        done()
+
+        done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-
-  // Logout a user
-  //
   it('can logout a user', function(done){
     QB.logout(function(err, result){
       if(err){
         done.fail("Logout user error3: " + JSON.stringify(err));
       }else{
         expect(null).toBeNull(); // we just have to have some expectations.
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-
-  // Destroy a session
-  //
   it('can destroy a session', function(done){
     QB.destroySession(function (err, result){
       if(err){
         done.fail("Destroy session error2: " + JSON.stringify(err));
       }else{
         expect(QB.service.qbInst.session).toBeNull();
-        done()
+
+        done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-
-  // Connect to custom domains
-  //
   it('can connect to custom domains', function(){
-
-    // Test old way to set domains
-    //
+    /** Test old way to set domains */
     var CUSTOMCONFIG = {
       endpoints: {
         api: 'apicustomdomain.quickblox.com',
@@ -125,9 +103,7 @@ describe('Session API', function() {
     expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chatcustomdomain.quickblox.com:5281');
     expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain.quickblox.com:5291');
 
-
-    // Test new way to set domains
-    //
+    /** Test new way to set domains */
     var CUSTOMCONFIG2 = {
       endpoints: {
          api: 'apicustomdomain2.quickblox.com',
@@ -144,8 +120,7 @@ describe('Session API', function() {
     expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chatcustomdomain2.quickblox.com:5291');
 
 
-    // return back to default domains
-    //
+    /** return back to default domains */
     var DEFAULTCONFIG = {
       endpoints: {
         api: 'api.quickblox.com',
@@ -161,5 +136,4 @@ describe('Session API', function() {
     expect(QB.service.qbInst.config.chatProtocol.bosh).toEqual('https://chat.quickblox.com:5281');
     expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chat.quickblox.com:5291');
   });
-
 });

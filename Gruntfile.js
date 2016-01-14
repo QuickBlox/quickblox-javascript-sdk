@@ -75,11 +75,19 @@ module.exports = function (grunt) {
           vendor: 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js',
           helpers: 'spec/config.js',
           specs: [
+            // WORK
             'spec/QB-CoreSpec.js',
             'spec/QB-HelpersSpec.js',
+            'spec/QB-UsersSpec.js',
+            'spec/QB-PushnotificationsSpec.js'
+
+            // DON'T WORK
             // 'spec/QB-ChatSpec.js'
+            // 'spec/QB-ContentSpec.js',
+            // 'spec/QB-DataSpec.js'
+            // 'spec/QB-LocationSpec.js',
+            // 'spec/QB-WebRTCSpec.js'
           ],
-          keepRunner: true,
           summary: true
         }
       }

@@ -1,6 +1,5 @@
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe("PushNotifications API", function() {
+  var REST_REQUESTS_TIMEOUT = 3000;
   var params;
 
   beforeAll(function(done){
@@ -17,7 +16,6 @@ describe("PushNotifications API", function() {
   }, REST_REQUESTS_TIMEOUT);
 
   describe("Subscriptions", function(){
-
     it("can create a subscription", function(done){
       params = {
         notification_channels: "gcm",
@@ -32,12 +30,14 @@ describe("PushNotifications API", function() {
                                          "_oFDuXo1x0ucQ"
         }
       };
+
       QB.pushnotifications.subscriptions.create(params, function(err, res){
         if (err) {
           done.fail("Create a subscription error: " + JSON.stringify(err));
         } else {
           expect(res).not.toBeNull();
           expect(res[0].subscription.device.platform.name).toBe("android");
+
           console.info("can create a subscription");
           done();
         }
@@ -51,6 +51,7 @@ describe("PushNotifications API", function() {
         } else {
           expect(result).not.toBeNull();
           expect(result[0].subscription.device.udid).toBe("jasmineUnique");
+
           console.info("can list a subscription");
           done();
         }
@@ -63,12 +64,14 @@ describe("PushNotifications API", function() {
           done.fail("List a subscription error: " + JSON.stringify(err));
         } else {
           var subscriptionId = result[0].subscription.id;
+
           QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
             if (err) {
               done.fail("Delete subscription error: " + JSON.stringify(err));
             } else {
               expect(res).not.toBeNull();
               expect(res).toBe(true);
+
               console.info("can delete subscription");
               done();
             }
@@ -76,7 +79,6 @@ describe("PushNotifications API", function() {
         }
       });
     });
-
   });
 
   describe("Events", function(){
@@ -88,6 +90,7 @@ describe("PushNotifications API", function() {
           done.fail("Create a subscription error: " + JSON.stringify(err));
         } else {
           expect(res).not.toBeNull();
+
           done();
         }
       });
@@ -108,6 +111,7 @@ describe("PushNotifications API", function() {
         } else {
           expect(response).not.toBeNull();
           expect(response.event.message).toBe("data.message=aGVsbG8rUXVpY2tCbG94JTIx");
+
           console.info("can create event");
           done();
         }
@@ -122,6 +126,7 @@ describe("PushNotifications API", function() {
           eventId = response.items[0].event.id;
           expect(response).not.toBeNull();
           expect(response.items.length).toBeGreaterThan(0);
+
           console.info("can list events");
           done();
         }
@@ -135,6 +140,7 @@ describe("PushNotifications API", function() {
         } else {
           expect(response).not.toBeNull();
           expect(response.event.id).toBe(eventId);
+
           console.info("can get event by id");
           done();
         }
@@ -148,6 +154,7 @@ describe("PushNotifications API", function() {
         } else {
           expect(response).not.toBeNull();
           expect(response.event.id).toBe(eventId);
+
           console.info("can get event's status by id");
           done();
         }
@@ -157,6 +164,7 @@ describe("PushNotifications API", function() {
     it("can delete event", function(done){
       QB.pushnotifications.events.delete(eventId, function(err, response) {
         expect(response).toBeNull();
+
         console.info("can delete event");
         done();
       });
@@ -168,6 +176,7 @@ describe("PushNotifications API", function() {
           done.fail("List a subscription error: " + JSON.stringify(err));
         } else {
           var subscriptionId = result[0].subscription.id;
+
           QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
             if (err) {
               done.fail("Delete subscription error: " + JSON.stringify(err));
@@ -179,8 +188,5 @@ describe("PushNotifications API", function() {
         }
       });
     });
-
   });
-
 });
-
