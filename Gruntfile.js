@@ -4,7 +4,6 @@ module.exports = function (grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-
     notify: {
       browserify: {
         options: {
@@ -17,7 +16,6 @@ module.exports = function (grunt) {
         }
       }
     },
-
     browserify: {
       options: {
         banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n',
@@ -32,7 +30,6 @@ module.exports = function (grunt) {
         }
       }
     },
-
     uglify: {
       options: {
         banner: '/* <%= pkg.description %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n'
@@ -43,7 +40,6 @@ module.exports = function (grunt) {
         }
       }
     },
-
     watch: {
       files: ['js/*.js', 'js/modules/*.js', 'js/modules/webrtc/*.js'],
       tasks: ['browserify', 'notify:browserify', 'uglify', 'notify:uglify'],
@@ -53,7 +49,6 @@ module.exports = function (grunt) {
         livereload: true
       }
     },
-
     connect: {
       server: {
         options: {
@@ -65,13 +60,37 @@ module.exports = function (grunt) {
         }
       }
     },
-
     parallel: {
       assets: {
         options: {
           grunt: true
         },
         tasks: ['watch', 'connect']
+      }
+    },
+    jasmine : {
+      test: {
+        src: 'quickblox.min.js',
+        options: {
+          vendor: 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js',
+          helpers: 'spec/config.js',
+          specs: [
+            // WORK
+            'spec/QB-CoreSpec.js',
+            'spec/QB-HelpersSpec.js',
+            'spec/QB-UsersSpec.js',
+            'spec/QB-PushnotificationsSpec.js',
+            'spec/QB-LocationSpec.js'
+
+            // DON'T WORK
+            // 'spec/QB-ChatSpec.js'
+            // 'spec/QB-ContentSpec.js',
+            // 'spec/QB-DataSpec.js'
+
+            // 'spec/QB-WebRTCSpec.js'
+          ],
+          summary: true
+        }
       }
     }
   });
@@ -86,4 +105,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-parallel');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
 };

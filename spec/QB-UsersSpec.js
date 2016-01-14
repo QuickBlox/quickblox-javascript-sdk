@@ -1,9 +1,7 @@
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Users API', function() {
+  var REST_REQUESTS_TIMEOUT = 3000;
 
   beforeAll(function(done){
-
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     QB.createSession(QBUser1, function(err, result) {
@@ -14,7 +12,6 @@ describe('Users API', function() {
         done();
       }
     }, REST_REQUESTS_TIMEOUT);
-
   });
 
   it('can list users', function(done){
@@ -45,7 +42,10 @@ describe('Users API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   it('can filter users by login', function(done) {
-    var params = {filter: { field: 'login', param: 'eq', value: 'js_jasmine1' }};
+    var params = {
+      filter: { field: 'login', param: 'eq', value: 'js_jasmine1' }
+    };
+
     QB.users.listUsers(params, function(err, res){
       if (err) {
         done.fail("Filter users by login error: " + JSON.stringify(err));
@@ -53,18 +53,25 @@ describe('Users API', function() {
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(1);
         expect(res.items[0].user.id).toBe(6126733);
+
         console.info('can filter users by login');
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
   describe('Create, update & delete Users', function(){
-
-    var userId, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
+    var userId,
+        login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
 
     it('can create a user (' + login + ')', function(done) {
-      var params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
+      var params = {
+        'login': login,
+        'password': 'someSecret',
+        'full_name': 'QuickBlox Test',
+        'website': 'http://quickblox.com'
+      };
 
       QB.users.create(params, function(err, res){
         if (err) {
@@ -73,7 +80,9 @@ describe('Users API', function() {
           expect(res).not.toBeNull();
           expect(res.full_name).toBe('QuickBlox Test');
           userId = res.id;
+
           console.info('can create a user (' + login + ')');
+
           done();
         }
       });
@@ -90,7 +99,9 @@ describe('Users API', function() {
             }else{
               expect(updated).not.toBeNull();
               expect(updated.full_name).toBe('Updated QuickBlox Test');
+
               console.info('can update a user (' + login + ')');
+
               done();
             }
           });
@@ -105,7 +116,9 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res).toBe(' ');
+
           console.info('can delete a user (' + login + ')');
+
           done();
         }
       });
@@ -113,7 +126,6 @@ describe('Users API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   describe('Get Users', function(){
-
     it('can get users by login', function(done) {
       var params = { 'login': 'js_jasmine2' };
 
@@ -123,7 +135,9 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.id).toBe(6126741);
+
           console.info('can get users by login');
+
           done();
         }
       });
@@ -138,7 +152,9 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.id).toBe(6126741);
+
           console.info('can get users by email');
+
           done();
         }
       });
@@ -153,11 +169,12 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res.login).toBe('js_jasmine2');
+
           console.info('can get users by id');
+
           done();
         }
       });
     }, REST_REQUESTS_TIMEOUT);
-
   });
 });
