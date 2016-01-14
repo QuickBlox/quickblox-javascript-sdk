@@ -79,13 +79,14 @@ module.exports = function (grunt) {
             'spec/QB-CoreSpec.js',
             'spec/QB-HelpersSpec.js',
             'spec/QB-UsersSpec.js',
-            'spec/QB-PushnotificationsSpec.js'
+            'spec/QB-PushnotificationsSpec.js',
+            'spec/QB-LocationSpec.js'
 
             // DON'T WORK
             // 'spec/QB-ChatSpec.js'
             // 'spec/QB-ContentSpec.js',
             // 'spec/QB-DataSpec.js'
-            // 'spec/QB-LocationSpec.js',
+
             // 'spec/QB-WebRTCSpec.js'
           ],
           summary: true
