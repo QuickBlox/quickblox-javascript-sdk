@@ -1,11 +1,9 @@
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Content API', function() {
+  var REST_REQUESTS_TIMEOUT = 3000;
+
   var token,
       data = {};
 
-  // beforeAll
-  //
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
@@ -58,12 +56,14 @@ describe('Content API', function() {
         done.fail("Create and upload files error: " + JSON.stringify(err));
       }else{
         var elemId = response.id;
+
         QB.content.delete(elemId, function(err, result) {
           if (err) {
             done.fail("Delete content objects error: " + JSON.stringify(err));
           }else{
             expect(result).toEqual(true);
             console.info('can delete content objects');
+
             done();
           }
         });
@@ -92,7 +92,8 @@ describe('Content API', function() {
     var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
         privateURL = QB.content.privateUrl(fileUID);
 
-    expect(privateURL).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token="+token);
+    expect(privateURL).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token=" + token);
+
     console.info('can access private URL');
   });
 

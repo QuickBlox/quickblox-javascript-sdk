@@ -1,6 +1,6 @@
-'use strict';
-
 describe('WebRTC API', function() {
+  'use strict';
+  
   var session,
       LOGIN_TIMEOUT = 10000;
 
@@ -33,40 +33,4 @@ describe('WebRTC API', function() {
       QB.webrtc.createNewSession([QBUser2.id], QB.webrtc.CallType.VIDEO);
     }).toThrow( new Error(errorString) );
   });
-
-
-  // it('can get user media', function(done) {
-  //   var mediaParams = {
-  //     audio: true,
-  //     video: true,
-  //     options: {
-  //       muted: true,
-  //       mirror: true
-  //     }
-  //   };
-  //
-  //   session.getUserMedia(mediaParams, function(err, stream) {
-  //     if(err) {
-  //       done.fail('getUserMedia: No access to mic or camera;');
-  //     } else {
-  //       expect(stream).not.toBeNull();
-  //       done();
-  //     }
-  //   });
-  // }, 5000);
-  //
-  //
-  // it('can call', function(done) {
-  //   session.call({});
-  //   expect(session.state).toEqual(2);
-  //   done();
-  // });
-  //
-  //
-  // it('can stop the session', function(done) {
-  //   session.stop({});
-  //   expect(session.state).toEqual(5);
-  //   done();
-  // });
-
 });

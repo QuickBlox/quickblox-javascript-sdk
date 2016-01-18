@@ -10,3 +10,6 @@ npm-debug.log
 
 # Use command grunt for create quickblox.js
 quickblox.js
+
+#jasmine-npm generate
+.grunt

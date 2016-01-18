@@ -1,16 +1,12 @@
-var LOGIN_TIMEOUT = 10000;
-var MESSAGING_TIMEOUT = 1500;
-var IQ_TIMEOUT = 1000;
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Chat API', function() {
+  var LOGIN_TIMEOUT = 10000;
+  var MESSAGING_TIMEOUT = 1500;
+  var IQ_TIMEOUT = 1000;
+  var REST_REQUESTS_TIMEOUT = 3000;
 
   describe('XMPP (real time messaging)', function() {
 
-    // beforeAll
-    //
     beforeAll(function(done){
-
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
       QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
@@ -21,18 +17,15 @@ describe('Chat API', function() {
           done();
         }
       });
-
     }, LOGIN_TIMEOUT);
 
 
     // 1-1 mesasging
     //
     it('can send and receive private messages', function(done) {
-
       var self = this;
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
-
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual("chat");
         expect(userId).toEqual(QBUser1.id);
@@ -55,16 +48,15 @@ describe('Chat API', function() {
         },
         markable: 1
       };
-      QB.chat.send(QBUser1.id, message);
-      this.messageId = message.id;
 
+      QB.chat.send(QBUser1.id, message);
+      self.messageId = message.id;
     }, MESSAGING_TIMEOUT);
 
 
     // System messages
     //
     it('can send and receive system messages', function(done) {
-
       var self = this;
 
       QB.chat.onSystemMessageListener = function(receivedMessage){
@@ -87,7 +79,7 @@ describe('Chat API', function() {
         }
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
-      this.messageId = message.id;
+      self.messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -95,7 +87,6 @@ describe('Chat API', function() {
     // 'Delivered' status
     //
     it("can send and receive 'delivered' status", function(done) {
-
       var self = this;
 
       QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
@@ -112,7 +103,7 @@ describe('Chat API', function() {
         userId: QBUser1.id,
         dialogId: "507f191e810c19729de860ea"
       };
-      this.params = params;
+      self.params = params;
 
       QB.chat.sendDeliveredStatus(params);
 
@@ -122,7 +113,6 @@ describe('Chat API', function() {
     // 'Read' status
     //
     it("can send and receive 'read' status", function(done) {
-
       var self = this;
 
       QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
@@ -139,7 +129,7 @@ describe('Chat API', function() {
         userId: QBUser1.id,
         dialogId: "507f191e810c19729de860ea"
       };
-      this.params = params;
+      self.params = params;
 
       QB.chat.sendReadStatus(params);
 
@@ -149,7 +139,6 @@ describe('Chat API', function() {
     // 'Is typing' status
     //
     it("can send and receive 'is typing' status (private)", function(done) {
-
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(true);
         expect(userId).toEqual(QBUser1.id);
@@ -166,7 +155,6 @@ describe('Chat API', function() {
     // 'Stop typing' status
     //
     it("can send and receive 'stop typing' status (private)", function(done) {
-
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(false);
         expect(userId).toEqual(QBUser1.id);
@@ -408,13 +396,12 @@ describe('Chat API', function() {
     // Dialog update
     //
     it('can update a dialog (group)', function(done) {
-
       var toUpdate = {
           name: "GroupDialogNewName",
           pull_all: {occupants_ids: [QBUser2.id]}
         };
-      QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
 
+      QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
         if(err){
           done.fail("Update dialog " + dialogId +  " error: " + JSON.stringify(err));
         }else{
@@ -428,16 +415,13 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
     // Can create a message
     //
     it('can create a mesasge', function(done) {
-
       var params = {chat_dialog_id: dialogId,
                            message: "hello world",
                    };
       QB.chat.message.create(params, function(err, res) {
-
         if(err){
           done.fail("Create a mesasge error: " + JSON.stringify(err));
         }else{
@@ -457,10 +441,9 @@ describe('Chat API', function() {
     // Messages list
     //
     it('can list messages', function(done) {
-
       var filters = {chat_dialog_id: dialogId};
-      QB.chat.message.list(filters, function(err, res) {
 
+      QB.chat.message.list(filters, function(err, res) {
         if(err){
           done.fail("List messages error: " + JSON.stringify(err));
         }else{
@@ -469,7 +452,6 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
@@ -477,10 +459,9 @@ describe('Chat API', function() {
     // Unread messages count
     //
     it('can request unread messages count', function(done) {
-
       var params = {chat_dialog_ids: [dialogId]};
-      QB.chat.message.unreadCount(params, function(err, res) {
 
+      QB.chat.message.unreadCount(params, function(err, res) {
         if(err){
           done.fail("Request unread messages count error: " + JSON.stringify(err));
         }else{
@@ -501,7 +482,6 @@ describe('Chat API', function() {
       console.log("messageId: " + messageId);
 
       QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
-
         if(err){
           done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
         }else{
@@ -517,9 +497,7 @@ describe('Chat API', function() {
     // Dialog delete
     //
     it('can delete a dialog (group)', function(done) {
-
       QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
-
         if(err){
           done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
         }else{
@@ -532,7 +510,5 @@ describe('Chat API', function() {
 
       });
     }, REST_REQUESTS_TIMEOUT);
-
   });
-
 });
