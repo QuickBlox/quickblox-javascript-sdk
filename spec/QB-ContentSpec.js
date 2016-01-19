@@ -1,8 +1,12 @@
 describe('Content API', function() {
+  'use strict';
+
   var REST_REQUESTS_TIMEOUT = 3000;
 
   var token,
-      data = {};
+      data = {},
+      fileUID = '97f5802dcbd34a59a4921d73f6baedd000',
+      urlToBlobs = 'https://api.quickblox.com/blobs/';
 
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
@@ -31,7 +35,7 @@ describe('Content API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.name).toBe('QB.txt');
-        console.info('can create and upload files');
+
         done();
       }
     });
@@ -44,7 +48,7 @@ describe('Content API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBeGreaterThan(0);
-        console.info('can list content objects');
+
         done();
       }
     });
@@ -62,7 +66,6 @@ describe('Content API', function() {
             done.fail("Delete content objects error: " + JSON.stringify(err));
           }else{
             expect(result).toEqual(true);
-            console.info('can delete content objects');
 
             done();
           }
@@ -79,30 +82,22 @@ describe('Content API', function() {
         expect(res).not.toBeNull();
         expect(res.blob.id).toEqual(2917985);
         expect(res.blob.size).toBe(15);
-        console.info('can get file information by ID');
 
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-  // Private Url
-  //
-  it('can access private URL', function() {
-    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
-        privateURL = QB.content.privateUrl(fileUID);
+  it('can access public URL', function() {
+    var publicUrl = QB.content.publicUrl(fileUID);
 
-    expect(privateURL).toBe("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000?token=" + token);
-
-    console.info('can access private URL');
+    expect(publicUrl).toEqual(urlToBlobs + fileUID);
   });
 
-  // Public Url
-  //
-  it('can access public URL', function() {
-    var fileUID = "97f5802dcbd34a59a4921d73f6baedd000",
-        publicUrl = QB.content.publicUrl(fileUID);
+  it('can access private URL', function() {
+    var privateURL = QB.content.privateUrl(fileUID);
+    var url = urlToBlobs + fileUID + '?token=';
 
-    expect(publicUrl).toEqual("https://api.quickblox.com/blobs/97f5802dcbd34a59a4921d73f6baedd000");
+    expect(privateURL).toBe(url + token);
   });
 });
