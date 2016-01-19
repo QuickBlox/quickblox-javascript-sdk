@@ -6,7 +6,18 @@ describe('Chat API', function() {
   var IQ_TIMEOUT = 1000;
   var REST_REQUESTS_TIMEOUT = 3000;
 
+  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+
+  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
+  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+
   describe('XMPP (real time messaging)', function() {
+
+    if(isNodeEnv) {
+      pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+    }
 
     beforeAll(function(done){
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
@@ -455,9 +466,7 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can delete a message', function(done) {
-      console.log("messageId: " + messageId);
-
+    it('can delete a message with id ', function(done) {
       QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
         if(err){
           done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
