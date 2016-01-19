@@ -5,6 +5,7 @@
     "QB-HelpersSpec.js",
     "QB-ChatSpec.js",
     "QB-UsersSpec.js",
+    "QB-ContentSpec.js",
     "QB-DataSpec.js",
     "QB-LocationSpec.js"
   ],
