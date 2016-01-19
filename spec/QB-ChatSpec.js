@@ -322,39 +322,32 @@ describe('Chat API', function() {
   });
 
   describe('REST API', function() {
-
     var dialogId;
     var messageId;
 
-    // beforeAll
-    //
     beforeAll(function(done){
-
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
       QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
         if(err){
-          done.fail("Creat session error: " + err);
+          done.fail("Create session error: " + err);
         }else{
           expect(result).not.toBeNull();
           expect(result.application_id).toEqual(CREDENTIALS.appId);
+
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog create
-    //
     it('can create a dialog (group)', function(done) {
+      var params = {
+        occupants_ids: [QBUser2.id],
+        name: "GroupDialogName",
+        type: 2
+      };
 
-      var params = {occupants_ids:[QBUser2.id],
-                             name: "GroupDialogName",
-                             type: 2
-                            }
       QB.chat.dialog.create(params, function(err, res) {
-
         if(err){
           done.fail("Creat dialog error: " + JSON.stringify(err));
         }else{
@@ -363,41 +356,35 @@ describe('Chat API', function() {
           expect(res.type).toEqual(2);
           expect(res.name).toEqual("GroupDialogName");
           expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
+
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
             return a - b;
           });
+
           expect(res.occupants_ids).toEqual(ocuupantsArray);
 
           dialogId = res._id;
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog list
-    //
     it('can list dialogs', function(done) {
-
       var filters = null;
-      QB.chat.dialog.list(filters, function(err, res) {
 
+      QB.chat.dialog.list(filters, function(err, res) {
         if(err){
           done.fail("List dialogs error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
           expect(res.items.length).toBeGreaterThan(0);
+
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog update
-    //
     it('can update a dialog (group)', function(done) {
       var toUpdate = {
           name: "GroupDialogNewName",
@@ -414,16 +401,15 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    // Can create a message
-    //
     it('can create a mesasge', function(done) {
-      var params = {chat_dialog_id: dialogId,
-                           message: "hello world",
-                   };
+      var params = {
+        chat_dialog_id: dialogId,
+        message: 'hello world'
+      };
+
       QB.chat.message.create(params, function(err, res) {
         if(err){
           done.fail("Create a mesasge error: " + JSON.stringify(err));
@@ -436,15 +422,11 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Messages list
-    //
     it('can list messages', function(done) {
-      var filters = {chat_dialog_id: dialogId};
+      var filters = { chat_dialog_id: dialogId };
 
       QB.chat.message.list(filters, function(err, res) {
         if(err){
@@ -458,9 +440,6 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Unread messages count
-    //
     it('can request unread messages count', function(done) {
       var params = {chat_dialog_ids: [dialogId]};
 
@@ -473,15 +452,10 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Message delete
-    //
     it('can delete a message', function(done) {
-
       console.log("messageId: " + messageId);
 
       QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
@@ -492,13 +466,9 @@ describe('Chat API', function() {
         }
 
         messageId = null;
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog delete
-    //
     it('can delete a dialog (group)', function(done) {
       QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
         if(err){
@@ -510,7 +480,6 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
   });
