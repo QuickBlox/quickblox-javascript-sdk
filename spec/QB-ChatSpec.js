@@ -458,7 +458,7 @@ describe('Chat API', function() {
         if(err){
           done.fail("Request unread messages count error: " + JSON.stringify(err));
         }else{
-          expect(res["total"]).toEqual(0);
+          expect(res.total).toEqual(0);
           expect(res[dialogId]).toEqual(0);
 
           done();
@@ -466,7 +466,7 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can delete a message with id ', function(done) {
+    it('can delete a message with id', function(done) {
       QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
         if(err){
           done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
@@ -479,13 +479,13 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete a dialog (group)', function(done) {
-      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
+      QB.chat.dialog.delete([dialogId, 'notExistentId'], {force: 1}, function(err, res) {
         if(err){
-          done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
+          done.fail('Delete dialog ' + dialogId +  ' error: ' + JSON.stringify(err));
         }else{
-          expect(res["SuccessfullyDeleted"]["ids"]).toEqual([dialogId]);
-          expect(res["NotFound"]["ids"]).toEqual(["notExistentId"]);
-          expect(res["WrongPermissions"]["ids"]).toEqual([]);
+          expect(res.SuccessfullyDeleted.ids).toEqual([dialogId]);
+          expect(res.NotFound.ids).toEqual(["notExistentId"]);
+          expect(res.WrongPermissions.ids).toEqual([]);
 
           done();
         }

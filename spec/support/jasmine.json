@@ -3,6 +3,7 @@
   "spec_files": [
     "QB-CoreSpec.js",
     "QB-HelpersSpec.js",
+    "QB-ChatSpec.js",
     "QB-UsersSpec.js",
     "QB-DataSpec.js",
     "QB-LocationSpec.js"
