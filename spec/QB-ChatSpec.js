@@ -1,4 +1,6 @@
 describe('Chat API', function() {
+  'use strict';
+
   var LOGIN_TIMEOUT = 10000;
   var MESSAGING_TIMEOUT = 1500;
   var IQ_TIMEOUT = 1000;
@@ -179,7 +181,8 @@ describe('Chat API', function() {
               {user_id: 1111111, action: "deny"},
               {user_id: 1010101, action: "allow"}
             ];
-            list = {name: "test", items: usersObj};
+
+        var list = {name: "test", items: usersObj};
 
         QB.chat.privacylist.create(list, function(error) {
           if(error){
