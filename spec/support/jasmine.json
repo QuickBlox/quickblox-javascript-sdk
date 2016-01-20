@@ -8,7 +8,8 @@
     "QB-ContentSpec.js",
     "QB-DataSpec.js",
     "QB-LocationSpec.js",
-    "QB-PushnotificationsSpec.js"
+    "QB-PushnotificationsSpec.js",
+    "QB-WebRTCSpec.js"
   ],
   "stopSpecOnExpectationFailure": false,
   "random": false

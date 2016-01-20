@@ -168,12 +168,16 @@ describe('PushNotifications API', function() {
 
     /**
      * WARNING!
-     * This spec break all. Need fix
+     * If run in Node and then will run again - something broken.
+     * Without running in Node env. - everything all right.
+     * Need review delete event and fix it!
      */
-    xit("can delete event", function(done){
-      console.log('can delete event!');
+    it("can delete event", function(done){
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+
       QB.pushnotifications.events.delete(eventId, function(err, response) {
-        console.log(err);
         expect(err.code).toEqual(200);
 
         done();
