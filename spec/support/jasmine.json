@@ -7,8 +7,9 @@
     "QB-UsersSpec.js",
     "QB-ContentSpec.js",
     "QB-DataSpec.js",
-    "QB-LocationSpec.js"
+    "QB-LocationSpec.js",
+    "QB-PushnotificationsSpec.js"
   ],
-  "stopSpecOnExpectationFailure": true,
+  "stopSpecOnExpectationFailure": false,
   "random": false
 }
