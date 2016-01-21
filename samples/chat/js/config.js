@@ -9,7 +9,7 @@ var config = {
     active: 2
   },
   debug: {
-    mode: 0,
+    mode: 1,
     file: null
   }
 };
