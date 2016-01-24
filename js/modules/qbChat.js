@@ -359,7 +359,9 @@ ChatProxy.prototype = {
         connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
 
         // set signaling callbacks
-        connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
+        if(webrtc){
+          connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
+        }
 
         // enable carbons
         self._enableCarbons(function() {
