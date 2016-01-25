@@ -3,7 +3,7 @@
  * WebRTC Module (WebRTC signaling processor)
  */
 
-require('../../../lib/strophe/strophe.min');
+require('strophe');
 
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
