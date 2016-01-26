@@ -4,7 +4,6 @@
  */
 
 var config = require('../../qbConfig');
-var download = require('../../../lib/download/download.min');
 
 var WebRTCHelpers = {};
 
@@ -75,11 +74,6 @@ WebRTCHelpers.SessionConnectionState = {
 WebRTCHelpers.CallType = {
   VIDEO: 1,
   AUDIO: 2
-};
-
-/** Download Blob to local file system */
-Blob.prototype.download = function() {
-  download(this, this.name, this.type);
 };
 
 module.exports = WebRTCHelpers;
