@@ -1,4 +1,4 @@
-describe('Сustom Objects API', function() {
+describe('Custom Objects API', function() {
   'use strict';
 
   var REST_REQUESTS_TIMEOUT = 3000;
