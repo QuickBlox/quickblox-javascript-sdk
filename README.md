@@ -3,7 +3,7 @@
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
 
-[QuickBlox](https://quickblox.com) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber. 
+[QuickBlox](https://quickblox.com) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.
 
 
 # Install
@@ -75,6 +75,7 @@ The quickblox.js library is build from a number of **CommonJS modules** containe
 These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere). To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 
 * You need to have the dependencies listed in the package.json available, use `npm install` to load them.
+* Also you need install jasmine global 'npm i -g jasmine' for tests.
 * Change the 'version' properties in next files:
   * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/js/qbConfig.js
   * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/bower.json
