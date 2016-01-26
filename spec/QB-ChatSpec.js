@@ -1,16 +1,25 @@
-var LOGIN_TIMEOUT = 10000;
-var MESSAGING_TIMEOUT = 1500;
-var IQ_TIMEOUT = 1000;
-var REST_REQUESTS_TIMEOUT = 3000;
-
 describe('Chat API', function() {
+  'use strict';
+
+  var LOGIN_TIMEOUT = 10000;
+  var MESSAGING_TIMEOUT = 1500;
+  var IQ_TIMEOUT = 1000;
+  var REST_REQUESTS_TIMEOUT = 3000;
+
+  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+
+  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
+  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
   describe('XMPP (real time messaging)', function() {
 
-    // beforeAll
-    //
-    beforeAll(function(done){
+    if(isNodeEnv) {
+      pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+    }
 
+    beforeAll(function(done){
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
       QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
@@ -21,18 +30,15 @@ describe('Chat API', function() {
           done();
         }
       });
-
     }, LOGIN_TIMEOUT);
 
 
     // 1-1 mesasging
     //
     it('can send and receive private messages', function(done) {
-
       var self = this;
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
-
         expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual("chat");
         expect(userId).toEqual(QBUser1.id);
@@ -55,16 +61,15 @@ describe('Chat API', function() {
         },
         markable: 1
       };
-      QB.chat.send(QBUser1.id, message);
-      this.messageId = message.id;
 
+      QB.chat.send(QBUser1.id, message);
+      self.messageId = message.id;
     }, MESSAGING_TIMEOUT);
 
 
     // System messages
     //
     it('can send and receive system messages', function(done) {
-
       var self = this;
 
       QB.chat.onSystemMessageListener = function(receivedMessage){
@@ -87,7 +92,7 @@ describe('Chat API', function() {
         }
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
-      this.messageId = message.id;
+      self.messageId = message.id;
 
     }, MESSAGING_TIMEOUT);
 
@@ -95,7 +100,6 @@ describe('Chat API', function() {
     // 'Delivered' status
     //
     it("can send and receive 'delivered' status", function(done) {
-
       var self = this;
 
       QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
@@ -112,7 +116,7 @@ describe('Chat API', function() {
         userId: QBUser1.id,
         dialogId: "507f191e810c19729de860ea"
       };
-      this.params = params;
+      self.params = params;
 
       QB.chat.sendDeliveredStatus(params);
 
@@ -122,7 +126,6 @@ describe('Chat API', function() {
     // 'Read' status
     //
     it("can send and receive 'read' status", function(done) {
-
       var self = this;
 
       QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
@@ -139,7 +142,7 @@ describe('Chat API', function() {
         userId: QBUser1.id,
         dialogId: "507f191e810c19729de860ea"
       };
-      this.params = params;
+      self.params = params;
 
       QB.chat.sendReadStatus(params);
 
@@ -149,7 +152,6 @@ describe('Chat API', function() {
     // 'Is typing' status
     //
     it("can send and receive 'is typing' status (private)", function(done) {
-
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(true);
         expect(userId).toEqual(QBUser1.id);
@@ -166,7 +168,6 @@ describe('Chat API', function() {
     // 'Stop typing' status
     //
     it("can send and receive 'stop typing' status (private)", function(done) {
-
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(false);
         expect(userId).toEqual(QBUser1.id);
@@ -191,7 +192,8 @@ describe('Chat API', function() {
               {user_id: 1111111, action: "deny"},
               {user_id: 1010101, action: "allow"}
             ];
-            list = {name: "test", items: usersObj};
+
+        var list = {name: "test", items: usersObj};
 
         QB.chat.privacylist.create(list, function(error) {
           if(error){
@@ -331,39 +333,32 @@ describe('Chat API', function() {
   });
 
   describe('REST API', function() {
-
     var dialogId;
     var messageId;
 
-    // beforeAll
-    //
     beforeAll(function(done){
-
       QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
 
       QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
         if(err){
-          done.fail("Creat session error: " + err);
+          done.fail("Create session error: " + err);
         }else{
           expect(result).not.toBeNull();
           expect(result.application_id).toEqual(CREDENTIALS.appId);
+
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog create
-    //
     it('can create a dialog (group)', function(done) {
+      var params = {
+        occupants_ids: [QBUser2.id],
+        name: "GroupDialogName",
+        type: 2
+      };
 
-      var params = {occupants_ids:[QBUser2.id],
-                             name: "GroupDialogName",
-                             type: 2
-                            }
       QB.chat.dialog.create(params, function(err, res) {
-
         if(err){
           done.fail("Creat dialog error: " + JSON.stringify(err));
         }else{
@@ -372,49 +367,42 @@ describe('Chat API', function() {
           expect(res.type).toEqual(2);
           expect(res.name).toEqual("GroupDialogName");
           expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
+
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
             return a - b;
           });
+
           expect(res.occupants_ids).toEqual(ocuupantsArray);
 
           dialogId = res._id;
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog list
-    //
     it('can list dialogs', function(done) {
-
       var filters = null;
-      QB.chat.dialog.list(filters, function(err, res) {
 
+      QB.chat.dialog.list(filters, function(err, res) {
         if(err){
           done.fail("List dialogs error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
           expect(res.items.length).toBeGreaterThan(0);
+
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog update
-    //
     it('can update a dialog (group)', function(done) {
-
       var toUpdate = {
           name: "GroupDialogNewName",
           pull_all: {occupants_ids: [QBUser2.id]}
         };
-      QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
 
+      QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
         if(err){
           done.fail("Update dialog " + dialogId +  " error: " + JSON.stringify(err));
         }else{
@@ -424,20 +412,16 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Can create a message
-    //
     it('can create a mesasge', function(done) {
+      var params = {
+        chat_dialog_id: dialogId,
+        message: 'hello world'
+      };
 
-      var params = {chat_dialog_id: dialogId,
-                           message: "hello world",
-                   };
       QB.chat.message.create(params, function(err, res) {
-
         if(err){
           done.fail("Create a mesasge error: " + JSON.stringify(err));
         }else{
@@ -449,18 +433,13 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Messages list
-    //
     it('can list messages', function(done) {
+      var filters = { chat_dialog_id: dialogId };
 
-      var filters = {chat_dialog_id: dialogId};
       QB.chat.message.list(filters, function(err, res) {
-
         if(err){
           done.fail("List messages error: " + JSON.stringify(err));
         }else{
@@ -469,39 +448,26 @@ describe('Chat API', function() {
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Unread messages count
-    //
     it('can request unread messages count', function(done) {
-
       var params = {chat_dialog_ids: [dialogId]};
-      QB.chat.message.unreadCount(params, function(err, res) {
 
+      QB.chat.message.unreadCount(params, function(err, res) {
         if(err){
           done.fail("Request unread messages count error: " + JSON.stringify(err));
         }else{
-          expect(res["total"]).toEqual(0);
+          expect(res.total).toEqual(0);
           expect(res[dialogId]).toEqual(0);
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Message delete
-    //
-    it('can delete a message', function(done) {
-
-      console.log("messageId: " + messageId);
-
+    it('can delete a message with id', function(done) {
       QB.chat.message.delete([messageId, "notExistentId"], {force: 1}, function(err, res) {
-
         if(err){
           done.fail("Delete message " + messageId +  " error: " + JSON.stringify(err));
         }else{
@@ -509,30 +475,21 @@ describe('Chat API', function() {
         }
 
         messageId = null;
-
       });
     }, REST_REQUESTS_TIMEOUT);
 
-
-    // Dialog delete
-    //
     it('can delete a dialog (group)', function(done) {
-
-      QB.chat.dialog.delete([dialogId, "notExistentId"], {force: 1}, function(err, res) {
-
+      QB.chat.dialog.delete([dialogId, 'notExistentId'], {force: 1}, function(err, res) {
         if(err){
-          done.fail("Delete dialog " + dialogId +  " error: " + JSON.stringify(err));
+          done.fail('Delete dialog ' + dialogId +  ' error: ' + JSON.stringify(err));
         }else{
-          expect(res["SuccessfullyDeleted"]["ids"]).toEqual([dialogId]);
-          expect(res["NotFound"]["ids"]).toEqual(["notExistentId"]);
-          expect(res["WrongPermissions"]["ids"]).toEqual([]);
+          expect(res.SuccessfullyDeleted.ids).toEqual([dialogId]);
+          expect(res.NotFound.ids).toEqual(["notExistentId"]);
+          expect(res.WrongPermissions.ids).toEqual([]);
 
           done();
         }
-
       });
     }, REST_REQUESTS_TIMEOUT);
-
   });
-
 });
