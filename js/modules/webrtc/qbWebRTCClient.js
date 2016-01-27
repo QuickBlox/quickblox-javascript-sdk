@@ -18,6 +18,7 @@ var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');
 var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
+var Utils = require('../../qbUtils');
 
 function WebRTCClient(service, connection) {
   if (WebRTCClient.__instance) {
@@ -127,7 +128,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
 
     delete extension.sdp;
     delete extension.platform;
-    extension["sessionID"] = sessionID;
+    extension.sessionID = sessionID;
 
     this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
   } else {
@@ -140,7 +141,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
       this._cleanupExtension(extensionClone);
 
       if (typeof this.onCallListener === 'function'){
-        this.onCallListener(session, extensionClone);
+        Utils.safeCallbackCall(this.onCallListener, session, extensionClone);
       }
     }
 
@@ -159,7 +160,7 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
       this._cleanupExtension(extensionClone);
 
       if (typeof this.onAcceptCallListener === 'function'){
-        this.onAcceptCallListener(session, userID, extensionClone);
+        Utils.safeCallbackCall(this.onAcceptCallListener,session, userID, extensionClone);
       }
 
       session.processOnAccept(userID, extension);
@@ -172,16 +173,17 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
 };
 
 WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension) {
-  var session = this.sessions[sessionID];
+  var that = this,
+    session = that.sessions[sessionID];
 
   Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
 
   if(session){
     var extensionClone = JSON.parse(JSON.stringify(extension));
-    this._cleanupExtension(extensionClone);
+    that._cleanupExtension(extensionClone);
 
     if (typeof this.onRejectCallListener === 'function'){
-     this.onRejectCallListener(session, userID, extensionClone);
+      Utils.safeCallbackCall(that.onRejectCallListener, session, userID, extensionClone);
     }
 
     session.processOnReject(userID, extension);
@@ -195,12 +197,12 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
 
   var session = this.sessions[sessionID],
       extensionClone = JSON.parse(JSON.stringify(extension));
-  
+
   if( session && (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)){
     this._cleanupExtension(extensionClone);
 
     if (typeof this.onStopCallListener === 'function'){
-      this.onStopCallListener(session, userID, extensionClone);
+      Utils.safeCallbackCall(this.onStopCallListener, session, userID, extensionClone);
     }
 
     session.processOnStop(userID, extension);
@@ -231,7 +233,7 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
   Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
 
   if (typeof this.onUpdateCallListener === 'function'){
-    this.onUpdateCallListener(session, userID, extension);
+    Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, extension);
   }
 };
 
