@@ -1,5 +1,8 @@
 # QuickBlox JavaScript SDK
 
+[![npm](https://img.shields.io/npm/v/quickblox.svg)]()
+[![npm](https://img.shields.io/npm/dm/quickblox.svg)]()
+
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
 

@@ -72,5 +72,9 @@
     "ghooks": {
       "pre-push": "jasmine"
     }
+  },
+  "scripts": {
+    "build": "npm i && grunt",
+    "test": "echo 'Testing...' && jasmine"
   }
 }
