@@ -74,7 +74,7 @@
     }
   },
   "scripts": {
-    "build": "npm i && grunt",
-    "test": "echo 'Testing...' && jasmine"
+    "build": "npm i && npm install -g jasmine && grunt",
+    "test": "jasmine"
   }
 }
