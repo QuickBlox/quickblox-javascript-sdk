@@ -81,7 +81,7 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
   /**
    * Additional parameters for Media Constraints
    * http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
-   * 
+   *
    * googEchoCancellation: true
    * googAutoGainControl: true
    * googNoiseSuppression: true
@@ -125,14 +125,14 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
   if (elem) {
     var URL = window.URL || window.webkitURL;
     elem.src = URL.createObjectURL(stream);
-    
+
     if (options && options.muted) elem.muted = true;
-    
+
     if (options && options.mirror) {
       elem.style.webkitTransform = 'scaleX(-1)';
       elem.style.transform = 'scaleX(-1)';
     }
-  
+
     elem.play();
   } else {
     throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
@@ -169,7 +169,7 @@ WebRTCSession.prototype.detachMediaStream = function(id){
 /**
  * [Initiate a call]
  * @param  {object}   extension [custom parametrs]
- * @param  {Function} callback  
+ * @param  {Function} callback
  */
 WebRTCSession.prototype.call = function(extension, callback) {
   var self = this,
@@ -251,7 +251,7 @@ WebRTCSession.prototype.accept = function(extension) {
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
     self._startWaitingOfferOrAnswerTimer(offerTime);
 
-    /** 
+    /**
      * here we have to decide to which users the user should call.
      * We have a rule: If a userID1 > userID2 then a userID1 should call to userID2.
      */
@@ -452,7 +452,7 @@ WebRTCSession.prototype.processOnCall = function(callerID, extension) {
 
   oppIDs.forEach(function(opID, i, arr) {
     var pConn = self.peerConnections[opID];
-    
+
     if(pConn){
       if(opID == callerID){
         pConn.updateRemoteSDP(extension.sdp);
@@ -509,7 +509,7 @@ WebRTCSession.prototype.processOnReject = function(userID, extension) {
   }else{
     Helpers.traceError("Ignore 'OnReject', there is no information about peer connection by some reason.");
   }
-  
+
   this._closeSessionIfAllConnectionsClosed();
 };
 
@@ -579,7 +579,7 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
   peerConnection.release();
 
   if(typeof this.onUserNotAnswerListener === 'function'){
-    this.onUserNotAnswerListener(this, peerConnection.userID);
+    Utils.safeCallbackCall(this.onUserNotAnswerListener, this, peerConnection.userID);
   }
 
   this._closeSessionIfAllConnectionsClosed();
@@ -590,7 +590,7 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
  */
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
   if (typeof this.onRemoteStreamListener === 'function'){
-    this.onRemoteStreamListener(this, userID, stream);
+    Utils.safeCallbackCall(this.onRemoteStreamListener, this, userID, stream);
   }
 };
 
@@ -598,7 +598,7 @@ WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(user
   var self = this;
 
   if (typeof self.onSessionConnectionStateChangedListener === 'function'){
-    self.onSessionConnectionStateChangedListener(self, userID, connectionState);
+      Utils.safeCallbackCall(self.onSessionConnectionStateChangedListener, self, userID, connectionState);
   }
 };
 
@@ -613,7 +613,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   /**
    * Additional parameters for RTCPeerConnection options
    * new RTCPeerConnection(pcConfig, options)
-   * 
+   *
    * DtlsSrtpKeyAgreement: true
    * RtpDataChannels: true
    */
@@ -643,7 +643,7 @@ WebRTCSession.prototype._close = function() {
   this.state = WebRTCSession.State.CLOSED;
 
   if(typeof this.onSessionCloseListener === 'function'){
-    this.onSessionCloseListener(this);
+    Utils.safeCallbackCall(this.onSessionCloseListener, this);
   }
 };
 
@@ -775,7 +775,7 @@ WebRTCSession.prototype._uniqueOpponentsIDs = function(){
       opponents.push(parseInt(userID));
     }
   });
-  
+
   return opponents;
 };
 
@@ -788,7 +788,7 @@ WebRTCSession.prototype._uniqueOpponentsIDsWithoutInitiator = function(){
       opponents.push(parseInt(userID));
     }
   });
-  
+
   return opponents;
 };
 

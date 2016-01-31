@@ -70,7 +70,11 @@
   },
   "config": {
     "ghooks": {
-      "pre-commit": "jasmine"
+      "pre-push": "jasmine"
     }
+  },
+  "scripts": {
+    "build": "npm install -g jasmine && npm install -g grunt && grunt",
+    "test": "jasmine"
   }
 }

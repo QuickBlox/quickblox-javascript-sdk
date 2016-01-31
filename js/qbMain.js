@@ -30,12 +30,13 @@ QuickBlox.prototype = {
         Content = require('./modules/qbContent'),
         Location = require('./modules/qbLocation'),
         PushNotifications = require('./modules/qbPushNotifications'),
-        Data = require('./modules/qbData');
+        Data = require('./modules/qbData'),
+        conn;
 
     if (isBrowser) {
       /** create Strophe Connection object */
       var Connection = require('./qbStrophe');
-      var conn = new Connection();
+      conn = new Connection();
 
       /** add WebRTC API if API is avaible */
       if( Utils.isWebRTCAvailble() ) {

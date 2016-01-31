@@ -441,10 +441,15 @@
         });
 
         /**
-         * QB Event listener:
-         * chat:
+         * QB Event listener.
+         *
+         * [Recommendation]
+         * We recomend use Function Declaration
+         * that SDK could identify what function(listener) has error
+         *
+         * Chat:
          * - onDisconnectedListener
-         * webrtc:
+         * WebRTC:
          * - onSessionCloseListener
          * - onUserNotAnswerListener
          * - onUpdateCallListener
@@ -475,7 +480,7 @@
           authorizationing = false;
         };
 
-        QB.webrtc.onSessionCloseListener = function(session){
+        QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
           console.log('onSessionCloseListener: ' + session);
 
           /** pause play call sound */
@@ -507,7 +512,7 @@
             remoteStreamCounter = 0;
         };
 
-        QB.webrtc.onUserNotAnswerListener = function(session, userId) {
+        QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
           console.group('onUserNotAnswerListener.');
               console.log('UserId: ' + userId);
               console.log('Session: ' + session);
@@ -528,11 +533,10 @@
               );
           }
 
-          /** It's for groups call */
           $('.j-callee_status_' + userId).text('No Answer');
         };
 
-        QB.webrtc.onUpdateCallListener = function(session, userId, extension) {
+        QB.webrtc.onUpdateCallListener = function onUpdateCallListener(session, userId, extension) {
           console.group('onUpdateCallListener.');
               console.log('UserId: ' + userId);
               console.log('Session: ' + session);
@@ -545,7 +549,7 @@
           }
         };
 
-        QB.webrtc.onCallListener = function(session, extension) {
+        QB.webrtc.onCallListener = function onCallListener(session, extension) {
           console.group('onCallListener.');
               console.log('Session: ' + session);
               console.log('Extension: ' + JSON.stringify(extension));
@@ -566,7 +570,7 @@
           document.getElementById(ui.sounds.rington).play();
         };
 
-        QB.webrtc.onAcceptCallListener = function(session, userId, extension) {
+        QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
           console.group('onAcceptCallListener.');
               console.log('UserId: ' + userId);
               console.log('Session: ' + session);
@@ -588,7 +592,7 @@
           }
         };
 
-        QB.webrtc.onRejectCallListener = function(session, userId, extension) {
+        QB.webrtc.onRejectCallListener = function onRejectCallListener(session, userId, extension) {
           console.group('onRejectCallListener.');
               console.log('UserId: ' + userId);
               console.log('Session: ' + session);
@@ -614,7 +618,7 @@
           $('.j-callee_status_' + userId).text('Rejected');
         };
 
-        QB.webrtc.onStopCallListener = function(session, userId, extension) {
+        QB.webrtc.onStopCallListener = function onStopCallListener(session, userId, extension) {
           console.group('onStopCallListener.');
               console.log('UserId: ' + userId);
               console.log('Session: ' + session);
@@ -641,7 +645,7 @@
           $('.j-callee_status_' + userId).text('Hung Up');
         };
 
-        QB.webrtc.onRemoteStreamListener = function(session, userID, stream) {
+        QB.webrtc.onRemoteStreamListener = function onRemoteStreamListener(session, userID, stream) {
           console.group('onRemoteStreamListener.');
               console.log('userID: ' + userID);
               console.log('Session: ' + session);
@@ -662,7 +666,7 @@
           }
         };
 
-        QB.webrtc.onSessionConnectionStateChangedListener = function(session, userID, connectionState) {
+        QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userID, connectionState) {
           console.group('onSessionConnectionStateChangedListener.');
               console.log('UserID: ' + userID);
               console.log('Session: ' + session);
