@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - "4.1"
 
-before_script: "npm run-script build"
-script: "npm run-script test"
+before_script: "npm run-script setDependencies"
 
+script: "grunt"
+after_success: "jasmine"
