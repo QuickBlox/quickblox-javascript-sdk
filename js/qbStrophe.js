@@ -5,7 +5,7 @@
  *
  */
 
-require('../lib/strophe/strophe.min');
+require('strophe');
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 

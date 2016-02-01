@@ -8,17 +8,22 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
+var isBrowser = typeof window !== "undefined";
+
 function PushNotificationsProxy(service) {
   this.service = service;
   this.subscriptions = new SubscriptionsProxy(service);
   this.events = new EventsProxy(service);
 
   this.base64Encode = function(str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-      return String.fromCharCode('0x' + p1);
-    }));
-  }
-
+    if(isBrowser) {
+      return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+      }));
+    } else {
+      return new Buffer(str).toString('base64');
+    }
+  };
 }
 
 // Subscriptions
@@ -43,7 +48,6 @@ SubscriptionsProxy.prototype = {
 
   delete: function(id, callback) {
     Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'},
                       function(err, res){
                         if (err) { callback(err, null);}
@@ -72,7 +76,7 @@ EventsProxy.prototype = {
       callback = params;
       params = null;
     }
-    
+
     Utils.QBLog('[EventsProxy]', 'list', params);
 
     this.service.ajax({url: Utils.getUrl(config.urls.events), data: params}, callback);
@@ -92,10 +96,8 @@ EventsProxy.prototype = {
 
   delete: function(id, callback) {
     Utils.QBLog('[EventsProxy]', 'delete', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
   }
-
 };
 
 module.exports = PushNotificationsProxy;
