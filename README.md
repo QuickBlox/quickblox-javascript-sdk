@@ -1,7 +1,8 @@
 # QuickBlox JavaScript SDK
 
-[![npm](https://img.shields.io/npm/v/quickblox.svg)]()
-[![npm](https://img.shields.io/npm/dm/quickblox.svg)]()
+[![travis-ci](https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages)](https://travis-ci.org/QuickBlox/quickblox-javascript-sdk)
+[![npm](https://img.shields.io/npm/v/quickblox.svg)](https://www.npmjs.com/package/quickblox)
+[![npm](https://img.shields.io/npm/dm/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
@@ -19,7 +20,7 @@ For correct work of JS SDK you must include the  library in your html before `qu
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.0.2/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.0.4/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -78,6 +79,7 @@ The quickblox.js library is build from a number of **CommonJS modules** containe
 These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere). To build the library, use the [Grunt](http://gruntjs.com/) task runner:
 
 * You need to have the dependencies listed in the package.json available, use `npm install` to load them.
+* Install grunt-cli `npm install -g grunt-cli`
 * Also you need install jasmine global `npm i -g jasmine` for tests.
 * Change the 'version' properties in next files:
   * https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/js/qbConfig.js
