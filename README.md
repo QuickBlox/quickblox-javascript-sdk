@@ -1,8 +1,8 @@
 # QuickBlox JavaScript SDK
 
-[![npm](https://img.shields.io/npm/v/quickblox.svg)]()
-[![npm](https://img.shields.io/npm/dm/quickblox.svg)]()
-[![travis-ci](https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages)]()
+[![travis-ci](https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages)](https://travis-ci.org/QuickBlox/quickblox-javascript-sdk)
+[![npm](https://img.shields.io/npm/v/quickblox.svg)](https://github.com/QuickBlox/quickblox-javascript-sdk/)
+[![npm](https://img.shields.io/npm/dm/quickblox.svg)](https://github.com/QuickBlox/quickblox-javascript-sdk/)
 
 The QuickBlox JavaScript SDK provides a JavaScript library making it even
 easier to access the QuickBlox cloud communication backend platform.
