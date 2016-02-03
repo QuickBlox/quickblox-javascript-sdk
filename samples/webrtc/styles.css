@@ -27,6 +27,16 @@ body {
     color: #404040;
 }
 
+select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 3px;
+  border: 1px solid #cdcdcd;
+  outline: none;
+
+  cursor: pointer;
+}
+
 /** mini-FRAMEWORK classes */
 .fw-link {
     display: inline-block;
@@ -357,6 +367,14 @@ body {
     font-weight: 800;
 }
 
+.caller__cams {
+  margin: 5px 0 0 0;
+}
+
+  .caller__cams {
+    font-size: 12px;
+  }
+
 .caller__action,
 .caller__ctrl {
     margin: 10px 0 0 0;
@@ -391,9 +409,6 @@ body {
 
 .caller__filter {
     margin: 15px 0 10px 0;
-
-    border: 1px solid #cdcdcd;
-    border-radius: 3px;
 }
 
 .caller__filter_select {

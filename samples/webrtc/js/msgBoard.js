@@ -1,10 +1,9 @@
 /**
  * Require:
- *  - jQuery;
  *  - Underscore;
  *  - MESSAGES (window.MESSAGES) - global const object with custom messages (from config.js);
  */
-;(function(window, $, _) {
+;(function(window, _) {
     'use strict';
 
     var msgBoard = (function() {
@@ -58,4 +57,4 @@
      */
     window.qbApp = window.qbApp || {};
     window.qbApp.MsgBoard = msgBoard;
-}(window, jQuery, _));
+}(window, _));

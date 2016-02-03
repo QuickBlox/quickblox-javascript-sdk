@@ -41,6 +41,28 @@ function WebRTCClient(service, connection) {
   this.sessions = {};
 }
 
+WebRTCClient.prototype.getOutputDevices = function() {
+  var avaibleDevices = [];
+
+  return new Promise(function(resolve, reject) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        devices.forEach(function(device) {
+          if(device.kind === 'videoinput') {
+            avaibleDevices.push(device);
+          }
+        });
+
+        resolve(avaibleDevices);
+      })
+      .catch(function(err) {
+        Helpers.traceError(err.name + ": " + error.message);
+
+        reject(err);
+      });
+  });
+};
+
 /**
  * A map with all sessions the user had/have.
  * @type {Object.<string, Object>}

@@ -130,6 +130,27 @@
           }
         }
 
+        function gotDevices(cams) {
+          var camsWrapEl = document.getElementById('j-cams_wrap'),
+              camsSelectEl = document.createElement('select');
+
+              /** Create and append select list */
+              camsSelectEl.setAttribute('id', 'j-cams');
+              camsWrapEl.appendChild(camsSelectEl);
+
+          if(cams.length > 1) {
+            /** Create and append the options */
+            cams.forEach(function(cam) {
+              var option = document.createElement('option');
+
+              option.setAttribute('value', cam.deviceId);
+              option.text = cam.label;
+
+              camsSelectEl.appendChild(option);
+            });
+          }
+        }
+
         /**
          * INITIALIZE
          */
@@ -171,6 +192,12 @@
                         password: $.trim( $el.data('password') ),
                         full_name: $.trim( $el.data('name') )
                     };
+
+                    /**
+                     * Init select with all avaible video sources
+                     */
+                    QB.webrtc.getOutputDevices()
+                      .then(gotDevices);
 
                     usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
 
@@ -226,10 +253,14 @@
 
         /** Call */
         $(document).on('click', '.j-call', function(e) {
+          var camsList = document.getElementById('j-cams');
+
           var videoElems = '',
               mediaParams = {
                   audio: true,
-                  video: true,
+                  video: {
+                    optional: [{sourceId: camsList.value }]
+                  },
                   options: {
                       muted: true,
                       mirror: true
