@@ -279,6 +279,7 @@
               app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
               app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                console.info(stream);
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
                   var errorMsg = '';
 
@@ -316,6 +317,27 @@
               });
             }
           }
+        });
+
+        /** change local stream */
+        $(document).on('change', '#j-cams', function() {
+          var sourceId = $(this).value,
+              mediaParams = {
+                audio: true,
+                video: {
+                  optional: [{sourceId: sourceId }]
+                },
+                options: {
+                    muted: true,
+                    mirror: true
+                }
+              };
+
+          app.currentSession.getUserMedia(mediaParams, function(stream) {
+            console.log(stream);
+            app.currentSession.attachMediaStream('localVideo', stream);
+            console.info('STREAM CHANGED!');
+          });
         });
 
         /** Hangup */

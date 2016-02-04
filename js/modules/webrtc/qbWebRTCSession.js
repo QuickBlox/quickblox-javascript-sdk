@@ -30,7 +30,7 @@ WebRTCSession.State = {
 
 
 /**
- * Creates a session
+ * Creates a WebRTC Session
  * @param {number} An ID if the call's initiator
  * @param {array} An array with opponents
  * @param {enum} Type of a call
@@ -68,15 +68,20 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  * @param {function} A callback to get a result of the function
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  var self = this,
+      getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
   if(!getUserMedia) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
 
-  getUserMedia = getUserMedia.bind(navigator);
+  if (self.localStream) {
+    self.localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+  }
 
-  var self = this;
+  getUserMedia = getUserMedia.bind(navigator);
 
   /**
    * Additional parameters for Media Constraints
