@@ -259,7 +259,7 @@
               mediaParams = {
                   audio: true,
                   video: {
-                    optional: [{sourceId: camsList.value }]
+                    optional: [{sourceId: camsList ? camsList.value : undefined }]
                   },
                   options: {
                       muted: true,
