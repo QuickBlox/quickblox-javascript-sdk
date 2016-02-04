@@ -134,11 +134,11 @@
           var camsWrapEl = document.getElementById('j-cams_wrap'),
               camsSelectEl = document.createElement('select');
 
-              /** Create and append select list */
-              camsSelectEl.setAttribute('id', 'j-cams');
-              camsWrapEl.appendChild(camsSelectEl);
-
           if(cams.length > 1) {
+            /** Create and append select list */
+            camsSelectEl.setAttribute('id', 'j-cams');
+            camsWrapEl.appendChild(camsSelectEl);
+
             /** Create and append the options */
             cams.forEach(function(cam) {
               var option = document.createElement('option');
