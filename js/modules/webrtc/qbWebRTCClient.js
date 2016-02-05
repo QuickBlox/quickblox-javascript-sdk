@@ -41,6 +41,42 @@ function WebRTCClient(service, connection) {
   this.sessions = {};
 }
 
+WebRTCClient.prototype.getOutputDevices = function(callback) {
+  var avaibleDevices = [],
+      errMsg = 'Selection of camera is unavailable.',
+      index = 1;
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    callback(null, errMsg);
+    Helpers.traceWarning(errMsg);
+
+    return false;
+  }
+
+  return new Promise(function() {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        devices.forEach(function(device, i) {
+          if(device.kind === 'videoinput') {
+            /** If user don't share device, device.label will be empty */
+            if(device.label === '') {
+              device.name = 'Camera #' + index;
+              ++index;
+            }
+            avaibleDevices.push(device);
+          }
+        });
+
+        callback(avaibleDevices, null);
+      })
+      .catch(function(error) {
+        Helpers.traceError(error.name + ": " + error.message);
+
+        callback(null, err);
+      });
+  });
+};
+
 /**
  * A map with all sessions the user had/have.
  * @type {Object.<string, Object>}

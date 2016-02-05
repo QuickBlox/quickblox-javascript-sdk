@@ -130,6 +130,31 @@
           }
         }
 
+        function gotDevices(cams, error) {
+          var camsWrapEl = document.getElementById('j-cams_wrap'),
+              camsSelectEl = document.createElement('select');
+
+          if(error) {
+            console.warn(error);
+          } else {
+            if(cams.length > 1) {
+              /** Create and append select list */
+              camsSelectEl.setAttribute('id', 'j-cams');
+              camsWrapEl.appendChild(camsSelectEl);
+
+              /** Create and append the options */
+              cams.forEach(function(cam) {
+                var option = document.createElement('option');
+
+                option.setAttribute('value', cam.deviceId);
+                option.text = cam.label === '' ? cam.name : cam.label;
+
+                camsSelectEl.appendChild(option);
+              });
+            }
+          }
+        }
+
         /**
          * INITIALIZE
          */
@@ -171,6 +196,12 @@
                         password: $.trim( $el.data('password') ),
                         full_name: $.trim( $el.data('name') )
                     };
+
+                    /**
+                     * Init select with all avaible video sources
+                     */
+
+                    QB.webrtc.getOutputDevices(gotDevices);
 
                     usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
 
@@ -226,10 +257,14 @@
 
         /** Call */
         $(document).on('click', '.j-call', function(e) {
+          var camsList = document.getElementById('j-cams');
+
           var videoElems = '',
               mediaParams = {
                   audio: true,
-                  video: true,
+                  video: {
+                    optional: [{sourceId: camsList ? camsList.value : undefined }]
+                  },
                   options: {
                       muted: true,
                       mirror: true
@@ -248,6 +283,7 @@
               app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
               app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                console.info(stream);
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
                   var errorMsg = '';
 
@@ -285,6 +321,31 @@
               });
             }
           }
+        });
+
+        /** change local stream */
+        $(document).on('change', '#j-cams', function() {
+          var sourceId = $(this).value,
+              mediaParams = {
+                audio: true,
+                video: {
+                  optional: [{sourceId: sourceId }]
+                },
+                options: {
+                    muted: true,
+                    mirror: true
+                }
+              };
+
+          if(!app.currentSession) {
+            return false;
+          }
+
+          app.currentSession.getUserMedia(mediaParams, function(stream) {
+            console.log(stream);
+            app.currentSession.attachMediaStream('localVideo', stream);
+            console.info('STREAM CHANGED!');
+          });
         });
 
         /** Hangup */

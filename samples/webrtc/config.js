@@ -1,17 +1,23 @@
 ;(function(window) {
+  'use strict';
+
   /**
    * Add parameter to url search
    * for switch users groups
    *
    * Possible options:
    * https://examples.com?users=prod
-   * https://examples.com?users=dev 
+   * https://examples.com?users=dev
    * https://examples.com - for qa by default
    */
   var usersQuery = _getQueryVar('users');
 
+  /**
+   * All params for CONFIG
+   * see in ./js/qbConfig.js
+   */
   var CONFIG = {
-    debug: true,
+    debug: { mode: 1 },
     webrtc: {
       answerTimeInterval: 30,
       dialingTimeInterval: 5,
