@@ -130,24 +130,28 @@
           }
         }
 
-        function gotDevices(cams) {
+        function gotDevices(cams, error) {
           var camsWrapEl = document.getElementById('j-cams_wrap'),
               camsSelectEl = document.createElement('select');
 
-          if(cams.length > 1) {
-            /** Create and append select list */
-            camsSelectEl.setAttribute('id', 'j-cams');
-            camsWrapEl.appendChild(camsSelectEl);
+          if(error) {
+            console.warn(error);
+          } else {
+            if(cams.length > 1) {
+              /** Create and append select list */
+              camsSelectEl.setAttribute('id', 'j-cams');
+              camsWrapEl.appendChild(camsSelectEl);
 
-            /** Create and append the options */
-            cams.forEach(function(cam) {
-              var option = document.createElement('option');
+              /** Create and append the options */
+              cams.forEach(function(cam) {
+                var option = document.createElement('option');
 
-              option.setAttribute('value', cam.deviceId);
-              option.text = cam.label;
+                option.setAttribute('value', cam.deviceId);
+                option.text = cam.label === '' ? cam.name : cam.label;
 
-              camsSelectEl.appendChild(option);
-            });
+                camsSelectEl.appendChild(option);
+              });
+            }
           }
         }
 
@@ -196,8 +200,8 @@
                     /**
                      * Init select with all avaible video sources
                      */
-                    QB.webrtc.getOutputDevices()
-                      .then(gotDevices);
+
+                    QB.webrtc.getOutputDevices(gotDevices);
 
                     usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
 
@@ -332,6 +336,10 @@
                     mirror: true
                 }
               };
+
+          if(!app.currentSession) {
+            return false;
+          }
 
           app.currentSession.getUserMedia(mediaParams, function(stream) {
             console.log(stream);

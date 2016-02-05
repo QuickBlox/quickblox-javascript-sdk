@@ -75,12 +75,6 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     throw new Error('getUserMedia() is not supported in your browser');
   }
 
-  if (self.localStream) {
-    self.localStream.getTracks().forEach(function(track) {
-      track.stop();
-    });
-  }
-
   getUserMedia = getUserMedia.bind(navigator);
 
   /**

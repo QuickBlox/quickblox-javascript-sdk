@@ -41,24 +41,38 @@ function WebRTCClient(service, connection) {
   this.sessions = {};
 }
 
-WebRTCClient.prototype.getOutputDevices = function() {
-  var avaibleDevices = [];
+WebRTCClient.prototype.getOutputDevices = function(callback) {
+  var avaibleDevices = [],
+      errMsg = 'Selection of camera is unavailable.',
+      index = 1;
 
-  return new Promise(function(resolve, reject) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    callback(null, errMsg);
+    Helpers.traceWarning(errMsg);
+
+    return false;
+  }
+
+  return new Promise(function() {
     navigator.mediaDevices.enumerateDevices()
       .then(function(devices) {
-        devices.forEach(function(device) {
+        devices.forEach(function(device, i) {
           if(device.kind === 'videoinput') {
+            /** If user don't share device, device.label will be empty */
+            if(device.label === '') {
+              device.name = 'Camera #' + index;
+              ++index;
+            }
             avaibleDevices.push(device);
           }
         });
 
-        resolve(avaibleDevices);
+        callback(avaibleDevices, null);
       })
-      .catch(function(err) {
-        Helpers.traceError(err.name + ": " + error.message);
+      .catch(function(error) {
+        Helpers.traceError(error.name + ": " + error.message);
 
-        reject(err);
+        callback(null, err);
       });
   });
 };
