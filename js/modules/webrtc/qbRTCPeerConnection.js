@@ -186,76 +186,15 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
     if(isNaN(+config.webrtc.statsReportTimeInterval)) {
       Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
     } else {
-      self.getStatsWrap();
+      self._getStatsWrap();
     }
   }
 };
-
-RTCPeerConnection.prototype._clearStatsReportTimer = function(){
-  if(this.statsReportTimer){
-    Helpers.trace('_clearStatsReportTimer');
-
-    clearInterval(this.statsReportTimer);
-    this.statsReportTimer = null;
-  }
-};
-
-RTCPeerConnection.prototype.getStatsWrap = function() {
-  var self = this,
-      statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
-
-  function _getStats(peer, cb) {
-    if (!!navigator.mozGetUserMedia) {
-      peer.getStats(
-        function (res) {
-          var items = [];
-          res.forEach(function (result) {
-              items.push(result);
-          });
-          cb(items);
-        },
-        cb
-      );
-    } else {
-      peer.getStats(function (res) {
-        var items = [];
-        res.result().forEach(function (result) {
-          var item = {};
-          result.names().forEach(function (name) {
-              item[name] = result.stat(name);
-          });
-          item.id = result.id;
-          item.type = result.type;
-          item.timestamp = result.timestamp;
-          items.push(item);
-        });
-        cb(items);
-      });
-    }
-  }
-
-  var _statsReportCallback = function() {
-    _getStats(self, function (results) {
-      for (var i = 0; i < results.length; ++i) {
-        var res = results[i];
-
-        if (res.googCodecName == 'opus' && res.bytesReceived) {
-          self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
-        }
-      }
-    });
-  };
-
-  self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
-};
-
-
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   var newIceConnectionState = this.iceConnectionState;
 
   Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
-
 
   /**
    * read more about all states:
@@ -298,6 +237,40 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 /**
  * PRIVATE
  */
+ RTCPeerConnection.prototype._clearStatsReportTimer = function(){
+   if(this.statsReportTimer){
+     Helpers.trace('_clearStatsReportTimer');
+
+     clearInterval(this.statsReportTimer);
+     this.statsReportTimer = null;
+   }
+ };
+
+ RTCPeerConnection.prototype._getStatsWrap = function() {
+   var self = this,
+       statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+
+   var _statsReportCallback = function() {
+     _getStats(self, function (results) {
+       for (var i = 0; i < results.length; ++i) {
+        var res = results[i],
+            is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+        /** for firefox */
+         if(is_firefox && res.bytesReceived) {
+           self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
+         }
+         /** for chrome */
+         if (res.googCodecName == 'opus' && res.bytesReceived) {
+           self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
+         }
+       }
+     });
+   };
+
+   self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+ };
+
 RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
   if(this.waitingReconnectTimeoutCallback){
     Helpers.trace('_clearWaitingReconnectTimer');
@@ -363,5 +336,38 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
   // call for the 1st time
   _dialingCallback(extension, withOnNotAnswerCallback, true);
 };
+
+/**
+ * PRIVATE
+ */
+ function _getStats(peer, cb) {
+   if (!!navigator.mozGetUserMedia) {
+     peer.getStats(peer.getLocalStreams()[0].getAudioTracks()[0],
+       function (res) {
+         var items = [];
+         res.forEach(function (result) {
+             items.push(result);
+         });
+         cb(items);
+       },
+       cb
+     );
+   } else {
+     peer.getStats(function (res) {
+       var items = [];
+       res.result().forEach(function (result) {
+         var item = {};
+         result.names().forEach(function (name) {
+             item[name] = result.stat(name);
+         });
+         item.id = result.id;
+         item.type = result.type;
+         item.timestamp = result.timestamp;
+         items.push(item);
+       });
+       cb(items);
+     });
+   }
+ }
 
 module.exports = RTCPeerConnection;
