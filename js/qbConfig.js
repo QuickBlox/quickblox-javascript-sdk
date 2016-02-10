@@ -3,6 +3,10 @@
  *
  * Configuration Module
  *
+ * NOTE:
+ *  - config.webrtc.statsReportTimeInterval [integer, sec]:
+ *  could add listener onCallStatsReport(session, userId, bytesReceived) if
+ *  want to get stats (bytesReceived) about peer every X sec;
  */
 
 var config = {
@@ -26,6 +30,7 @@ var config = {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
     disconnectTimeInterval: 30,
+    statsReportTimeInterval: 3,
     iceServers: [
       {
         'url': 'stun:stun.l.google.com:19302'

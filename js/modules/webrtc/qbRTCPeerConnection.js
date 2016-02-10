@@ -45,6 +45,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   /** We use this timer interval to dial a user - produce the call requests each N seconds. */
   this.dialingTimer = null;
   this.answerTimeInterval = 0;
+  this.statsReportTimer = null;
 
   /** timer to detect network blips */
   this.reconnectTimer = 0;
@@ -54,6 +55,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
 
 RTCPeerConnection.prototype.release = function(){
   this._clearDialingTimer();
+  this._clearStatsReportTimer();
 
   if(this.signalingState !== 'closed'){
     this.close();
@@ -174,14 +176,84 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
 
 /** handler of remote media stream */
 RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
+  var self = this;
+
   if (typeof this.delegate._onRemoteStreamListener === 'function'){
     this.delegate._onRemoteStreamListener(this.userID, event.stream);
   }
+
+  if (config.webrtc && config.webrtc.statsReportTimeInterval) {
+    if(isNaN(+config.webrtc.statsReportTimeInterval)) {
+      Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
+    } else {
+      self.getStatsWrap();
+    }
+  }
 };
+
+RTCPeerConnection.prototype._clearStatsReportTimer = function(){
+  if(this.statsReportTimer){
+    Helpers.trace('_clearStatsReportTimer');
+
+    clearInterval(this.statsReportTimer);
+    this.statsReportTimer = null;
+  }
+};
+
+RTCPeerConnection.prototype.getStatsWrap = function() {
+  var self = this,
+      statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+
+  function _getStats(peer, cb) {
+    if (!!navigator.mozGetUserMedia) {
+      peer.getStats(
+        function (res) {
+          var items = [];
+          res.forEach(function (result) {
+              items.push(result);
+          });
+          cb(items);
+        },
+        cb
+      );
+    } else {
+      peer.getStats(function (res) {
+        var items = [];
+        res.result().forEach(function (result) {
+          var item = {};
+          result.names().forEach(function (name) {
+              item[name] = result.stat(name);
+          });
+          item.id = result.id;
+          item.type = result.type;
+          item.timestamp = result.timestamp;
+          items.push(item);
+        });
+        cb(items);
+      });
+    }
+  }
+
+  var _statsReportCallback = function() {
+    _getStats(self, function (results) {
+      for (var i = 0; i < results.length; ++i) {
+        var res = results[i];
+
+        if (res.googCodecName == 'opus' && res.bytesReceived) {
+          self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
+        }
+      }
+    });
+  };
+
+  self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+};
+
+
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
   var newIceConnectionState = this.iceConnectionState;
-  
+
   Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
 
 

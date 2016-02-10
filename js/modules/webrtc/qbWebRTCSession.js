@@ -9,6 +9,7 @@
  * - onRemoteStreamListener(session, userID, stream)
  * - onSessionConnectionStateChangedListener(session, userID, connectionState)
  * - onSessionCloseListener(session)
+ * - onCallStatsReport(session, userId, bytesReceived)
  */
 
 var config = require('../../qbConfig');
@@ -591,6 +592,12 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
   if (typeof this.onRemoteStreamListener === 'function'){
     Utils.safeCallbackCall(this.onRemoteStreamListener, this, userID, stream);
+  }
+};
+
+WebRTCSession.prototype._onCallStatsReport = function(userId, bytesReceived) {
+  if (typeof this.onCallStatsReport === 'function'){
+    Utils.safeCallbackCall(this.onCallStatsReport, this, userId, bytesReceived);
   }
 };
 

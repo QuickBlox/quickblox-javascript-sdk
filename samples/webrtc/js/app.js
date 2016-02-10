@@ -3,98 +3,98 @@
     /** when DOM is ready */
     $(function() {
         var ui = {
-                $usersTitle: $('.j-users__title'),
-                $usersList: $('.j-users__list'),
+              $usersTitle: $('.j-users__title'),
+              $usersList: $('.j-users__list'),
 
-                $panel: $('.j-pl'),
-                $callees: $('.j-callees'),
+              $panel: $('.j-pl'),
+              $callees: $('.j-callees'),
 
-                $btnCall: $('.j-call'),
-                $btnHangup: $('.j-hangup'),
+              $btnCall: $('.j-call'),
+              $btnHangup: $('.j-hangup'),
 
-                $ctrlBtn: $('.j-caller__ctrl'),
-                filterClassName: '.j-filter',
+              $ctrlBtn: $('.j-caller__ctrl'),
+              filterClassName: '.j-filter',
 
-                modal: {
-                    'income_call': '#income_call'
-                },
+              modal: {
+                  'income_call': '#income_call'
+              },
 
-                sounds: {
-                    'call': 'callingSignal',
-                    'end': 'endCallSignal',
-                    'rington': 'ringtoneSignal'
-                },
-                setPositionFooter: function() {
-                    var $footer = $('.j-footer'),
-                        invisibleClassName = 'invisible',
-                        footerFixedClassName = 'footer-fixed';
+              sounds: {
+                  'call': 'callingSignal',
+                  'end': 'endCallSignal',
+                  'rington': 'ringtoneSignal'
+              },
+              setPositionFooter: function() {
+                  var $footer = $('.j-footer'),
+                      invisibleClassName = 'invisible',
+                      footerFixedClassName = 'footer-fixed';
 
-                    if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
-                        $footer.addClass(footerFixedClassName);
-                    } else {
-                        $footer.removeClass(footerFixedClassName);
-                    }
+                  if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
+                      $footer.addClass(footerFixedClassName);
+                  } else {
+                      $footer.removeClass(footerFixedClassName);
+                  }
 
-                    $footer.removeClass(invisibleClassName);
-                },
-                togglePreloadMain: function(action) {
-                    var $main = $('.j-main'),
-                        preloadClassName = 'main-preload';
+                  $footer.removeClass(invisibleClassName);
+              },
+              togglePreloadMain: function(action) {
+                  var $main = $('.j-main'),
+                      preloadClassName = 'main-preload';
 
-                    if(action === 'show') {
-                        $main.addClass( preloadClassName );
-                    } else {
-                        $main.removeClass( preloadClassName );
-                    }
-                },
-                createUsers: function(users, $node) {
-                    var tpl = _.template( $('#user_tpl').html() ),
-                        usersHTML = '';
+                  if(action === 'show') {
+                      $main.addClass( preloadClassName );
+                  } else {
+                      $main.removeClass( preloadClassName );
+                  }
+              },
+              createUsers: function(users, $node) {
+                  var tpl = _.template( $('#user_tpl').html() ),
+                      usersHTML = '';
 
-                    $node.empty();
+                  $node.empty();
 
-                    _.each(users, function(user, i, list) {
-                        usersHTML += tpl(user);
-                    });
+                  _.each(users, function(user, i, list) {
+                      usersHTML += tpl(user);
+                  });
 
-                    $node.append(usersHTML);
-                },
-                showCallBtn: function() {
-                    this.$btnHangup.addClass('hidden');
-                    this.$btnCall.removeClass('hidden');
-                },
-                hideCallBtn: function() {
-                    this.$btnHangup.removeClass('hidden');
-                    this.$btnCall.addClass('hidden');
-                },
-                toggleRemoteVideoView: function(userID, action) {
-                    var $video = $('#remote_video_' + userID);
+                  $node.append(usersHTML);
+              },
+              showCallBtn: function() {
+                  this.$btnHangup.addClass('hidden');
+                  this.$btnCall.removeClass('hidden');
+              },
+              hideCallBtn: function() {
+                  this.$btnHangup.removeClass('hidden');
+                  this.$btnCall.addClass('hidden');
+              },
+              toggleRemoteVideoView: function(userID, action) {
+                  var $video = $('#remote_video_' + userID);
 
-                    if(!_.isEmpty(app.currentSession) && $video.length){
-                        if(action === 'show') {
-                            $video.parents('.j-callee').removeClass('callees__callee-wait');
-                        } else if(action === 'hide') {
-                            $video.parents('.j-callee').addClass('callees__callee-wait');
-                        } else if(action === 'clear') {
-                            /** detachMediaStream take videoElementId */
-                            app.currentSession.detachMediaStream('remote_video_' + userID);
-                            $video.removeClass('fw-video-wait');
-                        }
-                    }
-                },
-                classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
-                changeFilter: function(selector, filterName) {
-                    $(selector)
-                        .removeClass(this.classesNameFilter)
-                        .addClass( filterName );
-                },
-                callTime: 0,
-                updTimer: function() {
-                    this.callTime += 1000;
+                  if(!_.isEmpty(app.currentSession) && $video.length){
+                      if(action === 'show') {
+                          $video.parents('.j-callee').removeClass('callees__callee-wait');
+                      } else if(action === 'hide') {
+                          $video.parents('.j-callee').addClass('callees__callee-wait');
+                      } else if(action === 'clear') {
+                          /** detachMediaStream take videoElementId */
+                          app.currentSession.detachMediaStream('remote_video_' + userID);
+                          $video.removeClass('fw-video-wait');
+                      }
+                  }
+              },
+              classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
+              changeFilter: function(selector, filterName) {
+                  $(selector)
+                      .removeClass(this.classesNameFilter)
+                      .addClass( filterName );
+              },
+              callTime: 0,
+              updTimer: function() {
+                  this.callTime += 1000;
 
-                    $('#timer').removeClass('hidden')
-                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
-                }
+                  $('#timer').removeClass('hidden')
+                      .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
+              }
             },
             app = {
                 caller: {},
@@ -107,6 +107,8 @@
             remoteStreamCounter = 0,
             authorizationing = false,
             callTimer;
+
+          window.app = app;
 
         function initializeUI(arg) {
             var params = arg || {};
@@ -480,6 +482,13 @@
           authorizationing = false;
         };
 
+        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, bytesReceived) {
+          console.group('onCallStatsReport');
+            console.log('userId: ' + userId);
+            console.log('bytesReceived: ' + bytesReceived);
+          console.groupEnd();
+        };
+
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
           console.log('onSessionCloseListener: ' + session);
 
@@ -662,7 +671,7 @@
           }
 
           if(!callTimer) {
-              callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+              callTimer = setInterval( function(){ ui.updTimer.call(ui); }, 1000);
           }
         };
 
