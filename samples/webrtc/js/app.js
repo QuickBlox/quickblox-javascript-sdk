@@ -107,7 +107,10 @@
             remoteStreamCounter = 0,
             authorizationing = false,
             callTimer,
-            network = {},
+            network = {
+              users: {},
+              timer: null
+            },
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
         function initializeUI(arg) {
@@ -483,10 +486,10 @@
           authorizationing = false;
         };
 
-        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, bytesReceived) {
+        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
           console.group('onCallStatsReport');
             console.log('userId: ' + userId);
-            console.log('bytesReceived: ' + bytesReceived);
+            console.log('Stats: ', stats);
           console.groupEnd();
 
           /**
@@ -494,25 +497,36 @@
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
            */
           if(is_firefox) {
-            if( network[userId] === undefined ) {
-              network[userId] = {
-                'bytesReceived': bytesReceived,
-                'attempt': 1
+            if(!network.timer) {
+              network.timer = window.setInterval(checkNetwork, 7000);
+            }
+
+            if(network.users[userId] === undefined ) {
+              network.users[userId] = {
+                userId: userId,
+                prevBytesReceived: 0,
+                bytesReceived: stats.bytesReceived
               };
             } else {
-              if( network[userId].bytesReceived === bytesReceived) {
-                if(network[userId].attempt > 2) {
-                  QB.webrtc.onStopCallListener(session, userId);
-                  session.processOnStop(userId);
-                } else {
-                  network[userId].attempt += 1;
-                }
-              } else {
-                network[userId].bytesReceived = bytesReceived;
-              }
+              network.users[userId].prevBytesReceived = network.users[userId].bytesReceived;
+              network.users[userId].bytesReceived = stats.bytesReceived;
             }
           }
         };
+
+        function checkNetwork() {
+          _.each(network.users, function(user) {
+            if(!user.isClosed) {
+              if(user.prevBytesReceived >= user.bytesReceived) {
+                QB.webrtc.onStopCallListener(app.currentSession, user.userId);
+                app.currentSession.processOnStop(user.userId);
+                user.isClosed = true;
+              } else {
+                user.bytesReceived = user.prevBytesReceived;
+              }
+            }
+          });
+        }
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
           console.log('onSessionCloseListener: ' + session);
@@ -771,10 +785,12 @@
               if( _.isEmpty(app.currentSession) || isCallEnded ) {
                   if(callTimer) {
                       $('#timer').addClass('hidden');
-
                       clearInterval(callTimer);
                       callTimer = null;
                       ui.callTime = 0;
+
+                      clearInterval(network.timer);
+                      network = {};
                   }
               }
           }

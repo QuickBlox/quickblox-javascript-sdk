@@ -182,13 +182,8 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
     this.delegate._onRemoteStreamListener(this.userID, event.stream);
   }
 
-  if (config.webrtc && config.webrtc.statsReportTimeInterval) {
-    if(isNaN(+config.webrtc.statsReportTimeInterval)) {
-      Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
-    } else {
-      self._getStatsWrap();
-    }
-  }
+
+  self._getStatsWrap();
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
@@ -246,26 +241,40 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
    }
  };
 
- RTCPeerConnection.prototype._getStatsWrap = function() {
-   var self = this,
-       statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+RTCPeerConnection.prototype._getStatsWrap = function() {
+  var self = this,
+      selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
+      statsReportInterval = 0;
 
-   var _statsReportCallback = function() {
-     _getStats(self, function (results) {
-       for (var i = 0; i < results.length; ++i) {
+  if (config.webrtc && config.webrtc.statsReportTimeInterval && isNaN(+config.webrtc.statsReportTimeInterval)) {
+     Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
+     return;
+  }
+
+  statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+
+  var _statsReportCallback = function() {
+    _getStats(self, function (results) {
+      for (var i = 0; i < results.length; ++i) {
         var res = results[i],
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-        /** for firefox */
-         if(is_firefox && res.bytesReceived) {
-           self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
-         }
+        /** for firefox  */
+        if(is_firefox && res.type == 'inboundrtp') {
+          self.delegate._onCallStatsReport(self.userID, res);
+        }
+
          /** for chrome */
-         if (res.googCodecName == 'opus' && res.bytesReceived) {
-           self.delegate._onCallStatsReport(self.userID, res.bytesReceived);
-         }
-       }
-     });
+        if (res.googCodecName == 'opus') {
+          self.delegate._onCallStatsReport(self.userID, res);
+        }
+      }
+     },
+    selector,
+    function errorLog(err) {
+      Helpers.traceError(error.name + ": " + error.message);
+    }
+    );
    };
 
    self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
@@ -340,9 +349,9 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 /**
  * PRIVATE
  */
- function _getStats(peer, cb) {
+ function _getStats(peer, cb, selector, errorCallback) {
    if (!!navigator.mozGetUserMedia) {
-     peer.getStats(peer.getLocalStreams()[0].getAudioTracks()[0],
+     peer.getStats(selector,
        function (res) {
          var items = [];
          res.forEach(function (result) {
@@ -350,7 +359,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
          });
          cb(items);
        },
-       cb
+       errorCallback
      );
    } else {
      peer.getStats(function (res) {
