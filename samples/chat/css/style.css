@@ -120,7 +120,6 @@ input[type=file]#load-img {
   position: absolute;
   left: 16px;
   bottom: 0px;
-  width: 10%;
   height: 34px;
   opacity: 0;
   cursor: pointer;
@@ -212,6 +211,7 @@ input[type=file]:focus {
 #stickers_btn.btn {
 	background: transparent !important;
 	border-radius: 0;
+	margin-right: 10px;
 	padding: 4px;
 	outline: none !important;
 }
@@ -219,7 +219,7 @@ input[type=file]:focus {
 #message_text {
 	display: inline-block;
 	border-radius: 0px;
-	width: 78.4%;
+	width: 100%;
 	box-shadow: none;
 }
 
@@ -230,7 +230,7 @@ input[type=file]:focus {
 
 #send_btn.btn {
 	border-radius: 0px;
-	width: 10%
+	margin-left: 10px;
 }
 
 #all_occupants{

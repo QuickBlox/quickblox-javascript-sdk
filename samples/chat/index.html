@@ -57,17 +57,27 @@
                   </div>
                     <div><img src="images/ajax-loader.gif" class="load-msg"></div>
                     <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
-                      <div class="form-group">
-                        <input id="load-img" type="file">
-                        <button type="button" id="attach_btn" class="btn btn-default" onclick="$('#load-img').click();">
-                          <i class="icon-photo"></i>
-                        </button>
-                        <button type="button" id="stickers_btn" class="btn btn-default" onclick="">
-                          <i class="icon-sticker"></i>
-                        </button>
-                        <input type="text" class="form-control" id="message_text" placeholder="Enter message">
-                        <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
-                      </div>
+	                  <div class="input-group">
+		                <span class="input-group-btn">
+			              <input id="load-img" type="file">
+			                <button type="button" id="attach_btn" class="btn btn-default" onclick="$('#load-img').click();">
+				              <i class="icon-photo"></i>
+			                </button>
+		                  </span>
+		                  <span class="input-group-btn">
+			                <button type="button" id="stickers_btn" class="btn btn-default" onclick="">
+				              <i class="icon-sticker"></i>
+			                </button>
+		                  </span>
+
+		                  <span class="input-group-btn" style="width: 100%;">
+			                 <input type="text" class="form-control" id="message_text" placeholder="Enter message">
+		                  </span>
+
+		                  <span class="input-group-btn">
+			                <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
+		                  </span>
+	                    </div>
                       <img src="images/ajax-loader.gif" id="progress">
                     </form>
                 </div>
