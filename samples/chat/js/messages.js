@@ -194,7 +194,7 @@ function sendMessage(text, attachmentFileId) {
     opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(opponentId, msg);
 
-    $('.list-group-item.active .list-group-item-text').text(msg.body);
+    $('.list-group-item.active .list-group-item-text').text(stickerpipe.isSticker(msg.body) ? 'Sticker' : msg.body);
 
     if(attachmentFileId === null){
       showMessage(currentUser.id, msg);

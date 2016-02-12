@@ -125,6 +125,8 @@ input[type=file]#load-img {
   opacity: 0;
   cursor: pointer;
   overflow: hidden;
+  display: none;
+
 }
 
 #progress {
@@ -178,15 +180,46 @@ input[type=file]:focus {
   border-radius: 0px;
 }
 
-#attach_btn.btn {
-	border-radius: 0px;
-	width: 10%;
+.icon-photo {
+	background-image: url('./../images/photo-btn.png');
+	background-repeat: no-repeat;
+	background-size: 24px 24px;
+	background-position: 0 0;
+	display: block;
+	opacity: 0.7;
+	height: 24px;
+	width: 24px;
+}
+
+.icon-sticker {
+	background-image: url('./../images/sticker-btn.png');
+	background-repeat: no-repeat;
+	background-size: 48px 24px;
+	background-position: 0 0;
+	display: block;
+	opacity: 0.7;
+	height: 24px;
+	width: 24px;
+}
+
+.icon-sticker.active {
+	background-position: -24px 0;
+	height: 24px;
+	width: 24px;
+}
+
+#attach_btn.btn,
+#stickers_btn.btn {
+	background: transparent !important;
+	border-radius: 0;
+	padding: 4px;
+	outline: none !important;
 }
 
 #message_text {
 	display: inline-block;
 	border-radius: 0px;
-	width: 78.7%;
+	width: 78.4%;
 	box-shadow: none;
 }
 
@@ -326,4 +359,10 @@ a.pull_push.active  {
   right: 15px;
   top: 30px;
   display: none;
+}
+
+.emoji {
+	height: 1.5em;
+	margin: 0 .2em;
+	width: 1.5em;
 }
