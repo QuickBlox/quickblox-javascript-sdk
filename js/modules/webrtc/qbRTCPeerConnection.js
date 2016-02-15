@@ -182,7 +182,6 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
     this.delegate._onRemoteStreamListener(this.userID, event.stream);
   }
 
-
   self._getStatsWrap();
 };
 
@@ -234,8 +233,6 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
  */
  RTCPeerConnection.prototype._clearStatsReportTimer = function(){
    if(this.statsReportTimer){
-     Helpers.trace('_clearStatsReportTimer');
-
      clearInterval(this.statsReportTimer);
      this.statsReportTimer = null;
    }
@@ -244,7 +241,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 RTCPeerConnection.prototype._getStatsWrap = function() {
   var self = this,
       selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
-      statsReportInterval = 0;
+      statsReportInterval;
 
   if (!config.webrtc && !config.webrtc.statsReportTimeInterval) {
     return;
@@ -258,15 +255,17 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
   statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
   var _statsReportCallback = function() {
-    _getStats(self, function (results) {
+    _getStats(self, selector,
+      function (results) {
         self.delegate._onCallStatsReport(self.userID, results);
       },
-      selector,
       function errorLog(err) {
-        Helpers.traceError(error.name + ": " + error.message);
+        Helpers.traceError("_getStats error. " + err.name + ": " + err.message);
       }
     );
    };
+
+   Helpers.trace('Stats tracker has been started.');
 
    self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
  };
@@ -340,7 +339,10 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 /**
  * PRIVATE
  */
- function _getStats(peer, cb, selector, errorCallback) {
+ function _getStats(peer, selector, successCallback, errorCallback) {
+
+  // http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
+  //
    if (!!navigator.mozGetUserMedia) {
      peer.getStats(selector,
        function (res) {
@@ -348,7 +350,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
          res.forEach(function (result) {
              items.push(result);
          });
-         cb(items);
+         successCallback(items);
        },
        errorCallback
      );
@@ -365,7 +367,7 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
          item.timestamp = result.timestamp;
          items.push(item);
        });
-       cb(items);
+       successCallback(items);
      });
    }
  }
