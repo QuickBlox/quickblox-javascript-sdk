@@ -246,7 +246,11 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
       selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
       statsReportInterval = 0;
 
-  if (config.webrtc && config.webrtc.statsReportTimeInterval && isNaN(+config.webrtc.statsReportTimeInterval)) {
+  if (!config.webrtc && !config.webrtc.statsReportTimeInterval) {
+    return;
+  }
+
+  if (isNaN(+config.webrtc.statsReportTimeInterval)) {
      Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
      return;
   }
@@ -259,13 +263,7 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
         var res = results[i],
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-        /** for firefox  */
-        if(is_firefox && res.type == 'inboundrtp') {
-          self.delegate._onCallStatsReport(self.userID, res);
-        }
-
-         /** for chrome */
-        if (res.googCodecName == 'opus') {
+        if (res.googCodecName == 'opus' || res.type == 'inboundrtp') {
           self.delegate._onCallStatsReport(self.userID, res);
         }
       }
