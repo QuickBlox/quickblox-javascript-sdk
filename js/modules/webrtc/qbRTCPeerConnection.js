@@ -340,10 +340,10 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
  * PRIVATE
  */
  function _getStats(peer, selector, successCallback, errorCallback) {
-
-  // http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
-  //
-   if (!!navigator.mozGetUserMedia) {
+  /**
+   * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
+   */
+   if (navigator.mozGetUserMedia) {
      peer.getStats(selector,
        function (res) {
          var items = [];

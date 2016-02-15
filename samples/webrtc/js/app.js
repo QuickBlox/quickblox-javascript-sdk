@@ -108,8 +108,7 @@
             authorizationing = false,
             callTimer,
             network = {
-              users: {},
-              timer: null
+              users: {}
             },
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
@@ -498,37 +497,11 @@
            * Hack for Firefox
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
            */
-          if(is_firefox && inboundrtp) {
-            if(!network.timer) {
-              network.timer = window.setInterval(checkNetwork, 7000);
-            }
-
-            if(network.users[userId] === undefined ) {
-              network.users[userId] = {
-                userId: userId,
-                prevBytesReceived: 0,
-                bytesReceived: inboundrtp.bytesReceived
-              };
-            } else {
-              network.users[userId].prevBytesReceived = network.users[userId].bytesReceived;
-              network.users[userId].bytesReceived = inboundrtp.bytesReceived;
-            }
+          if(is_firefox && !inboundrtp) {
+            QB.webrtc.onStopCallListener(app.currentSession, userId);
+            app.currentSession.processOnStop(userId);
           }
         };
-
-        function checkNetwork() {
-          _.each(network.users, function(user) {
-            if(!user.isClosed) {
-              if(user.prevBytesReceived >= user.bytesReceived) {
-                QB.webrtc.onStopCallListener(app.currentSession, user.userId);
-                app.currentSession.processOnStop(user.userId);
-                user.isClosed = true;
-              } else {
-                user.bytesReceived = user.prevBytesReceived;
-              }
-            }
-          });
-        }
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
           console.log('onSessionCloseListener: ' + session);
@@ -791,7 +764,6 @@
                       callTimer = null;
                       ui.callTime = 0;
 
-                      clearInterval(network.timer);
                       network = {};
                   }
               }
