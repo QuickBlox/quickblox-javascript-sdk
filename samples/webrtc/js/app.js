@@ -487,19 +487,25 @@
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
           console.group('onCallStatsReport');
-            console.log('userId: ' + userId);
-            console.log('Stats: ', stats);
+          console.log('userId: ' + userId);
+          console.log('Stats: ', stats);
           console.groupEnd();
-
-          var inboundrtp = is_firefox ? _.findWhere(stats, {type: 'inboundrtp'}) : undefined;
 
           /**
            * Hack for Firefox
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
            */
-          if(is_firefox && !inboundrtp) {
-            QB.webrtc.onStopCallListener(app.currentSession, userId);
-            app.currentSession.processOnStop(userId);
+          if(is_firefox) {
+            var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
+            console.log('Stats inboundrtp: ', inboundrtp);
+            if(!inboundrtp){
+              if(!_.isEmpty(app.currentSession)) {
+                  app.currentSession.stop({});
+                  app.currentSession = {};
+
+                  qbApp.MsgBoard.update('login_tpl', {name: app.caller.full_name});
+              }
+            }
           }
         };
 
