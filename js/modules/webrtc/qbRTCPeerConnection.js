@@ -259,19 +259,12 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
 
   var _statsReportCallback = function() {
     _getStats(self, function (results) {
-      for (var i = 0; i < results.length; ++i) {
-        var res = results[i],
-            is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
-        if (res.googCodecName == 'opus' || res.type == 'inboundrtp') {
-          self.delegate._onCallStatsReport(self.userID, res);
-        }
+        self.delegate._onCallStatsReport(self.userID, results);
+      },
+      selector,
+      function errorLog(err) {
+        Helpers.traceError(error.name + ": " + error.message);
       }
-     },
-    selector,
-    function errorLog(err) {
-      Helpers.traceError(error.name + ": " + error.message);
-    }
     );
    };
 

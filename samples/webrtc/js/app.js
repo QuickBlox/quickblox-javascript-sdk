@@ -492,11 +492,13 @@
             console.log('Stats: ', stats);
           console.groupEnd();
 
+          var inboundrtp = is_firefox ? _.findWhere(stats, {type: 'inboundrtp'}) : undefined;
+
           /**
            * Hack for Firefox
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
            */
-          if(is_firefox) {
+          if(is_firefox && inboundrtp) {
             if(!network.timer) {
               network.timer = window.setInterval(checkNetwork, 7000);
             }
@@ -505,11 +507,11 @@
               network.users[userId] = {
                 userId: userId,
                 prevBytesReceived: 0,
-                bytesReceived: stats.bytesReceived
+                bytesReceived: inboundrtp.bytesReceived
               };
             } else {
               network.users[userId].prevBytesReceived = network.users[userId].bytesReceived;
-              network.users[userId].bytesReceived = stats.bytesReceived;
+              network.users[userId].bytesReceived = inboundrtp.bytesReceived;
             }
           }
         };
