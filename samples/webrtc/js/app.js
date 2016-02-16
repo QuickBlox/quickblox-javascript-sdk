@@ -112,6 +112,8 @@
             },
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
+            window.app = app;
+
         function initializeUI(arg) {
             var params = arg || {};
 
@@ -512,7 +514,6 @@
             console.log('Stats: ', stats);
           console.groupEnd();
 
-
           /**
            * Hack for Firefox
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
@@ -522,8 +523,8 @@
 
             if(!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp)) {
               if(!_.isEmpty(app.currentSession)) {
+                app.currentSession.closeConnection(userId);
                 QB.webrtc.onStopCallListener(app.currentSession, userId);
-                app.currentSession.processOnStop(userId);
               }
             }
           }

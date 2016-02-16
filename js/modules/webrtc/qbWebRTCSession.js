@@ -362,6 +362,28 @@ WebRTCSession.prototype.stop = function(extension) {
 };
 
 /**
+ * [function close connection with user]
+ * @param  {[type]} userId [id of user]
+ */
+WebRTCSession.prototype.closeConnection = function(userId) {
+  var self = this,
+    peer = this.peerConnections[userId];
+
+  if(peer) {
+    peer.release();
+
+    if (typeof self.onSessionConnectionStateChangedListener === 'function'){
+        Utils.safeCallbackCall(self.onSessionConnectionStateChangedListener, self, userId, RTCPeerConnection.State.CLOSED);
+    }
+
+    self._closeSessionIfAllConnectionsClosed();
+  } else {
+    Helpers.traceWarn('Not found connection with user (' + userId + ')');
+  }
+};
+
+
+/**
  * Update a call
  * @param {array} A map with custom parameters
  */
