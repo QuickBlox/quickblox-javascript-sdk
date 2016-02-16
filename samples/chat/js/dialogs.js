@@ -152,7 +152,7 @@ function updateDialogsList(dialogId, text){
   $('#'+dialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
 
   // update last message
-  $('#'+dialogId+' .list-group-item-text').text(text);
+  $('#'+dialogId+' .list-group-item-text').text(stickerpipe.isSticker(text) ? 'Sticker' : text);
 }
 
 // Choose dialog
