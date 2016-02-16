@@ -134,6 +134,27 @@
           }
         }
 
+        function isBytesReceivedChanges(userId, inboundrtp) {
+          var res = true,
+            inbBytesRec = inboundrtp.bytesReceived;
+
+          if(network[userId] === undefined) {
+            network[userId] = {
+              'bytesReceived': inbBytesRec
+            };
+          } else {
+            if(network[userId].bytesReceived === inbBytesRec) {
+              res = false;
+            } else {
+              network[userId] = {
+                'bytesReceived': inbBytesRec
+              };
+            }
+          }
+
+          return res;
+        }
+
         /**
          * INITIALIZE
          */
@@ -492,12 +513,11 @@
           console.groupEnd();
 
           var inboundrtp = is_firefox ? _.findWhere(stats, {type: 'inboundrtp'}) : undefined;
-
           /**
            * Hack for Firefox
            * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
            */
-          if(is_firefox && !inboundrtp) {
+          if(is_firefox && (!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp))) {
             QB.webrtc.onStopCallListener(app.currentSession, userId);
             app.currentSession.processOnStop(userId);
           }
