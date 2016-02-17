@@ -157,6 +157,27 @@
           return res;
         }
 
+        function notifyIfUserLeaveCall(session, userId, reason, title) {
+          /** It's for p2p call */
+          var userInfo = _.findWhere(QBUsers, {id: +userId}),
+              currentUserInfo = _.findWhere(QBUsers, {id: session.currentUserID});
+
+          /** It's for p2p call */
+          if(session.opponentsIDs.length === 1) {
+              qbApp.MsgBoard.update(
+                'p2p_call_stop',
+                {
+                  name: userInfo.full_name,
+                  currentName: currentUserInfo.full_name,
+                  reason: reason
+                }
+              );
+          }
+
+          /** It's for groups call */
+          $('.j-callee_status_' + userId).text(title);
+        }
+
         /**
          * INITIALIZE
          */
@@ -523,8 +544,24 @@
 
             if(!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp)) {
               if(!_.isEmpty(app.currentSession)) {
-                app.currentSession.closeConnection(userId);
-                QB.webrtc.onStopCallListener(app.currentSession, userId);
+                var isCallEnded = _.every(session.peerConnections, function(i) {
+                    return i.iceConnectionState === 'closed';
+                });
+
+                notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
+                ui.toggleRemoteVideoView(userId, 'clear');
+
+                if (session.currentUserID === session.initiatorID && !isCallEnded) {
+                    /** get array if users without user who ends call */
+                    takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id === +userId; });
+                    qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
+                }
+
+                if(app.mainVideo === userId) {
+                  app.currentSession.detachMediaStream('main_video');
+                  ui.changeFilter('#remote_video_' + userId, 'no');
+                  $('#remote_video_' + userId).removeClass('active');
+                }
               }
             }
           }
@@ -675,24 +712,7 @@
               console.log('Extension: ' + JSON.stringify(extension));
           console.groupEnd();
 
-          /** It's for p2p call */
-          var userInfo = _.findWhere(QBUsers, {id: +userId}),
-              currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
-
-          /** It's for p2p call */
-          if(session.opponentsIDs.length === 1) {
-              qbApp.MsgBoard.update(
-                'p2p_call_stop',
-                {
-                  name: userInfo.full_name,
-                  currentName: currentUserInfo.full_name,
-                  reason: 'hung up the call'
-                }
-              );
-          }
-
-          /** It's for groups call */
-          $('.j-callee_status_' + userId).text('Hung Up');
+          notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
         };
 
         QB.webrtc.onRemoteStreamListener = function onRemoteStreamListener(session, userID, stream) {
