@@ -544,24 +544,8 @@
 
             if(!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp)) {
               if(!_.isEmpty(app.currentSession)) {
-                var isCallEnded = _.every(session.peerConnections, function(i) {
-                    return i.iceConnectionState === 'closed';
-                });
-
                 notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
-                ui.toggleRemoteVideoView(userId, 'clear');
-
-                if (session.currentUserID === session.initiatorID && !isCallEnded) {
-                    /** get array if users without user who ends call */
-                    takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id === +userId; });
-                    qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
-                }
-
-                if(app.mainVideo === userId) {
-                  app.currentSession.detachMediaStream('main_video');
-                  ui.changeFilter('#remote_video_' + userId, 'no');
-                  $('#remote_video_' + userId).removeClass('active');
-                }
+                session.closeConnection(userId);
               }
             }
           }
