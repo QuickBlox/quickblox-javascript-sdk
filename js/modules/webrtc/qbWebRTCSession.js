@@ -372,10 +372,6 @@ WebRTCSession.prototype.closeConnection = function(userId) {
   if(peer) {
     peer.release();
 
-    if (typeof self.onSessionConnectionStateChangedListener === 'function'){
-        Utils.safeCallbackCall(self.onSessionConnectionStateChangedListener, self, userId, RTCPeerConnection.State.CLOSED);
-    }
-
     self._closeSessionIfAllConnectionsClosed();
   } else {
     Helpers.traceWarn('Not found connection with user (' + userId + ')');
