@@ -80,6 +80,7 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
   newSession.onRemoteStreamListener = this.onRemoteStreamListener;
   newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
   newSession.onSessionCloseListener = this.onSessionCloseListener;
+  newSession.onCallStatsReport = this.onCallStatsReport;
 
   this.sessions[newSession.ID] = newSession;
   return newSession;

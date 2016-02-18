@@ -5,7 +5,7 @@
    *
    * Possible options:
    * https://examples.com?users=prod
-   * https://examples.com?users=dev 
+   * https://examples.com?users=dev
    * https://examples.com - for qa by default
    */
   var usersQuery = _getQueryVar('users');
@@ -15,7 +15,8 @@
     webrtc: {
       answerTimeInterval: 30,
       dialingTimeInterval: 5,
-      disconnectTimeInterval: 30
+      disconnectTimeInterval: 30,
+      statsReportTimeInterval: 5
     }
   };
 
