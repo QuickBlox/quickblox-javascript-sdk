@@ -10,6 +10,11 @@
     var msgBoard = (function() {
         var msgBoardEl = document.getElementById('msg_board');
 
+        if(!msgBoardEl) {
+            // throw new Error('The Element with id \'msg_board\' not found');
+            return false;
+        }
+
         /**
          * [updateMsg]
          * @param  {[String]} msg_title [key for MESSAGES object / id of template]

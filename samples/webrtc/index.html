@@ -16,7 +16,7 @@
 <body>
     <div class="wrapper j-wrapper">
         <header class="header">
-            <div class="fw-inner clearfix">
+            <div class="inner">
                 <div class="header__logo">
                     <img class="header__logo_img" src="images/Logo_qb.svg">
                     </img>
@@ -26,10 +26,39 @@
             </div>
         </header>
 
-        <aside class="msg_board" id="msg_board"></aside>
+        <main class="app" id="app">
+            <div class="page page-join" id="page-join">
+                <form class="join j-join">
+                    <h3 class="join__title">
+                        <p>Please enter your username and chat room name.</p>
+                        <p>You can join existed chat room.</p>
+                    </h3>
 
-        <main class="main j-main">
-            <div class="fw-inner">
+                    <div class="join__body">
+                        <div class="join__row">
+                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Enter a username">
+                        </div>
+
+                        <div class="join__row">
+                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Enter a chat room">
+                        </div>
+
+                        <div class="join__row">
+                            <button type="submit" class="join__btn">Login</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="page page-dashboard invisible" id="page-dashboard">
+                Hello
+            </div>
+        </main>
+
+        <!-- <aside class="msg_board" id="msg_board"></aside> -->
+
+        <!-- <main class="main j-main">
+            <div class="inner">
                 <aside class="users">
                     <h5 class="users__title j-users__title"></h5>
 
@@ -116,16 +145,14 @@
                     </div>
                 </div>
             </div>
-        </main>
+        </main> -->
 
         <footer class="footer j-footer invisible">
-            <div class="footer__inner">
-                <h4>
-                    <a class="fw-link" href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc">
-                        Source code
-                    </a>
-                </h4>
-            </div>
+            <h4>
+                <a class="fw-link" href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/gh-pages/samples/webrtc">
+                    Source code
+                </a>
+            </h4>
         </footer>
 
         <!-- SOUNDS -->
@@ -254,9 +281,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
     <script src="../../quickblox.js"></script>
+    <!-- Routing lib -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
 
     <script src="config.js"></script>
-    <script src="js/msgBoard.js"></script>
+    <script src="js/helpers.js"></script>
+    <!-- <script src="js/msgBoard.js"></script> -->
     <script src="js/app.js"></script>
 </body>
 </html>
