@@ -3,98 +3,98 @@
     /** when DOM is ready */
     $(function() {
         var ui = {
-                $usersTitle: $('.j-users__title'),
-                $usersList: $('.j-users__list'),
+              $usersTitle: $('.j-users__title'),
+              $usersList: $('.j-users__list'),
 
-                $panel: $('.j-pl'),
-                $callees: $('.j-callees'),
+              $panel: $('.j-pl'),
+              $callees: $('.j-callees'),
 
-                $btnCall: $('.j-call'),
-                $btnHangup: $('.j-hangup'),
+              $btnCall: $('.j-call'),
+              $btnHangup: $('.j-hangup'),
 
-                $ctrlBtn: $('.j-caller__ctrl'),
-                filterClassName: '.j-filter',
+              $ctrlBtn: $('.j-caller__ctrl'),
+              filterClassName: '.j-filter',
 
-                modal: {
-                    'income_call': '#income_call'
-                },
+              modal: {
+                  'income_call': '#income_call'
+              },
 
-                sounds: {
-                    'call': 'callingSignal',
-                    'end': 'endCallSignal',
-                    'rington': 'ringtoneSignal'
-                },
-                setPositionFooter: function() {
-                    var $footer = $('.j-footer'),
-                        invisibleClassName = 'invisible',
-                        footerFixedClassName = 'footer-fixed';
+              sounds: {
+                  'call': 'callingSignal',
+                  'end': 'endCallSignal',
+                  'rington': 'ringtoneSignal'
+              },
+              setPositionFooter: function() {
+                  var $footer = $('.j-footer'),
+                      invisibleClassName = 'invisible',
+                      footerFixedClassName = 'footer-fixed';
 
-                    if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
-                        $footer.addClass(footerFixedClassName);
-                    } else {
-                        $footer.removeClass(footerFixedClassName);
-                    }
+                  if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
+                      $footer.addClass(footerFixedClassName);
+                  } else {
+                      $footer.removeClass(footerFixedClassName);
+                  }
 
-                    $footer.removeClass(invisibleClassName);
-                },
-                togglePreloadMain: function(action) {
-                    var $main = $('.j-main'),
-                        preloadClassName = 'main-preload';
+                  $footer.removeClass(invisibleClassName);
+              },
+              togglePreloadMain: function(action) {
+                  var $main = $('.j-main'),
+                      preloadClassName = 'main-preload';
 
-                    if(action === 'show') {
-                        $main.addClass( preloadClassName );
-                    } else {
-                        $main.removeClass( preloadClassName );
-                    }
-                },
-                createUsers: function(users, $node) {
-                    var tpl = _.template( $('#user_tpl').html() ),
-                        usersHTML = '';
+                  if(action === 'show') {
+                      $main.addClass( preloadClassName );
+                  } else {
+                      $main.removeClass( preloadClassName );
+                  }
+              },
+              createUsers: function(users, $node) {
+                  var tpl = _.template( $('#user_tpl').html() ),
+                      usersHTML = '';
 
-                    $node.empty();
+                  $node.empty();
 
-                    _.each(users, function(user, i, list) {
-                        usersHTML += tpl(user);
-                    });
+                  _.each(users, function(user, i, list) {
+                      usersHTML += tpl(user);
+                  });
 
-                    $node.append(usersHTML);
-                },
-                showCallBtn: function() {
-                    this.$btnHangup.addClass('hidden');
-                    this.$btnCall.removeClass('hidden');
-                },
-                hideCallBtn: function() {
-                    this.$btnHangup.removeClass('hidden');
-                    this.$btnCall.addClass('hidden');
-                },
-                toggleRemoteVideoView: function(userID, action) {
-                    var $video = $('#remote_video_' + userID);
+                  $node.append(usersHTML);
+              },
+              showCallBtn: function() {
+                  this.$btnHangup.addClass('hidden');
+                  this.$btnCall.removeClass('hidden');
+              },
+              hideCallBtn: function() {
+                  this.$btnHangup.removeClass('hidden');
+                  this.$btnCall.addClass('hidden');
+              },
+              toggleRemoteVideoView: function(userID, action) {
+                  var $video = $('#remote_video_' + userID);
 
-                    if(!_.isEmpty(app.currentSession) && $video.length){
-                        if(action === 'show') {
-                            $video.parents('.j-callee').removeClass('callees__callee-wait');
-                        } else if(action === 'hide') {
-                            $video.parents('.j-callee').addClass('callees__callee-wait');
-                        } else if(action === 'clear') {
-                            /** detachMediaStream take videoElementId */
-                            app.currentSession.detachMediaStream('remote_video_' + userID);
-                            $video.removeClass('fw-video-wait');
-                        }
-                    }
-                },
-                classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
-                changeFilter: function(selector, filterName) {
-                    $(selector)
-                        .removeClass(this.classesNameFilter)
-                        .addClass( filterName );
-                },
-                callTime: 0,
-                updTimer: function() {
-                    this.callTime += 1000;
+                  if(!_.isEmpty(app.currentSession) && $video.length){
+                      if(action === 'show') {
+                          $video.parents('.j-callee').removeClass('callees__callee-wait');
+                      } else if(action === 'hide') {
+                          $video.parents('.j-callee').addClass('callees__callee-wait');
+                      } else if(action === 'clear') {
+                          /** detachMediaStream take videoElementId */
+                          app.currentSession.detachMediaStream('remote_video_' + userID);
+                          $video.removeClass('fw-video-wait');
+                      }
+                  }
+              },
+              classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
+              changeFilter: function(selector, filterName) {
+                  $(selector)
+                      .removeClass(this.classesNameFilter)
+                      .addClass( filterName );
+              },
+              callTime: 0,
+              updTimer: function() {
+                  this.callTime += 1000;
 
-                    $('#timer').removeClass('hidden')
-                        .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
-                }
+                  $('#timer').removeClass('hidden')
+                      .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
+              }
             },
             app = {
                 caller: {},
@@ -106,7 +106,13 @@
             takedCallCallee = [],
             remoteStreamCounter = 0,
             authorizationing = false,
-            callTimer;
+            callTimer,
+            network = {
+              users: {}
+            },
+            is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+            window.app = app;
 
         function initializeUI(arg) {
             var params = arg || {};
@@ -128,6 +134,48 @@
           } else {
             alert(errorTitle + errorMsg);
           }
+        }
+
+        function isBytesReceivedChanges(userId, inboundrtp) {
+          var res = true,
+            inbBytesRec = inboundrtp.bytesReceived;
+
+          if(network[userId] === undefined) {
+            network[userId] = {
+              'bytesReceived': inbBytesRec
+            };
+          } else {
+            if(network[userId].bytesReceived === inbBytesRec) {
+              res = false;
+            } else {
+              network[userId] = {
+                'bytesReceived': inbBytesRec
+              };
+            }
+          }
+
+          return res;
+        }
+
+        function notifyIfUserLeaveCall(session, userId, reason, title) {
+          /** It's for p2p call */
+          var userInfo = _.findWhere(QBUsers, {id: +userId}),
+              currentUserInfo = _.findWhere(QBUsers, {id: session.currentUserID});
+
+          /** It's for p2p call */
+          if(session.opponentsIDs.length === 1) {
+              qbApp.MsgBoard.update(
+                'p2p_call_stop',
+                {
+                  name: userInfo.full_name,
+                  currentName: currentUserInfo.full_name,
+                  reason: reason
+                }
+              );
+          }
+
+          /** It's for groups call */
+          $('.j-callee_status_' + userId).text(title);
         }
 
         /**
@@ -450,6 +498,7 @@
          * Chat:
          * - onDisconnectedListener
          * WebRTC:
+         * - onCallStatsReport
          * - onSessionCloseListener
          * - onUserNotAnswerListener
          * - onUpdateCallListener
@@ -478,6 +527,32 @@
 
           ui.setPositionFooter();
           authorizationing = false;
+        };
+
+        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
+          console.group('onCallStatsReport');
+            console.log('userId: ' + userId);
+            // console.log('Stats: ', stats);
+          console.groupEnd();
+
+          /**
+           * Hack for Firefox
+           * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
+           */
+          if(is_firefox) {
+            var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
+
+            if(!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp)) {
+
+              console.warn("This is Firefox and user " + userId + " has lost his connection.");
+
+              if(!_.isEmpty(app.currentSession)) {
+                app.currentSession.closeConnection(userId);
+
+                notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
+              }
+            }
+          }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
@@ -625,24 +700,7 @@
               console.log('Extension: ' + JSON.stringify(extension));
           console.groupEnd();
 
-          /** It's for p2p call */
-          var userInfo = _.findWhere(QBUsers, {id: userId}),
-              currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
-
-          /** It's for p2p call */
-          if(session.opponentsIDs.length === 1) {
-              qbApp.MsgBoard.update(
-                'p2p_call_stop',
-                {
-                  name: userInfo.full_name,
-                  currentName: currentUserInfo.full_name,
-                  reason: 'hung up the call'
-                }
-              );
-          }
-
-          /** It's for groups call */
-          $('.j-callee_status_' + userId).text('Hung Up');
+          notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
         };
 
         QB.webrtc.onRemoteStreamListener = function onRemoteStreamListener(session, userID, stream) {
@@ -662,7 +720,7 @@
           }
 
           if(!callTimer) {
-              callTimer = setInterval( function(){ ui.updTimer.call(ui) }, 1000);
+              callTimer = setInterval( function(){ ui.updTimer.call(ui); }, 1000);
           }
         };
 
@@ -737,10 +795,11 @@
               if( _.isEmpty(app.currentSession) || isCallEnded ) {
                   if(callTimer) {
                       $('#timer').addClass('hidden');
-
                       clearInterval(callTimer);
                       callTimer = null;
                       ui.callTime = 0;
+
+                      network = {};
                   }
               }
           }

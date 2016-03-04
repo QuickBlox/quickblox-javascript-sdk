@@ -9,6 +9,7 @@
  * - onRemoteStreamListener(session, userID, stream)
  * - onSessionConnectionStateChangedListener(session, userID, connectionState)
  * - onSessionCloseListener(session)
+ * - onCallStatsReport(session, userId, stats)
  */
 
 var config = require('../../qbConfig');
@@ -361,6 +362,24 @@ WebRTCSession.prototype.stop = function(extension) {
 };
 
 /**
+ * [function close connection with user]
+ * @param  {[type]} userId [id of user]
+ */
+WebRTCSession.prototype.closeConnection = function(userId) {
+  var self = this,
+    peer = this.peerConnections[userId];
+
+  if(peer) {
+    peer.release();
+
+    self._closeSessionIfAllConnectionsClosed();
+  } else {
+    Helpers.traceWarn('Not found connection with user (' + userId + ')');
+  }
+};
+
+
+/**
  * Update a call
  * @param {array} A map with custom parameters
  */
@@ -591,6 +610,12 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
   if (typeof this.onRemoteStreamListener === 'function'){
     Utils.safeCallbackCall(this.onRemoteStreamListener, this, userID, stream);
+  }
+};
+
+WebRTCSession.prototype._onCallStatsReport = function(userId, stats) {
+  if (typeof this.onCallStatsReport === 'function'){
+    Utils.safeCallbackCall(this.onCallStatsReport, this, userId, stats);
   }
 };
 
