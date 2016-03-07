@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>QuickBlox JavaScript WebRTC sample</title>
+    
+    <link rel="canonical" href="https://quickblox.github.io/quickblox-javascript-sdk/samples/webrtc" />
 
     <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
 
@@ -280,7 +282,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-    <script src="../../quickblox.js"></script>
+    <script src="../../quickblox.min.js"></script>
     <!-- Routing lib -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
 
@@ -288,5 +290,11 @@
     <script src="js/helpers.js"></script>
     <!-- <script src="js/msgBoard.js"></script> -->
     <script src="js/app.js"></script>
+    
+    <script type="text/javascript">
+      var host = "quickblox.github.io";
+      if ((host == window.location.host) && (window.location.protocol != "https:"))
+        window.location.protocol = "https";
+    </script>
 </body>
 </html>

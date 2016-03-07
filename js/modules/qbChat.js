@@ -328,7 +328,7 @@ ChatProxy.prototype = {
 
       switch (status) {
       case Strophe.Status.ERROR:
-        err = getError(422, 'Status.ERROR - An error has occurred');
+        err = Utils.getError(422, 'Status.ERROR - An error has occurred');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTING:
@@ -336,14 +336,14 @@ ChatProxy.prototype = {
         Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
         break;
       case Strophe.Status.CONNFAIL:
-        err = getError(422, 'Status.CONNFAIL - The connection attempt failed');
+        err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.AUTHENTICATING:
         Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
-        err = getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
+        err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
         if (typeof callback === 'function') callback(err, null);
         break;
       case Strophe.Status.CONNECTED:
@@ -1001,7 +1001,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject, null);
       }else{
-        callback(getError(408), null);
+        callback(Utils.getError(408), null);
       }
     });
   },
@@ -1041,7 +1041,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject, null);
       }else{
-        callback(getError(408), null);
+        callback(Utils.getError(408), null);
       }
     });
   },
@@ -1105,7 +1105,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject);
       }else{
-        callback(getError(408));
+        callback(Utils.getError(408));
       }
     });
   },
@@ -1154,7 +1154,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject);
       }else{
-        callback(getError(408));
+        callback(Utils.getError(408));
       }
     });
   },
@@ -1177,7 +1177,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject);
       }else{
-        callback(getError(408));
+        callback(Utils.getError(408));
       }
     });
   },
@@ -1200,7 +1200,7 @@ PrivacyListProxy.prototype = {
         var errorObject = getErrorFromXMLNode(stanzaError);
         callback(errorObject);
       }else{
-        callback(getError(408));
+        callback(Utils.getError(408));
       }
     });
   }
@@ -1407,7 +1407,7 @@ function getErrorFromXMLNode(stanzaError) {
   var errorElement = stanzaError.getElementsByTagName('error')[0];
   var errorCode = parseInt(errorElement.getAttribute('code'));
   var errorText = errorElement.getElementsByTagName('text')[0].textContent;
-  return getError(errorCode, errorText);
+  return Utils.getError(errorCode, errorText);
 }
 
 function getLocalTime() {
