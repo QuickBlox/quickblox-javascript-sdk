@@ -28,13 +28,16 @@ function setupStickerPipe() {
 
 		stickerpipe.onPurchase((function(packName, packTitle, pricePoint) {
 
-				try {
-						// do purchase transaction ...
-
-						stickerpipe.purchaseSuccess(packName, pricePoint);
-				} catch (e) {
-						stickerpipe.purchaseFail();
+			try {
+				// do purchase transaction ...
+				if (confirm('Do you want buy pack "' + packName + '"?')) {
+					stickerpipe.purchaseSuccess(packName, pricePoint);
+				} else {
+					stickerpipe.purchaseFail();
 				}
+			} catch (e) {
+				stickerpipe.purchaseFail();
+			}
 		}).bind(this));
 
 		window.addEventListener('sp:popover:shown', function() {

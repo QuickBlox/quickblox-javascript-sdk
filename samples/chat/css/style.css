@@ -366,3 +366,11 @@ a.pull_push.active  {
 	margin: 0 .2em;
 	width: 1.5em;
 }
+
+.sp-modal-overlay {
+	z-index: 10000;
+}
+
+.sp-modal {
+	z-index: 10005;
+}
