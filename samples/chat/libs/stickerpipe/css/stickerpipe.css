@@ -68,7 +68,7 @@ The `retina-sprites` mixin generates a CSS rule and media query for retina group
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 100000;
+  z-index: 1000;
   overflow: auto;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000);
   zoom: 1;
@@ -84,7 +84,7 @@ The `retina-sprites` mixin generates a CSS rule and media query for retina group
   left: 0;
   bottom: 0;
   right: 0;
-  z-index: 100005;
+  z-index: 1050;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -466,6 +466,7 @@ The `retina-sprites` mixin generates a CSS rule and media query for retina group
   display: inline-table;
   cursor: pointer;
   padding: 6px;
+  position: relative;
 }
 
 .sticker-pipe .sp-tabs .sp-tab-item img {
@@ -533,7 +534,7 @@ The `retina-sprites` mixin generates a CSS rule and media query for retina group
   padding-right: 0;
 }
 
-.sticker-pipe .sp-tabs .sp-tab-item.sp-pack-tab.sp-unwatched-pack::after {
+.sticker-pipe .sp-unwatched-content::after {
   content: "";
   width: 10px;
   height: 10px;
@@ -541,8 +542,8 @@ The `retina-sprites` mixin generates a CSS rule and media query for retina group
   position: absolute;
   background-color: #f60;
   border-radius: 50%;
-  margin-left: 29px;
-  margin-top: -10px;
+  top: 32px;
+  left: 35px;
 }
 
 .sticker-pipe .sp-scroll-content {

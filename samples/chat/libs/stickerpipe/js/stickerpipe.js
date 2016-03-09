@@ -2964,6 +2964,63 @@ window.StickersModule.Service = {};
 
 (function(Plugin) {
 
+	Plugin.Service.Ajax = function(options) {
+		options = options || {};
+
+		if (!options.url) {
+			return;
+		}
+
+		options.type = (options.type && options.type.toUpperCase()) || 'GET';
+		options.headers = options.headers || {};
+		options.data = options.data || {};
+		options.success = options.success || function() {};
+		options.error = options.error || function() {};
+		options.complete = options.complete || function() {};
+
+		options.headers.Apikey = Plugin.Configs.apiKey;
+		options.headers.Platform = 'JS';
+		options.headers.Localization = Plugin.Configs.lang;
+		options.headers.UserId = Plugin.Configs.userId;
+
+		if (options.type == 'POST' || options.type == 'PUT') {
+			options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
+			options.headers['DeviceId'] = Plugin.Service.Storage.getDeviceId();
+		}
+
+
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open(options.type, options.url, true);
+
+		for (var name in options.headers) {
+			xmlhttp.setRequestHeader(name, options.headers[name]);
+		}
+
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4) {
+				if (xmlhttp.status == 200) {
+					options.success(JSON.parse(xmlhttp.responseText), xmlhttp);
+				} else {
+					var response = {};
+					try {
+						response = JSON.parse(xmlhttp.responseText);
+					} catch (ex) {
+						response = {}
+					}
+					options.error(response, xmlhttp);
+				}
+
+				options.complete(JSON.parse(xmlhttp.responseText), xmlhttp);
+			}
+		};
+
+		xmlhttp.send(JSON.stringify(options.data));
+	};
+
+})(window.StickersModule);
+
+(function(Plugin) {
+
 	var API_VERSION = 2;
 
 	Plugin.Service.Api = {
@@ -2973,9 +3030,25 @@ window.StickersModule.Service = {};
 		},
 
 		getPacks: function(successCallback) {
-			var url = Plugin.Service.Url.getPacksUrl();
+			Plugin.Service.Ajax({
+				type: 'get',
+				url: Plugin.Service.Url.getUserPacksUrl(),
+				success: function(response) {
+					response = response || {};
+					response.meta = response.meta || {};
+					response.meta.shop_last_modified = response.meta.shop_last_modified || 0;
 
-			Plugin.Service.Http.get(url, {
+					Plugin.Service.Storage.setStoreLastModified(response.meta.shop_last_modified * 1000);
+
+					successCallback && successCallback(response.data);
+				}
+			});
+		},
+
+		getPackPreview: function(packName, successCallback) {
+			Plugin.Service.Ajax({
+				type: 'get',
+				url: Plugin.Service.Url.getPackPreviewUrl(packName),
 				success: function(response) {
 					successCallback && successCallback(response.data);
 				}
@@ -2983,12 +3056,16 @@ window.StickersModule.Service = {};
 		},
 
 		sendStatistic: function(statistic) {
-			Plugin.Service.Http.post(Plugin.Service.Url.getStatisticUrl(), statistic);
+			Plugin.Service.Ajax({
+				type: 'post',
+				url: Plugin.Service.Url.getStatisticUrl(),
+				data: statistic
+			});
 		},
 
 		updateUserData: function(userData) {
-			return Plugin.Service.Http.ajax({
-				type: 'PUT',
+			return Plugin.Service.Ajax({
+				type: 'put',
 				url: Plugin.Service.Url.getUserDataUrl(),
 				data: userData,
 				headers: {
@@ -2997,8 +3074,10 @@ window.StickersModule.Service = {};
 			});
 		},
 
-		purchasePack: function(packName, pricePoint, successCallback) {
-			Plugin.Service.Http.post(Plugin.Service.Url.getPurchaseUrl(packName, pricePoint), {}, {
+		purchasePack: function(packName, pricePoint, successCallback, failCallback) {
+			Plugin.Service.Ajax({
+				type: 'post',
+				url: Plugin.Service.Url.getPurchaseUrl(packName, pricePoint),
 				success: function(response) {
 					successCallback && successCallback(response.data);
 				},
@@ -3008,14 +3087,31 @@ window.StickersModule.Service = {};
 						packName: packName,
 						pricePoint: pricePoint
 					});
+
+					failCallback && failCallback();
 				}
 			});
 		},
 
 		getContentById: function(contentId, successCallback) {
-			Plugin.Service.Http.get(Plugin.Service.Url.getContentByIdUrl(contentId), {
+			Plugin.Service.Ajax({
+				type: 'get',
+				url: Plugin.Service.Url.getContentByIdUrl(contentId),
 				success: function(response) {
 					successCallback && successCallback(response.data);
+				}
+			});
+		},
+
+		hidePack: function(packName, successCallback, failCallback) {
+			return Plugin.Service.Ajax({
+				type: 'DELETE',
+				url: Plugin.Service.Url.getHidePackUrl(packName),
+				success: function(response) {
+					successCallback && successCallback(response.data);
+				},
+				error: function() {
+					failCallback && failCallback();
 				}
 			});
 		}
@@ -3279,92 +3375,22 @@ window.StickersModule.Service = {};
 
 (function(Plugin) {
 
-	Plugin.Service.Http = {
+	Plugin.Service.Highlight = {
 
-		// todo: refactor post(options) & get(options)
+		check: function() {
 
-		get: function(url, callbacks, headers) {
-			callbacks = callbacks || {};
-			headers = headers || {};
-
-			this.ajax({
-				type: 'GET',
-				url: url,
-				headers: headers,
-				success: callbacks.success,
-				error: callbacks.error,
-				complete: callbacks.complete
-			});
-		},
-
-		post: function(url, data, callbacks, headers) {
-			data = data || {};
-			callbacks = callbacks || {};
-			headers = headers || {};
-
-			this.ajax({
-				type: 'POST',
-				url: url,
-				data: data,
-				headers: headers,
-				success: callbacks.success,
-				error: callbacks.error,
-				complete: callbacks.complete
-			});
-		},
-
-		ajax: function(options) {
-			options = options || {};
-
-			if (!options.url) {
-				return;
+			var showContentHighlight = Plugin.Service.Packs.isExistUnwatched();
+			if (!showContentHighlight && Plugin.Service.Storage.getRecentStickers().length == 0) {
+				showContentHighlight = true;
 			}
 
-			options.type = (options.type && options.type.toUpperCase()) || 'GET';
-			options.headers = options.headers || {};
-			options.data = options.data || {};
-			options.success = options.success || function() {};
-			options.error = options.error || function() {};
-			options.complete = options.complete || function() {};
-
-			options.headers.Apikey = Plugin.Configs.apiKey;
-			options.headers.Platform = 'JS';
-			options.headers.Localization = Plugin.Configs.lang;
-			options.headers.UserId = Plugin.Configs.userId;
-
-			if (options.type == 'POST' || options.type == 'PUT') {
-				options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
-				options.headers['DeviceId'] = Plugin.Service.Storage.getDeviceId();
+			if (!showContentHighlight &&
+				Plugin.Service.Storage.getStoreLastModified() > Plugin.Service.Storage.getStoreLastVisit()) {
+				showContentHighlight = true;
 			}
-
-
-			var xmlhttp = new XMLHttpRequest();
-			xmlhttp.open(options.type, options.url, true);
-
-			for (var name in options.headers) {
-				xmlhttp.setRequestHeader(name, options.headers[name]);
-			}
-
-			xmlhttp.onreadystatechange = function() {
-				if (xmlhttp.readyState == 4) {
-					if (xmlhttp.status == 200) {
-						options.success(JSON.parse(xmlhttp.responseText), xmlhttp);
-					} else {
-						var response = {};
-						try {
-							response = JSON.parse(xmlhttp.responseText);
-						} catch (ex) {
-							response = {}
-						}
-						options.error(response, xmlhttp);
-					}
-
-					options.complete(JSON.parse(xmlhttp.responseText), xmlhttp);
-				}
-			};
-
-			xmlhttp.send(JSON.stringify(options.data));
+			Plugin.Service.Event.changeContentHighlight(showContentHighlight);
 		}
+
 	};
 })(window.StickersModule);
 
@@ -3372,15 +3398,76 @@ window.StickersModule.Service = {};
 
 	var stickerpipe;
 
-	function filterActivePacks(packs) {
-		for (var i = 0; i < packs.length; i++) {
-			if (packs[i].user_status != 'active') {
-				packs.splice(i, 1);
-			}
-		}
+	Plugin.Service.Pack = {
 
-		return packs;
-	}
+		init: function(_stickerpipe) {
+			stickerpipe = _stickerpipe;
+		},
+
+		purchase: function(packName, pricePoint, isUnwatched, successCallback, failCallback) {
+			isUnwatched = (typeof isUnwatched == 'undefined') ? true : isUnwatched;
+
+			Plugin.Service.Api.purchasePack(packName, pricePoint, function(pack) {
+				pack.isUnwatched = isUnwatched;
+
+				var packContentIds = [];
+				for (var i = 0; i < pack.stickers.length; i++) {
+					var sticker = pack.stickers[i];
+					sticker.pack = packName;
+
+					Plugin.Service.Storage.setContentById(sticker.content_id, sticker);
+
+					packContentIds.push(sticker.content_id);
+				}
+
+				pack.stickers = packContentIds;
+
+				Plugin.Service.Storage.setPack(pack.pack_name, pack, true);
+
+				if (stickerpipe && stickerpipe.view.isRendered) {
+					stickerpipe.view.tabsView.renderPacks();
+				}
+
+				successCallback && successCallback(pack);
+			}, function() {
+				failCallback && failCallback();
+			});
+		},
+
+		remove: function(packName, successCallback, failCallback) {
+			Plugin.Service.Api.hidePack(packName, function() {
+
+				var pack = Plugin.Service.Storage.getPack(packName);
+				pack.user_status = 'hidden';
+				Plugin.Service.Storage.setPack(packName, pack);
+
+				if (stickerpipe && stickerpipe.view.isRendered) {
+					stickerpipe.view.tabsView.renderPacks();
+					stickerpipe.view.tabsView.controls.history.el.click();
+				}
+
+				successCallback && successCallback();
+			}, function() {
+				failCallback && failCallback();
+			});
+		},
+
+		getMainIcon: function(packName, successCallback) {
+			Plugin.Service.Api.getPackPreview(packName, function(pack) {
+				var url = (pack && pack.main_icon && pack.main_icon[Plugin.Configs.stickerResolutionType]) || null;
+
+				successCallback && successCallback(url);
+			});
+		},
+
+		isHidden: function(pack) {
+			return pack.user_status == 'hidden';
+		}
+	};
+
+})(window.StickersModule);
+
+(function(Plugin) {
 
 	function filterRecentStickers() {
 
@@ -3426,47 +3513,11 @@ window.StickersModule.Service = {};
 		}
 	}
 
-	Plugin.Service.Pack = {
+	Plugin.Service.Packs = {
 
-		init: function(_stickerpipe) {
-			stickerpipe = _stickerpipe;
-		},
-
-		purchase: function(packName, pricePoint, doneCallback, isUnwatched) {
-			isUnwatched = (typeof isUnwatched == 'undefined') ? true : isUnwatched;
-
-			Plugin.Service.Api.purchasePack(packName, pricePoint, function(pack) {
-				pack.isUnwatched = isUnwatched;
-
-				var packContentIds = [];
-				for (var i = 0; i < pack.stickers.length; i++) {
-					var sticker = pack.stickers[i];
-					sticker.pack = packName;
-
-					Plugin.Service.Storage.setContentById(sticker.content_id, sticker);
-
-					packContentIds.push(sticker.content_id);
-				}
-
-				pack.stickers = packContentIds;
-
-				Plugin.Service.Storage.setPack(pack.pack_name, pack);
-
-				if (stickerpipe && stickerpipe.view.isRendered) {
-					stickerpipe.view.tabsView.renderPacks();
-				}
-
-				doneCallback && doneCallback(pack);
-			});
-		},
-
-		fetchPacks: function(callback) {
-
-			var self = this;
+		fetch: function(callback) {
 
 			Plugin.Service.Api.getPacks(function(packs) {
-
-				packs = filterActivePacks(packs);
 
 				var packsInStorage = Plugin.Service.Storage.getPacks(),
 					undefinedPacksInStorage = [];
@@ -3495,23 +3546,26 @@ window.StickersModule.Service = {};
 				Plugin.Service.Storage.setPacks(packs);
 
 				for (var i = 0; i < undefinedPacksInStorage.length; i++) {
+					if (Plugin.Service.Pack.isHidden(undefinedPacksInStorage[i])) {
+						continue;
+					}
+
 					Plugin.Service.Pack.purchase(
 						undefinedPacksInStorage[i].pack_name,
 						undefinedPacksInStorage[i].pricepoint,
-						null,
 						(packsInStorage.length) ? true : false
 					);
 				}
 
 				filterRecentStickers();
 
-				self.checkHighlight();
+				Plugin.Service.Highlight.check();
 
 				callback && callback();
 			});
 		},
 
-		isExistUnwatchedPacks: function() {
+		isExistUnwatched: function() {
 			var packs = Plugin.Service.Storage.getPacks();
 
 			for(var i = 0; i < packs.length; i++) {
@@ -3521,14 +3575,6 @@ window.StickersModule.Service = {};
 			}
 
 			return false;
-		},
-
-		checkHighlight: function() {
-			var showContentHighlight = this.isExistUnwatchedPacks();
-			if (!showContentHighlight && Plugin.Service.Storage.getRecentStickers().length == 0) {
-				showContentHighlight = true;
-			}
-			Plugin.Service.Event.changeContentHighlight(showContentHighlight);
 		}
 	};
 
@@ -3674,22 +3720,27 @@ window.StickersModule.Service = {};
 
 (function(Plugin) {
 
+	var lockr = Plugin.Libs.Lockr;
+
 	Plugin.Service.Storage = {
 
-		lockr: Plugin.Libs.Lockr,
-
-		setPrefix: function(storagePrefix) {
-			this.lockr.prefix = storagePrefix;
+		get: function(key) {
+			lockr.prefix = Plugin.Configs.storagePrefix;
+			return lockr.get(key);
+		},
+		set: function(key, data) {
+			lockr.prefix = Plugin.Configs.storagePrefix;
+			return lockr.set(key, data);
 		},
 
 		///////////////////////////////////////
 		// Used stickers
 		///////////////////////////////////////
 		getRecentStickers: function() {
-			return this.lockr.get('recent_stickers') || [];
+			return this.get('recent_stickers') || [];
 		},
 		setRecentStickers: function(recentStickers) {
-			return this.lockr.set('recent_stickers', recentStickers);
+			return this.set('recent_stickers', recentStickers);
 		},
 		addRecentSticker: function(stickerId) {
 
@@ -3710,10 +3761,10 @@ window.StickersModule.Service = {};
 		// Packs
 		///////////////////////////////////////
 		getPacks: function() {
-			return this.lockr.get('packs') || [];
+			return this.get('packs') || [];
 		},
 		setPacks: function(packs) {
-			return this.lockr.set('packs', packs)
+			return this.set('packs', packs)
 		},
 
 		getPack: function(packName) {
@@ -3727,7 +3778,8 @@ window.StickersModule.Service = {};
 
 			return null;
 		},
-		setPack: function(packName, pack) {
+		setPack: function(packName, pack, toBeginning) {
+			toBeginning = (typeof toBeginning != 'undefined') ? toBeginning : false;
 
 			var packExist = false,
 				packs = this.getPacks();
@@ -3736,11 +3788,15 @@ window.StickersModule.Service = {};
 				if (packName == packs[i].pack_name) {
 					packs[i] = pack;
 					packExist = true;
+
+					if (toBeginning) {
+						packs.splice(i, 1);
+					}
 					break;
 				}
 			}
 
-			if (!packExist) {
+			if (!packExist || toBeginning) {
 				packs.unshift(pack);
 			}
 
@@ -3751,10 +3807,10 @@ window.StickersModule.Service = {};
 		// Content
 		///////////////////////////////////////
 		getContent: function() {
-			return this.lockr.get('content') || {};
+			return this.get('content') || {};
 		},
 		setContent: function(content) {
-			return this.lockr.set('content', content || {})
+			return this.set('content', content || {})
 		},
 
 		getContentById: function(id) {
@@ -3769,11 +3825,11 @@ window.StickersModule.Service = {};
 		// Device ID
 		///////////////////////////////////////
 		getDeviceId: function() {
-			var deviceId = this.lockr.get('device_id');
+			var deviceId = this.get('device_id');
 
 			if (typeof deviceId == 'undefined') {
 				deviceId = + new Date();
-				this.lockr.set('device_id', deviceId);
+				this.set('device_id', deviceId);
 			}
 
 			return deviceId;
@@ -3783,30 +3839,30 @@ window.StickersModule.Service = {};
 		// User ID
 		///////////////////////////////////////
 		getUserId: function() {
-			return this.lockr.get('user_id');
+			return this.get('user_id');
 		},
 		setUserId: function(userId) {
-			return this.lockr.set('user_id', userId);
+			return this.set('user_id', userId);
 		},
 
 		///////////////////////////////////////
 		// User data
 		///////////////////////////////////////
 		getUserData: function() {
-			return this.lockr.get('user_data');
+			return this.get('user_data');
 		},
 		setUserData: function(userData) {
-			return this.lockr.set('user_data', userData);
+			return this.set('user_data', userData);
 		},
 
 		///////////////////////////////////////
 		// Pending request
 		///////////////////////////////////////
 		getPendingRequestTasks: function() {
-			return this.lockr.get('pending_request_tasks') || [];
+			return this.get('pending_request_tasks') || [];
 		},
 		setPendingRequestTasks: function(tasks) {
-			return this.lockr.set('pending_request_tasks', tasks);
+			return this.set('pending_request_tasks', tasks);
 		},
 		addPendingRequestTask: function(task) {
 
@@ -3823,6 +3879,47 @@ window.StickersModule.Service = {};
 			this.setPendingRequestTasks(tasks);
 
 			return task;
+		},
+
+		///////////////////////////////////////
+		// Metadata
+		///////////////////////////////////////
+		getMetadata: function(key) {
+			var metadata = this.get('metadata');
+
+			if (key) {
+				metadata = metadata[key];
+			}
+
+			return metadata;
+		},
+		setMetadata: function(key, value) {
+			var metadata = this.getMetadata() || {};
+
+			metadata[key] = value;
+
+			return this.set('metadata', metadata);
+		},
+
+		// todo: create Metadata service
+		///////////////////////////////////////
+		// Last store visit
+		///////////////////////////////////////
+		getStoreLastVisit: function() {
+			return this.getMetadata()['last_store_visit'] || 0;
+		},
+		setStoreLastVisit: function(time) {
+			return this.setMetadata('last_store_visit', time);
+		},
+
+		///////////////////////////////////////
+		// Last store visit
+		///////////////////////////////////////
+		getStoreLastModified: function() {
+			return this.getMetadata()['shop_last_modified'];
+		},
+		setStoreLastModified: function(time) {
+			return this.setMetadata('shop_last_modified', time);
 		}
 	};
 
@@ -3836,10 +3933,15 @@ window.StickersModule.Service = {};
 			uri = uri || '';
 
 			var platform = 'JS',
-				style = platform;
+				style = platform,
+				primaryColor = Plugin.Configs.primaryColor;
 
 			if (Plugin.Service.Helper.getMobileOS() == 'ios' || navigator.appVersion.indexOf('Mac') != -1) {
 				style = 'ios';
+			}
+
+			if (primaryColor.charAt(0) == '#') {
+				primaryColor = primaryColor.substr(1);
 			}
 
 			var params = {
@@ -3851,7 +3953,8 @@ window.StickersModule.Service = {};
 				priceC: Plugin.Configs.priceC,
 				is_subscriber: (Plugin.Configs.userPremium ? 1 : 0),
 				localization: Plugin.Configs.lang,
-				style: style
+				style: style,
+				primaryColor: primaryColor
 			};
 
 			var url = Plugin.Configs.storeUrl || this.buildApiUrl('/web');
@@ -3869,8 +3972,18 @@ window.StickersModule.Service = {};
 			return Plugin.Configs.apiUrl + '/api/v' + Plugin.Service.Api.getApiVersion() + uri;
 		},
 
-		getPacksUrl: function() {
+		getUserPacksUrl: function() {
 			var url = this.buildApiUrl('/shop/my');
+
+			if (Plugin.Configs.userPremium) {
+				url += '?is_subscriber=1';
+			}
+
+			return url;
+		},
+
+		getPackPreviewUrl: function(packName) {
+			var url = this.buildApiUrl('/packs/' + packName);
 
 			if (Plugin.Configs.userPremium) {
 				url += '?is_subscriber=1';
@@ -3911,6 +4024,10 @@ window.StickersModule.Service = {};
 
 		getContentByIdUrl: function(contentId) {
 			return this.buildApiUrl('/content/' + contentId);
+		},
+
+		getHidePackUrl: function(packName) {
+			return this.buildApiUrl('/packs/' + packName);
 		},
 
 		getStoreUrl: function() {
@@ -3983,6 +4100,8 @@ window.StickersModule.Configs = {};
 
 		priceB: null,
 		priceC: null,
+
+		primaryColor: '',
 
 		// todo: block or popover
 		display: 'block',
@@ -4866,7 +4985,7 @@ window.StickersModule.Module = {};
 		init: function(stickerpipe) {
 			Plugin.Module.Store.View.init();
 			Plugin.Module.Store.ApiListener.init();
-			Plugin.Module.Store.Controller.init(stickerpipe);
+			Plugin.Module.Store.Api.init(stickerpipe);
 		},
 
 		open: function(contentId) {
@@ -4895,19 +5014,52 @@ window.StickersModule.Module = {};
 
 (function(Plugin, Module) {
 
+	var stickerpipe;
+
+	function isPackHidden(packName) {
+		var packs = Plugin.Service.Storage.getPacks();
+
+		for (var i = 0; i < packs.length; i++) {
+			if (packs[i].pack_name == packName) {
+				return Plugin.Service.Pack.isHidden(packs[i]);
+			}
+		}
+
+		return false;
+	}
+
 	Module.Api= {
 
-		showCollections: function(data) {
-			Module.Controller.showCollections(data.attrs.packName);
+		init: function(_stickerpipe) {
+			stickerpipe = _stickerpipe;
+		},
+
+		showPack: function(data) {
+			Module.View.close();
+			stickerpipe.open(data.attrs.packName);
 		},
 
 		purchasePack: function(data) {
-			var attrs = data.attrs;
-			Module.Controller.purchasePack(attrs.packName, attrs.packTitle, attrs.pricePoint);
+			var packName = data.attrs.packName,
+				packTitle = data.attrs.packTitle,
+				pricePoint = data.attrs.pricePoint;
+
+			var isHidden = isPackHidden(packName);
+
+			if (pricePoint == 'A' || (pricePoint == 'B' && Plugin.Configs.userPremium) || isHidden) {
+				Module.Controller.downloadPack(packName, pricePoint);
+			} else {
+				Module.Controller.onPurchaseCallback &&
+				Module.Controller.onPurchaseCallback(packName, packTitle, pricePoint);
+			}
 		},
 
 		showPagePreloader: function(data) {
 			Module.View.showPagePreloader(data.attrs.show);
+		},
+
+		removePack: function(data) {
+			Module.Controller.removePack(data.attrs.packName);
 		},
 
 		showBackButton: function(data) {
@@ -4919,7 +5071,11 @@ window.StickersModule.Module = {};
 		},
 
 		keyUp: function(data) {
-			Module.Controller.keyUp(data.attrs.keyCode);
+			var ESC_CODE = 27;
+
+			if (data.attrs.keyCode == ESC_CODE) {
+				Module.View.close();
+			}
 		}
 	};
 
@@ -4965,48 +5121,35 @@ window.StickersModule.Module = {};
 		}), Plugin.Service.Helper.getDomain(Plugin.Service.Url.buildStoreUrl('/')));
 	}
 
-	var ESC_CODE = 27;
-
 	Module.Controller = {
-
-		stickerpipe: null,
 
 		onPurchaseCallback: null,
 
-		init: function(stickerpipe) {
-			this.stickerpipe = stickerpipe;
-		},
-
-		showCollections: function(packName) {
-			Module.View.close();
-			this.stickerpipe.open(packName);
+		configureStore: function() {
+			callStoreMethod('configure', {
+				canShowPack: true,
+				canRemovePack: true
+			});
 		},
 
 		downloadPack: function(packName, pricePoint) {
-			Plugin.Service.Pack.purchase(packName, pricePoint, function() {
-				callStoreMethod('reload');
-				callStoreMethod('onPackDownloaded', {
-					packName: packName
-				});
-			}, true);
+			Plugin.Service.Pack.purchase(packName, pricePoint, true, function() {
+				callStoreMethod('onPackPurchaseSuccess');
+			}, function() {
+				callStoreMethod('onPackPurchaseFail');
+			});
 		},
 
-		purchasePack: function(packName, packTitle, pricePoint) {
-			if (pricePoint == 'A' || (pricePoint == 'B' && Plugin.Configs.userPremium)) {
-				this.downloadPack(packName, pricePoint);
-			} else {
-				this.onPurchaseCallback && this.onPurchaseCallback(packName, packTitle, pricePoint);
-			}
+		removePack: function(packName) {
+			Plugin.Service.Pack.remove(packName, function() {
+				callStoreMethod('onPackRemoveSuccess');
+			}, function() {
+				callStoreMethod('onPackRemoveFail');
+			});
 		},
 
 		goBack: function() {
 			callStoreMethod('goBack');
-		},
-
-		keyUp: function(keyCode) {
-			if (keyCode == ESC_CODE) {
-				Module.View.close();
-			}
 		},
 
 		///////////////////////////////////////////
@@ -5018,7 +5161,7 @@ window.StickersModule.Module = {};
 		},
 
 		onPurchaseFail: function() {
-			callStoreMethod('hideActionProgress');
+			callStoreMethod('onPackPurchaseFail');
 		},
 
 		onScrollContent: function(yPosition) {
@@ -5064,6 +5207,10 @@ window.StickersModule.Module = {};
 
 						this.modalBody = modalBody;
 					}
+
+					this.iframe.onload = function() {
+						Module.Controller.configureStore();
+					};
 
 
 					if (!this.preloader) {
@@ -5597,11 +5744,13 @@ window.StickersModule.View = {};
 			function appendSticker(stickerId) {
 				var stickersSpanEl = document.createElement('span');
 				stickersSpanEl.className = 'sp-sticker-placeholder';
+				stickersSpanEl.style.background = Plugin.Configs.primaryColor || '#e1e1e1';
 				stickersSpanEl.setAttribute('data-sticker-id', stickerId);
 
 				var image = new Image();
 				image.onload = function() {
 					stickersSpanEl.className = Plugin.Configs.stickerItemClass;
+					stickersSpanEl.style.background = '';
 					stickersSpanEl.appendChild(image);
 				};
 				image.onerror = function() {};
@@ -5870,77 +6019,77 @@ window.StickersModule.View = {};
 (function(Plugin) {
 
 
+	var packTabSize = 48,
+		classes = {
+			scrollableContainer: 'sp-tabs-scrollable-container',
+			scrollableContent: 'sp-tabs-scrollable-content',
+			controlTab: 'sp-control-tab',
+			controlButton: 'sp-control-button',
+			unwatched: 'sp-unwatched-content',
+			packTab: 'sp-pack-tab',
+			tabActive: 'sp-tab-active',
+			tabs: 'sp-tabs'
+		};
+
 	Plugin.View.Tabs = Plugin.Libs.Class({
 
 		el: null,
 		scrollableContainerEl: null,
 		scrollableContentEl: null,
 
-		controls: null,
 		packTabs: {},
 		packTabsIndexes: {},
 
 		hasActiveTab: false,
 
-		classes: {
-			scrollableContainer: 'sp-tabs-scrollable-container',
-			scrollableContent: 'sp-tabs-scrollable-content',
-			controlTab: 'sp-control-tab',
-			controlButton: 'sp-control-button',
-			unwatched: 'sp-unwatched-pack',
-			packTab: 'sp-pack-tab',
-			tabActive: 'sp-tab-active',
-			tabs: 'sp-tabs'
+		controls: {
+			emoji: {
+				id: 'spTabEmoji',
+				class: 'sp-tab-emoji',
+				icon: 'sp-icon-face',
+				el: null,
+				isTab: true
+			},
+			history: {
+				id: 'spTabHistory',
+				class: 'sp-tab-history',
+				icon: 'sp-icon-clock',
+				el: null,
+				isTab: true
+			},
+			settings: {
+				id: 'spTabSettings',
+				class: 'sp-tab-settings',
+				icon: 'sp-icon-settings',
+				el: null,
+				isTab: false
+			},
+			store: {
+				id: 'spTabStore',
+				class: 'sp-tab-store',
+				icon: 'sp-icon-plus',
+				el: null,
+				isTab: false
+			},
+			prevPacks: {
+				id: 'spTabPrevPacks',
+				class: 'sp-tab-prev-packs',
+				icon: 'sp-icon-arrow-back',
+				el: null,
+				isTab: false
+			},
+			nextPacks: {
+				id: 'spTabNextPacks',
+				class: 'sp-tab-next-packs',
+				icon: 'sp-icon-arrow-forward',
+				el: null,
+				isTab: false
+			}
 		},
 
 		_constructor: function() {
 
 			this.el = document.createElement('div');
-
-			this.controls = {
-				emoji: {
-					id: 'spTabEmoji',
-					class: 'sp-tab-emoji',
-					icon: 'sp-icon-face',
-					el: null,
-					isTab: true
-				},
-				history: {
-					id: 'spTabHistory',
-					class: 'sp-tab-history',
-					icon: 'sp-icon-clock',
-					el: null,
-					isTab: true
-				},
-				settings: {
-					id: 'spTabSettings',
-					class: 'sp-tab-settings',
-					icon: 'sp-icon-settings',
-					el: null,
-					isTab: false
-				},
-				store: {
-					id: 'spTabStore',
-					class: 'sp-tab-store',
-					icon: 'sp-icon-plus',
-					el: null,
-					isTab: false
-				},
-				prevPacks: {
-					id: 'spTabPrevPacks',
-					class: 'sp-tab-prev-packs',
-					icon: 'sp-icon-arrow-back',
-					el: null,
-					isTab: false
-				},
-				nextPacks: {
-					id: 'spTabNextPacks',
-					class: 'sp-tab-next-packs',
-					icon: 'sp-icon-arrow-forward',
-					el: null,
-					isTab: false
-				}
-			};
 
 			window.addEventListener('resize', (function() {
 				this.onWindowResize();
@@ -5950,7 +6099,7 @@ window.StickersModule.View = {};
 
 		render: function() {
 
-			this.el.classList.add(this.classes.tabs);
+			this.el.className = classes.tabs;
 			this.el.innerHTML = '';
 
 			this.renderPrevPacksTab();
@@ -5966,10 +6115,10 @@ window.StickersModule.View = {};
 		renderScrollableContainer: function() {
 
 			this.scrollableContentEl = document.createElement('div');
-			this.scrollableContentEl.className = this.classes.scrollableContent;
+			this.scrollableContentEl.className = classes.scrollableContent;
 
 			this.scrollableContainerEl = document.createElement('div');
-			this.scrollableContainerEl.className = this.classes.scrollableContainer;
+			this.scrollableContainerEl.className = classes.scrollableContainer;
 
 			this.scrollableContainerEl.appendChild(this.scrollableContentEl);
 			this.el.appendChild(this.scrollableContainerEl);
@@ -5977,37 +6126,37 @@ window.StickersModule.View = {};
 		renderControlButton: function(controlButton) {
 			controlButton.isTab = controlButton.isTab || false;
 
-			var classes = [controlButton.class];
-			classes.push((controlButton.isTab) ? this.classes.controlTab : this.classes.controlButton);
+			var buttonClasses = [controlButton.class];
+			buttonClasses.push((controlButton.isTab) ? classes.controlTab : classes.controlButton);
 
 			var content = '<span class="' + controlButton.icon + '"></span>';
 
-			controlButton.el = this.renderTab(controlButton.id, classes, content);
+			controlButton.el = this.renderTab(controlButton.id, buttonClasses, content);
 			return controlButton.el;
 		},
 		renderPackTab: function(pack) {
-			var classes = [this.classes.packTab];
+			var tabClasses = [classes.packTab];
 
 			if (pack.isUnwatched) {
-				classes.push(this.classes.unwatched);
+				tabClasses.push(classes.unwatched);
 			}
 
 			var content = '<img src=' + pack.tab_icon[Plugin.Configs.tabResolutionType] + '>';
 
-			var tabEl = this.renderTab(null, classes, content, {
+			var tabEl = this.renderTab(null, tabClasses, content, {
 				'data-pack-name': pack.pack_name
 			});
 
 			tabEl.addEventListener('click', (function() {
-				tabEl.classList.remove(this.classes.unwatched);
+				tabEl.classList.remove(classes.unwatched);
 			}).bind(this));
 
 			this.packTabs[pack.pack_name] = tabEl;
 
 			return tabEl;
 		},
-		renderTab: function(id, classes, content, attrs) {
-			classes = classes || [];
+		renderTab: function(id, tabClasses, content, attrs) {
+			tabClasses = tabClasses || [];
 			attrs = attrs || {};
 
 			var tabEl = document.createElement('span');
@@ -6016,9 +6165,9 @@ window.StickersModule.View = {};
 				tabEl.id = id;
 			}
 
-			classes.push(Plugin.Configs.tabItemClass);
+			tabClasses.push(Plugin.Configs.tabItemClass);
 
-			tabEl.classList.add.apply(tabEl.classList, classes);
+			tabEl.classList.add.apply(tabEl.classList, tabClasses);
 
 			for (var name in attrs) {
 				tabEl.setAttribute(name, attrs[name]);
@@ -6027,23 +6176,23 @@ window.StickersModule.View = {};
 			tabEl.innerHTML = content;
 
 			tabEl.addEventListener('click', (function() {
-				if (!tabEl.classList.contains(this.classes.controlTab) &&
-					!tabEl.classList.contains(this.classes.packTab)) {
+				if (!tabEl.classList.contains(classes.controlTab) &&
+					!tabEl.classList.contains(classes.packTab)) {
 					return;
 				}
 
 				for (var tabName in this.packTabs) {
-					this.packTabs[tabName].classList.remove(this.classes.tabActive);
+					this.packTabs[tabName].classList.remove(classes.tabActive);
 				}
 
 				for (var controlName in this.controls) {
 					var controlTab = this.controls[controlName];
 					if (controlTab && controlTab.el) {
-						controlTab.el.classList.remove(this.classes.tabActive);
+						controlTab.el.classList.remove(classes.tabActive);
 					}
 				}
 
-				tabEl.classList.add(this.classes.tabActive);
+				tabEl.classList.add(classes.tabActive);
 			}).bind(this));
 
 			return tabEl;
@@ -6060,6 +6209,11 @@ window.StickersModule.View = {};
 
 			for (var i = 0; i < packs.length; i++) {
 				var pack = packs[i];
+
+				if (Plugin.Service.Pack.isHidden(pack)) {
+					continue;
+				}
+
 				this.scrollableContentEl.appendChild(this.renderPackTab(pack));
 				this.packTabsIndexes[pack.pack_name] = i;
 			}
@@ -6084,6 +6238,10 @@ window.StickersModule.View = {};
 		renderStoreTab: function() {
 			if (Plugin.Configs.enableStoreTab) {
 				this.el.appendChild(this.renderControlButton(this.controls.store));
+
+				if (Plugin.Service.Storage.getStoreLastModified() > Plugin.Service.Storage.getStoreLastVisit()) {
+					this.controls.store.el.classList.add('sp-unwatched-content');
+				}
 			}
 		},
 		renderPrevPacksTab: function() {
@@ -6097,23 +6255,21 @@ window.StickersModule.View = {};
 
 
 		onClickPrevPacksButton: function() {
-			var tabWidth = this.scrollableContentEl.getElementsByClassName(this.classes.packTab)[0].offsetWidth;
 			var containerWidth = this.scrollableContainerEl.offsetWidth;
 			var contentOffset = parseInt(this.scrollableContentEl.style.left, 10) || 0;
-			var countFullShownTabs = parseInt((containerWidth / tabWidth), 10);
+			var countFullShownTabs = parseInt((containerWidth / packTabSize), 10);
 
-			var offset = contentOffset + (tabWidth * countFullShownTabs);
+			var offset = contentOffset + (packTabSize * countFullShownTabs);
 			offset = (offset > 0) ? 0 : offset;
 			this.scrollableContentEl.style.left = offset + 'px';
 			this.onWindowResize();
 		},
 		onClickNextPacksButton: function() {
-			var tabWidth = this.scrollableContentEl.getElementsByClassName(this.classes.packTab)[0].offsetWidth;
 			var containerWidth = this.scrollableContainerEl.offsetWidth;
 			var contentOffset = parseInt(this.scrollableContentEl.style.left, 10) || 0;
-			var countFullShownTabs = parseInt((containerWidth / tabWidth), 10);
+			var countFullShownTabs = parseInt((containerWidth / packTabSize), 10);
 
-			var offset = -(tabWidth * countFullShownTabs) + contentOffset;
+			var offset = -(packTabSize * countFullShownTabs) + contentOffset;
 			this.scrollableContentEl.style.left = offset + 'px';
 			this.onWindowResize();
 		},
@@ -6132,12 +6288,14 @@ window.StickersModule.View = {};
 			this.packTabs[tabName].click();
 			this.hasActiveTab = true;
 
-			var tabWidth = this.scrollableContentEl.getElementsByClassName(this.classes.packTab)[0].offsetWidth;
+			var packTabSize = this.scrollableContentEl.getElementsByClassName(classes.packTab)[0].offsetWidth;
 			var containerWidth = this.scrollableContainerEl.offsetWidth;
-			var countFullShownTabs = parseInt((containerWidth / tabWidth), 10);
+			var countFullShownTabs = parseInt((containerWidth / packTabSize), 10);
 
 			var offset = -(parseInt((i / countFullShownTabs), 10) * containerWidth);
-			offset = (offset > 0) ? 0 : offset - 1;
+			//offset = (offset > 0) ? 0 : offset + 6; // old code
+			offset = (-offset < countFullShownTabs * packTabSize) ? 0 : offset + 6; // bugfix todo
+
 			this.scrollableContentEl.style.left = offset + 'px';
 
 			this.onWindowResize();
@@ -6155,7 +6313,7 @@ window.StickersModule.View = {};
 			Plugin.Service.Helper.setEvent('click', this.el, this.controls.history.class, callback);
 		},
 		handleClickOnPackTab: function(callback) {
-			Plugin.Service.Helper.setEvent('click', this.el, this.classes.packTab, callback);
+			Plugin.Service.Helper.setEvent('click', this.el, classes.packTab, callback);
 		},
 		handleClickOnStoreTab: function(callback) {
 			Plugin.Service.Helper.setEvent('click', this.el, this.controls.store.class, callback);
@@ -6203,9 +6361,6 @@ window.StickersModule.View = {};
 
 			Plugin.Service.Helper.setConfig(config);
 
-			// ***** Init Storage ******
-			Plugin.Service.Storage.setPrefix(Plugin.Configs.storagePrefix);
-
 			// ***** Init Emoji tab *****
 			var mobileOS = Plugin.Service.Helper.getMobileOS();
 			if (mobileOS == 'ios' || mobileOS == 'android') {
@@ -6221,12 +6376,16 @@ window.StickersModule.View = {};
 			Plugin.Configs.userId = Plugin.Service.Helper.md5(Plugin.Configs.userId + Plugin.Configs.apiKey);
 
 			if (Plugin.Configs.userId != Plugin.Service.Storage.getUserId()) {
+				Plugin.Service.Storage.setPacks([]);
 				Plugin.Service.Storage.setRecentStickers([]);
+				Plugin.Service.Storage.setUserData({});
+				Plugin.Service.Storage.setPendingRequestTasks([]);
+				Plugin.Service.Storage.setStoreLastVisit(0);
 			}
 
 			Plugin.Service.Storage.setUserId(Plugin.Configs.userId);
 
-			// ***** Init store *****
+			// ***** Init modules *****
 			Plugin.Module.Store.init(this);
 
 			// ***** Init services ******
@@ -6240,7 +6399,9 @@ window.StickersModule.View = {};
 		//   Functions
 		////////////////////
 
-		render: function(callback) {
+		render: function(callback, elId) {
+			Plugin.Configs.elId = elId || Plugin.Configs.elId;
+
 			var self = this;
 
 			this.view = new Plugin.View.Popover();
@@ -6248,14 +6409,14 @@ window.StickersModule.View = {};
 			this.delegateEvents();
 
 			// todo
-			Plugin.Service.Pack.fetchPacks(function() {
+			Plugin.Service.Packs.fetch(function() {
 				self.view.render();
 
 				callback && callback();
 			});
 
 			setInterval(function() {
-				Plugin.Service.Pack.fetchPacks();
+				Plugin.Service.Packs.fetch();
 			}, 1000 * 60 * 60);
 		},
 
@@ -6272,6 +6433,11 @@ window.StickersModule.View = {};
 
 			this.view.tabsView.handleClickOnStoreTab(function() {
 				Plugin.Module.Store.open();
+
+				Plugin.Service.Storage.setStoreLastVisit(+(new Date()));
+				Plugin.Service.Highlight.check();
+
+				self.view.tabsView.controls.store.el.classList.remove('sp-unwatched-content');
 			});
 
 			this.view.tabsView.handleClickOnPackTab(function(el) {
@@ -6284,7 +6450,7 @@ window.StickersModule.View = {};
 					self.view.renderPack(pack);
 				}
 
-				Plugin.Service.Pack.checkHighlight();
+				Plugin.Service.Highlight.check();
 			});
 
 			this.view.handleClickOnSticker(function(el) {
@@ -6294,7 +6460,7 @@ window.StickersModule.View = {};
 				Plugin.Service.Statistic.useSticker(stickerId);
 				Plugin.Service.Storage.addRecentSticker(stickerId);
 
-				Plugin.Service.Pack.checkHighlight();
+				Plugin.Service.Highlight.check();
 			});
 
 			this.view.handleClickOnEmoji(function(el) {
@@ -6304,7 +6470,7 @@ window.StickersModule.View = {};
 		},
 
 		fetchPacks: function(callback) {
-			Plugin.Service.Pack.fetchPacks(callback);
+			Plugin.Service.Packs.fetch(callback);
 		},
 
 		isSticker: function(text) {
@@ -6351,8 +6517,8 @@ window.StickersModule.View = {};
 			Plugin.Module.Store.close();
 		},
 
-		md5: function(string) {
-			return Plugin.Service.Helper.md5(string);
+		getPackMainIcon: function(packName, callback) {
+			Plugin.Service.Pack.getMainIcon(packName, callback);
 		},
 
 		////////////////////
