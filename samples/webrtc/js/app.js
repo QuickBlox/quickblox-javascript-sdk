@@ -2,20 +2,63 @@
     'use strict';
 
     $(function() {
-        app.Router = Backbone.Router.extend({
-            routes: {
+        var Router = Backbone.Router.extend({
+            'routes': {
+                'join': 'join',
                 'dashboard': 'dashboard',
-                '*query': 'join'
+                '*query': 'relocated'
             },
-            join: function() {
-                console.log('JOIN');
+            'container': $('.page'),
+            'relocated': function() {
+                var path = app.user ? 'dashboard' : 'join';
+
+                app.router.navigate(path, {'trigger': true});
             },
-            dashboard: function() {
-                console.log('DASHBOARD');
+            'join': function() {
+                this.container
+                    .removeClass('page-dashboard')
+                    .addClass('page-join');
+
+                app.user = null;
+            },
+            'dashboard': function() {
+                if (!app.user) {
+                    app.router.navigate('join', {'trigger': true});
+                    return false;
+                }
+
+                this.container
+                    .removeClass('page-join')
+                    .addClass('page-dashboard')
+                    .find('.j-dashboard').empty();
+
+                $('.j-dashboard').append( $('#dashboard_tpl').html() );
+
+                app.stateBoard = new window.qbApp.stateBoard('.j-state_board', {
+                    title: 'default_tpl',
+                    property: {
+                        name:  app.user.full_name
+                    }
+                });
+
+                /** render users */
+                app.helpers.renderUsers().then(function(usersHtml) {
+                    $('.j-users').empty()
+                        .append(usersHtml)
+                        .removeClass('wait');
+                });
             }
         });
-        
-        var router = new app.Router();
+
+        /**
+         * INIT
+         * variables:
+         *  app.helpers
+         *  app.router
+         *  app.ui
+         *  app.user
+         */
+        app.router = new Router();
         Backbone.history.start();
 
         app.ui.setFooterPosition();
@@ -43,13 +86,57 @@
             );
 
             app.helpers.join(data).then(function (user) {
+                app.user = user;
+
                 $form.removeClass('join-wait');
+                app.router.navigate("dashboard", {trigger: true});
+
+                $form.trigger('reset');
+            }).catch(function(error) {
+                console.info(error);
             });
 
             return false;
         });
 
+        /**
+         * DASHBOARD
+         */
+        /** REFRESH USERS */
+        $(document).on('click', '.j-users__refresh', function() {
+            var $btn = $(this),
+                $usersCont = $('.j-users');
 
+            $btn.prop('disabled', true);
+            $usersCont.addClass('wait');
+
+            app.helpers.renderUsers().then(function(usersHtml) {
+                $usersCont.empty()
+                    .append(usersHtml)
+                    .removeClass('wait');
+
+                $btn.prop('disabled', false);
+            });
+        });
+
+        /** Check / uncheck user (callee) */
+        $(document).on('click', '.j-user', function() {
+            var $user = $(this);
+
+            if( $user.hasClass('active') ) {
+                $user.removeClass('active');
+            } else {
+                $user.addClass('active');
+            }
+        });
+
+        /** LOGOUT */
+        $(document).on('click', '.j-logout', function() {
+            app.user = null;
+            app.users = [];
+
+            app.router.navigate('join', {'trigger': true});
+        });
 
     });
     /** when DOM is ready */

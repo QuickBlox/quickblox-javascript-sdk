@@ -4,6 +4,8 @@
     /** GLOBAL */
     app.helpers = {};
     app.ui = {};
+    app.user = null;
+    app.users = [];
 
     app.ui.setFooterPosition = function() {
         var $footer = $('.j-footer'),
@@ -21,6 +23,10 @@
 
     /**
      * JOIN
+     */
+    /**
+     * [getUui - generate a unique id]
+     * @return {[string]} [a unique id]
      */
     function getUui() {
         var navigator_info = window.navigator;
@@ -56,26 +62,32 @@
                                         'tag_list': data.room
                                     },
                                     function(ucError, ucUser){
-                                        console.log('[create user] Error:', ucError);
-                                        console.log('[create user] User:', ucUser);
-
-                                        resolve(ucUser);
+                                        if(ucError) {
+                                            console.log('[create user] Error:', ucError);
+                                            reject(ucError);
+                                        } else {
+                                            console.log('[create user] User:', ucUser);
+                                            resolve(ucUser);
+                                        }
                                     }
                                 );
                             } else {
                                 console.log('APP [get user] Error:', egError);
                                 console.log('APP [get user] User:', egUser);
 
-                                /** update info */
+                                /** Update info */
                                 if(egUser.user_tags !== data.room || egUser.full_name !== data.username ) {
                                     QB.users.update(egUser.id, {
                                         'full_name': data.username,
                                         'tag_list': data.room
                                     }, function(uuError, uuUser) {
-                                        console.log('APP [update user] Error:', uuError);
-                                        console.log('APP [update user] User:', uuUser);
-
-                                        resolve(uuUser);
+                                        if(uuError) {
+                                            console.log('APP [update user] Error:', uuError);
+                                            reject(uuError);
+                                        } else {
+                                            console.log('APP [update user] User:', uuUser);
+                                            resolve(uuUser);
+                                        }
                                     });
                                 } else {
                                     resolve(egUser);
@@ -83,6 +95,28 @@
                             }
                         }
                     );
+                }
+            });
+        });
+    };
+
+    app.helpers.renderUsers = function() {
+        return new Promise(function(resolve, reject) {
+            var tpl = _.template( $('#user_tpl').html() ),
+                usersHTML = '';
+
+            QB.users.get({'tags': [app.user.user_tags]}, function(err, result){
+                if (err) {
+                    reject(err);
+                } else {
+                    _.each(result.items, function(item) {
+                        if( item.user.id !== app.user.id ) {
+                            app.users.push(item.user);
+                            usersHTML += tpl(item.user);
+                        }
+                    });
+
+                    resolve(usersHTML);
                 }
             });
         });
