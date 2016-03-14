@@ -1,13 +1,14 @@
-;(function(window, app, QB) {
+;(function(window, QB) {
     'use strict';
 
     /** GLOBAL */
+    window.app = {};
     app.helpers = {};
-    app.ui = {};
-    app.user = null;
-    app.users = [];
 
-    app.ui.setFooterPosition = function() {
+    /**
+     * [Set fixed of relative position on footer]
+     */
+    app.helpers.setFooterPosition = function() {
         var $footer = $('.j-footer'),
             invisibleClassName = 'invisible',
             footerFixedClassName = 'footer-fixed';
@@ -21,9 +22,6 @@
         $footer.removeClass(invisibleClassName);
     };
 
-    /**
-     * JOIN
-     */
     /**
      * [getUui - generate a unique id]
      * @return {[string]} [a unique id]
@@ -103,22 +101,30 @@
     app.helpers.renderUsers = function() {
         return new Promise(function(resolve, reject) {
             var tpl = _.template( $('#user_tpl').html() ),
-                usersHTML = '';
+                usersHTML = '',
+                usersCount = 0;
 
-            QB.users.get({'tags': [app.user.user_tags]}, function(err, result){
+            QB.users.get({'tags': [app.caller.user_tags]}, function(err, result){
                 if (err) {
                     reject(err);
                 } else {
                     _.each(result.items, function(item) {
-                        if( item.user.id !== app.user.id ) {
-                            app.users.push(item.user);
+                        if( item.user.id !== app.caller.id ) {
                             usersHTML += tpl(item.user);
+                            ++usersCount;
                         }
                     });
 
-                    resolve(usersHTML);
+                    if(!usersCount) {
+                        reject({
+                            'title': 'not found',
+                            'message': 'Not found users by tag'
+                        });
+                    } else {
+                        resolve(usersHTML);
+                    }
                 }
             });
         });
     };
-}(window, window.app, window.QB));
+}(window, window.QB));

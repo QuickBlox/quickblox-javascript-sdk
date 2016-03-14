@@ -4,10 +4,10 @@
  *  - Underscore;
  *  - MESSAGES (window.MESSAGES) - global const object with custom messages (from config.js);
  */
-;(function(window, $, _) {
+;(function(window, MESSAGES, $, _) {
     'use strict';
 
-    var stateBoard = function (elSelector, params) {
+    function StateBoard(elSelector, params) {
         this.$el = $(elSelector);
 
         if(!this.$el.length) {
@@ -17,7 +17,7 @@
         if(params && !_.isEmpty(params)) {
             this.update(params);
         }
-    };
+    }
 
     /**
      * [update]
@@ -27,7 +27,7 @@
      *  * params.property [custom property for compiled template]
      *  * params.isError  [flag is Error - add className to html]
      */
-    stateBoard.prototype.update = function (params) {
+    StateBoard.prototype.update = function (params) {
         var msg = '',
             msgFrag = document.createElement('div'),
             className = 'inner';
@@ -35,7 +35,7 @@
         this.$el.empty();
 
         if(params.isError) {
-          className += ' error';
+          className += ' ' + params.isError;
         }
 
         msgFrag.className = className;
@@ -62,6 +62,5 @@
      * Check global variable
      * and add constructor MsgBoard
      */
-    window.qbApp = window.qbApp || {};
-    window.qbApp.stateBoard = stateBoard;
-}(window, jQuery, _));
+    window.app.helpers.StateBoard = StateBoard;
+}(window, window.CONFIG.MESSAGES, jQuery, _));

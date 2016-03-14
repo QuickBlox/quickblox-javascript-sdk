@@ -1,7 +1,14 @@
-;(function(window, $) {
+;(function(window, QB, app, CONFIG, $, Backbone) {
     'use strict';
 
+    /** INIT QB */
     $(function() {
+        var sounds = {
+            'call': 'callingSignal',
+            'end': 'endCallSignal',
+            'rington': 'ringtoneSignal'
+        };
+
         var Router = Backbone.Router.extend({
             'routes': {
                 'join': 'join',
@@ -19,53 +26,81 @@
                     .removeClass('page-dashboard')
                     .addClass('page-join');
 
-                app.user = null;
+                app.helpers.setFooterPosition();
+
+                app.caller = {};
+                app.callees = {};
             },
             'dashboard': function() {
-                if (!app.user) {
-                    app.router.navigate('join', {'trigger': true});
+                if (_.isEmpty(app.caller)) {
+                    app.router.navigate('join', { 'trigger': true });
                     return false;
                 }
 
+                /** render page */
                 this.container
                     .removeClass('page-join')
                     .addClass('page-dashboard')
                     .find('.j-dashboard').empty();
 
+                /** render skelet */
                 $('.j-dashboard').append( $('#dashboard_tpl').html() );
 
-                app.stateBoard = new window.qbApp.stateBoard('.j-state_board', {
+                /** Before use WebRTC checking WebRTC is avaible */
+                if (!QB.webrtc) {
+                    app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
+                        title: 'webrtc_not_avaible',
+                        isError: 'qb-error'
+                    });
+
+                    alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
+                    return;
+                }
+
+                /** render stateBoard */
+                app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
                     title: 'default_tpl',
                     property: {
-                        name:  app.user.full_name
+                        name:  app.caller.full_name
                     }
                 });
+
+                /** render users wrapper */
+                $('.j-users_wrap').append( $('#users_tpl').html() );
 
                 /** render users */
                 app.helpers.renderUsers().then(function(usersHtml) {
                     $('.j-users').empty()
                         .append(usersHtml)
                         .removeClass('wait');
+                }, function(error) {
+                    if(error.title === 'not found') {
+                        $('.j-users').empty()
+                            .append(error.message)
+                            .removeClass('wait');
+                    }
                 });
+
+                /** render frames */
+                var framesTpl =  _.template( $('#frames_tpl').html() );
+                $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
+
+                app.helpers.setFooterPosition();
             }
         });
 
         /**
          * INIT
-         * variables:
-         *  app.helpers
-         *  app.router
-         *  app.ui
-         *  app.user
          */
+        QB.init(
+            CONFIG.CREDENTIALS.appId,
+            CONFIG.CREDENTIALS.authKey,
+            CONFIG.CREDENTIALS.authSecret,
+            CONFIG.CONFIG
+        );
+
         app.router = new Router();
         Backbone.history.start();
-
-        app.ui.setFooterPosition();
-
-        $(window).on('resize', function() {
-            app.ui.setFooterPosition();
-        });
 
         /**
          * JOIN
@@ -73,27 +108,30 @@
         $(document).on('submit','.j-join', function() {
             var $form = $(this),
                 data = _.object( _.map( $form.serializeArray(), function(item) {
-                            return [item.name, item.value.trim()];
-                        }));
+                    return [item.name, item.value.trim()];
+                }));
 
             $form.addClass('join-wait');
 
-            QB.init(
-                app.CONFIG.qbApp.appId,
-                app.CONFIG.qbApp.authKey,
-                app.CONFIG.qbApp.authSecret,
-                app.CONFIG.config
-            );
-
             app.helpers.join(data).then(function (user) {
-                app.user = user;
+                app.caller = user;
 
-                $form.removeClass('join-wait');
-                app.router.navigate("dashboard", {trigger: true});
+                QB.chat.connect({
+                    jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
+                    password: 'webAppPass'
+                }, function(err, res) {
+                    if(err) {
+                        QB.chat.disconnect();
+                        app.router.navigate('join', { trigger: true });
+                    } else {
+                        $form.removeClass('join-wait');
+                        $form.trigger('reset');
+                        app.router.navigate('dashboard', { trigger: true });
+                    }
+                });
 
-                $form.trigger('reset');
             }).catch(function(error) {
-                console.info(error);
+                console.error(error);
             });
 
             return false;
@@ -116,18 +154,99 @@
                     .removeClass('wait');
 
                 $btn.prop('disabled', false);
+            }, function(error) {
+                if(error.title === 'not found') {
+                    $('.j-users').empty()
+                        .append(error.message)
+                        .removeClass('wait');
+                }
+
+                $btn.prop('disabled', false);
             });
         });
 
         /** Check / uncheck user (callee) */
         $(document).on('click', '.j-user', function() {
-            var $user = $(this);
+            var $user = $(this),
+                user = {
+                    id: +$.trim( $user.data('id') ),
+                    name: $.trim( $user.data('name') )
+                };
 
             if( $user.hasClass('active') ) {
+                delete app.callees[user.id];
                 $user.removeClass('active');
             } else {
+                app.callees[user.id] = user.name;
                 $user.addClass('active');
             }
+        });
+
+        /** Call / End of call */
+        $(document).on('click', '.j-actions', function() {
+            var $btn = $(this),
+                videoElems = '',
+                mediaParams = {
+                    audio: true,
+                    video: true,
+                    options: {
+                        muted: true,
+                        mirror: true
+                    },
+                    elemId: 'localVideo'
+              };
+            /** Check internet connection */
+            if(!window.navigator.onLine) {
+                app.helpers.stateBoard.update({'title': 'no_internet', 'isError': 'qb-error'});
+                return false;
+            }
+            /** Check callee */
+            if(_.isEmpty(app.callees)) {
+                $('#error_no_calles').modal();
+                return false;
+            }
+
+            app.helpers.stateBoard.update('create_session');
+
+            app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+
+            app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                    var errorMsg = '';
+
+                    app.currentSession.stop({});
+
+                    app.helpers.stateBoard.update({
+                        'title': 'device_not_found',
+                        'isError': 'qb-error',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
+                    });
+                } else {
+
+                    app.currentSession.call({}, function(error) {
+                        if(error) {
+                            console.warn(error.detail);
+                        } else {
+                            var compiled = _.template( $('#callee_video').html() );
+
+                            app.helpers.stateBoard.update({'title': 'calling'});
+
+                            document.getElementById(sounds.call).play();
+
+                            Object.keys(app.callees).forEach(function(id, i, arr) {
+                                videoElems += compiled({userID: id, name: app.callees[id] });
+                            });
+
+                            $('.j-callees').append(videoElems);
+
+                            $btn.addClass('hangup');
+                            app.helpers.setFooterPosition();
+                        }
+                  });
+                }
+            });
         });
 
         /** LOGOUT */
@@ -138,7 +257,58 @@
             app.router.navigate('join', {'trigger': true});
         });
 
+        /**
+         * QB Event listener.
+         *
+         * [Recommendation]
+         * We recomend use Function Declaration
+         * that SDK could identify what function(listener) has error
+         *
+         * Chat:
+         * - onDisconnectedListener
+         * WebRTC:
+         * - onCallStatsReport
+         * - onSessionCloseListener
+         * - onUserNotAnswerListener
+         * - onUpdateCallListener
+         * - onCallListener
+         * - onAcceptCallListener
+         * - onRejectCallListener
+         * - onStopCallListener
+         * - onRemoteStreamListener
+         * - onSessionConnectionStateChangedListener
+         */
+
+        QB.chat.onDisconnectedListener = function() {
+            console.log('onDisconnectedListener.');
+
+            app.mainVideo = 0;
+        };
+
+
+
+
+
+
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /** when DOM is ready */
     // $(function() {
     //     var ui = {
@@ -162,19 +332,6 @@
     //               'call': 'callingSignal',
     //               'end': 'endCallSignal',
     //               'rington': 'ringtoneSignal'
-    //           },
-    //           setPositionFooter: function() {
-    //               var $footer = $('.j-footer'),
-    //                   invisibleClassName = 'invisible',
-    //                   footerFixedClassName = 'footer-fixed';
-    //
-    //               if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
-    //                   $footer.addClass(footerFixedClassName);
-    //               } else {
-    //                   $footer.removeClass(footerFixedClassName);
-    //               }
-    //
-    //               $footer.removeClass(invisibleClassName);
     //           },
     //           togglePreloadMain: function(action) {
     //               var $main = $('.j-main'),
@@ -317,20 +474,6 @@
     //       $('.j-callee_status_' + userId).text(title);
     //     }
     //
-    //     /**
-    //      * INITIALIZE
-    //      */
-    //     ui.setPositionFooter();
-    //     QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
-    //
-    //     /** Before use WebRTC checking WebRTC is avaible */
-    //     if (!QB.webrtc) {
-    //       qbApp.MsgBoard.update('webrtc_not_avaible');
-    //       alert('Error: ' + window.MESSAGES.webrtc_not_avaible);
-    //       return;
-    //     }
-    //
-    //     initializeUI({withoutUpdMsg: false, msg: 'login'});
     //
     //     /**
     //      * EVENTS
@@ -404,12 +547,7 @@
     //
     //         return false;
     //     });
-    //
-    //     /** Logout */
-    //     $(document).on('click', '.j-logout', function() {
-    //         QB.chat.disconnect();
-    //         /** see others in onDisconnectedListener */
-    //     });
+
     //
     //     /** Call */
     //     $(document).on('click', '.j-call', function(e) {
@@ -944,4 +1082,4 @@
     //       }
     //     };
     // });
-}(window, jQuery));
+}(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
