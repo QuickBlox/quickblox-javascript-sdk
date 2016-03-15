@@ -36,7 +36,18 @@ b {
     font-weight: 700;
 }
 
-/** mini-FRAMEWORK classes */
+.qb-video {
+    position: relative;
+    padding: 0 0 75% 0; /* 4:3 */
+    background: #bfbfbf;
+}
+    .qb-video_source {
+        position: absolute;
+        top: 0; bottom: 0;
+        left: 0; right: 0;
+        max-width: 100%;
+    }
+
 .qb-error {
     color: #d0021b;
 }
@@ -81,24 +92,6 @@ b {
     .fw-link:hover:before {
         bottom: 0;
         opacity: 1;
-    }
-
-.fw-video {
-    display: block;
-    width: 135px;
-    height: 100px;
-    max-height: 100px;
-
-    background: #bfbfbf;
-}
-    .fw-video-wait {
-        min-width: 32px;
-        background: #bfbfbf url('images/loader3.gif') no-repeat center;
-    }
-    .fw-video.main_video_vid {
-        width: 100%;
-        height: auto;
-        max-height: none;
     }
 
 .inner {
@@ -562,12 +555,6 @@ b {
     position: relative;
 }
 
-.frames__main_v {
-    width: 100%;
-    padding-bottom: 75%;
-    max-height: none;
-}
-
 .frames__main_timer {
     display: inline-block;
     position: absolute;
@@ -580,19 +567,16 @@ b {
     color: #fff;
 }
 
-.frames__callee {
-    margin: 17px 0 0 0;
-}
-
 /**
  * CALLEES
  */
-.callees {
-    margin: 15px 0 0;
+
+.frames__callees {
+    margin: 17px 0 0 0;
     font-size: 0;
 }
 
-.callees__callee {
+.frames_callee {
     display: inline-block;
     position: relative;
     width: 50%;
@@ -607,12 +591,12 @@ b {
     font-size: 14px;
 }
 
-.callees__callee_inner {
+.frames_callee_inner {
     position: relative;
     margin: 0 0 10px 0;
 }
 
-.callees__callee_status {
+.frames_callee_status {
     position: absolute;
     width: 100%;
     top: -14px;
@@ -622,16 +606,16 @@ b {
     text-align: center;
 }
 
-.callees__callee_video {
+.frames_callee_video {
     margin: 0 auto;
     border: 4px solid transparent;
 
     transition: border-color .3s ease;
 }
-    .callees__callee_video.active {
+    .frames_callee_video.active {
         border-color: #41cc44;
     }
-    .callees__callee-wait .callees__callee_inner:before{
+    .frames_callee-wait .callees__callee_inner:before{
         content: " ";
         display: block;
 
@@ -647,10 +631,4 @@ b {
 
 .callees__callee_name {
     text-align: center;
-}
-
-@media all and (min-width: 780px) {
-    .callees__callee {
-        width: 20%;
-    }
 }

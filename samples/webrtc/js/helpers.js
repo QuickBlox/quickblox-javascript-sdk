@@ -70,9 +70,6 @@
                                     }
                                 );
                             } else {
-                                console.log('APP [get user] Error:', egError);
-                                console.log('APP [get user] User:', egUser);
-
                                 /** Update info */
                                 if(egUser.user_tags !== data.room || egUser.full_name !== data.username ) {
                                     QB.users.update(egUser.id, {

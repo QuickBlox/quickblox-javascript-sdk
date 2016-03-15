@@ -39,11 +39,11 @@
 
                     <div class="join__body">
                         <div class="join__row">
-                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Enter a username. Should contain only latin characters and alphanumeric characters, start with a letter." pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$">
+                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Enter a username. Should contain only latin characters and alphanumeric characters, starts with a letter." pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$">
                         </div>
 
                         <div class="join__row">
-                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Enter a chat room. Should contain only latin characters and alphanumeric characters, start with a letter." pattern="^[a-zA-Z0-9]+$">
+                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Enter a chat room. Should contain only latin characters and alphanumeric characters, without space." pattern="^[a-zA-Z0-9]+$">
                         </div>
 
                         <div class="join__row">
@@ -114,19 +114,70 @@
     </div>
 
     <!-- TEMPLATES -->
+        <!-- stateBoard -->
+        <script type="text/template" id="tpl_default">
+            Login in as QuickBlox Conversations room. Logged in as <b><%= name %></b>
+            <button class='fw-link j-logout'>Logout</button>
+        </script>
+
+        <script type="text/template" id="tpl_during_call">
+            Login in as <b><%= name %></b>
+        </script>
+
+        <script type="text/template" id="tpl_device_not_found">
+            Error: devices (camera or microphone) are not found.
+            <span class="qb-text">&emsp;Login in <b>as <%=name%></b></span>
+            <button class='fw-link j-logout'>Logout</button>
+        </script>
+
+        <script type="text/template" id="tpl_accept_call">
+            <%  _.each(users, function(el, i, list) { %>
+                <% if(list.length === 1){ %>
+                    <b><%= el.full_name %></b> has accepted the call
+                <% } else { %>
+                    <% if( (i+1) === list.length) { %>
+                        <b><%= el.full_name %></b> have accepted the call
+                    <% } else { %>
+                        <b><%= el.full_name %></b>,
+                    <% } %>
+                <% } %>
+            <% }); %>
+        </script>
+
+        <script type="text/template" id="tpl_call_stop">
+            Call is stopped.&emsp;
+            Login&nbsp;in&nbsp;as&nbsp;<%=name%>
+            <button class='fw-link j-logout'>Logout</button>
+        </script>
+
+        <script type="text/template" id="p2p_call_stop">
+            <%=name%> has <%=reason%>. Call is stopped.&emsp;
+            Login&nbsp;in&nbsp;as&nbsp;<%=currentName%>
+            <button class='fw-link j-logout'>Logout</button>
+        </script>
+
+    <script type="text/template" id="dashboard_tpl">
+        <div class="state_board j-state_board"></div>
+
+        <div class="dashboard__inner inner">
+            <div class="users j-users_wrap"></div>
+
+            <div class="board clearfix j-board"></div>
+        </div>
+    </script>
+
     <script type="text/template" id="frames_tpl">
         <div class="frames">
             <div class="frames__main">
                 <div class="frames__main_timer invisible" id="timer">
                 </div>
 
-                <video id="main_video" class="frames__main_v fw-video">
-                </video>
+                <div class="qb-video">
+                    <video id="main_video" class="frames__main_v qb-video_source"></video>
+                </div>
             </div>
 
-            <div class="frames__callee j-callees">
-                Callee
-            </div>
+            <div class="frames__callees j-callees"></div>
         </div>
 
         <div class="caller">
@@ -140,7 +191,9 @@
             </h4>
 
             <div class="caller__frames">
-                <video id="localVideo" class="fw-video"></video>
+                <div class="qb-video">
+                    <video id="localVideo" class="qb-video_source"></video>
+                </div>
 
                 <div class="caller__frames_acts">
                     <button class="caller__frames_acts_btn j-caller__ctrl" data-target="video">
@@ -215,21 +268,6 @@
         </div>
     </script>
 
-    <script type="text/template" id="dashboard_tpl">
-        <div class="state_board j-state_board"></div>
-
-        <div class="dashboard__inner inner">
-            <div class="users j-users_wrap"></div>
-
-            <div class="board clearfix j-board"></div>
-        </div>
-    </script>
-
-    <script type="text/template" id="default_tpl">
-        Login in as QuickBlox Conversations room. Logged in as <b><%= name %></b>
-        <button class='fw-link j-logout'>Logout</button>
-    </script>
-
     <script type="text/template" id="user_tpl">
         <div class="users__item">
             <button class="users__user j-user" data-id="<%= id %>" data-login="<%= login %>" data-name="<%= full_name %>">
@@ -240,62 +278,21 @@
         </div>
     </script>
 
-    <script type="text/template" id="accept_call">
-        <%  _.each(users, function(el, i, list) { %>
-            <% if(list.length === 1){ %>
-                <b><%= el.full_name %></b> has accepted the call
-            <% } else { %>
-                <% if( (i+1) === list.length) { %>
-                    <b><%= el.full_name %></b> have accepted the call
-                <% } else { %>
-                    <b><%= el.full_name %></b>,
-                <% } %>
-            <% } %>
-        <% }); %>
-    </script>
-
-
-
-    <script type="text/template" id="login_tpl">
-        Login in as <b><%= name %></b>
-        <button class='fw-link j-logout'>Logout</button>
-    </script>
-
-    <script type="text/template" id="during_call">
-        Login in as <b><%= name %></b>
-    </script>
-
-    <script type="text/template" id="device_not_found">
-        Error: devices (camera or microphone) are not found.
-        <span class="qb-text">&emsp;Login in <b>as <%=name%></b></span>
-        <button class='fw-link j-logout'>Logout</button>
-    </script>
-
     <script type="text/template" id="callee_video">
-        <div class="callees__callee j-callee">
-            <div class="callees__callee_inner">
-                <p class="callees__callee_status j-callee_status_<%=userID%>">Connecting</p>
-                <video class="j-callees__callee_video callees__callee_video fw-video fw-video-wait" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
+        <div class="frames_callee callees__callee j-callee">
+            <div class="frames_callee_inner">
+                <p class="frames_callee_status j-callee_status_<%=userID%>">Connecting</p>
+                <div class="qb-video">
+                    <video class="j-callees__callee_video frames_callee_video qb-video_source" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
+                </div>
             </div>
 
-            <p class="callees__callee_name"><%=name%></p>
+            <p class="frames_callee_name"><%=name%></p>
         </div>
     </script>
 
-    <script type="text/template" id="call_stop">
-        Call is stopped.&emsp;
-        Login&nbsp;in&nbsp;as&nbsp;<%=name%>
-        <button class='fw-link j-logout'>Logout</button>
-    </script>
-
-    <script type="text/template" id="p2p_call_stop">
-        <%=name%> has <%=reason%>. Call is stopped.&emsp;
-        Login&nbsp;in&nbsp;as&nbsp;<%=currentName%>
-        <button class='fw-link j-logout'>Logout</button>
-    </script>
-
     <!-- SCRIPT -->
-    <!-- DEPENDCIES -->
+    <!-- dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
@@ -304,13 +301,13 @@
     <!-- QB -->
     <script src="../../quickblox.min.js"></script>
 
-    <!-- APP -->
+    <!-- app -->
     <script src="config.js"></script>
     <script src="js/helpers.js"></script>
     <script src="js/stateBoard.js"></script>
     <script src="js/app.js"></script>
 
-    <!-- Hack for github Pages -->
+    <!-- hack for github Pages -->
     <script>
       var host = "quickblox.github.io";
       if ((host == window.location.host) && (window.location.protocol != "https:"))
