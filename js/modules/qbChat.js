@@ -672,10 +672,7 @@ ChatProxy.prototype = {
         var attach = {};
         var attributes = extraParams.childNodes[i].attributes;
         for (var j = 0, len2 = attributes.length; j < len2; j++) {
-          if (attributes[j].name === 'id' || attributes[j].name === 'size')
-            attach[attributes[j].name] = parseInt(attributes[j].value);
-          else
-            attach[attributes[j].name] = attributes[j].value;
+          attach[attributes[j].name] = attributes[j].value;
         }
         attachments.push(attach);
 
