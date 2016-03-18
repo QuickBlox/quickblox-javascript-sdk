@@ -45,7 +45,7 @@
          * then tpl with id like params.title
          */
         try {
-          msg = _.template( document.querySelector('#' + params.title).innerHTML )(params.property);
+          msg = _.template( $('#' + params.title).html() )(params.property);
         } catch(e) {
           if(MESSAGES[params.title]) {
               msg = MESSAGES[params.title];

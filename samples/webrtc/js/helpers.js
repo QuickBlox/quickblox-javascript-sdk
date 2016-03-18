@@ -4,6 +4,31 @@
     /** GLOBAL */
     window.app = {};
     app.helpers = {};
+    app.filter = {
+        'names': 'no _1977 inkwell moon nashville slumber toaster walden'
+    };
+    app.network = {};
+
+    app.helpers.isBytesReceivedChanges = function(userId, inboundrtp) {
+        var res = true,
+            inbBytesRec = inboundrtp.bytesReceived;
+
+        if(app.network[userId] === undefined) {
+            app.network[userId] = {
+              'bytesReceived': inbBytesRec
+            };
+        } else {
+            if(app.network[userId].bytesReceived === inbBytesRec) {
+                res = false;
+            } else {
+                app.network[userId] = {
+                    'bytesReceived': inbBytesRec
+                };
+            }
+        }
+
+        return res;
+    };
 
     /**
      * [Set fixed of relative position on footer]
@@ -20,6 +45,47 @@
         }
 
         $footer.removeClass(invisibleClassName);
+    };
+
+    app.helpers.notifyIfUserLeaveCall = function(session, userId, reason, title) {
+        var userRequest = _.findWhere(app.users, {'id': +userId}),
+            userCurrent = _.findWhere(app.users, {'id': +session.currentUserID});
+
+        /** It's for p2p call */
+        if(session.opponentsIDs.length === 1) {
+            app.helpers.stateBoard.update({
+                'title': 'p2p_call_stop',
+                'property': {
+                    'name': userRequest.full_name,
+                    'currentName': userCurrent.full_name,
+                    'reason': reason
+                }
+            });
+        } else {
+            /** It's for groups call */
+            $('.j-callee_status_' + userId).text(title);
+        }
+    };
+
+    app.helpers.changeFilter = function(selector, filterName) {
+        $(selector).removeClass(app.filter.names)
+            .addClass( filterName );
+    };
+
+    app.helpers.toggleRemoteVideoView = function(userId, action) {
+      var $video = $('#remote_video_' + userId);
+
+      if(!_.isEmpty(app.currentSession) && $video.length){
+          if(action === 'show') {
+              $video.parents('.j-callee').removeClass('wait');
+          } else if(action === 'hide') {
+              $video.parents('.j-callee').addClass('wait');
+          } else if(action === 'clear') {
+              /** detachMediaStream take videoElementId */
+              app.currentSession.detachMediaStream('remote_video_' + userId);
+              $video.removeClass('wait');
+          }
+        }
     };
 
     /**
@@ -39,6 +105,7 @@
 
         return uid;
     }
+
     app.helpers.join = function(data) {
         return new Promise(function(resolve, reject) {
             QB.createSession(function(csError, csResult){
@@ -99,26 +166,30 @@
         return new Promise(function(resolve, reject) {
             var tpl = _.template( $('#user_tpl').html() ),
                 usersHTML = '',
-                usersCount = 0;
+                users = [];
 
             QB.users.get({'tags': [app.caller.user_tags]}, function(err, result){
                 if (err) {
                     reject(err);
                 } else {
                     _.each(result.items, function(item) {
+                        users.push(item.user);
+
                         if( item.user.id !== app.caller.id ) {
                             usersHTML += tpl(item.user);
-                            ++usersCount;
                         }
                     });
 
-                    if(!usersCount) {
+                    if(!result.items.length) {
                         reject({
                             'title': 'not found',
                             'message': 'Not found users by tag'
                         });
                     } else {
-                        resolve(usersHTML);
+                        resolve({
+                            'usersHTML': usersHTML,
+                            'users': users
+                        });
                     }
                 }
             });

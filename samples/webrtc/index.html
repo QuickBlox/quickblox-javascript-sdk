@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css">
     <!-- use http://una.im/CSSgram/ for filters -->
-    <link rel="stylesheet" href="libs/cssgram.min.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/una/CSSgram/master/source/css/cssgram.css">
     <!-- app styles -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -116,7 +116,8 @@
     <!-- TEMPLATES -->
         <!-- stateBoard -->
         <script type="text/template" id="tpl_default">
-            Login in as QuickBlox Conversations room. Logged in as <b><%= name %></b>
+            QuickBlox Conversations room is calling <b><%= tag %></b>.
+            Logged in as <b><%= name %></b>
             <button class='fw-link j-logout'>Logout</button>
         </script>
 
@@ -151,7 +152,7 @@
         </script>
 
         <script type="text/template" id="p2p_call_stop">
-            <%=name%> has <%=reason%>. Call is stopped.&emsp;
+            <b><%=name%> has <%=reason%>.</b> Call is stopped.&emsp;
             Login&nbsp;in&nbsp;as&nbsp;<%=currentName%>
             <button class='fw-link j-logout'>Logout</button>
         </script>
@@ -226,19 +227,13 @@
                 <div class="caller__frames_fl">
                     <select class="caller__frames_fl_select j-filter">
                         <option value="no">No Filter</option>
-                        <option value="aden">Aden</option>
-                        <option value="reyes">Reyes</option>
-                        <option value="perpetua">Perpetua</option>
-                        <option value="inkwell">Inkwell</option>
-                        <option value="toaster">Toaster</option>
-                        <option value="walden">Walden</option>
-                        <option value="hudson">Hudson</option>
-                        <option value="gingham">Gingham</option>
-                        <option value="mayfair">Mayfair</option>
-                        <option value="lofi">Lofi</option>
-                        <option value="xpro2">Xpro2</option>
                         <option value="_1977">1977</option>
-                        <option value="brooklyn">Brooklyn</option>
+                        <option value="inkwell">inkwell</option>
+                        <option value="moon">moon</option>
+                        <option value="nashville">nashville</option>
+                        <option value="slumber">slumber</option>
+                        <option value="toaster">toaster</option>
+                        <option value="walden">walden</option>
                     </select>
                 </div>
             </div>
@@ -280,14 +275,14 @@
 
     <script type="text/template" id="callee_video">
         <div class="frames_callee callees__callee j-callee">
-            <div class="frames_callee_inner">
-                <p class="frames_callee_status j-callee_status_<%=userID%>">Connecting</p>
+            <div class="frames_callee__inner">
+                <p class="frames_callee__status j-callee_status_<%=userID%>">Connecting</p>
                 <div class="qb-video">
-                    <video class="j-callees__callee_video frames_callee_video qb-video_source" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
+                    <video class="j-callees__callee__video qb-video_source" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
                 </div>
             </div>
 
-            <p class="frames_callee_name"><%=name%></p>
+            <p class="frames_callee__name"><%=name%></p>
         </div>
     </script>
 
