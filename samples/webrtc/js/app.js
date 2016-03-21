@@ -42,6 +42,12 @@
                 app.router.navigate(path, {'trigger': true});
             },
             'join': function() {
+                /** Before use WebRTC checking WebRTC is avaible */
+                if (!QB.webrtc) {
+                    alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
+                    return;
+                }
+
                 this.container
                     .removeClass('page-dashboard')
                     .addClass('page-join');
@@ -53,6 +59,8 @@
                 app.calleesAnwered = [];
                 app.users = [];
                 app.videoMain = 0;
+
+
             },
             'dashboard': function() {
                 if (_.isEmpty(app.caller)) {
@@ -68,17 +76,6 @@
 
                 /** render skelet */
                 $('.j-dashboard').append( $('#dashboard_tpl').html() );
-
-                /** Before use WebRTC checking WebRTC is avaible */
-                if (!QB.webrtc) {
-                    app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
-                        title: 'webrtc_not_avaible',
-                        isError: 'qb-error'
-                    });
-
-                    alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
-                    return;
-                }
 
                 /** render stateBoard */
                 app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
@@ -114,6 +111,18 @@
                 QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
                     if(devices.length > 1) {
                         var $select = $('.j-source');
+
+                        for (var i = 0; i !== devices.length; ++i) {
+                            var deviceInfo = devices[i],
+                                option = document.createElement('option');
+
+                            option.value = deviceInfo.deviceId;
+
+                            if (deviceInfo.kind === 'videoinput') {
+                                option.text = deviceInfo.label || 'Camera ' + (i + 1);
+                                $select.append(option);
+                            }
+                        }
 
                         $select.removeClass('invisible');
                     }
@@ -226,10 +235,15 @@
         /** Call / End of call */
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
+                $videoSourceFilter = $(ui.sourceFilter),
                 videoElems = '',
                 mediaParams = {
                     audio: true,
-                    video: true,
+                    video: {
+                        optional: [
+                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
+                        ]
+                    },
                     options: {
                         muted: true,
                         mirror: true
@@ -302,6 +316,7 @@
 
                             $('.j-callees').append(videoElems);
 
+                            $videoSourceFilter.attr('disabled', true);
                             $btn.addClass('hangup');
                             app.helpers.setFooterPosition();
                         }
@@ -522,6 +537,7 @@
 
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
+            $(ui.sourceFilter).attr('disabled', false);
             $('.j-callees').empty();
 
             app.currentSession.detachMediaStream('main_video');

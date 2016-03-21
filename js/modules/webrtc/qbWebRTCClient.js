@@ -74,31 +74,6 @@ WebRTCClient.prototype.getMediaDevices = function(spec) {
     });
 };
 
-// WebRTCClient.getOutputDevices = function(callback) {
-//
-//   return new Promise(function() {
-//
-//         devices.forEach(function(device, i) {
-//           if(device.kind === 'videoinput') {
-//             /** If user don't share device, device.label will be empty */
-//             if(device.label === '') {
-//               device.name = 'Camera #' + index;
-//               ++index;
-//             }
-//             avaibleDevices.push(device);
-//           }
-//         });
-//
-//         callback(avaibleDevices, null);
-//       })
-//       .catch(function(error) {
-//         Helpers.traceError(error.name + ": " + error.message);
-//
-//         callback(null, err);
-//       });
-//   });
-// };
-
 /**
  * A map with all sessions the user had/have.
  * @type {Object.<string, Object>}
