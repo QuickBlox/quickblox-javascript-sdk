@@ -36,6 +36,16 @@ b {
     font-weight: 700;
 }
 
+.qb-select {
+    width: 100%;
+    padding: 6px;
+
+    border: 1px solid #cdcdcd;
+    border-radius: 3px;
+
+    outline: none;
+}
+
 .qb-video {
     position: relative;
     padding: 0 0 75% 0; /* 4:3 */
@@ -536,16 +546,6 @@ b {
 
 .caller__frames_fl {
     margin: 30px 0 10px 0;
-}
-
-.caller__frames_fl_select {
-    width: 100%;
-    padding: 6px;
-
-    border: 1px solid #cdcdcd;
-    border-radius: 3px;
-
-    outline: none;
 }
 
 /**

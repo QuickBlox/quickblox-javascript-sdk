@@ -11,6 +11,7 @@
  * - onStopCallListener(session, userID, extension)
  * - onUpdateCallListener(session, userID, extension)
  */
+'use strict';
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
@@ -40,6 +41,63 @@ function WebRTCClient(service, connection) {
 
   this.sessions = {};
 }
+
+/**
+ * [function description]
+ * @param  {[string]} spec [specify what type of devices you wnat to get.
+ *                         Possible values: audioinput, audiooutput,  videoinput]
+ * @return {[array]}       [array of devices]
+ */
+WebRTCClient.prototype.getMediaDevices = function(spec) {
+    var specDevices = [],
+        errMsg = 'Selection of camera is unavailable.';
+
+    return new Promise(function(resolve, reject) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            reject(errMsg);
+            Helpers.traceWarning(errMsg);
+        } else {
+            navigator.mediaDevices.enumerateDevices().then(function(devices) {
+                if(spec) {
+                    devices.forEach(function(device, i) {
+                        if(device.kind === spec) {
+                            specDevices.push(device);
+                        }
+                    });
+
+                    resolve(specDevices);
+                } else {
+                    resolve(devices);
+                }
+            });
+        }
+    });
+};
+
+// WebRTCClient.getOutputDevices = function(callback) {
+//
+//   return new Promise(function() {
+//
+//         devices.forEach(function(device, i) {
+//           if(device.kind === 'videoinput') {
+//             /** If user don't share device, device.label will be empty */
+//             if(device.label === '') {
+//               device.name = 'Camera #' + index;
+//               ++index;
+//             }
+//             avaibleDevices.push(device);
+//           }
+//         });
+//
+//         callback(avaibleDevices, null);
+//       })
+//       .catch(function(error) {
+//         Helpers.traceError(error.name + ": " + error.message);
+//
+//         callback(null, err);
+//       });
+//   });
+// };
 
 /**
  * A map with all sessions the user had/have.

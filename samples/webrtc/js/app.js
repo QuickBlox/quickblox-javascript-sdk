@@ -11,7 +11,8 @@
 
         var ui = {
             'income_call': '#income_call',
-            'filterSelect': '.j-filter'
+            'filterSelect': '.j-filter',
+            'sourceFilter': '.j-source'
         };
 
         var call = {
@@ -109,6 +110,16 @@
                 /** render frames */
                 var framesTpl =  _.template( $('#frames_tpl').html() );
                 $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
+
+                QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+                    if(devices.length > 1) {
+                        var $select = $('.j-source');
+
+                        $select.removeClass('invisible');
+                    }
+                }).catch(function(error) {
+                    console.warn('getMediaDevices', error);
+                });
 
                 app.helpers.setFooterPosition();
             }
