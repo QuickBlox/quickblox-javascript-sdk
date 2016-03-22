@@ -59,8 +59,6 @@
                 app.calleesAnwered = [];
                 app.users = [];
                 app.videoMain = 0;
-
-
             },
             'dashboard': function() {
                 if (_.isEmpty(app.caller)) {
@@ -110,7 +108,7 @@
 
                 QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
                     if(devices.length > 1) {
-                        var $select = $('.j-source');
+                        var $select = $(ui.sourceFilter);
 
                         for (var i = 0; i !== devices.length; ++i) {
                             var deviceInfo = devices[i],
@@ -232,6 +230,37 @@
             }
         });
 
+        $(document).on('change', $(ui.sourceFilter), function() {
+            if(app.currentSession && app.currentSession.localStream) {
+                app.currentSession.localStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+
+                var $videoSourceFilter = $(ui.sourceFilter),
+                    mediaParams = {
+                        audio: true,
+                        video: {
+                            optional: [
+                                {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
+                            ]
+                        },
+                        options: {
+                            muted: true,
+                            mirror: true
+                        },
+                        elemId: 'localVideo'
+                    };
+
+                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                    // for (var i = 0; i < app.currentSession.peerConnections.length; i++) {
+                    //     app.currentSession.peerConnections[i].stream =
+                    // }
+                });
+
+
+            }
+        });
+
         /** Call / End of call */
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
@@ -276,6 +305,7 @@
                 app.helpers.stateBoard.update({'title': 'no_internet', 'isError': 'qb-error'});
                 return false;
             }
+
             /** Check callee */
             if(_.isEmpty(app.callees)) {
                 $('#error_no_calles').modal();
@@ -316,7 +346,7 @@
 
                             $('.j-callees').append(videoElems);
 
-                            $videoSourceFilter.attr('disabled', true);
+                            // $videoSourceFilter.attr('disabled', true);
                             $btn.addClass('hangup');
                             app.helpers.setFooterPosition();
                         }
@@ -338,9 +368,14 @@
 
         /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
-            var mediaParams = {
+            var $videoSourceFilter = $(ui.sourceFilter),
+                mediaParams = {
                     audio: true,
-                    video: true,
+                    video: {
+                        optional: [
+                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
+                        ]
+                    },
                     elemId: 'localVideo',
                     options: {
                         muted: true,

@@ -50,7 +50,7 @@ function WebRTCClient(service, connection) {
  */
 WebRTCClient.prototype.getMediaDevices = function(spec) {
     var specDevices = [],
-        errMsg = 'Selection of camera is unavailable.';
+        errMsg = 'Browser does not support output device selection.';
 
     return new Promise(function(resolve, reject) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
