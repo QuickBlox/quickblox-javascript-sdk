@@ -49,7 +49,7 @@ describe('WebRTC API', function() {
     }).toThrow( new Error(errorString) );
   });
 
-  it('can to get devices', function(done) {
+  it('can get devices', function(done) {
     if(isNodeEnv) {
       pending('WebRTC API isn\'t supported outside of the browser');
     }
