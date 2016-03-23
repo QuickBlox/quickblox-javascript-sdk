@@ -48,4 +48,18 @@ describe('WebRTC API', function() {
       QB.webrtc.createNewSession([QBUser2.id], QB.webrtc.CallType.VIDEO);
     }).toThrow( new Error(errorString) );
   });
+
+  it('can to get devices', function(done) {
+    if(isNodeEnv) {
+      pending('WebRTC API isn\'t supported outside of the browser');
+    }
+
+    /**
+     * You need to be sure that your PC has devices
+     */
+    QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+        expect(devices.length).not.toBeNull();
+        done();
+    });
+  });
 });
