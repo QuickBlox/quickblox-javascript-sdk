@@ -230,54 +230,21 @@
             }
         });
 
-        $(document).on('change', $(ui.sourceFilter), function() {
-            if(app.currentSession && app.currentSession.localStream) {
-                app.currentSession.localStream.getTracks().forEach(function(track) {
-                    track.stop();
-                });
-
-                var $videoSourceFilter = $(ui.sourceFilter),
-                    mediaParams = {
-                        audio: true,
-                        video: {
-                            optional: [
-                                {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
-                            ]
-                        },
-                        options: {
-                            muted: true,
-                            mirror: true
-                        },
-                        elemId: 'localVideo'
-                    };
-
-                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    // for (var i = 0; i < app.currentSession.peerConnections.length; i++) {
-                    //     app.currentSession.peerConnections[i].stream =
-                    // }
-                });
-
-
-            }
-        });
-
         /** Call / End of call */
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
                 $videoSourceFilter = $(ui.sourceFilter),
                 videoElems = '',
                 mediaParams = {
-                    audio: true,
-                    video: {
-                        optional: [
-                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
-                        ]
+                    'audio': true,
+                    'video': {
+                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
-                    options: {
-                        muted: true,
-                        mirror: true
+                    'options': {
+                        'muted': true,
+                        'mirror': true
                     },
-                    elemId: 'localVideo'
+                    'elemId': 'localVideo'
                 };
 
             /** Hangup */
@@ -298,61 +265,60 @@
 
                     return false;
                 }
-            }
-
-            /** Check internet connection */
-            if(!window.navigator.onLine) {
-                app.helpers.stateBoard.update({'title': 'no_internet', 'isError': 'qb-error'});
-                return false;
-            }
-
-            /** Check callee */
-            if(_.isEmpty(app.callees)) {
-                $('#error_no_calles').modal();
-                return false;
-            }
-
-            app.helpers.stateBoard.update('create_session');
-
-            app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
-
-            app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                    var errorMsg = '';
-
-                    app.currentSession.stop({});
-
-                    app.helpers.stateBoard.update({
-                        'title': 'tpl_device_not_found',
-                        'isError': 'qb-error',
-                        'property': {
-                            'name': app.caller.full_name
-                        }
-                    });
-                } else {
-                    app.currentSession.call({}, function(error) {
-                        if(error) {
-                            console.warn(error.detail);
-                        } else {
-                            var compiled = _.template( $('#callee_video').html() );
-
-                            app.helpers.stateBoard.update({'title': 'calling'});
-
-                            document.getElementById(sounds.call).play();
-
-                            Object.keys(app.callees).forEach(function(id, i, arr) {
-                                videoElems += compiled({userID: id, name: app.callees[id] });
-                            });
-
-                            $('.j-callees').append(videoElems);
-
-                            // $videoSourceFilter.attr('disabled', true);
-                            $btn.addClass('hangup');
-                            app.helpers.setFooterPosition();
-                        }
-                  });
+            } else {
+                /** Check internet connection */
+                if(!window.navigator.onLine) {
+                    app.helpers.stateBoard.update({'title': 'no_internet', 'isError': 'qb-error'});
+                    return false;
                 }
-            });
+
+                /** Check callee */
+                if(_.isEmpty(app.callees)) {
+                    $('#error_no_calles').modal();
+                    return false;
+                }
+
+                app.helpers.stateBoard.update('create_session');
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+
+                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                        var errorMsg = '';
+
+                        app.currentSession.stop({});
+
+                        app.helpers.stateBoard.update({
+                            'title': 'tpl_device_not_found',
+                            'isError': 'qb-error',
+                            'property': {
+                                'name': app.caller.full_name
+                            }
+                        });
+                    } else {
+                        app.currentSession.call({}, function(error) {
+                            if(error) {
+                                console.warn(error.detail);
+                            } else {
+                                var compiled = _.template( $('#callee_video').html() );
+
+                                app.helpers.stateBoard.update({'title': 'calling'});
+
+                                document.getElementById(sounds.call).play();
+
+                                Object.keys(app.callees).forEach(function(id, i, arr) {
+                                    videoElems += compiled({userID: id, name: app.callees[id] });
+                                });
+
+                                $('.j-callees').append(videoElems);
+
+                                $videoSourceFilter.attr('disabled', true);
+                                $btn.addClass('hangup');
+                                app.helpers.setFooterPosition();
+                            }
+                        });
+                    }
+                });
+            }
         });
 
         /** DECLINE */
