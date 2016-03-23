@@ -1,355 +1,347 @@
-;(function(window, $) {
+;(function(window, QB, app, CONFIG, $, Backbone) {
     'use strict';
-    /** when DOM is ready */
+
+    /** INIT QB */
     $(function() {
+        var sounds = {
+            'call': 'callingSignal',
+            'end': 'endCallSignal',
+            'rington': 'ringtoneSignal'
+        };
+
         var ui = {
-              $usersTitle: $('.j-users__title'),
-              $usersList: $('.j-users__list'),
+            'income_call': '#income_call',
+            'filterSelect': '.j-filter',
+            'sourceFilter': '.j-source'
+        };
 
-              $panel: $('.j-pl'),
-              $callees: $('.j-callees'),
+        var call = {
+            callTime: 0,
+            callTimer: null,
+            updTimer: function() {
+                this.callTime += 1000;
 
-              $btnCall: $('.j-call'),
-              $btnHangup: $('.j-hangup'),
-
-              $ctrlBtn: $('.j-caller__ctrl'),
-              filterClassName: '.j-filter',
-
-              modal: {
-                  'income_call': '#income_call'
-              },
-
-              sounds: {
-                  'call': 'callingSignal',
-                  'end': 'endCallSignal',
-                  'rington': 'ringtoneSignal'
-              },
-              setPositionFooter: function() {
-                  var $footer = $('.j-footer'),
-                      invisibleClassName = 'invisible',
-                      footerFixedClassName = 'footer-fixed';
-
-                  if( $(window).outerHeight() > $('.j-wrapper').outerHeight() ) {
-                      $footer.addClass(footerFixedClassName);
-                  } else {
-                      $footer.removeClass(footerFixedClassName);
-                  }
-
-                  $footer.removeClass(invisibleClassName);
-              },
-              togglePreloadMain: function(action) {
-                  var $main = $('.j-main'),
-                      preloadClassName = 'main-preload';
-
-                  if(action === 'show') {
-                      $main.addClass( preloadClassName );
-                  } else {
-                      $main.removeClass( preloadClassName );
-                  }
-              },
-              createUsers: function(users, $node) {
-                  var tpl = _.template( $('#user_tpl').html() ),
-                      usersHTML = '';
-
-                  $node.empty();
-
-                  _.each(users, function(user, i, list) {
-                      usersHTML += tpl(user);
-                  });
-
-                  $node.append(usersHTML);
-              },
-              showCallBtn: function() {
-                  this.$btnHangup.addClass('hidden');
-                  this.$btnCall.removeClass('hidden');
-              },
-              hideCallBtn: function() {
-                  this.$btnHangup.removeClass('hidden');
-                  this.$btnCall.addClass('hidden');
-              },
-              toggleRemoteVideoView: function(userID, action) {
-                  var $video = $('#remote_video_' + userID);
-
-                  if(!_.isEmpty(app.currentSession) && $video.length){
-                      if(action === 'show') {
-                          $video.parents('.j-callee').removeClass('callees__callee-wait');
-                      } else if(action === 'hide') {
-                          $video.parents('.j-callee').addClass('callees__callee-wait');
-                      } else if(action === 'clear') {
-                          /** detachMediaStream take videoElementId */
-                          app.currentSession.detachMediaStream('remote_video_' + userID);
-                          $video.removeClass('fw-video-wait');
-                      }
-                  }
-              },
-              classesNameFilter: 'no aden reyes perpetua inkwell toaster walden hudson gingham mayfair lofi xpro2 _1977 brooklyn',
-              changeFilter: function(selector, filterName) {
-                  $(selector)
-                      .removeClass(this.classesNameFilter)
-                      .addClass( filterName );
-              },
-              callTime: 0,
-              updTimer: function() {
-                  this.callTime += 1000;
-
-                  $('#timer').removeClass('hidden')
-                      .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
+                $('#timer').removeClass('invisible')
+                    .text( new Date(this.callTime).toUTCString().split(/ /)[4] );
               }
-            },
-            app = {
-                caller: {},
-                callees: {},
-                currentSession: {},
-                mainVideo: 0
-            },
-            isDeviceAccess = true,
-            takedCallCallee = [],
-            remoteStreamCounter = 0,
-            authorizationing = false,
-            callTimer,
-            network = {
-              users: {}
-            },
+        };
+
+        var remoteStreamCounter = 0,
             is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-            window.app = app;
+        var Router = Backbone.Router.extend({
+            'routes': {
+                'join': 'join',
+                'dashboard': 'dashboard',
+                '*query': 'relocated'
+            },
+            'container': $('.page'),
+            'relocated': function() {
+                var path = app.user ? 'dashboard' : 'join';
 
-        function initializeUI(arg) {
-            var params = arg || {};
-
-            ui.createUsers(QBUsers, ui.$usersList);
-            ui.$usersTitle.text(MESSAGES.title_login);
-
-            if(!params.withoutUpdMsg || params.msg) {
-                qbApp.MsgBoard.update(params.msg);
-            }
-        }
-
-        function showErrorAccessPermission(error) {
-          var errorTitle = 'Error: ',
-            errorMsg = 'Failed to get access to your camera or microphone. Please check your hardware configuration.';
-
-          if(error && error.message) {
-            alert(errorTitle + error.message);
-          } else {
-            alert(errorTitle + errorMsg);
-          }
-        }
-
-        function isBytesReceivedChanges(userId, inboundrtp) {
-          var res = true,
-            inbBytesRec = inboundrtp.bytesReceived;
-
-          if(network[userId] === undefined) {
-            network[userId] = {
-              'bytesReceived': inbBytesRec
-            };
-          } else {
-            if(network[userId].bytesReceived === inbBytesRec) {
-              res = false;
-            } else {
-              network[userId] = {
-                'bytesReceived': inbBytesRec
-              };
-            }
-          }
-
-          return res;
-        }
-
-        function notifyIfUserLeaveCall(session, userId, reason, title) {
-          /** It's for p2p call */
-          var userInfo = _.findWhere(QBUsers, {id: +userId}),
-              currentUserInfo = _.findWhere(QBUsers, {id: session.currentUserID});
-
-          /** It's for p2p call */
-          if(session.opponentsIDs.length === 1) {
-              qbApp.MsgBoard.update(
-                'p2p_call_stop',
-                {
-                  name: userInfo.full_name,
-                  currentName: currentUserInfo.full_name,
-                  reason: reason
+                app.router.navigate(path, {'trigger': true});
+            },
+            'join': function() {
+                /** Before use WebRTC checking WebRTC is avaible */
+                if (!QB.webrtc) {
+                    alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
+                    return;
                 }
-              );
-          }
 
-          /** It's for groups call */
-          $('.j-callee_status_' + userId).text(title);
-        }
+                this.container
+                    .removeClass('page-dashboard')
+                    .addClass('page-join');
 
-        /**
-         * INITIALIZE
-         */
-        ui.setPositionFooter();
-        QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, CONFIG);
+                app.helpers.setFooterPosition();
 
-        /** Before use WebRTC checking WebRTC is avaible */
-        if (!QB.webrtc) {
-          qbApp.MsgBoard.update('webrtc_not_avaible');
-          alert('Error: ' + window.MESSAGES.webrtc_not_avaible);
-          return;
-        }
+                app.caller = {};
+                app.callees = {};
+                app.calleesAnwered = [];
+                app.users = [];
+                app.videoMain = 0;
+            },
+            'dashboard': function() {
+                if (_.isEmpty(app.caller)) {
+                    app.router.navigate('join', { 'trigger': true });
+                    return false;
+                }
 
-        initializeUI({withoutUpdMsg: false, msg: 'login'});
+                /** render page */
+                this.container
+                    .removeClass('page-join')
+                    .addClass('page-dashboard')
+                    .find('.j-dashboard').empty();
 
-        /**
-         * EVENTS
-         */
-        /** Choose caller or callees */
-        $(document).on('click', '.j-user', function(e) {
-            var $el = $(this),
-                usersWithoutCaller = [],
-                user = {},
-                classNameCheckedUser = 'users__user-active';
+                /** render skelet */
+                $('.j-dashboard').append( $('#dashboard_tpl').html() );
 
-            /** if app.caller is not exist create caller, if no - add callees */
-            if(!window.navigator.onLine) {
-                qbApp.MsgBoard.update('no_internet');
-            } else {
-                if(_.isEmpty(app.caller)) {
-                    authorizationing = true;
-                    ui.togglePreloadMain('show');
-                    /**
-                     * id: + for convert to number type
-                     */
-                    app.caller = {
-                        id: +$.trim( $el.data('id') ),
-                        login: $.trim( $el.data('login') ),
-                        password: $.trim( $el.data('password') ),
-                        full_name: $.trim( $el.data('name') )
-                    };
+                /** render stateBoard */
+                app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
+                    title: 'tpl_default',
+                    property: {
+                        'tag': app.caller.user_tags,
+                        'name':  app.caller.full_name,
+                    }
+                });
 
-                    usersWithoutCaller = _.filter(QBUsers, function(i) { return i.id !== app.caller.id; });
+                /** render users wrapper */
+                $('.j-users_wrap').append( $('#users_tpl').html() );
 
-                    ui.$usersList.empty();
+                /** render users */
+                app.helpers.renderUsers().then(function(res) {
+                    $('.j-users').empty()
+                        .append(res.usersHTML)
+                        .removeClass('wait');
 
-                    qbApp.MsgBoard.update('connect');
+                    app.users = res.users;
+                }, function(error) {
+                    if(error.title === 'not found') {
+                        $('.j-users').empty()
+                            .append(error.message)
+                            .removeClass('wait');
+                    }
+                });
 
-                    QB.chat.connect({
-                        jid: QB.chat.helpers.getUserJid( app.caller.id, QBApp.appId ),
-                        password: app.caller.password
-                    }, function(err, res) {
-                        if(err !== null) {
-                            app.caller = {};
+                /** render frames */
+                var framesTpl =  _.template( $('#frames_tpl').html() );
+                $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
 
-                            ui.setPositionFooter();
-                            ui.togglePreloadMain('hide');
-                            QB.chat.disconnect();
-                        } else {
-                            ui.createUsers(usersWithoutCaller, ui.$usersList);
+                QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+                    if(devices.length > 1) {
+                        var $select = $(ui.sourceFilter);
 
-                            ui.$usersTitle.text(MESSAGES.title_callee);
-                            qbApp.MsgBoard.update('login_tpl', {name: app.caller.full_name});
+                        for (var i = 0; i !== devices.length; ++i) {
+                            var deviceInfo = devices[i],
+                                option = document.createElement('option');
 
-                            ui.$panel.removeClass('hidden');
-                            ui.setPositionFooter();
-                            ui.togglePreloadMain('hide');
+                            option.value = deviceInfo.deviceId;
+
+                            if (deviceInfo.kind === 'videoinput') {
+                                option.text = deviceInfo.label || 'Camera ' + (i + 1);
+                                $select.append(option);
+                            }
                         }
 
-                        authorizationing = false;
-                    });
-                } else {
-                    user.id = +$.trim( $el.data('id') );
-                    user.name = $.trim( $el.data('name') );
-
-                    if ($el.hasClass(classNameCheckedUser)) {
-                        delete app.callees[user.id];
-                        $el.removeClass(classNameCheckedUser);
-                    } else {
-                        app.callees[user.id] = user.name;
-                        $el.addClass(classNameCheckedUser);
+                        $select.removeClass('invisible');
                     }
-                }
+                }).catch(function(error) {
+                    console.warn('getMediaDevices', error);
+                });
+
+                app.helpers.setFooterPosition();
             }
+        });
+
+        /**
+         * INIT
+         */
+        QB.init(
+            CONFIG.CREDENTIALS.appId,
+            CONFIG.CREDENTIALS.authKey,
+            CONFIG.CREDENTIALS.authSecret,
+            CONFIG.APP_CONFIG
+        );
+
+        app.router = new Router();
+        Backbone.history.start();
+
+        /**
+         * JOIN
+         */
+        $(document).on('submit','.j-join', function() {
+            var $form = $(this),
+                data = _.object( _.map( $form.serializeArray(), function(item) {
+                    return [item.name, item.value.trim()];
+                }));
+
+            $form.addClass('join-wait');
+
+            app.helpers.join(data).then(function (user) {
+                app.caller = user;
+
+                QB.chat.connect({
+                    jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
+                    password: 'webAppPass'
+                }, function(err, res) {
+                    if(err) {
+                        QB.chat.disconnect();
+                        app.router.navigate('join', { trigger: true });
+                    } else {
+                        $form.removeClass('join-wait');
+                        $form.trigger('reset');
+                        app.router.navigate('dashboard', { trigger: true });
+                    }
+                });
+            }).catch(function(error) {
+                console.error(error);
+            });
 
             return false;
         });
 
-        /** Logout */
-        $(document).on('click', '.j-logout', function() {
-            QB.chat.disconnect();
-            /** see others in onDisconnectedListener */
-        });
+        /**
+         * DASHBOARD
+         */
+        /** REFRESH USERS */
+        $(document).on('click', '.j-users__refresh', function() {
+            var $btn = $(this),
+                $usersCont = $('.j-users');
 
-        /** Call */
-        $(document).on('click', '.j-call', function(e) {
-          var videoElems = '',
-              mediaParams = {
-                  audio: true,
-                  video: true,
-                  options: {
-                      muted: true,
-                      mirror: true
-                  },
-                  elemId: 'localVideo'
-              };
+            $btn.prop('disabled', true);
+            $usersCont.addClass('wait');
 
-          if(!window.navigator.onLine) {
-            qbApp.MsgBoard.update('no_internet');
-          } else {
-            if ( _.isEmpty(app.callees) ) {
-              $('#error_no_calles').modal();
-            } else {
-              qbApp.MsgBoard.update('create_session');
+            app.helpers.renderUsers().then(function(res) {
+                $usersCont.empty()
+                    .append(res.usersHTML)
+                    .removeClass('wait');
 
-              app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+                app.users = res.users;
 
-              app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                  var errorMsg = '';
-
-                  if(err && err.message) {
-                    errorMsg += 'Error: ' + err.message;
-                  } else {
-                    errorMsg += 'device_not_found';
-                  }
-                  app.currentSession.stop({});
-
-                  showErrorAccessPermission(err);
-                  qbApp.MsgBoard.update(errorMsg, {name: app.caller.full_name}, true);
-                } else {
-                  app.currentSession.call({}, function(error) {
-                    if(error) {
-                        console.warn(error.detail);
-                    } else {
-                      var compiled = _.template( $('#callee_video').html() );
-
-                      qbApp.MsgBoard.update('calling');
-                      document.getElementById(ui.sounds.call).play();
-
-                      /** create video elements for callees */
-                      Object.keys(app.callees).forEach(function(userID, i, arr) {
-                          videoElems += compiled({userID: userID, name: app.callees[userID] });
-                      });
-
-                      ui.$callees.append(videoElems);
-
-                      ui.hideCallBtn();
-                      ui.setPositionFooter();
-                    }
-                  });
+                $btn.prop('disabled', false);
+            }, function(error) {
+                if(error.title === 'not found') {
+                    $('.j-users').empty()
+                        .append(error.message)
+                        .removeClass('wait');
                 }
-              });
-            }
-          }
+
+                $btn.prop('disabled', false);
+            });
+
+            app.callees = {};
+
+            app.helpers.setFooterPosition();
         });
 
-        /** Hangup */
-        $(document).on('click', '.j-hangup', function() {
-            if(!_.isEmpty(app.currentSession)) {
-                app.currentSession.stop({});
-                app.currentSession = {};
+        /** Check / uncheck user (callee) */
+        $(document).on('click', '.j-user', function() {
+            var $user = $(this),
+                user = {
+                    id: +$.trim( $user.data('id') ),
+                    name: $.trim( $user.data('name') )
+                };
 
-                qbApp.MsgBoard.update('login_tpl', {name: app.caller.full_name});
+            if( $user.hasClass('active') ) {
+                delete app.callees[user.id];
+                $user.removeClass('active');
+            } else {
+                app.callees[user.id] = user.name;
+                $user.addClass('active');
             }
         });
 
-        /** Accept */
+        /** Call / End of call */
+        $(document).on('click', '.j-actions', function() {
+            var $btn = $(this),
+                $videoSourceFilter = $(ui.sourceFilter),
+                videoElems = '',
+                mediaParams = {
+                    'audio': true,
+                    'video': {
+                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
+                    },
+                    'options': {
+                        'muted': true,
+                        'mirror': true
+                    },
+                    'elemId': 'localVideo'
+                };
+
+            /** Hangup */
+            if ($btn.hasClass('hangup')) {
+                if(!_.isEmpty(app.currentSession)) {
+                    app.currentSession.stop({});
+                    app.currentSession = {};
+
+                    app.helpers.stateBoard.update({
+                        'title': 'tpl_default',
+                        'property': {
+                            'tag': app.caller.user_tags,
+                            'name':  app.caller.full_name,
+                        }
+                    });
+
+                    app.helpers.setFooterPosition();
+
+                    return false;
+                }
+            } else {
+                /** Check internet connection */
+                if(!window.navigator.onLine) {
+                    app.helpers.stateBoard.update({'title': 'no_internet', 'isError': 'qb-error'});
+                    return false;
+                }
+
+                /** Check callee */
+                if(_.isEmpty(app.callees)) {
+                    $('#error_no_calles').modal();
+                    return false;
+                }
+
+                app.helpers.stateBoard.update('create_session');
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
+
+                app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                        var errorMsg = '';
+
+                        app.currentSession.stop({});
+
+                        app.helpers.stateBoard.update({
+                            'title': 'tpl_device_not_found',
+                            'isError': 'qb-error',
+                            'property': {
+                                'name': app.caller.full_name
+                            }
+                        });
+                    } else {
+                        app.currentSession.call({}, function(error) {
+                            if(error) {
+                                console.warn(error.detail);
+                            } else {
+                                var compiled = _.template( $('#callee_video').html() );
+
+                                app.helpers.stateBoard.update({'title': 'calling'});
+
+                                document.getElementById(sounds.call).play();
+
+                                Object.keys(app.callees).forEach(function(id, i, arr) {
+                                    videoElems += compiled({userID: id, name: app.callees[id] });
+                                });
+
+                                $('.j-callees').append(videoElems);
+
+                                $videoSourceFilter.attr('disabled', true);
+                                $btn.addClass('hangup');
+                                app.helpers.setFooterPosition();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        /** DECLINE */
+        $(document).on('click', '.j-decline', function() {
+            console.info('FUUUC');
+            if (!_.isEmpty(app.currentSession)) {
+                app.currentSession.reject({});
+
+                $(ui.income_call).modal('hide');
+                document.getElementById(sounds.rington).pause();
+            }
+        });
+
+        /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
-            var mediaParams = {
+            var $videoSourceFilter = $(ui.sourceFilter),
+                mediaParams = {
                     audio: true,
-                    video: true,
+                    video: {
+                        optional: [
+                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
+                        ]
+                    },
                     elemId: 'localVideo',
                     options: {
                         muted: true,
@@ -358,134 +350,134 @@
                 },
                 videoElems = '';
 
-            $(ui.modal.income_call).modal('hide');
-
-            document.getElementById(ui.sounds.rington).pause();
+            $(ui.income_call).modal('hide');
+            document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
-                  var errorMsg = '';
+                    var errorMsg = '';
 
-                  if(err && err.message) {
-                    errorMsg += 'Error: ' + err.message;
-                  } else {
-                    errorMsg += 'device_not_found';
-                  }
+                    app.currentSession.stop({});
 
-                  showErrorAccessPermission(err);
+                    if(err && err.message) {
+                        errorMsg += 'Error: ' + err.message;
+                    } else {
+                        errorMsg += 'tpl_device_not_found';
+                    }
 
-                  qbApp.MsgBoard.update(errorMsg, {name: app.caller.full_name}, true);
-                  isDeviceAccess = false;
-                  app.currentSession.stop({});
+                    app.helpers.stateBoard.update({
+                        'title': errorMsg,
+                        'isError': 'qb-error'
+                    });
                 } else {
                     var opponents = [app.currentSession.initiatorID],
                         compiled = _.template( $('#callee_video').html() );
 
-                    ui.hideCallBtn();
+                    $('.j-actions').addClass('hangup');
 
                     /** get all opponents */
-                    app.currentSession.opponentsIDs.forEach( function(userID, i, arr) {
+                    app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
                         if(userID != app.currentSession.currentUserID){
                             opponents.push(userID);
                         }
                     });
 
-                    /** create callees (video elemets) */
                     opponents.forEach(function(userID, i, arr) {
                         var peerState = app.currentSession.connectionStateForUser(userID),
-                            userInfo = _.findWhere(QBUsers, {id: userID});
+                            userInfo = _.findWhere(app.users, {'id': +userID});
 
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({userID: userID, name: userInfo.full_name});
 
                             if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-                              ui.toggleRemoteVideoView(userID, 'clear');
+                              app.helpers.toggleRemoteVideoView(app.currentSession, userID, 'clear');
                             }
                         }
                     });
 
-                    ui.$callees.append(videoElems);
-                    qbApp.MsgBoard.update('during_call', {name: app.caller.full_name});
-                    ui.setPositionFooter();
+                    $('.j-callees').append(videoElems);
+                    app.helpers.stateBoard.update({
+                        'title': 'tpl_during_call',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
+                    });
+                    app.helpers.setFooterPosition();
 
                     app.currentSession.accept({});
                 }
             });
         });
 
-        /** Reject */
-        $(document).on('click', '.j-decline', function() {
-            if (!_.isEmpty(app.currentSession)) {
-                app.currentSession.reject({});
+        /** CHANGE FILTER */
+        $(document).on('change', ui.filterSelect, function() {
+            var filterName = $.trim( $(this).val() );
 
-                $(ui.modal.income_call).modal('hide');
-                document.getElementById(ui.sounds.rington).pause();
+            app.helpers.changeFilter('#localVideo', filterName);
+
+            if(!_.isEmpty(app.currentSession)) {
+                app.currentSession.update({'filter': filterName});
             }
         });
 
-        /** Mute / Unmute cam / mic */
-        $(document).on('click', '.j-caller__ctrl', function() {
-            var $btn = $(this),
-                isActive = $btn.hasClass('active');
-
-            if( _.isEmpty( app.currentSession)) {
-                return false;
-            } else {
-                if(isActive) {
-                    $btn.removeClass('active');
-                    app.currentSession.unmute( $btn.data('target') );
-                } else {
-                    $btn.addClass('active');
-                    app.currentSession.mute( $btn.data('target') );
-                }
-            }
-        });
-
-        /** set main video */
-        $(document).on('click', '.j-callees__callee_video', function() {
+        $(document).on('click', '.j-callees__callee__video', function() {
             var $that = $(this),
-                userID = +($(this).data('user')),
+                userId = +($(this).data('user')),
                 classesName = [],
                 activeClass = [];
 
-            if( app.currentSession.peerConnections[userID].stream && !_.isEmpty( $that.attr('src')) ) {
+            if( app.currentSession.peerConnections[userId].stream && !_.isEmpty( $that.attr('src')) ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
 
                     app.currentSession.detachMediaStream('main_video');
-                    ui.changeFilter('#main_video', 'no');
+                    app.helpers.changeFilter('#main_video', 'no');
                     app.mainVideo = 0;
+                    remoteStreamCounter = 0;
                 } else {
                     $('.j-callees__callee_video').removeClass('active');
                     $that.addClass('active');
 
-                    ui.changeFilter('#main_video', 'no');
+                    app.helpers.changeFilter('#main_video', 'no');
 
-                    activeClass = _.intersection($that.attr('class').split(/\s+/), ui.classesNameFilter.split(/\s+/) );
+                    activeClass = _.intersection($that.attr('class').split(/\s+/), app.filter.names.split(/\s+/) );
 
                     /** set filter to main video if exist */
                     if(activeClass.length) {
-                        ui.changeFilter('#main_video', activeClass[0]);
+                        app.helpers.changeFilter('#main_video', activeClass[0]);
                     }
-                    app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userID].stream);
-                    app.mainVideo = userID;
+                    app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userId].stream);
+                    app.mainVideo = userId;
                 }
             }
         });
 
-        /** Change filter for filter */
-        $(document).on('change', ui.filterClassName, function() {
-            var val = $.trim( $(this).val() );
+        $(document).on('click', '.j-caller__ctrl', function() {
+           var $btn = $(this),
+               isActive = $btn.hasClass('active');
 
-            ui.changeFilter('#localVideo', val);
+           if( _.isEmpty( app.currentSession)) {
+               return false;
+           } else {
+               if(isActive) {
+                   $btn.removeClass('active');
+                   app.currentSession.unmute( $btn.data('target') );
+               } else {
+                   $btn.addClass('active');
+                   app.currentSession.mute( $btn.data('target') );
+               }
+           }
+       });
 
-            if(!_.isEmpty( app.currentSession)) {
-                app.currentSession.update({filter: val});
-            }
-        });
+        /** LOGOUT */
+        $(document).on('click', '.j-logout', function() {
+            app.user = null;
+            app.users = [];
 
-        $(window).on('resize', function() {
-            ui.setPositionFooter();
+            QB.chat.disconnect();
+            app.router.navigate('join', {'trigger': true});
+
+            app.helpers.setFooterPosition();
         });
 
         /**
@@ -509,300 +501,279 @@
          * - onRemoteStreamListener
          * - onSessionConnectionStateChangedListener
          */
+
         QB.chat.onDisconnectedListener = function() {
-          console.log('onDisconnectedListener.');
-          var initUIParams = authorizationing ? {withoutUpdMsg: false, msg: 'no_internet'} : {withoutUpdMsg: false, msg: 'login'};
-
-          app.caller = {};
-          app.callees = [];
-          app.mainVideo = 0;
-          remoteStreamCounter = 0;
-
-          ui.togglePreloadMain('hide');
-          initializeUI(initUIParams);
-          ui.$panel.addClass('hidden');
-
-          /** delete callee video elements */
-          $('.j-callee').remove();
-
-          ui.setPositionFooter();
-          authorizationing = false;
+            console.log('onDisconnectedListener.');
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
-          console.group('onCallStatsReport');
-            console.log('userId: ' + userId);
-            // console.log('Stats: ', stats);
-          console.groupEnd();
+            console.group('onCallStatsReport');
+                console.log('userId: ', userId);
+                // console.log('Stats: ', stats);
+            console.groupEnd();
 
-          /**
-           * Hack for Firefox
-           * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
-           */
-          if(is_firefox) {
-            var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
+            /**
+             * Hack for Firefox
+             * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
+             */
+            if(is_firefox) {
+                var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
 
-            if(!inboundrtp || !isBytesReceivedChanges(userId, inboundrtp)) {
+                if(!inboundrtp || !app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
+                    console.warn("This is Firefox and user " + userId + " has lost his connection.");
 
-              console.warn("This is Firefox and user " + userId + " has lost his connection.");
-
-              if(!_.isEmpty(app.currentSession)) {
-                app.currentSession.closeConnection(userId);
-
-                notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
-              }
+                    if(!_.isEmpty(app.currentSession)) {
+                        app.currentSession.closeConnection(userId);
+                        app.helpers.notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
+                    }
+                }
             }
-          }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
-          console.log('onSessionCloseListener: ' + session);
+            console.log('onSessionCloseListener: ', session);
 
-          /** pause play call sound */
-          document.getElementById(ui.sounds.call).pause();
-          document.getElementById(ui.sounds.end).play();
+            document.getElementById(sounds.call).pause();
+            document.getElementById(sounds.end).play();
 
-          ui.showCallBtn();
+            $('.j-actions').removeClass('hangup');
+            $('.j-caller__ctrl').removeClass('active');
+            $(ui.sourceFilter).attr('disabled', false);
+            $('.j-callees').empty();
 
-           if(!isDeviceAccess) {
-              isDeviceAccess = true;
-          } else {
-              if(session.opponentsIDs.length > 1) {
-                  qbApp.MsgBoard.update('call_stop', {name: app.caller.full_name});
-              }
-          }
-
-
-            /** delete blob from myself video */
-            document.getElementById('localVideo').src = '';
-
-            /** disable controls (mute cam/min) */
-            ui.$ctrlBtn.removeClass('active');
-
-            /** delete callee video elements */
-            $('.j-callee').remove();
-            /** clear main video */
             app.currentSession.detachMediaStream('main_video');
-            app.mainVideo = 0;
+            app.currentSession.detachMediaStream('localVideo');
             remoteStreamCounter = 0;
+
+            if(session.opponentsIDs.length > 1) {
+                app.helpers.stateBoard.update({
+                    'title': 'call_stop',
+                    'property': {
+                        'name': app.caller.full_name
+                    }
+                });
+            }
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
-          console.group('onUserNotAnswerListener.');
-              console.log('UserId: ' + userId);
-              console.log('Session: ' + session);
-          console.groupEnd();
+            console.group('onUserNotAnswerListener.');
+                console.log('UserId: ', userId);
+                console.log('Session: ', session);
+            console.groupEnd();
 
-          var userInfo = _.findWhere(QBUsers, {id: +userId}),
-              currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
+            var opponent = _.findWhere(app.users, {'id': +userId});
 
             /** It's for p2p call */
-          if(session.opponentsIDs.length === 1) {
-              qbApp.MsgBoard.update(
-                'p2p_call_stop',
-                {
-                  name: userInfo.full_name,
-                  currentName: currentUserInfo.full_name,
-                  reason: 'not answered'
-                }
-              );
-          }
-
-          $('.j-callee_status_' + userId).text('No Answer');
-        };
-
-        QB.webrtc.onUpdateCallListener = function onUpdateCallListener(session, userId, extension) {
-          console.group('onUpdateCallListener.');
-              console.log('UserId: ' + userId);
-              console.log('Session: ' + session);
-              console.log('Extension: ' + JSON.stringify(extension));
-          console.groupEnd();
-
-          ui.changeFilter('#remote_video_' + userId, extension.filter);
-          if (+(app.mainVideo) === userId) {
-              ui.changeFilter('#main_video', extension.filter);
-          }
+            if(session.opponentsIDs.length === 1) {
+                app.helpers.stateBoard.update({
+                    'title': 'p2p_call_stop',
+                    'property': {
+                        'name': opponent.full_name,
+                        'currentName': app.caller.full_name,
+                        'reason': 'not answered'
+                    }
+                });
+            } else {
+                $('.j-callee_status_' + userId).text('No Answer');
+            }
         };
 
         QB.webrtc.onCallListener = function onCallListener(session, extension) {
-          console.group('onCallListener.');
-              console.log('Session: ' + session);
-              console.log('Extension: ' + JSON.stringify(extension));
-          console.groupEnd();
+            console.group('onCallListener.');
+                console.log('Session: ' + session);
+                console.log('Extension: ' + JSON.stringify(extension));
+            console.groupEnd();
 
-          /** close previous modal if his is exist */
-          $(ui.modal.income_call).modal('hide');
+            var initiator = _.findWhere(app.users, {id: session.initiatorID});
+            app.currentSession = session;
 
-          var userInfo = _.findWhere(QBUsers, {id: session.initiatorID});
-
-          app.currentSession = session;
-
-          /** set name of caller */
-          $('.j-ic_initiator').text( userInfo.full_name );
-
-          $(ui.modal.income_call).modal('show');
-
-          document.getElementById(ui.sounds.rington).play();
-        };
-
-        QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
-          console.group('onAcceptCallListener.');
-              console.log('UserId: ' + userId);
-              console.log('Session: ' + session);
-              console.log('Extension: ' + JSON.stringify(extension));
-          console.groupEnd();
-
-          var userInfo = _.findWhere(QBUsers, {id: userId}),
-              filterName = $.trim( $(ui.filterClassName).val() );
-
-          document.getElementById(ui.sounds.call).pause();
-
-          app.currentSession.update({filter: filterName});
-
-          /** update list of callee who take call */
-          takedCallCallee.push(userInfo);
-
-          if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
-              qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
-          }
+            /** close previous modal */
+            $(ui.income_call).modal('hide');
+            /** set name of caller */
+            $('.j-ic_initiator').text( initiator.full_name );
+            $(ui.income_call).modal('show');
+            document.getElementById(sounds.rington).play();
         };
 
         QB.webrtc.onRejectCallListener = function onRejectCallListener(session, userId, extension) {
-          console.group('onRejectCallListener.');
-              console.log('UserId: ' + userId);
-              console.log('Session: ' + session);
-              console.log('Extension: ' + JSON.stringify(extension));
-          console.groupEnd();
+            console.group('onRejectCallListener.');
+                console.log('UserId: ' + userId);
+                console.log('Session: ' + session);
+                console.log('Extension: ' + JSON.stringify(extension));
+            console.groupEnd();
 
-          var userInfo = _.findWhere(QBUsers, {id: userId}),
-              currentUserInfo = _.findWhere(QBUsers, {id: app.currentSession.currentUserID});
+            var user = _.findWhere(app.users, {'id': +userId}),
+                userCurrent = _.findWhere(app.users, {'id': +session.currentUserID});
 
-          /** It's for p2p call */
-          if(session.opponentsIDs.length === 1) {
-              qbApp.MsgBoard.update(
-                'p2p_call_stop',
-                {
-                  name: userInfo.full_name,
-                  currentName: currentUserInfo.full_name,
-                  reason: 'rejected the call'
-                }
-              );
-          }
-
-          /** It's for groups call */
-          $('.j-callee_status_' + userId).text('Rejected');
+            /** It's for p2p call */
+            if(session.opponentsIDs.length === 1) {
+                app.helpers.stateBoard.update({
+                    'title': 'p2p_call_stop',
+                    'property': {
+                        'name': user.full_name,
+                        'currentName': userCurrent.full_name,
+                        'reason': 'rejected the call'
+                    }
+                });
+            } else {
+                $('.j-callee_status_' + userId).text('Rejected');
+            }
         };
 
         QB.webrtc.onStopCallListener = function onStopCallListener(session, userId, extension) {
-          console.group('onStopCallListener.');
-              console.log('UserId: ' + userId);
-              console.log('Session: ' + session);
-              console.log('Extension: ' + JSON.stringify(extension));
-          console.groupEnd();
+            console.group('onStopCallListener.');
+                console.log('UserId: ', userId);
+                console.log('Session: ', session);
+                console.log('Extension: ', extension);
+            console.groupEnd();
 
-          notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
+            app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
         };
 
-        QB.webrtc.onRemoteStreamListener = function onRemoteStreamListener(session, userID, stream) {
-          console.group('onRemoteStreamListener.');
-              console.log('userID: ' + userID);
-              console.log('Session: ' + session);
-          console.groupEnd();
-          app.currentSession.peerConnections[userID].stream = stream;
+        QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
+            console.group('onAcceptCallListener.');
+                console.log('UserId: ', userId);
+                console.log('Session: ', session);
+                console.log('Extension: ', extension);
+            console.groupEnd();
 
-          app.currentSession.attachMediaStream('remote_video_' + userID, stream);
+            var userInfo = _.findWhere(app.users, {'id': +userId}),
+                filterName = $.trim( $(ui.filterSelect).val() );
 
-          if( remoteStreamCounter === 0) {
-              $('#remote_video_' + userID).click();
+            document.getElementById(sounds.call).pause();
+            app.currentSession.update({'filter': filterName});
 
-              app.mainVideo = userID;
-              ++remoteStreamCounter;
-          }
+            /** update list of callee who take call */
+            app.calleesAnwered.push(userInfo);
 
-          if(!callTimer) {
-              callTimer = setInterval( function(){ ui.updTimer.call(ui); }, 1000);
-          }
+            if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
+                app.helpers.stateBoard.update({
+                    'title': 'tpl_accept_call',
+                    'property': {
+                        'users': app.calleesAnwered
+                    }
+                });
+            }
         };
 
-        QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userID, connectionState) {
-          console.group('onSessionConnectionStateChangedListener.');
-              console.log('UserID: ' + userID);
-              console.log('Session: ' + session);
-              console.log('Сonnection state: ' + connectionState);
-          console.groupEnd();
+        QB.webrtc.onRemoteStreamListener = function onRemoteStreamListener(session, userId, stream) {
+            console.group('onRemoteStreamListener.');
+                console.log('userId: ', userId);
+                console.log('Session: ', session);
+            console.groupEnd();
 
-          var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
-              $calleeStatus = $('.j-callee_status_' + userID),
-              isCallEnded = false;
+            app.currentSession.peerConnections[userId].stream = stream;
+            app.currentSession.attachMediaStream('remote_video_' + userId, stream);
 
-          if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
-              $calleeStatus.text(connectionStateName);
-          }
+            if( remoteStreamCounter === 0) {
+                $('#remote_video_' + userId).click();
 
-          if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED) {
-              ui.toggleRemoteVideoView(userID, 'show');
-              $calleeStatus.text(connectionStateName);
-          }
+                app.mainVideo = userId;
+                ++remoteStreamCounter;
+            }
 
-          if(connectionState === QB.webrtc.SessionConnectionState.COMPLETED) {
-              ui.toggleRemoteVideoView(userID, 'show');
-              $calleeStatus.text('connected');
-          }
-
-          if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
-              ui.toggleRemoteVideoView(userID, 'hide');
-              $calleeStatus.text('disconnected');
-          }
-
-          if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
-              ui.toggleRemoteVideoView(userID, 'clear');
-              document.getElementById(ui.sounds.rington).pause();
-
-              if(app.mainVideo === userID) {
-                  $('#remote_video_' + userID).removeClass('active');
-
-                  ui.changeFilter('#main_video', 'no');
-                  app.currentSession.detachMediaStream('main_video');
-                  app.mainVideo = 0;
-              }
-
-              if( !_.isEmpty(app.currentSession) ) {
-                  if ( Object.keys(app.currentSession.peerConnections).length === 1 || userID === app.currentSession.initiatorID) {
-                      $(ui.modal.income_call).modal('hide');
-                  }
-              }
-
-              isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
-                  return i.iceConnectionState === 'closed';
-              });
-
-              /** remove filters */
-              if( isCallEnded ) {
-                  ui.changeFilter('#localVideo', 'no');
-                  ui.changeFilter('#main_video', 'no');
-                  $(ui.filterClassName).val('no');
-
-                  takedCallCallee = [];
-              }
-
-              if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
-                  /** get array if users without user who ends call */
-                  takedCallCallee = _.reject(takedCallCallee, function(num){ return num.id === +userID; });
-
-                  qbApp.MsgBoard.update('accept_call', {users: takedCallCallee});
-              }
-
-              if( _.isEmpty(app.currentSession) || isCallEnded ) {
-                  if(callTimer) {
-                      $('#timer').addClass('hidden');
-                      clearInterval(callTimer);
-                      callTimer = null;
-                      ui.callTime = 0;
-
-                      network = {};
-                  }
-              }
-          }
+            if(!call.callTimer) {
+                call.callTimer = setInterval( function(){ call.updTimer.call(call); }, 1000);
+            }
         };
+
+        QB.webrtc.onUpdateCallListener = function onUpdateCallListener(session, userId, extension) {
+            console.group('onUpdateCallListener.');
+                console.log('UserId: ' + userId);
+                console.log('Session: ' + session);
+                console.log('Extension: ' + JSON.stringify(extension));
+            console.groupEnd();
+
+            app.helpers.changeFilter('#remote_video_' + userId, extension.filter);
+
+            if (+(app.mainVideo) === userId) {
+                app.helpers.changeFilter('#main_video', extension.filter);
+            }
+        };
+
+        QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userId, connectionState) {
+           console.group('onSessionConnectionStateChangedListener.');
+               console.log('UserID: ', userId);
+               console.log('Session: ', session);
+               console.log('Сonnection state: ', connectionState);
+           console.groupEnd();
+
+           var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
+               $calleeStatus = $('.j-callee_status_' + userId),
+               isCallEnded = false;
+
+           if(connectionState === QB.webrtc.SessionConnectionState.CONNECTING) {
+               $calleeStatus.text(connectionStateName);
+           }
+
+           if(connectionState === QB.webrtc.SessionConnectionState.CONNECTED) {
+               app.helpers.toggleRemoteVideoView(userId, 'show');
+               $calleeStatus.text(connectionStateName);
+           }
+
+           if(connectionState === QB.webrtc.SessionConnectionState.COMPLETED) {
+               app.helpers.toggleRemoteVideoView(userId, 'show');
+               $calleeStatus.text('connected');
+           }
+
+           if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+               app.helpers.toggleRemoteVideoView(userId, 'hide');
+               $calleeStatus.text('disconnected');
+           }
+
+           if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
+               app.helpers.toggleRemoteVideoView(userId, 'clear');
+               document.getElementById(sounds.rington).pause();
+
+               if(app.mainVideo === userId) {
+                   $('#remote_video_' + userId).removeClass('active');
+
+                   app.helpers.changeFilter('#main_video', 'no');
+                //    app.currentSession.detachMediaStream('main_video');
+                   app.mainVideo = 0;
+               }
+
+               if( !_.isEmpty(app.currentSession) ) {
+                   if ( Object.keys(app.currentSession.peerConnections).length === 1 || userId === app.currentSession.initiatorID) {
+                       $(ui.income_call).modal('hide');
+                   }
+               }
+
+               isCallEnded = _.every(app.currentSession.peerConnections, function(i) {
+                   return i.iceConnectionState === 'closed';
+               });
+
+               /** remove filters */
+               if( isCallEnded ) {
+                   app.helpers.changeFilter('#localVideo', 'no');
+                   app.helpers.changeFilter('#main_video', 'no');
+                   $(ui.filterSelect).val('no');
+
+                   app.calleesAnwered = [];
+               }
+
+               if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
+                   /** get array if users without user who ends call */
+                   app.calleesAnwered = _.reject(app.calleesAnwered, function(num){ return num.id === +userId; });
+
+                   app.helpers.stateBoard.update({
+                       'title': 'tpl_accept_call',
+                       'property': {
+                           'users': app.calleesAnwered
+                       }
+                   });
+               }
+
+                if( _.isEmpty(app.currentSession) || isCallEnded ) {
+                    if(call.callTimer) {
+                        $('#timer').addClass('hidden');
+                        clearInterval(call.callTimer);
+                        call.callTimer = null;
+                        call.callTime = 0;
+                        app.helpers.network = {};
+                    }
+                }
+           }
+         };
     });
-}(window, jQuery));
+}(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
