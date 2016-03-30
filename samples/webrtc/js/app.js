@@ -37,7 +37,7 @@
             },
             'container': $('.page'),
             'relocated': function() {
-                var path = app.user ? 'dashboard' : 'join';
+                var path = app.caller ? 'dashboard' : 'join';
 
                 app.router.navigate(path, {'trigger': true});
             },
@@ -471,13 +471,18 @@
 
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
-            app.user = null;
-            app.users = [];
+            QB.users.delete(app.caller.id, function(err, user){
+                if (user) {
+                    app.caller = {};
+                    app.users = [];
 
-            QB.chat.disconnect();
-            app.router.navigate('join', {'trigger': true});
-
-            app.helpers.setFooterPosition();
+                    QB.chat.disconnect();
+                    app.router.navigate('join', {'trigger': true});
+                    app.helpers.setFooterPosition();
+                } else  {
+                    console.error('Logout failed:', err);
+                }
+            });
         });
 
         /**
