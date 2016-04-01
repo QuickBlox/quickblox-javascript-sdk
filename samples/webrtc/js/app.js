@@ -323,7 +323,6 @@
 
         /** DECLINE */
         $(document).on('click', '.j-decline', function() {
-            console.info('FUUUC');
             if (!_.isEmpty(app.currentSession)) {
                 app.currentSession.reject({});
 
@@ -374,6 +373,7 @@
                         compiled = _.template( $('#callee_video').html() );
 
                     $('.j-actions').addClass('hangup');
+                    $(ui.sourceFilter).attr('disabled', true);
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -552,7 +552,7 @@
 
             if(session.opponentsIDs.length > 1) {
                 app.helpers.stateBoard.update({
-                    'title': 'call_stop',
+                    'title': 'tpl_call_stop',
                     'property': {
                         'name': app.caller.full_name
                     }
