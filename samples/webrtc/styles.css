@@ -235,6 +235,11 @@ b {
     text-align: center;
 }
 
+.join__notice {
+    margin: 10px 0 0 0;
+    font-size: 14px;
+}
+
 .join__body {
     width: 90%;
     max-width: 410px;
