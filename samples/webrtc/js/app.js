@@ -278,7 +278,7 @@
                     return false;
                 }
 
-                app.helpers.stateBoard.update('create_session');
+                app.helpers.stateBoard.update({'title': 'create_session'});
                 app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
