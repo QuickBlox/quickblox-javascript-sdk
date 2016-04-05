@@ -92,7 +92,7 @@
      * [getUui - generate a unique id]
      * @return {[string]} [a unique id]
      */
-    function getUui() {
+    function _getUui() {
         var navigator_info = window.navigator;
         var screen_info = window.screen;
         var uid = navigator_info.mimeTypes.length;
@@ -107,56 +107,58 @@
     }
 
     app.helpers.join = function(data) {
+        var userRequiredParams = {
+            'login': _getUui(),
+            'password': 'webAppPass'
+        };
+
         return new Promise(function(resolve, reject) {
-            QB.createSession(function(csError, csResult){
-                if(csError) {
-                    reject(csError);
+            QB.createSession(function(csErr, csRes){
+                if(csErr) {
+                    reject(csErr);
                 } else {
-                    /** Login */
-                    QB.login({
-                            'login': getUui(),
-                            'password': 'webAppPass'
-                        },
-                        function(egError, egUser){
-                            /** User not found */
-                            if(egError) {
-                                QB.users.create({
-                                        'login': getUui(),
-                                        'password': 'webAppPass',
-                                        'full_name': data.username,
-                                        'tag_list': data.room
-                                    },
-                                    function(ucError, ucUser){
-                                        if(ucError) {
-                                            console.log('[create user] Error:', ucError);
-                                            reject(ucError);
+                    /** In first trying to login */
+                    QB.login(userRequiredParams, function(loginErr, loginUser){
+                        if(loginErr) {
+                            /** Login failed, trying to create account */
+                            QB.users.create({
+                                'login': _getUui(),
+                                'password': 'webAppPass',
+                                'full_name': data.username,
+                                'tag_list': data.room
+                            }, function(createErr, createUser){
+                                if(createErr) {
+                                    console.log('[create user] Error:', createErr);
+                                    reject(createErr);
+                                } else {
+                                    QB.login(userRequiredParams, function(reloginErr, reloginUser) {
+                                        if(reloginErr) {
+                                            console.log('[relogin user] Error:', reloginErr);
                                         } else {
-                                            console.log('[create user] User:', ucUser);
-                                            resolve(ucUser);
-                                        }
-                                    }
-                                );
-                            } else {
-                                /** Update info */
-                                if(egUser.user_tags !== data.room || egUser.full_name !== data.username ) {
-                                    QB.users.update(egUser.id, {
-                                        'full_name': data.username,
-                                        'tag_list': data.room
-                                    }, function(uuError, uuUser) {
-                                        if(uuError) {
-                                            console.log('APP [update user] Error:', uuError);
-                                            reject(uuError);
-                                        } else {
-                                            console.log('APP [update user] User:', uuUser);
-                                            resolve(uuUser);
+                                            resolve(reloginUser);
                                         }
                                     });
-                                } else {
-                                    resolve(egUser);
                                 }
+                            });
+                        } else {
+                            /** Update info */
+                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username ) {
+                                QB.users.update(loginUser.id, {
+                                    'full_name': data.username,
+                                    'tag_list': data.room
+                                }, function(updateError, updateUser) {
+                                    if(updateError) {
+                                        console.log('APP [update user] Error:', updateError);
+                                        reject(updateError);
+                                    } else {
+                                        resolve(updateUser);
+                                    }
+                                });
+                            } else {
+                                resolve(loginUser);
                             }
                         }
-                    );
+                    });
                 }
             });
         });
@@ -180,7 +182,7 @@
                         }
                     });
 
-                    if(!result.items.length) {
+                    if(result.items.length < 2) {
                         reject({
                             'title': 'not found',
                             'message': 'Not found users by tag'
