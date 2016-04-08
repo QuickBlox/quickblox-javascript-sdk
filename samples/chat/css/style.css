@@ -375,6 +375,10 @@ a.pull_push.active  {
 	z-index: 1000005;
 }
 
+.visibility_hidden{
+  visibility: hidden;
+}
+
 iframe::-webkit-scrollbar {
 	width: 0;
 }

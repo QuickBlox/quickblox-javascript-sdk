@@ -165,7 +165,11 @@ function clickSendAttachments(inputFile) {
     if (err) {
       console.log(err);
     } else {
-      $("#progress").fadeOut(400);
+
+      $("#progress").fadeOut(400, function() {
+        $(".input-group-btn_change_load").removeClass("visibility_hidden");
+      });
+
       var uploadedFile = response;
 
       sendMessage("[attachment]", uploadedFile.id);
