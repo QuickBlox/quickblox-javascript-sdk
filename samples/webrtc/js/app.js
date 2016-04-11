@@ -164,8 +164,22 @@
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
-                        QB.chat.disconnect();
-                        app.router.navigate('join', { trigger: true });
+                        // $('#connect_err').modal();
+                        // console.info(app.currentSession);
+                        // QB.chat.disconnect();
+                        //
+                        // app.helpers.stateBoard.update({
+                        //     'title': 'tpl_default',
+                        //     'property': {
+                        //         'tag': app.caller.user_tags,
+                        //         'name':  app.caller.full_name,
+                        //     }
+                        // });
+                        // console.info('STAT');
+                        // app.currentSession.stop({});
+                        // app.currentSession = {};
+
+                        // app.helpers.setFooterPosition();
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
@@ -250,6 +264,7 @@
             /** Hangup */
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
+
                     app.currentSession.stop({});
                     app.currentSession = {};
 
@@ -525,7 +540,7 @@
                 var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
 
                 if(!inboundrtp || !app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-                    console.warn("This is Firefox and user " + userId + " has lost his connection.");
+                    console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
                     if(!_.isEmpty(app.currentSession)) {
                         app.currentSession.closeConnection(userId);
