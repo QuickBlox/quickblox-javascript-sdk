@@ -181,6 +181,9 @@ function clickSendAttachments(inputFile) {
 
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
+
+  stickerpipe.onUserMessageSent(stickerpipe.isSticker(text));
+
   var msg = {
     type: currentDialog.type === 3 ? 'chat' : 'groupchat',
     body: text,
