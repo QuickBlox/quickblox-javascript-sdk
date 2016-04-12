@@ -8,7 +8,7 @@ describe('Chat API', function() {
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
   var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
