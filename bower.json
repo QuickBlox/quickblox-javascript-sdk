@@ -33,7 +33,7 @@
   "ignore": [
     "**/.*",
     "examples",
-    "js",
+    "src",
     "lib",
     "node_modules",
     "plugins",

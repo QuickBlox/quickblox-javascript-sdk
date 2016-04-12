@@ -28,7 +28,7 @@ module.exports = function (grunt) {
       },
       all: {
         files: {
-          'quickblox.js': ['js/qbMain.js']
+          'quickblox.js': ['src/qbMain.js']
         }
       }
     },
@@ -45,7 +45,7 @@ module.exports = function (grunt) {
     },
 
     watch: {
-      files: ['js/*.js', 'js/modules/*.js', 'js/modules/webrtc/*.js'],
+      files: ['src/*.js', 'src/modules/*.js', 'src/modules/webrtc/*.js'],
       tasks: ['browserify', 'notify:browserify', 'uglify', 'notify:uglify'],
       options: {
         spawn: false,
