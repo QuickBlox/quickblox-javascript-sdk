@@ -405,7 +405,7 @@
                             videoElems += compiled({userID: userID, name: userInfo.full_name});
 
                             if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-                              app.helpers.toggleRemoteVideoView(app.currentSession, userID, 'clear');
+                                app.helpers.toggleRemoteVideoView( userID, 'clear');
                             }
                         }
                     });
@@ -418,7 +418,6 @@
                         }
                     });
                     app.helpers.setFooterPosition();
-
                     app.currentSession.accept({});
                 }
             });
@@ -600,8 +599,8 @@
 
         QB.webrtc.onCallListener = function onCallListener(session, extension) {
             console.group('onCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
+                console.log('Session: ', session);
+                console.log('Extension: ', extension);
             console.groupEnd();
 
             var initiator = _.findWhere(app.users, {id: session.initiatorID});
@@ -609,8 +608,11 @@
 
             /** close previous modal */
             $(ui.income_call).modal('hide');
-            /** set name of caller */
-            $('.j-ic_initiator').text( initiator.full_name );
+            /**
+             * set name of caller
+             * TODO: what if user doesn't sync all users
+             */
+            $('.j-ic_initiator').text( initiator.full_name ? initiator.full_name : 'Unknown' );
             $(ui.income_call).modal('show');
             document.getElementById(sounds.rington).play();
         };
@@ -712,11 +714,11 @@
         };
 
         QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userId, connectionState) {
-           console.group('onSessionConnectionStateChangedListener.');
-               console.log('UserID: ', userId);
-               console.log('Session: ', session);
-               console.log('Сonnection state: ', connectionState);
-           console.groupEnd();
+            console.group('onSessionConnectionStateChangedListener.');
+                console.log('UserID: ', userId);
+                console.log('Session: ', session);
+                console.log('Сonnection state: ', connectionState);
+            console.groupEnd();
 
            var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
                $calleeStatus = $('.j-callee_status_' + userId),
@@ -749,7 +751,6 @@
                    $('#remote_video_' + userId).removeClass('active');
 
                    app.helpers.changeFilter('#main_video', 'no');
-                //    app.currentSession.detachMediaStream('main_video');
                    app.mainVideo = 0;
                }
 

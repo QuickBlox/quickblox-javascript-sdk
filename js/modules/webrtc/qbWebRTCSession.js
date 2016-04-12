@@ -248,7 +248,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
   /** in a case of group video chat */
   if(oppIDs.length > 0){
-
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
     self._startWaitingOfferOrAnswerTimer(offerTime);
 
@@ -285,11 +284,11 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
           } else {
 
-            extension["sessionID"] = self.ID;
-            extension["callType"] = self.callType;
-            extension["callerID"] = self.initiatorID;
-            extension["opponentsIDs"] = self.opponentsIDs;
-            extension["sdp"] = peerConnection.localDescription.sdp;
+            extension.sessionID = self.ID;
+            extension.callType = self.callType;
+            extension.callerID = self.initiatorID;
+            extension.opponentsIDs = self.opponentsIDs;
+            extension.sdp = peerConnection.localDescription.sdp;
 
             self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
           }
