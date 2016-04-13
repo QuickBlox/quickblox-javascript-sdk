@@ -164,22 +164,25 @@
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
-                        // $('#connect_err').modal();
-                        // console.info(app.currentSession);
-                        // QB.chat.disconnect();
-                        //
-                        // app.helpers.stateBoard.update({
-                        //     'title': 'tpl_default',
-                        //     'property': {
-                        //         'tag': app.caller.user_tags,
-                        //         'name':  app.caller.full_name,
-                        //     }
-                        // });
-                        // console.info('STAT');
-                        // app.currentSession.stop({});
-                        // app.currentSession = {};
+                        if(!_.isEmpty(app.currentSession)) {
+                            app.currentSession.stop({});
+                            app.currentSession = {};
+                        }
 
-                        // app.helpers.setFooterPosition();
+                        app.helpers.changeFilter('#localVideo', 'no');
+                        app.helpers.changeFilter('#main_video', 'no');
+                        app.mainVideo = 0;
+
+                        $(ui.filterSelect).val('no');
+                        app.calleesAnwered = [];
+
+                        if(call.callTimer) {
+                            $('#timer').addClass('hidden');
+                            clearInterval(call.callTimer);
+                            call.callTimer = null;
+                            call.callTime = 0;
+                            app.helpers.network = {};
+                        }
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
@@ -528,7 +531,7 @@
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
-                // console.log('Stats: ', stats);
+                console.log('session: ', session);
             console.groupEnd();
 
             /**
@@ -781,7 +784,7 @@
                        'title': 'tpl_accept_call',
                        'property': {
                            'users': app.calleesAnwered
-                       }
+                        }
                    });
                }
 

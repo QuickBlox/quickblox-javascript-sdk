@@ -662,7 +662,11 @@ WebRTCSession.prototype._close = function() {
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];
-    peer.release();
+        try {
+            peer.release();
+        } catch (e) {
+            console.warn('Session _close', e);
+        }
   }
 
   this._closeLocalMediaStream();
