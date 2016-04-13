@@ -4,7 +4,7 @@ describe('Content API', function() {
   var REST_REQUESTS_TIMEOUT = 3000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
-  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
