@@ -10,4 +10,4 @@
 **How should this be manually tested?**
 
 
-**Does the documentation need an update?**
+**Do we need to update documentation?**
