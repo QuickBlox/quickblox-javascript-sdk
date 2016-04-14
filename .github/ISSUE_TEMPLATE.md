@@ -13,6 +13,10 @@
 **Actual behavior**
 
 
+**Logs**
+*(please, switch on a [debugging mode](http://quickblox.com/developers/Javascript#Configuration) and share us outputs)*
+
+
 **Steps to reproduce the behavior**
 
 
