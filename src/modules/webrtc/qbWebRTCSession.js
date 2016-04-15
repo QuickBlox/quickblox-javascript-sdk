@@ -665,7 +665,7 @@ WebRTCSession.prototype._close = function() {
         try {
             peer.release();
         } catch (e) {
-            console.warn('Session _close', e);
+            console.warn('Peer close error:', e);
         }
   }
 
