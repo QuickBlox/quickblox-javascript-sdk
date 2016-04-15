@@ -248,7 +248,6 @@ WebRTCSession.prototype.accept = function(extension) {
 
   /** in a case of group video chat */
   if(oppIDs.length > 0){
-
     var offerTime = (self.acceptCallTime - self.startCallTime) / 1000;
     self._startWaitingOfferOrAnswerTimer(offerTime);
 
@@ -285,11 +284,11 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
           } else {
 
-            extension["sessionID"] = self.ID;
-            extension["callType"] = self.callType;
-            extension["callerID"] = self.initiatorID;
-            extension["opponentsIDs"] = self.opponentsIDs;
-            extension["sdp"] = peerConnection.localDescription.sdp;
+            extension.sessionID = self.ID;
+            extension.callType = self.callType;
+            extension.callerID = self.initiatorID;
+            extension.opponentsIDs = self.opponentsIDs;
+            extension.sdp = peerConnection.localDescription.sdp;
 
             self.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.ACCEPT);
           }
@@ -336,29 +335,32 @@ WebRTCSession.prototype.reject = function(extension) {
  * @param {array} A map with custom parameters
  */
 WebRTCSession.prototype.stop = function(extension) {
-  var self = this,
-      ext = _prepareExtension(extension);
-  var peersLen = Object.keys(self.peerConnections).length;
+    var self = this,
+        ext = _prepareExtension(extension),
+        peersLen = Object.keys(self.peerConnections).length;
 
-  Helpers.trace('Stop, extension: ' + JSON.stringify(ext));
+    Helpers.trace('Stop, extension: ' + JSON.stringify(ext));
 
-  self.state = WebRTCSession.State.HUNGUP;
+    self.state = WebRTCSession.State.HUNGUP;
 
-  self._clearAnswerTimer();
-
-  ext["sessionID"] = self.ID;
-  ext["callType"] = self.callType;
-  ext["callerID"] = self.initiatorID;
-  ext["opponentsIDs"] = self.opponentsIDs;
-
-  if(peersLen > 0){
-    for (var key in self.peerConnections) {
-      var peerConnection = self.peerConnections[key];
-      self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.STOP);
+    if(self.answerTimer) {
+        self._clearAnswerTimer();
     }
-  }
 
-  self._close();
+    ext.sessionID = self.ID;
+    ext.callType = self.callType;
+    ext.callerID = self.initiatorID;
+    ext.opponentsIDs = self.opponentsIDs;
+
+    if(peersLen > 0){
+        for (var key in self.peerConnections) {
+            var peerConnection = self.peerConnections[key];
+
+            self.signalingProvider.sendMessage(peerConnection.userID, ext, SignalingConstants.SignalingType.STOP);
+        }
+    }
+
+    self._close();
 };
 
 /**
@@ -660,7 +662,11 @@ WebRTCSession.prototype._close = function() {
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];
-    peer.release();
+        try {
+            peer.release();
+        } catch (e) {
+            console.warn('Peer close error:', e);
+        }
   }
 
   this._closeLocalMediaStream();

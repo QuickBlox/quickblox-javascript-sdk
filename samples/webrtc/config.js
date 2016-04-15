@@ -19,7 +19,7 @@
         'login': 'Login as any user on this computer and another user on another computer.',
         'create_session': 'Creating a session...',
         'connect': 'Connecting...',
-        'connect_error': 'Something wrong with connect to chat. Check internet connection or user info and trying  again.',
+        'connect_error': 'Something went wrong with the connection. Check internet connection or user info and try again.',
         'login_as': 'Logged in as ',
         'title_login': 'Choose a user to login with:',
         'title_callee': 'Choose users to call:',

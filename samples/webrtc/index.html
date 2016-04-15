@@ -84,6 +84,25 @@
     </div>
 
     <!-- MODALS -->
+    <div class="modal fade" id="connect_err" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+                    <h4>Connect to chat is failed</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p class="text-danger">
+                        Something wrong with connect to chat. Check internet connection or user info and trying  again.
+                    </p>
+                </div>
+                <p></p>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="error_no_calles" tabindex="-1">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -128,7 +147,7 @@
 
         <script type="text/template" id="tpl_device_not_found">
             Error: devices (camera or microphone) are not found.
-            <span class="qb-text">&emsp;Login in <b>as <%=name%></b></span>
+            <span class="qb-text">Login in <b>as <%=name%></b></span>
             <button class='fw-link j-logout'>Logout</button>
         </script>
 

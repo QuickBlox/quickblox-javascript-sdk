@@ -239,35 +239,32 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
  };
 
 RTCPeerConnection.prototype._getStatsWrap = function() {
-  var self = this,
-      selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
-      statsReportInterval;
+    var self = this,
+        selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
+        statsReportInterval;
 
-  if (!config.webrtc && !config.webrtc.statsReportTimeInterval) {
-    return;
-  }
+    if (config.webrtc && config.webrtc.statsReportTimeInterval) {
+        if (isNaN(+config.webrtc.statsReportTimeInterval)) {
+            Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
+            return;
+        }
 
-  if (isNaN(+config.webrtc.statsReportTimeInterval)) {
-     Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
-     return;
-  }
+        statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
-  statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+        var _statsReportCallback = function() {
+            _getStats(self, selector,
+                function (results) {
+                  self.delegate._onCallStatsReport(self.userID, results);
+                },
+                function errorLog(err) {
+                  Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
+                }
+            );
+        };
 
-  var _statsReportCallback = function() {
-    _getStats(self, selector,
-      function (results) {
-        self.delegate._onCallStatsReport(self.userID, results);
-      },
-      function errorLog(err) {
-        Helpers.traceError("_getStats error. " + err.name + ": " + err.message);
-      }
-    );
-   };
-
-   Helpers.trace('Stats tracker has been started.');
-
-   self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+        Helpers.trace('Stats tracker has been started.');
+        self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+    }
  };
 
 RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {

@@ -164,8 +164,25 @@
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
-                        QB.chat.disconnect();
-                        app.router.navigate('join', { trigger: true });
+                        if(!_.isEmpty(app.currentSession)) {
+                            app.currentSession.stop({});
+                            app.currentSession = {};
+                        }
+
+                        app.helpers.changeFilter('#localVideo', 'no');
+                        app.helpers.changeFilter('#main_video', 'no');
+                        app.mainVideo = 0;
+
+                        $(ui.filterSelect).val('no');
+                        app.calleesAnwered = [];
+
+                        if(call.callTimer) {
+                            $('#timer').addClass('hidden');
+                            clearInterval(call.callTimer);
+                            call.callTimer = null;
+                            call.callTime = 0;
+                            app.helpers.network = {};
+                        }
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
@@ -250,6 +267,7 @@
             /** Hangup */
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
+
                     app.currentSession.stop({});
                     app.currentSession = {};
 
@@ -278,7 +296,7 @@
                     return false;
                 }
 
-                app.helpers.stateBoard.update('create_session');
+                app.helpers.stateBoard.update({'title': 'create_session'});
                 app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
@@ -323,7 +341,6 @@
 
         /** DECLINE */
         $(document).on('click', '.j-decline', function() {
-            console.info('FUUUC');
             if (!_.isEmpty(app.currentSession)) {
                 app.currentSession.reject({});
 
@@ -374,6 +391,7 @@
                         compiled = _.template( $('#callee_video').html() );
 
                     $('.j-actions').addClass('hangup');
+                    $(ui.sourceFilter).attr('disabled', true);
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -390,7 +408,7 @@
                             videoElems += compiled({userID: userID, name: userInfo.full_name});
 
                             if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-                              app.helpers.toggleRemoteVideoView(app.currentSession, userID, 'clear');
+                                app.helpers.toggleRemoteVideoView( userID, 'clear');
                             }
                         }
                     });
@@ -403,7 +421,6 @@
                         }
                     });
                     app.helpers.setFooterPosition();
-
                     app.currentSession.accept({});
                 }
             });
@@ -514,7 +531,7 @@
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
-                // console.log('Stats: ', stats);
+                console.log('session: ', session);
             console.groupEnd();
 
             /**
@@ -525,7 +542,7 @@
                 var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
 
                 if(!inboundrtp || !app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-                    console.warn("This is Firefox and user " + userId + " has lost his connection.");
+                    console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
                     if(!_.isEmpty(app.currentSession)) {
                         app.currentSession.closeConnection(userId);
@@ -552,7 +569,7 @@
 
             if(session.opponentsIDs.length > 1) {
                 app.helpers.stateBoard.update({
-                    'title': 'call_stop',
+                    'title': 'tpl_call_stop',
                     'property': {
                         'name': app.caller.full_name
                     }
@@ -585,8 +602,8 @@
 
         QB.webrtc.onCallListener = function onCallListener(session, extension) {
             console.group('onCallListener.');
-                console.log('Session: ' + session);
-                console.log('Extension: ' + JSON.stringify(extension));
+                console.log('Session: ', session);
+                console.log('Extension: ', extension);
             console.groupEnd();
 
             var initiator = _.findWhere(app.users, {id: session.initiatorID});
@@ -594,8 +611,11 @@
 
             /** close previous modal */
             $(ui.income_call).modal('hide');
-            /** set name of caller */
-            $('.j-ic_initiator').text( initiator.full_name );
+            /**
+             * set name of caller
+             * TODO: what if user doesn't sync all users
+             */
+            $('.j-ic_initiator').text( initiator.full_name ? initiator.full_name : 'Unknown' );
             $(ui.income_call).modal('show');
             document.getElementById(sounds.rington).play();
         };
@@ -697,11 +717,11 @@
         };
 
         QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userId, connectionState) {
-           console.group('onSessionConnectionStateChangedListener.');
-               console.log('UserID: ', userId);
-               console.log('Session: ', session);
-               console.log('Сonnection state: ', connectionState);
-           console.groupEnd();
+            console.group('onSessionConnectionStateChangedListener.');
+                console.log('UserID: ', userId);
+                console.log('Session: ', session);
+                console.log('Сonnection state: ', connectionState);
+            console.groupEnd();
 
            var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],
                $calleeStatus = $('.j-callee_status_' + userId),
@@ -734,7 +754,6 @@
                    $('#remote_video_' + userId).removeClass('active');
 
                    app.helpers.changeFilter('#main_video', 'no');
-                //    app.currentSession.detachMediaStream('main_video');
                    app.mainVideo = 0;
                }
 
@@ -765,7 +784,7 @@
                        'title': 'tpl_accept_call',
                        'property': {
                            'users': app.calleesAnwered
-                       }
+                        }
                    });
                }
 
