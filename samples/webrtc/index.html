@@ -40,11 +40,11 @@
 
                     <div class="join__body">
                         <div class="join__row">
-                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Should contain only latin characters and alphanumeric characters in a range from 3 to 20, starts with a letter." pattern="^[a-zA-Z\s][a-zA-Z\d-_\.\s]{3,20}$">
+                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,20}$">
                         </div>
 
                         <div class="join__row">
-                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Should contain only latin characters and alphanumeric characters in a range from 3 to 15, without space." pattern="^[a-zA-Z\s][a-zA-Z\d\s]{3,15}$">
+                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,15}$">
                         </div>
 
                         <div class="join__row">
