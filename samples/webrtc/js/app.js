@@ -154,6 +154,11 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            if(localStorage.getItem('isAuth')) {
+                $('#already_auth').modal();
+                return false;
+            }
+
             $form.addClass('join-wait');
 
             app.helpers.join(data).then(function (user) {
@@ -186,6 +191,7 @@
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
+                        localStorage.setItem('isAuth', true);
                         app.router.navigate('dashboard', { trigger: true });
                     }
                 });
@@ -494,12 +500,18 @@
                     app.users = [];
 
                     QB.chat.disconnect();
+                    localStorage.removeItem('isAuth');
                     app.router.navigate('join', {'trigger': true});
                     app.helpers.setFooterPosition();
                 } else  {
                     console.error('Logout failed:', err);
                 }
             });
+        });
+
+        /** Close tab or browser */
+        $( window ).unload(function() {
+            localStorage.removeItem('isAuth');
         });
 
         /**
