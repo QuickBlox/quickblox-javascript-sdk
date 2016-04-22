@@ -12,7 +12,28 @@
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
-            'sourceFilter': '.j-source'
+            'sourceFilter': '.j-source',
+            'insertOccupants': function() {
+                var $occupantsCont = $('.j-users');
+
+                function cb($cont, res) {
+                    $cont.empty()
+                        .append(res)
+                        .removeClass('wait');
+                }
+
+                return new Promise(function(resolve, reject) {
+                    $occupantsCont.addClass('wait');
+
+                    app.helpers.renderUsers().then(function(res) {
+                        cb($occupantsCont, res.usersHTML);
+                        resolve(res.users);
+                    }, function(error) {
+                        cb($occupantsCont, error.message);
+                        reject(null);
+                    });
+                });
+            }
         };
 
         var call = {
@@ -86,20 +107,8 @@
 
                 /** render users wrapper */
                 $('.j-users_wrap').append( $('#users_tpl').html() );
-
-                /** render users */
-                app.helpers.renderUsers().then(function(res) {
-                    $('.j-users').empty()
-                        .append(res.usersHTML)
-                        .removeClass('wait');
-
-                    app.users = res.users;
-                }, function(error) {
-                    if(error.title === 'not found') {
-                        $('.j-users').empty()
-                            .append(error.message)
-                            .removeClass('wait');
-                    }
+                ui.insertOccupants(function(users) {
+                    app.users = users;
                 });
 
                 /** render frames */
@@ -154,6 +163,11 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            if(localStorage.getItem('isAuth')) {
+                $('#already_auth').modal();
+                return false;
+            }
+
             $form.addClass('join-wait');
 
             app.helpers.join(data).then(function (user) {
@@ -186,6 +200,7 @@
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
+                        localStorage.setItem('isAuth', true);
                         app.router.navigate('dashboard', { trigger: true });
                     }
                 });
@@ -201,33 +216,20 @@
          */
         /** REFRESH USERS */
         $(document).on('click', '.j-users__refresh', function() {
-            var $btn = $(this),
-                $usersCont = $('.j-users');
-
-            $btn.prop('disabled', true);
-            $usersCont.addClass('wait');
-
-            app.helpers.renderUsers().then(function(res) {
-                $usersCont.empty()
-                    .append(res.usersHTML)
-                    .removeClass('wait');
-
-                app.users = res.users;
-
-                $btn.prop('disabled', false);
-            }, function(error) {
-                if(error.title === 'not found') {
-                    $('.j-users').empty()
-                        .append(error.message)
-                        .removeClass('wait');
-                }
-
-                $btn.prop('disabled', false);
-            });
+            var $btn = $(this);
 
             app.callees = {};
+            $btn.prop('disabled', true);
 
-            app.helpers.setFooterPosition();
+            ui.insertOccupants().then(function(users) {
+                app.users = users;
+
+                $btn.prop('disabled', false);
+                app.helpers.setFooterPosition();
+            }, function() {
+                $btn.prop('disabled', false);
+                app.helpers.setFooterPosition();
+            });
         });
 
         /** Check / uncheck user (callee) */
@@ -494,12 +496,18 @@
                     app.users = [];
 
                     QB.chat.disconnect();
+                    localStorage.removeItem('isAuth');
                     app.router.navigate('join', {'trigger': true});
                     app.helpers.setFooterPosition();
                 } else  {
                     console.error('Logout failed:', err);
                 }
             });
+        });
+
+        /** Close tab or browser */
+        $( window ).unload(function() {
+            localStorage.removeItem('isAuth');
         });
 
         /**
@@ -606,18 +614,19 @@
                 console.log('Extension: ', extension);
             console.groupEnd();
 
-            var initiator = _.findWhere(app.users, {id: session.initiatorID});
-            app.currentSession = session;
+            ui.insertOccupants().then(function(users) {
+                app.users = users;
 
-            /** close previous modal */
-            $(ui.income_call).modal('hide');
-            /**
-             * set name of caller
-             * TODO: what if user doesn't sync all users
-             */
-            $('.j-ic_initiator').text( initiator.full_name ? initiator.full_name : 'Unknown' );
-            $(ui.income_call).modal('show');
-            document.getElementById(sounds.rington).play();
+                var initiator = _.findWhere(app.users, {id: session.initiatorID});
+                app.currentSession = session;
+
+                /** close previous modal */
+                $(ui.income_call).modal('hide');
+
+                $('.j-ic_initiator').text(initiator.full_name);
+                $(ui.income_call).modal('show');
+                document.getElementById(sounds.rington).play();
+            });
         };
 
         QB.webrtc.onRejectCallListener = function onRejectCallListener(session, userId, extension) {
@@ -776,17 +785,17 @@
                    app.calleesAnwered = [];
                }
 
-               if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
+                if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
                    /** get array if users without user who ends call */
-                   app.calleesAnwered = _.reject(app.calleesAnwered, function(num){ return num.id === +userId; });
+                    app.calleesAnwered = _.reject(app.calleesAnwered, function(num){ return num.id === +userId; });
 
-                   app.helpers.stateBoard.update({
+                    app.helpers.stateBoard.update({
                        'title': 'tpl_accept_call',
                        'property': {
                            'users': app.calleesAnwered
                         }
-                   });
-               }
+                    });
+                }
 
                 if( _.isEmpty(app.currentSession) || isCallEnded ) {
                     if(call.callTimer) {

@@ -118,8 +118,8 @@ b {
 .wait:after {
     content: "";
     display: block;
-    min-width: 100px;
     min-height: 100px;
+    min-width: 100px;
     position: absolute;
 
     top: 0;
@@ -596,6 +596,11 @@ b {
 
     font-size: 14px;
 }
+    .frames_callee.wait:after {
+        min-width: auto;
+        min-height: auto;
+        background-size: 30%;
+    }
 
 .frames_callee__inner {
     position: relative;
