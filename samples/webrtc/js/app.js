@@ -757,7 +757,6 @@
 
            if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                app.helpers.toggleRemoteVideoView(userId, 'clear');
-               document.getElementById(sounds.rington).pause();
 
                if(app.mainVideo === userId) {
                    $('#remote_video_' + userId).removeClass('active');
@@ -769,6 +768,7 @@
                if( !_.isEmpty(app.currentSession) ) {
                    if ( Object.keys(app.currentSession.peerConnections).length === 1 || userId === app.currentSession.initiatorID) {
                        $(ui.income_call).modal('hide');
+                       document.getElementById(sounds.rington).pause();
                    }
                }
 
