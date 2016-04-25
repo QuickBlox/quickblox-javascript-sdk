@@ -191,7 +191,7 @@
                         app.calleesAnwered = [];
 
                         if(call.callTimer) {
-                            $('#timer').addClass('hidden');
+                            $('#timer').addClass('invisible');
                             clearInterval(call.callTimer);
                             call.callTimer = null;
                             call.callTime = 0;
@@ -679,7 +679,6 @@
             app.currentSession.update({'filter': filterName});
 
             /** update list of callee who take call */
-            console.info(app.calleee);
             app.calleesAnwered.push(userInfo);
 
             if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
@@ -801,7 +800,7 @@
 
                 if( _.isEmpty(app.currentSession) || isCallEnded ) {
                     if(call.callTimer) {
-                        $('#timer').addClass('hidden');
+                        $('#timer').addClass('invisible');
                         clearInterval(call.callTimer);
                         call.callTimer = null;
                         call.callTime = 0;
