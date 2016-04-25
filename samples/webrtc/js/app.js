@@ -107,7 +107,7 @@
 
                 /** render users wrapper */
                 $('.j-users_wrap').append( $('#users_tpl').html() );
-                ui.insertOccupants(function(users) {
+                ui.insertOccupants().then(function(users) {
                     app.users = users;
                 });
 
@@ -650,6 +650,7 @@
                     }
                 });
             } else {
+
                 $('.j-callee_status_' + userId).text('Rejected');
             }
         };
@@ -678,6 +679,7 @@
             app.currentSession.update({'filter': filterName});
 
             /** update list of callee who take call */
+            console.info(app.calleee);
             app.calleesAnwered.push(userInfo);
 
             if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
