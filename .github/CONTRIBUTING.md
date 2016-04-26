@@ -1,8 +1,10 @@
 # How to contribute
 
 First off, thanks that you help us to make Quickblox better.
-
 Feedback and suggestions for improvement always welcome :)
+
+## Coding conventions
+Please follow all rules from our [code style guidelines](https://github.com/QuickBlox/CodeStyle-Guidelines-for-Developers/tree/master/web).
 
 ## Modify and build the library
 
