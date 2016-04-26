@@ -107,7 +107,7 @@
 
                 /** render users wrapper */
                 $('.j-users_wrap').append( $('#users_tpl').html() );
-                ui.insertOccupants(function(users) {
+                ui.insertOccupants().then(function(users) {
                     app.users = users;
                 });
 
@@ -191,7 +191,7 @@
                         app.calleesAnwered = [];
 
                         if(call.callTimer) {
-                            $('#timer').addClass('hidden');
+                            $('#timer').addClass('invisible');
                             clearInterval(call.callTimer);
                             call.callTimer = null;
                             call.callTime = 0;
@@ -650,6 +650,7 @@
                     }
                 });
             } else {
+
                 $('.j-callee_status_' + userId).text('Rejected');
             }
         };
@@ -757,7 +758,6 @@
 
            if(connectionState === QB.webrtc.SessionConnectionState.CLOSED){
                app.helpers.toggleRemoteVideoView(userId, 'clear');
-               document.getElementById(sounds.rington).pause();
 
                if(app.mainVideo === userId) {
                    $('#remote_video_' + userId).removeClass('active');
@@ -769,6 +769,7 @@
                if( !_.isEmpty(app.currentSession) ) {
                    if ( Object.keys(app.currentSession.peerConnections).length === 1 || userId === app.currentSession.initiatorID) {
                        $(ui.income_call).modal('hide');
+                       document.getElementById(sounds.rington).pause();
                    }
                }
 
@@ -799,7 +800,7 @@
 
                 if( _.isEmpty(app.currentSession) || isCallEnded ) {
                     if(call.callTimer) {
-                        $('#timer').addClass('hidden');
+                        $('#timer').addClass('invisible');
                         clearInterval(call.callTimer);
                         call.callTimer = null;
                         call.callTime = 0;
