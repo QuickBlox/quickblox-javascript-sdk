@@ -45,13 +45,13 @@
          * then tpl with id like params.title
          */
         try {
-          msg = _.template( $('#' + params.title).html() )(params.property);
+            msg = _.template( $('#' + params.title).html() )(params.property);
         } catch(e) {
-          if(MESSAGES[params.title]) {
-              msg = MESSAGES[params.title];
-          } else {
-            msg = params.title;
-          }
+            if(MESSAGES[params.title]) {
+                msg = MESSAGES[params.title];
+            } else {
+                msg = params.title;
+            }
         }
 
         msgFrag.innerHTML = msg;

@@ -40,11 +40,11 @@
 
                     <div class="join__body">
                         <div class="join__row">
-                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Should contain only latin characters and alphanumeric characters in a range from 3 to 20, starts with a letter." pattern="^[a-zA-Z\s][a-zA-Z\d-_\.\s]{3,20}$">
+                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,19}$">
                         </div>
 
                         <div class="join__row">
-                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Should contain only latin characters and alphanumeric characters in a range from 3 to 15, without space." pattern="^[a-zA-Z\s][a-zA-Z\d\s]{3,15}$">
+                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,14}$">
                         </div>
 
                         <div class="join__row">
@@ -99,6 +99,21 @@
                     </p>
                 </div>
                 <p></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="already_auth" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Warning</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p class="text-danger">User has already authorized.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -284,7 +299,7 @@
             </button>
         </div>
 
-        <div class="wait users__list j-users">
+        <div class="users__list j-users">
         </div>
     </script>
 
