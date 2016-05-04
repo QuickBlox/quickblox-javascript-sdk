@@ -43,6 +43,7 @@
   "dependencies": {
     "crypto-js": "3.1.2-2",
     "jquery": "^2.2.0",
+    "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",
     "strophe": "~1.2.4",
     "xml2js": "^0.4.13"

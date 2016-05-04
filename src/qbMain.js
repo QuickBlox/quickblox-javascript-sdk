@@ -8,7 +8,7 @@
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 
-var isBrowser = typeof window !== "undefined";
+var isBrowser = typeof window !== 'undefined';
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -46,7 +46,7 @@ QuickBlox.prototype = {
         this.webrtc = false;
       }
     } else {
-      this.webrtc = false;
+        this.webrtc = false;
     }
 
     this.auth = new Auth(this.service);

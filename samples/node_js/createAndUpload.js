@@ -1,18 +1,15 @@
 /**
  * Sample for Node env.
- * Start example from root folder by command `node samples/node_js/main.js`
+ * createAndUpload an image
  *
+ * Start example from the root folder
+ * by command `node samples/node_js/createAndUpload.js`
  */
 
 /**
  * Declaring variables
  */
 const fs = require('fs');
-const url = require('url');
-const util = require('util');
-const http = require('http');
-const request = require('request');
-
 const QB = require('../../src/qbMain.js');
 
 /** See http://quickblox.com/developers/Javascript#Configuration */
@@ -43,7 +40,10 @@ QB.createSession(QBUser, function(err, result) {
     if (err) {
         console.log('[QB - createSession]Error:', err);
     } else {
-        /** An image for demonstrate a method 'QB.content.createAndUpload' */
+        /**
+         * An image for demonstrate
+         * a method 'QB.content.createAndUpload'
+         */
         var srcIMG = __dirname + '/wolf.jpg';
 
         fs.stat(srcIMG, function (err, stats) {
