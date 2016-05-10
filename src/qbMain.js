@@ -14,7 +14,6 @@ var isBrowser = typeof window !== 'undefined';
 function QuickBlox() {}
 
 QuickBlox.prototype = {
-
   init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
     if (configMap && typeof configMap === 'object') {
       config.set(configMap);
@@ -46,6 +45,10 @@ QuickBlox.prototype = {
         this.webrtc = false;
       }
     } else {
+        /** For NODE env. */
+        // var NodeClient = require('node-xmpp-client');
+        // conn = new NodeClient.Connection();
+
         this.webrtc = false;
     }
 
