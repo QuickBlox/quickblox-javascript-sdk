@@ -17,7 +17,6 @@ var config = {
     }
 };
 
-
 var QBUser = {
     id: 6729114,
     name: 'quickuser',

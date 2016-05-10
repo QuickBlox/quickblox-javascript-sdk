@@ -49,8 +49,8 @@ module.exports = function (grunt) {
       tasks: ['browserify', 'notify:browserify', 'uglify', 'notify:uglify'],
       options: {
         spawn: false,
-        debounceDelay: 250,
-        livereload: true
+        debounceDelay: 250
+        // livereload: true
       }
     },
 
@@ -59,7 +59,7 @@ module.exports = function (grunt) {
         options: {
           protocol: 'https',
           hostname: 'localhost',
-          port: 8080,
+          port: 5000,
           open: true,
           keepalive: true
         }

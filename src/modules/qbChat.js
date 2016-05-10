@@ -12,13 +12,23 @@ var config = require('../qbConfig'),
 var isBrowser = typeof window !== "undefined";
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
+/**
+ * For Node env.
+ * NodeClient - constructor from node-xmpp-client
+ * nClient - connection
+ */
+var NodeClient,
+    nClient;
+
 if (isBrowser) {
-  require('strophe');
-  // add extra namespaces for Strophe
-  Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
-  Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
-  Strophe.addNamespace('PRIVACY_LIST', 'jabber:iq:privacy');
-  Strophe.addNamespace('CHAT_STATES', 'http://jabber.org/protocol/chatstates');
+    require('strophe');
+    // add extra namespaces for Strophe
+    Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
+    Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
+    Strophe.addNamespace('PRIVACY_LIST', 'jabber:iq:privacy');
+    Strophe.addNamespace('CHAT_STATES', 'http://jabber.org/protocol/chatstates');
+} else {
+    NodeClient = require('node-xmpp-client');
 }
 
 var dialogUrl = config.urls.chat + '/Dialog';
@@ -421,8 +431,6 @@ ChatProxy.prototype = {
         });
     } else {
         /** Node env. */
-        var NodeClient = require('node-xmpp-client');
-
         /** nClient create connection */
         nClient = new NodeClient({
            jid: userJid,
@@ -447,10 +455,10 @@ ChatProxy.prototype = {
 
             // self._enableCarbons(function() {
                 // get the roster
-                // self.roster.get(function(contacts) {
-                    console.log("LOG", nClient);
+                self.roster.get(function(contacts) {
+                    // console.log("LOG", nClient);
                     // console.log(self);
-                // });
+                });
             // });
         });
     }
@@ -801,13 +809,25 @@ RosterProxy.prototype = {
     var iq, self = this,
         items, userId, contacts = {};
 
-    iq = $iq({
-      from: connection.jid,
-      type: 'get',
-      id: connection.getUniqueId('getRoster')
-    }).c('query', {
-      xmlns: Strophe.NS.ROSTER
-    });
+    // console.log(typeof NodeClient);
+    console.log('LOG', nClient.connection);
+
+    if(isBrowser) {
+        iq = $iq({
+            from: connection.jid,
+            type: 'get',
+            id: connection.getUniqueId('getRoster')
+        }).c('query', {
+            xmlns: Strophe.NS.ROSTER
+        });
+    } else {
+        // iq = new Client.Stanza('iq', {
+        //     'from': nClient.jid.user,
+        //     'type': 'get',
+        //     'id':
+        // });
+    }
+
 
     connection.sendIQ(iq, function(stanza) {
       items = stanza.getElementsByTagName('item');
