@@ -14,6 +14,9 @@ var QBApp = {
 var config = {
     chatProtocol: {
         active: 2
+    },
+    debug: {
+        mode: 1
     }
 };
 
@@ -28,7 +31,6 @@ QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
 
 QB.createSession({login: QBUser.login, password: QBUser.pass}, function(err, res) {
     if (res) {
-        console.log(res);
         QB.chat.connect({userId: QBUser.id, password: QBUser.pass}, function(err, roster) {
             if (err) {
                 console.log(err);

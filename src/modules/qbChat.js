@@ -317,8 +317,6 @@ function ChatProxy(service, webrtcModule, conn) {
 ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
   connect: function(params, callback) {
-    // if(!isBrowser) throw unsupported;
-    //
     Utils.QBLog('[ChatProxy]', 'connect', params);
 
     var self = this,
@@ -433,11 +431,11 @@ ChatProxy.prototype = {
         /** Node env. */
         /** nClient create connection */
         nClient = new NodeClient({
-           jid: userJid,
-           password: params.password
+           'jid': userJid,
+           'password': params.password
         });
 
-        /** Handlers */
+        /** HANDLERS */
         nClient.on('error', function (e) {
             console.log('ERROR', e);
             err = Utils.getError(422, 'Status.ERROR - An error has occurred');
@@ -809,37 +807,46 @@ RosterProxy.prototype = {
     var iq, self = this,
         items, userId, contacts = {};
 
-    // console.log(typeof NodeClient);
-    console.log('LOG', nClient.connection);
+    var stanzaParams = {
+        'type': 'get',
+        'from': connection ? connection.jid : nClient.jid.user,
+        'id': self.helpers.getUniqueIdCross('getRoster')
+    };
 
     if(isBrowser) {
-        iq = $iq({
-            from: connection.jid,
-            type: 'get',
-            id: connection.getUniqueId('getRoster')
-        }).c('query', {
+        iq = $iq(stanzaParams).c('query', {
             xmlns: Strophe.NS.ROSTER
         });
+
+        connection.sendIQ(iq, function(stanza) {
+            items = stanza.getElementsByTagName('item');
+
+            for (var i = 0, len = items.length; i < len; i++) {
+                userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
+
+                contacts[userId] = {
+                    subscription: items[i].getAttribute('subscription'),
+                    ask: items[i].getAttribute('ask') || null
+                };
+            }
+
+            callback(contacts);
+        });
     } else {
-        // iq = new Client.Stanza('iq', {
-        //     'from': nClient.jid.user,
-        //     'type': 'get',
-        //     'id':
-        // });
+        iq = new NodeClient.Stanza('iq', stanzaParams).c('query', {
+            'xmlns': 'jabber:iq:roster'
+        });
+
+        nClient.send(iq);
+
+        nClient.on('stanza', function (stanza) {
+            console.log(stanza);
+
+        });
     }
 
 
-    connection.sendIQ(iq, function(stanza) {
-      items = stanza.getElementsByTagName('item');
-      for (var i = 0, len = items.length; i < len; i++) {
-        userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
-        contacts[userId] = {
-          subscription: items[i].getAttribute('subscription'),
-          ask: items[i].getAttribute('ask') || null
-        };
-      }
-      callback(contacts);
-    });
+
   },
 
   add: function(jidOrUserId, callback) {
@@ -1438,6 +1445,22 @@ Helpers.prototype = {
   getUniqueId: function(suffix) {
     if(!isBrowser) throw unsupported;
     return connection.getUniqueId(suffix);
+  },
+
+  /**
+   * Steel from Strophe
+   */
+  getUniqueIdCross: function(suffix) {
+      var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0,
+              v = c == 'x' ? r : r & 0x3 | 0x8;
+          return v.toString(16);
+      });
+      if (typeof(suffix) == "string" || typeof(suffix) == "number") {
+          return uuid + ":" + suffix;
+      } else {
+          return uuid + "";
+      }
   },
 
   getBsonObjectId: function() {
