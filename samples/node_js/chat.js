@@ -35,7 +35,11 @@ QB.createSession({login: QBUser.login, password: QBUser.pass}, function(err, res
             if (err) {
                 console.log(err);
             } else {
-                console.log(roster);
+                console.log("success");
+
+                QB.chat.roster.get(function(contacts) {
+                    console.log("roster:", contacts);
+                });
             }
         });
     }else{

@@ -20,6 +20,8 @@ var unsupported = "This function isn't supported outside of the browser (...yet)
 var NodeClient,
     nClient;
 
+var nodeStanzasCallbacks = {};
+
 if (isBrowser) {
     require('strophe');
     // add extra namespaces for Strophe
@@ -446,18 +448,37 @@ ChatProxy.prototype = {
             console.log('Client is disconnected', e);
         });
 
-        nClient.on('connect', function () {
-            Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+        nClient.on('stanza', function (stanza){
+            console.log("stanza: ", stanza);
+            if(stanza.is("iq")){
+                var iqId = stanza.attrs.id;
+                var stanzaCallback = nodeStanzasCallbacks[iqId];
+                if(stanza.attrs.type === 'result'){
+                    stanzaCallback(stanza);
+                    delete nodeStanzasCallbacks[iqId];
+                // error
+                }else if(stanza.attrs.type === 'error'){
+                    stanzaCallback(stanza);
+                    delete nodeStanzasCallbacks[iqId];
+                }
+            }
+        });
 
-            self._isDisconnected = false;
+        nClient.on('online', function () {
+            console.log('Client is authorised');
+
+            nClient.send('<presence/>');
 
             // self._enableCarbons(function() {
-                // get the roster
-                self.roster.get(function(contacts) {
-                    // console.log("LOG", nClient);
-                    // console.log(self);
-                });
+
             // });
+            //
+            callback(null, null);
+        });
+
+        nClient.on('connect', function () {
+            Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+            self._isDisconnected = false;
         });
     }
   },
@@ -839,10 +860,7 @@ RosterProxy.prototype = {
 
         nClient.send(iq);
 
-        nClient.on('stanza', function (stanza) {
-            console.log(stanza);
-
-        });
+        nodeStanzasCallbacks[stanzaParams.id] = callback;
     }
 
 
