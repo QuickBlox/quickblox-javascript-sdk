@@ -6,6 +6,7 @@
   <title>QuickBlox JavaScript Chat code sample</title>
   <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="libs/stickerpipe/css/stickerpipe.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -25,7 +26,7 @@
             <li><a href="#" onclick="showNewDialogPopup()">Create dialog</a></li>
             <li><a href="#" onclick="showDialogInfoPopup()">Dialog info</a></li>
           </ul>
-          <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/tree/master/samples/chat"
+          <a href="https://github.com/QuickBlox/quickblox-javascript-sdk/"
       		style="position:absolute;top:20px;right:12%;font-size:0.85em;color:grey;">View source on GitHub</a>
         </div><!--/.nav-collapse -->
       </div>
@@ -56,12 +57,27 @@
                   </div>
                     <div><img src="images/ajax-loader.gif" class="load-msg"></div>
                     <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
-                      <div class="form-group">
-                        <input id="load-img" type="file">
-                        <button type="button" id="attach_btn" class="btn btn-default" onclick="">Attach</button>
-                        <input type="text" class="form-control" id="message_text" placeholder="Enter message">
-                        <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
-                      </div>
+	                  <div class="input-group">
+		                  <span class="input-group-btn input-group-btn_change_load">
+			              <input id="load-img" type="file">
+			                <button type="button" id="attach_btn" class="btn btn-default" onclick="$('#load-img').click();">
+				              <i class="icon-photo"></i>
+			                </button>
+		                  </span>
+		                  <span class="input-group-btn input-group-btn_change_load">
+			                <button type="button" id="stickers_btn" class="btn btn-default" onclick="">
+				              <i class="icon-sticker"></i>
+			                </button>
+		                  </span>
+
+		                  <span class="input-group-btn" style="width: 100%;">
+			                 <input type="text" class="form-control" id="message_text" placeholder="Enter message">
+		                  </span>
+
+		                  <span class="input-group-btn">
+			                <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
+		                  </span>
+	                    </div>
                       <img src="images/ajax-loader.gif" id="progress">
                     </form>
                 </div>
@@ -147,10 +163,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js" type="text/javascript"></script>
 
-  <script src="../../quickblox.js"></script>
+  <script src="../../quickblox.min.js"></script>
+  <script src="libs/stickerpipe/js/stickerpipe.js"></script>
   <script src="js/config.js"></script>
   <script src="js/connection.js"></script>
   <script src="js/messages.js"></script>
+  <script src="js/stickerpipe.js"></script>
   <script src="js/ui_helpers.js"></script>
   <script src="js/dialogs.js"></script>
   <script src="js/users.js"></script>

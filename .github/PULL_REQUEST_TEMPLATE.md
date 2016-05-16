@@ -1,13 +1,12 @@
 *Make sure that you wrote the tests for your proposed changes and the existing test was success.*
 
-**What are the relevant tickets?**
+**Made/Proposed changes:**
+*(Don’t use general words, describe changes in details)*
 
-
-**Proposed changes:**
 -
 -
 
 **How should this be manually tested?**
 
 
-**Do we need to update documentation?**
+**Does the documentation need an update?**

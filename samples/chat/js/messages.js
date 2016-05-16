@@ -165,7 +165,11 @@ function clickSendAttachments(inputFile) {
     if (err) {
       console.log(err);
     } else {
-      $("#progress").fadeOut(400);
+
+      $("#progress").fadeOut(400, function() {
+        $(".input-group-btn_change_load").removeClass("visibility_hidden");
+      });
+
       var uploadedFile = response;
 
       sendMessage("[attachment]", uploadedFile.id);
@@ -177,6 +181,9 @@ function clickSendAttachments(inputFile) {
 
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
+
+  stickerpipe.onUserMessageSent(stickerpipe.isSticker(text));
+
   var msg = {
     type: currentDialog.type === 3 ? 'chat' : 'groupchat',
     body: text,
@@ -194,7 +201,7 @@ function sendMessage(text, attachmentFileId) {
     opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
     QB.chat.send(opponentId, msg);
 
-    $('.list-group-item.active .list-group-item-text').text(msg.body);
+    $('.list-group-item.active .list-group-item-text').text(stickerpipe.isSticker(msg.body) ? 'Sticker' : msg.body);
 
     if(attachmentFileId === null){
       showMessage(currentUser.id, msg);

@@ -672,10 +672,7 @@ ChatProxy.prototype = {
         var attach = {};
         var attributes = extraParams.childNodes[i].attributes;
         for (var j = 0, len2 = attributes.length; j < len2; j++) {
-          if (attributes[j].name === 'id' || attributes[j].name === 'size')
-            attach[attributes[j].name] = parseInt(attributes[j].value);
-          else
-            attach[attributes[j].name] = attributes[j].value;
+          attach[attributes[j].name] = attributes[j].value;
         }
         attachments.push(attach);
 
@@ -1277,11 +1274,23 @@ MessageProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(messageUrl), type: 'POST', data: params}, callback);
   },
 
-  update: function(id, params, callback) {
-    Utils.QBLog('[MessageProxy]', 'update', id, params);
+    /**
+    * uses dataType:text
+    * because this request returnes
+    * empty body if the request was success
+    */
+    update: function(id, params, callback) {
+        var attrAjax = {
+            'type': 'PUT',
+            'dataType': 'text',
+            'url': Utils.getUrl(messageUrl, id),
+            'data': params
+        };
 
-    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
-  },
+        Utils.QBLog('[MessageProxy]', 'update', id, params);
+
+        this.service.ajax(attrAjax, callback);
+    },
 
   delete: function(id, params_or_callback, callback) {
     Utils.QBLog('[DialogProxy]', 'delete', id);

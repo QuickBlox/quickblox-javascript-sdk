@@ -4,12 +4,39 @@ function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachm
   if(attachmentFileId){
       messageAttach = '<img src="http://api.quickblox.com/blobs/'+attachmentFileId+'/download.xml?token='+token+'" alt="attachment" class="attachments img-responsive" />';
   }
+
+	var isMessageSticker = stickerpipe.isSticker(messageText);
+
   var delivered = '<img class="icon-small" src="images/delivered.jpg" alt="" id="delivered_'+messageId+'">';
   var read = '<img class="icon-small" src="images/read.jpg" alt="" id="read_'+messageId+'">';
 
-  var messageHtml = '<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+"'"+messageId+"'"+')">'+'<time datetime="'+messageDateSent+
-                    '" class="pull-right">'+jQuery.timeago(messageDateSent)+'</time>'+'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+
-                    '<p class="list-group-item-text">'+(messageAttach ? messageAttach : messageText)+'</p>'+delivered+read+'</div>';
+	var messageTextHtml = messageText;
+	if (messageAttach) {
+		messageTextHtml = messageAttach;
+	} else if (isMessageSticker) {
+		messageTextHtml = '<div class="message-sticker-container"></div>';
+
+		stickerpipe.parseStickerFromText(messageText, function(sticker, isAsync) {
+			if (isAsync) {
+				$('#' + messageId + ' .message-sticker-container').html(sticker.html);
+			} else {
+				messageTextHtml = sticker.html;
+			}
+		});
+	}
+
+  var messageHtml =
+			'<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+"'"+messageId+"'"+')">'+
+				'<time datetime="'+messageDateSent+ '" class="pull-right">'
+					+jQuery.timeago(messageDateSent)+
+				'</time>'+
+
+				'<h4 class="list-group-item-heading">'+messageSenderId+'</h4>'+
+				'<p class="list-group-item-text">'+
+					messageTextHtml +
+				'</p>'
+				+delivered+read+
+			'</div>';
   return messageHtml;
 }
 
@@ -18,17 +45,29 @@ function buildDialogHtml(dialogId, dialogUnreadMessagesCount, dialogIcon, dialog
   var UnreadMessagesCountShow = '<span class="badge">'+dialogUnreadMessagesCount+'</span>';
       UnreadMessagesCountHide = '<span class="badge" style="display: none;">'+dialogUnreadMessagesCount+'</span>';
 
-  var dialogHtml = '<a href="#" class="list-group-item inactive" id='+'"'+dialogId+'"'+' onclick="triggerDialog('+"'"+dialogId+"'"+')">'+
-                   (dialogUnreadMessagesCount === 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+'<h4 class="list-group-item-heading">'+
-                   dialogIcon+'&nbsp;&nbsp;&nbsp;<span>'+dialogName+'</span></h4>'+'<p class="list-group-item-text last-message">'+
-                   (dialogLastMessage === null ?  "" : dialogLastMessage)+'</p>'+'</a>';
+  var isMessageSticker = stickerpipe.isSticker(dialogLastMessage);
+
+  var dialogHtml =
+      '<a href="#" class="list-group-item inactive" id='+'"'+dialogId+'"'+' onclick="triggerDialog('+"'"+dialogId+"'"+')">'+
+                   (dialogUnreadMessagesCount === 0 ? UnreadMessagesCountHide : UnreadMessagesCountShow)+
+        '<h4 class="list-group-item-heading">'+ dialogIcon+'&nbsp;&nbsp;&nbsp;' +
+            '<span>'+dialogName+'</span>' +
+        '</h4>'+
+        '<p class="list-group-item-text last-message">'+
+            (dialogLastMessage === null ?  "" : (isMessageSticker ? 'Sticker' : dialogLastMessage))+
+        '</p>'+
+      '</a>';
   return dialogHtml;
 }
 
 // build html for typing status
 function buildTypingUserHtml(userId, userLogin) {
-  var typingUserHtml = '<div id="'+userId+'_typing" class="list-group-item typing">'+'<time class="pull-right">writing now</time>'+'<h4 class="list-group-item-heading">'+
-                       userLogin+'</h4>'+'<p class="list-group-item-text"> . . . </p>'+'</div>';
+  var typingUserHtml =
+      '<div id="'+userId+'_typing" class="list-group-item typing">'+
+        '<time class="pull-right">writing now</time>'+
+        '<h4 class="list-group-item-heading">'+ userLogin+'</h4>'+
+        '<p class="list-group-item-text"> . . . </p>'+
+      '</div>';
 
   return typingUserHtml;
 }
