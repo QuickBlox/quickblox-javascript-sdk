@@ -7,7 +7,7 @@ describe('Users API', function() {
   var request = isNodeEnv ? require('request') : {};
 
   var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
-  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
+  var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
@@ -19,7 +19,7 @@ describe('Users API', function() {
         done.fail("Create session error: " + JSON.stringify(err));
       } else {
         expect(result).not.toBeNull();
-        
+
         done();
       }
     }, REST_REQUESTS_TIMEOUT);
