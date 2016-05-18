@@ -1,7 +1,7 @@
 describe('Users API', function() {
   'use strict';
 
-  var REST_REQUESTS_TIMEOUT = 3000;
+  var REST_REQUESTS_TIMEOUT = 5000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
   var request = isNodeEnv ? require('request') : {};
