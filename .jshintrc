@@ -22,10 +22,11 @@
     "inject",
     "expect",
     "spyOn",
-    
+
     "QB",
     "CONFIG",
     "QBApp",
-    "QBUsers"
+    "QBUsers",
+    "Promise"
   ]
 }
