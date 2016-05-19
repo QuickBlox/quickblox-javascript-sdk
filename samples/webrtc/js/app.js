@@ -1,7 +1,6 @@
 ;(function(window, QB, app, CONFIG, $, Backbone) {
     'use strict';
 
-    /** INIT QB */
     $(function() {
         var sounds = {
             'call': 'callingSignal',
@@ -30,7 +29,7 @@
                         resolve(res.users);
                     }, function(error) {
                         cb($occupantsCont, error.message);
-                        reject(null);
+                        reject('Not found users by tag');
                     });
                 });
             }
@@ -69,6 +68,11 @@
                     return;
                 }
 
+                if (!_.isEmpty(app.caller)) {
+                    app.router.navigate('dashboard');
+                    return false;
+                }
+
                 this.container
                     .removeClass('page-dashboard')
                     .addClass('page-join');
@@ -82,7 +86,7 @@
                 app.videoMain = 0;
             },
             'dashboard': function() {
-                if (_.isEmpty(app.caller)) {
+                if(_.isEmpty(app.caller)) {
                     app.router.navigate('join', { 'trigger': true });
                     return false;
                 }
@@ -109,6 +113,8 @@
                 $('.j-users_wrap').append( $('#users_tpl').html() );
                 ui.insertOccupants().then(function(users) {
                     app.users = users;
+                }, function(err) {
+                    console.error(err);
                 });
 
                 /** render frames */
