@@ -87,6 +87,7 @@ function retrieveChatDialogs() {
           var inputFile = $("input[type=file]")[0].files[0];
           if (inputFile) {
             $("#progress").show(0);
+            $(".input-group-btn_change_load").addClass("visibility_hidden");
           }
 
           clickSendAttachments(inputFile);
@@ -152,7 +153,7 @@ function updateDialogsList(dialogId, text){
   $('#'+dialogId+'.list-group-item.inactive .badge').text(parseInt(badgeCount)+1).fadeIn(500);
 
   // update last message
-  $('#'+dialogId+' .list-group-item-text').text(text);
+  $('#'+dialogId+' .list-group-item-text').text(stickerpipe.isSticker(text) ? 'Sticker' : text);
 }
 
 // Choose dialog

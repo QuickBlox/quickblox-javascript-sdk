@@ -41,6 +41,11 @@ function connectToChat(user) {
           console.log(err);
         } else {
           console.log(roster);
+
+          // setup scroll stickerpipe module
+          //
+          setupStickerPipe();
+
           // load chat dialogs
           //
           retrieveChatDialogs();

@@ -1,12 +1,12 @@
 describe('Helpers', function() {
   'use strict';
-  
+
   var LOGIN_TIMEOUT = 10000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
   var QB = isNodeEnv ? require('../quickblox.min.js') : window.QB;
-  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
+  var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
   beforeAll(function() {
