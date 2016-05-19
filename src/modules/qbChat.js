@@ -329,7 +329,9 @@ ChatProxy.prototype = {
       switch (status) {
       case Strophe.Status.ERROR:
         err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-        if (typeof callback === 'function') callback(err, null);
+        if (typeof callback === 'function') {
+          callback(err, null);
+        }
         break;
       case Strophe.Status.CONNECTING:
         Utils.QBLog('[ChatProxy]', 'Status.CONNECTING');
@@ -337,14 +339,21 @@ ChatProxy.prototype = {
         break;
       case Strophe.Status.CONNFAIL:
         err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed');
-        if (typeof callback === 'function') callback(err, null);
+        if (typeof callback === 'function') {
+          callback(err, null);
+        }
         break;
       case Strophe.Status.AUTHENTICATING:
         Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
         break;
       case Strophe.Status.AUTHFAIL:
         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-        if (typeof callback === 'function') callback(err, null);
+        if (typeof callback === 'function') {
+          callback(err, null);
+        }
+        if(self._isDisconnected && typeof self.onReconnectFailedListener === 'function'){
+          Utils.safeCallbackCall(self.onReconnectFailedListener, err);
+        }
         break;
       case Strophe.Status.CONNECTED:
         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
