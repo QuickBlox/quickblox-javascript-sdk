@@ -72,6 +72,22 @@
             .addClass( filterName );
     };
 
+    app.helpers.getConStateName = function(num) {
+        var answ;
+
+        switch (num) {
+            case 7:
+            case 5:
+            case 6:
+                answ = 'DISCONNECTED';
+                break;
+            default:
+                answ = 'CONNECTING';
+        }
+
+        return answ;
+    };
+
     app.helpers.toggleRemoteVideoView = function(userId, action) {
       var $video = $('#remote_video_' + userId);
 

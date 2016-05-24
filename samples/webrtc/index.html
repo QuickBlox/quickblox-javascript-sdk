@@ -317,9 +317,15 @@
     <script type="text/template" id="callee_video">
         <div class="frames_callee callees__callee j-callee">
             <div class="frames_callee__inner">
-                <p class="frames_callee__status j-callee_status_<%=userID%>">Connecting</p>
+                <p class="frames_callee__status j-callee_status_<%=userID%>">
+                    <%=state%>
+                </p>
+
                 <div class="qb-video">
-                    <video class="j-callees__callee__video qb-video_source" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
+                    <video class="j-callees__callee__video qb-video_source"
+                        id="remote_video_<%=userID%>"
+                        data-user="<%=userID%>">
+                    </video>
                 </div>
             </div>
 
