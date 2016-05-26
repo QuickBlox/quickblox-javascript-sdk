@@ -1,0 +1,15 @@
+{
+    "AVFoundation.framework": 1,
+    "CoreMedia.framework": 1,
+    "GLKit.framework": 1,
+    "OpenGLES.framework": 1,
+    "CoreVideo.framework": 1,
+    "CoreAudio.framework": 1,
+    "QuartzCore.framework": 1,
+    "CoreLocation.framework": 1,
+    "AudioToolbox.framework": 1,
+    "libc++.dylib": 1,
+    "libstdc++.dylib": 1,
+    "libsqlite3.0.dylib": 1,
+    "VideoToolbox.framework": 1
+}
