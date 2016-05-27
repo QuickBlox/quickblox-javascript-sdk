@@ -18,6 +18,11 @@
                         }
                     ]
                 }
+            },
+            "*-Info.plist": {
+                "parents": {
+                    "NSLocationWhenInUseUsageDescription": []
+                }
             }
         }
     },
