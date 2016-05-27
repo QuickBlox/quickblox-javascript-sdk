@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
 		06BC01E5D0A441E2B8F8B726 /* PluginUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1963E6D6764233BF7006CE /* PluginUtils.swift */; };
@@ -43,6 +42,7 @@
 		D27E6326E6FB4092AAB4B589 /* PluginEnumerateDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C800750B4B4A468EDAF931 /* PluginEnumerateDevices.swift */; };
 		E3B8C16046C3441181A92B20 /* PluginMediaStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E472DBC855446C92FA0B09 /* PluginMediaStream.swift */; };
 		FBF9B30A0574444C997FAB6B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB8F325464F44307B6F43846 /* AudioToolbox.framework */; };
+		978FC87734FF48FB951E6BF8 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C99F9BE778140B38968F567 /* ImageIO.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +141,7 @@
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "QB VideoChat/config.xml"; sourceTree = "<group>"; };
 		FA3B1198BCEB437B90A02A6C /* CoreVideo.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		FB8F325464F44307B6F43846 /* AudioToolbox.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		5C99F9BE778140B38968F567 /* ImageIO.framework */ = {isa = PBXFileReference; name = "ImageIO.framework"; path = "System/Library/Frameworks/ImageIO.framework"; sourceTree = SDKROOT; fileEncoding = undefined; lastKnownFileType = wrapper.framework; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +164,7 @@
 				537F89BD240F43F9B806C1F6 /* libstdc++.dylib in Frameworks */,
 				B28906365017467784DF0F5F /* libsqlite3.0.dylib in Frameworks */,
 				BA55193FEC264FF58C496944 /* VideoToolbox.framework in Frameworks */,
+				978FC87734FF48FB951E6BF8 /* ImageIO.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,6 +248,7 @@
 				EC3A6BEE9D634219841169A3 /* libstdc++.dylib */,
 				CF9112701D7C48CC8E082595 /* libsqlite3.0.dylib */,
 				10AF764B2EEA4E49A11DDA05 /* VideoToolbox.framework */,
+				5C99F9BE778140B38968F567 /* ImageIO.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -358,7 +361,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 730;
 				LastUpgradeCheck = 510;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "QB VideoChat" */;

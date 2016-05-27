@@ -11,5 +11,6 @@
     "libc++.dylib": 1,
     "libstdc++.dylib": 1,
     "libsqlite3.0.dylib": 1,
-    "VideoToolbox.framework": 1
+    "VideoToolbox.framework": 1,
+    "ImageIO.framework": 1
 }
