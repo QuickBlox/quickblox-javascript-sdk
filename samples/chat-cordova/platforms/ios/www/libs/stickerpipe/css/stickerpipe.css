@@ -1,0 +1,823 @@
+/*
+SCSS variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon-home-width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon-home: x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet: width height image $spritesheet-sprites;
+*/
+
+/*
+These "retina group" variables are mappings for the naming and pairing of normal and retina sprites.
+
+The list formatted variables are intended for mixins like `retina-sprite` and `retina-sprites`.
+*/
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  @include sprite-width($icon-home);
+}
+
+.icon-email {
+  @include sprite($icon-email);
+}
+*/
+
+/*
+The `retina-sprite` mixin sets up rules and a media query for a sprite/retina sprite.
+  It should be used with a "retina group" variable.
+
+The media query is from CSS Tricks: https://css-tricks.com/snippets/css/retina-display-media-query/
+
+$icon-home-group: ('icon-home', $icon-home, $icon-home-2x, );
+
+.icon-home {
+  @include retina-sprite($icon-home-group);
+}
+*/
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of SCSS
+
+@include sprites($spritesheet-sprites);
+*/
+
+/*
+The `retina-sprites` mixin generates a CSS rule and media query for retina groups
+  This yields the same output as CSS retina template but can be overridden in SCSS
+
+@include retina-sprites($retina-groups);
+*/
+
+.sp-modal-lock {
+  overflow: hidden;
+}
+
+.sp-modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  overflow: auto;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000);
+  zoom: 1;
+}
+
+.sp-modal-overlay > * {
+  -webkit-transform: translateZ(0px);
+}
+
+.sp-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1050;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sp-modal-dialog {
+  background: white;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+  margin: 40px auto;
+  max-width: 700px;
+}
+
+.sp-modal-dialog:before {
+  display: table;
+  content: " ";
+}
+
+@media (max-width: 700px) {
+  .sp-modal-dialog {
+    border-radius: 0;
+    margin: 0;
+    width: 100%;
+  }
+}
+
+.sp-modal-header {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  display: table;
+  height: 48px;
+  width: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.sp-modal-body {
+  height: 100%;
+  width: 100%;
+  overflow-y: hidden;
+}
+
+.sp-modal-back,
+.sp-modal-close {
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 12px;
+}
+
+.sp-modal-back:hover,
+.sp-modal-close:hover {
+  opacity: 0.7;
+}
+
+.sp-modal-back {
+  float: left;
+  display: none;
+}
+
+.sp-modal-close {
+  float: right;
+}
+
+.ps-container {
+  -ms-touch-action: none;
+  touch-action: none;
+  overflow: hidden !important;
+  -ms-overflow-style: none;
+}
+
+@supports (-ms-overflow-style: none) {
+  .ps-container {
+    overflow: auto !important;
+  }
+}
+
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .ps-container {
+    overflow: auto !important;
+  }
+}
+
+.ps-container.ps-active-x > .ps-scrollbar-x-rail,
+.ps-container.ps-active-y > .ps-scrollbar-y-rail {
+  display: block;
+  background-color: transparent;
+}
+
+.ps-container.ps-in-scrolling {
+  pointer-events: none;
+}
+
+.ps-container.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
+  background-color: #999;
+}
+
+.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
+  background-color: #999;
+}
+
+.ps-container > .ps-scrollbar-x-rail {
+  display: none;
+  position: absolute;
+  /* please don't change 'position' */
+  border-radius: 4px;
+  opacity: 0;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  transition: background-color .2s linear, opacity .2s linear;
+  bottom: 3px;
+  /* there must be 'bottom' for ps-scrollbar-x-rail */
+  height: 8px;
+}
+
+.ps-container > .ps-scrollbar-x-rail > .ps-scrollbar-x {
+  position: absolute;
+  /* please don't change 'position' */
+  background-color: #aaa;
+  border-radius: 4px;
+  -webkit-transition: background-color .2s linear;
+  transition: background-color .2s linear;
+  bottom: 0;
+  /* there must be 'bottom' for ps-scrollbar-x */
+  height: 8px;
+}
+
+.ps-container > .ps-scrollbar-y-rail {
+  display: none;
+  position: absolute;
+  /* please don't change 'position' */
+  border-radius: 4px;
+  opacity: 0;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  transition: background-color .2s linear, opacity .2s linear;
+  right: 3px;
+  width: 7px;
+  margin-right: 1px;
+}
+
+.ps-container > .ps-scrollbar-y-rail > .ps-scrollbar-y {
+  position: absolute;
+  /* please don't change 'position' */
+  background-color: #aaa;
+  border-radius: 4px;
+  -webkit-transition: background-color .2s linear;
+  transition: background-color .2s linear;
+  right: 0;
+  width: 7px;
+}
+
+.ps-container:hover.ps-in-scrolling {
+  pointer-events: none;
+}
+
+.ps-container:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
+  background-color: #999;
+}
+
+.ps-container:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
+  background-color: #999;
+}
+
+.ps-container:hover > .ps-scrollbar-x-rail,
+.ps-container:hover > .ps-scrollbar-y-rail {
+  opacity: 0.6;
+}
+
+.ps-container:hover > .ps-scrollbar-x-rail:hover {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
+  background-color: #999;
+}
+
+.ps-container:hover > .ps-scrollbar-y-rail:hover {
+  background-color: #eee;
+  opacity: 0.9;
+}
+
+.ps-container:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
+  background-color: #999;
+}
+
+.sp-preloader {
+  background: white;
+  display: table;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 9;
+}
+
+.sp-preloader-content {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.sp-preloader-chasing-dots {
+  margin: 40px auto;
+  width: 40px;
+  height: 40px;
+  position: relative;
+  text-align: center;
+  -webkit-animation: sp-preloader-chasingDotsRotate 2s infinite linear;
+  animation: sp-preloader-chasingDotsRotate 2s infinite linear;
+}
+
+.sp-preloader-chasing-dots .sp-preloader-child {
+  width: 60%;
+  height: 60%;
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  background-color: #9e9e9e;
+  border-radius: 100%;
+  -webkit-animation: sp-preloader-chasingDotsBounce 2s infinite ease-in-out;
+  animation: sp-preloader-chasingDotsBounce 2s infinite ease-in-out;
+}
+
+.sp-preloader-chasing-dots .sp-preloader-dot2 {
+  top: auto;
+  bottom: 0;
+  -webkit-animation-delay: -1s;
+  animation-delay: -1s;
+}
+
+@-webkit-keyframes sp-preloader-chasingDotsRotate {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sp-preloader-chasingDotsRotate {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes sp-preloader-chasingDotsBounce {
+  0%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes sp-preloader-chasingDotsBounce {
+  0%, 100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+.sp-popover {
+  border: 1px solid #c8c8c8;
+  border-radius: 3px;
+  position: absolute;
+  box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.15);
+  -webkit-box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.sp-popover > .sticker-pipe {
+  border-radius: 3px;
+}
+
+.sp-popover .sp-arrow,
+.sp-popover .sp-arrow:after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.sp-popover .sp-arrow {
+  bottom: -11px;
+  margin-left: 1px;
+  border-top-color: rgba(0, 0, 0, 0.25);
+  border-width: 11px;
+  border-bottom-width: 0;
+}
+
+@media (max-width: 544px) {
+  .sp-popover .sp-arrow {
+    display: none;
+  }
+}
+
+.sp-popover .sp-arrow:after {
+  bottom: 1px;
+  margin-left: -10px;
+  content: " ";
+  border-top-color: #fafafa;
+  border-width: 10px;
+  border-bottom-width: 0;
+}
+
+.sticker-pipe {
+  background: #fafafa;
+  width: 100%;
+}
+
+.sticker-pipe .sp-store {
+  background: white;
+}
+
+.sticker-pipe .sp-tabs {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  background-color: white;
+  border-bottom: 1px solid #c8c8c8;
+  border-radius: 3px 3px 0 0;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sticker-pipe .sp-tabs .sp-tabs-scrollable-container {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  float: left;
+  overflow: hidden;
+  position: relative;
+}
+
+.sticker-pipe .sp-tabs .sp-tabs-scrollable-container .sp-tabs-scrollable-content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  left: 0;
+  position: relative;
+  -webkit-transition: 300ms;
+  transition: 300ms;
+  white-space: nowrap;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item {
+  display: inline-table;
+  cursor: pointer;
+  padding: 6px;
+  position: relative;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item img {
+  border-radius: 50%;
+  height: 36px;
+  width: 36px;
+  opacity: .5;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item img:hover {
+  opacity: .7;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-tab-active {
+  background: rgba(0, 0, 0, 0.1);
+  color: orange;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-tab-active img {
+  opacity: 1;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-tab-active.sp-control-tab > span,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-tab-active.sp-control-button > span {
+  opacity: 0.9;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button {
+  margin: 0;
+  padding: 12px;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab:hover > span,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button:hover > span {
+  opacity: .7;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab > span,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button > span {
+  display: table;
+  opacity: .5;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-next-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-store,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-next-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-store {
+  border-left: 1px solid #c8c8c8;
+  border-radius: 0;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-prev-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-history,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-prev-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-history {
+  border-right: 1px solid #c8c8c8;
+}
+
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-prev-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-tab.sp-tab-next-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-prev-packs,
+.sticker-pipe .sp-tabs .sp-tab-item.sp-control-button.sp-tab-next-packs {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sticker-pipe .sp-unwatched-content::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  display: block;
+  position: absolute;
+  background-color: #f60;
+  border-radius: 50%;
+  top: 32px;
+  left: 35px;
+}
+
+.sticker-pipe .sp-scroll-content {
+  position: relative;
+  overflow: hidden;
+}
+
+.sticker-pipe .sp-emojis,
+.sticker-pipe .sp-stickers {
+  border-radius: 0 0 3px 3px;
+  display: table;
+}
+
+.sticker-pipe .sp-emojis {
+  padding: 8px 16px;
+}
+
+.sticker-pipe .sp-emojis .sp-emoji {
+  display: inline-table;
+  float: left;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.sticker-pipe .sp-emojis .sp-emoji:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.sticker-pipe .sp-emojis .sp-emoji img {
+  height: 24px;
+  width: 24px;
+}
+
+.sticker-pipe .sp-stickers .sp-sticker-item,
+.sticker-pipe .sp-stickers .sp-sticker-placeholder {
+  float: left;
+  display: inline-table;
+}
+
+.sticker-pipe .sp-stickers .sp-sticker-placeholder {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  margin: 32px;
+}
+
+.sticker-pipe .sp-stickers .sp-sticker-item {
+  cursor: pointer;
+  display: inline-table;
+  float: left;
+  margin: 9px;
+  padding: 3px;
+}
+
+.sticker-pipe .sp-stickers .sp-sticker-item:not(.sp-sticker-placeholder):hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.sticker-pipe .sp-stickers .sp-sticker-item img {
+  height: 80px;
+  width: 80px;
+}
+
+.sticker-pipe .sp-recent-empty {
+  text-align: center;
+  margin-top: 135px;
+  font-size: 20px;
+}
+
+.stickerpipe-sticker {
+  height: 160px;
+  width: 160px;
+}
+
+.stickerpipe-content-highlight:after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  display: block;
+  position: absolute;
+  background-color: red;
+  border-radius: 50%;
+  margin-left: 16px;
+  margin-top: -24px !important;
+}
+
+.sp-icon-arrow-back {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-arrow-forward {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-back {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-clock {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-close {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-face {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-mall {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-plus {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-settings {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+.sp-icon-arrow-back {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-arrow-back {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-arrow-forward {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-arrow-forward {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-back {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-back {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-clock {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-clock {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-close {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px 0px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-close {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-face {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px -24px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-face {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-mall {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: 0px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-mall {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-plus {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -24px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-plus {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
+
+.sp-icon-settings {
+  background-image: url("../img/icons/icons_sprite.1453724705945.png");
+  background-position: -48px -48px;
+  width: 24px;
+  height: 24px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sp-icon-settings {
+    background-image: url("../img/icons/icons_sprite@2x.1453724705945.png");
+    background-size: 72px 72px;
+  }
+}
