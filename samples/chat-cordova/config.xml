@@ -22,5 +22,6 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+        <preference name="Orientation" value="landscape" />
     </platform>
 </widget>
