@@ -76,9 +76,9 @@
         var answ;
 
         switch (num) {
-            case 7:
-            case 5:
-            case 6:
+            case QB.webrtc.PeerConnectionState.DISCONNECTED:
+            case QB.webrtc.PeerConnectionState.FAILED:
+            case QB.webrtc.PeerConnectionState.CLOSED:
                 answ = 'DISCONNECTED';
                 break;
             default:

@@ -2,6 +2,8 @@
     'use strict';
 
     $(function() {
+        var peerConnList = QB.webrtc.PeerConnectionState;
+
         var sounds = {
             'call': 'callingSignal',
             'end': 'endCallSignal',
@@ -712,7 +714,7 @@
 
             var state = app.currentSession.connectionStateForUser(userId);
 
-            if(state === 7 || state === 5 || state === 6) {
+            if(state === peerConnList.DISCONNECTED || state === peerConnList.FAILED || state === peerConnList.CLOSED) {
                 return false;
             }
 
