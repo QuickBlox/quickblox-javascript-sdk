@@ -72,6 +72,22 @@
             .addClass( filterName );
     };
 
+    app.helpers.getConStateName = function(num) {
+        var answ;
+
+        switch (num) {
+            case QB.webrtc.PeerConnectionState.DISCONNECTED:
+            case QB.webrtc.PeerConnectionState.FAILED:
+            case QB.webrtc.PeerConnectionState.CLOSED:
+                answ = 'DISCONNECTED';
+                break;
+            default:
+                answ = 'CONNECTING';
+        }
+
+        return answ;
+    };
+
     app.helpers.toggleRemoteVideoView = function(userId, action) {
       var $video = $('#remote_video_' + userId);
 

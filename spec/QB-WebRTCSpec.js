@@ -1,5 +1,6 @@
 describe('WebRTC API', function() {
   'use strict';
+  
   var LOGIN_TIMEOUT = 10000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';

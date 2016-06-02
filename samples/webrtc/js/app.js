@@ -1,8 +1,9 @@
 ;(function(window, QB, app, CONFIG, $, Backbone) {
     'use strict';
 
-    /** INIT QB */
     $(function() {
+        var peerConnList = QB.webrtc.PeerConnectionState;
+
         var sounds = {
             'call': 'callingSignal',
             'end': 'endCallSignal',
@@ -30,7 +31,7 @@
                         resolve(res.users);
                     }, function(error) {
                         cb($occupantsCont, error.message);
-                        reject(null);
+                        reject('Not found users by tag');
                     });
                 });
             }
@@ -69,6 +70,11 @@
                     return;
                 }
 
+                if (!_.isEmpty(app.caller)) {
+                    app.router.navigate('dashboard');
+                    return false;
+                }
+
                 this.container
                     .removeClass('page-dashboard')
                     .addClass('page-join');
@@ -82,7 +88,7 @@
                 app.videoMain = 0;
             },
             'dashboard': function() {
-                if (_.isEmpty(app.caller)) {
+                if(_.isEmpty(app.caller)) {
                     app.router.navigate('join', { 'trigger': true });
                     return false;
                 }
@@ -109,6 +115,8 @@
                 $('.j-users_wrap').append( $('#users_tpl').html() );
                 ui.insertOccupants().then(function(users) {
                     app.users = users;
+                }, function(err) {
+                    console.warn(err);
                 });
 
                 /** render frames */
@@ -326,7 +334,11 @@
                                 document.getElementById(sounds.call).play();
 
                                 Object.keys(app.callees).forEach(function(id, i, arr) {
-                                    videoElems += compiled({userID: id, name: app.callees[id] });
+                                    videoElems += compiled({
+                                        'userID': id,
+                                        'name': app.callees[id],
+                                        'state': 'connecting'
+                                    });
                                 });
 
                                 $('.j-callees').append(videoElems);
@@ -407,10 +419,14 @@
                             userInfo = _.findWhere(app.users, {'id': +userID});
 
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
-                            videoElems += compiled({userID: userID, name: userInfo.full_name});
+                            videoElems += compiled({
+                                'userID': userID,
+                                'name': userInfo.full_name,
+                                'state': app.helpers.getConStateName(peerState)
+                            });
 
                             if(peerState === QB.webrtc.PeerConnectionState.CLOSED){
-                                app.helpers.toggleRemoteVideoView( userID, 'clear');
+                                app.helpers.toggleRemoteVideoView(userID, 'clear');
                             }
                         }
                     });
@@ -650,7 +666,6 @@
                     }
                 });
             } else {
-
                 $('.j-callee_status_' + userId).text('Rejected');
             }
         };
@@ -696,6 +711,12 @@
                 console.log('userId: ', userId);
                 console.log('Session: ', session);
             console.groupEnd();
+
+            var state = app.currentSession.connectionStateForUser(userId);
+
+            if(state === peerConnList.DISCONNECTED || state === peerConnList.FAILED || state === peerConnList.CLOSED) {
+                return false;
+            }
 
             app.currentSession.peerConnections[userId].stream = stream;
             app.currentSession.attachMediaStream('remote_video_' + userId, stream);
