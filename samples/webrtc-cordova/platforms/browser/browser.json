@@ -1,0 +1,53 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {
+            "config.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<feature name=\"Device\"><param name=\"browser-package\" value=\"Device\" /></feature>",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "installed_plugins": {
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        },
+        "cordova-plugin-iosrtc": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        }
+    },
+    "dependent_plugins": {},
+    "modules": [
+        {
+            "file": "plugins/cordova-plugin-device/www/device.js",
+            "id": "cordova-plugin-device.device",
+            "pluginId": "cordova-plugin-device",
+            "clobbers": [
+                "device"
+            ]
+        },
+        {
+            "file": "plugins/cordova-plugin-device/src/browser/DeviceProxy.js",
+            "id": "cordova-plugin-device.DeviceProxy",
+            "pluginId": "cordova-plugin-device",
+            "runs": true
+        }
+    ],
+    "plugin_metadata": {
+        "cordova-plugin-device": "1.1.2",
+        "cordova-plugin-iosrtc": "3.0.0",
+        "cordova-plugin-whitelist": "1.2.2"
+    }
+}

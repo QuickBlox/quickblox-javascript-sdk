@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
+    <title>ic_remove</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Slice" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="Artboard-1" sketch:type="MSArtboardGroup" transform="translate(-160.000000, -158.000000)">
+            <g id="ic_remove" sketch:type="MSLayerGroup" transform="translate(160.000000, 158.000000)">
+                <path d="M2,2 L26,2 L26,26 L2,26 L2,2 Z" id="Bounds" sketch:type="MSShapeGroup"></path>
+                <circle id="Oval-1" fill="#FFFFFF" sketch:type="MSShapeGroup" cx="14" cy="14" r="14"></circle>
+                <path d="M14,4 C8.48,4 4,8.48 4,14 C4,19.52 8.48,24 14,24 C19.52,24 24,19.52 24,14 C24,8.48 19.52,4 14,4 L14,4 Z M19,15 L9,15 L9,13 L19,13 L19,15 L19,15 Z" id="Shape" fill="#FF2D55" sketch:type="MSShapeGroup"></path>
+            </g>
+        </g>
+    </g>
+</svg>
