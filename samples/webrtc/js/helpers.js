@@ -11,18 +11,20 @@
 
     app.helpers.isBytesReceivedChanges = function(userId, inboundrtp) {
         var res = true,
-            inbBytesRec = inboundrtp.bytesReceived;
+            inbBytesRec = inboundrtp ? inboundrtp.bytesReceived : 0;
 
-        if(app.network[userId] === undefined) {
+        if(app.network[userId] || !inboundrtp) {
             app.network[userId] = {
-              'bytesReceived': inbBytesRec
+              'bytesReceived': inbBytesRec,
+              'count': 0
             };
         } else {
             if(app.network[userId].bytesReceived === inbBytesRec) {
                 res = false;
             } else {
                 app.network[userId] = {
-                    'bytesReceived': inbBytesRec
+                    'bytesReceived': inbBytesRec,
+                    'count': ++app.network[userId].count
                 };
             }
         }

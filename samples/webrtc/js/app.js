@@ -554,6 +554,7 @@
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);
+                console.log('stats: ', stats);
             console.groupEnd();
 
             /**
@@ -561,16 +562,23 @@
              * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
              */
             if(is_firefox) {
-                var inboundrtp = _.findWhere(stats, {type: 'inboundrtp'});
+                var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'});
 
-                if(!inboundrtp || !app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
+                if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
                     console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
-                    if(!_.isEmpty(app.currentSession)) {
+                    /**
+                     * 2 - This is how many stats
+                     * we can get without inboundrtp
+                     * before close connection
+                     */
+                    if(app.network[userId].count >= 2 && !_.isEmpty(app.currentSession)) {
                         app.currentSession.closeConnection(userId);
                         app.helpers.notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
                     }
                 }
+
+                console.info( app.network[userId] );
             }
         };
 
