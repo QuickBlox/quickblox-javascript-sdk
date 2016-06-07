@@ -577,8 +577,6 @@
                         app.helpers.notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
                     }
                 }
-
-                console.info( app.network[userId] );
             }
         };
 
