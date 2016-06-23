@@ -165,10 +165,12 @@
         /**
          * INIT
          */
+        var CREDS = app.helpers.getQueryVar('creds') === 'test' ? CONFIG.CREDENTIALS.test : CONFIG.CREDENTIALS.prod;
+
         QB.init(
-            CONFIG.CREDENTIALS.appId,
-            CONFIG.CREDENTIALS.authKey,
-            CONFIG.CREDENTIALS.authSecret,
+            CREDS.appId,
+            CREDS.authKey,
+            CREDS.authSecret,
             CONFIG.APP_CONFIG
         );
 
@@ -197,7 +199,7 @@
                 app.caller = user;
 
                 QB.chat.connect({
-                    jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
+                    jid: QB.chat.helpers.getUserJid( app.caller.id, CREDS.appId ),
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
