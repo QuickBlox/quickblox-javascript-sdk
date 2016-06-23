@@ -49,8 +49,6 @@
         var remoteStreamCounter = 0;
 
         function closeConn(userId) {
-            console.info('closeConn to user with id' + userId);
-            console.info(app.currentSession);
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
             app.currentSession.closeConnection(userId);
         }
@@ -592,8 +590,7 @@
                     $('.j-callee_status_' + userId).text('disconnected');
 
                     if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
-                        // ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
-                        // console.info('set setTimeout for Firefox');
+                        ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
                     }
                 } else {
                     if(ffHack.waitingReconnectTimer) {
@@ -666,8 +663,6 @@
 
             ui.insertOccupants().then(function(users) {
                 app.users = users;
-
-                console.log(users);
 
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
                 app.currentSession = session;
