@@ -622,8 +622,8 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
 
 /**
  * [_onCallStatsReport return statistics about the peer]
- * @param  {[type]} userId [id of user (callee)]
- * @param  {[type]} stats  [array of statistics]
+ * @param  {number} userId [id of user (callee)]
+ * @param  {array} stats  [array of statistics]
  * 
  * Fire onCallStatsReport callbacks with parameters(userId, stats).
  * If stats will be invalid callback return null
