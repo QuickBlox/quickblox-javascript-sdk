@@ -13,18 +13,16 @@
         var res = true,
             inbBytesRec = inboundrtp ? inboundrtp.bytesReceived : 0;
 
-        if(app.network[userId] || !inboundrtp) {
+        if(!app.network[userId]) {
             app.network[userId] = {
-              'bytesReceived': inbBytesRec,
-              'count': 0
+              'bytesReceived': inbBytesRec
             };
         } else {
-            if(app.network[userId].bytesReceived === inbBytesRec) {
+            if(app.network[userId].bytesReceived >= inbBytesRec) {
                 res = false;
             } else {
                 app.network[userId] = {
-                    'bytesReceived': inbBytesRec,
-                    'count': ++app.network[userId].count
+                    'bytesReceived': inbBytesRec
                 };
             }
         }

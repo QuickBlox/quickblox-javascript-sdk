@@ -46,8 +46,25 @@
               }
         };
 
-        var remoteStreamCounter = 0,
-            is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        var remoteStreamCounter = 0;
+
+        function closeConn(userId) {
+            console.info('closeConn to user with id' + userId);
+            console.info(app.currentSession);
+            app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
+            app.currentSession.closeConnection(userId);
+        }
+
+        var ffHack = {
+            waitingReconnectTimer: null,
+            waitingReconnectTimeoutCallback: function(userId, cb) {
+                console.info('Start waitingReconnectTimeoutCallback for Firefox');
+
+                clearTimeout(this.waitingReconnectTimer);
+                cb(userId);
+            },
+            isFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+        };
 
         var Router = Backbone.Router.extend({
             'routes': {
@@ -156,6 +173,8 @@
             CONFIG.CREDENTIALS.authSecret,
             CONFIG.APP_CONFIG
         );
+
+        var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
 
         app.router = new Router();
         Backbone.history.start();
@@ -561,23 +580,32 @@
              * Hack for Firefox
              * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
              */
-            if(is_firefox) {
-                var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'});
+            // if(ffHack.isFirefox) {
+            //     var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
+            //         webrtcConf = CONFIG.APP_CONFIG.webrtc,
+            //         timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
+            //         console.info(timeout);
+            //     if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
+            //         console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
-                if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-                    console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
+            //         app.helpers.toggleRemoteVideoView(userId, 'hide');
+            //         $('.j-callee_status_' + userId).text('disconnected');
 
-                    /**
-                     * 2 - This is how many stats
-                     * we can get without inboundrtp
-                     * before close connection
-                     */
-                    if(app.network[userId].count >= 2 && !_.isEmpty(app.currentSession)) {
-                        app.currentSession.closeConnection(userId);
-                        app.helpers.notifyIfUserLeaveCall(session, userId, 'disconnected', 'Disconnected');
-                    }
-                }
-            }
+            //         if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
+            //             // ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
+            //             // console.info('set setTimeout for Firefox');
+            //         }
+            //     } else {
+            //         if(ffHack.waitingReconnectTimer) {
+            //             clearTimeout(ffHack.waitingReconnectTimer);
+            //             ffHack.waitingReconnectTimer = null;
+            //             console.info('clearTimeout(ffHack.waitingReconnectTimer)');
+            //         }
+
+            //         app.helpers.toggleRemoteVideoView(userId, 'show');
+            //         $('.j-callee_status_' + userId).text('connected');
+            //     }
+            // }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
@@ -602,6 +630,8 @@
                         'name': app.caller.full_name
                     }
                 });
+            } else {
+                app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
         };
 
@@ -636,6 +666,8 @@
 
             ui.insertOccupants().then(function(users) {
                 app.users = users;
+
+                console.log(users);
 
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
                 app.currentSession = session;
@@ -754,9 +786,9 @@
 
         QB.webrtc.onSessionConnectionStateChangedListener = function onSessionConnectionStateChangedListener(session, userId, connectionState) {
             console.group('onSessionConnectionStateChangedListener.');
-                console.log('UserID: ', userId);
-                console.log('Session: ', session);
-                console.log('Сonnection state: ', connectionState);
+                console.log('UserID:', userId);
+                console.log('Session:', session);
+                console.log('Сonnection state:', connectionState, statesPeerConn[connectionState]);
             console.groupEnd();
 
            var connectionStateName = _.invert(QB.webrtc.SessionConnectionState)[connectionState],

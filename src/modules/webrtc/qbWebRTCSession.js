@@ -365,19 +365,24 @@ WebRTCSession.prototype.stop = function(extension) {
 
 /**
  * [function close connection with user]
- * @param  {[type]} userId [id of user]
+ * @param  {[number]} userId [id of user]
  */
 WebRTCSession.prototype.closeConnection = function(userId) {
-  var self = this,
-    peer = this.peerConnections[userId];
+    var self = this,
+        peer = this.peerConnections[userId];
 
-  if(peer) {
-    peer.release();
+    if(!peer) {
+        Helpers.traceWarn('Not found connection with user (' + userId + ')');
+        return false;
+    }
 
-    self._closeSessionIfAllConnectionsClosed();
-  } else {
-    Helpers.traceWarn('Not found connection with user (' + userId + ')');
-  }
+    try {
+        peer.release();
+    } catch (e) {
+        Helpers.traceError(e);
+    } finally {
+        self._closeSessionIfAllConnectionsClosed();
+    }
 };
 
 
@@ -615,6 +620,14 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
   }
 };
 
+/**
+ * [_onCallStatsReport return statistics about the peer]
+ * @param  {[type]} userId [id of user (callee)]
+ * @param  {[type]} stats  [array of statistics]
+ * 
+ * Fire onCallStatsReport callbacks with parameters(userId, stats).
+ * If stats will be invalid callback return null
+ */
 WebRTCSession.prototype._onCallStatsReport = function(userId, stats) {
   if (typeof this.onCallStatsReport === 'function'){
     Utils.safeCallbackCall(this.onCallStatsReport, this, userId, stats);

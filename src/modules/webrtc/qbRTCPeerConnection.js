@@ -254,10 +254,11 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
         var _statsReportCallback = function() {
             _getStats(self, selector,
                 function (results) {
-                  self.delegate._onCallStatsReport(self.userID, results);
+                    self.delegate._onCallStatsReport(self.userID, results);
                 },
                 function errorLog(err) {
-                  Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
+                    Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
+                    self.delegate._onCallStatsReport(self.userID, null);
                 }
             );
         };
@@ -336,37 +337,42 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 /**
  * PRIVATE
  */
- function _getStats(peer, selector, successCallback, errorCallback) {
-  /**
-   * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
-   */
-   if (navigator.mozGetUserMedia) {
-     peer.getStats(selector,
-       function (res) {
-         var items = [];
-         res.forEach(function (result) {
-             items.push(result);
-         });
-         successCallback(items);
-       },
-       errorCallback
-     );
-   } else {
-     peer.getStats(function (res) {
-       var items = [];
-       res.result().forEach(function (result) {
-         var item = {};
-         result.names().forEach(function (name) {
-             item[name] = result.stat(name);
-         });
-         item.id = result.id;
-         item.type = result.type;
-         item.timestamp = result.timestamp;
-         items.push(item);
-       });
-       successCallback(items);
-     });
-   }
- }
+function _getStats(peer, selector, successCallback, errorCallback) {
+    /**
+     * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
+     */
+    if (navigator.mozGetUserMedia) {
+        peer.getStats(selector,
+            function (res) {
+                var items = [];
+                
+                res.forEach(function (result) {
+                    items.push(result);
+                });
+
+                successCallback(items);
+            },
+            errorCallback
+        );
+    } else {
+        peer.getStats(function (res) {
+            var items = [];
+
+            res.result().forEach(function (result) {
+                var item = {};
+                
+                result.names().forEach(function (name) {
+                    item[name] = result.stat(name);
+                });
+         
+                item.id = result.id;
+                item.type = result.type;
+                item.timestamp = result.timestamp;
+                items.push(item);
+            });
+            successCallback(items);
+        });
+    }
+}
 
 module.exports = RTCPeerConnection;
