@@ -580,32 +580,32 @@
              * Hack for Firefox
              * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
              */
-            // if(ffHack.isFirefox) {
-            //     var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
-            //         webrtcConf = CONFIG.APP_CONFIG.webrtc,
-            //         timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
-            //         console.info(timeout);
-            //     if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-            //         console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
+            if(ffHack.isFirefox) {
+                var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
+                    webrtcConf = CONFIG.APP_CONFIG.webrtc,
+                    timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
 
-            //         app.helpers.toggleRemoteVideoView(userId, 'hide');
-            //         $('.j-callee_status_' + userId).text('disconnected');
+                if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
+                    console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
-            //         if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
-            //             // ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
-            //             // console.info('set setTimeout for Firefox');
-            //         }
-            //     } else {
-            //         if(ffHack.waitingReconnectTimer) {
-            //             clearTimeout(ffHack.waitingReconnectTimer);
-            //             ffHack.waitingReconnectTimer = null;
-            //             console.info('clearTimeout(ffHack.waitingReconnectTimer)');
-            //         }
+                    app.helpers.toggleRemoteVideoView(userId, 'hide');
+                    $('.j-callee_status_' + userId).text('disconnected');
 
-            //         app.helpers.toggleRemoteVideoView(userId, 'show');
-            //         $('.j-callee_status_' + userId).text('connected');
-            //     }
-            // }
+                    if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
+                        // ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
+                        // console.info('set setTimeout for Firefox');
+                    }
+                } else {
+                    if(ffHack.waitingReconnectTimer) {
+                        clearTimeout(ffHack.waitingReconnectTimer);
+                        ffHack.waitingReconnectTimer = null;
+                        console.info('clearTimeout(ffHack.waitingReconnectTimer)');
+                    }
+
+                    app.helpers.toggleRemoteVideoView(userId, 'show');
+                    $('.j-callee_status_' + userId).text('connected');
+                }
+            }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
