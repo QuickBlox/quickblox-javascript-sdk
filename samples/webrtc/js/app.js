@@ -569,7 +569,7 @@
             console.log('onDisconnectedListener.');
         };
 
-        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats) {
+        QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);

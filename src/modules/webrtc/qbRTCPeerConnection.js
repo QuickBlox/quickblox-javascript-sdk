@@ -254,11 +254,11 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
         var _statsReportCallback = function() {
             _getStats(self, selector,
                 function (results) {
-                    self.delegate._onCallStatsReport(self.userID, results);
+                    self.delegate._onCallStatsReport(self.userID, results, null);
                 },
                 function errorLog(err) {
                     Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
-                    self.delegate._onCallStatsReport(self.userID, null);
+                    self.delegate._onCallStatsReport(self.userID, null, err);
                 }
             );
         };

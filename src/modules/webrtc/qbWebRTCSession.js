@@ -625,12 +625,12 @@ WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
  * @param  {number} userId [id of user (callee)]
  * @param  {array} stats  [array of statistics]
  * 
- * Fire onCallStatsReport callbacks with parameters(userId, stats).
- * If stats will be invalid callback return null
+ * Fire onCallStatsReport callbacks with parameters(userId, stats, error).
+ * If stats will be invalid callback return null and error
  */
-WebRTCSession.prototype._onCallStatsReport = function(userId, stats) {
+WebRTCSession.prototype._onCallStatsReport = function(userId, stats, error) {
   if (typeof this.onCallStatsReport === 'function'){
-    Utils.safeCallbackCall(this.onCallStatsReport, this, userId, stats);
+    Utils.safeCallbackCall(this.onCallStatsReport, this, userId, stats, error);
   }
 };
 
