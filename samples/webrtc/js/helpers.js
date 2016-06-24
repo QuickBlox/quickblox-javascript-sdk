@@ -9,22 +9,41 @@
     };
     app.network = {};
 
+    
+    /* [getQueryVar get value of key from search string of url]
+     * @param  {[string]} q [name of query]
+     * @return {[string]}   [value of query]
+     */
+    app.helpers.getQueryVar = function(q){
+        var query = window.location.search.substring(1),
+            vars = query.split("&"),
+            answ = false;
+
+        vars.forEach(function(el, i){
+            var pair = el.split('=');
+
+            if(pair[0] === q) {
+                answ = pair[1];
+            }
+        });
+
+        return answ;
+    };
+
     app.helpers.isBytesReceivedChanges = function(userId, inboundrtp) {
         var res = true,
             inbBytesRec = inboundrtp ? inboundrtp.bytesReceived : 0;
 
-        if(app.network[userId] || !inboundrtp) {
+        if(!app.network[userId]) {
             app.network[userId] = {
-              'bytesReceived': inbBytesRec,
-              'count': 0
+              'bytesReceived': inbBytesRec
             };
         } else {
-            if(app.network[userId].bytesReceived === inbBytesRec) {
+            if(app.network[userId].bytesReceived >= inbBytesRec) {
                 res = false;
             } else {
                 app.network[userId] = {
-                    'bytesReceived': inbBytesRec,
-                    'count': ++app.network[userId].count
+                    'bytesReceived': inbBytesRec
                 };
             }
         }
