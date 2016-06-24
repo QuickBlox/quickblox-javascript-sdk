@@ -1,46 +1,43 @@
 describe('Session API', function() {
-  'use strict';
+    'use strict';
 
-  var REST_REQUESTS_TIMEOUT = 3000;
+    var REST_REQUESTS_TIMEOUT = 10000;
 
-  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
-  var request = isNodeEnv ? require('request') : {};
+    var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
-  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
-  var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+    var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
 
-  /**
-   * TEST CASES
-   */
-  it('can init SDK with session token and appId', function(){
-    QB.init('56655ac9a0eb476d92002b66', CREDENTIALS.appId);
+    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+    var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
-    expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
-  });
+    it('can init SDK with session token and appId', function(){
+        QB.init('56655ac9a0eb476d92002b66', CREDS.appId);
 
-  it('can init SDK with appId, authKey, authSecret, config', function(){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
-
-    expect(QB.service.qbInst.config.creds.appId).toEqual(CREDENTIALS.appId);
-    expect(QB.service.qbInst.config.creds.authKey).toEqual(CREDENTIALS.authKey);
-    expect(QB.service.qbInst.config.creds.authSecret).toEqual(CREDENTIALS.authSecret);
-    expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
-  });
-
-  it('can create a session', function(done){
-    QB.createSession(function (err, session){
-      if(err){
-        done.fail("Create a session error: " + JSON.stringify(err));
-      }else{
-        expect(session).not.toBeNull();
-        expect(session.application_id).toEqual(CREDENTIALS.appId);
-
-        done();
-      }
+        expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
     });
-  }, REST_REQUESTS_TIMEOUT);
+
+    it('can init SDK with appId, authKey, authSecret, config', function(){
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+
+        expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
+        expect(QB.service.qbInst.config.creds.authKey).toEqual(CREDS.authKey);
+        expect(QB.service.qbInst.config.creds.authSecret).toEqual(CREDS.authSecret);
+        expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
+    });
+
+    it('can create a session', function(done){
+        QB.createSession(function (err, session){
+            if(err){
+                done.fail('Create a session error: ' + JSON.stringify(err));
+            }else{
+                expect(session).not.toBeNull();
+                expect(session.application_id).toEqual(CREDS.appId);
+
+                done();
+            }
+        });
+    }, REST_REQUESTS_TIMEOUT);
 
   it('can create a User session', function(done){
     QB.createSession(QBUser1, function (err, session){
@@ -48,7 +45,7 @@ describe('Session API', function() {
         done.fail("Create a User session error: " + JSON.stringify(err));
       }else{
         expect(session).not.toBeNull();
-        expect(session.application_id).toEqual(CREDENTIALS.appId);
+        expect(session.application_id).toEqual(CREDS.appId);
         expect(session.user_id).toEqual(QBUser1.id);
 
         done();
@@ -108,7 +105,7 @@ describe('Session API', function() {
       }
     };
 
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CUSTOMCONFIG);
+    QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CUSTOMCONFIG);
 
     expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain.quickblox.com');
     expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain.quickblox.com');
@@ -124,7 +121,7 @@ describe('Session API', function() {
       }
     };
 
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CUSTOMCONFIG2);
+    QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CUSTOMCONFIG2);
 
     expect(QB.service.qbInst.config.endpoints.api).toEqual('apicustomdomain2.quickblox.com');
     expect(QB.service.qbInst.config.endpoints.chat).toEqual('chatcustomdomain2.quickblox.com');
@@ -140,7 +137,7 @@ describe('Session API', function() {
       }
     };
 
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, DEFAULTCONFIG);
+    QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, DEFAULTCONFIG);
 
     expect(QB.service.qbInst.config.endpoints.api).toEqual('api.quickblox.com');
     expect(QB.service.qbInst.config.endpoints.chat).toEqual('chat.quickblox.com');

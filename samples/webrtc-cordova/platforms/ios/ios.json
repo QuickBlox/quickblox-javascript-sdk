@@ -1,0 +1,64 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {
+            "config.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<feature name=\"Device\"><param name=\"ios-package\" value=\"CDVDevice\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"iosrtcPlugin\"><param name=\"ios-package\" value=\"iosrtcPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            "*-Info.plist": {
+                "parents": {
+                    "NSLocationWhenInUseUsageDescription": []
+                }
+            }
+        }
+    },
+    "installed_plugins": {
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        },
+        "cordova-plugin-iosrtc": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        }
+    },
+    "dependent_plugins": {},
+    "modules": [
+        {
+            "file": "plugins/cordova-plugin-device/www/device.js",
+            "id": "cordova-plugin-device.device",
+            "pluginId": "cordova-plugin-device",
+            "clobbers": [
+                "device"
+            ]
+        },
+        {
+            "file": "plugins/cordova-plugin-iosrtc/dist/cordova-plugin-iosrtc.js",
+            "id": "cordova-plugin-iosrtc.Plugin",
+            "pluginId": "cordova-plugin-iosrtc",
+            "clobbers": [
+                "cordova.plugins.iosrtc"
+            ]
+        }
+    ],
+    "plugin_metadata": {
+        "cordova-plugin-device": "1.1.2",
+        "cordova-plugin-iosrtc": "3.0.0",
+        "cordova-plugin-whitelist": "1.2.2"
+    }
+}

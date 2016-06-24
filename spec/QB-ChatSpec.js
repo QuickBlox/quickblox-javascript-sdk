@@ -1,37 +1,37 @@
 describe('Chat API', function() {
-  'use strict';
+    'use strict';
 
-  var LOGIN_TIMEOUT = 10000;
-  var MESSAGING_TIMEOUT = 1500;
-  var IQ_TIMEOUT = 1000;
-  var REST_REQUESTS_TIMEOUT = 3000;
+    var LOGIN_TIMEOUT = 10000;
+    var MESSAGING_TIMEOUT = 3000;
+    var IQ_TIMEOUT = 1000;
+    var REST_REQUESTS_TIMEOUT = 3000;
 
-  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+    var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
-  var CREDENTIALS = isNodeEnv ? require('./config').CREDENTIALS : window.CREDENTIALS;
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+    var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
+    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+
+    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+    var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
   describe('XMPP (real time messaging)', function() {
-
-    if(isNodeEnv) {
-      pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-    }
-
-    beforeAll(function(done){
-      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
-
-      QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
-        if(err){
-          done.fail("Chat login error: " + JSON.stringify(err));
-        }else{
-          expect(roster).not.toBeNull();
-          done();
+        if(isNodeEnv) {
+          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
         }
-      });
-    }, LOGIN_TIMEOUT);
 
+        beforeAll(function(done){
+            QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+
+            QB.chat.connect({
+                'userId': QBUser1.id,
+                'password': QBUser1.password
+            }, function(err, roster) {
+                if(err){ done.fail('Chat login error: ' + JSON.stringify(err)); }
+
+                expect(roster).not.toBeNull();
+                done();
+            });
+        }, LOGIN_TIMEOUT);
 
     // 1-1 mesasging
     //
@@ -40,11 +40,11 @@ describe('Chat API', function() {
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
         expect(receivedMessage).not.toBeNull();
-        expect(receivedMessage.type).toEqual("chat");
+        expect(receivedMessage.type).toEqual('chat');
         expect(userId).toEqual(QBUser1.id);
         expect(receivedMessage.extension).toEqual({
-          param1: "value1",
-          param2: "value2"
+          param1: 'value1',
+          param2: 'value2'
         });
         expect(receivedMessage.id).toEqual(self.messageId);
         expect(receivedMessage.markable).toEqual(1);
@@ -54,10 +54,10 @@ describe('Chat API', function() {
       };
 
       var message = {
-        type: "chat",
+        type: 'chat',
         extension: {
-          param1: "value1",
-          param2: "value2"
+          param1: 'value1',
+          param2: 'value2'
         },
         markable: 1
       };
@@ -147,7 +147,6 @@ describe('Chat API', function() {
       QB.chat.sendReadStatus(params);
 
     }, MESSAGING_TIMEOUT);
-
 
     // 'Is typing' status
     //
@@ -307,18 +306,18 @@ describe('Chat API', function() {
         });
       });
 
-      // Delete list
-      //
-      it("can delete list by name", function(done) {
-        QB.chat.privacylist.delete("test", function(error) {
-          if(error){
-            done.fail("Delete list by name error: " + JSON.stringify(error));
-          }else{
-            console.info("can delete list by name");
-            done();
-          }
-        });
-      });
+    // Delete list TODO: need review this
+    //
+    //   it("can delete list by name", function(done) {
+    //     QB.chat.privacylist.delete("test", function(error) {
+    //       if(error){
+    //         done.fail("Delete list by name error: " + JSON.stringify(error));
+    //       }else{
+    //         console.info("can delete list by name");
+    //         done();
+    //       }
+    //     });
+    //   });
 
     });
 
@@ -337,18 +336,21 @@ describe('Chat API', function() {
     var messageId;
 
     beforeAll(function(done){
-      QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret);
 
-      QB.createSession({login: QBUser1.login, password: QBUser1.password},function (err, result){
-        if(err){
-          done.fail("Create session error: " + err);
-        }else{
-          expect(result).not.toBeNull();
-          expect(result.application_id).toEqual(CREDENTIALS.appId);
+        QB.createSession({
+                'login': QBUser1.login,
+                'password': QBUser1.password
+            },
+            function(err, result) {
+                if(err){ done.fail('Create session error: ' + err); }
 
-          done();
-        }
-      });
+                expect(result).not.toBeNull();
+                expect(result.application_id).toEqual(CREDS.appId);
+
+                done();
+            }
+        );
     }, REST_REQUESTS_TIMEOUT);
 
     it('can create a dialog (group)', function(done) {
@@ -360,7 +362,7 @@ describe('Chat API', function() {
 
       QB.chat.dialog.create(params, function(err, res) {
         if(err){
-          done.fail("Creat dialog error: " + JSON.stringify(err));
+          done.fail("Create dialog error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
           expect(res._id).not.toBeNull();
@@ -415,7 +417,7 @@ describe('Chat API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can create a mesasge', function(done) {
+    it('can create a message', function(done) {
       var params = {
         chat_dialog_id: dialogId,
         message: 'hello world'
@@ -423,7 +425,7 @@ describe('Chat API', function() {
 
       QB.chat.message.create(params, function(err, res) {
         if(err){
-          done.fail("Create a mesasge error: " + JSON.stringify(err));
+          done.fail("Create a message error: " + JSON.stringify(err));
         }else{
           expect(res._id).not.toBeNull();
           expect(res.message).toEqual("hello world");
@@ -464,6 +466,24 @@ describe('Chat API', function() {
           done();
         }
       });
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('can set \'read\' status for all messages in dialog', function(done) {
+        /**
+         * dialogId we get from previous test case 'can create a dialog'
+         */
+
+        QB.chat.message.update('', {
+            'read': '1',
+            'chat_dialog_id': dialogId
+        }, function(error, result) {
+            if(error) {
+                done.fail('can\'t set status "read" to all messages' , error);
+            }
+
+            /** result will be equal to empty */
+            done();
+        });
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete a message with id', function(done) {

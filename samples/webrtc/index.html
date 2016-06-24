@@ -20,8 +20,7 @@
         <header class="header">
             <div class="inner">
                 <div class="header__logo">
-                    <img class="header__logo_img" src="images/Logo_qb.svg">
-                    </img>
+                    <img class="header__logo_img" src="images/Logo_qb.svg"></img>
                 </div>
 
                 <h2 class="header__title">JavaScript WebRTC Sample</h2>
@@ -34,8 +33,10 @@
                 <form class="join j-join">
                     <h3 class="join__title">
                         <p>Please enter your username and chat room name.</p>
-                        <p>You can join existed chat room.</p>
-                        <p class="join__notice">Use several browsers to simulate several users.</p>
+                        <p>You can join existent chat room.</p>
+                        <p class="join__notice">
+                            Use several browsers to simulate several users.
+                        </p>
                     </h3>
 
                     <div class="join__body">
@@ -316,9 +317,15 @@
     <script type="text/template" id="callee_video">
         <div class="frames_callee callees__callee j-callee">
             <div class="frames_callee__inner">
-                <p class="frames_callee__status j-callee_status_<%=userID%>">Connecting</p>
+                <p class="frames_callee__status j-callee_status_<%=userID%>">
+                    <%=state%>
+                </p>
+
                 <div class="qb-video">
-                    <video class="j-callees__callee__video qb-video_source" id="remote_video_<%=userID%>" data-user="<%=userID%>"></video>
+                    <video class="j-callees__callee__video qb-video_source"
+                        id="remote_video_<%=userID%>"
+                        data-user="<%=userID%>">
+                    </video>
                 </div>
             </div>
 

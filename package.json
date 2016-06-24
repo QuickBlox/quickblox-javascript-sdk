@@ -1,9 +1,9 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "homepage": "http://quickblox.com/developers/Javascript",
-  "main": "js/qbMain.js",
+  "main": "src/qbMain.js",
   "license": [
     {
       "type": "BSD",

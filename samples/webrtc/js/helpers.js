@@ -9,16 +9,37 @@
     };
     app.network = {};
 
+    
+    /* [getQueryVar get value of key from search string of url]
+     * @param  {[string]} q [name of query]
+     * @return {[string]}   [value of query]
+     */
+    app.helpers.getQueryVar = function(q){
+        var query = window.location.search.substring(1),
+            vars = query.split("&"),
+            answ = false;
+
+        vars.forEach(function(el, i){
+            var pair = el.split('=');
+
+            if(pair[0] === q) {
+                answ = pair[1];
+            }
+        });
+
+        return answ;
+    };
+
     app.helpers.isBytesReceivedChanges = function(userId, inboundrtp) {
         var res = true,
-            inbBytesRec = inboundrtp.bytesReceived;
+            inbBytesRec = inboundrtp ? inboundrtp.bytesReceived : 0;
 
-        if(app.network[userId] === undefined) {
+        if(!app.network[userId]) {
             app.network[userId] = {
               'bytesReceived': inbBytesRec
             };
         } else {
-            if(app.network[userId].bytesReceived === inbBytesRec) {
+            if(app.network[userId].bytesReceived >= inbBytesRec) {
                 res = false;
             } else {
                 app.network[userId] = {
@@ -70,6 +91,22 @@
     app.helpers.changeFilter = function(selector, filterName) {
         $(selector).removeClass(app.filter.names)
             .addClass( filterName );
+    };
+
+    app.helpers.getConStateName = function(num) {
+        var answ;
+
+        switch (num) {
+            case QB.webrtc.PeerConnectionState.DISCONNECTED:
+            case QB.webrtc.PeerConnectionState.FAILED:
+            case QB.webrtc.PeerConnectionState.CLOSED:
+                answ = 'DISCONNECTED';
+                break;
+            default:
+                answ = 'CONNECTING';
+        }
+
+        return answ;
     };
 
     app.helpers.toggleRemoteVideoView = function(userId, action) {

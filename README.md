@@ -20,7 +20,7 @@ For correct work of JS SDK you must include the  library in your html before `qu
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.1.0/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.1.2/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -76,4 +76,4 @@ Feedback and suggestions for improvement always welcome :)
 See more information at [contributing.md](https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md)
 
 # License
-BSD
+Apache 2.0
