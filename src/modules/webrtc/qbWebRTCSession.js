@@ -9,7 +9,7 @@
  * - onRemoteStreamListener(session, userID, stream)
  * - onSessionConnectionStateChangedListener(session, userID, connectionState)
  * - onSessionCloseListener(session)
- * - onCallStatsReport(session, userId, stats)
+ * - onCallStatsReport(session, userId, stats, error)
  */
 
 var config = require('../../qbConfig');
