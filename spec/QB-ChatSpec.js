@@ -343,7 +343,7 @@ describe('Chat API', function() {
                 'password': QBUser1.password
             },
             function(err, result) {
-                if(err){ done.fail('Create session error: ' + err); }
+                if(err){ done.fail('Create session error: ', err); }
 
                 expect(result).not.toBeNull();
                 expect(result.application_id).toEqual(CREDS.appId);
@@ -354,11 +354,11 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can create a dialog (group)', function(done) {
-      var params = {
-        occupants_ids: [QBUser2.id],
-        name: "GroupDialogName",
-        type: 2
-      };
+        var params = {
+            occupants_ids: [QBUser2.id],
+            name: 'GroupDialogName',
+            type: 2
+        };
 
       QB.chat.dialog.create(params, function(err, res) {
         if(err){
@@ -367,7 +367,7 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res._id).not.toBeNull();
           expect(res.type).toEqual(2);
-          expect(res.name).toEqual("GroupDialogName");
+          expect(res.name).toEqual('GroupDialogName');
           expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
 
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
@@ -399,9 +399,11 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can update a dialog (group)', function(done) {
-      var toUpdate = {
-          name: "GroupDialogNewName",
-          pull_all: {occupants_ids: [QBUser2.id]}
+        var toUpdate = {
+            name: 'GroupDialogNewName',
+            pull_all: {
+                occupants_ids: [QBUser2.id]
+            }
         };
 
       QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
@@ -472,7 +474,6 @@ describe('Chat API', function() {
         /**
          * dialogId we get from previous test case 'can create a dialog'
          */
-
         QB.chat.message.update('', {
             'read': '1',
             'chat_dialog_id': dialogId

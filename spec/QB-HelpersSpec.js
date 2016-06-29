@@ -1,17 +1,17 @@
 describe('Helpers', function() {
-  'use strict';
+    'use strict';
 
-  var LOGIN_TIMEOUT = 10000;
+    var LOGIN_TIMEOUT = 10000;
 
-  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+    var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../quickblox.min.js') : window.QB;
-  var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+    var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
+    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
-  beforeAll(function() {
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
-  });
+    beforeAll(function() {
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret);
+    });
 
   /**
    * TEST CASES

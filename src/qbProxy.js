@@ -1,4 +1,4 @@
-/*
+/**
  * QuickBlox JavaScript SDK
  *
  * Proxy Module
@@ -10,13 +10,18 @@ var Utils = require('./qbUtils');
 
 var versionNum = config.version;
 
-// For server-side applications through using npm package 'quickblox' you should include the following lines
+/**
+ * For server-side applications through using npm package 'quickblox'
+ * you should include the following lines
+ */
 var isBrowser = typeof window !== 'undefined';
+
 if (!isBrowser) {
-  var request = require('request');
+var request = require('request');
 }
 
 var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
+
 if (isBrowser && !ajax) {
   throw new Error('Quickblox requires jQuery or Zepto');
 }

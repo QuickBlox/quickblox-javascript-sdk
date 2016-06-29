@@ -1,16 +1,13 @@
-
 /*
  * QuickBlox JavaScript SDK
- *
- * Chat 2.0 Module
- *
+ * Chat Module
  */
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-var isBrowser = typeof window !== "undefined";
-var unsupported = "This function isn't supported outside of the browser (...yet)";
+var isBrowser = typeof window !== 'undefined';
+var unsupported = 'This function isn\'t supported outside of the browser (...yet)';
 
 /**
  * For Node env.
@@ -43,6 +40,7 @@ var connection,
 
 function ChatProxy(service, webrtcModule, conn) {
   var self = this;
+  
   webrtc = webrtcModule;
   connection = conn;
 
@@ -1359,9 +1357,16 @@ MessageProxy.prototype = {
   },
 
   update: function(id, params, callback) {
+    var attrAjax = {
+        'type': 'PUT',
+        'dataType': 'text',
+        'url': Utils.getUrl(messageUrl, id),
+        'data': params
+    };
+
     Utils.QBLog('[MessageProxy]', 'update', id, params);
 
-    this.service.ajax({url: Utils.getUrl(messageUrl, id), type: 'PUT', data: params}, callback);
+    this.service.ajax(attrAjax, callback);
   },
 
   delete: function(id, params_or_callback, callback) {
