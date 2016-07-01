@@ -59,7 +59,7 @@ module.exports = function (grunt) {
         options: {
           protocol: 'https',
           hostname: 'localhost',
-          port: 5000,
+          port: 8080,
           open: true,
           keepalive: true
         }

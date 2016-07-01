@@ -7,6 +7,7 @@ var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
 var isBrowser = typeof window !== 'undefined';
+var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 var unsupported = 'This function isn\'t supported outside of the browser (...yet)';
 
 /**
@@ -93,7 +94,6 @@ function ChatProxy(service, webrtcModule, conn) {
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         marker = delivered || read || null;
-
 
     // ignore invite messages from MUC
     //
@@ -310,6 +310,62 @@ function ChatProxy(service, webrtcModule, conn) {
     // returning false would remove it after it finishes
     return true;
   };
+
+  /** [_onComingStanza Listener for Node env.] */
+  this._onComingStanza = function(stanza) {
+    // var msg = {
+    //     id: 
+    // };
+
+    // var message = {
+      //   id: messageId,
+      //   dialog_id: dialogId,
+      //   type: type,
+      //   body: (body && body.textContent) || null,
+      //   extension: extraParamsParsed ? extraParamsParsed.extension : null,
+      //   delay: delay
+      // };
+      // if (markable) {
+      //   message.markable = 1;
+      // }
+      // if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
+      //   Utils.safeCallbackCall(self.onMessageListener, userId, message);
+      // }
+      // 
+      // 
+      // 
+      // var from = stanza.getAttribute('from'),
+      //   to = stanza.getAttribute('to'),
+      //   type = stanza.getAttribute('type'),
+      //   body = stanza.querySelector('body'),
+      //   markable = stanza.querySelector('markable'),
+      //   delivered = stanza.querySelector('received'),
+      //   read = stanza.querySelector('displayed'),
+      //   composing = stanza.querySelector('composing'),
+      //   paused = stanza.querySelector('paused'),
+      //   invite = stanza.querySelector('invite'),
+      //   extraParams = stanza.querySelector('extraParams'),
+      //   delay = stanza.querySelector('delay'),
+      //   messageId = stanza.getAttribute('id'),
+      //   dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
+      //   userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+      //   marker = delivered || read || null;
+      //   
+
+      
+      // 
+      
+      /**
+       * All methods
+       * stanza.is('message')
+       * stanza.getChild('delay')
+       * stanza.getChildText('body')
+       */
+       if (stanza.is('message') && (stanza.attrs.type !== 'error')) {
+            console.log(stanza.attr.id);
+            self.onMessageListener(stanza);
+       }
+  };
 }
 
 
@@ -333,7 +389,8 @@ ChatProxy.prototype = {
       userJid = params.jid;
     }
 
-    if(isBrowser) {
+    /** Connect for browser env. */
+    if(Utils.getEnv() === 'browser') {
         connection.connect(userJid, params.password, function(status) {
             switch (status) {
                 case Strophe.Status.ERROR:
@@ -427,9 +484,11 @@ ChatProxy.prototype = {
                     break;
             }
         });
-    } else {
-        /** Node env. */
-        /** nClient create connection */
+    }
+
+    /** connect for node */
+    if(Utils.getEnv() === 'node') {
+        /** nClient create a connection */
         nClient = new NodeClient({
            'jid': userJid,
            'password': params.password
@@ -442,24 +501,28 @@ ChatProxy.prototype = {
             if (typeof callback === 'function') callback(err, null);
         });
 
-        nClient.on('disconnect', function (e) {
-            console.log('Client is disconnected', e);
+        nClient.on('disconnect', function () {
+            console.log('Client is disconnected');
         });
 
         nClient.on('stanza', function (stanza){
-            console.log("stanza: ", stanza);
-            if(stanza.is("iq")){
-                var iqId = stanza.attrs.id;
-                var stanzaCallback = nodeStanzasCallbacks[iqId];
-                if(stanza.attrs.type === 'result'){
-                    stanzaCallback(stanza);
-                    delete nodeStanzasCallbacks[iqId];
-                // error
-                }else if(stanza.attrs.type === 'error'){
-                    stanzaCallback(stanza);
-                    delete nodeStanzasCallbacks[iqId];
-                }
-            }
+            self._onComingStanza(stanza);
+            // if(stanza.is('iq')){
+            //     var iqId = stanza.attrs.id;
+            //     var stanzaCallback = nodeStanzasCallbacks[iqId];
+            //     if(stanza.attrs.type === 'result'){
+            //         stanzaCallback(stanza);
+            //         delete nodeStanzasCallbacks[iqId];
+            //     // error
+            //     }else if(stanza.attrs.type === 'error'){
+            //         stanzaCallback(stanza);
+            //         delete nodeStanzasCallbacks[iqId];
+            //     }
+            // }
+
+            // if (stanza.is('message') && (stanza.attrs.type !== 'error')) {
+                
+            // }
         });
 
         nClient.on('online', function () {
@@ -467,77 +530,93 @@ ChatProxy.prototype = {
 
             nClient.send('<presence/>');
 
-            // self._enableCarbons(function() {
-
-            // });
-            //
             callback(null, null);
         });
 
         nClient.on('connect', function () {
             Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+
             self._isDisconnected = false;
+            self._isLogout = false;
+
+            if (typeof callback === 'function') {
+                /** First argmnt is error. It's fire cb without an error. */
+               callback(null);
+            }
         });
     }
   },
 
-  send: function(jid_or_user_id, message) {
-    if(!isBrowser) throw unsupported;
+    send: function(jid_or_user_id, message) {
+        var self = this,
+            msg= {};
 
-    if(!message.id){
-      message.id = Utils.getBsonObjectId();
-    }
+        if(Utils.getEnv() === 'browser') {
+            msg = $msg({
+                from: connection.jid,
+                to: this.helpers.jidOrUserId(jid_or_user_id),
+                type: message.type ? message.type : 'chat',
+                id: message.id ? message.id : Utils.getBsonObjectId()
+            });
 
-    var self = this,
-        msg = $msg({
-          from: connection.jid,
-          to: this.helpers.jidOrUserId(jid_or_user_id),
-          type: message.type,
-          id: message.id
-        });
+            if (message.body) {
+              msg.c('body', {
+                xmlns: Strophe.NS.CLIENT
+              }).t(message.body).up();
+            }
 
-    if (message.body) {
-      msg.c('body', {
-        xmlns: Strophe.NS.CLIENT
-      }).t(message.body).up();
-    }
+            // custom parameters
+            if (message.extension) {
+              msg.c('extraParams', {
+                xmlns: Strophe.NS.CLIENT
+              });
 
-    // custom parameters
-    if (message.extension) {
-      msg.c('extraParams', {
-        xmlns: Strophe.NS.CLIENT
-      });
+              Object.keys(message.extension).forEach(function(field) {
+                if (field === 'attachments') {
 
-      Object.keys(message.extension).forEach(function(field) {
-        if (field === 'attachments') {
+                  // attachments
+                  message.extension[field].forEach(function(attach) {
+                    msg.c('attachment', attach).up();
+                  });
 
-          // attachments
-          message.extension[field].forEach(function(attach) {
-            msg.c('attachment', attach).up();
-          });
+                } else if (typeof message.extension[field] === 'object') {
 
-        } else if (typeof message.extension[field] === 'object') {
+                  self._JStoXML(field, message.extension[field], msg);
 
-          self._JStoXML(field, message.extension[field], msg);
+                } else {
+                  msg.c(field).t(message.extension[field]).up();
+                }
+              });
 
-        } else {
-          msg.c(field).t(message.extension[field]).up();
+              msg.up();
+            }
+
+            // chat markers
+            //
+            if (message.markable) {
+              msg.c('markable', {
+                xmlns: Strophe.NS.CHAT_MARKERS
+              });
+            }
+
+            connection.send(msg);
         }
-      });
 
-      msg.up();
-    }
+        if(Utils.getEnv() === 'node') {
+            msg = new NodeClient.Stanza('message', {
+                from: nClient.options.jid.user,
+                to: this.helpers.jidOrUserId(jid_or_user_id),
+                type: message.type ? message.type : 'chat',
+                id: message.id ? message.id : Utils.getBsonObjectId()
+            });
 
-    // chat markers
-    //
-    if (message.markable) {
-      msg.c('markable', {
-        xmlns: Strophe.NS.CHAT_MARKERS
-      });
-    }
+            if (message.body) {
+              msg.c('body').t(message.body);
+            }
 
-    connection.send(msg);
-  },
+            nClient.send(msg);
+        }
+    },
 
   // send system messages
   sendSystemMessage: function(jid_or_user_id, message) {
@@ -662,13 +741,18 @@ ChatProxy.prototype = {
     connection.send(msg);
   },
 
-  disconnect: function() {
-    if(!isBrowser) throw unsupported;
+    disconnect: function() {
+        joinedRooms = {};
+        this._isLogout = true;
 
-    joinedRooms = {};
-    this._isLogout = true;
-    connection.flush();
-    connection.disconnect();
+        if(isBrowser) {
+            connection.flush();
+            connection.disconnect();
+        }
+
+        if(isNodeEnv) {
+            nClient.end();
+        }
   },
 
   addListener: function(params, callback) {

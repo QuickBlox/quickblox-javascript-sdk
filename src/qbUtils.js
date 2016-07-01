@@ -23,6 +23,17 @@ var ObjectId = {
 };
 
 var Utils = {
+    /**
+     * [getEnv get a name of an execution environment]
+     * @return {string/null} return name of env. (node/browser) 
+     *                              or null if it's not node or browser
+     */
+    getEnv: function() {
+        var isNode = typeof window === 'undefined' && typeof exports === 'object',
+            isBrowser = typeof window !== 'undefined';
+
+        return isNode ? 'node' : isBrowser ? 'browser' : null;
+    },
   safeCallbackCall: function() {
     if(!isBrowser) throw unsupported;
 

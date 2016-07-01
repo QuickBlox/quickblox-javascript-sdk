@@ -14,7 +14,7 @@ describe('Chat API', function() {
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
     var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
-  describe('XMPP (real time messaging)', function() {
+    describe('XMPP (real time messaging)', function() {
         if(isNodeEnv) {
           pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
         }
@@ -26,14 +26,16 @@ describe('Chat API', function() {
                 'userId': QBUser1.id,
                 'password': QBUser1.password
             }, function(err, roster) {
-                if(err){ done.fail('Chat login error: ' + JSON.stringify(err)); }
+                if(err){ 
+                  done.fail('Chat login error: ' + JSON.stringify(err));
+                }
 
                 expect(roster).not.toBeNull();
                 done();
             });
         }, LOGIN_TIMEOUT);
 
-    // 1-1 mesasging
+    // 1-1 chat
     //
     it('can send and receive private messages', function(done) {
       var self = this;
