@@ -2,13 +2,13 @@ describe('Chat API', function() {
     'use strict';
 
     var LOGIN_TIMEOUT = 10000;
-    var MESSAGING_TIMEOUT = 1500;
+    var MESSAGING_TIMEOUT = 3000;
     var IQ_TIMEOUT = 1000;
     var REST_REQUESTS_TIMEOUT = 3000;
 
     var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-    var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+    var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
     var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
 
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
@@ -26,7 +26,7 @@ describe('Chat API', function() {
                 'userId': QBUser1.id,
                 'password': QBUser1.password
             }, function(err, roster) {
-                if(err){ done.fail("Chat login error: ", err); }
+                if(err){ done.fail('Chat login error: ' + JSON.stringify(err)); }
 
                 expect(roster).not.toBeNull();
                 done();
@@ -40,11 +40,11 @@ describe('Chat API', function() {
 
       QB.chat.onMessageListener = function(userId, receivedMessage){
         expect(receivedMessage).not.toBeNull();
-        expect(receivedMessage.type).toEqual("chat");
+        expect(receivedMessage.type).toEqual('chat');
         expect(userId).toEqual(QBUser1.id);
         expect(receivedMessage.extension).toEqual({
-          param1: "value1",
-          param2: "value2"
+          param1: 'value1',
+          param2: 'value2'
         });
         expect(receivedMessage.id).toEqual(self.messageId);
         expect(receivedMessage.markable).toEqual(1);
@@ -54,10 +54,10 @@ describe('Chat API', function() {
       };
 
       var message = {
-        type: "chat",
+        type: 'chat',
         extension: {
-          param1: "value1",
-          param2: "value2"
+          param1: 'value1',
+          param2: 'value2'
         },
         markable: 1
       };

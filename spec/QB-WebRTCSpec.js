@@ -1,10 +1,11 @@
 describe('WebRTC API', function() {
   'use strict';
+  
   var LOGIN_TIMEOUT = 10000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
@@ -47,5 +48,19 @@ describe('WebRTC API', function() {
     expect(function() {
       QB.webrtc.createNewSession([QBUser2.id], QB.webrtc.CallType.VIDEO);
     }).toThrow( new Error(errorString) );
+  });
+
+  it('can get devices', function(done) {
+    if(isNodeEnv) {
+      pending('WebRTC API isn\'t supported outside of the browser');
+    }
+
+    /**
+     * You need to be sure that your PC has devices
+     */
+    QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+        expect(devices.length).not.toBeNull();
+        done();
+    });
   });
 });

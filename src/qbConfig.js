@@ -30,7 +30,7 @@ var config = {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
     disconnectTimeInterval: 30,
-    statsReportTimeInterval: 10,
+    statsReportTimeInterval: false,
     iceServers: [
       {
         'url': 'stun:stun.l.google.com:19302'

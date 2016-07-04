@@ -239,35 +239,33 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
  };
 
 RTCPeerConnection.prototype._getStatsWrap = function() {
-  var self = this,
-      selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
-      statsReportInterval;
+    var self = this,
+        selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
+        statsReportInterval;
 
-  if (!config.webrtc && !config.webrtc.statsReportTimeInterval) {
-    return;
-  }
+    if (config.webrtc && config.webrtc.statsReportTimeInterval) {
+        if (isNaN(+config.webrtc.statsReportTimeInterval)) {
+            Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
+            return;
+        }
 
-  if (isNaN(+config.webrtc.statsReportTimeInterval)) {
-     Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
-     return;
-  }
+        statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
-  statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
+        var _statsReportCallback = function() {
+            _getStats(self, selector,
+                function (results) {
+                    self.delegate._onCallStatsReport(self.userID, results, null);
+                },
+                function errorLog(err) {
+                    Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
+                    self.delegate._onCallStatsReport(self.userID, null, err);
+                }
+            );
+        };
 
-  var _statsReportCallback = function() {
-    _getStats(self, selector,
-      function (results) {
-        self.delegate._onCallStatsReport(self.userID, results);
-      },
-      function errorLog(err) {
-        Helpers.traceError("_getStats error. " + err.name + ": " + err.message);
-      }
-    );
-   };
-
-   Helpers.trace('Stats tracker has been started.');
-
-   self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+        Helpers.trace('Stats tracker has been started.');
+        self.statsReportTimer = setInterval(_statsReportCallback, statsReportInterval);
+    }
  };
 
 RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
@@ -339,37 +337,42 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 /**
  * PRIVATE
  */
- function _getStats(peer, selector, successCallback, errorCallback) {
-  /**
-   * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
-   */
-   if (navigator.mozGetUserMedia) {
-     peer.getStats(selector,
-       function (res) {
-         var items = [];
-         res.forEach(function (result) {
-             items.push(result);
-         });
-         successCallback(items);
-       },
-       errorCallback
-     );
-   } else {
-     peer.getStats(function (res) {
-       var items = [];
-       res.result().forEach(function (result) {
-         var item = {};
-         result.names().forEach(function (name) {
-             item[name] = result.stat(name);
-         });
-         item.id = result.id;
-         item.type = result.type;
-         item.timestamp = result.timestamp;
-         items.push(item);
-       });
-       successCallback(items);
-     });
-   }
- }
+function _getStats(peer, selector, successCallback, errorCallback) {
+    /**
+     * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
+     */
+    if (navigator.mozGetUserMedia) {
+        peer.getStats(selector,
+            function (res) {
+                var items = [];
+                
+                res.forEach(function (result) {
+                    items.push(result);
+                });
+
+                successCallback(items);
+            },
+            errorCallback
+        );
+    } else {
+        peer.getStats(function (res) {
+            var items = [];
+
+            res.result().forEach(function (result) {
+                var item = {};
+                
+                result.names().forEach(function (name) {
+                    item[name] = result.stat(name);
+                });
+         
+                item.id = result.id;
+                item.type = result.type;
+                item.timestamp = result.timestamp;
+                items.push(item);
+            });
+            successCallback(items);
+        });
+    }
+}
 
 module.exports = RTCPeerConnection;
