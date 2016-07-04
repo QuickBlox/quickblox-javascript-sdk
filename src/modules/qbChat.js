@@ -313,58 +313,67 @@ function ChatProxy(service, webrtcModule, conn) {
 
   /** [_onComingStanza Listener for Node env.] */
   this._onComingStanza = function(stanza) {
-    // var msg = {
-    //     id: 
-    // };
+    var from = stanza.attrs.from,
+        to = stanza.attrs.to,
+        messageId = stanza.attrs.id,
+        type = stanza.attrs.type,
+        body = stanza.getChildText('body'),
+        isError = stanza.attrs.type === 'error',
+        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+        dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null;
 
-    // var message = {
-      //   id: messageId,
-      //   dialog_id: dialogId,
-      //   type: type,
-      //   body: (body && body.textContent) || null,
-      //   extension: extraParamsParsed ? extraParamsParsed.extension : null,
-      //   delay: delay
-      // };
-      // if (markable) {
-      //   message.markable = 1;
-      // }
-      // if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
-      //   Utils.safeCallbackCall(self.onMessageListener, userId, message);
-      // }
-      // 
-      // 
-      // 
-      // var from = stanza.getAttribute('from'),
-      //   to = stanza.getAttribute('to'),
-      //   type = stanza.getAttribute('type'),
-      //   body = stanza.querySelector('body'),
-      //   markable = stanza.querySelector('markable'),
-      //   delivered = stanza.querySelector('received'),
-      //   read = stanza.querySelector('displayed'),
-      //   composing = stanza.querySelector('composing'),
-      //   paused = stanza.querySelector('paused'),
-      //   invite = stanza.querySelector('invite'),
-      //   extraParams = stanza.querySelector('extraParams'),
-      //   delay = stanza.querySelector('delay'),
-      //   messageId = stanza.getAttribute('id'),
-      //   dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-      //   userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-      //   marker = delivered || read || null;
-      //   
 
-      
-      // 
-      
+        // moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
+        // delay = stanza.querySelector('delay'),
+        // messageId = stanza.getAttribute('id'),
+        // message;
+    // if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
+
+    //   var extraParamsParsed = self._parseExtraParams(extraParams);
+
+    //   message = {
+    //     id: messageId,
+    //     userId: self.helpers.getIdFromNode(from),
+    //     extension: extraParamsParsed.extension
+    //   };
+
+    //   Utils.safeCallbackCall(self.onSystemMessageListener, message);
+    // }
+
+    // return true;
+
+    // var extraParamsParsed;
+    
+    // if(extraParams){
+    //     extraParamsParsed = self._parseExtraParams(extraParams);
+        
+    //     if(extraParamsParsed.dialogId){
+    //         dialogId = extraParamsParsed.dialogId;
+    //     }
+    // }
+
+
       /**
        * All methods
        * stanza.is('message')
        * stanza.getChild('delay')
        * stanza.getChildText('body')
        */
-       if (stanza.is('message') && (stanza.attrs.type !== 'error')) {
-            console.log(stanza.attr.id);
-            self.onMessageListener(stanza);
-       }
+        if (stanza.is('message') && !isError && (type === 'headline')) {
+            console.log(stanza.toString());
+        }
+
+        if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
+            if (typeof self.onMessageListener === 'function') {
+                self.onMessageListener(userId, {
+                    id: messageId, 
+                    dialog_id: dialogId,
+                    type: type,
+                    body: body,
+                    // extension: extraParamsParsed ? extraParamsParsed.extension : null
+                });
+            }
+        }
   };
 }
 
@@ -611,46 +620,90 @@ ChatProxy.prototype = {
             });
 
             if (message.body) {
-              msg.c('body').t(message.body);
+              msg.c('body').t(message.body).up();
             }
+
+            // if (message.extension) {
+            //   msg.c('extraParams');
+            //   msg.c('Inner').t('innerTest').up();
+              // Object.keys(message.extension).forEach(function(field) {
+              //     if (field === 'attachments') {
+              //         // attachments
+              //         message.extension[field].forEach(function(attach) {
+              //           msg.c('attachment', attach).up();
+              //         });
+              //     } else if (typeof message.extension[field] === 'object') {
+              //         self._JStoXML(field, message.extension[field], msg);
+              //     } else {
+              //         msg.c(field).t(message.extension[field]).up();
+              //     }
+              // });
+
+              // msg.up();
+            // }
 
             nClient.send(msg);
         }
     },
 
-  // send system messages
-  sendSystemMessage: function(jid_or_user_id, message) {
-    if(!isBrowser) throw unsupported;
+    sendSystemMessage: function(jid_or_user_id, message) {
+        var self = this;
 
-    if(!message.id){
-      message.id = Utils.getBsonObjectId();
-    }
-
-    var self = this,
-        msg = $msg({
-          id: message.id,
-          type: 'headline',
-          to: this.helpers.jidOrUserId(jid_or_user_id)
-        });
-
-    // custom parameters
-    if (message.extension) {
-      msg.c('extraParams', {
-        xmlns: Strophe.NS.CLIENT
-      }).c('moduleIdentifier').t('SystemNotifications').up();
-
-      Object.keys(message.extension).forEach(function(field) {
-        if (typeof message.extension[field] === 'object') {
-          self._JStoXML(field, message.extension[field], msg);
-        }else{
-          msg.c(field).t(message.extension[field]).up();
+        if(!message.id){
+            message.id = Utils.getBsonObjectId();
         }
-      });
 
-      msg.up();
+        if(Utils.getEnv() === 'browser') {
+            var msg = $msg({
+                    id: message.id,
+                    type: 'headline',
+                    to: this.helpers.jidOrUserId(jid_or_user_id)
+                });
+
+            // custom parameters
+            if (message.extension) {
+              msg.c('extraParams', {
+                xmlns: Strophe.NS.CLIENT
+              }).c('moduleIdentifier').t('SystemNotifications').up();
+
+              Object.keys(message.extension).forEach(function(field) {
+                if (typeof message.extension[field] === 'object') {
+                  self._JStoXML(field, message.extension[field], msg);
+                }else{
+                  msg.c(field).t(message.extension[field]).up();
+                }
+              });
+
+              msg.up();
+            }
+
+            connection.send(msg);
+        }
+
+        if(Utils.getEnv() === 'node') {
+            msg = new NodeClient.Stanza('message', {
+                id: message.id,
+                type: 'headline',
+                to: this.helpers.jidOrUserId(jid_or_user_id)
+            });
+
+            if (message.extension) {
+                msg.c('extraParams')
+                    .c('moduleIdentifier').t('SystemNotifications').up();
+
+              Object.keys(message.extension).forEach(function(field) {
+                if (typeof message.extension[field] === 'object') {
+                  self._JStoXML(field, message.extension[field], msg);
+                }else{
+                  msg.c(field).t(message.extension[field]).up();
+                }
+              });
+
+              msg.up();
+            }
+
+            nClient.send(msg);
     }
-
-    connection.send(msg);
   },
 
   // send typing status

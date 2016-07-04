@@ -57,17 +57,26 @@ QB.createSession({
 
         console.log('connect to chat: success');
 
-        QB.chat.onMessageListener = function(receivedMessage){
-            console.log('MSG', receivedMessage);
+        QB.chat.onMessageListener = function(userId, receivedMessage){
+            console.log('onMessageListener', userId, receivedMessage);
             process.exit(0);
         };
 
-        var message = {
+        /** TODO: can't create inner elements in Extraparams (custom parameters) */
+        var msg = {
             type: 'chat',
-            body: 'Hello'
+            body: 'Hello from myself',
         };
+            // sysMsg  = {
+            //     extension: {
+            //         param1: "value1",
+            //         param2: "value2"
+            //     }
+            // };
 
-        QB.chat.send(QBUser.id, message);
+
+        QB.chat.send(QBUser.id, msg);
+        // QB.chat.sendSystemMessage(QBUser.id, sysMsg);
     });
  
 });
