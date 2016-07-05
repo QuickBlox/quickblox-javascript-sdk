@@ -57,16 +57,28 @@ QB.createSession({
 
         console.log('connect to chat: success');
 
+        /**
+         * Send msg
+         */
         QB.chat.onMessageListener = function(userId, receivedMessage){
             console.log('onMessageListener', userId, receivedMessage);
             process.exit(0);
         };
 
-        /** TODO: can't create inner elements in Extraparams (custom parameters) */
         var msg = {
             type: 'chat',
-            body: 'Hello from myself',
+            body: 'Hello from skynet',
+            extension: {
+                name: 'skynet',
+                mission: 'take over the planet'
+            }
         };
+
+        QB.chat.send(QBUser.id, msg);
+
+        /**
+         * Send sys msg
+         */
             // sysMsg  = {
             //     extension: {
             //         param1: "value1",
@@ -75,7 +87,7 @@ QB.createSession({
             // };
 
 
-        QB.chat.send(QBUser.id, msg);
+        
         // QB.chat.sendSystemMessage(QBUser.id, sysMsg);
     });
  

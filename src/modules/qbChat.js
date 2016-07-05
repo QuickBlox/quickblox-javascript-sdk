@@ -320,38 +320,8 @@ function ChatProxy(service, webrtcModule, conn) {
         body = stanza.getChildText('body'),
         isError = stanza.attrs.type === 'error',
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null;
-
-
-        // moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
-        // delay = stanza.querySelector('delay'),
-        // messageId = stanza.getAttribute('id'),
-        // message;
-    // if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-
-    //   var extraParamsParsed = self._parseExtraParams(extraParams);
-
-    //   message = {
-    //     id: messageId,
-    //     userId: self.helpers.getIdFromNode(from),
-    //     extension: extraParamsParsed.extension
-    //   };
-
-    //   Utils.safeCallbackCall(self.onSystemMessageListener, message);
-    // }
-
-    // return true;
-
-    // var extraParamsParsed;
-    
-    // if(extraParams){
-    //     extraParamsParsed = self._parseExtraParams(extraParams);
-        
-    //     if(extraParamsParsed.dialogId){
-    //         dialogId = extraParamsParsed.dialogId;
-    //     }
-    // }
-
+        dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
+        extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null;
 
       /**
        * All methods
@@ -359,10 +329,6 @@ function ChatProxy(service, webrtcModule, conn) {
        * stanza.getChild('delay')
        * stanza.getChildText('body')
        */
-        if (stanza.is('message') && !isError && (type === 'headline')) {
-            console.log(stanza.toString());
-        }
-
         if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
             if (typeof self.onMessageListener === 'function') {
                 self.onMessageListener(userId, {
@@ -370,7 +336,7 @@ function ChatProxy(service, webrtcModule, conn) {
                     dialog_id: dialogId,
                     type: type,
                     body: body,
-                    // extension: extraParamsParsed ? extraParamsParsed.extension : null
+                    extension: extraParams ? extraParams.extension : null
                 });
             }
         }
@@ -612,7 +578,7 @@ ChatProxy.prototype = {
         }
 
         if(Utils.getEnv() === 'node') {
-            msg = new NodeClient.Stanza('message', {
+            var stanza = new NodeClient.Stanza('message', {
                 from: nClient.options.jid.user,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: message.type ? message.type : 'chat',
@@ -620,29 +586,30 @@ ChatProxy.prototype = {
             });
 
             if (message.body) {
-              msg.c('body').t(message.body).up();
+              stanza.c('body').t(message.body).up();
             }
 
-            // if (message.extension) {
-            //   msg.c('extraParams');
-            //   msg.c('Inner').t('innerTest').up();
-              // Object.keys(message.extension).forEach(function(field) {
-              //     if (field === 'attachments') {
-              //         // attachments
-              //         message.extension[field].forEach(function(attach) {
-              //           msg.c('attachment', attach).up();
-              //         });
-              //     } else if (typeof message.extension[field] === 'object') {
-              //         self._JStoXML(field, message.extension[field], msg);
-              //     } else {
-              //         msg.c(field).t(message.extension[field]).up();
-              //     }
-              // });
+            if (message.extension) {
+              stanza.c('extraParams', {xmlns: 'jabber:client'});
 
-              // msg.up();
-            // }
+              Object.keys(message.extension).forEach(function(field) {
+                  if (field === 'attachments') {
+                      // attachments
+                      message.extension[field].forEach(function(attach) {
+                        msg.c('attachment', attach).up();
+                      });
+                  } else if (typeof message.extension[field] === 'object') {
+                      self._JStoXML(field, message.extension[field], msg);
+                  } else {
+                      stanza.getChild('extraParams').
+                          c(field).t(message.extension[field]).up();
+                  }
+              });
 
-            nClient.send(msg);
+              stanza.up();
+            }
+
+            nClient.send(stanza);
         }
     },
 
@@ -863,55 +830,71 @@ ChatProxy.prototype = {
 
     var attachments = [];
 
-    for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-
-      // parse attachments
-      if (extraParams.childNodes[i].tagName === 'attachment') {
-        var attach = {};
-        var attributes = extraParams.childNodes[i].attributes;
-        for (var j = 0, len2 = attributes.length; j < len2; j++) {
-          if (attributes[j].name === 'id' || attributes[j].name === 'size')
-            attach[attributes[j].name] = parseInt(attributes[j].value);
-          else
-            attach[attributes[j].name] = attributes[j].value;
-        }
-        attachments.push(attach);
-
-      // parse 'dialog_id'
-      } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-        dialogId = extraParams.childNodes[i].textContent;
-        extension['dialog_id'] = dialogId;
-
-      // parse other user's custom parameters
-      } else {
-        if (extraParams.childNodes[i].childNodes.length > 1) {
-          // Firefox issue with 4K XML node limit:
-          // http://www.coderholic.com/firefox-4k-xml-node-limit/
-          var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-          if (nodeTextContentSize > 4096) {
-            var wholeNodeContent = "";
-            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-              wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-            }
-            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-          } else {
-            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+    if (Utils.getEnv() === 'browser') {
+      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+        // parse attachments
+        if (extraParams.childNodes[i].tagName === 'attachment') {
+          var attach = {};
+          var attributes = extraParams.childNodes[i].attributes;
+          for (var j = 0, len2 = attributes.length; j < len2; j++) {
+            if (attributes[j].name === 'id' || attributes[j].name === 'size')
+              attach[attributes[j].name] = parseInt(attributes[j].value);
+            else
+              attach[attributes[j].name] = attributes[j].value;
           }
+          attachments.push(attach);
+
+        // parse 'dialog_id'
+        } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+          dialogId = extraParams.childNodes[i].textContent;
+          extension['dialog_id'] = dialogId;
+
+        // parse other user's custom parameters
         } else {
-          extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+          if (extraParams.childNodes[i].childNodes.length > 1) {
+            // Firefox issue with 4K XML node limit:
+            // http://www.coderholic.com/firefox-4k-xml-node-limit/
+            var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+            if (nodeTextContentSize > 4096) {
+              var wholeNodeContent = "";
+              for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+              }
+              extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+            } else {
+              extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+            }
+          } else {
+            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+          }
         }
       }
+
+      if (attachments.length > 0) {
+        extension.attachments = attachments;
+      }
+
+      if (extension.moduleIdentifier) {
+        delete extension.moduleIdentifier;
+      }
+
+      return {extension: extension, dialogId: dialogId};
     }
 
-    if (attachments.length > 0) {
-      extension.attachments = attachments;
-    }
+    if(Utils.getEnv() === 'node') {
+        for (var i = 0, len = extraParams.children.length; i < len; i++) {
+            if(extraParams.children[i].children.length === 1) {
+                var child = extraParams.children[i];
 
-    if (extension.moduleIdentifier) {
-      delete extension.moduleIdentifier;
+                extension[child.name] = child.children[0];
+            }
+        }
+        
+        return {
+          extension: extension,
+          dialogId: null
+        };
     }
-
-    return {extension: extension, dialogId: dialogId};
   },
 
   _autoSendPresence: function() {
