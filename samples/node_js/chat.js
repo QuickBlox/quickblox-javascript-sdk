@@ -55,8 +55,6 @@ QB.createSession({
             process.exit(1);
         }
 
-        console.log('connect to chat: success');
-
         /**
          * Send msg
          */
@@ -75,20 +73,6 @@ QB.createSession({
         };
 
         QB.chat.send(QBUser.id, msg);
-
-        /**
-         * Send sys msg
-         */
-            // sysMsg  = {
-            //     extension: {
-            //         param1: "value1",
-            //         param2: "value2"
-            //     }
-            // };
-
-
-        
-        // QB.chat.sendSystemMessage(QBUser.id, sysMsg);
     });
  
 });

@@ -321,7 +321,22 @@ function ChatProxy(service, webrtcModule, conn) {
         isError = stanza.attrs.type === 'error',
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-        extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null;
+        extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
+        markable = stanza.getChild('markable');
+
+        /**
+         * autosend 'received' status (ignore messages from self)
+         */
+        if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
+            var params = {
+                messageId: messageId,
+                userId: userId,
+                dialogId: dialogId
+            };
+            
+            self.sendDeliveredStatus(params);
+        }
+
 
       /**
        * All methods
@@ -336,7 +351,8 @@ function ChatProxy(service, webrtcModule, conn) {
                     dialog_id: dialogId,
                     type: type,
                     body: body,
-                    extension: extraParams ? extraParams.extension : null
+                    extension: extraParams ? extraParams.extension : null,
+                    markable: markable ? 1 : null
                 });
             }
         }
@@ -471,9 +487,11 @@ ChatProxy.prototype = {
 
         /** HANDLERS */
         nClient.on('error', function (e) {
-            console.log('ERROR', e);
             err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-            if (typeof callback === 'function') callback(err, null);
+            
+            if(typeof callback === 'function') {
+                callback(err, null);
+            }
         });
 
         nClient.on('disconnect', function () {
@@ -524,7 +542,7 @@ ChatProxy.prototype = {
 
     send: function(jid_or_user_id, message) {
         var self = this,
-            msg= {};
+            msg = {};
 
         if(Utils.getEnv() === 'browser') {
             msg = $msg({
@@ -586,7 +604,13 @@ ChatProxy.prototype = {
             });
 
             if (message.body) {
-              stanza.c('body').t(message.body).up();
+                stanza.c('body').t(message.body).up();
+            }
+
+            if (message.markable) {
+                stanza.c('markable', {
+                    xmlns: 'urn:xmpp:chat-markers:0'
+                }).up();
             }
 
             if (message.extension) {
