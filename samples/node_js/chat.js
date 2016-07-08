@@ -60,6 +60,10 @@ QB.createSession({
          */
         QB.chat.onMessageListener = function(userId, receivedMessage){
             console.log('onMessageListener', userId, receivedMessage);
+        };
+
+        QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId) {
+            console.log(messageId, dialogId, userId);
             process.exit(0);
         };
 
@@ -69,7 +73,8 @@ QB.createSession({
             extension: {
                 name: 'skynet',
                 mission: 'take over the planet'
-            }
+            },
+            markable: 1
         };
 
         QB.chat.send(QBUser.id, msg);

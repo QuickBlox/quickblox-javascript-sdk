@@ -32,10 +32,7 @@ describe('Chat API', function() {
                 }
 
                 expect(err).toBeNull();
-
-                if(!isNodeEnv) {
-                    expect(roster).not.toBeNull();
-                }
+                expect(roster).not.toBeNull();
 
                 done();
             });

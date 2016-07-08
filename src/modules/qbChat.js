@@ -322,21 +322,40 @@ function ChatProxy(service, webrtcModule, conn) {
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
-        markable = stanza.getChild('markable');
+        markable = stanza.getChild('markable'),
+        read = stanza.getChild('displayed'),
+        delivered = stanza.getChild('received'),
+        marker = delivered || read || null;
+
+        /**
+         * fire read/delivered listeners
+         */
+        if (marker) {
+            if (delivered) {
+                if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
+                    self.onDeliveredStatusListener(delivered.attrs.id, dialogId, userId);
+                }
+            } else {
+                // if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
+                //     Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
+                // }
+            }
+          
+            return true;
+        }
 
         /**
          * autosend 'received' status (ignore messages from self)
          */
-        if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
-            var params = {
+        if (markable && userId != self.helpers.getIdFromNode(nClient.options.jid.user)) {
+            var paramsReceived = {
                 messageId: messageId,
                 userId: userId,
                 dialogId: dialogId
             };
             
-            self.sendDeliveredStatus(params);
+            self.sendDeliveredStatus(paramsReceived);
         }
-
 
       /**
        * All methods
@@ -742,25 +761,46 @@ ChatProxy.prototype = {
   },
 
   sendDeliveredStatus: function(params) {
-    if(!isBrowser) throw unsupported;
+    if(Utils.getEnv() === 'browser') {
+        var msg = $msg({
+          from: connection.jid,
+          to: this.helpers.jidOrUserId(params.userId),
+          type: 'chat',
+          id: Utils.getBsonObjectId()
+        });
 
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(params.userId),
-      type: 'chat',
-      id: Utils.getBsonObjectId()
-    });
+        msg.c('received', {
+          xmlns: Strophe.NS.CHAT_MARKERS,
+          id: params.messageId
+        }).up();
 
-    msg.c('received', {
-      xmlns: Strophe.NS.CHAT_MARKERS,
-      id: params.messageId
-    }).up();
+        msg.c('extraParams', {
+          xmlns: Strophe.NS.CLIENT
+        }).c('dialog_id').t(params.dialogId);
 
-    msg.c('extraParams', {
-      xmlns: Strophe.NS.CLIENT
-    }).c('dialog_id').t(params.dialogId);
+        connection.send(msg);
+    }
 
-    connection.send(msg);
+    if(Utils.getEnv() === 'node') {
+        var stanza = new NodeClient.Stanza('message', {
+            from: nClient.options.jid.user,
+            to: this.helpers.jidOrUserId(params.userId),
+            type: 'chat',
+            id: Utils.getBsonObjectId()
+        });
+
+        stanza.c('received', {
+            xmlns: 'urn:xmpp:chat-markers:0',
+            id: params.messageId
+        }).up();
+
+        stanza.c('extraParams', {
+            xmlns: 'jabber:client'
+        }).c('dialog_id').t(params.dialogId || null);
+
+        nClient.send(stanza);
+    }
+    
   },
 
   sendReadStatus: function(params) {
