@@ -112,6 +112,7 @@ describe('Custom Objects API', function() {
           if(isNodeEnv){
             var fs = require('fs');
 
+            var srcIMG = 'logo.png';
             fs.stat(srcIMG, function (err, stats) {
               fs.readFile(srcIMG, function (err, data) {
                 if (err) throw err;
