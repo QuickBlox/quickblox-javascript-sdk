@@ -112,19 +112,19 @@ describe('Custom Objects API', function() {
           if(isNodeEnv){
             var fs = require('fs');
 
-            var srcIMG = 'logo.png';
+            var imgName = "logo.png";
+            var srcIMG = 'spec/' + imgName;
             fs.stat(srcIMG, function (err, stats) {
               fs.readFile(srcIMG, function (err, data) {
                 if (err) throw err;
 
-                paramsFile = {field_name: "motors", file: data, id: result._id};
+                paramsFile = {field_name: "motors", file: data, id: result._id, name: imgName};
 
                 QB.data.uploadFile('cars', paramsFile, function(err, res) {
                   if (err) {
                     done.fail("Upload a file to an existing record error: " + JSON.stringify(err));
                   } else {
                     expect(res).not.toBeNull();
-                    expect(res.name).toBe("bmw.txt");
 
                     done();
                   }
