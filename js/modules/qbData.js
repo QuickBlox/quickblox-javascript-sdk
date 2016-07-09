@@ -97,6 +97,12 @@ DataProxy.prototype = {
     callback(null, result);
   },
 
+  fileUrl: function(className, params) {
+    var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
+    result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
+    return result;
+  },
+
   deleteFile: function(className, params, callback) {
     Utils.QBLog('[DataProxy]', 'deleteFile', className, params);
 

@@ -104,10 +104,6 @@ describe('Custom Objects API', function() {
   describe('Custom Objects with files', function() {
     var paramsFile, paramsFor;
 
-    if(isNodeEnv) {
-      pending('Working on fix "new File" in Node env.');
-    }
-
     it ('can upload a file to an existing record', function(done){
       QB.data.create('cars', {make: 'BMW', model: 'M5', value: 100, damaged: true}, function(err, result) {
         if (err) {
@@ -150,6 +146,21 @@ describe('Custom Objects API', function() {
           done();
         }
       });
+    });
+
+    it ('can get file url', function(){
+      paramsFor = {
+        id: paramsFile.id,
+        field_name: paramsFile.field_name
+      };
+
+      var url = QB.data.fileUrl('cars', paramsFor);
+
+      expect(url).not.toBeNull();
+      expect(url).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
+                       "/file.json?field_name="+paramsFile.field_name+
+                       "&token="+session.token);
+
     });
 
     it ('can delete a file from existing record', function(done){
