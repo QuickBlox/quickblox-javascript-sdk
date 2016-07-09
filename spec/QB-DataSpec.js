@@ -109,21 +109,45 @@ describe('Custom Objects API', function() {
         if (err) {
           done.fail("Create custom object error: " + JSON.stringify(err));
         } else {
-          var d = new Date(2015, 10, 19, 12, 0, 0, 600),
-              genFile = new File(["Hello QuickBlox cars"], "bmw.txt", {type: "text/plain", lastModified: d});
+          if(isNodeEnv){
+            var fs = require('fs');
 
-          paramsFile = {field_name: "motors", file: genFile, id: result._id};
+            fs.stat(srcIMG, function (err, stats) {
+              fs.readFile(srcIMG, function (err, data) {
+                if (err) throw err;
 
-          QB.data.uploadFile('cars', paramsFile, function(err, res) {
-            if (err) {
-              done.fail("Upload a file to an existing record error: " + JSON.stringify(err));
-            } else {
-              expect(res).not.toBeNull();
-              expect(res.name).toBe("bmw.txt");
+                paramsFile = {field_name: "motors", file: data, id: result._id};
 
-              done();
-            }
-          });
+                QB.data.uploadFile('cars', paramsFile, function(err, res) {
+                  if (err) {
+                    done.fail("Upload a file to an existing record error: " + JSON.stringify(err));
+                  } else {
+                    expect(res).not.toBeNull();
+                    expect(res.name).toBe("bmw.txt");
+
+                    done();
+                  }
+                });
+
+              });
+            });
+          }else{
+            var d = new Date(2015, 10, 19, 12, 0, 0, 600);
+            var genFile = new File(["Hello QuickBlox cars"], "bmw.txt", {type: "text/plain", lastModified: d});
+
+            paramsFile = {field_name: "motors", file: genFile, id: result._id};
+
+            QB.data.uploadFile('cars', paramsFile, function(err, res) {
+              if (err) {
+                done.fail("Upload a file to an existing record error: " + JSON.stringify(err));
+              } else {
+                expect(res).not.toBeNull();
+                expect(res.name).toBe("bmw.txt");
+
+                done();
+              }
+            });
+          }
         }
       });
     });
