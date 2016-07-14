@@ -48,7 +48,9 @@ describe('PushNotifications API', function() {
                     done.fail('Create a subscription error: ' + JSON.stringify(err));
                 } else {
                     expect(res).not.toBeNull();
-                    expect(res[0].subscription.device.platform.name).toBe("android");
+                    if(res.length > 0){
+                      expect(res[0].subscription.device.platform.name).toBe("android");
+                    }
 
                     done();
                 }
