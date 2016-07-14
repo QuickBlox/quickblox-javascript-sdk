@@ -159,51 +159,52 @@ describe('Custom Objects API', function() {
         });
       });
 
-    it ('can download a file from existing record', function(done){
-      paramsFor = {
-        id: paramsFile.id,
-        field_name: paramsFile.field_name
-      };
+      it ('can download a file from existing record', function(done){
+        paramsFor = {
+          id: paramsFile.id,
+          field_name: paramsFile.field_name
+        };
 
-      QB.data.downloadFile('cars', paramsFor, function(err, res) {
-        if (err) {
-          done.fail("Download a file from existing record error: " + JSON.stringify(err));
-        } else {
-          expect(res).not.toBeNull();
-          expect(res).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
-                           "/file.json?field_name="+paramsFile.field_name+
-                           "&token="+session.token);
+        QB.data.downloadFile('cars', paramsFor, function(err, res) {
+          if (err) {
+            done.fail("Download a file from existing record error: " + JSON.stringify(err));
+          } else {
+            expect(res).not.toBeNull();
+            expect(res).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
+                             "/file.json?field_name="+paramsFile.field_name+
+                             "&token="+session.token);
 
-          done();
-        }
+            done();
+          }
+        });
       });
-    });
 
-    it ('can get file url', function(){
-      paramsFor = {
-        id: paramsFile.id,
-        field_name: paramsFile.field_name
-      };
+      it ('can get file url', function(){
+        paramsFor = {
+          id: paramsFile.id,
+          field_name: paramsFile.field_name
+        };
 
-      var url = QB.data.fileUrl('cars', paramsFor);
+        var url = QB.data.fileUrl('cars', paramsFor);
 
-      expect(url).not.toBeNull();
-      expect(url).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
-                       "/file.json?field_name="+paramsFile.field_name+
-                       "&token="+session.token);
+        expect(url).not.toBeNull();
+        expect(url).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
+                         "/file.json?field_name="+paramsFile.field_name+
+                         "&token="+session.token);
 
-    });
+      });
 
-    it ('can delete a file from existing record', function(done){
-      QB.data.deleteFile('cars', paramsFor, function(err, res) {
-        if (err) {
-          done.fail("Delete a file from existing record error: " + JSON.stringify(err));
-        } else {
-          expect(res).not.toBeNull();
-          expect(res).toBe(true);
+      it ('can delete a file from existing record', function(done){
+        QB.data.deleteFile('cars', paramsFor, function(err, res) {
+          if (err) {
+            done.fail("Delete a file from existing record error: " + JSON.stringify(err));
+          } else {
+            expect(res).not.toBeNull();
+            expect(res).toBe(true);
 
-          done();
-        }
+            done();
+          }
+        });
       });
     });
 
@@ -252,4 +253,5 @@ describe('Custom Objects API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
     });
+
 });
