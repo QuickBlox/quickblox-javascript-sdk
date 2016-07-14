@@ -42,6 +42,18 @@ QB.createSession(QBUser, function(err, result) {
             console.log(response);
           }
         });
+
+
+        // var params = {id: "577fc04fa0eb47771900001a", field_name: "photo", file: data, name: srcIMG};
+        //
+        // QB.data.uploadFile("Images", params, function(err, res){
+        //   if (err) {
+        //     console.log(err);
+        //   } else {
+        //     console.log(res);
+        //   }
+        // });
+
       });
     });
   }
