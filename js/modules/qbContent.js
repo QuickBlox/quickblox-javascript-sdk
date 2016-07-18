@@ -85,7 +85,9 @@ ContentProxy.prototype = {
         callback(err, null);
       } else {
         var uri = parseUri(createResult.blob_object_access.params);
-        var uploadParams = { url: 'https://' + uri.host };
+        var uploadUrl = uri.protocol + "://" + uri.authority + uri.path;
+        var uploadParams = {url: uploadUrl};
+
         var data;
         if(isBrowser){
           data = new FormData();
@@ -116,12 +118,6 @@ ContentProxy.prototype = {
           if (err) {
             callback(err, null);
           } else {
-            if (isBrowser) {
-              createResult.path = result.Location.replace('http://', 'https://');
-            } else {
-              createResult.path = result.PostResponse.Location;
-            }
-
             // Mark file as uploaded
             //
             _this.markUploaded({id: fileId, size: size}, function(err, result){
@@ -140,28 +136,12 @@ ContentProxy.prototype = {
   upload: function(params, callback){
     Utils.QBLog('[ContentProxy]', 'upload');
 
-    this.service.ajax({url: params.url, data: params.data, dataType: 'xml',
+    this.service.ajax({url: params.url, data: params.data, dataType: 'text',
                        contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
       if (err) {
         callback (err, null);
       } else {
-        if (isBrowser) {
-          // AWS S3 doesn't respond with a JSON structure
-          // so parse the xml and return a JSON structure ourselves
-          var result = {}, rootElement = xmlDoc.documentElement, children = rootElement.childNodes, i, m;
-          for (i = 0, m = children.length; i < m ; i++) {
-            result[children[i].nodeName] = children[i].childNodes[0].nodeValue;
-          }
-          callback (null, result);
-
-        } else {
-          var parseString = xml2js.parseString;
-          parseString(xmlDoc, function(err,result) {
-            if (result) {
-              callback (null, result);
-            }
-          });
-        }
+        callback (null, {});
       }
     });
   },
