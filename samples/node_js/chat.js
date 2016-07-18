@@ -27,10 +27,10 @@ var config = {
 };
 
 var QBUser = {
-    'id': 6729114,
-    'name': 'quickuser',
-    'login': 'chatusr11',
-    'pass': 'chatusr11'
+    'id': 15130505,
+    'name': 'chatQbBot',
+    'login': 'chatQbBot',
+    'pass': 'chatQbBot'
 };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
@@ -55,29 +55,43 @@ QB.createSession({
             process.exit(1);
         }
 
-        /**
-         * Send msg
-         */
+        // console.log('[Sample] - Connected');
+
+        // var dialogJid = '5788b425a28f9ac53900001c';
+
+        // QB.chat.muc.join(dialogJid, function(error) {
+        //     if(error) {
+        //         throw new Error('Join to dialog is failed');
+        //     }
+
+        //     var msg = {
+        //         type: 'groupchat',
+        //         body: "How are you today?",
+        //         extension: {
+        //             save_to_history: 1,
+        //         }
+        //     };
+
+        //     QB.chat.send(dialogJid, msg);
+        // });
+
         QB.chat.onMessageListener = function(userId, receivedMessage){
             console.log('onMessageListener', userId, receivedMessage);
-        };
+            
+            if(receivedMessage.body) {
+                var msg = receivedMessage.body.toLowerCase() === 'yes' ? 'Gooood, bro' : 'Everyone says:"' + receivedMessage.body + '", are you want to buy a white elephant?.';
+     
+                var answer = {
+                    type: 'chat',
+                    body: msg,
+                    extension: {
+                        save_to_history: 1,
+                    }
+                };
 
-        QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId) {
-            console.log(messageId, dialogId, userId);
-            process.exit(0);
+                QB.chat.send(userId, answer);
+            }
         };
-
-        var msg = {
-            type: 'chat',
-            body: 'Hello from skynet',
-            extension: {
-                name: 'skynet',
-                mission: 'take over the planet'
-            },
-            markable: 1
-        };
-
-        QB.chat.send(QBUser.id, msg);
     });
  
 });

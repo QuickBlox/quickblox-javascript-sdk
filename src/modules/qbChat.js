@@ -52,12 +52,12 @@ function ChatProxy(service, webrtcModule, conn) {
   this._isDisconnected = false;
 
   if(isBrowser) {
-    this.muc = new MucProxy(service);
     this.privacylist = new PrivacyListProxy(service);
   }
   this.dialog = new DialogProxy(service);
   this.message = new MessageProxy(service);
   this.helpers = new Helpers();
+  this.muc = new MucProxy(service);
 
 /*
  * User's callbacks (listener-functions):
@@ -325,7 +325,51 @@ function ChatProxy(service, webrtcModule, conn) {
         markable = stanza.getChild('markable'),
         read = stanza.getChild('displayed'),
         delivered = stanza.getChild('received'),
-        marker = delivered || read || null;
+        marker = delivered || read || null,
+        x = stanza.getChild('x');
+
+        if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
+            if (typeof self.onMessageListener === 'function') {
+                self.onMessageListener(userId, {
+                    id: messageId, 
+                    dialog_id: dialogId,
+                    type: type,
+                    body: body,
+                    extension: extraParams ? extraParams.extension : null,
+                    markable: markable ? 1 : null
+                });
+            }
+
+            return;
+        }
+
+        if(x && x.attrs.xmlns == 'http://jabber.org/protocol/muc#user'){
+            var status = x.getChild('status');
+
+            if(status && status.attrs.code == '110'){
+
+                if(typeof nodeStanzasCallbacks.MucJoin === 'function') {
+                    nodeStanzasCallbacks.MucJoin(null);
+                }
+            }
+
+            return true;
+        }
+
+        /** System message */
+        if(extraParams && extraParams.extension.moduleIdentifier && extraParams.extension.moduleIdentifier === 'SystemNotifications') {
+            if(typeof self.onSystemMessageListener === 'function') {
+                var sysMsg = {
+                    id: messageId,
+                    userId: self.helpers.getIdFromNode(from),
+                    extension: extraParams.extension
+                };
+
+                self.onSystemMessageListener(sysMsg);
+            }
+
+            return true;
+        }
 
         /**
          * fire read/delivered listeners
@@ -336,9 +380,9 @@ function ChatProxy(service, webrtcModule, conn) {
                     self.onDeliveredStatusListener(delivered.attrs.id, dialogId, userId);
                 }
             } else {
-                // if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-                //     Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
-                // }
+                if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
+                    self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
+                }
             }
           
             return true;
@@ -355,6 +399,8 @@ function ChatProxy(service, webrtcModule, conn) {
             };
             
             self.sendDeliveredStatus(paramsReceived);
+
+            return true;
         }
 
       /**
@@ -363,18 +409,7 @@ function ChatProxy(service, webrtcModule, conn) {
        * stanza.getChild('delay')
        * stanza.getChildText('body')
        */
-        if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
-            if (typeof self.onMessageListener === 'function') {
-                self.onMessageListener(userId, {
-                    id: messageId, 
-                    dialog_id: dialogId,
-                    type: type,
-                    body: body,
-                    extension: extraParams ? extraParams.extension : null,
-                    markable: markable ? 1 : null
-                });
-            }
-        }
+        
   };
 }
 
@@ -538,8 +573,6 @@ ChatProxy.prototype = {
         });
 
         nClient.on('online', function () {
-            console.log('Client is authorised');
-
             nClient.send('<presence/>');
 
             callback(null, null);
@@ -644,14 +677,14 @@ ChatProxy.prototype = {
                   } else if (typeof message.extension[field] === 'object') {
                       self._JStoXML(field, message.extension[field], msg);
                   } else {
-                      stanza.getChild('extraParams').
-                          c(field).t(message.extension[field]).up();
+                      stanza.getChild('extraParams')
+                          .c(field).t(message.extension[field]).up();
                   }
               });
 
               stanza.up();
             }
-
+            console.log('SEND', stanza.toString());
             nClient.send(stanza);
         }
     },
@@ -691,23 +724,25 @@ ChatProxy.prototype = {
         }
 
         if(Utils.getEnv() === 'node') {
-            msg = new NodeClient.Stanza('message', {
+            var msg = new NodeClient.Stanza('message', {
                 id: message.id,
                 type: 'headline',
                 to: this.helpers.jidOrUserId(jid_or_user_id)
             });
 
             if (message.extension) {
-                msg.c('extraParams')
-                    .c('moduleIdentifier').t('SystemNotifications').up();
+                msg.c('extraParams',  {
+                    xmlns: 'jabber:client'
+                }).c('moduleIdentifier').t('SystemNotifications');
 
-              Object.keys(message.extension).forEach(function(field) {
-                if (typeof message.extension[field] === 'object') {
-                  self._JStoXML(field, message.extension[field], msg);
-                }else{
-                  msg.c(field).t(message.extension[field]).up();
-                }
-              });
+                Object.keys(message.extension).forEach(function(field) {
+                    if (typeof message.extension[field] === 'object') {
+                        self._JStoXML(field, message.extension[field], msg);
+                    }else{
+                        msg.getChild('extraParams')
+                            .c(field).t(message.extension[field]).up();
+                    }
+                });
 
               msg.up();
             }
@@ -1157,25 +1192,45 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype = {
-
   join: function(jid, callback) {
     var pres, self = this,
-        id = connection.getUniqueId('join');
+        id = connection ? connection.getUniqueId('join') : null;
 
     joinedRooms[jid] = true;
 
-    pres = $pres({
-      from: connection.jid,
-      to: self.helpers.getRoomJid(jid),
-      id: id
-    }).c("x", {
-      xmlns: Strophe.NS.MUC
-    }).c("history", {
-      maxstanzas: 0
-    });
+    if (Utils.getEnv() === 'browser') {
+      pres = $pres({
+        from: connection.jid,
+        to: self.helpers.getRoomJid(jid),
+        id: id
+      }).c("x", {
+        xmlns: Strophe.NS.MUC
+      }).c("history", {
+        maxstanzas: 0
+      });
 
-    if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', null, id);
-    connection.send(pres);
+      if (typeof callback === 'function') {
+          connection.addHandler(callback, null, 'presence', null, id);
+      }
+
+      connection.send(pres);
+    } else {
+      var realId = nClient.jid.user.substring(0, nClient.jid.user.indexOf('-'));
+
+      pres = new NodeClient.Stanza('presence', {
+        to: self.helpers.getRoomJidFromDialogId(jid) + '/' + realId
+      });
+
+      pres.c('x', {
+        xmlns: 'http://jabber.org/protocol/muc'
+      }).c('history', {maxstanzas: 0});
+
+      if (typeof callback === 'function') {
+          nodeStanzasCallbacks.MucJoin = callback;
+      }
+
+      nClient.send(pres);
+    }
   },
 
   leave: function(jid, callback) {
@@ -1190,7 +1245,10 @@ MucProxy.prototype = {
       type: 'unavailable'
     });
 
-    if (typeof callback === 'function') connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+    if (typeof callback === 'function') {
+        connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+    }
+
     connection.send(pres);
   },
 
