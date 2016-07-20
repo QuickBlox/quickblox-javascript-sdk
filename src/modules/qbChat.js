@@ -598,7 +598,7 @@ ChatProxy.prototype = {
             self._isLogout = false;
 
             /** Enable Carbons */
-            self._enableCarbons();
+            // self._enableCarbons();
 
             if (typeof callback === 'function') {
                 /** First argmnt is error. It's fire cb without an error. */
