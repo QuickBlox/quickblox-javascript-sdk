@@ -311,22 +311,43 @@ function ChatProxy(service, webrtcModule, conn) {
     return true;
   };
 
-  /** [_onComingStanza Listener for Node env.] */
-  this._onComingStanza = function(stanza) {
-    var from = stanza.attrs.from,
-        to = stanza.attrs.to,
-        messageId = stanza.attrs.id,
-        type = stanza.attrs.type,
-        body = stanza.getChildText('body'),
-        isError = stanza.attrs.type === 'error',
-        userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-        dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-        extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
-        markable = stanza.getChild('markable'),
-        read = stanza.getChild('displayed'),
-        delivered = stanza.getChild('received'),
-        marker = delivered || read || null,
-        x = stanza.getChild('x');
+    /** [_onComingStanza Listener for Node env.] */
+    this._onComingStanza = function(stanza) {
+
+        /** Need to separete a listner by Message, Presence, Iq */
+        // if(stanza.is('message')) {
+        //     console.log('MESSAGE', stanza.toString());
+        // } else if (stanza.is('presence')) {
+        //     console.log('PRESENCE', stanza.toString());
+        // } else {
+        //     console.log('ELSE', stanza.toString() );
+        // }
+
+
+        var from = stanza.attrs.from,
+            to = stanza.attrs.to,
+            messageId = stanza.attrs.id,
+            type = stanza.attrs.type,
+            body = stanza.getChildText('body'),
+            isError = stanza.attrs.type === 'error',
+            userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+            dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
+            extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
+            markable = stanza.getChild('markable'),
+            read = stanza.getChild('displayed'),
+            delivered = stanza.getChild('received'),
+            marker = delivered || read || null,
+            x = stanza.getChild('x'),
+            composing = stanza.getChild('composing'),
+            paused = stanza.getChild('paused');
+
+        if(composing || paused){
+            if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
+                self.onMessageTypingListener(composing != null, userId, dialogId);
+            }
+        
+            return true;
+        }
 
         if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
             if (typeof self.onMessageListener === 'function') {
@@ -402,14 +423,6 @@ function ChatProxy(service, webrtcModule, conn) {
 
             return true;
         }
-
-      /**
-       * All methods
-       * stanza.is('message')
-       * stanza.getChild('delay')
-       * stanza.getChildText('body')
-       */
-        
   };
 }
 
@@ -584,6 +597,9 @@ ChatProxy.prototype = {
             self._isDisconnected = false;
             self._isLogout = false;
 
+            /** Enable Carbons */
+            self._enableCarbons();
+
             if (typeof callback === 'function') {
                 /** First argmnt is error. It's fire cb without an error. */
                callback(null);
@@ -684,7 +700,7 @@ ChatProxy.prototype = {
 
               stanza.up();
             }
-            console.log('SEND', stanza.toString());
+
             nClient.send(stanza);
         }
     },

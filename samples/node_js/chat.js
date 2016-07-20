@@ -55,43 +55,28 @@ QB.createSession({
             process.exit(1);
         }
 
-        // console.log('[Sample] - Connected');
+        // QB.chat.onMessageTypingListener = function(composing, userId, dialogId) {
+        //     var msg = composing ? 'start typing...' : 'stop typing.'; 
+        //     console.log(`User ${userId} ${msg}`);
+        // };
 
-        // var dialogJid = '5788b425a28f9ac53900001c';
-
-        // QB.chat.muc.join(dialogJid, function(error) {
-        //     if(error) {
-        //         throw new Error('Join to dialog is failed');
-        //     }
-
-        //     var msg = {
-        //         type: 'groupchat',
-        //         body: "How are you today?",
-        //         extension: {
-        //             save_to_history: 1,
-        //         }
-        //     };
-
-        //     QB.chat.send(dialogJid, msg);
-        // });
-
-        QB.chat.onMessageListener = function(userId, receivedMessage){
-            console.log('onMessageListener', userId, receivedMessage);
+        // QB.chat.onMessageListener = function(userId, receivedMessage){
+        //     console.log('onMessageListener', userId, receivedMessage);
             
-            if(receivedMessage.body) {
-                var msg = receivedMessage.body.toLowerCase() === 'yes' ? 'Gooood, bro' : 'Everyone says:"' + receivedMessage.body + '", are you want to buy a white elephant?.';
+        //     if(receivedMessage.body) {
+        //         var msg = receivedMessage.body.toLowerCase() === 'yes' ? 'Gooood, bro' : 'Everyone says:"' + receivedMessage.body + '", are you want to buy a white elephant?.';
      
-                var answer = {
-                    type: 'chat',
-                    body: msg,
-                    extension: {
-                        save_to_history: 1,
-                    }
-                };
+        //         var answer = {
+        //             type: 'chat',
+        //             body: msg,
+        //             extension: {
+        //                 save_to_history: 1,
+        //             }
+        //         };
 
-                QB.chat.send(userId, answer);
-            }
-        };
+        //         QB.chat.send(userId, answer);
+        //     }
+        // };
     });
  
 });
