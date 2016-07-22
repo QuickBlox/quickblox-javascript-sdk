@@ -194,10 +194,6 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
 
         session.processOnReject(userID, extension);
     } else {
-        if (typeof this.onIgnoredListener === 'function'){
-          Utils.safeCallbackCall(this.onIgnoredListener, 'onReject', session, userID, extensionClone);
-        }
-
         Helpers.traceError("Ignore 'onReject', there is no information about session " + sessionID + " by some reason.");
     }
 };
@@ -234,10 +230,6 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
         if (session.state === WebRTCSession.State.ACTIVE) {
             session.processOnIceCandidates(userID, extension);
         } else {
-            if (typeof this.onIgnoredListener === 'function'){
-                Utils.safeCallbackCall(this.onIgnoredListener, 'OnIceCandidates', session, userID, extensionClone);
-            }
-
             Helpers.traceWarning('Ignore \'OnIceCandidates\', the session ( ' + sessionID + ' ) has invalid state.');
         }
     } else {
