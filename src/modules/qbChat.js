@@ -467,7 +467,6 @@ ChatProxy.prototype = {
         } else if (typeof message.extension[field] === 'object') {
 
           self._JStoXML(field, message.extension[field], msg);
-
         } else {
           msg.c(field).t(message.extension[field]).up();
         }
