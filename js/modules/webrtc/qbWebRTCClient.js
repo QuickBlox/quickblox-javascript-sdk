@@ -141,7 +141,6 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
           Utils.safeCallbackCall(this.onIgnoredListener, 'onCall', session, userID, extensionClone);
         }
     } else {
-
         if (!session) {
             session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
