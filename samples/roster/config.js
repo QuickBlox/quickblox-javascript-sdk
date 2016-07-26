@@ -1,14 +1,17 @@
 var QBApp = {
-  appId: 92,
-  authKey: 'wJHdOcQSxXQGWx5',
-  authSecret: 'BTFsj7Rtt27DAmT'
+    appId: 92,
+    authKey: 'wJHdOcQSxXQGWx5',
+    authSecret: 'BTFsj7Rtt27DAmT'
 };
 
 var config = {
-  chatProtocol: {
-    websocket: 'wss://chat.quickblox.com:5291',
-    active: 2
-  }
+    debug: {
+        mode: 1,
+        file: null
+    },
+    chatProtocol: {
+        active: 2
+    }
 };
 
 var QBUser1 = {

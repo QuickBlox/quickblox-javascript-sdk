@@ -123,6 +123,8 @@ WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessi
  * DELEGATE (signaling)
  */
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
+    var extensionClone = JSON.parse(JSON.stringify(extension));
+
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
     if (this.isExistNewOrActiveSessionExceptSessionID(sessionID)) {
@@ -133,13 +135,16 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
         extension.sessionID = sessionID;
 
         this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
+
+        if (typeof this.onIgnoredListener === 'function'){
+          Utils.safeCallbackCall(this.onIgnoredListener, 'onCall', sessionID, userID, extensionClone);
+        }
     } else {
         var session = this.sessions[sessionID];
 
         if (!session) {
             session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
-            var extensionClone = JSON.parse(JSON.stringify(extension));
             this._cleanupExtension(extensionClone);
 
             if (typeof this.onCallListener === 'function') {
