@@ -586,6 +586,7 @@ ChatProxy.prototype = {
         });
 
         nClient.on('online', function () {
+            /** Send first presence if user is online */
             nClient.send('<presence/>');
 
             callback(null, null);
@@ -598,11 +599,10 @@ ChatProxy.prototype = {
             self._isLogout = false;
 
             /** Enable Carbons */
-            // self._enableCarbons();
+            self._enableCarbons();
 
             if (typeof callback === 'function') {
-                /** First argmnt is error. It's fire cb without an error. */
-               callback(null);
+               callback(null, null);
             }
         });
     }
@@ -1022,24 +1022,39 @@ ChatProxy.prototype = {
   },
 
   // Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
-  _enableCarbons: function(callback) {
-    if(!isBrowser) throw unsupported;
+  _enableCarbons: function(cb) {
+    var self = this,
+        iq;
 
-    var iq;
+    if(Utils.getEnv() === 'browser') {
+        iq = $iq({
+            from: connection.jid,
+            type: 'set',
+            id: connection.getUniqueId('enableCarbons')
+        }).c('enable', {
+            xmlns: Strophe.NS.CARBONS
+        });
 
-    iq = $iq({
-      from: connection.jid,
-      type: 'set',
-      id: connection.getUniqueId('enableCarbons')
-    }).c('enable', {
-      xmlns: Strophe.NS.CARBONS
-    });
+        connection.sendIQ(iq, function(stanza) {
+          /**
+           * In future we need to remove cb
+           */
+          cb();
+        });
+    } else if(Utils.getEnv() === 'node') {
+        iq = new NodeClient.Stanza('iq', {
+            type: 'set',
+            from: nClient.jid.user,
+            id: self.helpers.getUniqueIdCross('enableCarbons')
+        });
 
-    connection.sendIQ(iq, function(stanza) {
-      callback();
-    });
+        iq.c('enable', {
+            xmlns: 'urn:xmpp:carbons:2'
+        });
+
+        nClient.send(iq);
+    }
   }
-
 };
 
 
