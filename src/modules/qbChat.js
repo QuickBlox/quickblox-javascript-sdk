@@ -567,22 +567,6 @@ ChatProxy.prototype = {
 
         nClient.on('stanza', function (stanza){
             self._onComingStanza(stanza);
-            // if(stanza.is('iq')){
-            //     var iqId = stanza.attrs.id;
-            //     var stanzaCallback = nodeStanzasCallbacks[iqId];
-            //     if(stanza.attrs.type === 'result'){
-            //         stanzaCallback(stanza);
-            //         delete nodeStanzasCallbacks[iqId];
-            //     // error
-            //     }else if(stanza.attrs.type === 'error'){
-            //         stanzaCallback(stanza);
-            //         delete nodeStanzasCallbacks[iqId];
-            //     }
-            // }
-
-            // if (stanza.is('message') && (stanza.attrs.type !== 'error')) {
-                
-            // }
         });
 
         nClient.on('online', function () {
@@ -598,7 +582,6 @@ ChatProxy.prototype = {
             self._isDisconnected = false;
             self._isLogout = false;
 
-            /** Enable Carbons */
             self._enableCarbons();
 
             if (typeof callback === 'function') {
