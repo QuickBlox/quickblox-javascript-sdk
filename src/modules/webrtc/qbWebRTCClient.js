@@ -43,7 +43,7 @@ function WebRTCClient(service, connection) {
 }
 
 /**
- * [function description]
+ * [Return data or all active devices]
  * @param  {[string]} spec [specify what type of devices you wnat to get.
  *                         Possible values: audioinput, audiooutput,  videoinput]
  * @return {[array]}       [array of devices]
