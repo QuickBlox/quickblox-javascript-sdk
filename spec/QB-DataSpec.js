@@ -13,7 +13,7 @@ describe('Custom Objects API', function() {
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
     beforeAll(function(done){
-        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret);
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
         QB.createSession(QBUser1, function(err, res) {
             if (err) {
@@ -170,14 +170,14 @@ describe('Custom Objects API', function() {
             done.fail("Download a file from existing record error: " + JSON.stringify(err));
           } else {
             expect(res).not.toBeNull();
-            expect(res).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
+            expect(res).toBe("https://" + CONFIG.endpoints.api + "/data/cars/"+paramsFile.id+
                              "/file.json?field_name="+paramsFile.field_name+
                              "&token="+session.token);
 
             done();
           }
         });
-      });
+      }, REST_REQUESTS_TIMEOUT);
 
       it ('can get file url', function(){
         paramsFor = {
@@ -188,10 +188,9 @@ describe('Custom Objects API', function() {
         var url = QB.data.fileUrl('cars', paramsFor);
 
         expect(url).not.toBeNull();
-        expect(url).toBe("https://api.quickblox.com/data/cars/"+paramsFile.id+
-                         "/file.json?field_name="+paramsFile.field_name+
-                         "&token="+session.token);
-
+        expect(url).toBe("https://" + CONFIG.endpoints.api + "/data/cars/"+paramsFile.id+
+                       "/file.json?field_name="+paramsFile.field_name+
+                       "&token="+session.token);
       });
 
       it ('can delete a file from existing record', function(done){
@@ -206,6 +205,7 @@ describe('Custom Objects API', function() {
           }
         });
       });
+
     });
 
 
