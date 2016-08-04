@@ -72,6 +72,8 @@ ServiceProxy.prototype = {
     var _this = this,
         retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback); };
 
+        // console.log(params);
+
     var ajaxCall = {
       url: params.url,
       type: params.type || 'GET',
@@ -120,7 +122,7 @@ ServiceProxy.prototype = {
         url: ajaxCall.url,
         method: ajaxCall.type,
         timeout: config.timeout,
-        json: isJSONRequest ? ajaxCall.data : null,
+        json: (isJSONRequest && !params.isFileUpload) ? ajaxCall.data : null,
         headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
       };
 
@@ -162,7 +164,16 @@ ServiceProxy.prototype = {
        Object.keys(ajaxCall.data).forEach(function(item,i,ar){
          form.append(item, ajaxCall.data[item]);
        });
-      }
+     }else if (params.isFileUpload){
+       var form = r.form();
+       Object.keys(ajaxCall.data).forEach(function(item,i,ar){
+         if(item === "file"){
+           form.append(item, ajaxCall.data[item].data, {filename: ajaxCall.data[item].name});
+         }else{
+           form.append(item, ajaxCall.data[item]);
+         }
+       });
+     }
     }
   }
 
