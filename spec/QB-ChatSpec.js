@@ -208,14 +208,14 @@ describe('Chat API', function() {
         });
       }, IQ_TIMEOUT);
 
-      // // Remove user from contact list
-      // //
-      // it("can remove user from contact list", function(done) {
-      //   QB.chat.roster.remove(QBUser2.id, function() {
-      //     console.info("can remove user from contact list");
-      //     done();
-      //   });
-      // }, IQ_TIMEOUT);
+      // Remove user from contact list
+      //
+      it("can remove user from contact list", function(done) {
+        QB.chat.roster.remove(QBUser2.id, function() {
+          console.info("can remove user from contact list");
+          done();
+        });
+      }, IQ_TIMEOUT);
 
       // Confirm subscription request
       //
@@ -226,14 +226,14 @@ describe('Chat API', function() {
         });
       }, IQ_TIMEOUT);
 
-      // // Reject subscription request
-      // //
-      // it("can reject subscription request", function(done) {
-      //   QB.chat.roster.reject(QBUser2.id, function() {
-      //     console.info("can reject subscription request");
-      //     done();
-      //   });
-      // }, IQ_TIMEOUT);
+      // Reject subscription request
+      //
+      it("can reject subscription request", function(done) {
+        QB.chat.roster.reject(QBUser2.id, function() {
+          console.info("can reject subscription request");
+          done();
+        });
+      }, IQ_TIMEOUT);
     });
 
 
