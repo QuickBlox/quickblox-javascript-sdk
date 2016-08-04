@@ -22,8 +22,8 @@ describe('Users API', function() {
 
         done();
       }
-    }, REST_REQUESTS_TIMEOUT);
-  });
+    });
+  }, REST_REQUESTS_TIMEOUT);
 
   /**
    * TEST CASES
