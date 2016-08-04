@@ -59,7 +59,7 @@ describe('Users API', function() {
       filter: {
         field: 'login',
         param: 'eq',
-        value: 'js_jasmine1'
+        value: QBUser1.login
       }
     };
 
@@ -69,18 +69,18 @@ describe('Users API', function() {
       }else{
         expect(res).not.toBeNull();
         expect(res.items.length).toBe(1);
-        expect(res.items[0].user.id).toBe(6126733);
+        expect(res.items[0].user.id).toBe(QBUser1.id);
 
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-  describe('Create, update & delete Users', function(){
+  describe('CUD operations: ', function(){
     var userId, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
 
     it('can create a user (' + login + ')', function(done) {
-      var params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test', 'website': 'http://quickblox.com' };
+      var params = { 'login': login, 'password': 'someSecret', 'full_name': 'QuickBlox Test' };
 
       QB.users.create(params, function(err, res){
         if (err) {
@@ -125,20 +125,21 @@ describe('Users API', function() {
           done();
         }
       });
-    });
-  }, REST_REQUESTS_TIMEOUT);
+    }, REST_REQUESTS_TIMEOUT);
+
+  });
 
   describe('Get Users', function(){
 
     it('can get users by login', function(done) {
-      var params = { 'login': 'js_jasmine2' };
+      var params = { 'login': QBUser1.login };
 
       QB.users.get(params, function(err, res){
         if (err) {
           done.fail("Get user by login error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          expect(res.id).toBe(6126741);
+          expect(res.id).toBe(QBUser1.id);
 
           done();
         }
@@ -146,14 +147,14 @@ describe('Users API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can get users by email', function(done) {
-      var params = { 'email': 'js_jasmine2@quickblox.com' };
+      var params = { 'email': QBUser1.email };
 
       QB.users.get(params, function(err, res){
         if (err) {
           done.fail("Get user by email error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          expect(res.id).toBe(6126741);
+          expect(res.id).toBe(QBUser1.id);
 
           done();
         }
@@ -161,14 +162,14 @@ describe('Users API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can get users by id', function(done) {
-      var params = 6126741;
+      var params = QBUser1.id;
 
       QB.users.get(params, function(err, res){
         if (err) {
           done.fail("Get user by id error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          expect(res.login).toBe('js_jasmine2');
+          expect(res.login).toBe(QBUser1.login);
 
           done();
         }

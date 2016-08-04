@@ -3,35 +3,38 @@ describe('Chat API', function() {
 
     var LOGIN_TIMEOUT = 10000;
     var MESSAGING_TIMEOUT = 1500;
-    var IQ_TIMEOUT = 1000;
+    var IQ_TIMEOUT = 3000;
     var REST_REQUESTS_TIMEOUT = 3000;
 
     var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
     var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
     var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+    var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
 
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
     var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
+    var chatEndpoint = CONFIG.endpoints.chat;
+
   describe('XMPP (real time messaging)', function() {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+    if(isNodeEnv) {
+      pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+    }
 
-        beforeAll(function(done){
-            QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+    beforeAll(function(done){
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
-            QB.chat.connect({
-                'userId': QBUser1.id,
-                'password': QBUser1.password
-            }, function(err, roster) {
-                if(err){ done.fail("Chat login error: ", err); }
+        QB.chat.connect({
+            'userId': QBUser1.id,
+            'password': QBUser1.password
+        }, function(err, roster) {
+            if(err){ done.fail("Chat login error: ", err); }
 
-                expect(roster).not.toBeNull();
-                done();
-            });
-        }, LOGIN_TIMEOUT);
+            expect(roster).not.toBeNull();
+            done();
+        });
+    }, LOGIN_TIMEOUT);
 
     // 1-1 mesasging
     //
@@ -179,10 +182,64 @@ describe('Chat API', function() {
 
     }, MESSAGING_TIMEOUT);
 
+    // Privacy lists API
+    //
+    describe("Contact list: ", function() {
+
+      // Retrieve contact list
+      //
+      it("can retrieve contact list", function(done) {
+        QB.chat.roster.get(function(roster) {
+          if(!roster){
+            done.fail("Retrieve contact list error");
+          }else{
+            console.info("can retrieve contact list");
+            done();
+          }
+        });
+      }, IQ_TIMEOUT);
+
+      // Add user to contact list
+      //
+      it("can add user to contact list", function(done) {
+        QB.chat.roster.add(QBUser2.id, function() {
+          console.info("can add user to contact list");
+          done();
+        });
+      }, IQ_TIMEOUT);
+
+      // // Remove user from contact list
+      // //
+      // it("can remove user from contact list", function(done) {
+      //   QB.chat.roster.remove(QBUser2.id, function() {
+      //     console.info("can remove user from contact list");
+      //     done();
+      //   });
+      // }, IQ_TIMEOUT);
+
+      // Confirm subscription request
+      //
+      it("can confirm subscription request", function(done) {
+        QB.chat.roster.confirm(QBUser2.id, function() {
+          console.info("can confirm subscription request");
+          done();
+        });
+      }, IQ_TIMEOUT);
+
+      // // Reject subscription request
+      // //
+      // it("can reject subscription request", function(done) {
+      //   QB.chat.roster.reject(QBUser2.id, function() {
+      //     console.info("can reject subscription request");
+      //     done();
+      //   });
+      // }, IQ_TIMEOUT);
+    });
+
 
     // Privacy lists API
     //
-    describe("Privacy list", function() {
+    describe("Privacy list: ", function() {
 
       // Create
       //
@@ -368,7 +425,7 @@ describe('Chat API', function() {
           expect(res._id).not.toBeNull();
           expect(res.type).toEqual(2);
           expect(res.name).toEqual("GroupDialogName");
-          expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
+          expect(res.xmpp_room_jid).toContain(chatEndpoint);
 
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
             return a - b;

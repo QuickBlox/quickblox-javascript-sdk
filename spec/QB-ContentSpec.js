@@ -1,3 +1,5 @@
+var fileId;
+
 describe('Content API', function() {
   'use strict';
 
@@ -7,14 +9,15 @@ describe('Content API', function() {
   var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
 
   var token,
       data = {},
       fileUID = '97f5802dcbd34a59a4921d73f6baedd000',
-      urlToBlobs = 'https://api.quickblox.com/blobs/';
+      urlToBlobs = 'https://' + CONFIG.endpoints.api + '/blobs/';
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     QB.createSession(QBUser1, function(err, session) {
       if (err) {
@@ -42,13 +45,28 @@ describe('Content API', function() {
       if (err) {
         done.fail('Create and upload files error: ' + JSON.stringify(err));
       }else{
+        fileId = res.id;
+
         expect(res).not.toBeNull();
         expect(res.name).toBe('QB.txt');
 
         done();
       }
     });
-  }, 5000);
+  }, REST_REQUESTS_TIMEOUT);
+
+  it('can get file information by ID', function(done) {
+    QB.content.getInfo(fileId, function(err, res) {
+      if (err) {
+        done.fail("Get file information by ID error: " + JSON.stringify(err));
+      }else{
+        expect(res).not.toBeNull();
+        expect(res.blob.id).toEqual(self.fileId);
+
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
 
   it('can list content objects', function(done) {
     QB.content.list(function(err, res) {
@@ -86,20 +104,6 @@ describe('Content API', function() {
       }
     });
   }, 7000);
-
-  it('can get file information by ID', function(done) {
-    QB.content.getInfo(2917985, function(err, res) {
-      if (err) {
-        done.fail("Get file information by ID error: " + JSON.stringify(err));
-      }else{
-        expect(res).not.toBeNull();
-        expect(res.blob.id).toEqual(2917985);
-        expect(res.blob.size).toBe(15);
-
-        done();
-      }
-    });
-  }, REST_REQUESTS_TIMEOUT);
 
   it('can access public URL', function() {
     var publicUrl = QB.content.publicUrl(fileUID);
