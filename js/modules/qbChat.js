@@ -81,6 +81,7 @@ function ChatProxy(service, webrtcModule, conn) {
         messageId = stanza.getAttribute('id'),
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
+        recipientId = type === 'groupchat' ? self.helpers.getIdFromResource(to) : self.helpers.getIdFromNode(to),
         marker = delivered || read || null;
 
 
@@ -139,6 +140,7 @@ function ChatProxy(service, webrtcModule, conn) {
     var message = {
       id: messageId,
       dialog_id: dialogId,
+      recipient_id: recipientId,
       type: type,
       body: (body && body.textContent) || null,
       extension: extraParamsParsed ? extraParamsParsed.extension : null,
