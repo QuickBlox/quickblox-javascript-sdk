@@ -32,10 +32,15 @@ var Utils = {
         var isNode = typeof window === 'undefined' && typeof exports === 'object',
             isBrowser = typeof window !== 'undefined';
 
-        return isNode ? 'node' : isBrowser ? 'browser' : null;
+        //return isNode ? 'node' : isBrowser ? 'browser' : null;
+
+        return {
+          'browser': isBrowser,
+          'node': isNode
+        };
     },
   safeCallbackCall: function() {
-    if(!isBrowser) throw unsupported;
+    // if(!isBrowser) throw unsupported;
 
     var listenerString = arguments[0].toString(),
         listenerName = listenerString.split('(')[0].split(' ')[1],
