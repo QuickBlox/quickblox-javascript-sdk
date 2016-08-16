@@ -5,7 +5,7 @@ describe('Helpers', function() {
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../quickblox.min.js') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
   var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;

@@ -5,7 +5,7 @@ describe('PushNotifications API', function() {
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
@@ -27,6 +27,8 @@ describe('PushNotifications API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   describe('Subscriptions', function(){
+    var subscriptionId;
+
     it('can create a subscription', function(done){
       params = {
         notification_channels: 'gcm',
@@ -62,31 +64,27 @@ describe('PushNotifications API', function() {
           expect(result).not.toBeNull();
           expect(result[0].subscription.device.udid).toBe('jasmineUnique');
 
+          subscriptionId = result[0].subscription.id;
+          
           done();
         }
       });
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete subscription', function(done){
-      QB.pushnotifications.subscriptions.list(function(err, result){
+      function deleteSubscribtionCallback(err, res) {
         if (err) {
-          done.fail('List a subscription error: ' + JSON.stringify(err));
-        } else {
-          var subscriptionId = result[0].subscription.id;
+            done.fail('Delete subscription error: ' + JSON.stringify(err));
+          } else {
+            expect(res).not.toBeNull();
+            expect(res).toBe(true);
 
-          QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
-            if (err) {
-              done.fail('Delete subscription error: ' + JSON.stringify(err));
-            } else {
-              expect(res).not.toBeNull();
-              expect(res).toBe(true);
-
-              done();
-            }
-          });
-        }
-      });
-    }, 3000);
+            done();
+          }
+      }
+      
+      QB.pushnotifications.subscriptions.delete(subscriptionId, deleteSubscribtionCallback);
+    }, 20000);
   });
 
   describe('Events', function(){
@@ -172,7 +170,7 @@ describe('PushNotifications API', function() {
      * Without running in Node env. - everything all right.
      * Need review delete event and fix it!
      */
-    it("can delete event", function(done){
+    it('can delete event', function(done){
       if(isNodeEnv) {
         pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
       }
