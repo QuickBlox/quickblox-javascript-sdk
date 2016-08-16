@@ -60,7 +60,6 @@ QB.createSession({email: QBUser.login,password: QBUser.pass}, function(csError, 
 
         /* Listener for typing status */
         QB.chat.onMessageTypingListener = function(composing, userId, dialogId) {
-            console.log('[composing]',composing);
             var msg = composing ? 'start typing...' : 'stop typing.';
             console.log('User ' + userId + ' ' + msg);
         };
@@ -80,6 +79,7 @@ QB.createSession({email: QBUser.login,password: QBUser.pass}, function(csError, 
             }
 
             if(receivedMessage.body) {
+                console.log('testttttt message body');
                 if(receivedMessage.body.toLowerCase() === 'delete me'){
                     removeUser();
                     return;
@@ -98,7 +98,18 @@ QB.createSession({email: QBUser.login,password: QBUser.pass}, function(csError, 
                 return;
             }
 
-            console.log(' regular message ',userId, receivedMessage);
+            /*
+            * <message type="chat" xmlns="jabber:client" from="13486905-36125@chat.quickblox.com/1220770403-quickblox-69429" to="11878855-36125@chat.quickblox.com" id="57b302b053fc871db500000c" xmlns:stream="http://etherx.jabber.org/streams">
+            *     <body xmlns="jabber:client">фыв</body>
+            *     <extraParams xmlns="jabber:client">
+        *         <save_to_history>1</save_to_history>
+        *         <dialog_id>57a993d0a0eb47b4b9000003</dialog_id>
+        *         <date_sent>1471349424</date_sent>
+        *         <message_id>57b302b053fc871db500000c</message_id>
+        *         </extraParams><markable xmlns="urn:xmpp:chat-markers:0"/>
+        *         </message>
+            * */
+            //console.log(' regular message ',userId, receivedMessage);
             return;
         };
 
@@ -113,8 +124,7 @@ QB.createSession({email: QBUser.login,password: QBUser.pass}, function(csError, 
             });
         };
 
-
-
+        
         QB.chat.onConfirmSubscribeListener = function(userId){
             console.log('{{QB.chat.onConfirmSubscribeListener}}', userId);
         };

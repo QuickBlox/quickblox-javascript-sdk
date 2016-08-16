@@ -79,20 +79,39 @@ function ChatProxy(service, webrtcModule, conn) {
 
     this._onMessage = function(stanza) {
 
-        var from = stanza.getAttribute('from'),
-            to = stanza.getAttribute('to'),
-            type = stanza.getAttribute('type'),
-            body = stanza.querySelector('body'),
-            markable = stanza.querySelector('markable'),
-            delivered = stanza.querySelector('received'),
-            read = stanza.querySelector('displayed'),
-            composing = stanza.querySelector('composing'),
-            paused = stanza.querySelector('paused'),
-            invite = stanza.querySelector('invite'),
-            extraParams = stanza.querySelector('extraParams'),
-            delay = stanza.querySelector('delay'),
-            messageId = stanza.getAttribute('id'),
-            dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
+        if (Utils.getEnv().browser) {
+            var from = stanza.getAttribute('from'),
+                to = stanza.getAttribute('to'),
+                type = stanza.getAttribute('type'),
+                body = stanza.querySelector('body'),
+                markable = stanza.querySelector('markable'),
+                delivered = stanza.querySelector('received'),
+                read = stanza.querySelector('displayed'),
+                composing = stanza.querySelector('composing'),
+                paused = stanza.querySelector('paused'),
+                invite = stanza.querySelector('invite'),
+                extraParams = stanza.querySelector('extraParams'),
+                delay = stanza.querySelector('delay'),
+                messageId = stanza.getAttribute('id'),
+                jid = connection.jid;
+        } else if(Utils.getEnv().node){
+            var from = stanza.attrs.from,
+                to = stanza.attrs.to,
+                type = stanza.attrs.type,
+                body = stanza.getChildText('body'),
+                markable = stanza.getChildText('markable'),
+                delivered = stanza.getChildText('delivered'),
+                read = stanza.getChildText('read'),
+                composing = stanza.getChildText('composing'),
+                paused = stanza.getChildText('paused'),
+                invite = stanza.getChildText('invite'),
+                extraParams = stanza.getChildText('extraParams'),
+                delay = stanza.getChildText('delay'),
+                messageId = stanza.attrs.id,
+                jid = nClient.options.jid.user;
+        }
+
+        var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
             marker = delivered || read || null;
 
@@ -137,7 +156,8 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // autosend 'received' status (ignore messages from self)
         //
-        if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
+
+        if (markable && userId != self.helpers.getIdFromNode(jid)) {
             var params = {
                 messageId: messageId,
                 userId: userId,
@@ -159,7 +179,10 @@ function ChatProxy(service, webrtcModule, conn) {
         if (markable) {
             message.markable = 1;
         }
+        
         if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
+            console.log('self.onMessageListener', userId, message);
+            console.log(stanza.toString());
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
 
@@ -399,7 +422,7 @@ function ChatProxy(service, webrtcModule, conn) {
             if (typeof self.onMessageListener === 'function') {
                 //console.log('onMessageListener',userId);
                 self.onMessageListener(userId, {
-                    id: messageId, 
+                    id: messageId,
                     dialog_id: dialogId,
                     type: type,
                     body: body,
@@ -639,12 +662,12 @@ ChatProxy.prototype = {
             });
 
             nClient.on('stanza', function (stanza){
-                // Utils.QBLog('[QBChat] RECV', stanza.toString());
-
                 if(stanza.is('presence')){
                     self._onPresence(stanza);
                 } else if(stanza.is('iq')) {
                     self._onIQ(stanza);
+                } else if(stanza.is('message') && (stanza.type === 'chat' || stanza.type === 'groupchat')) {
+                    self._onMessage(stanza);
                 } else {
                     self._onComingStanza(stanza);
                 }
