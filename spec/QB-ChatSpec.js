@@ -1,78 +1,75 @@
 describe('Chat API', function() {
-    'use strict';
+  'use strict';
 
-    var LOGIN_TIMEOUT = 10000;
-    var MESSAGING_TIMEOUT = 10000;
-    var IQ_TIMEOUT = 1000;
-    var REST_REQUESTS_TIMEOUT = 3000;
+  var LOGIN_TIMEOUT = 10000;
+  var MESSAGING_TIMEOUT = 1500;
+  var IQ_TIMEOUT = 3000;
+  var REST_REQUESTS_TIMEOUT = 3000;
 
-    var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-    var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
-    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-    var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+  var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
+  var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+  var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
 
-    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-    var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
-    describe('XMPP (real time messaging)', function() {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
-        
-        beforeAll(function(done){
-            QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+  var chatEndpoint = CONFIG.endpoints.chat;
 
-            QB.chat.connect({
-                'userId': QBUser1.id,
-                'password': QBUser1.password
-            }, function(err, roster) {
-                if(err){ 
-                  done.fail('Chat login error: ' + JSON.stringify(err));
-                }
+  describe('XMPP - real time messaging', function() {
+    beforeAll(function(done){
+      QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
-                expect(err).toBeNull();
-                expect(roster).not.toBeNull();
+      QB.chat.connect({
+        'userId': QBUser1.id,
+        'password': QBUser1.password
+      }, function(err, roster) {
+          if(err) { 
+            done.fail('Chat login error: ', err);
+          }
 
-                done();
-            });
-        }, LOGIN_TIMEOUT);
+          expect(err).toBeNull();
+          
+          done();
+      });
+    }, LOGIN_TIMEOUT);
 
-    // 1-1 chat
-    //
     it('can send and receive private messages', function(done) {
-      QB.chat.onMessageListener = function(userId, receivedMessage){
+      var self = this;
+
+      var msgExtension = {
+          name: 'skynet',
+          mission: 'take over the planet'
+      },  
+        msg = {
+          type: 'chat',
+          extension: msgExtension,
+          markable: 1
+      };
+
+      function onMsgCallback(userId, receivedMessage) {
+        expect(receivedMessage).not.toBeNull();
+
         expect(userId).toEqual(QBUser1.id);
 
-        expect(receivedMessage).not.toBeNull();
         expect(receivedMessage.type).toEqual('chat');
         expect(receivedMessage.extension).toEqual(msgExtension);
         expect(receivedMessage.markable).toEqual(1);
 
-        expect(receivedMessage.id).not.toBeUndefined();
         done();
-      };
+      }
 
-      var self = this;
-      var msgExtension = {
-                name: 'skynet',
-                mission: 'take over the planet'
-            },
-            message = {
-                type: 'chat',
-                extension: msgExtension,
-                markable: 1
-            };
+      QB.chat.onMessageListener = onMsgCallback;
 
-      QB.chat.send(QBUser1.id, message);
+      QB.chat.send(QBUser1.id, msg);
     }, MESSAGING_TIMEOUT);
 
-    // System messages
-    //
+
     it('can send and receive system messages', function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
 
       var self = this;
 
@@ -97,17 +94,23 @@ describe('Chat API', function() {
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
       self.messageId = message.id;
-
     }, MESSAGING_TIMEOUT);
-
 
     // 'Delivered' status
     //
-    it("can send and receive 'delivered' status", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+    it('can send and receive \'delivered\' status', function(done) {
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       var self = this;
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+
+      self.params = params;
 
       QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
         expect(messageId).toEqual(self.params.messageId);
@@ -118,24 +121,19 @@ describe('Chat API', function() {
         done();
       };
 
-      var params = {
-        messageId: "507f1f77bcf86cd799439011",
-        userId: QBUser1.id,
-        dialogId: "507f191e810c19729de860ea"
-      };
-      self.params = params;
+
 
       QB.chat.sendDeliveredStatus(params);
-
     }, MESSAGING_TIMEOUT);
 
 
     // 'Read' status
     //
     it("can send and receive 'read' status", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       var self = this;
 
       QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
@@ -161,9 +159,10 @@ describe('Chat API', function() {
     // 'Is typing' status
     //
     it("can send and receive 'is typing' status (private)", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(true);
         expect(userId).toEqual(QBUser1.id);
@@ -180,9 +179,10 @@ describe('Chat API', function() {
     // 'Stop typing' status
     //
     it("can send and receive 'stop typing' status (private)", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(false);
         expect(userId).toEqual(QBUser1.id);
@@ -193,16 +193,63 @@ describe('Chat API', function() {
 
       QB.chat.sendIsStopTypingStatus(QBUser1.id);
 
-
     }, MESSAGING_TIMEOUT);
+
+    // Privacy lists API
+    //
+    describe('Contact list: ', function() {
+      it('can retrieve contact list', function(done) {
+        QB.chat.roster.get(function(roster) {
+          if(!roster){
+            done.fail('Retrieve contact list error');
+          }else{
+            expect(roster).toBeDefined();
+
+            done();
+          }
+        });
+      }, IQ_TIMEOUT);
+
+      it('can add user to contact list', function(done) {
+        QB.chat.roster.add(QBUser2.id, function() {
+          console.info('can add user to contact list');
+          done();
+        });
+      }, IQ_TIMEOUT);
+
+      it('can remove user from contact list', function(done) {
+        QB.chat.roster.remove(QBUser2.id, function() {
+          console.info('can remove user from contact list');
+          done();
+        });
+      }, IQ_TIMEOUT);
+
+      it('can confirm subscription request', function(done) {
+        if(isNodeEnv) {
+          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+        }
+        
+        QB.chat.roster.confirm(QBUser2.id, function() {
+          console.info('can confirm subscription request');
+          done();
+        });
+      }, IQ_TIMEOUT);
+
+      it('can reject subscription request', function(done) {
+        QB.chat.roster.reject(QBUser2.id, function() {
+          console.info('can reject subscription request');
+          done();
+        });
+      }, IQ_TIMEOUT);
+    });
 
 
     // Privacy lists API
     //
-    describe("Privacy list", function() {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+    describe("Privacy list: ", function() {
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
       // Create
       //
       it("can create new list with items", function(done) {
@@ -354,6 +401,10 @@ describe('Chat API', function() {
     var dialogId;
     var messageId;
 
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+
     beforeAll(function(done){
         QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret);
 
@@ -362,7 +413,7 @@ describe('Chat API', function() {
                 'password': QBUser1.password
             },
             function(err, result) {
-                if(err){ done.fail('Create session error: ', err); }
+                if(err){ done.fail('Create session error: ' + err); }
 
                 expect(result).not.toBeNull();
                 expect(result.application_id).toEqual(CREDS.appId);
@@ -373,11 +424,11 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can create a dialog (group)', function(done) {
-        var params = {
-            occupants_ids: [QBUser2.id],
-            name: 'GroupDialogName',
-            type: 2
-        };
+      var params = {
+        occupants_ids: [QBUser2.id],
+        name: "GroupDialogName",
+        type: 2
+      };
 
       QB.chat.dialog.create(params, function(err, res) {
         if(err){
@@ -386,8 +437,8 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res._id).not.toBeNull();
           expect(res.type).toEqual(2);
-          expect(res.name).toEqual('GroupDialogName');
-          expect(res.xmpp_room_jid).toMatch('muc.chat.quickblox.com');
+          expect(res.name).toEqual("GroupDialogName");
+          expect(res.xmpp_room_jid).toContain(chatEndpoint);
 
           var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
             return a - b;
@@ -418,11 +469,9 @@ describe('Chat API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can update a dialog (group)', function(done) {
-        var toUpdate = {
-            name: 'GroupDialogNewName',
-            pull_all: {
-                occupants_ids: [QBUser2.id]
-            }
+      var toUpdate = {
+          name: "GroupDialogNewName",
+          pull_all: {occupants_ids: [QBUser2.id]}
         };
 
       QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
@@ -493,6 +542,7 @@ describe('Chat API', function() {
         /**
          * dialogId we get from previous test case 'can create a dialog'
          */
+
         QB.chat.message.update('', {
             'read': '1',
             'chat_dialog_id': dialogId

@@ -156,8 +156,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // autosend 'received' status (ignore messages from self)
         //
-
-        if (markable && userId != self.helpers.getIdFromNode(jid)) {
+        if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
             var params = {
                 messageId: messageId,
                 userId: userId,
@@ -179,10 +178,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (markable) {
             message.markable = 1;
         }
-        
         if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
-            console.log('self.onMessageListener', userId, message);
-            console.log(stanza.toString());
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
 
@@ -422,7 +418,7 @@ function ChatProxy(service, webrtcModule, conn) {
             if (typeof self.onMessageListener === 'function') {
                 //console.log('onMessageListener',userId);
                 self.onMessageListener(userId, {
-                    id: messageId,
+                    id: messageId, 
                     dialog_id: dialogId,
                     type: type,
                     body: body,
@@ -662,12 +658,12 @@ ChatProxy.prototype = {
             });
 
             nClient.on('stanza', function (stanza){
+                // Utils.QBLog('[QBChat] RECV', stanza.toString());
+
                 if(stanza.is('presence')){
                     self._onPresence(stanza);
                 } else if(stanza.is('iq')) {
                     self._onIQ(stanza);
-                } else if(stanza.is('message') && (stanza.type === 'chat' || stanza.type === 'groupchat')) {
-                    self._onMessage(stanza);
                 } else {
                     self._onComingStanza(stanza);
                 }
