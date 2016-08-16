@@ -78,7 +78,6 @@ function ChatProxy(service, webrtcModule, conn) {
   // stanza callbacks (Message, Presence, IQ, SystemNotifications)
 
     this._onMessage = function(stanza) {
-
         var from = stanza.getAttribute('from'),
             to = stanza.getAttribute('to'),
             type = stanza.getAttribute('type'),
@@ -634,7 +633,6 @@ ChatProxy.prototype = {
             });
 
             nClient.on('disconnect', function () {
-                console.log('Client is disconnected');
                 callback(null, null);
             });
 
@@ -651,7 +649,7 @@ ChatProxy.prototype = {
             });
 
             nClient.on('offline', function () {
-                console.log('offline')
+                Utils.QBLog('[QBChat]', 'User is offline');
             });
 
             nClient.on('error', function (e) {

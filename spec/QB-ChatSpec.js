@@ -25,7 +25,6 @@ describe('Chat API', function() {
         'userId': QBUser1.id,
         'password': QBUser1.password
       }, function(err, roster) {
-          console.info(err);
           if(err) { 
             done.fail('Chat login error: ', err);
           }
@@ -38,7 +37,7 @@ describe('Chat API', function() {
 
     it('can send and receive private messages', function(done) {
       var self = this;
-      console.info('CASE 1');
+
       var msgExtension = {
           name: 'skynet',
           mission: 'take over the planet'
@@ -95,17 +94,23 @@ describe('Chat API', function() {
       };
       QB.chat.sendSystemMessage(QBUser1.id, message);
       self.messageId = message.id;
-
     }, MESSAGING_TIMEOUT);
-
 
     // 'Delivered' status
     //
-    it("can send and receive 'delivered' status", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+    it('can send and receive \'delivered\' status', function(done) {
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       var self = this;
+      var params = {
+        messageId: "507f1f77bcf86cd799439011",
+        userId: QBUser1.id,
+        dialogId: "507f191e810c19729de860ea"
+      };
+
+      self.params = params;
 
       QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
         expect(messageId).toEqual(self.params.messageId);
@@ -116,24 +121,19 @@ describe('Chat API', function() {
         done();
       };
 
-      var params = {
-        messageId: "507f1f77bcf86cd799439011",
-        userId: QBUser1.id,
-        dialogId: "507f191e810c19729de860ea"
-      };
-      self.params = params;
+
 
       QB.chat.sendDeliveredStatus(params);
-
     }, MESSAGING_TIMEOUT);
 
 
     // 'Read' status
     //
     it("can send and receive 'read' status", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       var self = this;
 
       QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
@@ -159,9 +159,10 @@ describe('Chat API', function() {
     // 'Is typing' status
     //
     it("can send and receive 'is typing' status (private)", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(true);
         expect(userId).toEqual(QBUser1.id);
@@ -178,9 +179,10 @@ describe('Chat API', function() {
     // 'Stop typing' status
     //
     it("can send and receive 'stop typing' status (private)", function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
+      if(isNodeEnv) {
+        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+      }
+      
       QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
         expect(composing).toEqual(false);
         expect(userId).toEqual(QBUser1.id);
@@ -195,55 +197,47 @@ describe('Chat API', function() {
 
     // Privacy lists API
     //
-    describe("Contact list: ", function() {
-      if(isNodeEnv) {
-        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-      }
-      // Retrieve contact list
-      //
-      it("can retrieve contact list", function(done) {
+    describe('Contact list: ', function() {
+      it('can retrieve contact list', function(done) {
         QB.chat.roster.get(function(roster) {
           if(!roster){
-            done.fail("Retrieve contact list error");
+            done.fail('Retrieve contact list error');
           }else{
-            console.info("can retrieve contact list");
+            expect(roster).toBeDefined();
+
             done();
           }
         });
       }, IQ_TIMEOUT);
 
-      // Add user to contact list
-      //
-      it("can add user to contact list", function(done) {
+      it('can add user to contact list', function(done) {
         QB.chat.roster.add(QBUser2.id, function() {
-          console.info("can add user to contact list");
+          console.info('can add user to contact list');
           done();
         });
       }, IQ_TIMEOUT);
 
-      // Remove user from contact list
-      //
-      it("can remove user from contact list", function(done) {
+      it('can remove user from contact list', function(done) {
         QB.chat.roster.remove(QBUser2.id, function() {
-          console.info("can remove user from contact list");
+          console.info('can remove user from contact list');
           done();
         });
       }, IQ_TIMEOUT);
 
-      // Confirm subscription request
-      //
-      it("can confirm subscription request", function(done) {
+      it('can confirm subscription request', function(done) {
+        if(isNodeEnv) {
+          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
+        }
+        
         QB.chat.roster.confirm(QBUser2.id, function() {
-          console.info("can confirm subscription request");
+          console.info('can confirm subscription request');
           done();
         });
       }, IQ_TIMEOUT);
 
-      // Reject subscription request
-      //
-      it("can reject subscription request", function(done) {
+      it('can reject subscription request', function(done) {
         QB.chat.roster.reject(QBUser2.id, function() {
-          console.info("can reject subscription request");
+          console.info('can reject subscription request');
           done();
         });
       }, IQ_TIMEOUT);
