@@ -1195,9 +1195,6 @@ RosterProxy.prototype = {
 
         nodeStanzasCallbacks[stanzaParams.id] = callback;
     }
-
-
-
   },
 
   add: function(jidOrUserId, callback) {
