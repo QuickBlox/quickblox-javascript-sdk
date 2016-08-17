@@ -75,15 +75,16 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onReconnectListener
  */
 
-  // stanza callbacks (Message, Presence, IQ, SystemNotifications)
-
+    // stanza callbacks (Message, Presence, IQ, SystemNotifications)
     this._onMessage = function(stanza) {
 
         if (Utils.getEnv().browser) {
+
             var from = stanza.getAttribute('from'),
                 to = stanza.getAttribute('to'),
                 type = stanza.getAttribute('type'),
                 body = stanza.querySelector('body'),
+                bodyContent = (body && body.textContent) || null;
                 markable = stanza.querySelector('markable'),
                 delivered = stanza.querySelector('received'),
                 read = stanza.querySelector('displayed'),
@@ -94,22 +95,26 @@ function ChatProxy(service, webrtcModule, conn) {
                 delay = stanza.querySelector('delay'),
                 messageId = stanza.getAttribute('id'),
                 jid = connection.jid;
+
         } else if(Utils.getEnv().node){
+
             var from = stanza.attrs.from,
                 to = stanza.attrs.to,
                 type = stanza.attrs.type,
                 body = stanza.getChildText('body'),
-                markable = stanza.getChildText('markable'),
-                delivered = stanza.getChildText('delivered'),
-                read = stanza.getChildText('read'),
-                composing = stanza.getChildText('composing'),
-                paused = stanza.getChildText('paused'),
-                invite = stanza.getChildText('invite'),
-                extraParams = stanza.getChildText('extraParams'),
-                delay = stanza.getChildText('delay'),
+                bodyContent = body || null,
+                markable = stanza.getChild('markable'),
+                delivered = stanza.getChild('delivered'),
+                read = stanza.getChild('read'),
+                composing = stanza.getChild('composing'),
+                paused = stanza.getChild('paused'),
+                invite = stanza.getChild('invite'),
+                extraParams = stanza.getChild('extraParams'),
+                delay = stanza.getChild('delay'),
                 messageId = stanza.attrs.id,
                 jid = nClient.options.jid.user;
         }
+
 
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
@@ -156,7 +161,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // autosend 'received' status (ignore messages from self)
         //
-        if (markable && userId != self.helpers.getIdFromNode(connection.jid)) {
+        if (markable && userId != self.helpers.getIdFromNode(jid)) {
             var params = {
                 messageId: messageId,
                 userId: userId,
@@ -171,7 +176,7 @@ function ChatProxy(service, webrtcModule, conn) {
             id: messageId,
             dialog_id: dialogId,
             type: type,
-            body: (body && body.textContent) || null,
+            body: bodyContent,
             extension: extraParamsParsed ? extraParamsParsed.extension : null,
             delay: delay
         };
@@ -201,158 +206,159 @@ function ChatProxy(service, webrtcModule, conn) {
 
         var userId = self.helpers.getIdFromNode(from);
 
-    if (!type) {
-      if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-        Utils.safeCallbackCall(self.onContactListListener, userId);
-    } else {
-
-      // subscriptions callbacks
-      switch (type) {
-          case 'subscribe':
-        if (roster[userId] && roster[userId].subscription === 'to') {
-            console.log('1subscribe  get in true');
-          roster[userId] = {
-            subscription: 'both',
-            ask: null
-          };
-          self.roster._sendSubscriptionPresence({
-            jid: from,
-            type: 'subscribed'
-          });
+        if (!type) {
+            if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
+                Utils.safeCallbackCall(self.onContactListListener, userId);
         } else {
-          if (typeof self.onSubscribeListener === 'function')
-            Utils.safeCallbackCall(self.onSubscribeListener, userId);
-        }
-        break;
-      case 'subscribed':
-        if (roster[userId] && roster[userId].subscription === 'from') {
-          roster[userId] = {
-            subscription: 'both',
-            ask: null
-          };
-            if(Utils.getEnv().node){
-                nodeStanzasCallbacks['subscribed']();
-            }
-        } else {
-          roster[userId] = {
-            subscription: 'to',
-            ask: null
-          };
-          if (typeof self.onConfirmSubscribeListener === 'function'){
-            Utils.safeCallbackCall(self.onConfirmSubscribeListener, userId);
-          }
-        }
-        break;
-      case 'unsubscribed':
-        roster[userId] = {
-          subscription: 'none',
-          ask: null
-        };
-        if (typeof self.onRejectSubscribeListener === 'function')
-          Utils.safeCallbackCall(self.onRejectSubscribeListener, userId);
-        break;
-      case 'unsubscribe':
-        roster[userId] = {
-          subscription: 'to',
-          ask: null
-        };
-        // if (typeof self.onRejectSubscribeListener === 'function')
-        //   self.onRejectSubscribeListener(userId);
-        break;
-      case 'unavailable':
-        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
-          Utils.safeCallbackCall(self.onContactListListener, userId, type);
-        break;
-      }
+            // subscriptions callbacks
+            switch (type) {
+                case 'subscribe':
+                    if (roster[userId] && roster[userId].subscription === 'to') {
+                        console.log('1subscribe  get in true');
+                        roster[userId] = {
+                            subscription: 'both',
+                            ask: null
+                        };
+                        self.roster._sendSubscriptionPresence({
+                            jid: from,
+                            type: 'subscribed'
+                        });
+                    } else {
+                        if (typeof self.onSubscribeListener === 'function')
+                        Utils.safeCallbackCall(self.onSubscribeListener, userId);
+                    }
+                    break;
+                case 'subscribed':
+                    if (roster[userId] && roster[userId].subscription === 'from') {
+                        roster[userId] = {
+                            subscription: 'both',
+                            ask: null
+                        };
+                        if(Utils.getEnv().node){
+                            nodeStanzasCallbacks['subscribed']();
+                        }
+                    } else {
+                        roster[userId] = {
+                            subscription: 'to',
+                            ask: null
+                        };
+                        if (typeof self.onConfirmSubscribeListener === 'function'){
+                            Utils.safeCallbackCall(self.onConfirmSubscribeListener, userId);
+                        }
+                    }
+                    break;
+                case 'unsubscribed':
+                    roster[userId] = {
+                        subscription: 'none',
+                        ask: null
+                    };
+                    if (typeof self.onRejectSubscribeListener === 'function') {
+                        Utils.safeCallbackCall(self.onRejectSubscribeListener, userId);
+                    }
 
-    }
-
-    // we must return true to keep the handler alive
-    // returning false would remove it after it finishes
-    return true;
-  };
-
-  this._onIQ = function(stanza) {
-    // var type = stanza.getAttribute('type'),
-    //     typeId = stanza.getAttribute('id').split(':')[1];
-
-    // if (typeof self.onListEditListener === 'function' && typeId === 'push') {
-    //   var listName = (stanza.getElementsByTagName('list')[0]).getAttribute('name');
-
-    //   var iq = $iq({
-    //     from: connection.jid,
-    //     type: 'result',
-    //     id: connection.getUniqueId('push')
-    //   });
-
-    //   connection.sendIQ(iq);
-
-    //   Utils.safeCallbackCall(self.onListEditListener(listName));
-    // }
-
-    // we must return true to keep the handler alive
-    // returning false would remove it after it finishes
-
-    if(Utils.getEnv().node){
-
-        // get all users callback
-        if(stanza.attrs && stanza.attrs.type === 'result' && stanza.attrs.id.indexOf('getRoster') !== -1){
-            var JSONStanza = stanza.toJSON(),
-                items = JSONStanza.children[0].children,
-                contacts = {};
-
-            for (var i = 0, len = items.length; i < len; i++) {
-                userId = self.helpers.getIdFromNode(items[i].attrs.jid).toString();
-                contacts[userId] = {
-                    subscription: items[i].attrs.subscription,
-                    ask: items[i].attrs.ask || null
-                };
-            }
-
-            nodeStanzasCallbacks[stanza.attrs.id](contacts);
-        }
-        // remove user callback
-        else if(stanza.getChild('query') && stanza.getChild('query').attrs.xmlns === 'jabber:iq:roster'){
-            var stanzaQuery = stanza.getChild('query'),
-                item = stanzaQuery.getChild('item');
-
-            if(stanza.attrs.id.indexOf('removeRosterItem') && item && item.attrs.subscription === 'remove'){
-
-                delete roster[userId];
-                nodeStanzasCallbacks['jabber:iq:roster']['remove']();
-                return true;
+                    break;
+                case 'unsubscribe':
+                    roster[userId] = {
+                        subscription: 'to',
+                        ask: null
+                    };
+                    // if (typeof self.onRejectSubscribeListener === 'function')
+                    //   self.onRejectSubscribeListener(userId);
+                    break;
+                case 'unavailable':
+                    if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none') {
+                        Utils.safeCallbackCall(self.onContactListListener, userId, type);
+                    }
+                    break;
             }
         }
-    }
-    return true;
-  };
 
-  this._onSystemMessageListener = function(stanza) {
-      console.log('_onSystemMessageListener!!!!!!');
-    var from = stanza.getAttribute('from'),
-        to = stanza.getAttribute('to'),
-        extraParams = stanza.querySelector('extraParams'),
-        moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
-        delay = stanza.querySelector('delay'),
-        messageId = stanza.getAttribute('id'),
-        message;
+        // we must return true to keep the handler alive
+        // returning false would remove it after it finishes
+        return true;
+    };
+
+    this._onIQ = function(stanza) {
+        // var type = stanza.getAttribute('type'),
+        //     typeId = stanza.getAttribute('id').split(':')[1];
+
+        // if (typeof self.onListEditListener === 'function' && typeId === 'push') {
+        //   var listName = (stanza.getElementsByTagName('list')[0]).getAttribute('name');
+
+        //   var iq = $iq({
+        //     from: connection.jid,
+        //     type: 'result',
+        //     id: connection.getUniqueId('push')
+        //   });
+
+        //   connection.sendIQ(iq);
+
+        //   Utils.safeCallbackCall(self.onListEditListener(listName));
+        // }
+
+        // we must return true to keep the handler alive
+        // returning false would remove it after it finishes
+
+        if(Utils.getEnv().node){
+
+            // get all users callback
+            if(stanza.attrs && stanza.attrs.type === 'result' && stanza.attrs.id.indexOf('getRoster') !== -1){
+                var JSONStanza = stanza.toJSON(),
+                    items = JSONStanza.children[0].children,
+                    contacts = {};
+
+                for (var i = 0, len = items.length; i < len; i++) {
+                    userId = self.helpers.getIdFromNode(items[i].attrs.jid).toString();
+                    contacts[userId] = {
+                        subscription: items[i].attrs.subscription,
+                        ask: items[i].attrs.ask || null
+                    };
+                }
+
+                nodeStanzasCallbacks[stanza.attrs.id](contacts);
+            }
+            // remove user callback
+            else if(stanza.getChild('query') && stanza.getChild('query').attrs.xmlns === 'jabber:iq:roster'){
+                var stanzaQuery = stanza.getChild('query'),
+                    item = stanzaQuery.getChild('item');
+
+                if(stanza.attrs.id.indexOf('removeRosterItem') && item && item.attrs.subscription === 'remove'){
+
+                    delete roster[userId];
+                    nodeStanzasCallbacks['jabber:iq:roster']['remove']();
+                    return true;
+                }
+            }
+        }
+        return true;
+    };
+
+    this._onSystemMessageListener = function(stanza) {
+        console.log('_onSystemMessageListener!!!!!!');
+        var from = stanza.getAttribute('from'),
+            to = stanza.getAttribute('to'),
+            extraParams = stanza.querySelector('extraParams'),
+            moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
+            delay = stanza.querySelector('delay'),
+            messageId = stanza.getAttribute('id'),
+            message;
 
     // fire 'onSystemMessageListener'
     //
-    if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
+        if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
 
-      var extraParamsParsed = self._parseExtraParams(extraParams);
-      message = {
-        id: messageId,
-        userId: self.helpers.getIdFromNode(from),
-        extension: extraParamsParsed.extension
-      };
+            var extraParamsParsed = self._parseExtraParams(extraParams);
+            message = {
+                id: messageId,
+                userId: self.helpers.getIdFromNode(from),
+                extension: extraParamsParsed.extension
+            };
 
-      Utils.safeCallbackCall(self.onSystemMessageListener, message);
-    }
+            Utils.safeCallbackCall(self.onSystemMessageListener, message);
+        }
 
-    return true;
-  };
+        return true;
+    };
 
     this._onMessageErrorListener = function(stanza) {
 
@@ -416,7 +422,6 @@ function ChatProxy(service, webrtcModule, conn) {
 
         if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
             if (typeof self.onMessageListener === 'function') {
-                //console.log('onMessageListener',userId);
                 self.onMessageListener(userId, {
                     id: messageId, 
                     dialog_id: dialogId,
@@ -657,13 +662,15 @@ ChatProxy.prototype = {
                 callback(null, null);
             });
 
-            nClient.on('stanza', function (stanza){
+            nClient.on('stanza', function (stanza) {
                 // Utils.QBLog('[QBChat] RECV', stanza.toString());
 
-                if(stanza.is('presence')){
+                if (stanza.is('presence')) {
                     self._onPresence(stanza);
-                } else if(stanza.is('iq')) {
+                } else if (stanza.is('iq')) {
                     self._onIQ(stanza);
+                } else if(stanza.is('message')){
+                    self._onMessage(stanza);
                 } else {
                     self._onComingStanza(stanza);
                 }
@@ -1011,82 +1018,85 @@ ChatProxy.prototype = {
         return extension;
     },
 
-  _parseExtraParams: function(extraParams) {
-    if(!extraParams){
-      return null;
-    }
-
-    var extension = {};
-    var dialogId;
-
-    var attachments = [];
-
-    if (Utils.getEnv().browser) {
-      for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-        // parse attachments
-        if (extraParams.childNodes[i].tagName === 'attachment') {
-          var attach = {};
-          var attributes = extraParams.childNodes[i].attributes;
-          for (var j = 0, len2 = attributes.length; j < len2; j++) {
-            if (attributes[j].name === 'id' || attributes[j].name === 'size')
-              attach[attributes[j].name] = parseInt(attributes[j].value);
-            else
-              attach[attributes[j].name] = attributes[j].value;
-          }
-          attachments.push(attach);
-
-        // parse 'dialog_id'
-        } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-          dialogId = extraParams.childNodes[i].textContent;
-          extension['dialog_id'] = dialogId;
-
-        // parse other user's custom parameters
-        } else {
-          if (extraParams.childNodes[i].childNodes.length > 1) {
-            // Firefox issue with 4K XML node limit:
-            // http://www.coderholic.com/firefox-4k-xml-node-limit/
-            var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-            if (nodeTextContentSize > 4096) {
-              var wholeNodeContent = "";
-              for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-              }
-              extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-            } else {
-              extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-            }
-          } else {
-            extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-          }
+    _parseExtraParams: function(extraParams) {
+        if(!extraParams){
+            return null;
         }
-      }
 
-      if (attachments.length > 0) {
-        extension.attachments = attachments;
-      }
+        var extension = {};
+        var dialogId;
 
-      if (extension.moduleIdentifier) {
-        delete extension.moduleIdentifier;
-      }
+        var attachments = [];
 
-      return {extension: extension, dialogId: dialogId};
-    }
+        if (Utils.getEnv().browser) {
+            for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
+                // parse attachments
+                if (extraParams.childNodes[i].tagName === 'attachment') {
+                    var attach = {};
+                    var attributes = extraParams.childNodes[i].attributes;
 
-    if(Utils.getEnv().node) {
-        for (var i = 0, len = extraParams.children.length; i < len; i++) {
-            if(extraParams.children[i].children.length === 1) {
-                var child = extraParams.children[i];
+                    for (var j = 0, len2 = attributes.length; j < len2; j++) {
+                        if (attributes[j].name === 'id' || attributes[j].name === 'size'){
+                            attach[attributes[j].name] = parseInt(attributes[j].value);
+                        } else {
+                            attach[attributes[j].name] = attributes[j].value;
+                        }
+                    }
 
-                extension[child.name] = child.children[0];
+                    attachments.push(attach);
+
+                    // parse 'dialog_id'
+                } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
+                    dialogId = extraParams.childNodes[i].textContent;
+                    extension['dialog_id'] = dialogId;
+
+                    // parse other user's custom parameters
+                } else {
+                    if (extraParams.childNodes[i].childNodes.length > 1) {
+                        // Firefox issue with 4K XML node limit:
+                        // http://www.coderholic.com/firefox-4k-xml-node-limit/
+                        var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+                        if (nodeTextContentSize > 4096) {
+                            var wholeNodeContent = "";
+                            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+                                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+                            }
+                            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
+                        } else {
+                            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                        }
+                    } else {
+                        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+                    }
+                }
             }
+
+            if (attachments.length > 0) {
+                extension.attachments = attachments;
+            }
+
+            if (extension.moduleIdentifier) {
+                delete extension.moduleIdentifier;
+            }
+
+            return {extension: extension, dialogId: dialogId};
         }
+
+        if(Utils.getEnv().node) {
+            for (var i = 0, len = extraParams.children.length; i < len; i++) {
+                if(extraParams.children[i].children.length === 1) {
+                    var child = extraParams.children[i];
+
+                    extension[child.name] = child.children[0];
+                }
+            }
         
-        return {
-          extension: extension,
-          dialogId: null
-        };
-    }
-  },
+            return {
+                extension: extension,
+                dialogId: null
+            };
+        }
+    },
 
     _autoSendPresence: function() {
         if(Utils.getEnv().browser) {
@@ -1106,40 +1116,40 @@ ChatProxy.prototype = {
         return true;
     },
 
-  // Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
-  _enableCarbons: function(cb) {
-    var self = this,
-        iq;
+    // Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
+    _enableCarbons: function(cb) {
+        var self = this,
+            iq;
 
-    if(Utils.getEnv().browser) {
-        iq = $iq({
-            from: connection.jid,
-            type: 'set',
-            id: connection.getUniqueId('enableCarbons')
-        }).c('enable', {
-            xmlns: Strophe.NS.CARBONS
-        });
+        if(Utils.getEnv().browser) {
+            iq = $iq({
+                from: connection.jid,
+                type: 'set',
+                id: connection.getUniqueId('enableCarbons')
+            }).c('enable', {
+                xmlns: Strophe.NS.CARBONS
+            });
 
-        connection.sendIQ(iq, function(stanza) {
-          /**
-           * In future we need to remove cb
-           */
-          cb();
-        });
-    } else if(Utils.getEnv().node) {
-        iq = new NodeClient.Stanza('iq', {
-            type: 'set',
-            from: nClient.jid.user,
-            id: self.helpers.getUniqueIdCross('enableCarbons')
-        });
+            connection.sendIQ(iq, function(stanza) {
+                /**
+                * In future we need to remove cb
+                */
+                cb();
+            });
+        } else if(Utils.getEnv().node) {
+            iq = new NodeClient.Stanza('iq', {
+                type: 'set',
+                from: nClient.jid.user,
+                id: self.helpers.getUniqueIdCross('enableCarbons')
+            });
 
-        iq.c('enable', {
-            xmlns: 'urn:xmpp:carbons:2'
-        });
+            iq.c('enable', {
+                xmlns: 'urn:xmpp:carbons:2'
+            });
 
-        nClient.send(iq);
+            nClient.send(iq);
+        }
     }
-  }
 };
 
 
@@ -1151,120 +1161,120 @@ ChatProxy.prototype = {
  *
 ----------------------------------------------------------------------------- */
 function RosterProxy(service) {
-  this.service = service;
-  this.helpers = new Helpers();
+    this.service = service;
+    this.helpers = new Helpers();
 }
 
 RosterProxy.prototype = {
 
-  get: function(callback) {
-    var iq, self = this,
-        items, userId, contacts = {};
+    get: function(callback) {
+        var iq, self = this,
+            items, userId, contacts = {};
 
-    var stanzaParams = {
-        'type': 'get',
-        'from': connection ? connection.jid : nClient.jid.user,
-        'id': self.helpers.getUniqueIdCross('getRoster')
-    };
+        var stanzaParams = {
+            'type': 'get',
+            'from': connection ? connection.jid : nClient.jid.user,
+            'id': self.helpers.getUniqueIdCross('getRoster')
+        };
 
-    if(Utils.getEnv().browser) {
-        iq = $iq(stanzaParams).c('query', {
-            xmlns: Strophe.NS.ROSTER
+        if(Utils.getEnv().browser) {
+            iq = $iq(stanzaParams).c('query', {
+                xmlns: Strophe.NS.ROSTER
+            });
+
+            connection.sendIQ(iq, function(stanza) {
+                items = stanza.getElementsByTagName('item');
+
+                for (var i = 0, len = items.length; i < len; i++) {
+                    userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
+
+                    contacts[userId] = {
+                        subscription: items[i].getAttribute('subscription'),
+                        ask: items[i].getAttribute('ask') || null
+                    };
+                }
+
+                callback(contacts);
+            });
+        } else if(Utils.getEnv().node){
+            iq = new NodeClient.Stanza('iq', stanzaParams).c('query', {
+                'xmlns': 'jabber:iq:roster'
+            });
+
+            nClient.send(iq);
+
+            nodeStanzasCallbacks[stanzaParams.id] = callback;
+        }
+
+
+
+    },
+
+    add: function(jidOrUserId, callback) {
+        var self = this;
+        var userJid = this.helpers.jidOrUserId(jidOrUserId);
+        var userId = this.helpers.getIdFromNode(userJid).toString();
+
+        roster[userId] = {
+            subscription: 'none',
+            ask: 'subscribe'
+        };
+
+        self._sendSubscriptionPresence({
+            jid: userJid,
+            type: 'subscribe'
         });
 
-        connection.sendIQ(iq, function(stanza) {
-            items = stanza.getElementsByTagName('item');
+        if (typeof callback === 'function') callback();
+    },
 
-            for (var i = 0, len = items.length; i < len; i++) {
-                userId = self.helpers.getIdFromNode(items[i].getAttribute('jid')).toString();
+    confirm: function(jidOrUserId, callback) {
+        var self = this;
+        var userJid = this.helpers.jidOrUserId(jidOrUserId);
+        var userId = this.helpers.getIdFromNode(userJid).toString();
 
-                contacts[userId] = {
-                    subscription: items[i].getAttribute('subscription'),
-                    ask: items[i].getAttribute('ask') || null
-                };
-            }
+        roster[userId] = {
+            subscription: 'from',
+            ask: 'subscribe'
+        };
 
-            callback(contacts);
+        self._sendSubscriptionPresence({
+            jid: userJid,
+            type: 'subscribed'
         });
-    } else if(Utils.getEnv().node){
-        iq = new NodeClient.Stanza('iq', stanzaParams).c('query', {
-            'xmlns': 'jabber:iq:roster'
+
+        self._sendSubscriptionPresence({
+            jid: userJid,
+            type: 'subscribe'
         });
 
-        nClient.send(iq);
 
-        nodeStanzasCallbacks[stanzaParams.id] = callback;
-    }
+        if(Utils.getEnv().browser){
+            if (typeof callback === 'function') callback();
+        }
 
+        if(Utils.getEnv().node){
+            nodeStanzasCallbacks['subscribed'] = callback;
+        }
+    },
 
+    reject: function(jidOrUserId, callback) {
+        var self = this;
+        var userJid = this.helpers.jidOrUserId(jidOrUserId);
+        var userId = this.helpers.getIdFromNode(userJid).toString();
 
-  },
+        roster[userId] = {
+            subscription: 'none',
+            ask: null
+        };
 
-  add: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
-
-    roster[userId] = {
-      subscription: 'none',
-      ask: 'subscribe'
-    };
-
-    self._sendSubscriptionPresence({
-      jid: userJid,
-      type: 'subscribe'
-    });
-
-    if (typeof callback === 'function') callback();
-  },
-
-  confirm: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
-
-    roster[userId] = {
-      subscription: 'from',
-      ask: 'subscribe'
-    };
-
-    self._sendSubscriptionPresence({
-      jid: userJid,
-      type: 'subscribed'
-    });
-
-    self._sendSubscriptionPresence({
-      jid: userJid,
-      type: 'subscribe'
-    });
-
-
-      if(Utils.getEnv().browser){
-          if (typeof callback === 'function') callback();
-      }
-
-      if(Utils.getEnv().node){
-          nodeStanzasCallbacks['subscribed'] = callback;
-      }
-  },
-
-  reject: function(jidOrUserId, callback) {
-    var self = this;
-    var userJid = this.helpers.jidOrUserId(jidOrUserId);
-    var userId = this.helpers.getIdFromNode(userJid).toString();
-
-    roster[userId] = {
-      subscription: 'none',
-      ask: null
-    };
-
-    self._sendSubscriptionPresence({
-      jid: userJid,
-      type: 'unsubscribed'
-    });
+        self._sendSubscriptionPresence({
+            jid: userJid,
+            type: 'unsubscribed'
+        });
     
-    if (typeof callback === 'function') callback();
-  },
+        if (typeof callback === 'function') callback();
+    },
 
     remove: function(jidOrUserId, callback) {
         var self = this,
@@ -1351,8 +1361,8 @@ RosterProxy.prototype = {
  *
 ----------------------------------------------------------------------------- */
 function MucProxy(service) {
-  this.service = service;
-  this.helpers = new Helpers();
+    this.service = service;
+    this.helpers = new Helpers();
 }
 
 MucProxy.prototype = {
