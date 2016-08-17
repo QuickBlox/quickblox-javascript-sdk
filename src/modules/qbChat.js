@@ -41,7 +41,7 @@ var connection,
 
 function ChatProxy(service, webrtcModule, conn) {
     var self = this;
-  
+
     webrtc = webrtcModule;
     connection = conn;
 
@@ -77,7 +77,6 @@ function ChatProxy(service, webrtcModule, conn) {
 
     // stanza callbacks (Message, Presence, IQ, SystemNotifications)
     this._onMessage = function(stanza) {
-
         if (Utils.getEnv().browser) {
 
             var from = stanza.getAttribute('from'),
@@ -104,8 +103,8 @@ function ChatProxy(service, webrtcModule, conn) {
                 body = stanza.getChildText('body'),
                 bodyContent = body || null,
                 markable = stanza.getChild('markable'),
-                delivered = stanza.getChild('delivered'),
-                read = stanza.getChild('read'),
+                delivered = stanza.getChild('received'),
+                read = stanza.getChild('displayed'),
                 composing = stanza.getChild('composing'),
                 paused = stanza.getChild('paused'),
                 invite = stanza.getChild('invite'),
@@ -149,11 +148,19 @@ function ChatProxy(service, webrtcModule, conn) {
         if (marker) {
             if (delivered) {
                 if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
-                    Utils.safeCallbackCall(self.onDeliveredStatusListener, delivered.getAttribute('id'), dialogId, userId);
+                    if(Utils.getEnv().browser){
+                        Utils.safeCallbackCall(self.onDeliveredStatusListener, delivered.getAttribute('id'), dialogId, userId);
+                    } else if(Utils.getEnv().node){
+                        Utils.safeCallbackCall(self.onDeliveredStatusListener, delivered.attrs.id, dialogId, userId);
+                    }
                 }
             } else {
                 if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-                    Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
+                    if(Utils.getEnv().browser){
+                        Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
+                    } else if(Utils.getEnv().node){
+                        Utils.safeCallbackCall(self.onDeliveredStatusListener, read.attrs.id, dialogId, userId);
+                    }
                 }
             }
             return true;
@@ -214,7 +221,6 @@ function ChatProxy(service, webrtcModule, conn) {
             switch (type) {
                 case 'subscribe':
                     if (roster[userId] && roster[userId].subscription === 'to') {
-                        console.log('1subscribe  get in true');
                         roster[userId] = {
                             subscription: 'both',
                             ask: null
@@ -334,7 +340,6 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     this._onSystemMessageListener = function(stanza) {
-        console.log('_onSystemMessageListener!!!!!!');
         var from = stanza.getAttribute('from'),
             to = stanza.getAttribute('to'),
             extraParams = stanza.querySelector('extraParams'),
@@ -416,23 +421,8 @@ function ChatProxy(service, webrtcModule, conn) {
             if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
                 self.onMessageTypingListener(composing != null, userId, dialogId);
             }
-        
+
             return true;
-        }
-
-        if (stanza.is('message') && !isError && (type === 'chat' || type === 'groupchat')) {
-            if (typeof self.onMessageListener === 'function') {
-                self.onMessageListener(userId, {
-                    id: messageId, 
-                    dialog_id: dialogId,
-                    type: type,
-                    body: body,
-                    extension: extraParams ? extraParams.extension : null,
-                    markable: markable ? 1 : null
-                });
-            }
-
-            return;
         }
 
         if(x && x.attrs.xmlns == 'http://jabber.org/protocol/muc#user'){
@@ -464,23 +454,6 @@ function ChatProxy(service, webrtcModule, conn) {
         }
 
         /**
-         * fire read/delivered listeners
-         */
-        if (marker) {
-            if (delivered) {
-                if (typeof self.onDeliveredStatusListener === 'function' && type === 'chat') {
-                    self.onDeliveredStatusListener(delivered.attrs.id, dialogId, userId);
-                }
-            } else {
-                if (typeof self.onReadStatusListener === 'function' && type === 'chat') {
-                    self.onReadStatusListener(read.getAttribute('id'), dialogId, userId);
-                }
-            }
-          
-            return true;
-        }
-
-        /**
          * autosend 'received' status (ignore messages from self)
          */
         if (markable && userId != self.helpers.getIdFromNode(nClient.options.jid.user)) {
@@ -489,7 +462,7 @@ function ChatProxy(service, webrtcModule, conn) {
                 userId: userId,
                 dialogId: dialogId
             };
-            
+
             self.sendDeliveredStatus(paramsReceived);
 
             return true;
@@ -747,6 +720,7 @@ ChatProxy.prototype = {
         }
 
         if(Utils.getEnv().node) {
+
             var stanza = new NodeClient.Stanza('message', {
                 from: nClient.options.jid.user,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
@@ -783,6 +757,7 @@ ChatProxy.prototype = {
 
               stanza.up();
             }
+
             nClient.send(stanza);
         }
     },
@@ -933,7 +908,7 @@ ChatProxy.prototype = {
 
         nClient.send(stanza);
     }
-    
+
   },
 
     sendReadStatus: function(params) {
@@ -1090,7 +1065,7 @@ ChatProxy.prototype = {
                     extension[child.name] = child.children[0];
                 }
             }
-        
+
             return {
                 extension: extension,
                 dialogId: null
@@ -1272,7 +1247,7 @@ RosterProxy.prototype = {
             jid: userJid,
             type: 'unsubscribed'
         });
-    
+
         if (typeof callback === 'function') callback();
     },
 

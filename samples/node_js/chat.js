@@ -100,6 +100,10 @@ QB.createSession({email: QBUser.login,password: QBUser.pass}, function(csError, 
             return;
         };
 
+        QB.chat.onDeliveredStatusListener = function(status, dialogId, userId){
+            console.log('Message from ' + dialogId + ' was getting status ' + status + ' from ' + userId);
+        };
+
         QB.chat.onSubscribeListener = function(userId){
             if(userId === 13486905){
                 rejectSubscibtion(userId);
