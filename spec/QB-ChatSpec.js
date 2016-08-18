@@ -225,10 +225,6 @@ describe('Chat API', function() {
       }, IQ_TIMEOUT);
 
       it('can confirm subscription request', function(done) {
-        if(isNodeEnv) {
-          pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-        }
-
         QB.chat.roster.confirm(QBUser2.id, function() {
           console.info('can confirm subscription request');
           done();
