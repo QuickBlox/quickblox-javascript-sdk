@@ -408,12 +408,12 @@ describe('Chat API', function() {
         'login': QBUser1.login,
         'password': QBUser1.password
       }, function(err, result) {
-        if(err){ done.fail('Create session error: ' + err); }
+          if(err){ done.fail('Create session error: ' + err); }
 
-        expect(result).not.toBeNull();
-        expect(result.application_id).toEqual(CREDS.appId);
+          expect(result).not.toBeNull();
+          expect(result.application_id).toEqual(CREDS.appId);
 
-        done();
+          done();
       });
     }, REST_REQUESTS_TIMEOUT);
 
@@ -539,13 +539,13 @@ describe('Chat API', function() {
        * dialogId we get from previous test case 'can create a dialog'
        */
 
-      QB.chat.message.update('', {
-        'read': '1',
-        'chat_dialog_id': dialogId
-      }, function(error, result) {
-        if(error) {
-          done.fail('can\'t set status "read" to all messages' , error);
-        }
+        QB.chat.message.update('', {
+          'read': '1',
+          'chat_dialog_id': dialogId
+        }, function(error, result) {
+            if(error) {
+                done.fail('can\'t set status "read" to all messages' , error);
+            }
 
         /** result will be equal to empty */
         done();

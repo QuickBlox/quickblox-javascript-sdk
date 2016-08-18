@@ -1178,12 +1178,9 @@ RosterProxy.prototype = {
 
             nClient.send(iq);
 
-            nodeStanzasCallbacks[stanzaParams.id] = callback;
-        }
-
-
-
-    },
+        nodeStanzasCallbacks[stanzaParams.id] = callback;
+    }
+  },
 
     add: function(jidOrUserId, callback) {
         var self = this;
