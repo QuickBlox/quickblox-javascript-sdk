@@ -1,99 +1,83 @@
 describe('Chat API', function() {
-  'use strict';
-  
-  var LOGIN_TIMEOUT = 10000;
-  var MESSAGING_TIMEOUT = 1500;
-  var IQ_TIMEOUT = 3000;
-  var REST_REQUESTS_TIMEOUT = 3000;
+    'use strict';
 
-  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+    var LOGIN_TIMEOUT = 10000;
+    var MESSAGING_TIMEOUT = 1500;
+    var IQ_TIMEOUT = 3000;
+    var REST_REQUESTS_TIMEOUT = 3000;
 
-  var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
-  var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-  var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+    var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+    var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
+    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+    var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
 
-  var chatEndpoint = CONFIG.endpoints.chat;
+    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+    var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+
+    var chatEndpoint = CONFIG.endpoints.chat;
 
   describe('XMPP - real time messaging', function() {
     beforeAll(function(done){
-      QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
-      QB.chat.connect({
-        'userId': QBUser1.id,
-        'password': QBUser1.password
-      }, function(err, roster) {
-        if(err) {
-          done.fail('Chat login error: ', err);
-        }
+        QB.chat.connect({
+            'userId': QBUser1.id,
+            'password': QBUser1.password
+        }, function(err) {
+            expect(err).toBeNull();
 
-        expect(err).toBeNull();
-
-        done();
-      });
+            done();
+        });
     }, LOGIN_TIMEOUT);
 
     it('can send and receive private messages', function(done) {
-      var self = this;
+        var self = this;
 
-      var msgExtension = {
-            name: 'skynet',
-            mission: 'take over the planet'
-          },
-          msg = {
-            type: 'chat',
-            extension: msgExtension,
-            markable: 1
-          };
+        var msgExtension = {
+                name: 'skynet',
+                mission: 'take over the planet'
+        },
+            msg = {
+                type: 'chat',
+                extension: msgExtension,
+                markable: 1
+            };
 
-      function onMsgCallback(userId, receivedMessage) {
-        expect(receivedMessage).not.toBeNull();
+        function onMsgCallback(userId, receivedMessage) {
+            expect(userId).toEqual(QBUser1.id);
 
-        expect(userId).toEqual(QBUser1.id);
+            expect(receivedMessage).toBeDefined();
+            expect(receivedMessage.type).toEqual('chat');
+            expect(receivedMessage.extension).toEqual(msgExtension);
+            expect(receivedMessage.markable).toEqual(1);
 
-        expect(receivedMessage.type).toEqual('chat');
-        expect(receivedMessage.extension).toEqual(msgExtension);
-        expect(receivedMessage.markable).toEqual(1);
+            done();
+        }
 
-        done();
-      }
+        QB.chat.onMessageListener = onMsgCallback;
 
-      QB.chat.onMessageListener = onMsgCallback;
-
-      QB.chat.send(QBUser1.id, msg);
+        QB.chat.send(QBUser1.id, msg);
     }, MESSAGING_TIMEOUT);
 
+    it('can send and receive system message', function(done) {
+        var extension = {
+            name: 'Walle',
+            action: 'Found love'
+        };
 
-    it('can send and receive system messages', function(done) {
-      if(isNodeEnv) {
-        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-      }
+        function onSystemMessageListenerCb(receivedMessage) {
+            expect(receivedMessage).toBeDefined();
 
-      var self = this;
-
-      QB.chat.onSystemMessageListener = function(receivedMessage){
-        expect(receivedMessage).not.toBeNull();
-        expect(receivedMessage.userId).toEqual(QBUser1.id);
-        expect(receivedMessage.extension).toEqual({
-          param1: "value1",
-          param2: "value2"
-        });
-        expect(receivedMessage.id).toEqual(self.messageId);
-        self.messageId = null;
-
-        done();
-      };
-
-      var message = {
-        extension: {
-          param1: "value1",
-          param2: "value2"
+            expect(receivedMessage.userId).toEqual(QBUser1.id);
+            expect(receivedMessage.extension).toEqual(extension);
+            
+            done();
         }
-      };
-      QB.chat.sendSystemMessage(QBUser1.id, message);
-      self.messageId = message.id;
+
+        QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
+        QB.chat.sendSystemMessage(QBUser1.id, {'extension': extension});
+
     }, MESSAGING_TIMEOUT);
 
     // 'Delivered' status
@@ -212,14 +196,12 @@ describe('Chat API', function() {
 
       it('can add user to contact list', function(done) {
         QB.chat.roster.add(QBUser2.id, function() {
-          console.info('can add user to contact list');
           done();
         });
       }, IQ_TIMEOUT);
 
       it('can remove user from contact list', function(done) {
         QB.chat.roster.remove(QBUser2.id, function() {
-          console.info('can remove user from contact list');
           done();
         });
       }, IQ_TIMEOUT);
