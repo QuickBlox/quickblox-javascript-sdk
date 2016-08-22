@@ -249,9 +249,6 @@ function ChatProxy(service, webrtcModule, conn) {
                             subscription: 'both',
                             ask: null
                         };
-                        if(Utils.getEnv().node){
-                            nodeStanzasCallbacks['subscribed']();
-                        }
                     } else {
                         roster[userId] = {
                             subscription: 'to',
@@ -1234,13 +1231,7 @@ RosterProxy.prototype = {
         });
 
 
-        if(Utils.getEnv().browser){
-            if (typeof callback === 'function') callback();
-        }
-
-        if(Utils.getEnv().node){
-            nodeStanzasCallbacks['subscribed'] = callback;
-        }
+        if (typeof callback === 'function') callback();
     },
 
     reject: function(jidOrUserId, callback) {
