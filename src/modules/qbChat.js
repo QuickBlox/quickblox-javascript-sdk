@@ -6,8 +6,6 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-// var isBrowser = typeof window !== 'undefined';
-// var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 var unsupported = 'This function isn\'t supported outside of the browser (...yet)';
 
 /**
@@ -76,7 +74,6 @@ function ChatProxy(service, webrtcModule, conn) {
     // stanza callbacks (Message, Presence, IQ, SystemNotifications)
     this._onMessage = function(stanza) {
         if (Utils.getEnv().browser) {
-
             var from = stanza.getAttribute('from'),
                 to = stanza.getAttribute('to'),
                 type = stanza.getAttribute('type'),
@@ -94,7 +91,6 @@ function ChatProxy(service, webrtcModule, conn) {
                 jid = connection.jid;
 
         } else if(Utils.getEnv().node){
-
             var from = stanza.attrs.from,
                 to = stanza.attrs.to,
                 type = stanza.attrs.type,
@@ -111,7 +107,6 @@ function ChatProxy(service, webrtcModule, conn) {
                 messageId = stanza.attrs.id,
                 jid = nClient.options.jid.user;
         }
-
 
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
@@ -131,6 +126,20 @@ function ChatProxy(service, webrtcModule, conn) {
             }
         }
 
+        /** System message */
+        if(extraParamsParsed && extraParamsParsed.extension.moduleIdentifier && extraParamsParsed.extension.moduleIdentifier === 'SystemNotifications') {
+            if(typeof self.onSystemMessageListener === 'function') {
+                var sysMsg = {
+                    id: messageId,
+                    userId: self.helpers.getIdFromNode(from),
+                    extension: extraParamsParsed.extension
+                };
+
+                self.onSystemMessageListener(sysMsg);
+            }
+
+            return true;
+        }
 
         // fire 'is typing' callback
         //
@@ -373,19 +382,27 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     this._onSystemMessageListener = function(stanza) {
-        var from = stanza.getAttribute('from'),
-            to = stanza.getAttribute('to'),
-            extraParams = stanza.querySelector('extraParams'),
-            moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent,
-            delay = stanza.querySelector('delay'),
-            messageId = stanza.getAttribute('id'),
-            message;
+        var from, to, extraParams, moduleIdentifier, delay, messageId, message;
 
-    // fire 'onSystemMessageListener'
-    //
+        if(Utils.getEnv().browser) {
+            from = stanza.getAttribute('from');
+            to = stanza.getAttribute('to');
+            extraParams = stanza.querySelector('extraParams');
+            moduleIdentifier = extraParams.querySelector('moduleIdentifier').textContent;
+            delay = stanza.querySelector('delay');
+            messageId = stanza.getAttribute('id');
+        } else if(Utils.getEnv().node) {
+            from = stanza.attrs.from;
+            to = stanza.attrs.to;
+            extraParams = stanza.getChild('extraParams');
+            moduleIdentifier = extraParams.getChild('moduleIdentifier').getText();
+            delay = stanza.getChild('delay');
+            messageId = stanza.attrs.id;
+        }
+
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-
             var extraParamsParsed = self._parseExtraParams(extraParams);
+
             message = {
                 id: messageId,
                 userId: self.helpers.getIdFromNode(from),
@@ -466,21 +483,6 @@ function ChatProxy(service, webrtcModule, conn) {
                 if(typeof nodeStanzasCallbacks.MucJoin === 'function') {
                     nodeStanzasCallbacks.MucJoin(null);
                 }
-            }
-
-            return true;
-        }
-
-        /** System message */
-        if(extraParams && extraParams.extension.moduleIdentifier && extraParams.extension.moduleIdentifier === 'SystemNotifications') {
-            if(typeof self.onSystemMessageListener === 'function') {
-                var sysMsg = {
-                    id: messageId,
-                    userId: self.helpers.getIdFromNode(from),
-                    extension: extraParams.extension
-                };
-
-                self.onSystemMessageListener(sysMsg);
             }
 
             return true;
@@ -669,15 +671,22 @@ ChatProxy.prototype = {
             });
 
             nClient.on('stanza', function (stanza) {
-                // Utils.QBLog('[QBChat] RECV', stanza.toString());
-                console.log(stanza.toString());
+                Utils.QBLog('[QBChat] RECV', stanza.toString());
+                /**
+                 * Detect typeof incoming stanza 
+                 * and fire the Listener
+                 */
                 if (stanza.is('presence')) {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
                     console.log('stanza is iq');
                     self._onIQ(stanza);
                 } else if(stanza.is('message')){
-                    self._onMessage(stanza);
+                    if(stanza.attrs.type === 'headline') {
+                        self._onSystemMessageListener(stanza);
+                    } else {
+                        self._onMessage(stanza);
+                    }
                 } else {
                     self._onComingStanza(stanza);
                 }
@@ -1083,7 +1092,7 @@ ChatProxy.prototype = {
             if (attachments.length > 0) {
                 extension.attachments = attachments;
             }
-
+            
             if (extension.moduleIdentifier) {
                 delete extension.moduleIdentifier;
             }
@@ -1098,6 +1107,10 @@ ChatProxy.prototype = {
 
                     extension[child.name] = child.children[0];
                 }
+            }
+
+            if (extension.moduleIdentifier) {
+                delete extension.moduleIdentifier;
             }
 
             return {
