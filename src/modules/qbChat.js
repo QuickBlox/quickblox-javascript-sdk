@@ -110,8 +110,6 @@ function ChatProxy(service, webrtcModule, conn) {
                 jid = nClient.options.jid.user;
         }
 
-        // console.log(stanza.toString());
-
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
             marker = delivered || read || null;
