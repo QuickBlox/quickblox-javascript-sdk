@@ -26,7 +26,7 @@ describe('Chat API', function() {
             'password': QBUser1.password
         }, function(err) {
             expect(err).toBeNull();
-
+            console.info('CONNECTED');
             done();
         });
     }, LOGIN_TIMEOUT);
@@ -35,14 +35,14 @@ describe('Chat API', function() {
         var self = this;
 
         var msgExtension = {
-                name: 'skynet',
-                mission: 'take over the planet'
+            name: 'skynet',
+            mission: 'take over the planet'
         },
             msg = {
-                type: 'chat',
-                extension: msgExtension,
-                markable: 1
-            };
+            type: 'chat',
+            extension: msgExtension,
+            markable: 1
+        };
 
         function onMsgCallback(userId, receivedMessage) {
             expect(userId).toEqual(QBUser1.id);
