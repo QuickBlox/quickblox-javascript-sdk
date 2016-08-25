@@ -17,32 +17,32 @@ describe('Chat API', function() {
 
     var chatEndpoint = CONFIG.endpoints.chat;
 
+    beforeAll(function(done){
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+
+        var createSessionParams = {
+            'login': QBUser1.login,
+            'password': QBUser1.password
+        };
+
+        function createSessionCb(err, result) {
+            expect(err).toBeNull();
+
+            expect(result).toBeDefined();
+            expect(result.application_id).toEqual(CREDS.appId);
+
+            console.info('[Jasmine] Initialize QB and created a session.');
+            done();
+        }
+
+        QB.createSession(createSessionParams, createSessionCb);
+    });
+
+    afterAll(function(){
+        QB.chat.disconnect();
+    });
+
     describe('XMPP - real time messaging', function() {
-        beforeAll(function(done){
-            QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
-
-            var createSessionParams = {
-                'login': QBUser1.login,
-                'password': QBUser1.password
-            };
-
-            function createSessionCb(err, result) {
-                expect(err).toBeNull();
-
-                expect(result).toBeDefined();
-                expect(result.application_id).toEqual(CREDS.appId);
-
-                console.info('[Jasmine] Initialize QB and created a session.');
-                done();
-            }
-
-            QB.createSession(createSessionParams, createSessionCb);
-        });
-
-        afterAll(function(){
-            QB.chat.disconnect();
-        });
-
         it('can connect to chat', function(done) {
             var connectParams = {
                 'userId': QBUser1.id,
@@ -254,10 +254,6 @@ describe('Chat API', function() {
         });
 
         describe('Privacy list: ', function() {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
-
             it('can create new list with items', function(done) {
                 var usersObj = [
                     {user_id: 1111111, action: "deny"},
