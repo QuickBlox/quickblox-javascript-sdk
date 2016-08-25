@@ -222,6 +222,22 @@ function ChatProxy(service, webrtcModule, conn) {
 
         var userId = self.helpers.getIdFromNode(from);
 
+        if(Utils.getEnv().node) {
+            var x = stanza.getChild('x');
+
+            if(x && x.attrs.xmlns == "http://jabber.org/protocol/muc#user"){
+                var status = x.getChild('status')
+                
+                if(stanza.attrs.id) {
+                    if(status && status.attrs.code == "110"){
+                        nodeStanzasCallbacks[stanza.attrs.id](stanza);
+                    } else {
+                        nodeStanzasCallbacks[stanza.attrs.id](null);
+                    }
+                }
+            }
+        }
+
         if (!type) {
             if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
                 Utils.safeCallbackCall(self.onContactListListener, userId);
@@ -332,7 +348,8 @@ function ChatProxy(service, webrtcModule, conn) {
             // remove user callback
             else if(stanza.getChild('query') && stanza.getChild('query').attrs.xmlns === 'jabber:iq:roster'){
                 var stanzaQuery = stanza.getChild('query'),
-                    item = stanzaQuery.getChild('item');
+                    item = stanzaQuery.getChild('item'),
+                    userId = self.helpers.getIdFromNode(item.attrs.jid).toString();
 
                 if(stanza.attrs.id.indexOf('removeRosterItem') && item && item.attrs.subscription === 'remove'){
 
@@ -439,19 +456,6 @@ function ChatProxy(service, webrtcModule, conn) {
             return true;
         }
 
-        if(x && x.attrs.xmlns == 'http://jabber.org/protocol/muc#user'){
-            var status = x.getChild('status');
-
-            if(status && status.attrs.code == '110'){
-
-                if(typeof nodeStanzasCallbacks.MucJoin === 'function') {
-                    nodeStanzasCallbacks.MucJoin(null);
-                }
-            }
-
-            return true;
-        }
-
         /**
          * autosend 'received' status (ignore messages from self)
          */
@@ -482,13 +486,15 @@ ChatProxy.prototype = {
         var userJid;
 
         if ('userId' in params) {
-          userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
-          if ('resource' in params) {
-            userJid = userJid + "/" + params.resource;
-          }
+            userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+          
+            if ('resource' in params) {
+                userJid = userJid + "/" + params.resource;
+            }
         } else if ('jid' in params) {
-          userJid = params.jid;
+            userJid = params.jid;
         }
+
         /** Connect for browser env. */
         if(Utils.getEnv().browser) {
             connection.connect(userJid, params.password, function(status) {
@@ -588,15 +594,14 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(Utils.getEnv().node) {
-            /** nClient create a connection */
-            var reconnect = params.reconnect !== undefined ? params.reconnect : true;
-
             nClient = new NodeClient({
                 'jid': userJid,
                 'password': params.password,
-                'reconnect': reconnect
+                'reconnect': true
             });
-
+            nClient.on('auth', function () {
+                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+            });
             /** HANDLERS */
             nClient.on('online', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
@@ -622,15 +627,25 @@ ChatProxy.prototype = {
             });
 
             nClient.on('connect', function () {
+                Utils.QBLog('[QBChat] client is connected');
                 self._enableCarbons();
             });
 
             nClient.on('reconnect', function () {
-                console.log('reconnect')
+                Utils.QBLog('[QBChat] client is reconnected');
+                
+                self._isDisconnected = true;
+                self._isLogout = true;
+                
             });
 
             nClient.on('disconnect', function () {
-                console.log('Client is disconnected');
+                Utils.QBLog('[QBChat] client is disconnected');
+
+
+                self._isDisconnected = true;
+                self._isLogout = true;
+
                 callback(null, null);
             });
 
@@ -656,10 +671,18 @@ ChatProxy.prototype = {
             });
 
             nClient.on('offline', function () {
-                console.log('offline')
+                Utils.QBLog('[QBChat] client goes offline');
+
+                self._isDisconnected = true;
+                self._isLogout = true;
             });
 
             nClient.on('error', function (e) {
+                Utils.QBLog('[QBChat] client got error', e);
+
+                self._isDisconnected = true;
+                self._isLogout = true;
+
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred');
 
                 if(typeof callback === 'function') {
@@ -1342,45 +1365,46 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype = {
-  join: function(jid, callback) {
-    var pres, self = this,
-        id = connection ? connection.getUniqueId('join') : null;
+    join: function(jid, callback) {
+        var self = this,
+            id = self.helpers.getUniqueIdCross('join'),
+            pres;
 
-    joinedRooms[jid] = true;
+        joinedRooms[jid] = true;
 
-    if (Utils.getEnv().browser) {
-      pres = $pres({
-        from: connection.jid,
-        to: self.helpers.getRoomJid(jid),
-        id: id
-      }).c("x", {
-        xmlns: Strophe.NS.MUC
-      }).c("history", {
-        maxstanzas: 0
-      });
+        if (Utils.getEnv().browser) {
+            pres = $pres({
+                from: connection.jid,
+                to: self.helpers.getRoomJid(jid),
+                id: id
+            }).c("x", {
+                xmlns: Strophe.NS.MUC
+            }).c("history", {
+                maxstanzas: 0
+            });
 
-      if (typeof callback === 'function') {
-          connection.addHandler(callback, null, 'presence', null, id);
-      }
+            if (typeof callback === 'function') {
+                connection.addHandler(callback, null, 'presence', null, id);
+            }
 
-      connection.send(pres);
-    } else {
-      var realId = nClient.jid.user.substring(0, nClient.jid.user.indexOf('-'));
+            connection.send(pres);
+        } else if(Utils.getEnv().node){
+            pres = new NodeClient.Stanza('presence', {
+                from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
+                to: jid + '/' + nClient.jid.user,
+                id: id
+            }); 
 
-      pres = new NodeClient.Stanza('presence', {
-        to: self.helpers.getRoomJidFromDialogId(jid) + '/' + realId
-      });
+            pres.c('x', {
+                xmlns: 'http://jabber.org/protocol/muc'
+            }).c('history', {maxstanzas: 0});
 
-      pres.c('x', {
-        xmlns: 'http://jabber.org/protocol/muc'
-      }).c('history', {maxstanzas: 0});
+            if (typeof callback === 'function') {
+                nodeStanzasCallbacks[id] = callback;
+            }
 
-      if (typeof callback === 'function') {
-          nodeStanzasCallbacks.MucJoin = callback;
-      }
-
-      nClient.send(pres);
-    }
+            nClient.send(pres);
+        }
   },
 
   leave: function(jid, callback) {
@@ -1716,15 +1740,24 @@ DialogProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'PUT', data: params}, callback);
   },
 
-  delete: function(id, params_or_callback, callback) {
-    Utils.QBLog('[DialogProxy]', 'delete', id);
+    delete: function(id, params_or_callback, callback) {
+        Utils.QBLog('[DialogProxy]', 'delete', id);
 
-    if (arguments.length == 2) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE'}, params_or_callback);
-    } else if (arguments.length == 3) {
-      this.service.ajax({url: Utils.getUrl(dialogUrl, id), type: 'DELETE', data: params_or_callback}, callback);
+        if (arguments.length == 2) {
+            this.service.ajax({
+                url: Utils.getUrl(dialogUrl, id),
+                type: 'DELETE',
+                dataType: 'text',
+            }, params_or_callback);
+        } else if (arguments.length == 3) {
+            this.service.ajax({
+                url: Utils.getUrl(dialogUrl, id),
+                type: 'DELETE',
+                data: params_or_callback,
+                dataType: 'text'
+            }, callback);
+        }
     }
-  }
 };
 
 // Messages
