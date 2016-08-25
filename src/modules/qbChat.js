@@ -311,71 +311,9 @@ function ChatProxy(service, webrtcModule, conn) {
 
         if(Utils.getEnv().node){
 
-            // get all users callback
-            if(stanza.attrs && stanza.attrs.type === 'result' && stanza.attrs.id.indexOf('getRoster') !== -1){
-                var JSONStanza = stanza.toJSON(),
-                    items = JSONStanza.children[0].children,
-                    contacts = {};
-
-                for (var i = 0, len = items.length; i < len; i++) {
-                    userId = self.helpers.getIdFromNode(items[i].attrs.jid).toString();
-                    contacts[userId] = {
-                        subscription: items[i].attrs.subscription,
-                        ask: items[i].attrs.ask || null
-                    };
-                }
-
-                nodeStanzasCallbacks[stanza.attrs.id](contacts);
-            }
-            // remove user callback
-            else if(stanza.getChild('query') && stanza.getChild('query').attrs.xmlns === 'jabber:iq:roster'){
-                var stanzaQuery = stanza.getChild('query'),
-                    item = stanzaQuery.getChild('item');
-
-                if(stanza.attrs.id.indexOf('removeRosterItem') && item && item.attrs.subscription === 'remove'){
-
-                    delete roster[userId];
-                    nodeStanzasCallbacks['jabber:iq:roster']['remove']();
-                    return true;
-                }
-            }
-            else if(stanza.getChild('query') && stanza.getChild('query').attrs.xmlns === 'jabber:iq:privacy'){
-                if(stanza.attrs.id.indexOf('getlist') !== -1){
-                    var stanzaQuery = stanza.getChild('query'),
-                        list = stanzaQuery ? stanzaQuery.getChild('list') : null,
-                        items = list ? list.getChildElements('item') : null,
-                        userJid, userId, usersList = [];
-
-
-                    for (var i = 0, len = items.length; i < len; i=i+2) {
-                        userJid = items[i].attrs.value;
-                        userId = self.helpers.getIdFromNode(userJid);
-                        usersList.push({
-                            user_id: userId,
-                            action: items[i].attrs.action
-                        });
-                    }
-                    list = {
-                        name: list.attrs.name,
-                        items: usersList
-                    };
-
-                    nodeStanzasCallbacks['jabber:iq:privacy'][stanza.attrs.id](null, list);
-                    delete nodeStanzasCallbacks['jabber:iq:privacy'][stanza.attrs.id]
-
-                } else if(stanza.attrs.id.indexOf('edit') !== -1) {
-                    if(typeof nodeStanzasCallbacks[stanza.attrs.id] === 'function'){
-                        console.log(stanza.toString());
-                        console.log(stanza.getChild('error'));
-                        console.log(Object.getOwnPropertyNames(stanza));
-
-                        nodeStanzasCallbacks[stanza.attrs.id](null);
-                        delete nodeStanzasCallbacks[stanza.attrs.id]
-                    }
-                } else {
-                    console.log('ELSE STANZA');
-                    console.log(stanza.toString());
-                }
+            if(nodeStanzasCallbacks[stanza.attrs.id]){
+                nodeStanzasCallbacks[stanza.attrs.id](stanza);
+                delete nodeStanzasCallbacks[stanza.attrs.id];
             }
         }
         return true;
@@ -679,7 +617,6 @@ ChatProxy.prototype = {
                 if (stanza.is('presence')) {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
-                    console.log('stanza is iq');
                     self._onIQ(stanza);
                 } else if(stanza.is('message')){
                     if(stanza.attrs.type === 'headline') {
@@ -1221,11 +1158,25 @@ RosterProxy.prototype = {
         } else if(Utils.getEnv().node){
             iq = new NodeClient.Stanza('iq', stanzaParams).c('query', {
                 'xmlns': 'jabber:iq:roster'
-            });
+            }).up();
+
+            nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+                var JSONStanza = stanza.toJSON(),
+                    items = JSONStanza.children[0].children,
+                    contacts = {};
+
+                for (var i = 0, len = items.length; i < len; i++) {
+                    userId = self.helpers.getIdFromNode(items[i].attrs.jid).toString();
+                    contacts[userId] = {
+                        subscription: items[i].attrs.subscription,
+                        ask: items[i].attrs.ask || null
+                    };
+                }
+
+                callback(contacts);
+            };
 
             nClient.send(iq);
-
-        nodeStanzasCallbacks[stanzaParams.id] = callback;
     }
   },
 
@@ -1296,13 +1247,14 @@ RosterProxy.prototype = {
         var userId = this.helpers.getIdFromNode(userJid);
         var iq;
 
-        if(Utils.getEnv().browser) {
+        var stanzaParams = {
+            'type': 'set',
+            'from': connection ? connection.jid : nClient.jid.user,
+            'id': self.helpers.getUniqueIdCross('getRoster')
+        };
 
-            iq = $iq({
-                from: connection.jid,
-                type: 'set',
-                id: connection.getUniqueId('removeRosterItem')
-            }).c('query', {
+        if(Utils.getEnv().browser) {
+            iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.ROSTER
             }).c('item', {
                 jid: userJid,
@@ -1315,12 +1267,7 @@ RosterProxy.prototype = {
             });
 
         } else if(Utils.getEnv().node) {
-            iq = new NodeClient.Stanza('iq', {
-                from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
-                type: 'set',
-                id: self.helpers.getUniqueIdCross('removeRosterItem'),
-                xmlns: 'jabber:client'
-            });
+            iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
                 xmlns: 'jabber:iq:roster'
@@ -1329,15 +1276,14 @@ RosterProxy.prototype = {
                 subscription: 'remove'
             });
 
-            nClient.send(iq);
-
-            if (typeof callback === 'function') {
-
-                if (!nodeStanzasCallbacks['jabber:iq:roster']){
-                    nodeStanzasCallbacks['jabber:iq:roster'] = {};
+            nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+                delete roster[userId];
+                if (typeof callback === 'function') {
+                    callback();
                 }
-                nodeStanzasCallbacks['jabber:iq:roster']['remove'] = callback;
-            }
+            };
+
+            nClient.send(iq);
 
         }
     },
@@ -1480,41 +1426,85 @@ function PrivacyListProxy(service) {
 PrivacyListProxy.prototype = {
 
     getNames: function(callback) {
-        var iq = $iq({
-            from: connection.jid,
-            type: 'get',
-            id: connection.getUniqueId('getNames')
-        }).c('query', {
-            xmlns: Strophe.NS.PRIVACY_LIST
-        });
-
-        connection.sendIQ(iq, function(stanzaResult) {
-            var allNames = [], namesList = {},
-                defaultList = stanzaResult.getElementsByTagName('default'),
-                activeList = stanzaResult.getElementsByTagName('active'),
-                allLists = stanzaResult.getElementsByTagName('list'),
-                defaultName = defaultList[0].getAttribute('name'),
-                activeName = activeList[0].getAttribute('name');
-
-            for (var i = 0, len = allLists.length; i < len; i++) {
-                allNames.push(allLists[i].getAttribute('name'));
-            }
-
-            namesList = {
-                'default': defaultName,
-                'active': activeName,
-                'names': allNames
+        var iq,
+            stanzaParams = {
+                'from': connection ? connection.jid : nClient.jid.user,
+                'type': 'get',
+                'id': this.helpers.getUniqueIdCross('getNames')
             };
 
-            callback(null, namesList);
-        }, function(stanzaError){
-            if(stanzaError){
-                var errorObject = getErrorFromXMLNode(stanzaError);
-                callback(errorObject, null);
-            }else{
-                callback(Utils.getError(408), null);
-            }
-        });
+        if(Utils.getEnv().browser){
+
+            var iq = $iq(stanzaParams).c('query', {
+                xmlns: Strophe.NS.PRIVACY_LIST
+            });
+
+            connection.sendIQ(iq, function(stanzaResult) {
+                var allNames = [], namesList = {},
+                    defaultList = stanzaResult.getElementsByTagName('default'),
+                    activeList = stanzaResult.getElementsByTagName('active'),
+                    allLists = stanzaResult.getElementsByTagName('list'),
+                    defaultName = defaultList[0].getAttribute('name'),
+                    activeName = activeList[0].getAttribute('name');
+
+                for (var i = 0, len = allLists.length; i < len; i++) {
+                    allNames.push(allLists[i].getAttribute('name'));
+                }
+
+                namesList = {
+                    'default': defaultName,
+                    'active': activeName,
+                    'names': allNames
+                };
+                console.log('namesList',namesList);
+                callback(null, namesList);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    callback(errorObject, null);
+                }else{
+                    callback(Utils.getError(408), null);
+                }
+            });
+        } else if(Utils.getEnv().node) {
+            iq = new NodeClient.Stanza('iq', stanzaParams);
+
+            iq.c('query', {
+                xmlns: 'jabber:iq:privacy'
+            });
+
+            nodeStanzasCallbacks[iq.attrs.id] = function(stanza){
+                if(stanza.attrs.type !== 'error'){
+
+                    var allNames = [], namesList = {},
+                        query = stanza.getChild('query'),
+                        defaultList = query.getChild('default'),
+                        activeList = query.getChild('active'),
+                        allLists = query.getChildElements('list');
+
+                    var defaultName = defaultList.attrs.name,
+                        activeName = activeList.attrs.name;
+
+                    for (var i = 0, len = allLists.length; i < len; i++) {
+                        if(allLists[i].name !== 'default' && allLists[i].name !== 'active'){
+                            allNames.push(allLists[i].attrs.name);
+                        }
+                    }
+
+                    namesList = {
+                        'default': defaultName || '',
+                        'active': activeName || '',
+                        'names': allNames
+                    };
+
+                    callback(null, namesList);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
+
+            nClient.send(iq);
+        }
     },
 
     getList: function(name, callback) {
@@ -1549,6 +1539,7 @@ PrivacyListProxy.prototype = {
                     name: name,
                     items: usersList
                 };
+                    console.log(list);
                     callback(null, list);
                 }, function(stanzaError){
                     if(stanzaError){
@@ -1570,9 +1561,31 @@ PrivacyListProxy.prototype = {
                 name: name
             });
 
-            nClient.send(iq);
+            nodeStanzasCallbacks[iq.attrs.id] = function(stanza){
+                var stanzaQuery = stanza.getChild('query'),
+                    list = stanzaQuery ? stanzaQuery.getChild('list') : null,
+                    items = list ? list.getChildElements('item') : null,
+                    userJid, userId, usersList = [];
 
-            nodeStanzasCallbacks[iq.attrs.id] = callback;
+
+                for (var i = 0, len = items.length; i < len; i=i+2) {
+                    userJid = items[i].attrs.value;
+                    userId = self.helpers.getIdFromNode(userJid);
+                    usersList.push({
+                        user_id: userId,
+                        action: items[i].attrs.action
+                    });
+                }
+                list = {
+                    name: list.attrs.name,
+                    items: usersList
+                };
+
+                callback(null, list);
+                delete nodeStanzasCallbacks[stanza.attrs.id]
+            };
+
+            nClient.send(iq);
         }
     },
 
@@ -1601,12 +1614,9 @@ PrivacyListProxy.prototype = {
 
             iq = fillCreatePrivacyListIq(iq, list);
 
-            console.log(iq.nodeTree.outerHTML);
             connection.sendIQ(iq, function(stanzaResult) {
-                console.log('stanzaResult', stanzaResult);
                 callback(null);
             }, function(stanzaError){
-                console.log('stanzaError', stanzaError.toString());
                 if(stanzaError){
                     var errorObject = getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
@@ -1630,9 +1640,13 @@ PrivacyListProxy.prototype = {
 
             iq = fillCreatePrivacyListIq(iq, list);
 
-            console.log(iq.toString());
-
-            nodeStanzasCallbacks[iq.attrs.id] = callback;
+            nodeStanzasCallbacks[iq.attrs.id] = function(stanza) {
+                if(!stanza.getChildElements('error').length){
+                    callback(null);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
 
             nClient.send(iq);
         }
@@ -1676,8 +1690,6 @@ PrivacyListProxy.prototype = {
                 } else if(Utils.getEnv().node){
                     var lists = iq.getChild('query').getChild('list');
 
-                    console.log(lists);
-
                     lists.c('item', {
                             type: 'jid',
                             value: userJid,
@@ -1708,100 +1720,150 @@ PrivacyListProxy.prototype = {
         }
     },
 
-  update: function(list, callback) {
-    var self = this;
+    update: function(list, callback) {
+        var self = this;
 
-    self.getList(list.name, function(error, response) {
-      if (error) {
-        callback(error, null);
-      }else{
-        var copyList = (JSON.parse(JSON.stringify(list))),
-            oldArray = response.items,
-            newArray = copyList.items,
-            createdList = {};
+        self.getList(list.name, function(error, response) {
+            if (error) {
+                callback(error, null);
+            } else {
+                var copyList = (JSON.parse(JSON.stringify(list))),
+                    oldArray = response.items,
+                    newArray = copyList.items,
+                    createdList = {};
 
-        copyList.items = $.merge(oldArray, newArray);
-        createdList = copyList;
+                copyList.items = Utils.MergeArrayOfObjects(oldArray, newArray);
+                createdList = copyList;
 
-        self.create(createdList, function(err, result) {
-          if (error) {
-            callback(err, null);
-          }else{
-            callback(null, result);
-          }
+                self.create(createdList, function(err, result) {
+                    if (error) {
+                        callback(err, null);
+                    }else{
+                        callback(null, result);
+                    }
+                });
+            }
         });
-      }
-    });
-  },
+    },
 
-  delete: function(name, callback) {
-    var iq = $iq({
-      from: connection.jid,
-      type: 'set',
-      id: connection.getUniqueId('remove')
-    }).c('query', {
-      xmlns: Strophe.NS.PRIVACY_LIST
-    }).c('list', {
-      name: name ? name : ''
-    });
+    delete: function(name, callback) {
+        var iq = $iq({
+            from: connection.jid,
+            type: 'set',
+            id: connection.getUniqueId('remove')
+        }).c('query', {
+            xmlns: Strophe.NS.PRIVACY_LIST
+        }).c('list', {
+            name: name ? name : ''
+        });
 
-    connection.sendIQ(iq, function(stanzaResult) {
-      callback(null);
-    }, function(stanzaError){
-      if(stanzaError){
-        var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject);
-      }else{
-        callback(Utils.getError(408));
-      }
-    });
-  },
+        connection.sendIQ(iq, function(stanzaResult) {
+            callback(null);
+        }, function(stanzaError){
+            if(stanzaError){
+                var errorObject = getErrorFromXMLNode(stanzaError);
+                callback(errorObject);
+            }else{
+                callback(Utils.getError(408));
+            }
+        });
+    },
 
-  setAsDefault: function(name, callback) {
-    var iq = $iq({
-      from: connection.jid,
-      type: 'set',
-      id: connection.getUniqueId('default')
-    }).c('query', {
-      xmlns: Strophe.NS.PRIVACY_LIST
-    }).c('default', {
-      name: name ? name : ''
-    });
+    setAsDefault: function(name, callback) {
+        var iq,
+            stanzaParams = {
+                'from': connection ? connection.jid : nClient.jid.user,
+                'type': 'set',
+                'id': this.helpers.getUniqueIdCross('default')
+            };
 
-    connection.sendIQ(iq, function(stanzaResult) {
-      callback(null);
-    }, function(stanzaError){
-      if(stanzaError){
-        var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject);
-      }else{
-        callback(Utils.getError(408));
-      }
-    });
-  },
+        if(Utils.getEnv().browser){
+            iq = $iq(stanzaParams).c('query', {
+                xmlns: Strophe.NS.PRIVACY_LIST
+            }).c('default', {
+                name: name ? name : ''
+            });
 
-  setAsActive: function(name, callback) {
-    var iq = $iq({
-      from: connection.jid,
-      type: 'set',
-      id: connection.getUniqueId('active')
-    }).c('query', {
-      xmlns: Strophe.NS.PRIVACY_LIST
-    }).c('active', {
-      name: name ? name : ''
-    });
+            connection.sendIQ(iq, function(stanzaResult) {
+                callback(null);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    callback(errorObject);
+                }else{
+                    callback(Utils.getError(408));
+                }
+            });
+        } else if(Utils.getEnv().node){
+            iq = new NodeClient.Stanza('iq', stanzaParams);
 
-    connection.sendIQ(iq, function(stanzaResult) {
-      callback(null);
-    }, function(stanzaError){
-      if(stanzaError){
-        var errorObject = getErrorFromXMLNode(stanzaError);
-        callback(errorObject);
-      }else{
-        callback(Utils.getError(408));
-      }
-    });
-  }
+            iq.c('query', {
+                xmlns: 'jabber:iq:privacy'
+            }).c('default', {
+                name: name ? name : ''
+            });
+
+            nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+                if(!stanza.getChildElements('error').length){
+                    callback(null);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
+            nClient.send(iq);
+        }
+
+    },
+
+    setAsActive: function(name, callback) {
+        var iq,
+            stanzaParams = {
+            'from': connection ? connection.jid : nClient.jid.user,
+            'type': 'set',
+            'id': this.helpers.getUniqueIdCross('active')
+        };
+
+        if(Utils.getEnv().browser){
+            iq = $iq(stanzaParams).c('query', {
+                xmlns: Strophe.NS.PRIVACY_LIST
+            }).c('active', {
+                name: name ? name : ''
+            });
+
+            connection.sendIQ(iq, function(stanzaResult) {
+                callback(null);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    callback(errorObject);
+                }else{
+                    callback(Utils.getError(408));
+                }
+            });
+        } else if(Utils.getEnv().node){
+            iq = new NodeClient.Stanza('iq', stanzaParams);
+
+            iq.c('query', {
+                xmlns: 'jabber:iq:privacy'
+            }).c('active', {
+                name: name ? name : ''
+            });
+
+            nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+                if(!stanza.getChildElements('error').length){
+                    callback(null);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
+
+            nClient.send(iq);
+        }
+
+
+
+
+    }
 };
 
 
