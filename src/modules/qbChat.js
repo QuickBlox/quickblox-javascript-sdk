@@ -1479,7 +1479,7 @@ PrivacyListProxy.prototype = {
                     'active': activeName,
                     'names': allNames
                 };
-                console.log('namesList',namesList);
+
                 callback(null, namesList);
             }, function(stanzaError){
                 if(stanzaError){
