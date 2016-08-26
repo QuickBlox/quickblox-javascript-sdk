@@ -17,7 +17,7 @@ describe('Chat API', function() {
 
     var chatEndpoint = CONFIG.endpoints.chat;
 
-    beforeAll(function(done){
+    beforeAll(function(done) {
         QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
         var createSessionParams = {
@@ -31,16 +31,21 @@ describe('Chat API', function() {
             expect(result).toBeDefined();
             expect(result.application_id).toEqual(CREDS.appId);
 
-            console.info('[Jasmine] Initialize QB and created a session.');
+            console.info('\n[Jasmine] Initialize QB and created a session.');
             done();
         }
 
         QB.createSession(createSessionParams, createSessionCb);
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
-    afterAll(function(){
+    afterAll(function(done) {
         QB.chat.disconnect();
-    });
+        QB.destroySession(function(err) {
+            expect(err).toBeNull();
+            
+            done();
+        });
+    }, REST_REQUESTS_TIMEOUT);
 
     describe('XMPP - real time messaging', function() {
         it('can connect to chat', function(done) {
@@ -192,7 +197,7 @@ describe('Chat API', function() {
 
                     dialog = createdDialog;
 
-                    console.info('[Jasmine] Create dialog for testing MUC features.');
+                    console.info('\n[Jasmine] Create dialog for testing MUC features.');
                     done();
                 }
 
@@ -203,19 +208,19 @@ describe('Chat API', function() {
                 QB.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
                     expect(err).toBeNull();
 
-                    console.info('[Jasmine] Delete dialog for testing MUC features.');
+                    console.info('\n[Jasmine] Delete dialog for testing MUC features.');
                     done();
                 });
             });
 
-            it('can join to group chat', function(done) {
+            it('can join group chat', function(done) {
                 function dialogJoinCb(stanza) {
                     expect(stanza).not.toBeNull();
                     done();
                 }
 
                 QB.chat.muc.join(dialog.xmpp_room_jid, dialogJoinCb);
-            }, LOGIN_TIMEOUT);
+            }, MESSAGING_TIMEOUT);
         });
 
         describe('[Roster] Contact list: ', function() {

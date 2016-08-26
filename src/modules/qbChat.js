@@ -1335,7 +1335,7 @@ RosterProxy.prototype = {
 };
 
 
-/* Chat module: Group Chat
+/* Chat module: Group Chat (Dialog)
  *
  * Multi-User Chat
  * http://xmpp.org/extensions/xep-0045.html
@@ -1390,22 +1390,37 @@ MucProxy.prototype = {
   },
 
   leave: function(jid, callback) {
-    var pres, self = this,
-        roomJid = self.helpers.getRoomJid(jid);
+        var self = this,
+            roomJid = self.helpers.getRoomJid(jid),
+            pres;
 
-    delete joinedRooms[jid];
+        delete joinedRooms[jid];
 
-    pres = $pres({
-      from: connection.jid,
-      to: roomJid,
-      type: 'unavailable'
-    });
+        if (Utils.getEnv().browser) {
+            pres = $pres({
+                from: connection.jid,
+                to: roomJid,
+                type: 'unavailable'
+            });
 
-    if (typeof callback === 'function') {
-        connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
-    }
+            if (typeof callback === 'function') {
+                connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+            }
 
-    connection.send(pres);
+            connection.send(pres);
+        } else if(Utils.getEnv().node){
+            /** uses id to set callback */
+            var id = self.helpers.getUniqueIdCross('leave');
+
+            res = new NodeClient.Stanza('presence', {
+                from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
+                to: jid + '/' + nClient.jid.user,
+                type: 'unavailable'
+            });
+
+            nodeStanzasCallbacks[id] = callback;
+        }
+    
   },
 
   listOnlineUsers: function(roomJid, callback) {
