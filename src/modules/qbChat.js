@@ -208,7 +208,8 @@ function ChatProxy(service, webrtcModule, conn) {
 
     this._onPresence = function(stanza) {
         var from,
-            type;
+            type,
+            userId;
 
         if(Utils.getEnv().browser){
             from = stanza.getAttribute('from');
@@ -218,14 +219,29 @@ function ChatProxy(service, webrtcModule, conn) {
             type = stanza.attrs.type;
         }
 
-        var userId = self.helpers.getIdFromNode(from);
+        userId = self.helpers.getIdFromNode(from);
 
         if(Utils.getEnv().node) {
             var x = stanza.getChild('x');
 
+            /** MUC */
             if(x && x.attrs.xmlns == "http://jabber.org/protocol/muc#user"){
-                var status = x.getChild('status')
+                var status = x.getChild('status');
+                /**
+                 * if you make 'leave' from dialog
+                 * stanza will be contains type="unavailable"
+                 */
+                var type = stanza.attrs.type;
+
+                /** LEAVE from dialog */
+                if(type && type === 'unavailable' && nodeStanzasCallbacks['muc:leave']) {
+                    if(status && status.attrs.code == "110"){
+                        nodeStanzasCallbacks['muc:leave'](null);
+                        return;
+                    }
+                }
                 
+                /** JOIN to dialog */
                 if(stanza.attrs.id) {
                     if(status && status.attrs.code == "110"){
                         nodeStanzasCallbacks[stanza.attrs.id](stanza);
@@ -324,15 +340,18 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // we must return true to keep the handler alive
         // returning false would remove it after it finishes
+        if(Utils.getEnv().browser) {
+            return true;
+        }
 
         if(Utils.getEnv().node){
+            var stanzaId = stanza.attrs.id;
 
-            if(nodeStanzasCallbacks[stanza.attrs.id]){
-                nodeStanzasCallbacks[stanza.attrs.id](stanza);
-                delete nodeStanzasCallbacks[stanza.attrs.id];
+            if(nodeStanzasCallbacks[stanzaId]){
+                nodeStanzasCallbacks[stanzaId](stanza);
+                delete nodeStanzasCallbacks[stanzaId];
             }
         }
-        return true;
     };
 
     this._onSystemMessageListener = function(stanza) {
@@ -572,10 +591,12 @@ ChatProxy.prototype = {
                 'password': params.password,
                 'reconnect': true
             });
+
+            /** HANDLERS */
             nClient.on('auth', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
             });
-            /** HANDLERS */
+
             nClient.on('online', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
 
@@ -609,7 +630,6 @@ ChatProxy.prototype = {
                 
                 self._isDisconnected = true;
                 self._isLogout = true;
-                
             });
 
             nClient.on('disconnect', function () {
@@ -624,6 +644,7 @@ ChatProxy.prototype = {
 
             nClient.on('stanza', function (stanza) {
                 Utils.QBLog('[QBChat] RECV', stanza.toString());
+               
                 /**
                  * Detect typeof incoming stanza 
                  * and fire the Listener
@@ -1387,66 +1408,104 @@ MucProxy.prototype = {
 
             nClient.send(pres);
         }
-  },
-
-  leave: function(jid, callback) {
+    },
+    leave: function(jid, callback) {
         var self = this,
-            roomJid = self.helpers.getRoomJid(jid),
-            pres;
+            pres,
+            type = 'unavailable';
 
         delete joinedRooms[jid];
 
         if (Utils.getEnv().browser) {
+            var roomJid = self.helpers.getRoomJid(jid);
+            
             pres = $pres({
                 from: connection.jid,
-                to: roomJid,
-                type: 'unavailable'
+                to: self.helpers.getRoomJid(jid),
+                type: type
             });
 
             if (typeof callback === 'function') {
-                connection.addHandler(callback, null, 'presence', 'unavailable', null, roomJid);
+                connection.addHandler(callback, null, 'presence', type, null, roomJid);
             }
 
             connection.send(pres);
-        } else if(Utils.getEnv().node){
-            /** uses id to set callback */
-            var id = self.helpers.getUniqueIdCross('leave');
-
-            res = new NodeClient.Stanza('presence', {
+        } else if(Utils.getEnv().node) {
+            pres = new NodeClient.Stanza('presence', {
                 from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
                 to: jid + '/' + nClient.jid.user,
-                type: 'unavailable'
+                type: type
             });
 
-            nodeStanzasCallbacks[id] = callback;
+            /** The answer don't contain id */
+            if(typeof callback === 'function') {
+                nodeStanzasCallbacks['muc:leave'] = callback;
+            }
+
+            nClient.send(pres);
         }
-    
-  },
+    },
+    listOnlineUsers: function(dialogJID, callback) {
+        var self = this,
+            iq, 
+            id = self.helpers.getUniqueIdCross('muc_disco_items'),
+            onlineUsers = [];
 
-  listOnlineUsers: function(roomJid, callback) {
-    var iq, self = this,
-        onlineUsers = [];
+        var TYPE = 'get';
 
-    iq = $iq({
-      from: connection.jid,
-      id: connection.getUniqueId('muc_disco_items'),
-      to: roomJid,
-      type: "get"
-    }).c("query", {
-      xmlns: 'http://jabber.org/protocol/disco#items'
-    });
+        function _getUsers(stanza) {
+            var stanzaId = stanza.attrs.id;
 
-    connection.sendIQ(iq, function(stanza) {
-      var items = stanza.getElementsByTagName('item');
-      var userId;
-      for (var i = 0, len = items.length; i < len; i++) {
-        userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
-        onlineUsers.push(userId);
-      }
-      callback(onlineUsers);
-    });
-  }
+            if(nodeStanzasCallbacks[stanzaId]) {
+                var users = [],
+                    items = stanza.getChild('query').getChildElements('item');
 
+                for(var i = 0, len = items.length; i < len; i++) {
+                    users.push(items[i].attrs.name);
+                }
+
+                callback(users);
+            }
+        };
+
+        if (Utils.getEnv().browser) {
+            iq = $iq({
+                id: id,
+                from: connection.jid,
+                to: dialogJID,
+                type: TYPE
+            }).c('query', {
+              xmlns: 'http://jabber.org/protocol/disco#items'
+            });
+
+            connection.sendIQ(iq, function(stanza) {
+                var items = stanza.getElementsByTagName('item'),
+                    userId;
+                
+                for (var i = 0, len = items.length; i < len; i++) {
+                    userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
+                    onlineUsers.push(userId);
+                }
+
+                callback(onlineUsers);
+            });
+        } else if(Utils.getEnv().node) {
+            iq = new NodeClient.Stanza('iq', {
+                id: id,
+                from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
+                to: dialogJID,
+                type: TYPE
+            });
+
+            iq.c('query', {
+              xmlns: 'http://jabber.org/protocol/disco#items'
+            });
+
+            nClient.send(iq);
+            
+            nodeStanzasCallbacks[id] = _getUsers;
+        }
+    }
 };
 
 

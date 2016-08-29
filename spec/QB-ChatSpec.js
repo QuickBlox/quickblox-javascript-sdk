@@ -42,7 +42,7 @@ describe('Chat API', function() {
         QB.chat.disconnect();
         QB.destroySession(function(err) {
             expect(err).toBeNull();
-            
+
             done();
         });
     }, REST_REQUESTS_TIMEOUT);
@@ -58,7 +58,6 @@ describe('Chat API', function() {
                 expect(err).toBeNull();
                 done();
             }
-
             QB.chat.connect(connectParams, connectCb);
         }, LOGIN_TIMEOUT);
 
@@ -178,7 +177,7 @@ describe('Chat API', function() {
             QB.chat.sendIsTypingStatus(QBUser1.id);
         }, MESSAGING_TIMEOUT);
 
-        describe('[MUC] Dialogs:', function() {
+        describe('[MUC] Dialogs', function() {
             var dialog;
 
             beforeAll(function(done){
@@ -220,6 +219,24 @@ describe('Chat API', function() {
                 }
 
                 QB.chat.muc.join(dialog.xmpp_room_jid, dialogJoinCb);
+            }, MESSAGING_TIMEOUT);
+
+            it('can get online users', function(done) {
+                function listOnlineUsersCb(users) {
+                    expect(users).toBeDefined();
+
+                    done();
+                }
+
+                QB.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, listOnlineUsersCb);
+            }, MESSAGING_TIMEOUT);
+
+            it('can leave group chat', function(done) {
+                function dialogLeaveCb() {
+                    done();
+                }
+
+                QB.chat.muc.leave(dialog.xmpp_room_jid, dialogLeaveCb);
             }, MESSAGING_TIMEOUT);
         });
 
