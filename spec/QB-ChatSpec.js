@@ -110,9 +110,6 @@ describe('Chat API', function() {
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
 
             var self = this;
             var params = {
@@ -136,9 +133,6 @@ describe('Chat API', function() {
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'read\' status', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
 
             var self = this;
 
@@ -163,9 +157,6 @@ describe('Chat API', function() {
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'is typing\' status (private)', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
 
             QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
                 expect(composing).toEqual(true);
