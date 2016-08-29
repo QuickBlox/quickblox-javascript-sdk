@@ -13,7 +13,7 @@ describe('PushNotifications API', function() {
   var params;
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     QB.createSession(QBUser1, function(err, session) {
       if (err) {
@@ -52,7 +52,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can list a subscription', function(done){
       QB.pushnotifications.subscriptions.list(function(err, result){
@@ -65,7 +65,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can delete subscription', function(done){
       QB.pushnotifications.subscriptions.list(function(err, result){
@@ -86,7 +86,7 @@ describe('PushNotifications API', function() {
           });
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
   });
 
   describe('Events', function(){
@@ -102,7 +102,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can create event', function(done){
       var params = {
@@ -123,7 +123,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can list events', function(done){
       QB.pushnotifications.events.list({page: '1', per_page: '25'}, function(err, response) {
@@ -138,7 +138,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can get event by id', function(done){
       QB.pushnotifications.events.get(eventId, function(err, response) {
@@ -151,7 +151,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     it('can get event\'s status by id', function(done){
       QB.pushnotifications.events.status(eventId, function(err, response) {
@@ -164,7 +164,7 @@ describe('PushNotifications API', function() {
           done();
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     /**
      * WARNING!
@@ -182,7 +182,7 @@ describe('PushNotifications API', function() {
 
         done();
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
 
     afterAll(function(done){
       QB.pushnotifications.subscriptions.list(function(err, result){
@@ -202,7 +202,7 @@ describe('PushNotifications API', function() {
           });
         }
       });
-    });
+    }, REST_REQUESTS_TIMEOUT);
   });
 
 });

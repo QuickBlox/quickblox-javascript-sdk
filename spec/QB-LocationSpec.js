@@ -10,7 +10,7 @@ describe('Location API', function() {
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     QB.createSession(QBUser1, function(err, session) {
       if (err) {
