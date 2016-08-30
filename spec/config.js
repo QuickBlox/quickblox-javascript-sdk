@@ -1,7 +1,6 @@
 (function() {
     'use strict';
 
-
     var CREDS =  {
         'appId': 29650,
         'authKey': 'WULOyezrmxpOgQ-',
@@ -29,7 +28,7 @@
         active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
       },
       'debug': {
-          'mode': 1,
+          'mode': 0,
           'file': null
       }
     };

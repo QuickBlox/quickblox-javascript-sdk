@@ -27,6 +27,9 @@ describe('PushNotifications API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   describe('Subscriptions', function(){
+    /** Uses for can get list and delete subscription */
+    var subscriptionId;
+
     it('can create a subscription', function(done){
       params = {
         notification_channels: 'gcm',
@@ -62,31 +65,23 @@ describe('PushNotifications API', function() {
           expect(result).not.toBeNull();
           expect(result[0].subscription.device.udid).toBe('jasmineUnique');
 
+          subscriptionId = result[0].subscription.id;
+          
           done();
         }
       });
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete subscription', function(done){
-      QB.pushnotifications.subscriptions.list(function(err, result){
-        if (err) {
-          done.fail('List a subscription error: ' + JSON.stringify(err));
-        } else {
-          var subscriptionId = result[0].subscription.id;
+        function deleteSubscriptionCb(err, res) {
+            expect(err).toBeNull();
+            expect(res).toBeDefined();
 
-          QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
-            if (err) {
-              done.fail('Delete subscription error: ' + JSON.stringify(err));
-            } else {
-              expect(res).not.toBeNull();
-              expect(res).toBe(true);
-
-              done();
-            }
-          });
+            done();
         }
-      });
-    }, REST_REQUESTS_TIMEOUT);
+
+        QB.pushnotifications.subscriptions.delete(subscriptionId, deleteSubscriptionCb);
+    }, 10000);
   });
 
   describe('Events', function(){
