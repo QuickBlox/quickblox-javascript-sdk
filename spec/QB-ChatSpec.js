@@ -38,15 +38,6 @@ describe('Chat API', function() {
         QB.createSession(createSessionParams, createSessionCb);
     }, REST_REQUESTS_TIMEOUT);
 
-    afterAll(function(done) {
-        QB.chat.disconnect();
-        QB.destroySession(function(err) {
-            expect(err).toBeNull();
-
-            done();
-        });
-    }, REST_REQUESTS_TIMEOUT);
-
     describe('XMPP - real time messaging', function() {
         it('can connect to chat', function(done) {
             var connectParams = {
@@ -392,7 +383,6 @@ describe('Chat API', function() {
 
         it('can list dialogs', function(done) {
             var filters = null;
-
             QB.chat.dialog.list(filters, function(err, res) {
                 expect(err).toBeNull();
                 
@@ -505,4 +495,15 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
     });
+
+
+    // it('can disconnect', function(done){
+    //     QB.chat.onDisconnectedListener = function(){
+    //         console.log("DISCONNECTED DONE");
+    //         expect(true).toEqual(true);
+    //         done();
+    //     };
+    //
+    //     QB.chat.disconnect();
+    // }, REST_REQUESTS_TIMEOUT);
 });

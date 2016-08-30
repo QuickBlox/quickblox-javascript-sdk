@@ -614,7 +614,6 @@ ChatProxy.prototype = {
                 }, 55 * 1000);
 
                 if (typeof callback === 'function') {
-                    console.log('online');
                     callback(null, true);
                 }
 
@@ -635,11 +634,11 @@ ChatProxy.prototype = {
             nClient.on('disconnect', function () {
                 Utils.QBLog('[QBChat] client is disconnected');
 
+                if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
+                    Utils.safeCallbackCall(self.onDisconnectedListener);
+                }
 
                 self._isDisconnected = true;
-                self._isLogout = true;
-
-                callback(null, null);
             });
 
             nClient.on('stanza', function (stanza) {
@@ -649,6 +648,7 @@ ChatProxy.prototype = {
                  * Detect typeof incoming stanza 
                  * and fire the Listener
                  */
+
                 if (stanza.is('presence')) {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
@@ -664,7 +664,7 @@ ChatProxy.prototype = {
                 }
             });
 
-            nClient.on('offline', function () {
+            nClient.on('offline', function (){
                 Utils.QBLog('[QBChat] client goes offline');
 
                 self._isDisconnected = true;
@@ -673,16 +673,8 @@ ChatProxy.prototype = {
 
             nClient.on('error', function (e) {
                 Utils.QBLog('[QBChat] client got error', e);
-
-                self._isDisconnected = true;
-                self._isLogout = true;
-
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-
-                if(typeof callback === 'function') {
-                    console.log('error callback');
-                    callback(err, null);
-                }
+                if (typeof callback === 'function') callback(err, null);
             });
         }
     },
@@ -2017,11 +2009,13 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
-    if (params.occupants_ids instanceof Array) params.occupants_ids = params.occupants_ids.join(', ');
+        if (params.occupants_ids instanceof Array){
+            params.occupants_ids = params.occupants_ids.join(', ');
+        }
 
-    Utils.QBLog('[DialogProxy]', 'create', params);
+        Utils.QBLog('[DialogProxy]', 'create', params);
 
-    this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
+        this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
