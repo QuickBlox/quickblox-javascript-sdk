@@ -10,7 +10,7 @@
  * - onRejectCallListener(session, userID, extension)
  * - onStopCallListener(session, userID, extension)
  * - onUpdateCallListener(session, userID, extension)
- * - onIgnoredListener(state, session, userID, extension)
+ * - onInvalidEventsListener (state, session, userID, extension)
  */
 
 var WebRTCSession = require('./qbWebRTCSession');
@@ -136,8 +136,8 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
 
         this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
 
-        if (typeof this.onIgnoredListener === 'function'){
-          Utils.safeCallbackCall(this.onIgnoredListener, 'onCall', sessionID, userID, extensionClone);
+        if (typeof this.onInvalidEventsListener  === 'function'){
+          Utils.safeCallbackCall(this.onInvalidEventsListener, 'onCall', sessionID, userID, extensionClone);
         }
     } else {
         var session = this.sessions[sessionID];
@@ -172,8 +172,8 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
 
             session.processOnAccept(userID, extension);
         } else {
-            if (typeof this.onIgnoredListener === 'function'){
-              Utils.safeCallbackCall(this.onIgnoredListener, 'onAccept', session, userID, extensionClone);
+            if (typeof this.onInvalidEventsListener === 'function'){
+              Utils.safeCallbackCall(this.onInvalidEventsListener, 'onAccept', session, userID, extensionClone);
             }
 
             Helpers.traceWarning("Ignore 'onAccept', the session( " + sessionID + " ) has invalid state.");
@@ -218,8 +218,8 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
 
         session.processOnStop(userID, extension);
     } else {
-        if (typeof this.onIgnoredListener === 'function'){
-          Utils.safeCallbackCall(this.onIgnoredListener, 'onStop', session, userID, extensionClone);
+        if (typeof this.onInvalidEventsListener === 'function'){
+          Utils.safeCallbackCall(this.onInvalidEventsListener, 'onStop', session, userID, extensionClone);
         }
 
         Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.");
