@@ -79,8 +79,7 @@ function ChatProxy(service, webrtcModule, conn) {
         extraParams = stanza.querySelector('extraParams'),
         delay = stanza.querySelector('delay'),
         messageId = stanza.getAttribute('id'),
-        recipient = stanza.querySelector('forwarded') ?
-          stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null,
+        recipient = stanza.querySelector('forwarded') ? stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null,
         recipientId = recipient ? self.helpers.getIdFromNode(recipient) : null,
         dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
         userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
@@ -89,7 +88,6 @@ function ChatProxy(service, webrtcModule, conn) {
     // ignore invite messages from MUC
     //
     if (invite) return true;
-
 
     // parse extra params
     var extraParamsParsed;
