@@ -71,46 +71,62 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onReconnectListener
  */
 
-    // stanza callbacks (Message, Presence, IQ, SystemNotifications)
     this._onMessage = function(stanza) {
-        if (Utils.getEnv().browser) {
-            var from = stanza.getAttribute('from'),
-                to = stanza.getAttribute('to'),
-                type = stanza.getAttribute('type'),
-                body = stanza.querySelector('body'),
-                bodyContent = (body && body.textContent) || null;
-                markable = stanza.querySelector('markable'),
-                delivered = stanza.querySelector('received'),
-                read = stanza.querySelector('displayed'),
-                composing = stanza.querySelector('composing'),
-                paused = stanza.querySelector('paused'),
-                invite = stanza.querySelector('invite'),
-                extraParams = stanza.querySelector('extraParams'),
-                delay = stanza.querySelector('delay'),
-                messageId = stanza.getAttribute('id'),
-                jid = connection.jid;
+        var from, to,
+            type,
+            messageId,
+            body, bodyContent,
+            markable, delivered, read,
+            recipient, recipientId,
+            composing, paused,
+            invite,
+            extraParams,
+            delay,
+            jid;
 
+        if (Utils.getEnv().browser) {
+            from = stanza.getAttribute('from');
+            to = stanza.getAttribute('to');
+            messageId = stanza.getAttribute('id');
+            type = stanza.getAttribute('type');
+            body = stanza.querySelector('body');
+            bodyContent = (body && body.textContent) || null;
+            recipient = stanza.querySelector('forwarded') ? stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null;
+            recipientId = recipient ? self.helpers.getIdFromNode(recipient) : null;
+            markable = stanza.querySelector('markable');
+            delivered = stanza.querySelector('received');
+            read = stanza.querySelector('displayed');
+            composing = stanza.querySelector('composing');
+            paused = stanza.querySelector('paused');
+            invite = stanza.querySelector('invite');
+            extraParams = stanza.querySelector('extraParams');
+            delay = stanza.querySelector('delay');
+
+            jid = connection.jid;
         } else if(Utils.getEnv().node){
-            var from = stanza.attrs.from,
-                to = stanza.attrs.to,
-                type = stanza.attrs.type,
-                body = stanza.getChildText('body'),
-                bodyContent = body || null,
-                markable = stanza.getChild('markable'),
-                delivered = stanza.getChild('received'),
-                read = stanza.getChild('displayed'),
-                composing = stanza.getChild('composing'),
-                paused = stanza.getChild('paused'),
-                invite = stanza.getChild('invite'),
-                extraParams = stanza.getChild('extraParams'),
-                delay = stanza.getChild('delay'),
-                messageId = stanza.attrs.id,
-                jid = nClient.options.jid.user;
+            from = stanza.attrs.from;
+            to = stanza.attrs.to;
+            type = stanza.attrs.type;
+            messageId = stanza.attrs.id;
+            body = stanza.getChildText('body');
+            bodyContent = body || null;
+            markable = stanza.getChild('markable');
+            delivered = stanza.getChild('received');
+            read = stanza.getChild('displayed');
+            composing = stanza.getChild('composing');
+            paused = stanza.getChild('paused');
+            invite = stanza.getChild('invite');
+            extraParams = stanza.getChild('extraParams');
+            delay = stanza.getChild('delay');
+        
+            jid = nClient.options.jid.user;
         }
 
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
             marker = delivered || read || null;
+
+        var extraParamsParsed;
 
         // ignore invite messages from MUC
         //
@@ -118,9 +134,9 @@ function ChatProxy(service, webrtcModule, conn) {
 
 
         // parse extra params
-        var extraParamsParsed;
         if(extraParams){
             extraParamsParsed = self._parseExtraParams(extraParams);
+
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
             }
@@ -147,7 +163,8 @@ function ChatProxy(service, webrtcModule, conn) {
             if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
                 Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
             }
-        return true;
+            
+            return true;
         }
 
         // fire read/delivered listeners
@@ -181,6 +198,7 @@ function ChatProxy(service, webrtcModule, conn) {
                 userId: userId,
                 dialogId: dialogId
             };
+
             self.sendDeliveredStatus(params);
         }
 
@@ -189,11 +207,13 @@ function ChatProxy(service, webrtcModule, conn) {
         var message = {
             id: messageId,
             dialog_id: dialogId,
+            recipient_id: recipientId,
             type: type,
             body: bodyContent,
             extension: extraParamsParsed ? extraParamsParsed.extension : null,
             delay: delay
         };
+
         if (markable) {
             message.markable = 1;
         }
@@ -508,7 +528,15 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.AUTHFAIL:
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-                        if (typeof callback === 'function') callback(err, null);
+                        
+                        if (typeof callback === 'function') {
+                            callback(err, null);
+                        }
+
+                        if(self._isDisconnected && typeof self.onReconnectFailedListener === 'function'){
+                            Utils.safeCallbackCall(self.onReconnectFailedListener, err);
+                        }
+                        
                         break;
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
