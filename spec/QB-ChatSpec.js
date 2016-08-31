@@ -38,16 +38,13 @@ describe('Chat API', function() {
         QB.createSession(createSessionParams, createSessionCb);
     }, REST_REQUESTS_TIMEOUT);
 
-    afterAll(function(done) {
-        QB.chat.disconnect();
-        QB.destroySession(function(err) {
-            expect(err).toBeNull();
-
-            done();
-        });
-    }, REST_REQUESTS_TIMEOUT);
-
     describe('XMPP - real time messaging', function() {
+        var statusCheckingParams = {
+            userId: QBUser1.id,
+            messageId: '507f1f77bcf86cd799439011',
+            dialogId: '507f191e810c19729de860ea'
+        };
+
         it('can connect to chat', function(done) {
             var connectParams = {
                 'userId': QBUser1.id,
@@ -109,73 +106,45 @@ describe('Chat API', function() {
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
-
-            var self = this;
-            var params = {
-                messageId: '507f1f77bcf86cd799439011',
-                userId: QBUser1.id,
-                dialogId: '507f191e810c19729de860ea'
-            };
-
-            self.params = params;
-
-            QB.chat.onDeliveredStatusListener = function(messageId, dialogId, userId){
-                expect(messageId).toEqual(self.params.messageId);
-                expect(dialogId).toEqual(self.params.dialogId);
-                expect(userId).toEqual(self.params.userId);
-                self.params = null;
+            function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
+                expect(messageId).toEqual(statusCheckingParams.messageId);
+                expect(dialogId).toEqual(statusCheckingParams.dialogId);
+                expect(userId).toEqual(statusCheckingParams.userId);
 
                 done();
-            };
-            
-            QB.chat.sendDeliveredStatus(params);
+            }
+
+            QB.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
+
+            QB.chat.sendDeliveredStatus(statusCheckingParams);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'read\' status', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-            }
-
-            var self = this;
-
-            QB.chat.onReadStatusListener = function(messageId, dialogId, userId){
-                expect(messageId).toEqual(self.params.messageId);
-                expect(dialogId).toEqual(self.params.dialogId);
-                expect(userId).toEqual(self.params.userId);
-                self.params = null;
+            function onReadStatusListenerCB(messageId, dialogId, userId) {
+                expect(messageId).toEqual(statusCheckingParams.messageId);
+                expect(dialogId).toEqual(statusCheckingParams.dialogId);
+                expect(userId).toEqual(statusCheckingParams.userId);
 
                 done();
-            };
-
-            var params = {
-                messageId: "507f1f77bcf86cd799439011",
-                userId: QBUser1.id,
-                dialogId: "507f191e810c19729de860ea"
-            };
-        
-            self.params = params;
-
-            QB.chat.sendReadStatus(params);
-        }, MESSAGING_TIMEOUT);
-
-        it('can send and receive \'is typing\' status (private)', function(done) {
-            if(isNodeEnv) {
-                pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
             }
 
-            QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
-                expect(composing).toEqual(true);
-                expect(userId).toEqual(QBUser1.id);
-                expect(dialogId).toBeNull();
+            QB.chat.onReadStatusListener = onReadStatusListenerCB;
 
-                done();
-            };
-
-            QB.chat.sendIsTypingStatus(QBUser1.id);
+            QB.chat.sendReadStatus(statusCheckingParams);
         }, MESSAGING_TIMEOUT);
+
+        // it('can send and receive \'is typing\' status (private)', function(done) {
+
+        //     QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
+        //         expect(composing).toEqual(true);
+        //         expect(userId).toEqual(QBUser1.id);
+        //         expect(dialogId).toBeNull();
+
+        //         done();
+        //     };
+
+        //     QB.chat.sendIsTypingStatus(QBUser1.id);
+        // }, MESSAGING_TIMEOUT);
 
         describe('[MUC] Dialogs', function() {
             var dialog;
@@ -401,7 +370,6 @@ describe('Chat API', function() {
 
         it('can list dialogs', function(done) {
             var filters = null;
-
             QB.chat.dialog.list(filters, function(err, res) {
                 expect(err).toBeNull();
                 
@@ -514,4 +482,15 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
     });
+
+    /** Doesn't work on OS */
+    // it('can disconnect', function(done){
+    //     QB.chat.onDisconnectedListener = function(){
+    //         console.log("DISCONNECTED DONE");
+    //         expect(true).toEqual(true);
+    //         done();
+    //     };
+    //
+    //     QB.chat.disconnect();
+    // }, REST_REQUESTS_TIMEOUT);
 });

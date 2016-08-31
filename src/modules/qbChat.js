@@ -135,7 +135,9 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // parse extra params
         if(extraParams){
+            console.info('INFO', extraParams.toString());
             extraParamsParsed = self._parseExtraParams(extraParams);
+            console.info('INFO', extraParamsParsed);
 
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
@@ -163,7 +165,7 @@ function ChatProxy(service, webrtcModule, conn) {
             if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
                 Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
             }
-            
+
             return true;
         }
 
@@ -1105,11 +1107,19 @@ ChatProxy.prototype = {
                 delete extension.moduleIdentifier;
             }
 
-            return {extension: extension, dialogId: dialogId};
+            return {
+                extension: extension,
+                dialogId: dialogId
+            };
         }
 
         if(Utils.getEnv().node) {
             for (var i = 0, len = extraParams.children.length; i < len; i++) {
+                if(extraParams.children[i].tagName === 'dialog_id') {
+                    dialogId = extraParams.childNodes[i].textContent;
+                    extension['dialog_id'] = dialogId;
+                }
+                 
                 if(extraParams.children[i].children.length === 1) {
                     var child = extraParams.children[i];
 
@@ -1117,13 +1127,20 @@ ChatProxy.prototype = {
                 }
             }
 
-            if (extension.moduleIdentifier) {
+            if(extension.moduleIdentifier) {
                 delete extension.moduleIdentifier;
+            }
+
+            if(extension.dialog_id) {
+                dialogId = extension.dialog_id;
+                delete extension.dialog_id;
+            } else {
+                dialogId = null;
             }
 
             return {
                 extension: extension,
-                dialogId: null
+                dialogId: dialogId
             };
         }
     },
