@@ -133,18 +133,19 @@ describe('Chat API', function() {
             QB.chat.sendReadStatus(statusCheckingParams);
         }, MESSAGING_TIMEOUT);
 
-        // it('can send and receive \'is typing\' status (private)', function(done) {
+        it('can send and receive \'is typing\' status (private)', function(done) {
+            function onMessageTypingListenerCB(composing, userId, dialogId) {
+                console.info('onMessageTypingListenerCB');
+                expect(composing).toEqual(true);
+                expect(userId).toEqual(QBUser1.id);
+                expect(dialogId).toBeNull();
 
-        //     QB.chat.onMessageTypingListener = function(composing, userId, dialogId){
-        //         expect(composing).toEqual(true);
-        //         expect(userId).toEqual(QBUser1.id);
-        //         expect(dialogId).toBeNull();
+                done();
+            }
 
-        //         done();
-        //     };
-
-        //     QB.chat.sendIsTypingStatus(QBUser1.id);
-        // }, MESSAGING_TIMEOUT);
+            QB.chat.onMessageTypingListener = onMessageTypingListenerCB;
+            QB.chat.sendIsTypingStatus(QBUser1.id);
+        }, MESSAGING_TIMEOUT);
 
         describe('[MUC] Dialogs', function() {
             var dialog;

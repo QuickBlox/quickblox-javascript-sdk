@@ -135,9 +135,7 @@ function ChatProxy(service, webrtcModule, conn) {
 
         // parse extra params
         if(extraParams){
-            console.info('INFO', extraParams.toString());
             extraParamsParsed = self._parseExtraParams(extraParams);
-            console.info('INFO', extraParamsParsed);
 
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
@@ -163,7 +161,7 @@ function ChatProxy(service, webrtcModule, conn) {
         //
         if(composing || paused){
             if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-                Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
+                Utils.safeCallbackCall(self.onMessageTypingListener, !!composing, userId, dialogId);
             }
 
             return true;
@@ -185,7 +183,7 @@ function ChatProxy(service, webrtcModule, conn) {
                     if(Utils.getEnv().browser){
                         Utils.safeCallbackCall(self.onReadStatusListener, read.getAttribute('id'), dialogId, userId);
                     } else if(Utils.getEnv().node){
-                        Utils.safeCallbackCall(self.onDeliveredStatusListener, read.attrs.id, dialogId, userId);
+                        Utils.safeCallbackCall(self.onReadStatusListener, read.attrs.id, dialogId, userId);
                     }
                 }
             }
@@ -716,7 +714,6 @@ ChatProxy.prototype = {
             });
         }
     },
-
     send: function(jid_or_user_id, message) {
         var self = this,
             msg = {};
@@ -773,7 +770,6 @@ ChatProxy.prototype = {
         }
 
         if(Utils.getEnv().node) {
-
             var stanza = new NodeClient.Stanza('message', {
                 from: nClient.options.jid.user,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
@@ -792,29 +788,28 @@ ChatProxy.prototype = {
             }
 
             if (message.extension) {
-              stanza.c('extraParams', {xmlns: 'jabber:client'});
+                stanza.c('extraParams', {xmlns: 'jabber:client'});
 
-              Object.keys(message.extension).forEach(function(field) {
-                  if (field === 'attachments') {
-                      // attachments
-                      message.extension[field].forEach(function(attach) {
-                        msg.c('attachment', attach).up();
-                      });
-                  } else if (typeof message.extension[field] === 'object') {
-                      self._JStoXML(field, message.extension[field], msg);
-                  } else {
-                      stanza.getChild('extraParams')
-                          .c(field).t(message.extension[field]).up();
-                  }
-              });
+                Object.keys(message.extension).forEach(function(field) {
+                    if (field === 'attachments') {
+                          // attachments
+                        message.extension[field].forEach(function(attach) {
+                            msg.c('attachment', attach).up();
+                        });
+                    } else if (typeof message.extension[field] === 'object') {
+                        self._JStoXML(field, message.extension[field], msg);
+                    } else {
+                        stanza.getChild('extraParams')
+                            .c(field).t(message.extension[field]).up();
+                    }
+                });
 
-              stanza.up();
+                stanza.up();
             }
 
             nClient.send(stanza);
         }
     },
-
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this;
 
@@ -870,122 +865,142 @@ ChatProxy.prototype = {
                     }
                 });
 
-              msg.up();
+                msg.up();
             }
 
             nClient.send(msg);
         }
     },
 
-  // send typing status
-  sendIsTypingStatus: function(jid_or_user_id) {
-    if(Utils.getEnv().node) throw unsupported;
+    sendIsTypingStatus: function(jid_or_user_id) {
+        var stanzaParams = {
+            from: connection ? connection.jid : nClient.jid.user,
+            to: this.helpers.jidOrUserId(jid_or_user_id),
+            type: this.helpers.typeChat(jid_or_user_id)
+        },
+        msg;
 
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(jid_or_user_id),
-      type: this.helpers.typeChat(jid_or_user_id)
-    });
+        if(Utils.getEnv().browser){
+            msg = $msg(stanzaParams);
 
-    msg.c('composing', {
-      xmlns: Strophe.NS.CHAT_STATES
-    });
+            msg.c('composing', {
+                xmlns: Strophe.NS.CHAT_STATES
+            });
 
-    connection.send(msg);
-  },
+            connection.send(msg);
+        } else if(Utils.getEnv().node) {
+            msg = new NodeClient.Stanza('message', stanzaParams);
 
-  // send stop typing status
-  sendIsStopTypingStatus: function(jid_or_user_id) {
-    if(Utils.getEnv().node) throw unsupported;
+            msg.c('composing', {
+                xmlns: 'http://www.jabber.org/protocol/chatstates'
+            });
 
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(jid_or_user_id),
-      type: this.helpers.typeChat(jid_or_user_id)
-    });
-
-    msg.c('paused', {
-      xmlns: Strophe.NS.CHAT_STATES
-    });
-
-    connection.send(msg);
-  },
-
-  // helper function for ChatProxy.send()
-  sendPres: function(type) {
-    if(Utils.getEnv().node) throw unsupported;
-
-    connection.send($pres({
-      from: connection.jid,
-      type: type
-    }));
-  },
-
-  sendDeliveredStatus: function(params) {
-    if(Utils.getEnv().browser) {
-        var msg = $msg({
-          from: connection.jid,
-          to: this.helpers.jidOrUserId(params.userId),
-          type: 'chat',
-          id: Utils.getBsonObjectId()
-        });
-
-        msg.c('received', {
-          xmlns: Strophe.NS.CHAT_MARKERS,
-          id: params.messageId
-        }).up();
-
-        msg.c('extraParams', {
-          xmlns: Strophe.NS.CLIENT
-        }).c('dialog_id').t(params.dialogId);
-
-        connection.send(msg);
-    }
-
-    if(Utils.getEnv().node) {
-        var stanza = new NodeClient.Stanza('message', {
-            from: nClient.options.jid.user,
-            to: this.helpers.jidOrUserId(params.userId),
-            type: 'chat',
-            id: Utils.getBsonObjectId()
-        });
-
-        stanza.c('received', {
-            xmlns: 'urn:xmpp:chat-markers:0',
-            id: params.messageId
-        }).up();
-
-        stanza.c('extraParams', {
-            xmlns: 'jabber:client'
-        }).c('dialog_id').t(params.dialogId || null);
-
-        nClient.send(stanza);
-    }
-
-  },
-
-    sendReadStatus: function(params) {
-        if(Utils.getEnv().node) throw unsupported;
-
-        var msg = $msg({
-            from: connection.jid,
-            to: this.helpers.jidOrUserId(params.userId),
-            type: 'chat',
-            id: Utils.getBsonObjectId()
-        });
-
-        msg.c('displayed', {
-            xmlns: Strophe.NS.CHAT_MARKERS,
-            id: params.messageId
-        }).up();
-
-        msg.c('extraParams', {
-            xmlns: Strophe.NS.CLIENT
-        }).c('dialog_id').t(params.dialogId);
-
-        connection.send(msg);
+            nClient.send(msg);
+        }
     },
 
+    sendIsStopTypingStatus: function(jid_or_user_id) {
+        var stanzaParams = {
+            from: connection ? connection.jid : nClient.jid.user,
+            to: this.helpers.jidOrUserId(jid_or_user_id),
+            type: this.helpers.typeChat(jid_or_user_id)
+        },
+        msg;
+
+        if(Utils.getEnv().browser){
+            msg = $msg(stanzaParams);
+
+            msg.c('paused', {
+              xmlns: Strophe.NS.CHAT_STATES
+            });
+
+            connection.send(msg);
+         } else if(Utils.getEnv().node) {
+            msg = new NodeClient.Stanza('message', stanzaParams);
+
+            msg.c('paused', {
+                xmlns: 'http://www.jabber.org/protocol/chatstates'
+            });
+
+            nClient.send(msg);
+        }
+    },
+    sendDeliveredStatus: function(params) {
+        if(Utils.getEnv().browser) {
+            var msg = $msg({
+              from: connection.jid,
+              to: this.helpers.jidOrUserId(params.userId),
+              type: 'chat',
+              id: Utils.getBsonObjectId()
+            });
+
+            msg.c('received', {
+              xmlns: Strophe.NS.CHAT_MARKERS,
+              id: params.messageId
+            }).up();
+
+            msg.c('extraParams', {
+              xmlns: Strophe.NS.CLIENT
+            }).c('dialog_id').t(params.dialogId);
+
+            connection.send(msg);
+        } else if(Utils.getEnv().node) {
+            var stanza = new NodeClient.Stanza('message', {
+                from: nClient.options.jid.user,
+                to: this.helpers.jidOrUserId(params.userId),
+                type: 'chat',
+                id: Utils.getBsonObjectId()
+            });
+
+            stanza.c('received', {
+                xmlns: 'urn:xmpp:chat-markers:0',
+                id: params.messageId
+            }).up();
+
+            stanza.c('extraParams', {
+                xmlns: 'jabber:client'
+            }).c('dialog_id').t(params.dialogId || null);
+
+            nClient.send(stanza);
+        }
+    },
+    sendReadStatus: function(params) {
+        var stanzaParams = {
+                from: connection ? connection.jid : nClient.jid.user,
+                to: this.helpers.jidOrUserId(params.userId),
+                type: 'chat',
+                id: Utils.getBsonObjectId()
+            },
+            msg;
+
+        if(Utils.getEnv().browser) {
+            msg = $msg(stanzaParams);
+
+            msg.c('displayed', {
+                xmlns: Strophe.NS.CHAT_MARKERS,
+                id: params.messageId
+            }).up();
+
+            msg.c('extraParams', {
+                xmlns: Strophe.NS.CLIENT
+            }).c('dialog_id').t(params.dialogId);
+
+            connection.send(msg);
+        } else if(Utils.getEnv().node){
+            msg = new NodeClient.Stanza('message', stanzaParams);
+
+            msg.c('displayed', {
+                xmlns: 'urn:xmpp:chat-markers:0',
+                id: params.messageId
+            }).up();
+
+            msg.c('extraParams', {
+                xmlns: 'jabber:client'
+            }).c('dialog_id').t(params.dialogId);
+
+            nClient.send(msg);
+        }
+    },
     disconnect: function() {
         joinedRooms = {};
         this._isLogout = true;
@@ -998,8 +1013,7 @@ ChatProxy.prototype = {
         if(Utils.getEnv().node) {
             nClient.end();
         }
-  },
-
+    },
     addListener: function(params, callback) {
         if(Utils.getEnv().node) throw unsupported;
 
@@ -1011,17 +1025,17 @@ ChatProxy.prototype = {
             return params.live !== false;
         }
     },
-
     deleteListener: function(ref) {
         if(Utils.getEnv().node) throw unsupported;
 
         connection.deleteHandler(ref);
     },
-
     // TODO: the magic
     _JStoXML: function(title, obj, msg) {
         var self = this;
+        
         msg.c(title);
+        
         Object.keys(obj).forEach(function(field) {
             if (typeof obj[field] === 'object') {
                 self._JStoXML(field, obj[field], msg);
@@ -1031,8 +1045,6 @@ ChatProxy.prototype = {
         });
         msg.up();
     },
-
-    // TODO: the magic
     _XMLtoJS: function(extension, title, obj) {
         var self = this;
         extension[title] = {};
@@ -1045,7 +1057,6 @@ ChatProxy.prototype = {
         }
         return extension;
     },
-
     _parseExtraParams: function(extraParams) {
         if(!extraParams){
             return null;
@@ -1144,17 +1155,15 @@ ChatProxy.prototype = {
             };
         }
     },
-
     _autoSendPresence: function() {
         if(Utils.getEnv().browser) {
             connection.send($pres().tree());
         } else if (Utils.getEnv().node) {
-            var self = this,
-                presence = new NodeClient.Stanza('presence', {
+            var presence = new NodeClient.Stanza('presence', {
                     xmlns: 'jabber:client'
                 });
 
-            Utils.QBLog('[QBChat] Send',presence.toString());
+            Utils.QBLog('[QBChat] Send', presence.toString());
             nClient.send(presence);
         }
 
