@@ -31,7 +31,6 @@ describe('Chat API', function() {
             expect(result).toBeDefined();
             expect(result.application_id).toEqual(CREDS.appId);
 
-            console.info('\n[Jasmine] Initialize QB and created a session.');
             done();
         }
 
@@ -135,7 +134,6 @@ describe('Chat API', function() {
 
         it('can send and receive \'is typing\' status (private)', function(done) {
             function onMessageTypingListenerCB(composing, userId, dialogId) {
-                console.info('onMessageTypingListenerCB');
                 expect(composing).toEqual(true);
                 expect(userId).toEqual(QBUser1.id);
                 expect(dialogId).toBeNull();
@@ -166,7 +164,6 @@ describe('Chat API', function() {
 
                     dialog = createdDialog;
 
-                    console.info('\n[Jasmine] Create dialog for testing MUC features.');
                     done();
                 }
 
@@ -177,7 +174,6 @@ describe('Chat API', function() {
                 QB.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
                     expect(err).toBeNull();
 
-                    console.info('\n[Jasmine] Delete dialog for testing MUC features.');
                     done();
                 });
             });

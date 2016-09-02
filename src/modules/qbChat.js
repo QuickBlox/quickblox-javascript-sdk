@@ -409,8 +409,6 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     this._onMessageErrorListener = function(stanza) {
-
-
         // <error code="503" type="cancel">
         //   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
         //   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
@@ -429,62 +427,7 @@ function ChatProxy(service, webrtcModule, conn) {
         // returning false would remove it after it finishes
         return true;
      };
-
-    /** [_onComingStanza Listener for Node env.] */
-    this._onComingStanza = function(stanza) {
-
-        /** Need to separete a listner by Message, Presence, Iq */
-        // if(stanza.is('message')) {
-        //     console.log('MESSAGE', stanza.toString());
-        // } else if (stanza.is('presence')) {
-        //     console.log('PRESENCE', stanza.toString());
-        // } else {
-        //     console.log('ELSE', stanza.toString() );
-        // }
-
-        var from = stanza.attrs.from;
-
-        var to = stanza.attrs.to,
-            messageId = stanza.attrs.id,
-            type = stanza.attrs.type,
-            body = stanza.getChildText('body'),
-            isError = stanza.attrs.type === 'error',
-            userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-            dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-            extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
-            markable = stanza.getChild('markable'),
-            read = stanza.getChild('displayed'),
-            delivered = stanza.getChild('received'),
-            marker = delivered || read || null,
-            x = stanza.getChild('x'),
-            composing = stanza.getChild('composing'),
-            paused = stanza.getChild('paused');
-
-        if(composing || paused){
-            if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-                self.onMessageTypingListener(composing != null, userId, dialogId);
-            }
-
-            return true;
-        }
-
-        /**
-         * autosend 'received' status (ignore messages from self)
-         */
-        if (markable && userId != self.helpers.getIdFromNode(nClient.options.jid.user)) {
-            var paramsReceived = {
-                messageId: messageId,
-                userId: userId,
-                dialogId: dialogId
-            };
-
-            self.sendDeliveredStatus(paramsReceived);
-
-            return true;
-        }
-  };
 }
-
 
 /* Chat module: Core
 ----------------------------------------------------------------------------- */
@@ -642,10 +585,8 @@ ChatProxy.prototype = {
                 }, 55 * 1000);
 
                 if (typeof callback === 'function') {
-                    console.log('online');
                     callback(null, true);
                 }
-
             });
 
             nClient.on('connect', function () {
@@ -687,8 +628,6 @@ ChatProxy.prototype = {
                     } else {
                         self._onMessage(stanza);
                     }
-                } else {
-                    self._onComingStanza(stanza);
                 }
             });
 
