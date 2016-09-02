@@ -244,9 +244,13 @@ function ChatProxy(service, webrtcModule, conn) {
                 /** JOIN to dialog */
                 if(stanza.attrs.id) {
                     if(status && status.attrs.code == "110"){
-                        nodeStanzasCallbacks[stanza.attrs.id](stanza);
+                        if(typeof nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
+                            nodeStanzasCallbacks[stanza.attrs.id](stanza);
+                        }
                     } else {
-                        nodeStanzasCallbacks[stanza.attrs.id](null);
+                        if(typeof nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
+                            nodeStanzasCallbacks[stanza.attrs.id](null);
+                        }
                     }
                 }
             }
@@ -772,7 +776,7 @@ ChatProxy.prototype = {
 
               stanza.up();
             }
-
+            Utils.QBLog('[QBChat] SEND', stanza.toString());
             nClient.send(stanza);
         }
     },
@@ -1601,8 +1605,8 @@ PrivacyListProxy.prototype = {
                         activeList = query.getChild('active'),
                         allLists = query.getChildElements('list');
 
-                    var defaultName = defaultList.attrs.name,
-                        activeName = activeList.attrs.name;
+                    var defaultName = defaultList ? defaultList.attrs.name : '',
+                        activeName = activeList ? activeList.attrs.name : '';
 
                     for (var i = 0, len = allLists.length; i < len; i++) {
                         if(allLists[i].name !== 'default' && allLists[i].name !== 'active'){
@@ -1611,8 +1615,8 @@ PrivacyListProxy.prototype = {
                     }
 
                     namesList = {
-                        'default': defaultName || '',
-                        'active': activeName || '',
+                        'default': defaultName,
+                        'active': activeName,
                         'names': allNames
                     };
 
