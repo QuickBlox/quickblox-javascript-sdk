@@ -69,13 +69,21 @@ DataProxy.prototype = {
       formData.append('field_name', params.field_name);
       formData.append('file', params.file);
     }else{
-      formData = {};
-      formData['field_name'] = params.field_name;
-      formData['file'] = params.file;
+      formData = {
+        field_name: params.field_name,
+        file: {
+          data: params.file,
+          name: params.name
+        }
+      }
     }
 
-    this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: formData,
-                      contentType: false, processData: false, type:'POST'}, function(err, result){
+    this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),
+                      data: formData,
+                      contentType: false,
+                      processData: false,
+                      type:'POST',
+                      isFileUpload: true}, function(err, result){
                         if (err) { callback(err, null);}
                         else { callback (err, result); }
                       });
@@ -87,6 +95,12 @@ DataProxy.prototype = {
     var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
     result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
     callback(null, result);
+  },
+
+  fileUrl: function(className, params) {
+    var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
+    result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
+    return result;
   },
 
   deleteFile: function(className, params, callback) {

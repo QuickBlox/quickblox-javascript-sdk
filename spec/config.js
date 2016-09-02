@@ -1,9 +1,6 @@
 (function() {
     'use strict';
 
-    /**
-    * Config file used to test SDK
-    */
     var CREDS =  {
         'appId': 29650,
         'authKey': 'WULOyezrmxpOgQ-',
@@ -13,7 +10,8 @@
     var QBUser1 = {
             'id': 6126733,
             'login': "js_jasmine1",
-            'password': "js_jasmine1"
+            'password': "js_jasmine1",
+            'email': "js_jasmine1@quickblox.com"
         },
         QBUser2 = {
             'id': 6126741,
@@ -21,12 +19,20 @@
             'password': "js_jasmine2"
         };
 
-        var CONFIG = {
-            'debug': {
-                'mode': 0,
-                'file': null
-            }
-        };
+    var CONFIG = {
+      endpoints: {
+        api: "api.quickblox.com", // set custom API endpoint
+        chat: "chat.quickblox.com" // set custom Chat endpoint
+      },
+      chatProtocol: {
+        active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+      },
+      'debug': {
+          'mode': 0,
+          'file': null
+      }
+    };
+
 
     /**
      * Check Node env.

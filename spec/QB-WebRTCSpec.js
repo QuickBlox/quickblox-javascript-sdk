@@ -1,6 +1,6 @@
 describe('WebRTC API', function() {
   'use strict';
-  
+
   var LOGIN_TIMEOUT = 10000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
@@ -14,7 +14,7 @@ describe('WebRTC API', function() {
   var session;
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret);
+    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if(err){
@@ -59,8 +59,8 @@ describe('WebRTC API', function() {
      * You need to be sure that your PC has devices
      */
     QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
-        expect(devices.length).not.toBeNull();
-        done();
+      expect(devices.length).not.toBeNull();
+      done();
     });
   });
 });
