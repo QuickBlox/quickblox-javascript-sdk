@@ -1,7 +1,7 @@
 describe('PushNotifications API', function() {
   'use strict';
 
-  var REST_REQUESTS_TIMEOUT = 5000;
+  var REST_REQUESTS_TIMEOUT = 3000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
@@ -27,6 +27,7 @@ describe('PushNotifications API', function() {
   }, REST_REQUESTS_TIMEOUT);
 
   describe('Subscriptions', function(){
+    /** Uses for can get list and delete subscription */
     var subscriptionId;
 
     it('can create a subscription', function(done){
@@ -72,19 +73,15 @@ describe('PushNotifications API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete subscription', function(done){
-      function deleteSubscribtionCallback(err, res) {
-        if (err) {
-            done.fail('Delete subscription error: ' + JSON.stringify(err));
-          } else {
-            expect(res).not.toBeNull();
-            expect(res).toBe(true);
+        function deleteSubscriptionCb(err, res) {
+            expect(err).toBeNull();
+            expect(res).toBeDefined();
 
             done();
-          }
-      }
-      
-      QB.pushnotifications.subscriptions.delete(subscriptionId, deleteSubscribtionCallback);
-    }, 20000);
+        }
+
+        QB.pushnotifications.subscriptions.delete(subscriptionId, deleteSubscriptionCb);
+    }, 10000);
   });
 
   describe('Events', function(){
@@ -170,7 +167,7 @@ describe('PushNotifications API', function() {
      * Without running in Node env. - everything all right.
      * Need review delete event and fix it!
      */
-    it('can delete event', function(done){
+    it("can delete event", function(done){
       if(isNodeEnv) {
         pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
       }

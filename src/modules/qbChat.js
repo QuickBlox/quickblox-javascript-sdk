@@ -71,46 +71,62 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onReconnectListener
  */
 
-    // stanza callbacks (Message, Presence, IQ, SystemNotifications)
     this._onMessage = function(stanza) {
-        if (Utils.getEnv().browser) {
-            var from = stanza.getAttribute('from'),
-                to = stanza.getAttribute('to'),
-                type = stanza.getAttribute('type'),
-                body = stanza.querySelector('body'),
-                bodyContent = (body && body.textContent) || null;
-                markable = stanza.querySelector('markable'),
-                delivered = stanza.querySelector('received'),
-                read = stanza.querySelector('displayed'),
-                composing = stanza.querySelector('composing'),
-                paused = stanza.querySelector('paused'),
-                invite = stanza.querySelector('invite'),
-                extraParams = stanza.querySelector('extraParams'),
-                delay = stanza.querySelector('delay'),
-                messageId = stanza.getAttribute('id'),
-                jid = connection.jid;
+        var from, to,
+            type,
+            messageId,
+            body, bodyContent,
+            markable, delivered, read,
+            recipient, recipientId,
+            composing, paused,
+            invite,
+            extraParams,
+            delay,
+            jid;
 
+        if (Utils.getEnv().browser) {
+            from = stanza.getAttribute('from');
+            to = stanza.getAttribute('to');
+            messageId = stanza.getAttribute('id');
+            type = stanza.getAttribute('type');
+            body = stanza.querySelector('body');
+            bodyContent = (body && body.textContent) || null;
+            recipient = stanza.querySelector('forwarded') ? stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null;
+            recipientId = recipient ? self.helpers.getIdFromNode(recipient) : null;
+            markable = stanza.querySelector('markable');
+            delivered = stanza.querySelector('received');
+            read = stanza.querySelector('displayed');
+            composing = stanza.querySelector('composing');
+            paused = stanza.querySelector('paused');
+            invite = stanza.querySelector('invite');
+            extraParams = stanza.querySelector('extraParams');
+            delay = stanza.querySelector('delay');
+
+            jid = connection.jid;
         } else if(Utils.getEnv().node){
-            var from = stanza.attrs.from,
-                to = stanza.attrs.to,
-                type = stanza.attrs.type,
-                body = stanza.getChildText('body'),
-                bodyContent = body || null,
-                markable = stanza.getChild('markable'),
-                delivered = stanza.getChild('received'),
-                read = stanza.getChild('displayed'),
-                composing = stanza.getChild('composing'),
-                paused = stanza.getChild('paused'),
-                invite = stanza.getChild('invite'),
-                extraParams = stanza.getChild('extraParams'),
-                delay = stanza.getChild('delay'),
-                messageId = stanza.attrs.id,
-                jid = nClient.options.jid.user;
+            from = stanza.attrs.from;
+            to = stanza.attrs.to;
+            type = stanza.attrs.type;
+            messageId = stanza.attrs.id;
+            body = stanza.getChildText('body');
+            bodyContent = body || null;
+            markable = stanza.getChild('markable');
+            delivered = stanza.getChild('received');
+            read = stanza.getChild('displayed');
+            composing = stanza.getChild('composing');
+            paused = stanza.getChild('paused');
+            invite = stanza.getChild('invite');
+            extraParams = stanza.getChild('extraParams');
+            delay = stanza.getChild('delay');
+        
+            jid = nClient.options.jid.user;
         }
 
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
             marker = delivered || read || null;
+
+        var extraParamsParsed;
 
         // ignore invite messages from MUC
         //
@@ -118,9 +134,9 @@ function ChatProxy(service, webrtcModule, conn) {
 
 
         // parse extra params
-        var extraParamsParsed;
         if(extraParams){
             extraParamsParsed = self._parseExtraParams(extraParams);
+
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
             }
@@ -145,8 +161,9 @@ function ChatProxy(service, webrtcModule, conn) {
         //
         if(composing || paused){
             if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-                Utils.safeCallbackCall(self.onMessageTypingListener, composing != null, userId, dialogId);
+                Utils.safeCallbackCall(self.onMessageTypingListener, !!composing, userId, dialogId);
             }
+
             return true;
         }
 
@@ -181,6 +198,7 @@ function ChatProxy(service, webrtcModule, conn) {
                 userId: userId,
                 dialogId: dialogId
             };
+
             self.sendDeliveredStatus(params);
         }
 
@@ -189,11 +207,13 @@ function ChatProxy(service, webrtcModule, conn) {
         var message = {
             id: messageId,
             dialog_id: dialogId,
+            recipient_id: recipientId,
             type: type,
             body: bodyContent,
             extension: extraParamsParsed ? extraParamsParsed.extension : null,
             delay: delay
         };
+
         if (markable) {
             message.markable = 1;
         }
@@ -393,8 +413,6 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     this._onMessageErrorListener = function(stanza) {
-
-
         // <error code="503" type="cancel">
         //   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
         //   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
@@ -413,62 +431,7 @@ function ChatProxy(service, webrtcModule, conn) {
         // returning false would remove it after it finishes
         return true;
      };
-
-    /** [_onComingStanza Listener for Node env.] */
-    this._onComingStanza = function(stanza) {
-
-        /** Need to separete a listner by Message, Presence, Iq */
-        // if(stanza.is('message')) {
-        //     console.log('MESSAGE', stanza.toString());
-        // } else if (stanza.is('presence')) {
-        //     console.log('PRESENCE', stanza.toString());
-        // } else {
-        //     console.log('ELSE', stanza.toString() );
-        // }
-
-        var from = stanza.attrs.from;
-
-        var to = stanza.attrs.to,
-            messageId = stanza.attrs.id,
-            type = stanza.attrs.type,
-            body = stanza.getChildText('body'),
-            isError = stanza.attrs.type === 'error',
-            userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
-            dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
-            extraParams = stanza.getChild('extraParams') ? self._parseExtraParams(stanza.getChild('extraParams')) : null,
-            markable = stanza.getChild('markable'),
-            read = stanza.getChild('displayed'),
-            delivered = stanza.getChild('received'),
-            marker = delivered || read || null,
-            x = stanza.getChild('x'),
-            composing = stanza.getChild('composing'),
-            paused = stanza.getChild('paused');
-
-        if(composing || paused){
-            if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
-                self.onMessageTypingListener(composing != null, userId, dialogId);
-            }
-
-            return true;
-        }
-
-        /**
-         * autosend 'received' status (ignore messages from self)
-         */
-        if (markable && userId != self.helpers.getIdFromNode(nClient.options.jid.user)) {
-            var paramsReceived = {
-                messageId: messageId,
-                userId: userId,
-                dialogId: dialogId
-            };
-
-            self.sendDeliveredStatus(paramsReceived);
-
-            return true;
-        }
-  };
 }
-
 
 /* Chat module: Core
 ----------------------------------------------------------------------------- */
@@ -512,7 +475,15 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.AUTHFAIL:
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-                        if (typeof callback === 'function') callback(err, null);
+                        
+                        if (typeof callback === 'function') {
+                            callback(err, null);
+                        }
+
+                        if(self._isDisconnected && typeof self.onReconnectFailedListener === 'function'){
+                            Utils.safeCallbackCall(self.onReconnectFailedListener, err);
+                        }
+                        
                         break;
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
@@ -620,7 +591,6 @@ ChatProxy.prototype = {
                 if (typeof callback === 'function') {
                     callback(null, true);
                 }
-
             });
 
             nClient.on('connect', function () {
@@ -638,11 +608,11 @@ ChatProxy.prototype = {
             nClient.on('disconnect', function () {
                 Utils.QBLog('[QBChat] client is disconnected');
 
-                if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
-                    Utils.safeCallbackCall(self.onDisconnectedListener);
-                }
 
                 self._isDisconnected = true;
+                self._isLogout = true;
+
+                callback(null, null);
             });
 
             nClient.on('stanza', function (stanza) {
@@ -652,7 +622,6 @@ ChatProxy.prototype = {
                  * Detect typeof incoming stanza 
                  * and fire the Listener
                  */
-
                 if (stanza.is('presence')) {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
@@ -663,12 +632,10 @@ ChatProxy.prototype = {
                     } else {
                         self._onMessage(stanza);
                     }
-                } else {
-                    self._onComingStanza(stanza);
                 }
             });
 
-            nClient.on('offline', function (){
+            nClient.on('offline', function () {
                 Utils.QBLog('[QBChat] client goes offline');
 
                 self._isDisconnected = true;
@@ -677,12 +644,19 @@ ChatProxy.prototype = {
 
             nClient.on('error', function (e) {
                 Utils.QBLog('[QBChat] client got error', e);
+
+                self._isDisconnected = true;
+                self._isLogout = true;
+
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-                if (typeof callback === 'function') callback(err, null);
+
+                if(typeof callback === 'function') {
+                    console.log('error callback');
+                    callback(err, null);
+                }
             });
         }
     },
-
     send: function(jid_or_user_id, message) {
         var self = this,
             msg = {};
@@ -739,7 +713,6 @@ ChatProxy.prototype = {
         }
 
         if(Utils.getEnv().node) {
-
             var stanza = new NodeClient.Stanza('message', {
                 from: nClient.options.jid.user,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
@@ -758,29 +731,28 @@ ChatProxy.prototype = {
             }
 
             if (message.extension) {
-              stanza.c('extraParams', {xmlns: 'jabber:client'});
+                stanza.c('extraParams', {xmlns: 'jabber:client'});
 
-              Object.keys(message.extension).forEach(function(field) {
-                  if (field === 'attachments') {
-                      // attachments
-                      message.extension[field].forEach(function(attach) {
-                        msg.c('attachment', attach).up();
-                      });
-                  } else if (typeof message.extension[field] === 'object') {
-                      self._JStoXML(field, message.extension[field], msg);
-                  } else {
-                      stanza.getChild('extraParams')
-                          .c(field).t(message.extension[field]).up();
-                  }
-              });
+                Object.keys(message.extension).forEach(function(field) {
+                    if (field === 'attachments') {
+                          // attachments
+                        message.extension[field].forEach(function(attach) {
+                            msg.c('attachment', attach).up();
+                        });
+                    } else if (typeof message.extension[field] === 'object') {
+                        self._JStoXML(field, message.extension[field], msg);
+                    } else {
+                        stanza.getChild('extraParams')
+                            .c(field).t(message.extension[field]).up();
+                    }
+                });
 
-              stanza.up();
+                stanza.up();
             }
             Utils.QBLog('[QBChat] SEND', stanza.toString());
             nClient.send(stanza);
         }
     },
-
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this;
 
@@ -836,28 +808,26 @@ ChatProxy.prototype = {
                     }
                 });
 
-              msg.up();
+                msg.up();
             }
 
             nClient.send(msg);
         }
     },
 
-    // send typing status
     sendIsTypingStatus: function(jid_or_user_id) {
         var stanzaParams = {
-                from: connection ? connection.jid : nClient.jid.user,
-                to: this.helpers.jidOrUserId(jid_or_user_id),
-                type: this.helpers.typeChat(jid_or_user_id)
-            },
-            msg;
-
+            from: connection ? connection.jid : nClient.jid.user,
+            to: this.helpers.jidOrUserId(jid_or_user_id),
+            type: this.helpers.typeChat(jid_or_user_id)
+        },
+        msg;
 
         if(Utils.getEnv().browser){
             msg = $msg(stanzaParams);
 
             msg.c('composing', {
-              xmlns: Strophe.NS.CHAT_STATES
+                xmlns: Strophe.NS.CHAT_STATES
             });
 
             connection.send(msg);
@@ -872,76 +842,71 @@ ChatProxy.prototype = {
         }
     },
 
-  // send stop typing status
-  sendIsStopTypingStatus: function(jid_or_user_id) {
-    if(Utils.getEnv().node) throw unsupported;
+    sendIsStopTypingStatus: function(jid_or_user_id) {
+        var stanzaParams = {
+            from: connection ? connection.jid : nClient.jid.user,
+            to: this.helpers.jidOrUserId(jid_or_user_id),
+            type: this.helpers.typeChat(jid_or_user_id)
+        },
+        msg;
 
-    var msg = $msg({
-      from: connection.jid,
-      to: this.helpers.jidOrUserId(jid_or_user_id),
-      type: this.helpers.typeChat(jid_or_user_id)
-    });
+        if(Utils.getEnv().browser){
+            msg = $msg(stanzaParams);
 
-    msg.c('paused', {
-      xmlns: Strophe.NS.CHAT_STATES
-    });
+            msg.c('paused', {
+              xmlns: Strophe.NS.CHAT_STATES
+            });
 
-    connection.send(msg);
-  },
+            connection.send(msg);
+         } else if(Utils.getEnv().node) {
+            msg = new NodeClient.Stanza('message', stanzaParams);
 
-  // helper function for ChatProxy.send()
-  sendPres: function(type) {
-    if(Utils.getEnv().node) throw unsupported;
+            msg.c('paused', {
+                xmlns: 'http://www.jabber.org/protocol/chatstates'
+            });
 
-    connection.send($pres({
-      from: connection.jid,
-      type: type
-    }));
-  },
+            nClient.send(msg);
+        }
+    },
+    sendDeliveredStatus: function(params) {
+        if(Utils.getEnv().browser) {
+            var msg = $msg({
+              from: connection.jid,
+              to: this.helpers.jidOrUserId(params.userId),
+              type: 'chat',
+              id: Utils.getBsonObjectId()
+            });
 
-  sendDeliveredStatus: function(params) {
-    if(Utils.getEnv().browser) {
-        var msg = $msg({
-          from: connection.jid,
-          to: this.helpers.jidOrUserId(params.userId),
-          type: 'chat',
-          id: Utils.getBsonObjectId()
-        });
+            msg.c('received', {
+              xmlns: Strophe.NS.CHAT_MARKERS,
+              id: params.messageId
+            }).up();
 
-        msg.c('received', {
-          xmlns: Strophe.NS.CHAT_MARKERS,
-          id: params.messageId
-        }).up();
+            msg.c('extraParams', {
+              xmlns: Strophe.NS.CLIENT
+            }).c('dialog_id').t(params.dialogId);
 
-        msg.c('extraParams', {
-          xmlns: Strophe.NS.CLIENT
-        }).c('dialog_id').t(params.dialogId);
+            connection.send(msg);
+        } else if(Utils.getEnv().node) {
+            var stanza = new NodeClient.Stanza('message', {
+                from: nClient.options.jid.user,
+                to: this.helpers.jidOrUserId(params.userId),
+                type: 'chat',
+                id: Utils.getBsonObjectId()
+            });
 
-        connection.send(msg);
-    }
+            stanza.c('received', {
+                xmlns: 'urn:xmpp:chat-markers:0',
+                id: params.messageId
+            }).up();
 
-    if(Utils.getEnv().node) {
-        var stanza = new NodeClient.Stanza('message', {
-            from: nClient.options.jid.user,
-            to: this.helpers.jidOrUserId(params.userId),
-            type: 'chat',
-            id: Utils.getBsonObjectId()
-        });
+            stanza.c('extraParams', {
+                xmlns: 'jabber:client'
+            }).c('dialog_id').t(params.dialogId || null);
 
-        stanza.c('received', {
-            xmlns: 'urn:xmpp:chat-markers:0',
-            id: params.messageId
-        }).up();
-
-        stanza.c('extraParams', {
-            xmlns: 'jabber:client'
-        }).c('dialog_id').t(params.dialogId || null);
-
-        nClient.send(stanza);
-    }
-
-  },
-
+            nClient.send(stanza);
+        }
+    },
     sendReadStatus: function(params) {
         var stanzaParams = {
                 from: connection ? connection.jid : nClient.jid.user,
@@ -978,9 +943,7 @@ ChatProxy.prototype = {
 
             nClient.send(msg);
         }
-
     },
-
     disconnect: function() {
         joinedRooms = {};
         this._isLogout = true;
@@ -993,8 +956,7 @@ ChatProxy.prototype = {
         if(Utils.getEnv().node) {
             nClient.end();
         }
-  },
-
+    },
     addListener: function(params, callback) {
         if(Utils.getEnv().node) throw unsupported;
 
@@ -1006,17 +968,17 @@ ChatProxy.prototype = {
             return params.live !== false;
         }
     },
-
     deleteListener: function(ref) {
         if(Utils.getEnv().node) throw unsupported;
 
         connection.deleteHandler(ref);
     },
-
     // TODO: the magic
     _JStoXML: function(title, obj, msg) {
         var self = this;
+        
         msg.c(title);
+        
         Object.keys(obj).forEach(function(field) {
             if (typeof obj[field] === 'object') {
                 self._JStoXML(field, obj[field], msg);
@@ -1026,8 +988,6 @@ ChatProxy.prototype = {
         });
         msg.up();
     },
-
-    // TODO: the magic
     _XMLtoJS: function(extension, title, obj) {
         var self = this;
         extension[title] = {};
@@ -1040,7 +1000,6 @@ ChatProxy.prototype = {
         }
         return extension;
     },
-
     _parseExtraParams: function(extraParams) {
         if(!extraParams){
             return null;
@@ -1102,12 +1061,19 @@ ChatProxy.prototype = {
                 delete extension.moduleIdentifier;
             }
 
-            return {extension: extension, dialogId: dialogId};
+            return {
+                extension: extension,
+                dialogId: dialogId
+            };
         }
 
         if(Utils.getEnv().node) {
-
             for (var i = 0, len = extraParams.children.length; i < len; i++) {
+                if(extraParams.children[i].tagName === 'dialog_id') {
+                    dialogId = extraParams.childNodes[i].textContent;
+                    extension['dialog_id'] = dialogId;
+                }
+                 
                 if(extraParams.children[i].children.length === 1) {
                     var child = extraParams.children[i];
 
@@ -1115,27 +1081,32 @@ ChatProxy.prototype = {
                 }
             }
 
-            if (extension.moduleIdentifier) {
+            if(extension.moduleIdentifier) {
                 delete extension.moduleIdentifier;
+            }
+
+            if(extension.dialog_id) {
+                dialogId = extension.dialog_id;
+                delete extension.dialog_id;
+            } else {
+                dialogId = null;
             }
 
             return {
                 extension: extension,
-                dialogId: extension.dialog_id || null
+                dialogId: dialogId
             };
         }
     },
-
     _autoSendPresence: function() {
         if(Utils.getEnv().browser) {
             connection.send($pres().tree());
         } else if (Utils.getEnv().node) {
-            var self = this,
-                presence = new NodeClient.Stanza('presence', {
+            var presence = new NodeClient.Stanza('presence', {
                     xmlns: 'jabber:client'
                 });
 
-            Utils.QBLog('[QBChat] Send',presence.toString());
+            Utils.QBLog('[QBChat] Send', presence.toString());
             nClient.send(presence);
         }
 
@@ -1662,6 +1633,7 @@ PrivacyListProxy.prototype = {
                     name: name,
                     items: usersList
                 };
+                    console.log(list);
                     callback(null, list);
                 }, function(stanzaError){
                     if(stanzaError){
@@ -2013,13 +1985,11 @@ DialogProxy.prototype = {
   },
 
   create: function(params, callback) {
-        if (params.occupants_ids instanceof Array){
-            params.occupants_ids = params.occupants_ids.join(', ');
-        }
+    if (params.occupants_ids instanceof Array) params.occupants_ids = params.occupants_ids.join(', ');
 
-        Utils.QBLog('[DialogProxy]', 'create', params);
+    Utils.QBLog('[DialogProxy]', 'create', params);
 
-        this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
+    this.service.ajax({url: Utils.getUrl(dialogUrl), type: 'POST', data: params}, callback);
   },
 
   update: function(id, params, callback) {
