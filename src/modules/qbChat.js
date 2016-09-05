@@ -142,21 +142,6 @@ function ChatProxy(service, webrtcModule, conn) {
             }
         }
 
-        /** System message */
-        if(extraParamsParsed && extraParamsParsed.extension.moduleIdentifier && extraParamsParsed.extension.moduleIdentifier === 'SystemNotifications') {
-            if(typeof self.onSystemMessageListener === 'function') {
-                var sysMsg = {
-                    id: messageId,
-                    userId: self.helpers.getIdFromNode(from),
-                    extension: extraParamsParsed.extension
-                };
-
-                self.onSystemMessageListener(sysMsg);
-            }
-
-            return true;
-        }
-
         // fire 'is typing' callback
         //
         if(composing || paused){
@@ -1062,11 +1047,11 @@ ChatProxy.prototype = {
                 dialogId: dialogId
             };
         }
-        
+
         if(Utils.getEnv().node) {
             for (var i = 0, len = extraParams.children.length; i < len; i++) {
-                if(extraParams.children[i].tagName === 'dialog_id') {
-                    dialogId = extraParams.childNodes[i].textContent;
+                if(extraParams.children[i].name === 'dialog_id') {
+                    dialogId = extraParams.getChildText('dialog_id');
                     extension['dialog_id'] = dialogId;
                 }
                  
