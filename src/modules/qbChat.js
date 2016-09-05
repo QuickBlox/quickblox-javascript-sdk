@@ -1062,7 +1062,7 @@ ChatProxy.prototype = {
                 dialogId: dialogId
             };
         }
-
+        
         if(Utils.getEnv().node) {
             for (var i = 0, len = extraParams.children.length; i < len; i++) {
                 if(extraParams.children[i].tagName === 'dialog_id') {
@@ -1079,13 +1079,6 @@ ChatProxy.prototype = {
 
             if(extension.moduleIdentifier) {
                 delete extension.moduleIdentifier;
-            }
-
-            if(extension.dialog_id) {
-                dialogId = extension.dialog_id;
-                delete extension.dialog_id;
-            } else {
-                dialogId = null;
             }
 
             return {
