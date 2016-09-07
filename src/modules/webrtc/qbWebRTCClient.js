@@ -12,6 +12,7 @@
  * - onUpdateCallListener(session, userID, extension)
  * - onInvalidEventsListener (state, session, userID, extension)
  */
+'use strict';
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
@@ -41,6 +42,38 @@ function WebRTCClient(service, connection) {
 
     this.sessions = {};
 }
+
+/**
+ * [Return data or all active devices]
+ * @param  {[string]} spec [specify what type of devices you wnat to get.
+ *                         Possible values: audioinput, audiooutput,  videoinput]
+ * @return {[array]}       [array of devices]
+ */
+WebRTCClient.prototype.getMediaDevices = function(spec) {
+    var specDevices = [],
+        errMsg = 'Browser does not support output device selection.';
+
+    return new Promise(function(resolve, reject) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            reject(errMsg);
+            Helpers.traceWarning(errMsg);
+        } else {
+            navigator.mediaDevices.enumerateDevices().then(function(devices) {
+                if(spec) {
+                    devices.forEach(function(device, i) {
+                        if(device.kind === spec) {
+                            specDevices.push(device);
+                        }
+                    });
+
+                    resolve(specDevices);
+                } else {
+                    resolve(devices);
+                }
+            });
+        }
+    });
+};
 
 /**
  * A map with all sessions the user had/have.

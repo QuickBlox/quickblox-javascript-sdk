@@ -7,7 +7,7 @@ describe('Content API', function() {
   var UPLOAD_TIMEOUT = 6000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
-  var QB = isNodeEnv ? require('../js/qbMain') : window.QB;
+  var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
   var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
