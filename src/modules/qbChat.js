@@ -159,8 +159,10 @@ function ChatProxy(service, webrtcModule, conn) {
 
   this._onPresence = function(stanza) {
     var from = stanza.getAttribute('from'),
+        to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
-        userId = self.helpers.getIdFromNode(from);
+        userId = self.helpers.getIdFromNode(from),
+        currentUserId = self.helpers.getIdFromNode(to);
 
     if (!type) {
       if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
@@ -216,8 +218,12 @@ function ChatProxy(service, webrtcModule, conn) {
         //   self.onRejectSubscribeListener(userId);
         break;
       case 'unavailable':
-        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
+        if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none') {
           Utils.safeCallbackCall(self.onContactListListener, userId, type);
+        }
+        if (userId === currentUserId) {
+          self._autoSendPresence();
+        }
         break;
       }
 
