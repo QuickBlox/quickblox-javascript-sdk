@@ -641,7 +641,7 @@ ChatProxy.prototype = {
                 stanza.up();
             }
 
-            Utils.QBLog('[QBChat] SEND', stanza.toString());
+            nClient.send(stanza);
         }
     },
     sendSystemMessage: function(jid_or_user_id, message) {
