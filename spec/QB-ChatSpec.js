@@ -58,21 +58,24 @@ describe('Chat API', function() {
         }, LOGIN_TIMEOUT);
 
         it('can send and receive private message', function(done) {
-            var msgExtension = {
-                name: 'skynet',
-                mission: 'take over the planet'
-            },
+            var body = 'Warning! People are coming',
+                msgExtension = {
+                    name: 'skynet',
+                    mission: 'take over the planet'
+                },
                 msg = {
-                type: 'chat',
-                extension: msgExtension,
-                markable: 1
+                    type: 'chat',
+                    body: body,
+                    extension: msgExtension,
+                    markable: 1
             };
 
             function onMsgCallback(userId, receivedMessage) {
                 expect(userId).toEqual(QBUser1.id);
 
                 expect(receivedMessage).toBeDefined();
-                expect(receivedMessage.type).toEqual('chat');
+                expect(receivedMessage.type).toEqual(msg.type);
+                expect(receivedMessage.body).toEqual(body);
                 expect(receivedMessage.extension).toEqual(msgExtension);
                 expect(receivedMessage.markable).toEqual(1);
 
@@ -80,7 +83,6 @@ describe('Chat API', function() {
             }
 
             QB.chat.onMessageListener = onMsgCallback;
-
             QB.chat.send(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
