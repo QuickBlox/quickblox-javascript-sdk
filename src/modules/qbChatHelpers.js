@@ -4,18 +4,21 @@ var ERR_UNKNOWN_INTERFACE = 'Unknown interface. SDK support browser / node env.'
 
 var MARKERS = {
     CLIENT: 'jabber:client',
-    CHAT: 'urn:xmpp:chat-markers:0'
+    CHAT: 'urn:xmpp:chat-markers:0',
+    STATES: 'http://www.jabber.org/protocol/chatstates',
+    MARKERS: 'urn:xmpp:chat-markers:0',
+    CARBONS: 'urn:xmpp:carbons:2'
 };
 
 var qbChatHelpers = {
     MARKERS: MARKERS,
-    createStanzaMessage: function(builder, params) {
+    createStanza: function(builder, params, type) {
         var stanza;
 
         if(utils.getEnv().browser) {
             stanza = builder(params);
         } else if(utils.getEnv().node) {
-            stanza = new builder('message', params);
+            stanza = new builder(type ? type : 'message', params);
         }
 
         return stanza;
@@ -61,6 +64,18 @@ var qbChatHelpers = {
 
         return txt ? txt : null;
     },
+    getUniqueId: function(suffix) {
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : r & 0x3 | 0x8;
+            return v.toString(16);
+        });
+        if (typeof(suffix) == 'string' || typeof(suffix) == 'number') {
+            return uuid + ':' + suffix;
+        } else {
+            return uuid + '';
+        }
+    }
 };
 
 module.exports = qbChatHelpers;
