@@ -7,11 +7,20 @@ var MARKERS = {
     CHAT: 'urn:xmpp:chat-markers:0',
     STATES: 'http://www.jabber.org/protocol/chatstates',
     MARKERS: 'urn:xmpp:chat-markers:0',
-    CARBONS: 'urn:xmpp:carbons:2'
+    CARBONS: 'urn:xmpp:carbons:2',
+    ROSTER: 'jabber:iq:roster',
+    MUC: 'http://jabber.org/protocol/muc'
 };
 
 var qbChatHelpers = {
     MARKERS: MARKERS,
+    getMyselfJid: function(conn) {
+        if(utils.getEnv().browser) {
+            return conn.jid;
+        } else if(utils.getEnv().node) {
+            return nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
+        }
+    },
     createStanza: function(builder, params, type) {
         var stanza;
 

@@ -212,6 +212,7 @@ describe('Chat API', function() {
             it('can retrieve contact list', function(done) {
                 QB.chat.roster.get(function(roster) {
                     expect(roster).toBeDefined();
+                    expect(roster).toEqual(jasmine.any(Object));
 
                     done();
                 });
