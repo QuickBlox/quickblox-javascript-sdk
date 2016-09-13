@@ -245,12 +245,11 @@ describe('Chat API', function() {
       //
       it("can create new list with items", function(done) {
         var usersObj = [
-              {user_id: 1111111, action: "deny"},
+              {user_id: 1111111, action: "deny", mutualBlock: true},
               {user_id: 1010101, action: "allow"}
             ];
 
         var list = {name: "test", items: usersObj};
-
         QB.chat.privacylist.create(list, function(error) {
           if(error){
             done.fail("Create or update list error: " + JSON.stringify(error));

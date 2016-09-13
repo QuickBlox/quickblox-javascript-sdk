@@ -1057,6 +1057,7 @@ PrivacyListProxy.prototype = {
     var iq, self = this,
         userId, userJid,
         userAction, userMuc,
+        mutualBlock,
         listObj = {},
         listKeys = [];
 
@@ -1071,38 +1072,58 @@ PrivacyListProxy.prototype = {
     });
 
     $(list.items).each(function(e, i){
-      listObj[i.user_id] = i.action;
+      listObj[i.user_id] = {
+        action: i.action,
+        mutualBlock: i.mutualBlock === true ? true : false
+      };
     });
 
     listKeys = Object.keys(listObj);
 
     for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
       userId = listKeys[index];
-      userAction = listObj[userId];
+      userAction = listObj[userId].action;
       userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
       userMuc = self.helpers.getUserNickWithMucDomain(userId);
+      mutualBlock = listObj[userId].mutualBlock;
 
-      iq.c('item', {
-        type: 'jid',
-        value: userJid,
-        action: userAction,
-        order: i+1
-      }).c('message', {
-      }).up().c('presence-in', {
-      }).up().c('presence-out', {
-      }).up().c('iq', {
-      }).up().up();
+      if(!mutualBlock && userAction !== 'deny'){
+        iq.c('item', {
+          type: 'jid',
+          value: userJid,
+          action: userAction,
+          order: i+1
+        }).c('message', {
+        }).up().c('presence-in', {
+        }).up().c('presence-out', {
+        }).up().c('iq', {
+        }).up().up();
 
-      iq.c('item', {
-        type: 'jid',
-        value: userMuc,
-        action: userAction,
-        order: i+2
-      }).c('message', {
-      }).up().c('presence-in', {
-      }).up().c('presence-out', {
-      }).up().c('iq', {
-      }).up().up();
+        iq.c('item', {
+          type: 'jid',
+          value: userMuc,
+          action: userAction,
+          order: i+2
+        }).c('message', {
+        }).up().c('presence-in', {
+        }).up().c('presence-out', {
+        }).up().c('iq', {
+        }).up().up();
+      } else {
+        iq.c('item', {
+          type: 'jid',
+          value: userJid,
+          action: userAction,
+          order: i+1
+        }).up();
+
+        iq.c('item', {
+          type: 'jid',
+          value: userMuc,
+          action: userAction,
+          order: i+2
+        }).up();
+      }
     }
 
     connection.sendIQ(iq, function(stanzaResult) {
