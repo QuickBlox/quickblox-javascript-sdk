@@ -1291,7 +1291,7 @@ MucProxy.prototype = {
  *
  * Privacy list
  * http://xmpp.org/extensions/xep-0016.html
- *
+ * by default 'mutualBlock' is work in one side
 ----------------------------------------------------------------------------- */
 function PrivacyListProxy(service) {
     this.service = service;
@@ -1466,10 +1466,11 @@ PrivacyListProxy.prototype = {
         var iq, self = this,
             userId, userJid,
             userAction, userMuc,
+            mutualBlock,
             listObj = {},
             listKeys = [],
             newlistObj = {};
-
+        
         if(Utils.getEnv().browser){
             iq = $iq({
                 from: connection.jid,
@@ -1482,7 +1483,10 @@ PrivacyListProxy.prototype = {
             });
 
             $(list.items).each(function(e, i){
-                listObj[i.user_id] = i.action;
+                listObj[i.user_id] = {
+                    action: i.action,
+                    mutualBlock: i.mutualBlock === true ? true : false
+                };
             });
 
             iq = fillCreatePrivacyListIq(iq, list);
@@ -1497,8 +1501,8 @@ PrivacyListProxy.prototype = {
                     callback(Utils.getError(408));
                 }
             });
-
         } else if(Utils.getEnv().node){
+
             iq = new NodeClient.Stanza('iq', {
                 from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
                 type: 'set',
@@ -1512,20 +1516,22 @@ PrivacyListProxy.prototype = {
             });
 
             iq = fillCreatePrivacyListIq(iq, list);
-
+            console.info('\n' + iq.toString());
             nodeStanzasCallbacks[iq.attrs.id] = function(stanza) {
+                console.info('CALVACK', stanza.toString());
                 if(!stanza.getChildElements('error').length){
                     callback(null);
                 } else {
                     callback(Utils.getError(408));
                 }
+
+
             };
 
             nClient.send(iq);
         }
 
         function fillCreatePrivacyListIq(iq, list){
-
             for(var i=0; i< list.items.length; i++){
                 listObj[list.items[i].user_id] = list.items[i].action;
             }
@@ -1534,36 +1540,38 @@ PrivacyListProxy.prototype = {
 
             for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
                 userId = listKeys[index];
-                userAction = listObj[userId];
+                userAction = listObj[userId].action;
                 userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
                 userMuc = self.helpers.getUserNickWithMucDomain(userId);
+                mutualBlock = listObj[userId].mutualBlock;
 
-                if(Utils.getEnv().browser){
-                    iq.c('item', {
-                        type: 'jid',
-                        value: userJid,
-                        action: userAction,
-                        order: i+1
-                    }).c('message', {
-                    }).up().c('presence-in', {
-                    }).up().c('presence-out', {
-                    }).up().c('iq', {
-                    }).up().up();
+                if(!mutualBlock && userAction !== 'deny'){
+                    if(Utils.getEnv().browser){
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        }).c('message', {
+                        }).up().c('presence-in', {
+                        }).up().c('presence-out', {
+                        }).up().c('iq', {
+                        }).up().up();
 
-                    iq.c('item', {
-                        type: 'jid',
-                        value: userMuc,
-                        action: userAction,
-                        order: i+2
-                    }).c('message', {
-                    }).up().c('presence-in', {
-                    }).up().c('presence-out', {
-                    }).up().c('iq', {
-                    }).up().up();
-                } else if(Utils.getEnv().node){
-                    var lists = iq.getChild('query').getChild('list');
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userMuc,
+                            action: userAction,
+                            order: i+2
+                        }).c('message', {
+                        }).up().c('presence-in', {
+                        }).up().c('presence-out', {
+                        }).up().c('iq', {
+                        }).up().up();
+                    } else if(Utils.getEnv().node) {
+                        var lists = iq.getChild('query').getChild('list');
 
-                    lists.c('item', {
+                        lists.c('item', {
                             type: 'jid',
                             value: userJid,
                             action: userAction,
@@ -1585,8 +1593,40 @@ PrivacyListProxy.prototype = {
                         }).up().c('presence-out', {
                         }).up().c('iq', {
                         });
-                }
+                    }
+                } else {
+                    if(Utils.getEnv().browser){
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        }).up();
 
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+2
+                        }).up();
+                    } else if(Utils.getEnv().node){
+                        var lists = iq.getChild('query').getChild('list');
+
+                        lists.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        });
+
+                        lists.c('item', {
+                            type: 'jid',
+                            value: userMuc,
+                            action: userAction,
+                            order: i+2
+                        });
+                    }
+                }
             }
 
             return iq;
