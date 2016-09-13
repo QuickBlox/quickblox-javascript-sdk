@@ -1665,9 +1665,9 @@ PrivacyListProxy.prototype = {
         var iq, self = this,
             userId, userJid,
             userAction, userMuc,
+            mutualBlock,
             listObj = {},
-            listKeys = [],
-            newlistObj = {};
+            listKeys = [];
 
         if(Utils.getEnv().browser){
             iq = $iq({
@@ -1701,7 +1701,8 @@ PrivacyListProxy.prototype = {
             iq = new NodeClient.Stanza('iq', {
                 from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
                 type: 'set',
-                id: self.helpers.getUniqueIdCross('edit')
+                id: self.helpers.getUniqueIdCross('edit'),
+                xmlns: "jabber:client"
             });
 
             iq.c('query', {
@@ -1726,43 +1727,57 @@ PrivacyListProxy.prototype = {
         function fillCreatePrivacyListIq(iq, list){
 
             for(var i=0; i< list.items.length; i++){
-                listObj[list.items[i].user_id] = list.items[i].action;
+                listObj[list.items[i].user_id] = {
+                    action: list.items[i].action,
+                    mutualBlock: list.items[i].mutualBlock === true ? true : false
+                }
             }
+
 
             listKeys = Object.keys(listObj);
 
             for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
+
                 userId = listKeys[index];
-                userAction = listObj[userId];
+                userAction = listObj[userId].action;
+                mutualBlock = listObj[userId].mutualBlock;
                 userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
                 userMuc = self.helpers.getUserNickWithMucDomain(userId);
 
-                if(Utils.getEnv().browser){
-                    iq.c('item', {
-                        type: 'jid',
-                        value: userJid,
-                        action: userAction,
-                        order: i+1
-                    }).c('message', {
-                    }).up().c('presence-in', {
-                    }).up().c('presence-out', {
-                    }).up().c('iq', {
-                    }).up().up();
+                if(mutualBlock && userAction === 'deny'){
+                    if(Utils.getEnv().browser){
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        }).up();
 
-                    iq.c('item', {
-                        type: 'jid',
-                        value: userMuc,
-                        action: userAction,
-                        order: i+2
-                    }).c('message', {
-                    }).up().c('presence-in', {
-                    }).up().c('presence-out', {
-                    }).up().c('iq', {
-                    }).up().up();
-                } else if(Utils.getEnv().node){
-                    var lists = iq.getChild('query').getChild('list');
+                        iq.c('item', {
+                            type: 'jid',
+                            value: userMuc,
+                            action: userAction,
+                            order: i+2
+                        });
+                    } else if(Utils.getEnv().node){
+                        var lists = iq.getChild('query').getChild('list');
 
-                    lists.c('item', {
+                        lists.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        }).up()
+                            .c('item', {
+                                type: 'jid',
+                                value: userMuc,
+                                action: userAction,
+                                order: i+2
+                            });
+                    }
+                } else {
+                    if(Utils.getEnv().browser){
+                        iq.c('item', {
                             type: 'jid',
                             value: userJid,
                             action: userAction,
@@ -1771,10 +1786,9 @@ PrivacyListProxy.prototype = {
                         }).up().c('presence-in', {
                         }).up().c('presence-out', {
                         }).up().c('iq', {
-                        })
-                        .up()
-                        .up()
-                        .c('item', {
+                        }).up().up();
+
+                        iq.c('item', {
                             type: 'jid',
                             value: userMuc,
                             action: userAction,
@@ -1783,9 +1797,34 @@ PrivacyListProxy.prototype = {
                         }).up().c('presence-in', {
                         }).up().c('presence-out', {
                         }).up().c('iq', {
-                        });
-                }
+                        }).up().up();
+                    } else if(Utils.getEnv().node){
+                        var lists = iq.getChild('query').getChild('list');
 
+                        lists.c('item', {
+                            type: 'jid',
+                            value: userJid,
+                            action: userAction,
+                            order: i+1
+                        }).c('message', {
+                        }).up().c('presence-in', {
+                        }).up().c('presence-out', {
+                        }).up().c('iq', {
+                            })
+                            .up()
+                            .up()
+                            .c('item', {
+                                type: 'jid',
+                                value: userMuc,
+                                action: userAction,
+                                order: i+2
+                            }).c('message', {
+                        }).up().c('presence-in', {
+                        }).up().c('presence-out', {
+                        }).up().c('iq', {
+                        });
+                    }
+                }
             }
 
             return iq;

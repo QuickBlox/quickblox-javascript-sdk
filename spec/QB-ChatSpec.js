@@ -244,7 +244,7 @@ describe('Chat API', function() {
         describe('Privacy list: ', function() {
             it('can create new list with items', function(done) {
                 var usersObj = [
-                    {user_id: 1111111, action: "deny"},
+                    {user_id: 1111111, action: "deny", mutualBlock: true},
                     {user_id: 1010101, action: "allow"}
                 ];
 
