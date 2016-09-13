@@ -1082,47 +1082,39 @@ PrivacyListProxy.prototype = {
 
     for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
       userId = listKeys[index];
-      userAction = listObj[userId];
+      userAction = listObj[userId].action;
       userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
       userMuc = self.helpers.getUserNickWithMucDomain(userId);
       mutualBlock = listObj[userId].mutualBlock;
 
-      if(!mutualBlock && userAction !== 'deny'){
+      function createPrivacyItem(order){
         iq.c('item', {
           type: 'jid',
           value: userJid,
           action: userAction,
-          order: i+1
+          order: order
         }).c('message', {
         }).up().c('presence-in', {
         }).up().c('presence-out', {
         }).up().c('iq', {
         }).up().up();
+      }
 
+      function createPrivacyItemMutal(order){
         iq.c('item', {
           type: 'jid',
-          value: userMuc,
+          value: userJid,
           action: userAction,
-          order: i+2
-        }).c('message', {
-        }).up().c('presence-in', {
-        }).up().c('presence-out', {
-        }).up().c('iq', {
-        }).up().up();
+          order: order
+        }).up();
+      }
+
+      if(mutualBlock && userAction === 'deny'){
+        createPrivacyItemMutal(i+1);
+        createPrivacyItemMutal(i+2);
       } else {
-        iq.c('item', {
-          type: 'jid',
-          value: userJid,
-          action: userAction,
-          order: i+1
-        }).up();
-
-        iq.c('item', {
-          type: 'jid',
-          value: userMuc,
-          action: userAction,
-          order: i+2
-        }).up();
+        createPrivacyItem(i+1);
+        createPrivacyItem(i+2);
       }
     }
 
