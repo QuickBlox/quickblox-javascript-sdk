@@ -1299,6 +1299,248 @@ function PrivacyListProxy(service) {
 }
 
 PrivacyListProxy.prototype = {
+    create: function(list, callback) {
+        var self = this,
+            userId, userJid, userMuc,
+            userAction, 
+            mutualBlock,
+            listPrivacy = {},
+            listUserId = [];
+
+        /** Filled listPrivacys */
+        for (var i = list.items.length - 1; i >= 0; i--) {
+            var user = list.items[i];
+
+            listPrivacy[user.user_id] = {
+                action: user.action,
+                mutualBlock: user.mutualBlock === true ? true : false
+            };
+        }
+
+        /** Filled listUserId */
+        listUserId = Object.keys(listPrivacy);
+
+        var iqParams = {
+            type: 'set',
+            from: userCurrentJid,
+            id: chatUtils.getUniqueId('edit')
+        },
+        builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
+
+        var iq = chatUtils.createStanza(builder, iqParams, 'iq');
+
+        iq.c('query', { 
+            xmlns: chatUtils.MARKERS.PRIVACY
+        }).c('list', {
+          name: list.name
+        });
+
+        function createPrivacyItem(iq, params){
+            if(Utils.getEnv().browser) {
+                iq.c('item', {
+                    type: 'jid',
+                    value: params.jidOrMuc,
+                    action: params.userAction,
+                    order: params.order
+                }).c('message', {})
+                .up().c('presence-in', {})
+                .up().c('presence-out', {})
+                .up().c('iq', {})
+                .up().up();
+            } else if(Utils.getEnv().node) {
+                var list = iq.getChild('query').getChild('list');
+
+                list.c('item', {
+                    type: 'jid',
+                    value: params.jidOrMuc,
+                    action: params.userAction,
+                    order: params.order
+                }).c('message', {})
+                .up().c('presence-in', {})
+                .up().c('presence-out', {})
+                .up().c('iq', {})
+                .up().up();
+            }
+
+            return iq;
+        }
+
+        function createPrivacyItemMutal(iq, params) {
+            if(Utils.getEnv().browser) {
+                iq.c('item', {
+                  type: 'jid',
+                  value: params.jidOrMuc,
+                  action: params.userAction,
+                  order: params.order
+                }).up();
+            } else if(Utils.getEnv().node) {
+                var list = iq.getChild('query').getChild('list');
+
+                list.c('item', {
+                  type: 'jid',
+                  value: params.jidOrMuc,
+                  action: params.userAction,
+                  order: params.order
+                }).up();
+            }
+
+            return iq;
+        }
+
+        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i=i+2) {
+            userId = listUserId[index];
+            mutualBlock = listPrivacy[userId].mutualBlock;
+
+            userAction = listPrivacy[userId].action;
+            userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
+            userMuc = self.helpers.getUserNickWithMucDomain(userId);
+
+            if(mutualBlock && userAction === 'deny'){
+                iq = createPrivacyItemMutal(iq, {
+                    order: i+1,
+                    jidOrMuc: userJid,
+                    userAction: userAction
+                });
+                iq = createPrivacyItemMutal(iq, {
+                    order: i+2,
+                    jidOrMuc: userMuc,
+                    userAction: userAction
+                }).up().up();
+            } else {
+                iq = createPrivacyItem(iq, {
+                    order: i+1,
+                    jidOrMuc: userJid,
+                    userAction: userAction
+                });
+                iq = createPrivacyItem(iq, {
+                    order: i+2,
+                    jidOrMuc: userMuc,
+                    userAction: userAction
+                });
+            }
+        }
+
+        if(Utils.getEnv().browser) {
+            connection.sendIQ(iq, function(stanzaResult) {
+                callback(null);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    callback(errorObject);
+                }else{
+                    callback(Utils.getError(408));
+                }
+            });
+        } else if(Utils.getEnv().node) {
+            nClient.send(iq);
+
+            nodeStanzasCallbacks[iqParams.id] = function (stanza) {
+                if(!stanza.getChildElements('error').length){
+                    callback(null);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
+        }
+    },
+    getList: function(name, callback) {
+        var self = this,
+            items, userJid, userId,
+            usersList = [], list = {};
+
+        var iqParams = {
+                type: 'get',
+                from: userCurrentJid,
+                id: chatUtils.getUniqueId('getlist')
+            },
+            builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
+
+        var iq = chatUtils.createStanza(builder, iqParams, 'iq');
+
+        iq.c('query', {
+            xmlns: chatUtils.MARKERS.PRIVACY
+        }).c('list', {
+            name: name
+        });
+
+        if(Utils.getEnv().browser) {
+            connection.sendIQ(iq, function(stanzaResult) {
+                items = stanzaResult.getElementsByTagName('item');
+
+                for (var i = 0, len = items.length; i < len; i=i+2) {
+                    userJid = items[i].getAttribute('value');
+                    userId = self.helpers.getIdFromNode(userJid);
+                    usersList.push({
+                        user_id: userId,
+                        action: items[i].getAttribute('action')
+                    });
+                }
+                list = {
+                    name: name,
+                    items: usersList
+                };
+                    callback(null, list);
+                }, function(stanzaError){
+                    if(stanzaError){
+                        var errorObject = getErrorFromXMLNode(stanzaError);
+                        callback(errorObject, null);
+                    }else{
+                        callback(Utils.getError(408), null);
+                    }
+                });
+        } else if(Utils.getEnv().node){
+            nodeStanzasCallbacks[iqParams.id] = function(stanza){
+                var stanzaQuery = stanza.getChild('query'),
+                    list = stanzaQuery ? stanzaQuery.getChild('list') : null,
+                    items = list ? list.getChildElements('item') : null,
+                    userJid, userId, usersList = [];
+
+                for (var i = 0, len = items.length; i < len; i=i+2) {
+                    userJid = items[i].attrs.value;
+                    userId = self.helpers.getIdFromNode(userJid);
+                    usersList.push({
+                        user_id: userId,
+                        action: items[i].attrs.action
+                    });
+                }
+
+                list = {
+                    name: list.attrs.name,
+                    items: usersList
+                };
+
+                callback(null, list);
+                delete nodeStanzasCallbacks[iqParams.id];
+            };
+
+            nClient.send(iq);
+        }
+    },
+    update: function(list, callback) {
+        var self = this;
+
+        self.getList(list.name, function(error, response) {
+            if (error) {
+                callback(error, null);
+            } else {
+                var copyList = (JSON.parse(JSON.stringify(list))),
+                    oldArray = response.items,
+                    newArray = copyList.items,
+                    createdList = {};
+
+                copyList.items = Utils.MergeArrayOfObjects(oldArray, newArray);
+                createdList = copyList;
+
+                self.create(createdList, function(err, result) {
+                    if (error) {
+                        callback(err, null);
+                    }else{
+                        callback(null, result);
+                    }
+                });
+            }
+        });
+    },
     getNames: function(callback) {
         var self = this,
             iq,
@@ -1380,285 +1622,6 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
-
-    getList: function(name, callback) {
-        var iq, self = this,
-            items, userJid, userId,
-            usersList = [], list = {};
-
-        if(Utils.getEnv().browser) {
-
-            iq = $iq({
-                from: connection.jid,
-                type: 'get',
-                id: connection.getUniqueId('getlist')
-            }).c('query', {
-                xmlns: Strophe.NS.PRIVACY_LIST
-            }).c('list', {
-                name: name
-            });
-
-            connection.sendIQ(iq, function(stanzaResult) {
-                items = stanzaResult.getElementsByTagName('item');
-
-                for (var i = 0, len = items.length; i < len; i=i+2) {
-                    userJid = items[i].getAttribute('value');
-                    userId = self.helpers.getIdFromNode(userJid);
-                    usersList.push({
-                        user_id: userId,
-                        action: items[i].getAttribute('action')
-                    });
-                }
-                list = {
-                    name: name,
-                    items: usersList
-                };
-                    callback(null, list);
-                }, function(stanzaError){
-                    if(stanzaError){
-                        var errorObject = getErrorFromXMLNode(stanzaError);
-                        callback(errorObject, null);
-                    }else{
-                        callback(Utils.getError(408), null);
-                    }
-                });
-        } else if(Utils.getEnv().node){
-            iq = new NodeClient.Stanza('iq', {
-                type: 'get',
-                id: chatUtils.getUniqueId('getlist')
-            });
-
-            iq.c('query', {
-                xmlns: 'jabber:iq:privacy'
-            }).c('list', {
-                name: name
-            });
-
-            nodeStanzasCallbacks[iq.attrs.id] = function(stanza){
-                var stanzaQuery = stanza.getChild('query'),
-                    list = stanzaQuery ? stanzaQuery.getChild('list') : null,
-                    items = list ? list.getChildElements('item') : null,
-                    userJid, userId, usersList = [];
-
-
-                for (var i = 0, len = items.length; i < len; i=i+2) {
-                    userJid = items[i].attrs.value;
-                    userId = self.helpers.getIdFromNode(userJid);
-                    usersList.push({
-                        user_id: userId,
-                        action: items[i].attrs.action
-                    });
-                }
-                list = {
-                    name: list.attrs.name,
-                    items: usersList
-                };
-
-                callback(null, list);
-                delete nodeStanzasCallbacks[stanza.attrs.id]
-            };
-
-            nClient.send(iq);
-        }
-    },
-
-    create: function(list, callback) {
-        var iq, self = this,
-            userId, userJid,
-            userAction, userMuc,
-            mutualBlock,
-            listObj = {},
-            listKeys = [],
-            newlistObj = {};
-        
-        if(Utils.getEnv().browser){
-            iq = $iq({
-                from: connection.jid,
-                type: 'set',
-                id: connection.getUniqueId('edit')
-            }).c('query', {
-                xmlns: Strophe.NS.PRIVACY_LIST
-            }).c('list', {
-                name: list.name
-            });
-
-            $(list.items).each(function(e, i){
-                listObj[i.user_id] = {
-                    action: i.action,
-                    mutualBlock: i.mutualBlock === true ? true : false
-                };
-            });
-
-            iq = fillCreatePrivacyListIq(iq, list);
-
-            connection.sendIQ(iq, function(stanzaResult) {
-                callback(null);
-            }, function(stanzaError){
-                if(stanzaError){
-                    var errorObject = getErrorFromXMLNode(stanzaError);
-                    callback(errorObject);
-                }else{
-                    callback(Utils.getError(408));
-                }
-            });
-        } else if(Utils.getEnv().node){
-
-            iq = new NodeClient.Stanza('iq', {
-                from: nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource,
-                type: 'set',
-                id: chatUtils.getUniqueId('edit')
-            });
-
-            iq.c('query', {
-                xmlns: 'jabber:iq:privacy'
-            }).c('list', {
-                name: list.name
-            });
-
-            iq = fillCreatePrivacyListIq(iq, list);
-            console.info('\n' + iq.toString());
-            nodeStanzasCallbacks[iq.attrs.id] = function(stanza) {
-                console.info('CALVACK', stanza.toString());
-                if(!stanza.getChildElements('error').length){
-                    callback(null);
-                } else {
-                    callback(Utils.getError(408));
-                }
-
-
-            };
-
-            nClient.send(iq);
-        }
-
-        function fillCreatePrivacyListIq(iq, list){
-            for(var i=0; i< list.items.length; i++){
-                listObj[list.items[i].user_id] = list.items[i].action;
-            }
-
-            listKeys = Object.keys(listObj);
-
-            for (var index = 0, i = 0, len = listKeys.length; index < len; index++, i=i+2) {
-                userId = listKeys[index];
-                userAction = listObj[userId].action;
-                userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
-                userMuc = self.helpers.getUserNickWithMucDomain(userId);
-                mutualBlock = listObj[userId].mutualBlock;
-
-                if(!mutualBlock && userAction !== 'deny'){
-                    if(Utils.getEnv().browser){
-                        iq.c('item', {
-                            type: 'jid',
-                            value: userJid,
-                            action: userAction,
-                            order: i+1
-                        }).c('message', {
-                        }).up().c('presence-in', {
-                        }).up().c('presence-out', {
-                        }).up().c('iq', {
-                        }).up().up();
-
-                        iq.c('item', {
-                            type: 'jid',
-                            value: userMuc,
-                            action: userAction,
-                            order: i+2
-                        }).c('message', {
-                        }).up().c('presence-in', {
-                        }).up().c('presence-out', {
-                        }).up().c('iq', {
-                        }).up().up();
-                    } else if(Utils.getEnv().node) {
-                        var lists = iq.getChild('query').getChild('list');
-
-                        lists.c('item', {
-                            type: 'jid',
-                            value: userJid,
-                            action: userAction,
-                            order: i+1
-                        }).c('message', {
-                        }).up().c('presence-in', {
-                        }).up().c('presence-out', {
-                        }).up().c('iq', {
-                        })
-                        .up()
-                        .up()
-                        .c('item', {
-                            type: 'jid',
-                            value: userMuc,
-                            action: userAction,
-                            order: i+2
-                        }).c('message', {
-                        }).up().c('presence-in', {
-                        }).up().c('presence-out', {
-                        }).up().c('iq', {
-                        });
-                    }
-                } else {
-                    if(Utils.getEnv().browser){
-                        iq.c('item', {
-                            type: 'jid',
-                            value: userJid,
-                            action: userAction,
-                            order: i+1
-                        }).up();
-
-                        iq.c('item', {
-                            type: 'jid',
-                            value: userJid,
-                            action: userAction,
-                            order: i+2
-                        }).up();
-                    } else if(Utils.getEnv().node){
-                        var lists = iq.getChild('query').getChild('list');
-
-                        lists.c('item', {
-                            type: 'jid',
-                            value: userJid,
-                            action: userAction,
-                            order: i+1
-                        });
-
-                        lists.c('item', {
-                            type: 'jid',
-                            value: userMuc,
-                            action: userAction,
-                            order: i+2
-                        });
-                    }
-                }
-            }
-
-            return iq;
-        }
-    },
-
-    update: function(list, callback) {
-        var self = this;
-
-        self.getList(list.name, function(error, response) {
-            if (error) {
-                callback(error, null);
-            } else {
-                var copyList = (JSON.parse(JSON.stringify(list))),
-                    oldArray = response.items,
-                    newArray = copyList.items,
-                    createdList = {};
-
-                copyList.items = Utils.MergeArrayOfObjects(oldArray, newArray);
-                createdList = copyList;
-
-                self.create(createdList, function(err, result) {
-                    if (error) {
-                        callback(err, null);
-                    }else{
-                        callback(null, result);
-                    }
-                });
-            }
-        });
-    },
-
     delete: function(name, callback) {
         var iq = $iq({
             from: connection.jid,
@@ -1681,7 +1644,6 @@ PrivacyListProxy.prototype = {
             }
         });
     },
-
     setAsDefault: function(name, callback) {
         var iq,
             stanzaParams = {
@@ -1725,9 +1687,7 @@ PrivacyListProxy.prototype = {
             };
             nClient.send(iq);
         }
-
     },
-
     setAsActive: function(name, callback) {
         var iq,
             stanzaParams = {

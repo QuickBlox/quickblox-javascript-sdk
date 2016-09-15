@@ -247,8 +247,8 @@ describe('Chat API', function() {
         describe('Privacy list: ', function() {
             it('can create new list with items', function(done) {
                 var usersObj = [
-                    {user_id: 1111111, action: 'deny', mutualBlock: true},
-                    {user_id: 1010101, action: 'allow'}
+                    {user_id: 1010101, action: 'allow'},
+                    {user_id: 1111111, action: 'deny', mutualBlock: true}
                 ];
 
                 var list = {name: 'test', items: usersObj};
@@ -269,6 +269,17 @@ describe('Chat API', function() {
                 QB.chat.privacylist.update(list, function(error) {
                     expect(error).toBeDefined();
                     
+                    done();
+                });
+            });
+
+            it('can get list by name', function(done) {
+                QB.chat.privacylist.getList('test', function(error, response) {
+                    expect(error).toBeNull();
+
+                    expect(response.name).toBe('test');
+                    expect(response.items.length).toEqual(3);
+
                     done();
                 });
             });
@@ -300,17 +311,6 @@ describe('Chat API', function() {
             it('can declines the use of default lists', function(done) {
                 QB.chat.privacylist.setAsDefault('', function(error) {
                     expect(error).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can get list by name', function(done) {
-                QB.chat.privacylist.getList('test', function(error, response) {
-                    expect(error).toBeNull();
-
-                    expect(response.name).toBe('test');
-                    expect(response.items.length).toEqual(3);
 
                     done();
                 });

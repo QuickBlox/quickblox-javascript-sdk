@@ -9,7 +9,8 @@ var MARKERS = {
     MARKERS: 'urn:xmpp:chat-markers:0',
     CARBONS: 'urn:xmpp:carbons:2',
     ROSTER: 'jabber:iq:roster',
-    MUC: 'http://jabber.org/protocol/muc'
+    MUC: 'http://jabber.org/protocol/muc',
+    PRIVACY: 'jabber:iq:privacy'
 };
 
 var qbChatHelpers = {
