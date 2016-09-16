@@ -194,7 +194,7 @@ function ChatProxy(service, webrtcModule, conn) {
                 /** LEAVE from dialog */
                 if(type && type === 'unavailable' && nodeStanzasCallbacks['muc:leave']) {
                     if(status && status.attrs.code == "110"){
-                        nodeStanzasCallbacks['muc:leave'](null);
+                        Utils.safeCallbackCall(nodeStanzasCallbacks['muc:leave'], null);
                         return;
                     }
                 }
@@ -203,11 +203,11 @@ function ChatProxy(service, webrtcModule, conn) {
                 if(stanza.attrs.id) {
                     if(status && status.attrs.code == "110"){
                         if(typeof nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
-                            nodeStanzasCallbacks[stanza.attrs.id](stanza);
+                            Utils.safeCallbackCall(nodeStanzasCallbacks[stanza.attrs.id], stanza);
                         }
                     } else {
                         if(typeof nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
-                            nodeStanzasCallbacks[stanza.attrs.id](null);
+                            Utils.safeCallbackCall(nodeStanzasCallbacks[stanza.attrs.id], null);
                         }
                     }
                 }
@@ -289,7 +289,7 @@ function ChatProxy(service, webrtcModule, conn) {
             var stanzaId = chatUtils.getAttr(stanza, 'id');
 
             if(nodeStanzasCallbacks[stanzaId]){
-                nodeStanzasCallbacks[stanzaId](stanza);
+                Utils.safeCallbackCall(nodeStanzasCallbacks[stanzaId], stanza);
                 delete nodeStanzasCallbacks[stanzaId];
             }
         }
@@ -489,8 +489,6 @@ ChatProxy.prototype = {
                 self._isDisconnected = false;
                 self._isLogout = false;
 
-
-
                 /** Send first presence if user is online */
                 nClient.send('<presence/>');
 
@@ -599,7 +597,7 @@ ChatProxy.prototype = {
         if(Utils.getEnv().browser) {
             if (message.extension) {
               stanza.c('extraParams', {
-                xmlns: Strophe.NS.CLIENT
+                xmlns: chatUtils.MARKERS.CLIENT
               });
 
               Object.keys(message.extension).forEach(function(field) {

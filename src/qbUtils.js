@@ -40,8 +40,6 @@ var Utils = {
         };
     },
   safeCallbackCall: function() {
-    // if(!isBrowser) throw unsupported;
-
     var listenerString = arguments[0].toString(),
         listenerName = listenerString.split('(')[0].split(' ')[1],
         argumentsCopy = [], listenerCall;
