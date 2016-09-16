@@ -2,15 +2,15 @@
  * QuickBlox JavaScript SDK
  * Chat Module
  */
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils'),
-    chatUtils = require('./qbChatHelpers');
+var chatUtils = require('./qbChatHelpers'),
+    config = require('../qbConfig'),
+    Utils = require('../qbUtils');
 
 var webrtc,
     roster = {},
     joinedRooms = {};
 
-var unsupported = 'This function isn\'t supported outside of the browser (...yet)';
+var unsupportedError = 'This function isn\'t supported outside of the browser (...yet)';
 
 var dialogUrl = config.urls.chat + '/Dialog';
 var messageUrl = config.urls.chat + '/Message';
@@ -811,7 +811,9 @@ ChatProxy.prototype = {
         }
     },
     addListener: function(params, callback) {
-        if(Utils.getEnv().node) throw unsupported;
+        if(Utils.getEnv().node) {
+            throw new Error(unsupportedError);
+        }
 
         return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
@@ -822,7 +824,9 @@ ChatProxy.prototype = {
         }
     },
     deleteListener: function(ref) {
-        if(Utils.getEnv().node) throw unsupported;
+        if(Utils.getEnv().node) {
+            throw new Error(unsupportedError);
+        }
 
         connection.deleteHandler(ref);
     },
@@ -1626,7 +1630,7 @@ PrivacyListProxy.prototype = {
         var iq = $iq({
             from: connection.jid,
             type: 'set',
-            id: connection.getUniqueId('remove')
+            id: chatUtils.getUniqueId('remove')
         }).c('query', {
             xmlns: Strophe.NS.PRIVACY_LIST
         }).c('list', {
@@ -1876,7 +1880,7 @@ Helpers.prototype = {
         } else if (typeof jid_or_user_id === 'number') {
             jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
         } else {
-            throw unsupported;
+            throw new Error(unsupportedError);
         }
         return jid;
     },
@@ -1888,7 +1892,7 @@ Helpers.prototype = {
         } else if (typeof jid_or_user_id === 'number') {
             chatType = 'chat';
         } else {
-            throw unsupported;
+            throw new Error(unsupportedError);
         }
         return chatType;
     },
@@ -1937,11 +1941,6 @@ Helpers.prototype = {
         if (s.length < 2) return null;
         s.splice(0, 1);
         return parseInt(s.join('/'));
-    },
-
-    getUniqueId: function(suffix) {
-        if(Utils.getEnv().node) throw unsupported;
-        return connection.getUniqueId(suffix);
     },
     getBsonObjectId: function() {
         return Utils.getBsonObjectId();
