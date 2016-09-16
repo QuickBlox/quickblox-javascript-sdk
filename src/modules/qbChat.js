@@ -596,26 +596,11 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             if (message.extension) {
-              stanza.c('extraParams', {
-                xmlns: chatUtils.MARKERS.CLIENT
-              });
+                stanza.c('extraParams', {
+                    xmlns: chatUtils.MARKERS.CLIENT
+                });
 
-              Object.keys(message.extension).forEach(function(field) {
-                if (field === 'attachments') {
-
-                  // attachments
-                  message.extension[field].forEach(function(attach) {
-                    stanza.c('attachment', attach).up();
-                  });
-
-                } else if (typeof message.extension[field] === 'object') {
-                  self._JStoXML(field, message.extension[field], stanza);
-                } else {
-                  stanza.c(field).t(message.extension[field]).up();
-                }
-              });
-
-              stanza.up();
+                stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
@@ -627,21 +612,7 @@ ChatProxy.prototype = {
                     xmlns: chatUtils.MARKERS.CLIENT
                 });
 
-                Object.keys(message.extension).forEach(function(field) {
-                    if (field === 'attachments') {
-                          // attachments
-                        message.extension[field].forEach(function(attach) {
-                            stanza.c('attachment', attach).up();
-                        });
-                    } else if (typeof message.extension[field] === 'object') {
-                        self._JStoXML(field, message.extension[field], stanza);
-                    } else {
-                        stanza.getChild('extraParams')
-                            .c(field).t(message.extension[field]).up();
-                    }
-                });
-
-                stanza.up();
+                stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             nClient.send(stanza);
@@ -665,15 +636,7 @@ ChatProxy.prototype = {
                 xmlns: chatUtils.MARKERS.CLIENT
               }).c('moduleIdentifier').t('SystemNotifications').up();
 
-              Object.keys(message.extension).forEach(function(field) {
-                if (typeof message.extension[field] === 'object') {
-                  self._JStoXML(field, message.extension[field], stanza);
-                }else{
-                  stanza.c(field).t(message.extension[field]).up();
-                }
-              });
-
-              stanza.up();
+             stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
@@ -685,16 +648,7 @@ ChatProxy.prototype = {
                     xmlns: chatUtils.MARKERS.CLIENT
                 }).c('moduleIdentifier').t('SystemNotifications');
 
-                Object.keys(message.extension).forEach(function(field) {
-                    if (typeof message.extension[field] === 'object') {
-                        self._JStoXML(field, message.extension[field], stanza);
-                    }else{
-                        stanza.getChild('extraParams')
-                            .c(field).t(message.extension[field]).up();
-                    }
-                });
-
-                stanza.up();
+                stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             nClient.send(stanza);
@@ -828,36 +782,6 @@ ChatProxy.prototype = {
 
         connection.deleteHandler(ref);
     },
-    // TODO: the magic
-    _JStoXML: function(title, obj, msg) {
-        var self = this;
-        
-        msg.c(title);
-        
-        Object.keys(obj).forEach(function(field) {
-            if (typeof obj[field] === 'object') {
-                self._JStoXML(field, obj[field], msg);
-            } else {
-                msg.c(field).t(obj[field]).up();
-            }
-        });
-
-        msg.up();
-    },
-    _XMLtoJS: function(extension, title, obj) {
-        var self = this;
-
-        extension[title] = {};
-
-        for (var i = 0, len = obj.childNodes.length; i < len; i++) {
-            if (obj.childNodes[i].childNodes.length > 1) {
-                extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
-            } else {
-                extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
-            }
-        }
-        return extension;
-    },
     _parseExtraParams: function(extraParams) {
         if(!extraParams){
             return null;
@@ -903,7 +827,7 @@ ChatProxy.prototype = {
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
                         } else {
-                            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                            extension = chatUtils._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
                         }
                     } else {
                         extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
