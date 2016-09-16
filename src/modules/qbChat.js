@@ -35,10 +35,10 @@ var NodeClient,
 if (Utils.getEnv().browser) {
     require('strophe');
 
-    Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
-    Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
-    Strophe.addNamespace('PRIVACY_LIST', 'jabber:iq:privacy');
-    Strophe.addNamespace('CHAT_STATES', 'http://jabber.org/protocol/chatstates');
+    Strophe.addNamespace('CARBONS', chatUtils.MARKERS.CARBONS);
+    Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
+    Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
+    Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
 } else {
     NodeClient = require('node-xmpp-client');
 }
@@ -1457,7 +1457,7 @@ PrivacyListProxy.prototype = {
                 from: userCurrentJid,
                 id: chatUtils.getUniqueId('getlist')
             },
-            builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
+            builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
 
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
 
@@ -1948,10 +1948,22 @@ Helpers.prototype = {
 
     getUserIdFromRoomJid: function(jid) {
         var arrayElements = jid.toString().split('/');
-        if(arrayElements.length == 0){
+        if(arrayElements.length === 0){
             return null;
         }
         return arrayElements[arrayElements.length-1];
+    },
+    getUniqueId: function(suffix) {
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : r & 0x3 | 0x8;
+            return v.toString(16);
+        });
+        if (typeof(suffix) == 'string' || typeof(suffix) == 'number') {
+            return uuid + ':' + suffix;
+        } else {
+            return uuid + '';
+        }
     }
 };
 

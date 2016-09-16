@@ -5,7 +5,7 @@ var ERR_UNKNOWN_INTERFACE = 'Unknown interface. SDK support browser / node env.'
 var MARKERS = {
     CLIENT: 'jabber:client',
     CHAT: 'urn:xmpp:chat-markers:0',
-    STATES: 'http://www.jabber.org/protocol/chatstates',
+    STATES: 'http://jabber.org/protocol/chatstates',
     MARKERS: 'urn:xmpp:chat-markers:0',
     CARBONS: 'urn:xmpp:carbons:2',
     ROSTER: 'jabber:iq:roster',
