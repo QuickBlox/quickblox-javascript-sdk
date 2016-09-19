@@ -35,7 +35,7 @@ QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
 
 var qbListeners = {
     onSubscribeListener: function onSubscribeListener(userId) {
-        console.log('[QB] onSubscribeListener. Subscribe from ${userId}');
+        console.log(`[QB] onSubscribeListener. Subscribe from ${userId}`);
         
         QB.chat.roster.confirm(userId, function() {
             console.log(`[QB] Confirm subscription from user ${userId}`);
