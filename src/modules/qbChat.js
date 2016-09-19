@@ -423,8 +423,6 @@ ChatProxy.prototype = {
                             // chat server will close your connection if you are not active in chat during one minute
                             // initial presence and an automatic reminder of it each 55 seconds
                             connection.send($pres().tree());
-                            connection.addTimedHandler(55 * 1000, self._autoSendPresence);
-
 
                             if (typeof callback === 'function') {
                                 callback(null, roster);
@@ -491,12 +489,6 @@ ChatProxy.prototype = {
 
                 /** Send first presence if user is online */
                 nClient.send('<presence/>');
-
-                self._autoSendPresence();
-
-                setInterval(function(){
-                    self._autoSendPresence();
-                }, 55 * 1000);
 
                 userCurrentJid = nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
 
@@ -691,9 +683,9 @@ ChatProxy.prototype = {
         });
 
         if(Utils.getEnv().browser){
-            connection.send(msg);
+            connection.send(stanza);
          } else if(Utils.getEnv().node) {
-            nClient.send(msg);
+            nClient.send(stanza);
         }
     },
     sendDeliveredStatus: function(params) {
@@ -863,21 +855,6 @@ ChatProxy.prototype = {
             extension: extension,
             dialogId: dialogId
         };
-    },
-    _autoSendPresence: function() {
-        if(Utils.getEnv().browser) {
-            connection.send($pres().tree());
-        } else if (Utils.getEnv().node) {
-            var presence = new NodeClient.Stanza('presence', {
-                    xmlns: chatUtils.MARKERS.CLIENT
-                });
-
-            nClient.send(presence);
-        }
-
-        // we must return true to keep the handler alive
-        // returning false would remove it after it finishes
-        return true;
     },
     /**
      * Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
