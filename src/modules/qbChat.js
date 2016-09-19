@@ -112,7 +112,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (invite) return true;
 
         if(extraParams) {
-            extraParamsParsed = chatUtils._parseExtraParams(extraParams);
+            extraParamsParsed = chatUtils.parseExtraParams(extraParams);
 
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
@@ -307,7 +307,7 @@ function ChatProxy(service, webrtcModule, conn) {
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-            var extraParamsParsed = chatUtils._parseExtraParams(extraParams);
+            var extraParamsParsed = chatUtils.parseExtraParams(extraParams);
 
             message = {
                 id: messageId,
@@ -352,17 +352,9 @@ ChatProxy.prototype = {
         var self = this,
             err, rooms;
 
-        var userJid;
+        var userJid = chatUtils.buildUserJid(params);
 
-        if ('userId' in params) {
-            userJid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
-          
-            if ('resource' in params) {
-                userJid = userJid + "/" + params.resource;
-            }
-        } else if ('jid' in params) {
-            userJid = params.jid;
-        }
+        
 
         /** Connect for browser env. */
         if(Utils.getEnv().browser) {

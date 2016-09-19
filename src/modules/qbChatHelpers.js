@@ -1,4 +1,5 @@
 var utils = require('../qbUtils');
+var config = require('../qbConfig');
 
 var ERR_UNKNOWN_INTERFACE = 'Unknown interface. SDK support browser / node env.';
 
@@ -21,6 +22,25 @@ var qbChatHelpers = {
         } else if(utils.getEnv().node) {
             return nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
         }
+    },
+    /**
+     * @param {params} this object may contains Jid or Id property
+     * @return {string} jid of user
+     */
+    buildUserJid: function(params) {
+        var jid;
+
+        if ('userId' in params) {
+            jid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
+          
+            if ('resource' in params) {
+                jid = userJid + "/" + params.resource;
+            }
+        } else if ('jid' in params) {
+            jid = params.jid;
+        }
+
+        return jid;
     },
     createStanza: function(builder, params, type) {
         var stanza;
@@ -127,7 +147,7 @@ var qbChatHelpers = {
 
         return stanza;
     },
-    _parseExtraParams: function(extraParams) {
+    parseExtraParams: function(extraParams) {
         if(!extraParams){
             return null;
         }
