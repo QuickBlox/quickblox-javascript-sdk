@@ -112,7 +112,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (invite) return true;
 
         if(extraParams) {
-            extraParamsParsed = self._parseExtraParams(extraParams);
+            extraParamsParsed = chatUtils._parseExtraParams(extraParams);
 
             if(extraParamsParsed.dialogId){
                 dialogId = extraParamsParsed.dialogId;
@@ -307,7 +307,7 @@ function ChatProxy(service, webrtcModule, conn) {
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-            var extraParamsParsed = self._parseExtraParams(extraParams);
+            var extraParamsParsed = chatUtils._parseExtraParams(extraParams);
 
             message = {
                 id: messageId,
@@ -773,88 +773,6 @@ ChatProxy.prototype = {
         }
 
         connection.deleteHandler(ref);
-    },
-    _parseExtraParams: function(extraParams) {
-        if(!extraParams){
-            return null;
-        }
-
-        var extension = {};
-        var dialogId;
-
-        var attachments = [];
-
-        if (Utils.getEnv().browser) {
-            for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-                // parse attachments
-                if (extraParams.childNodes[i].tagName === 'attachment') {
-                    var attach = {};
-                    var attributes = extraParams.childNodes[i].attributes;
-
-                    for (var j = 0, len2 = attributes.length; j < len2; j++) {
-                        if (attributes[j].name === 'id' || attributes[j].name === 'size'){
-                            attach[attributes[j].name] = parseInt(attributes[j].value);
-                        } else {
-                            attach[attributes[j].name] = attributes[j].value;
-                        }
-                    }
-
-                    attachments.push(attach);
-
-                    // parse 'dialog_id'
-                } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
-                    dialogId = extraParams.childNodes[i].textContent;
-                    extension['dialog_id'] = dialogId;
-
-                    // parse other user's custom parameters
-                } else {
-                    if (extraParams.childNodes[i].childNodes.length > 1) {
-                        // Firefox issue with 4K XML node limit:
-                        // http://www.coderholic.com/firefox-4k-xml-node-limit/
-                        var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-                        if (nodeTextContentSize > 4096) {
-                            var wholeNodeContent = "";
-                            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
-                            }
-                            extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-                        } else {
-                            extension = chatUtils._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-                        }
-                    } else {
-                        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
-                    }
-                }
-            }
-
-            if (attachments.length > 0) {
-                extension.attachments = attachments;
-            }
-        }
-
-        if(Utils.getEnv().node) {
-            for (var i = 0, len = extraParams.children.length; i < len; i++) {
-                if(extraParams.children[i].name === 'dialog_id') {
-                    dialogId = extraParams.getChildText('dialog_id');
-                    extension['dialog_id'] = dialogId;
-                }
-                 
-                if(extraParams.children[i].children.length === 1) {
-                    var child = extraParams.children[i];
-
-                    extension[child.name] = child.children[0];
-                }
-            }
-        }
-
-        if(extension.moduleIdentifier) {
-            delete extension.moduleIdentifier;
-        }
-
-        return {
-            extension: extension,
-            dialogId: dialogId
-        };
     },
     /**
      * Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
