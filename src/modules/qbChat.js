@@ -329,7 +329,7 @@ function ChatProxy(service, webrtcModule, conn) {
         // </error>
 
         var messageId = stanza.getAttribute('id');
-        var error = getErrorFromXMLNode(stanza);
+        var error = chatUtils.getErrorFromXMLNode(stanza);
 
         // fire 'onMessageErrorListener'
         //
@@ -396,7 +396,7 @@ ChatProxy.prototype = {
                         
                         break;
                     case Strophe.Status.CONNECTED:
-                        Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+                        Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
@@ -449,7 +449,7 @@ ChatProxy.prototype = {
                         Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTING');
                         break;
                     case Strophe.Status.DISCONNECTED:
-                        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + getLocalTime());
+                        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
 
                         connection.reset();
 
@@ -480,11 +480,11 @@ ChatProxy.prototype = {
 
             /** HANDLERS */
             nClient.on('auth', function () {
-                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
             });
 
             nClient.on('online', function () {
-                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + getLocalTime());
+                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
                 self._isDisconnected = false;
                 self._isLogout = false;
@@ -1351,7 +1351,7 @@ PrivacyListProxy.prototype = {
                 callback(null);
             }, function(stanzaError){
                 if(stanzaError){
-                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
                 }else{
                     callback(Utils.getError(408));
@@ -1408,7 +1408,7 @@ PrivacyListProxy.prototype = {
                     callback(null, list);
                 }, function(stanzaError){
                     if(stanzaError){
-                        var errorObject = getErrorFromXMLNode(stanzaError);
+                        var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                         callback(errorObject, null);
                     }else{
                         callback(Utils.getError(408), null);
@@ -1502,7 +1502,7 @@ PrivacyListProxy.prototype = {
                 callback(null, namesList);
             }, function(stanzaError){
                 if(stanzaError){
-                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject, null);
                 }else{
                     callback(Utils.getError(408), null);
@@ -1563,7 +1563,7 @@ PrivacyListProxy.prototype = {
             callback(null);
         }, function(stanzaError){
             if(stanzaError){
-                var errorObject = getErrorFromXMLNode(stanzaError);
+                var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                 callback(errorObject);
             }else{
                 callback(Utils.getError(408));
@@ -1589,7 +1589,7 @@ PrivacyListProxy.prototype = {
                 callback(null);
             }, function(stanzaError){
                 if(stanzaError){
-                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
                 }else{
                     callback(Utils.getError(408));
@@ -1633,7 +1633,7 @@ PrivacyListProxy.prototype = {
                 callback(null);
             }, function(stanzaError){
                 if(stanzaError){
-                    var errorObject = getErrorFromXMLNode(stanzaError);
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
                 }else{
                     callback(Utils.getError(408));
@@ -1890,17 +1890,3 @@ Helpers.prototype = {
 };
 
 module.exports = ChatProxy;
-
-
-/* Private
------------------------------------------------------------------------------ */
-function getErrorFromXMLNode(stanzaError) {
-  var errorElement = stanzaError.getElementsByTagName('error')[0];
-  var errorCode = parseInt(errorElement.getAttribute('code'));
-  var errorText = errorElement.getElementsByTagName('text')[0].textContent;
-  return Utils.getError(errorCode, errorText);
-}
-
-function getLocalTime() {
-  return (new Date()).toTimeString().split(' ')[0];
-}

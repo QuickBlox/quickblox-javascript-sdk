@@ -138,6 +138,16 @@ var qbChatHelpers = {
         } else {
             return uuid + '';
         }
+    },
+    getErrorFromXMLNode: function(stanzaError) {
+        var errorElement = stanzaError.getElementsByTagName('error')[0];
+        var errorCode = parseInt(errorElement.getAttribute('code'));
+        var errorText = errorElement.getElementsByTagName('text')[0].textContent;
+  
+        return utils.getError(errorCode, errorText);
+    },
+    getLocalTime: function() {
+        return (new Date()).toTimeString().split(' ')[0];
     }
 };
 
