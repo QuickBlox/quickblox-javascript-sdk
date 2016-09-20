@@ -5,7 +5,8 @@
   "browserify" : true,
   "jasmine"    : true,
   "jquery"     : true,
-  "predef"     : [
+  "esnext"     : true,
+  "globals"     : [
     "jasmine",
     "describe",
     "xdescribe",
