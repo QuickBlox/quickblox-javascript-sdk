@@ -102,7 +102,7 @@ EventsProxy.prototype = {
   delete: function(id, callback) {
     Utils.QBLog('[EventsProxy]', 'delete', id);
     
-    this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
+    this.service.ajax({url: Utils.getUrl(config.urls.events, id), dataType: 'text', type: 'DELETE'}, callback);
   }
 };
 
