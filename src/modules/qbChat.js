@@ -1682,6 +1682,7 @@ MessageProxy.prototype = {
 function Helpers() {}
 
 Helpers.prototype = {
+    getUniqueId: chatUtils.getUniqueId,
     jidOrUserId: function(jid_or_user_id) {
         var jid;
         if (typeof jid_or_user_id === 'string') {

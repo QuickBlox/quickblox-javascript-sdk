@@ -73,10 +73,6 @@ describe('Helpers', function() {
   });
 
   it('can get roomJid from jid', function(done) {
-    if(isNodeEnv) {
-      pending('This function isn\'t supported outside of the browser');
-    }
-
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if (err) {
         done.fail('Connection to chat error: ' + JSON.stringify(err));
@@ -96,10 +92,6 @@ describe('Helpers', function() {
   });
 
   it('can get unique id', function() {
-    if(isNodeEnv) {
-      pending('This function isn\'t supported outside of the browser');
-    }
-
     var uniqueId = QB.chat.helpers.getUniqueId();
 
     expect(uniqueId).toEqual(jasmine.any(String));
