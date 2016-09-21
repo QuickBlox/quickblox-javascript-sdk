@@ -1,7 +1,8 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.1.5",  "homepage": "https://quickblox.com/developers/Javascript",
+  "version": "2.2.2",
+  "homepage": "https://quickblox.com/developers/Javascript",
   "main": "quickblox.js",
   "license": "Apache 2.0",
   "keywords": [
