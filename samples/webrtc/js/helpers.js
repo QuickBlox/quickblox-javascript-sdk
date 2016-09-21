@@ -3,6 +3,7 @@
 
     /** GLOBAL */
     window.app = {};
+    app.stream;
     app.helpers = {};
     app.filter = {
         'names': 'no _1977 inkwell moon nashville slumber toaster walden'

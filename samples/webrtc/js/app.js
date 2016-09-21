@@ -98,7 +98,6 @@
                 app.callees = {};
                 app.calleesAnwered = [];
                 app.users = [];
-                app.videoMain = 0;
             },
             'dashboard': function() {
                 if(_.isEmpty(app.caller)) {
@@ -475,7 +474,6 @@
         $(document).on('click', '.j-callees__callee__video', function() {
             var $that = $(this),
                 userId = +($(this).data('user')),
-                classesName = [],
                 activeClass = [];
 
             if( app.currentSession.peerConnections[userId].stream && !_.isEmpty( $that.attr('src')) ) {
@@ -519,8 +517,39 @@
                    app.currentSession.mute( $btn.data('target') );
                }
            }
-       });
+        });
+        
+        /** Video recording */
+        $(document).on('click', '.j-record', function() {
+            var $btn = $(this),
+                isActive = $btn.hasClass('active');
 
+            if( _.isEmpty( app.currentSession)) {
+                return false;
+            } else {
+                var connection = app.currentSession.peerConnections[app.mainVideo]
+                if (!connection){
+                    return false;
+                }
+                if(!$btn.hasClass('active')){
+                    var streamForRecord = connection.stream;
+                    QB.recorder.start(streamForRecord, {}, 10);
+                    $btn.addClass('active');
+                } else {
+                    $btn.removeClass('active');
+                    QB.recorder.stop();
+                }
+            }
+        });
+
+        QB.recorder.onStopRecording = function(){
+            var down = confirm('Do you want to download video?');
+
+            if(down){
+                QB.recorder.download(name);
+            }
+        };
+        
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
@@ -743,6 +772,7 @@
             console.group('onRemoteStreamListener.');
                 console.log('userId: ', userId);
                 console.log('Session: ', session);
+                console.log('Stream: ', stream);
             console.groupEnd();
 
             var state = app.currentSession.connectionStateForUser(userId),
