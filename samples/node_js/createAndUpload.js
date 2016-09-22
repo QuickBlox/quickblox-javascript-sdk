@@ -2,8 +2,8 @@
  * Sample for Node env.
  * createAndUpload an image
  *
- * Start example from the root folder
- * by command `node samples/node_js/createAndUpload.js`
+ * Start example 
+ * by command `node createAndUpload.js`
  */
 
 /**
@@ -15,7 +15,7 @@ const QB = require('../../src/qbMain.js');
 /** See http://quickblox.com/developers/Javascript#Configuration */
 const CONFIG = {
     'debug': {
-        'mode': 2, //  [1, 2] logs to console and file ON
+        'mode': 2,
         'file': 'sample_debug.log'
     }
 };

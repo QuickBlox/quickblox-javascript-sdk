@@ -13,6 +13,3 @@ quickblox.js
 
 #jasmine-npm generate
 .grunt
-
-# A Log file of node js example
-sample_debug.log

@@ -343,7 +343,7 @@ describe('Chat API', function() {
         it('can create a dialog (group)', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
-                name: "GroupDialogName",
+                name: 'GroupDialogName',
                 type: 2
             };
 

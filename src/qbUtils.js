@@ -25,14 +25,11 @@ var ObjectId = {
 var Utils = {
     /**
      * [getEnv get a name of an execution environment]
-     * @return {string/null} return name of env. (node/browser) 
-     *                              or null if it's not node or browser
+     * @return {object} return names of env. (node/browser) 
      */
     getEnv: function() {
         var isNode = typeof window === 'undefined' && typeof exports === 'object',
             isBrowser = typeof window !== 'undefined';
-
-        //return isNode ? 'node' : isBrowser ? 'browser' : null;
 
         return {
           'browser': isBrowser,
