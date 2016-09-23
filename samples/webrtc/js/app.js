@@ -527,29 +527,41 @@
             if( _.isEmpty( app.currentSession)) {
                 return false;
             } else {
-                var connection = app.currentSession.peerConnections[app.mainVideo]
-                if (!connection){
-                    return false;
-                }
-                if(!$btn.hasClass('active')){
-                    var streamForRecord = connection.stream;
-                    QB.recorder.start(streamForRecord, {}, 10);
-                    $btn.addClass('active');
+                if(!isActive){
+                    var connections = app.currentSession.peerConnections,
+                        connection = connections[app.mainVideo],
+                        connectionsCount = Object.keys(connections).length;
+
+                    if (!connection || connectionsCount !== 1){
+                        return false;
+                    }
+
+                    if(!QB.recorder.isRecording){
+                        var streamForRecord = connection.stream;
+                        QB.recorder.start(streamForRecord, {}, 10);
+                    }
                 } else {
-                    $btn.removeClass('active');
                     QB.recorder.stop();
                 }
             }
         });
 
+        QB.recorder.onStartRecording = function(){
+            console.log('[QB Recorder] onStartRecording');
+            $('.j-record').addClass('active');
+            console.log('Start recording');
+        }
+
         QB.recorder.onStopRecording = function(){
+            console.log('[QB Recorder] onStopRecording');
+            $('.j-record').removeClass('active');
             var down = confirm('Do you want to download video?');
 
             if(down){
-                QB.recorder.download(name);
+                QB.recorder.download('QB_WEBrtc_sample' + Date.now());
             }
         };
-        
+
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
@@ -661,6 +673,8 @@
             } else {
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
+
+            QB.recorder.stop();
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
@@ -740,6 +754,8 @@
             console.groupEnd();
 
             app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
+
+            QB.recorder.stop();
         };
 
         QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
