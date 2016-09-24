@@ -1,4 +1,3 @@
-
 var dialogs = {};
 
 function onSystemMessageListener(message) {
@@ -19,82 +18,71 @@ function onSystemMessageListener(message) {
 }
 
 function retrieveChatDialogs() {
-  // get the chat dialogs list
-  //
-  QB.chat.dialog.list(null, function(err, resDialogs) {
-    if (err) {
-      console.log(err);
-    } else {
+    QB.chat.dialog.list(null, function(err, resDialogs) {
+        if (err) {
+          console.error(err);
+        } else {
+            // repackage dialogs data and collect all occupants ids
+            var occupantsIds = [];
 
-      // repackage dialogs data and collect all occupants ids
-      //
-      var occupantsIds = [];
+            // hide login form
+            $('#loginForm').modal('hide');
 
-      if(resDialogs.items.length === 0){
+            if(resDialogs.items.length === 0){
+                // setup attachments button handler
+                $("#load-img").change(function(){
+                    var inputFile = $("input[type=file]")[0].files[0];
+                    
+                    if (inputFile) {
+                        $("#progress").show(0);
+                    }
 
-        // hide login form
-        $("#loginForm").modal("hide");
+                    clickSendAttachments(inputFile);
+                });
 
-        // setup attachments button handler
-        //
-        $("#load-img").change(function(){
-          var inputFile = $("input[type=file]")[0].files[0];
-          if (inputFile) {
-            $("#progress").show(0);
-          }
+                return;
+            }
 
-          clickSendAttachments(inputFile);
-        });
+            resDialogs.items.forEach(function(item, i, arr) {
+                var dialogId = item._id;
+                dialogs[dialogId] = item;
 
-        return;
-      }
+                // join room
+                if (item.type != 3) {
+                    QB.chat.muc.join(item.xmpp_room_jid, function() {
+                        console.info('Joined dialog '+ dialogId);
+                    });
+                }
 
-      resDialogs.items.forEach(function(item, i, arr) {
-        var dialogId = item._id;
-        dialogs[dialogId] = item;
+                item.occupants_ids.map(function(userId) {
+                    occupantsIds.push(userId);
+                });
+            });
 
-        // join room
-        if (item.type != 3) {
-          QB.chat.muc.join(item.xmpp_room_jid, function() {
-             console.log("Joined dialog "+dialogId);
-          });
+            // load dialogs' users
+            updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
+                // show dialogs
+                resDialogs.items.forEach(function(item, i, arr) {
+                    showOrUpdateDialogInUI(item, false);
+                });
+
+                // and trigger the 1st dialog
+                triggerDialog(resDialogs.items[0]._id);
+
+                // setup attachments button handler
+                $("#load-img").change(function(){
+                    var inputFile = $("input[type=file]")[0].files[0];
+                    
+                    if (inputFile) {
+                        $("#progress").show(0);
+                        $(".input-group-btn_change_load").addClass("visibility_hidden");
+                    }
+
+                    clickSendAttachments(inputFile);
+                });
+            });
         }
-
-        item.occupants_ids.map(function(userId) {
-          occupantsIds.push(userId);
-        });
-      });
-
-      // load dialogs' users
-      //
-      updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
-        // show dialogs
-        //
-        resDialogs.items.forEach(function(item, i, arr) {
-          showOrUpdateDialogInUI(item, false);
-        });
-
-        //  and trigger the 1st dialog
-        //
-        triggerDialog(resDialogs.items[0]._id);
-
-        // hide login form
-        $("#loginForm").modal("hide");
-
-        // setup attachments button handler
-        //
-        $("#load-img").change(function(){
-          var inputFile = $("input[type=file]")[0].files[0];
-          if (inputFile) {
-            $("#progress").show(0);
-            $(".input-group-btn_change_load").addClass("visibility_hidden");
-          }
-
-          clickSendAttachments(inputFile);
-        });
-      });
-    }
-  });
+    });
 }
 
 function showOrUpdateDialogInUI(itemRes, updateHtml) {
@@ -334,12 +322,10 @@ function notifyOccupants(dialogOccupants, dialogId, notificationType) {
 //
 function getAndShowNewDialog(newDialogId) {
   // get the dialog and users
-  //
   QB.chat.dialog.list({_id: newDialogId}, function(err, res) {
     if (err) {
       console.log(err);
     } else {
-
       var newDialog = res.items[0];
 
       // save dialog to local storage
@@ -354,7 +340,7 @@ function getAndShowNewDialog(newDialogId) {
       updateDialogsUsersStorage(jQuery.unique(occupantsIds), function(){
 
       });
-
+      console.info('DIALOG LIST newDialog', newDialog);
       joinToNewDialogAndShow(newDialog);
     }
   });
@@ -400,11 +386,12 @@ function getAndUpdateDialog(updatedDialogId) {
 
 // show modal window with dialog's info
 function showDialogInfoPopup() {
-  $("#update_dialog").modal("show");
-  $('#update_dialog .progress').hide();
+    if(Object.keys(currentDialog).length !== 0) {
+        $('#update_dialog').modal('show');
+        $('#update_dialog .progress').hide();
 
-  // shwo current dialog's occupants
-  setupDialogInfoPopup(currentDialog.occupants_ids, currentDialog.name);
+        setupDialogInfoPopup(currentDialog.occupants_ids, currentDialog.name);
+    }
 }
 
 // show information about the occupants for current dialog

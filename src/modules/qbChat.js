@@ -1690,7 +1690,7 @@ Helpers.prototype = {
         } else if (typeof jid_or_user_id === 'number') {
             jid = jid_or_user_id + '-' + config.creds.appId + '@' + config.endpoints.chat;
         } else {
-            throw new Error(unsupportedError);
+            throw new Error('The method "jidOrUserId" may take jid or id');
         }
         return jid;
     },
