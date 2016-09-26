@@ -5,7 +5,7 @@
  *
  */
 
-require('strophe');
+require('strophe.js');
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 

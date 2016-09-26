@@ -13,7 +13,7 @@ var isBrowser = typeof window !== "undefined";
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
 if (isBrowser) {
-  require('strophe');
+  require('strophe.js');
   // add extra namespaces for Strophe
   Strophe.addNamespace('CARBONS', 'urn:xmpp:carbons:2');
   Strophe.addNamespace('CHAT_MARKERS', 'urn:xmpp:chat-markers:0');
