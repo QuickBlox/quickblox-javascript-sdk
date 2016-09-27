@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "license": [
@@ -45,7 +45,7 @@
     "jquery": "^2.2.0",
     "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",
-    "strophe": "~1.2.4",
+    "strophe.js": "^1.2.8",
     "xml2js": "^0.4.13"
   },
   "devDependencies": {

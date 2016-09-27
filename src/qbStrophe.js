@@ -4,10 +4,8 @@
  * Strophe Connection Object
  */
 
-/* Globals uses for jshint checker */
-/* globals Strophe */
+require('strophe.js');
 
-require('strophe');
 
 var config = require('./qbConfig');
 var chatPRTCL = config.chatProtocol;
