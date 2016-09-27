@@ -549,7 +549,6 @@
         QB.recorder.onStartRecording = function(){
             console.log('[QB Recorder] onStartRecording');
             $('.j-record').addClass('active');
-            console.log('Start recording');
         }
 
         QB.recorder.onStopRecording = function(){

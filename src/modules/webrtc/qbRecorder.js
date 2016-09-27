@@ -30,6 +30,7 @@ function Recorder() {
 	this.onStartRecording = null;
 	this._downloadName = null;
 	this.isRecording = false;
+	this._worker = null;
 
 	if(window.Worker){
 		var blob = new Blob([
@@ -40,7 +41,7 @@ function Recorder() {
 		this._worker = new Worker(window.URL.createObjectURL(blob));
 		this._worker.onmessage = function(message){
 			var data = message.data;
-			
+
 			self[data.cmd](data.params);
 		}
 	}
@@ -91,6 +92,14 @@ Recorder.prototype.workerScriptContent = function(){
 Recorder.prototype.start = function(stream, options, time){
 	var self = this;
 
+	if(!window.W){
+		throw new Error('Your browser isn\'t supported MediaRecorder. You can\'t record stream.');
+		return;
+	} else if(!window.Worker){
+		throw new Error('Your browser isn\'t supported Worker. You can\'t record stream.');
+		return;
+	}
+
 	self._recordedBlobs = [];
 
 	// set options object
@@ -108,15 +117,10 @@ Recorder.prototype.start = function(stream, options, time){
 			}
 		}
 	}
-	try {
-		self._mediaRecorder = new MediaRecorder(stream, _options, time);
-	} catch (e) {
-		alert('Exception while creating MediaRecorder: '
-			+ e + '. mimeType: ' + _options.mimeType);
-		return;
-	}
 
-	// set on onStopRecording callback. Can be run only if
+	self._mediaRecorder = new MediaRecorder(stream, _options, time);
+
+	// set on onStopRecording callback.
 	if(typeof self.onStopRecording === 'function'){
 		self._mediaRecorder.onstop = self.onStopRecording;
 	}
@@ -133,6 +137,7 @@ Recorder.prototype.start = function(stream, options, time){
 	if(typeof self.onStartRecording === 'function'){
 		self.onStartRecording();
 	}
+
 	// Set timeslice.
 	self._mediaRecorder.start(time || 10);
 	self.isRecording = true;
