@@ -33,7 +33,7 @@ var NodeClient,
     nodeStanzasCallbacks = {};
 
 if (Utils.getEnv().browser) {
-    require('strophe');
+    require('strophe.js');
 
     Strophe.addNamespace('CARBONS', chatUtils.MARKERS.CARBONS);
     Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
