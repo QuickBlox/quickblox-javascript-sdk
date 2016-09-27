@@ -270,11 +270,11 @@ function isTypingTimeoutCallback() {
 
 // send 'is typing' status
 function sendTypingStatus() {
-  if (currentDialog.type == 3) {
-    QB.chat.sendIsTypingStatus(opponentId);
-  } else {
-    QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
-  }
+    if (currentDialog.type == 3) {
+        QB.chat.sendIsTypingStatus(opponentId);
+    } else if(currentDialog && currentDialog.xmpp_room_jid) {
+        QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
+    }
 }
 
 // send 'stop typing' status

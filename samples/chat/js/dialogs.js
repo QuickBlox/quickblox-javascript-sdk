@@ -146,24 +146,22 @@ function updateDialogsList(dialogId, text){
 
 // Choose dialog
 function triggerDialog(dialogId){
-  console.log("Select a dialog with id: " + dialogId + ", name: " + dialogs[dialogId].name);
+    console.info('Select a dialog with id: ' + dialogId + ', name: ' + dialogs[dialogId].name);
 
-  // deselect
-  var kids = $('#dialogs-list').children();
-  kids.removeClass('active').addClass('inactive');
+    // deselect
+    var kids = $('#dialogs-list').children();
+    kids.removeClass('active').addClass('inactive');
 
-  // select
-  $('#'+dialogId).removeClass('inactive').addClass('active');
+    // select
+    $('#'+dialogId).removeClass('inactive').addClass('active');
 
-  $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
+    $('.list-group-item.active .badge').text(0).delay(250).fadeOut(500);
 
-  $('#messages-list').html('');
+    $('#messages-list').html('');
 
-  // load chat history
-  //
-  retrieveChatMessages(dialogs[dialogId], null);
+    retrieveChatMessages(dialogs[dialogId], null);
 
-  $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
+    $('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));
 }
 
 function setupUsersScrollHandler(){
@@ -506,26 +504,25 @@ function onDialogUpdate() {
 
 // delete currend dialog
 function onDialogDelete() {
-  if (confirm("Are you sure you want remove the dialog?")) {
-    QB.chat.dialog.delete(currentDialog._id, function(err, res) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Dialog removed");
-        $('#'+currentDialog._id).remove();
+    if (confirm('Are you sure you want remove the dialog?')) {
+        QB.chat.dialog.delete(currentDialog._id, function(err, res) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.info('Dialog removed');
+            
+                $('#'+currentDialog._id).remove();
+                delete dialogs[currentDialog._id];
 
-        // remove from storage
-        delete dialogs[currentDialog._id];
+                if(Object.keys(dialogs).length > 0){
+                    triggerDialog(dialogs[Object.keys(dialogs)[0]]._id);
+                } else {
+                    $('#messages-list').empty();
+                }
+            }
+        });
 
-        //  and trigger the next dialog
-        if(Object.keys(dialogs).length > 0){
-          triggerDialog(dialogs[Object.keys(dialogs)[0]]._id);
-        }
-
-      }
-    });
-
-    $("#update_dialog").modal("hide");
-    $('#update_dialog .progress').show();
-  }
+        $("#update_dialog").modal("hide");
+        $('#update_dialog .progress').show();
+    }
 }

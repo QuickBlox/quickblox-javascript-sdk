@@ -583,7 +583,7 @@ ChatProxy.prototype = {
         if (message.markable) {
             stanza.c('markable', {
                 xmlns: chatUtils.MARKERS.CHAT
-            });
+            }).up();
         }
 
         if(Utils.getEnv().browser) {
