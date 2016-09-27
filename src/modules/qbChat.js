@@ -221,6 +221,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none') {
           Utils.safeCallbackCall(self.onContactListListener, userId, type);
         }
+        // send initial presence if one of client (instance) goes offline
         if (userId === currentUserId) {
           connection.send($pres().tree());
         }
