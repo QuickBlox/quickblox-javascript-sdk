@@ -31,6 +31,11 @@ function Recorder() {
 	this._downloadName = null;
 	this.isRecording = false;
 	this._worker = null;
+	this._isAvailable = false;
+
+	if(!!window.window.MediaRecorder && !!window.Worker){
+		this._isAvailable = true;
+	}
 
 	if(window.Worker){
 		var blob = new Blob([
@@ -46,6 +51,10 @@ function Recorder() {
 		}
 	}
 }
+
+Recorder.prototype.isAvailable = function(){
+	return this._isAvailable;
+};
 
 /*
  * @function workerScriptContent
@@ -92,11 +101,9 @@ Recorder.prototype.workerScriptContent = function(){
 Recorder.prototype.start = function(stream, options, time){
 	var self = this;
 
-	if(!window.W){
-		throw new Error('Your browser isn\'t supported MediaRecorder. You can\'t record stream.');
-		return;
-	} else if(!window.Worker){
-		throw new Error('Your browser isn\'t supported Worker. You can\'t record stream.');
+
+	if(!self._isAvailable){
+		throw new Error('Your browser isn\'t supported MediaRecorder or Worker. You can\'t record stream.');
 		return;
 	}
 
