@@ -15,5 +15,4 @@ quickblox.js
 .grunt
 
 # Cordova build
-samples/chat-cordova/platforms/android/CordovaLib/build
-samples/webrtc-cordova/platforms/android/CordovaLib/build
+*/build
