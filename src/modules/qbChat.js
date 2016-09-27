@@ -162,7 +162,7 @@ function ChatProxy(service, webrtcModule, conn) {
         to = stanza.getAttribute('to'),
         type = stanza.getAttribute('type'),
         userId = self.helpers.getIdFromNode(from),
-        currentUserId = self.helpers.getIdFromNode(to);
+        currentUserId = self.helpers.getIdFromNode(connection.jid);
 
     if (!type) {
       if (typeof self.onContactListListener === 'function' && roster[userId] && roster[userId].subscription !== 'none')
@@ -222,7 +222,7 @@ function ChatProxy(service, webrtcModule, conn) {
           Utils.safeCallbackCall(self.onContactListListener, userId, type);
         }
         if (userId === currentUserId) {
-          self._autoSendPresence();
+          connection.send($pres().tree());
         }
         break;
       }
