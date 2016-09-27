@@ -3,6 +3,10 @@
  *
  * Stream Record Module
  *
+ * User's callbacks (listener-functions):
+ * - onStartRecording
+ * - onStopRecording
+ *
  * @module Recorder
  */
 
@@ -20,19 +24,60 @@ function Recorder() {
 	 * isRecording;
 	 */
 
-	this._recordedBlobs = [];
-	this._mediaRecorder;
-	this.onStopRecording;
-	this.onStartRecording;
+	var self = this;
+	this._mediaRecorder = null;
+	this.onStopRecording = null;
+	this.onStartRecording = null;
+	this._downloadName = null;
 	this.isRecording = false;
-};
+
+	if(window.Worker){
+		var blob = new Blob([
+			this.workerScriptContent.toString().slice(12, -1)
+		], { type: "text/javascript" });
+
+
+		this._worker = new Worker(window.URL.createObjectURL(blob));
+		this._worker.onmessage = function(message){
+			var data = message.data;
+			
+			self[data.cmd](data.params);
+		}
+	}
+}
 
 /*
- * User's callbacks (listener-functions):
- * - onStartRecording
- * - onStopRecording
- */
+ * @function workerScriptContent
+ *
+ * The body of this function contains listeners and helper functions for worker.
+ *
+ * After creating worker can post messages. It should be an object with 2 keys:
+ * cmd - helper function name;
+ * params - helper function arguments;
+ *
+ * */
+Recorder.prototype.workerScriptContent = function(){
+	var _recordedBlobs = [],
+		recorder = {};
+	// set on onStopRecording callback. Can be run only if
 
+	onmessage = function(e) {
+		var data = e.data;
+
+		recorder[data.cmd](data.params);
+	};
+
+	recorder.push = function(blob){
+		_recordedBlobs.push(blob);
+	};
+
+	recorder.download = function(){
+		postMessage({
+			cmd: '_workerDownload',
+			params: new Blob(_recordedBlobs, {type: 'video/webm'})
+		});
+	}
+};
 
 /**
  * @function start().
@@ -71,14 +116,17 @@ Recorder.prototype.start = function(stream, options, time){
 		return;
 	}
 
-	// set on onStopRecording callback. Can be run only if 
+	// set on onStopRecording callback. Can be run only if
 	if(typeof self.onStopRecording === 'function'){
 		self._mediaRecorder.onstop = self.onStopRecording;
 	}
 
 	self._mediaRecorder.ondataavailable = function (event) {
 		if (event.data && event.data.size > 0) {
-			self._recordedBlobs.push(event.data);
+			self._worker.postMessage({
+				cmd:'push',
+				params: event.data
+			});
 		}
 	};
 
@@ -113,14 +161,20 @@ Recorder.prototype.stop = function(){
  */
 
 Recorder.prototype.download = function(name){
-	var self = this,
-		blob = new Blob(self._recordedBlobs, {type: 'video/webm'}),
-		url = window.URL.createObjectURL(blob),
+	this._downloadName = name;
+	this._worker.postMessage({
+		cmd: 'download'
+	});
+};
+
+Recorder.prototype._workerDownload = function(blob){
+	var url = window.URL.createObjectURL(blob),
 		a = document.createElement('a');
 
 	a.style.display = 'none';
 	a.href = url;
-	a.download = (name || Date.now()) + '.webm';
+	a.download = (this._downloadName || Date.now()) + '.webm';
+
 	document.body.appendChild(a);
 	a.click();
 	setTimeout(function() {
