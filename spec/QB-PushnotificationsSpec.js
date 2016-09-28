@@ -160,20 +160,10 @@ describe('PushNotifications API', function() {
         }
       });
     }, REST_REQUESTS_TIMEOUT);
-
-    /**
-     * WARNING!
-     * If run in Node and then will run again - something broken.
-     * Without running in Node env. - everything all right.
-     * Need review delete event and fix it!
-     */
+    
     it("can delete event", function(done){
-      if(isNodeEnv) {
-        pending('This describe "XMPP - real time messaging" isn\'t supported outside of the browser');
-      }
-
       QB.pushnotifications.events.delete(eventId, function(err, response) {
-        expect(err.code).toEqual(200);
+        expect(err).toBeNull();
 
         done();
       });

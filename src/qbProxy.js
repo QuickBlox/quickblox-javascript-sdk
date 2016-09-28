@@ -1,4 +1,4 @@
-/*
+/**
  * QuickBlox JavaScript SDK
  *
  * Proxy Module
@@ -10,13 +10,18 @@ var Utils = require('./qbUtils');
 
 var versionNum = config.version;
 
-// For server-side applications through using npm package 'quickblox' you should include the following lines
+/**
+ * For server-side applications through using npm package 'quickblox'
+ * you should include the following lines
+ */
 var isBrowser = typeof window !== 'undefined';
+
 if (!isBrowser) {
-  var request = require('request');
+var request = require('request');
 }
 
 var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
+
 if (isBrowser && !ajax) {
   throw new Error('Quickblox requires jQuery or Zepto');
 }
@@ -54,20 +59,24 @@ ServiceProxy.prototype = {
   },
 
   ajax: function(params, callback) {
+    Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
-    var clonedParams;
+    var _this = this,
+        clonedParams;
+
     if(params.data && params.data.file){
       clonedParams = JSON.parse(JSON.stringify(params));
       clonedParams.data.file = "...";
     }else{
       clonedParams = params;
     }
-    Utils.QBLog('[ServiceProxy]', "Request: ", params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
-    var _this = this,
-        retry = function(session) { if(!!session) _this.setSession(session); _this.ajax(params, callback); };
-
-        // console.log(params);
+    var retry = function(session) {
+        if(!!session) {
+            _this.setSession(session);
+            _this.ajax(params, callback); 
+        }
+    };
 
     var ajaxCall = {
       url: params.url,
@@ -91,7 +100,7 @@ ServiceProxy.prototype = {
         else callback(null, data);
       },
       error: function(jqHXR, status, error) {
-        Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR.responseText);
+        Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR);
 
         var errorMsg = {
           code: jqHXR.status,

@@ -89,7 +89,10 @@ var config = {
     sessionExpired: null
   },
   timeout: null,
-  debug: {mode: 0, file: null},
+  debug: {
+    mode: 0,
+    file: null
+  },
   addISOTime: false
 };
 
