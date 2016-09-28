@@ -27,7 +27,6 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-  console.info(isMessageForCurrentDialog(userId, msg.dialog_id));
   // check if it's a message for current dialog
   if (isMessageForCurrentDialog(userId, msg.dialog_id)){
     dialogsMessages.push(msg);
@@ -89,13 +88,10 @@ function retrieveChatMessages(dialog, beforeDateSent){
     }
 
     QB.chat.message.list(params, function(err, messages) {
-      console.info(messages);
-    if (messages) {
-
-
-      if(messages.items.length === 0) {
-        $("#no-messages-label").removeClass('hide');
-      } else {
+      if (messages) {
+        if(messages.items.length === 0) {
+          $("#no-messages-label").removeClass('hide');
+        } else {
         $("#no-messages-label").addClass('hide');
 
         messages.items.forEach(function(item, i, arr) {
@@ -225,7 +221,7 @@ function showMessage(userId, msg, attachmentFileId) {
   // add a message to list
   var userLogin = getUserLoginById(userId);
   var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId, msg.id);
-  console.log(messageHtml);
+
   $('#messages-list').append(messageHtml);
 
   // scroll to bottom

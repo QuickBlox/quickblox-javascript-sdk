@@ -35,7 +35,7 @@ function connectToChat(user) {
         if (res) {
             token = res.token;
             user.id = res.user_id;
-            /** ??? */
+
             mergeUsers([{user: user}]);
 
             QB.chat.connect({userId: user.id, password: user.pass}, function(err, roster) {
