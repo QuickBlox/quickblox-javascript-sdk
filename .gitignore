@@ -13,3 +13,6 @@ quickblox.js
 
 #jasmine-npm generate
 .grunt
+
+# Cordova build
+**/build
