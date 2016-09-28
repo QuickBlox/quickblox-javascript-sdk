@@ -67,7 +67,7 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onMessageErrorListener (messageId, error)
  * - onMessageTypingListener
  * - onDeliveredStatusListener (messageId, dialogId, userId);
- * - onReadStatusListener
+ * - onReadStatusListener (messageId, dialogId, userId);
  * - onSystemMessageListener (message)
  * - onContactListListener (userId, type)
  * - onSubscribeListener (userId)
@@ -361,8 +361,6 @@ ChatProxy.prototype = {
             err, rooms;
 
         var userJid = chatUtils.buildUserJid(params);
-
-        
 
         /** Connect for browser env. */
         if(Utils.getEnv().browser) {
