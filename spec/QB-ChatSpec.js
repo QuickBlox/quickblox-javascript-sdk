@@ -102,7 +102,7 @@ describe('Chat API', function() {
             }
 
             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
-      
+
             QB.chat.sendSystemMessage(QBUser1.id, {'extension': extension});
         }, MESSAGING_TIMEOUT);
 
@@ -209,18 +209,18 @@ describe('Chat API', function() {
         });
 
         describe('[Roster] Contact list: ', function() {
-            it('can retrieve contact list', function(done) {
-                QB.chat.roster.get(function(roster) {
-                    expect(roster).toBeDefined();
-                    expect(roster).toEqual(jasmine.any(Object));
-
+            /** !!Don't give back any response */
+            it('can add user to contact list', function(done) {
+                QB.chat.roster.add(QBUser2.id, function() {
                     done();
                 });
             }, IQ_TIMEOUT);
 
-            /** !!Don't give back any response */
-            it('can add user to contact list', function(done) {
-                QB.chat.roster.add(QBUser2.id, function() {
+            it('can retrieve contact list', function(done) {
+                QB.chat.roster.get(function(roster) {
+                    expect(roster).toBeDefined();
+                    expect(QBUser2.id in roster).toEqual(true);
+
                     done();
                 });
             }, IQ_TIMEOUT);
@@ -268,7 +268,7 @@ describe('Chat API', function() {
 
                 QB.chat.privacylist.update(list, function(error) {
                     expect(error).toBeDefined();
-                    
+
                     done();
                 });
             });
@@ -287,7 +287,7 @@ describe('Chat API', function() {
             it('can set active list', function(done) {
                 QB.chat.privacylist.setAsActive('test', function(error) {
                     expect(error).toBeNull();
-                    
+
                     done();
                 });
             });
@@ -339,7 +339,7 @@ describe('Chat API', function() {
     describe('REST API', function() {
         var dialogId;
         var messageId;
-        
+
         it('can create a dialog (group)', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
@@ -372,7 +372,7 @@ describe('Chat API', function() {
             var filters = null;
             QB.chat.dialog.list(filters, function(err, res) {
                 expect(err).toBeNull();
-                
+
                 expect(res).not.toBeNull();
                 expect(res.items.length).toBeGreaterThan(0);
 
@@ -423,7 +423,7 @@ describe('Chat API', function() {
 
             QB.chat.message.list(filters, function(err, res) {
                 expect(err).toBeNull();
-              
+
                 expect(res).not.toBeNull();
                 expect(res.items.length).toBeGreaterThan(0);
 
@@ -436,7 +436,7 @@ describe('Chat API', function() {
 
             QB.chat.message.unreadCount(params, function(err, res) {
                 expect(err).toBeNull();
-              
+
                 expect(res.total).toEqual(0);
                 expect(res[dialogId]).toEqual(0);
 
@@ -463,7 +463,7 @@ describe('Chat API', function() {
         it('can delete a message with id', function(done) {
             QB.chat.message.delete([messageId, 'notExistentId'], {force: 1}, function(err, res) {
                 expect(err).toBeNull();
-              
+
                 done();
 
                 messageId = null;

@@ -200,7 +200,7 @@ function ChatProxy(service, webrtcModule, conn) {
                         return;
                     }
                 }
-                
+
                 /** JOIN to dialog */
                 if(stanza.attrs.id) {
                     if(status && status.attrs.code == "110"){
@@ -383,7 +383,7 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.AUTHFAIL:
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-                        
+
                         if (typeof callback === 'function') {
                             callback(err, null);
                         }
@@ -391,7 +391,7 @@ ChatProxy.prototype = {
                         if(self._isDisconnected && typeof self.onReconnectFailedListener === 'function'){
                             Utils.safeCallbackCall(self.onReconnectFailedListener, err);
                         }
-                        
+
                         break;
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
@@ -413,7 +413,7 @@ ChatProxy.prototype = {
 
                         // enable carbons
                         self._enableCarbons();
-                            
+
                         // get the roster
                         self.roster.get(function(contacts) {
                             roster = contacts;
@@ -502,7 +502,7 @@ ChatProxy.prototype = {
 
             nClient.on('reconnect', function () {
                 Utils.QBLog('[QBChat] client is reconnected');
-                
+
                 self._isDisconnected = true;
                 self._isLogout = true;
             });
@@ -519,9 +519,9 @@ ChatProxy.prototype = {
 
             nClient.on('stanza', function (stanza) {
                 Utils.QBLog('[QBChat] RECV', stanza.toString());
-               
+
                 /**
-                 * Detect typeof incoming stanza 
+                 * Detect typeof incoming stanza
                  * and fire the Listener
                  */
                 if (stanza.is('presence')) {
@@ -835,10 +835,9 @@ RosterProxy.prototype = {
             var items = _getItems(stanza);
             /** TODO */
             for (var i = 0, len = items.length; i < len; i++) {
-                var userId = chatUtils.getAttr(items[i], 'name'),
+                var userId = self.helpers.getIdFromNode( chatUtils.getAttr(items[i], 'jid') ),
                     ask = chatUtils.getAttr(items[i], 'ask'),
                     subscription = chatUtils.getAttr(items[i], 'subscription');
-
 
                 contacts[userId] = {
                     subscription: subscription,
@@ -968,7 +967,7 @@ RosterProxy.prototype = {
             };
 
         var pres = chatUtils.createStanza(builder, presParams, 'presence');
-        
+
         Utils.QBLog('[_sendSubscriptionPresence]', params);
 
         if(Utils.getEnv().browser){
@@ -1091,7 +1090,7 @@ MucProxy.prototype = {
             connection.sendIQ(iq, function(stanza) {
                 var items = stanza.getElementsByTagName('item'),
                     userId;
-                
+
                 for (var i = 0, len = items.length; i < len; i++) {
                     userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
                     onlineUsers.push(userId);
@@ -1121,7 +1120,7 @@ PrivacyListProxy.prototype = {
     create: function(list, callback) {
         var self = this,
             userId, userJid, userMuc,
-            userAction, 
+            userAction,
             mutualBlock,
             listPrivacy = {},
             listUserId = [];
@@ -1148,7 +1147,7 @@ PrivacyListProxy.prototype = {
 
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
 
-        iq.c('query', { 
+        iq.c('query', {
             xmlns: chatUtils.MARKERS.PRIVACY
         }).c('list', {
           name: list.name
