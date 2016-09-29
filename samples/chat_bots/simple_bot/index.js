@@ -2,6 +2,16 @@
 
 const QB = require('../../../src/qbMain.js');
 
+// In order to start develop you first Chat Bot you have to register new QuickBlox account and create your first application.
+// Go to https://quickblox.com/signup and get a QuickBlox account, then go to https://admin.quickblox.com/apps/new
+// and create your first application. Then put here Application ID, Authorization key, Authorization secret.
+//
+// also
+//
+// Go to Users module in QuickBlox dashboard
+// (e.g. <your_app_id>/service/users https://admin.quickblox.com/apps/<your_app_id>/service/users) and create
+// new user for you chat bot. Then put here user's ID, password and full name.
+//
 const CONFIG = {
     "appId": "13318",
     "authKey": "WzrAY7vrGmbgFfP",
