@@ -2,7 +2,7 @@
 
 /**
  * Before using you need to install universal_rivescript
- * by the command `npm i` 
+ * by the command `npm i`
  */
 
 const CONFIG = require('./config').CONFIG;
@@ -36,7 +36,7 @@ QB.init(CONFIG.appId, CONFIG.authKey, CONFIG.authSecret);
 var qbListeners = {
     onSubscribeListener: function onSubscribeListener(userId) {
         console.log(`[QB] onSubscribeListener. Subscribe from ${userId}`);
-        
+
         QB.chat.roster.confirm(userId, function() {
             console.log(`[QB] Confirm subscription from user ${userId}`);
         });
@@ -118,6 +118,8 @@ QB.createSession({
                 console.log('[QB] chat.connect is failed', JSON.stringify(chatConnectError));
                 process.exit(1);
             }
+
+            console.log('[QB] bot is up and running');
 
             QB.chat.dialog.list({type: 2}, (dialogListError, dialogList) => {
                 if(dialogListError){

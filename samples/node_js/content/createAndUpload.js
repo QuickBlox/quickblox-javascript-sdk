@@ -2,7 +2,7 @@
  * Sample for Node env.
  * createAndUpload an image
  *
- * Start example 
+ * Start example
  * by command `node createAndUpload.js`
  */
 
@@ -10,7 +10,7 @@
  * Declaring variables
  */
 const fs = require('fs');
-const QB = require('../../src/qbMain.js');
+const QB = require('../../../src/qbMain.js');
 
 /** See http://quickblox.com/developers/Javascript#Configuration */
 const CONFIG = {
