@@ -5,4 +5,4 @@ This example demonstrates simple 1-to-1 chat bot. It can simply echo incoming me
 # Guide
 Read Chat Bots guide to understand how to build own bot for QuickBlox.
 
-[http://quickblox.com/developers/ChatBots](http://quickblox.com/developers/ChatBots)
+[https://quickblox.com/developers/ChatBots](https://quickblox.com/developers/ChatBots)
