@@ -4,7 +4,8 @@
  */
 var chatUtils = require('./qbChatHelpers'),
     config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+    Utils = require('../qbUtils'),
+    StreamManagement = require('../plugins/streamManagement');
 
 var webrtc,
     roster = {},
@@ -31,6 +32,9 @@ var connection;
 var NodeClient,
     nClient,
     nodeStanzasCallbacks = {};
+
+    //set timer for current message. (setStatusTimer).
+    // MessageSentFailListener on statusTimer timeout.
 
 if (Utils.getEnv().browser) {
     require('strophe.js');
@@ -60,6 +64,7 @@ function ChatProxy(service, webrtcModule, conn) {
     this.message = new MessageProxy(service);
     this.helpers = new Helpers();
     this.muc = new MucProxy(service);
+    this.streamManagement = new StreamManagement();
 
 /*
  * User's callbacks (listener-functions):
@@ -397,7 +402,8 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
-
+                        self.streamManagement.enable(connection);
+                        console.log('streamManagement done');
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
 
@@ -414,27 +420,27 @@ ChatProxy.prototype = {
                         }
 
                         // enable carbons
-                        self._enableCarbons();
+                        // self._enableCarbons();
                             
                         // get the roster
                         self.roster.get(function(contacts) {
                             roster = contacts;
-
+                        
                             // chat server will close your connection if you are not active in chat during one minute
                             // initial presence and an automatic reminder of it each 55 seconds
                             connection.send($pres().tree());
-
+                        
                             if (typeof callback === 'function') {
                                 callback(null, roster);
                             } else {
                                 self._isLogout = false;
-
+                        
                                 // recover the joined rooms
                                 rooms = Object.keys(joinedRooms);
                                 for (var i = 0, len = rooms.length; i < len; i++) {
                                     self.muc.join(rooms[i]);
                                 }
-
+                        
                                 // fire 'onReconnectListener'
                                 if (typeof self.onReconnectListener === 'function'){
                                     Utils.safeCallbackCall(self.onReconnectListener);
