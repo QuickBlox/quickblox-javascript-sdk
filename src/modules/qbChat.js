@@ -619,6 +619,12 @@ ChatProxy.prototype = {
 
         var stanza = chatUtils.createStanza(builder, paramsCreateMsg);
 
+        if (message.body) {
+            stanza.c('body', {
+                xmlns: chatUtils.MARKERS.CLIENT,
+            }).t(message.body).up();
+        }
+
         if(Utils.getEnv().browser) {
             // custom parameters
             if (message.extension) {
