@@ -10,7 +10,7 @@
  */
 
 var config = {
-  version: '2.1.5',
+  version: '2.3.1',
   creds: {
     appId: '',
     authKey: '',
@@ -89,7 +89,10 @@ var config = {
     sessionExpired: null
   },
   timeout: null,
-  debug: {mode: 0, file: null},
+  debug: {
+    mode: 0,
+    file: null
+  },
   addISOTime: false
 };
 

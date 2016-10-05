@@ -106,10 +106,6 @@ describe('Custom Objects API', function() {
       var paramsFile,
           paramsFor;
 
-      if(isNodeEnv) {
-          pending('Working on fix "new File" in Node env.');
-      }
-
       it ('can upload a file to an existing record', function(done){
         QB.data.create('cars', {make: 'BMW', model: 'M5', value: 100, damaged: true}, function(err, result) {
           if (err) {
