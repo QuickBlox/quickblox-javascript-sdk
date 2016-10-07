@@ -26,7 +26,7 @@ function buildMessageHTML(messageText, messageSenderId, messageDateSent, attachm
 	}
 
   var messageHtml =
-			'<div class="list-group-item" id="'+messageId+'" onclick="clickToAddMsg('+"'"+messageId+"'"+')">'+
+			'<div class="list-group-item" id="'+messageId+'">'+
 				'<time datetime="'+messageDateSent+ '" class="pull-right">'
 					+jQuery.timeago(messageDateSent)+
 				'</time>'+

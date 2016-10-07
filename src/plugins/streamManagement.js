@@ -6,26 +6,39 @@
 /** Modules */
 var Utils = require('../qbUtils');
 
+/*
+* TODO
+* 1. Add node.js Functionality
+* 2. Send messages again after error
+* 3. Add error callback
+* 4. Add success callback
+* 5.
+* */
+
+
 function StreamManagement() {
 
 	this._NS = 'urn:xmpp:sm:3';
-	this._isStreamManagementEnabling = false;
+	this._streamManagementEnabling = false;
 	this._isStreamManagementEnabled = false;
+	// The last income server counter
 	this._serverProcesssedStanzasCounter = null;
+	// Counter of the incoming stanzas
 	this._clientProcessedStanzasCounter = null;
+	// The client send stanza counter.
 	this._clientSentStanzasCounter = null;
-	// this._requestResponseIntervalCount = 0;
+	this._expectedStanzaCounter = null;
+	this._requestResponseIntervalCount = 0;
+	this.requestResponseInterval = 5;
+
+	// connection
 	this._c = null;
+
+	// Original connection.send method
 	this._originalSend = null;
 
-	this._messageQue = [];
-
-	var t = {
-		stanza: '',
-		expect: ''
-	};
-	//set timer for current message. (setStatusTimer).
-	// MessageSentFailListener on statusTimer timeout.
+	// In progress stanzas йueue
+	this._stanzasQueue = [];
 }
 
 
@@ -43,7 +56,7 @@ StreamManagement.prototype.enable = function (connection) {
 
 	if (Utils.getEnv().browser) {
 		this._c.send($build('enable', enableParams));
-		this._isStreamManagementEnabling = true;
+		this._streamManagementEnabling = true;
 	}
 };
 
@@ -51,15 +64,16 @@ StreamManagement.prototype._addEnableHandlers = function () {
 	var self = this;
 
 	if (Utils.getEnv().browser) {
-		// self._c.addHandler(onEnable, null, 'enable');
-		// self._c.addHandler(onEnabled, null, 'enabled');
-		// self._c.addHandler(onFailed, null, 'failed');
 		self._c.addHandler(_incomingStanzaHandler.bind(self));
 	}
 
 	function _incomingStanzaHandler (stanza){
+		/*
+		* Getting incoming stanza tagName
+		* */
+
 		var tagName = stanza.tagName || stanza.nodeTree.tagName;
-		console.log('income', stanza)
+
 		if(tagName === 'enabled'){
 			this._isStreamManagementEnabled = true;
 		}
@@ -69,7 +83,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
 		}
 
 		if(tagName === 'r'){
-
+			console.log('r income');
 		}
 
 		if(tagName === 'a'){
@@ -78,6 +92,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
 			if(Utils.getEnv().browser){
 				h = parseInt(stanza.getAttribute('h'));
 			}
+
 			this._setSentStanzasCounter(h);
 		}
 		return true;
@@ -93,23 +108,27 @@ StreamManagement.prototype.send = function (stanza) {
 	self._originalSend.call(self._c, stanza);
 
 	if (tagName === 'message' || tagName === 'presence' || tagName === 'iq') {
-		// this._messageQue.push(stanza);
-		self._increaseSentStanzasCounter();
+		self._increaseSentStanzasCounter(stanza);
 	}
 };
 
-StreamManagement.prototype._increaseSentStanzasCounter = function () {
+StreamManagement.prototype._increaseSentStanzasCounter = function (stanza) {
 	var self = this;
 
-	if(self._isStreamManagementEnabling){
+	if(self._streamManagementEnabling){
 		self._clientSentStanzasCounter++;
+		self._requestResponseIntervalCount++;
+		self._stanzasQueue.push(stanza);
+
 		console.info('_increaseSentStanzasCounter', self._clientSentStanzasCounter);
 
-	}
+		if(self._isStreamManagementEnabled){
+			if (self._requestResponseIntervalCount === self.requestResponseInterval) {
+				self._requestResponseIntervalCount = 0;
+				self._expectedStanzaCounter = self._clientSentStanzasCounter;
 
-	if(self._isStreamManagementEnabled){
-		if (Utils.getEnv().browser) {
-			self.send($build('r', {xmlns: self._NS}));
+				this._originalSend.call(this._c, $build('r', { xmlns: this._NS }));
+			}
 		}
 	}
 };
@@ -121,10 +140,15 @@ StreamManagement.prototype.getClientSentStanzasCounter = function(){
 StreamManagement.prototype._setSentStanzasCounter = function (count){
 	this._serverProcesssedStanzasCounter = count;
 
-	if (this._clientSentStanzasCounter !== this._serverProcesssedStanzasCounter) {
-		console.error('Stream Management stanzas counter mismatch. Client value: ' + this._clientSentStanzasCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter);
+	if (this._expectedStanzaCounter !== this._serverProcesssedStanzasCounter) {
+		// TO DO:
+		// add ERROR stanzas listener.
+
+		console.error('Stream Management stanzas counter mismatch. Client value: ' + this._expectedStanzaCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter);
 	} else {
-		console.info('counters are same. Client value: ' + this._clientSentStanzasCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter)
+		// add SUCCESS stanzas listener.
+		this._stanzasQueue.length = 0;
+		console.info('Counters are same. Client value: ' + this._expectedStanzaCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter)
 	}
 };
 

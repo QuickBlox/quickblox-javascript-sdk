@@ -13,7 +13,7 @@ var config = {
         active: 2
     },
     debug: {
-        mode: 1,
+        mode: 0,
         file: null
     },
     stickerpipe: {
