@@ -58,10 +58,12 @@
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
     "gulp-jshint": "^2.0.1",
+    "gulp-uglify": "^2.0.0",
     "jasmine": "^2.4.1",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
-    "load-grunt-tasks": "^1.0.0"
+    "load-grunt-tasks": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "autoupdate": {
     "source": "git",

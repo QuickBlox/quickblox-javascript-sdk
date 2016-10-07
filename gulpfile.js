@@ -26,7 +26,7 @@ gulp.task('transform', function () {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('uglify',['transform'], function () {
+gulp.task('uglify', function () {
     gulp.src('./quickblox.js')
         .pipe(uglify())
         .pipe(gulp.dest('./'));
@@ -35,6 +35,3 @@ gulp.task('uglify',['transform'], function () {
 gulp.task('develop', function() {
 
 });
-
-
-
