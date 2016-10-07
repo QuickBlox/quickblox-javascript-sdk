@@ -58,6 +58,7 @@
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
     "gulp-jshint": "^2.0.1",
+    "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.0",
     "jasmine": "^2.4.1",
     "jshint": "^2.9.3",
@@ -82,8 +83,9 @@
   "scripts": {
     "setDependencies": "npm i && npm install -g grunt-cli && npm install -g jasmine",
     "test": "jasmine",
-    "develop": "gulp",
-    "build": "export NODE_ENV=develop || set NODE_ENV=develop && npm run lint && gulp transform && gulp uglify",
+    "setNodeVarDevelopment": "export NODE_ENV=develop || set NODE_ENV=develop",
+    "develop": "npm run setNodeVarDevelopment && gulp",
+    "build": "npm run lint && gulp transform && gulp uglify",
     "lint": "jshint src --reporter=node_modules/jshint-stylish"
   }
 }

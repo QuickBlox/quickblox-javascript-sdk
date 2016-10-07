@@ -9,11 +9,11 @@ var source = require('vinyl-source-stream');
 
 var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
+var rename = require("gulp-rename");
 
-var connect = require('gulp-connect')
+var connect = require('gulp-connect');
 
 gulp.task('transform', function () {
-    console.log(process.env.NODE_ENV);
     let isDevelopment = process.env.NODE_ENV === 'development',
         browserifyOpts = {
             debug: isDevelopment,
@@ -28,7 +28,12 @@ gulp.task('transform', function () {
 });
 
 gulp.task('uglify', function () {
-    gulp.src('./quickblox.js')
+    gulp.src('quickblox.js')
         .pipe(uglify())
+        .pipe(rename('quickblox.min.js'))
         .pipe(gulp.dest('./'));
+});
+
+gulp.task('default', function () {
+    gulp.watch('src/**/*.js', ['transform', 'uglify']);
 });
