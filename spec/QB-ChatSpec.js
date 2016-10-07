@@ -87,23 +87,27 @@ describe('Chat API', function() {
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive system message', function(done) {
-            var extension = {
-                name: 'Walle',
-                action: 'Found love'
+            var msg = {
+                body: 'Notification',
+                extension:{
+                    name: 'Walle',
+                    action: 'Found love'
+                }
             };
 
             function onSystemMessageListenerCb(receivedMessage) {
                 expect(receivedMessage).toBeDefined();
 
                 expect(receivedMessage.userId).toEqual(QBUser1.id);
-                expect(receivedMessage.extension).toEqual(extension);
+                expect(receivedMessage.body).toEqual(msg.body);
+                expect(receivedMessage.extension).toEqual(msg.extension);
 
                 done();
             }
 
             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
 
-            QB.chat.sendSystemMessage(QBUser1.id, {'extension': extension});
+            QB.chat.sendSystemMessage(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
