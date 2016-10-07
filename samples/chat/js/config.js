@@ -1,44 +1,48 @@
 var QBApp = {
-  appId: 28287,
-  authKey: 'XydaWcf8OO9xhGT',
-  authSecret: 'JZfqTspCvELAmnW'
+    appId: 16,
+    authKey: 'E5y5Ug8xXrKdz57',
+    authSecret: 'DtD9zbS28New6tg'
 };
 
 var config = {
-  chatProtocol: {
-    active: 2
-  },
-  debug: {
-    mode: 1,
-    file: null
-  },
-  stickerpipe: {
-    elId: 'stickers_btn',
+	endpoints: {
+		api: "apistage4.quickblox.com", // set custom API endpoint
+		chat: "chatstage4.quickblox.com" // set custom Chat endpoint
+	},
+    chatProtocol: {
+        active: 2
+    },
+    debug: {
+        mode: 1,
+        file: null
+    },
+    stickerpipe: {
+	    elId: 'stickers_btn',
 
-    apiKey: '847b82c49db21ecec88c510e377b452c',
+	    apiKey: '847b82c49db21ecec88c510e377b452c',
 
-    enableEmojiTab: false,
-    enableHistoryTab: true,
-    enableStoreTab: true,
+	    enableEmojiTab: false,
+	    enableHistoryTab: true,
+	    enableStoreTab: true,
 
-    userId: null,
+	    userId: null,
 
-    priceB: '0.99 $',
-    priceC: '1.99 $'
-  }
+	    priceB: '0.99 $',
+	    priceC: '1.99 $'
+    }
 };
 
 var QBUser1 = {
-        id: 18065508,
-        name: 'dima1',
-        login: 'dimajs1',
-        pass: 'dimatest'
-    }, 
+		id: 619,
+		name: 'user1user1',
+		login: 'user1user1',
+		pass: 'user1user1'
+	},
     QBUser2 = {
-        id: 18065532,
-        name: 'dima2',
-        login: 'dimatest2',
-        pass: 'dimatest'
+	    id: 620,
+	    name: 'user2user2',
+	    login: 'user2user2',
+	    pass: 'user2user2'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);

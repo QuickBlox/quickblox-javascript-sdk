@@ -33,8 +33,6 @@ var NodeClient,
     nClient,
     nodeStanzasCallbacks = {};
 
-    //set timer for current message. (setStatusTimer).
-    // MessageSentFailListener on statusTimer timeout.
 
 if (Utils.getEnv().browser) {
     require('strophe.js');
@@ -403,7 +401,6 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
                         self.streamManagement.enable(connection);
-                        console.log('streamManagement done');
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
 
@@ -420,7 +417,7 @@ ChatProxy.prototype = {
                         }
 
                         // enable carbons
-                        // self._enableCarbons();
+                        self._enableCarbons();
                             
                         // get the roster
                         self.roster.get(function(contacts) {

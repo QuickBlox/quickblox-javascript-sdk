@@ -45,7 +45,7 @@ module.exports = function (grunt) {
     },
 
     watch: {
-      files: ['src/*.js', 'src/modules/*.js', 'src/modules/webrtc/*.js'],
+      files: ['src/*.js', 'src/modules/*.js', 'src/plugins/*.js', 'src/modules/webrtc/*.js'],
       tasks: ['browserify', 'notify:browserify', 'uglify', 'notify:uglify'],
       options: {
         spawn: false,
