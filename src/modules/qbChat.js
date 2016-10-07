@@ -1,7 +1,8 @@
-/*
- * QuickBlox JavaScript SDK
- * Chat Module
- */
+'use strict';
+
+/** JSHint inline rules */
+/* globals Strophe, $pres, $msg, $iq */
+
 var chatUtils = require('./qbChatHelpers'),
     config = require('../qbConfig'),
     Utils = require('../qbUtils');
@@ -191,7 +192,7 @@ function ChatProxy(service, webrtcModule, conn) {
                  * if you make 'leave' from dialog
                  * stanza will be contains type="unavailable"
                  */
-                var type = stanza.attrs.type;
+                type = stanza.attrs.type;
 
                 /** LEAVE from dialog */
                 if(type && type === 'unavailable' && nodeStanzasCallbacks['muc:leave']) {
@@ -1205,7 +1206,7 @@ PrivacyListProxy.prototype = {
             return iq;
         }
 
-        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i=i+2) {
+        for (let index = 0, i = 0, len = listUserId.length; index < len; index++, i = i + 2) {
             userId = listUserId[index];
             mutualBlock = listPrivacy[userId].mutualBlock;
 
@@ -1369,7 +1370,7 @@ PrivacyListProxy.prototype = {
             };
 
         if(Utils.getEnv().browser){
-            var iq = $iq(stanzaParams).c('query', {
+            iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             });
 
@@ -1767,18 +1768,6 @@ Helpers.prototype = {
             return null;
         }
         return arrayElements[arrayElements.length-1];
-    },
-    getUniqueId: function(suffix) {
-        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : r & 0x3 | 0x8;
-            return v.toString(16);
-        });
-        if (typeof(suffix) == 'string' || typeof(suffix) == 'number') {
-            return uuid + ':' + suffix;
-        } else {
-            return uuid + '';
-        }
     }
 };
 

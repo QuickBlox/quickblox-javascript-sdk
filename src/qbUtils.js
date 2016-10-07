@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -36,27 +38,27 @@ var Utils = {
           'node': isNode
         };
     },
-  safeCallbackCall: function() {
-    var listenerString = arguments[0].toString(),
-        listenerName = listenerString.split('(')[0].split(' ')[1],
-        argumentsCopy = [], listenerCall;
+    safeCallbackCall: function() {
+        var listenerString = arguments[0].toString(),
+            listenerName = listenerString.split('(')[0].split(' ')[1],
+            argumentsCopy = [], listenerCall;
 
-      for (var i = 0; i < arguments.length; i++) {
-        argumentsCopy.push(arguments[i]);
-      }
+        for (var i = 0; i < arguments.length; i++) {
+          argumentsCopy.push(arguments[i]);
+        }
 
-      listenerCall = argumentsCopy.shift();
+        listenerCall = argumentsCopy.shift();
 
-    try {
-      listenerCall.apply(null, argumentsCopy);
-    } catch (err) {
-      if (listenerName === '') {
-        console.error('Error: ' + err);
-      }else{
-        console.error('Error in listener ' + listenerName + ': ' + err);
-      }
-    }
-  },
+        try {
+            listenerCall.apply(null, argumentsCopy);
+        } catch (err) {
+            if (listenerName === '') {
+              console.error('Error: ' + err);
+            }else{
+              console.error('Error in listener ' + listenerName + ': ' + err);
+            }
+        }
+    },
 
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
@@ -99,89 +101,93 @@ var Utils = {
     return data;
   },
 
-  QBLog: function(){
-
-    if(this.loggers){
-      for(var i=0;i<this.loggers.length;++i){
-        this.loggers[i](arguments);
-      }
-      return;
-    }
-
-    this.loggers = [];
-
-    var consoleLoggerFunction = function(){
-      var logger = function(args){
-        console.log.apply(console, Array.prototype.slice.call(args));
-      };
-      return logger;
-    };
-
-    var fileLoggerFunction = function(){
-      var logger = function(args){
-        if(isBrowser){
-          throw unsupported;
-        }else{
-
-          var data = [];
-          for (var i = 0; i < args.length; i++) {
-            data.push(JSON.stringify(args[i]));
-          }
-          data = data.join(" ");
-
-          var toLog = "\n" + new Date() + ". " + data;
-          fs.appendFile(config.debug.file, toLog, function(err) {
-            if(err) {
-              return console.error("Error while writing log to file. Error: " + err);
+    QBLog: function(){
+        if(this.loggers){
+            for(var i=0;i<this.loggers.length;++i){
+                this.loggers[i](arguments);
             }
-          });
+        
+            return;
         }
-      };
-      return logger;
-    };
 
-    // Build loggers
-    //
+        var logger;
+        this.loggers = [];
 
-    // format "debug: { }"
-    if (typeof config.debug === 'object'){
+        var consoleLoggerFunction = function(){
+            var logger = function(args){
+                console.log.apply(console, Array.prototype.slice.call(args));
+            };
+      
+            return logger;
+        };
 
-      if(typeof config.debug.mode === 'number'){
-        if(config.debug.mode == 1){
-          var logger = consoleLoggerFunction();
-          this.loggers.push(logger);
-        }else if(config.debug.mode == 2){
-          var logger = fileLoggerFunction();
-          this.loggers.push(logger);
+        var fileLoggerFunction = function(){
+            var logger = function(args){
+                if(isBrowser){
+                    throw unsupported;
+                } else {
+                    var data = [];
+                
+                    for (var i = 0; i < args.length; i++) {
+                        data.push(JSON.stringify(args[i]));
+                    }
+          
+                    data = data.join(" ");
+
+                    var toLog = "\n" + new Date() + ". " + data;
+            
+                    fs.appendFile(config.debug.file, toLog, function(err) {
+                        if(err) {
+                            return console.error('Error while writing log to file. Error: ' + err);
+                        }
+                    });
+                }
+            };
+      
+            return logger;
+        };
+
+        // Build loggers
+        // format "debug: { }"
+
+        if(typeof config.debug === 'object'){
+            if(typeof config.debug.mode === 'number'){
+                if(config.debug.mode == 1){
+                    logger = consoleLoggerFunction();
+                    this.loggers.push(logger);
+                } else if(config.debug.mode == 2){
+                    logger = fileLoggerFunction();
+                    this.loggers.push(logger);
+                }
+            } else if(typeof config.debug.mode === 'object'){
+                var self = this;
+                
+                config.debug.mode.forEach(function(mode, i, arr) {
+                    if(mode === 1){
+                        logger = consoleLoggerFunction();
+                        self.loggers.push(logger);
+                    } else if (mode === 2){
+                        logger = fileLoggerFunction();
+                        self.loggers.push(logger);
+                    }
+                });
+            }
+
+        // format "debug: true"
+        // backward compatibility
+        }else if (typeof config.debug === 'boolean'){
+            if(config.debug){
+                logger = consoleLoggerFunction();
+                this.loggers.push(logger);
+            }
         }
-      }else if(typeof config.debug.mode === 'object'){
-        var self = this;
-        config.debug.mode.forEach(function(mode, i, arr) {
-          if (mode === 1){
-            var logger = consoleLoggerFunction();
-            self.loggers.push(logger);
-          }else if (mode === 2){
-            var logger = fileLoggerFunction();
-            self.loggers.push(logger);
-          }
-        });
-      }
 
-    // format "debug: true"
-    // backward compatibility
-    }else if (typeof config.debug === 'boolean'){
-      if(config.debug){
-        var logger = consoleLoggerFunction();
-        this.loggers.push(logger);
-      }
-    }
-
-    if(this.loggers){
-      for(var i=0;i<this.loggers.length;++i){
-        this.loggers[i](arguments);
-      }
-    }
-  },
+        if(this.loggers){
+            for(let i=0;i<this.loggers.length;++i){
+                this.loggers[i](arguments);
+            }
+        }
+    },
     isWebRTCAvailble: function() {
         /** Shims */
         var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection,

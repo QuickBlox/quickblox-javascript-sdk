@@ -1,3 +1,8 @@
+'use strict';
+
+/** JSHint inline rules (TODO: loopfunc will delete) */
+/* jshint loopfunc: true */
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC peer connection model)
