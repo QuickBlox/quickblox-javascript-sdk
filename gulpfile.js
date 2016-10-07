@@ -13,6 +13,7 @@ var uglify = require('gulp-uglify');
 var connect = require('gulp-connect')
 
 gulp.task('transform', function () {
+    console.log(process.env.NODE_ENV);
     let isDevelopment = process.env.NODE_ENV === 'development',
         browserifyOpts = {
             debug: isDevelopment,
@@ -30,8 +31,4 @@ gulp.task('uglify', function () {
     gulp.src('./quickblox.js')
         .pipe(uglify())
         .pipe(gulp.dest('./'));
-});
-
-gulp.task('develop', function() {
-
 });

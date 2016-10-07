@@ -82,8 +82,8 @@
   "scripts": {
     "setDependencies": "npm i && npm install -g grunt-cli && npm install -g jasmine",
     "test": "jasmine",
-    "develop": "set NODE_ENV=develop && gulp",
-    "build": "npm run lint && gulp transform && gulp uglify",
+    "develop": "gulp",
+    "build": "export NODE_ENV=develop || set NODE_ENV=develop && npm run lint && gulp transform && gulp uglify",
     "lint": "jshint src --reporter=node_modules/jshint-stylish"
   }
 }
