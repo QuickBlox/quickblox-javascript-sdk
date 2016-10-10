@@ -27,7 +27,7 @@ var qbChatHelpers = {
 
         if ('userId' in params) {
             jid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
-          
+
             if ('resource' in params) {
                 jid = jid + '/' + params.resource;
             }
@@ -91,9 +91,9 @@ var qbChatHelpers = {
     },
     _JStoXML: function(title, obj, msg) {
         var self = this;
-        
+
         msg.c(title);
-        
+
         Object.keys(obj).forEach(function(field) {
             if (typeof obj[field] === 'object') {
                 self._JStoXML(field, obj[field], msg);
@@ -162,7 +162,7 @@ var qbChatHelpers = {
                     var attributes = extraParams.childNodes[i].attributes;
 
                     for (var j = 0, len2 = attributes.length; j < len2; j++) {
-                        if (attributes[j].name === 'id' || attributes[j].name === 'size'){
+                        if (attributes[j].name === 'size'){
                             attach[attributes[j].name] = parseInt(attributes[j].value);
                         } else {
                             attach[attributes[j].name] = attributes[j].value;
@@ -207,7 +207,7 @@ var qbChatHelpers = {
                     dialogId = extraParams.getChildText('dialog_id');
                     extension.dialog_id = dialogId;
                 }
-                 
+
                 if(extraParams.children[i].children.length === 1) {
                     var child = extraParams.children[i];
 
@@ -241,7 +241,7 @@ var qbChatHelpers = {
         var errorElement = stanzaError.getElementsByTagName('error')[0];
         var errorCode = parseInt(errorElement.getAttribute('code'));
         var errorText = errorElement.getElementsByTagName('text')[0].textContent;
-  
+
         return utils.getError(errorCode, errorText);
     },
     getLocalTime: function() {
