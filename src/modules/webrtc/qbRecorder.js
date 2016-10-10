@@ -1,7 +1,12 @@
-/*
- * QuickBlox JavaScript SDK
- *
+'use strict';
+
+/* JSHint inline rules */
+/* globals MediaRecorder, Worker, URL */
+
+/**
  * Stream Record Module
+ * 
+ * (support http://caniuse.com/#feat=mediarecorder)
  *
  * User's callbacks (listener-functions):
  * - onStartRecording
@@ -11,49 +16,48 @@
  */
 
 function Recorder() {
+    /**
+     * @constructs Recorder
+     *
+     * This constructor contains of:
+     *
+     * _recordedBlobs;
+     * _mediaRecorder;
+     * onStopRecording;
+     * onStartRecording;
+     * isRecording;
+     */
 
-	/**
-	 * @constructs Recorder
-	 *
-	 * This constructor contains of:
-	 *
-	 * _recordedBlobs;
-	 * _mediaRecorder;
-	 * onStopRecording;
-	 * onStartRecording;
-	 * isRecording;
-	 */
+    var self = this;
 
-	var self = this;
-	this._mediaRecorder = null;
-	this.onStopRecording = null;
-	this.onStartRecording = null;
-	this._downloadName = null;
-	this.isRecording = false;
-	this._worker = null;
-	this._isAvailable = false;
+    this._mediaRecorder = null;
+    this.onStopRecording = null;
+    this.onStartRecording = null;
+    this._downloadName = null;
+    this.isRecording = false;
+    this._worker = null;
+    this._isAvailable = false;
 
-	if(!!window.window.MediaRecorder && !!window.Worker){
-		this._isAvailable = true;
-	}
+    if(!!MediaRecorder && !!Worker){
+        this._isAvailable = true;
+    }
 
-	if(window.Worker){
-		var blob = new Blob([
-			this.workerScriptContent.toString().slice(12, -1)
-		], { type: "text/javascript" });
+    if(Worker){
+        var blob = new Blob([
+            this.workerScriptContent.toString().slice(12, -1)
+        ], { type: 'text/javascript' });
 
+        this._worker = new window.Worker(URL.createObjectURL(blob));
+        this._worker.onmessage = function(message){
+            var data = message.data;
 
-		this._worker = new Worker(window.URL.createObjectURL(blob));
-		this._worker.onmessage = function(message){
-			var data = message.data;
-
-			self[data.cmd](data.params);
-		}
-	}
+            self[data.cmd](data.params);
+        };
+    }
 }
 
 Recorder.prototype.isAvailable = function(){
-	return this._isAvailable;
+    return this._isAvailable;
 };
 
 /*
@@ -67,31 +71,31 @@ Recorder.prototype.isAvailable = function(){
  *
  * */
 Recorder.prototype.workerScriptContent = function(){
-	var _recordedBlobs = [],
-		recorder = {};
-	// set on onStopRecording callback. Can be run only if
+    var _recordedBlobs = [],
+        recorder = {};
 
-	onmessage = function(e) {
-		var data = e.data;
+    onmessage = function(e) {
+        var data = e.data;
 
-		recorder[data.cmd](data.params);
-	};
+        recorder[data.cmd](data.params);
+    };
 
-	recorder.push = function(blob){
-		_recordedBlobs.push(blob);
-	};
+    recorder.push = function(blob){
+        _recordedBlobs.push(blob);
+    };
 
-	recorder.download = function(){
-		postMessage({
-			cmd: '_workerDownload',
-			params: new Blob(_recordedBlobs, {type: 'video/webm'})
-		});
-	}
+    recorder.download = function(){
+        postMessage({
+            cmd: '_workerDownload',
+            params: new Blob(_recordedBlobs, {type: 'video/webm'})
+        });
+    };
 };
 
 /**
  * @function start().
  * Start recording function
+ * 
  * @param stream {object} The MediaStream that will be recorded. <br />
  * @param options {object} Is optional parameter.
  * can contain of: mimeType, audioBitsPerSecond, videoBitsPerSecond, bitsPerSecond. <br />
@@ -99,55 +103,53 @@ Recorder.prototype.workerScriptContent = function(){
  * This parameter takes a value of milliseconds, and represents the length of media capture to return in each Blob. <br />
  */
 Recorder.prototype.start = function(stream, options, time){
-	var self = this;
+    var self = this;
 
+    if(!self._isAvailable){
+        throw new Error('Your browser isn\'t supported MediaRecorder or Worker. You can\'t record stream.');
+    }
 
-	if(!self._isAvailable){
-		throw new Error('Your browser isn\'t supported MediaRecorder or Worker. You can\'t record stream.');
-		return;
-	}
+    self._recordedBlobs = [];
 
-	self._recordedBlobs = [];
+    // set options object
+    var _options = options;
+    _options.mimeType = options.mimeType || 'video/webm;codecs=vp9';
 
-	// set options object
-	var _options = options;
-	_options.mimeType = options.mimeType || 'video/webm;codecs=vp9';
+    if (!MediaRecorder.isTypeSupported(_options.mimeType)) {
+        _options.mimeType = 'video/webm;codecs=vp8';
 
-	if (!MediaRecorder.isTypeSupported(_options.mimeType)) {
-		_options.mimeType = 'video/webm;codecs=vp8';
+        if (!MediaRecorder.isTypeSupported(_options.mimeType)) {
+            _options.mimeType =  'video/webm';
 
-		if (!MediaRecorder.isTypeSupported(_options.mimeType)) {
-			_options.mimeType =  'video/webm';
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                _options.mimeType = '';
+            }
+        }
+    }
 
-			if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-				_options.mimeType = '';
-			}
-		}
-	}
+    self._mediaRecorder = new MediaRecorder(stream, _options, time);
 
-	self._mediaRecorder = new MediaRecorder(stream, _options, time);
+    // set on onStopRecording callback.
+    if(typeof self.onStopRecording === 'function'){
+        self._mediaRecorder.onstop = self.onStopRecording;
+    }
 
-	// set on onStopRecording callback.
-	if(typeof self.onStopRecording === 'function'){
-		self._mediaRecorder.onstop = self.onStopRecording;
-	}
+    self._mediaRecorder.ondataavailable = function(event) {
+        if (event.data && event.data.size > 0) {
+            self._worker.postMessage({
+                cmd:'push',
+                params: event.data
+            });
+        }
+    };
 
-	self._mediaRecorder.ondataavailable = function (event) {
-		if (event.data && event.data.size > 0) {
-			self._worker.postMessage({
-				cmd:'push',
-				params: event.data
-			});
-		}
-	};
+    if(typeof self.onStartRecording === 'function'){
+        self.onStartRecording();
+    }
 
-	if(typeof self.onStartRecording === 'function'){
-		self.onStartRecording();
-	}
-
-	// Set timeslice.
-	self._mediaRecorder.start(time || 10);
-	self.isRecording = true;
+    // Set timeslice.
+    self._mediaRecorder.start(time || 10);
+    self.isRecording = true;
 };
 
 /**
@@ -155,13 +157,12 @@ Recorder.prototype.start = function(stream, options, time){
  * Stop recording function.
  * This function called without parameters.
  */
-
 Recorder.prototype.stop = function(){
-	if(this._mediaRecorder){
-		this._mediaRecorder.stop();
-		this.isRecording = false;
-		this._mediaRecorder = null;
-	}
+    if(this._mediaRecorder){
+        this._mediaRecorder.stop();
+        this.isRecording = false;
+        this._mediaRecorder = null;
+    }
 
 };
 
@@ -171,28 +172,27 @@ Recorder.prototype.stop = function(){
  * @param name {string} Is optional. Will change the default recorded file name.
  * the default name is the current date in miliseconds (Date.now()).
  */
-
 Recorder.prototype.download = function(name){
-	this._downloadName = name;
-	this._worker.postMessage({
-		cmd: 'download'
-	});
+    this._downloadName = name;
+    this._worker.postMessage({
+        cmd: 'download'
+    });
 };
 
 Recorder.prototype._workerDownload = function(blob){
-	var url = window.URL.createObjectURL(blob),
-		a = document.createElement('a');
+    var url = URL.createObjectURL(blob),
+        a = document.createElement('a');
 
-	a.style.display = 'none';
-	a.href = url;
-	a.download = (this._downloadName || Date.now()) + '.webm';
+    a.style.display = 'none';
+    a.href = url;
+    a.download = (this._downloadName || Date.now()) + '.webm';
 
-	document.body.appendChild(a);
-	a.click();
-	setTimeout(function() {
-		document.body.removeChild(a);
-		window.URL.revokeObjectURL(url);
-	}, 100);
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
 };
 
 module.exports = Recorder;
