@@ -80,6 +80,6 @@
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "build": "npm run lint && gulp transform && gulp uglify",
     "develop": "cross-env NODE_ENV=develop gulp",
-    "server": "gulp connect"
+    "start": "gulp connect"
   }
 }

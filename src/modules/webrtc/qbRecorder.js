@@ -1,7 +1,7 @@
 'use strict';
 
 /* JSHint inline rules */
-/* globals MediaRecorder, Worker, URL */
+/* globals MediaRecorder, Worker, URL, onmessage:true, postMessage */
 
 /**
  * Stream Record Module
@@ -127,7 +127,12 @@ Recorder.prototype.start = function(stream, options, time){
         }
     }
 
-    self._mediaRecorder = new MediaRecorder(stream, _options, time);
+    try {
+        self._mediaRecorder = new MediaRecorder(stream, _options, time);
+    } catch(e) {
+        console.warn(e);
+        self._mediaRecorder = new MediaRecorder(stream);
+    }
 
     // set on onStopRecording callback.
     if(typeof self.onStopRecording === 'function'){

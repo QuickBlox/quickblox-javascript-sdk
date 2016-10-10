@@ -536,30 +536,39 @@
                         return false;
                     }
 
-                    if(!QB.recorder.isRecording){
-                        var streamForRecord = connection.stream;
-                        QB.recorder.start(streamForRecord, {}, 10);
+                    if(QB.recorder && QB.recorder.isAvailable()) {
+                        if(!QB.recorder.isRecording){
+                            var streamForRecord = connection.stream;
+                            QB.recorder.start(streamForRecord, {}, 10);
+                        }
                     }
                 } else {
-                    QB.recorder.stop();
+                    if(QB.recorder && QB.recorder.isAvailable()) {
+                        QB.recorder.stop();
+                    }
                 }
             }
         });
 
-        QB.recorder.onStartRecording = function(){
-            console.log('[QB Recorder] onStartRecording');
-            $('.j-record').addClass('active');
+        if(QB.recorder && QB.recorder.isAvailable()) {
+            QB.recorder.onStartRecording = function(){
+                console.log('[QB Recorder] onStartRecording');
+                $('.j-record').addClass('active');
+            };
         }
 
-        QB.recorder.onStopRecording = function(){
-            console.log('[QB Recorder] onStopRecording');
-            $('.j-record').removeClass('active');
-            var down = confirm('Do you want to download video?');
+        if(QB.recorder && QB.recorder.isAvailable()) {
+            QB.recorder.onStopRecording = function(){
+                console.log('[QB Recorder] onStopRecording');
+                $('.j-record').removeClass('active');
+                var down = confirm('Do you want to download video?');
 
-            if(down){
-                QB.recorder.download('QB_WEBrtc_sample' + Date.now());
-            }
-        };
+                if(down){
+                    QB.recorder.download('QB_WEBrtc_sample' + Date.now());
+                }
+            };
+        }
+
 
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
@@ -673,7 +682,10 @@
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
-            QB.recorder.stop();
+            if(QB.recorder && QB.recorder.isAvailable()) {
+                QB.recorder.stop();
+            }
+
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
