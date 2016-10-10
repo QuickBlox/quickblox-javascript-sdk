@@ -76,10 +76,10 @@
     }
   },
   "scripts": {
-    "setDependencies": "npm i && npm install -g grunt-cli && npm install -g jasmine",
-    "build": "npm run lint && gulp transform && gulp uglify",
+    "setDependencies": "npm i && npm install -g gulp-cli && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
+    "build": "npm run lint && gulp transform && gulp uglify",
     "develop": "cross-env NODE_ENV=develop gulp",
-    "test": "jasmine"
+    "server": "gulp connect"
   }
 }
