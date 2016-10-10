@@ -9,12 +9,12 @@ var source = require('vinyl-source-stream');
 
 var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
-var rename = require("gulp-rename");
+var rename = require('gulp-rename');
 
 var connect = require('gulp-connect');
 
 gulp.task('transform', function () {
-    let isDevelopment = process.env.NODE_ENV === 'development',
+    var isDevelopment = process.env.NODE_ENV === 'development',
         browserifyOpts = {
             debug: isDevelopment,
             standalone: 'QB'
@@ -34,6 +34,15 @@ gulp.task('uglify', function () {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('default', function () {
-    gulp.watch('src/**/*.js', ['transform', 'uglify']);
+gulp.task('connect', function() {
+    connect.server({
+        port: 8080,
+        https: true
+    });
 });
+
+gulp.task('watch', function () {
+  gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
+});
+
+gulp.task('default', ['connect', 'watch']);
