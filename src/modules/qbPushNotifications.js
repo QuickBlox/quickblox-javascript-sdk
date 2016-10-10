@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -47,14 +49,19 @@ SubscriptionsProxy.prototype = {
   },
 
   delete: function(id, callback) {
-    Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
-    this.service.ajax({url: Utils.getUrl(config.urls.subscriptions, id), type: 'DELETE', dataType:'text'},
-                      function(err, res){
-                        if (err) { callback(err, null);}
-                        else { callback(null, true);}
-                      });
-  }
+      Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
 
+      var attrAjax = {
+          'type': 'DELETE',
+          'dataType': 'text',
+          'url': Utils.getUrl(config.urls.subscriptions, id)
+      };
+    
+      this.service.ajax(attrAjax, function(err, res){
+        if (err) { callback(err, null);}
+        else { callback(null, true);}
+      });
+  }
 };
 
 // Events
@@ -96,7 +103,8 @@ EventsProxy.prototype = {
 
   delete: function(id, callback) {
     Utils.QBLog('[EventsProxy]', 'delete', id);
-    this.service.ajax({url: Utils.getUrl(config.urls.events, id), type: 'DELETE'}, callback);
+    
+    this.service.ajax({url: Utils.getUrl(config.urls.events, id), dataType: 'text', type: 'DELETE'}, callback);
   }
 };
 

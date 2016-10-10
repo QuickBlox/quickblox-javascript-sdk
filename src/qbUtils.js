@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -23,29 +25,40 @@ var ObjectId = {
 };
 
 var Utils = {
-  safeCallbackCall: function() {
-    if(!isBrowser) throw unsupported;
+    /**
+     * [getEnv get a name of an execution environment]
+     * @return {object} return names of env. (node/browser) 
+     */
+    getEnv: function() {
+        var isNode = typeof window === 'undefined' && typeof exports === 'object',
+            isBrowser = typeof window !== 'undefined';
 
-    var listenerString = arguments[0].toString(),
-        listenerName = listenerString.split('(')[0].split(' ')[1],
-        argumentsCopy = [], listenerCall;
+        return {
+          'browser': isBrowser,
+          'node': isNode
+        };
+    },
+    safeCallbackCall: function() {
+        var listenerString = arguments[0].toString(),
+            listenerName = listenerString.split('(')[0].split(' ')[1],
+            argumentsCopy = [], listenerCall;
 
-      for (var i = 0; i < arguments.length; i++) {
-        argumentsCopy.push(arguments[i]);
-      }
+        for (var i = 0; i < arguments.length; i++) {
+          argumentsCopy.push(arguments[i]);
+        }
 
-      listenerCall = argumentsCopy.shift();
+        listenerCall = argumentsCopy.shift();
 
-    try {
-      listenerCall.apply(null, argumentsCopy);
-    } catch (err) {
-      if (listenerName === '') {
-        console.error('Error: ' + err);
-      }else{
-        console.error('Error in listener ' + listenerName + ': ' + err);
-      }
-    }
-  },
+        try {
+            listenerCall.apply(null, argumentsCopy);
+        } catch (err) {
+            if (listenerName === '') {
+              console.error('Error: ' + err);
+            }else{
+              console.error('Error in listener ' + listenerName + ': ' + err);
+            }
+        }
+    },
 
   randomNonce: function() {
     return Math.floor(Math.random() * 10000);
@@ -88,139 +101,160 @@ var Utils = {
     return data;
   },
 
-  QBLog: function(){
-
-    if(this.loggers){
-      for(var i=0;i<this.loggers.length;++i){
-        this.loggers[i](arguments);
-      }
-      return;
-    }
-
-    this.loggers = [];
-
-    var consoleLoggerFunction = function(){
-      var logger = function(args){
-        console.log.apply(console, Array.prototype.slice.call(args));
-      };
-      return logger;
-    };
-
-    var fileLoggerFunction = function(){
-      var logger = function(args){
-        if(isBrowser){
-          throw unsupported;
-        }else{
-
-          var data = [];
-          for (var i = 0; i < args.length; i++) {
-            data.push(JSON.stringify(args[i]));
-          }
-          data = data.join(" ");
-
-          var toLog = "\n" + new Date() + ". " + data;
-          fs.appendFile(config.debug.file, toLog, function(err) {
-            if(err) {
-              return console.error("Error while writing log to file. Error: " + err);
+    QBLog: function(){
+        if(this.loggers){
+            for(var i=0;i<this.loggers.length;++i){
+                this.loggers[i](arguments);
             }
-          });
+        
+            return;
         }
-      };
-      return logger;
-    };
 
-    // Build loggers
-    //
+        var logger;
+        this.loggers = [];
 
-    // format "debug: { }"
-    if (typeof config.debug === 'object'){
+        var consoleLoggerFunction = function(){
+            var logger = function(args){
+                console.log.apply(console, Array.prototype.slice.call(args));
+            };
+      
+            return logger;
+        };
 
-      if(typeof config.debug.mode === 'number'){
-        if(config.debug.mode == 1){
-          var logger = consoleLoggerFunction();
-          this.loggers.push(logger);
-        }else if(config.debug.mode == 2){
-          var logger = fileLoggerFunction();
-          this.loggers.push(logger);
+        var fileLoggerFunction = function(){
+            var logger = function(args){
+                if(isBrowser){
+                    throw unsupported;
+                } else {
+                    var data = [];
+                
+                    for (var i = 0; i < args.length; i++) {
+                        data.push(JSON.stringify(args[i]));
+                    }
+          
+                    data = data.join(" ");
+
+                    var toLog = "\n" + new Date() + ". " + data;
+            
+                    fs.appendFile(config.debug.file, toLog, function(err) {
+                        if(err) {
+                            return console.error('Error while writing log to file. Error: ' + err);
+                        }
+                    });
+                }
+            };
+      
+            return logger;
+        };
+
+        // Build loggers
+        // format "debug: { }"
+
+        if(typeof config.debug === 'object'){
+            if(typeof config.debug.mode === 'number'){
+                if(config.debug.mode == 1){
+                    logger = consoleLoggerFunction();
+                    this.loggers.push(logger);
+                } else if(config.debug.mode == 2){
+                    logger = fileLoggerFunction();
+                    this.loggers.push(logger);
+                }
+            } else if(typeof config.debug.mode === 'object'){
+                var self = this;
+                
+                config.debug.mode.forEach(function(mode, i, arr) {
+                    if(mode === 1){
+                        logger = consoleLoggerFunction();
+                        self.loggers.push(logger);
+                    } else if (mode === 2){
+                        logger = fileLoggerFunction();
+                        self.loggers.push(logger);
+                    }
+                });
+            }
+
+        // format "debug: true"
+        // backward compatibility
+        }else if (typeof config.debug === 'boolean'){
+            if(config.debug){
+                logger = consoleLoggerFunction();
+                this.loggers.push(logger);
+            }
         }
-      }else if(typeof config.debug.mode === 'object'){
-        var self = this;
-        config.debug.mode.forEach(function(mode, i, arr) {
-          if (mode === 1){
-            var logger = consoleLoggerFunction();
-            self.loggers.push(logger);
-          }else if (mode === 2){
-            var logger = fileLoggerFunction();
-            self.loggers.push(logger);
-          }
-        });
-      }
 
-    // format "debug: true"
-    // backward compatibility
-    }else if (typeof config.debug === 'boolean'){
-      if(config.debug){
-        var logger = consoleLoggerFunction();
-        this.loggers.push(logger);
-      }
+        if(this.loggers){
+            for(let i=0;i<this.loggers.length;++i){
+                this.loggers[i](arguments);
+            }
+        }
+    },
+    isWebRTCAvailble: function() {
+        /** Shims */
+        var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection,
+            IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate,
+            SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription,
+            isAvaible = true;
+
+        if(!RTCPeerConnection || !IceCandidate || !SessionDescription) {
+            isAvaible = false;
+        }
+
+        return isAvaible;
+    },
+    getError: function(code, detail, moduleName) {
+        var errorMsg = {
+            code: code,
+            status: 'error',
+            detail: detail
+        };
+
+        switch(code){
+            case 401:
+                errorMsg.message = 'Unauthorized';
+                break;
+
+            case 403:
+                errorMsg.message = 'Forbidden';
+                break;
+
+            case 408:
+                errorMsg.message = 'Request Timeout';
+                break;
+
+            case 422:
+                errorMsg.message = 'Unprocessable Entity';
+                break;
+
+            case 502:
+                errorMsg.message = 'Bad Gateway';
+                break;
+
+            default:
+                errorMsg.message = 'Unknown error';
+                break;
+        }
+
+        this.QBLog('[' + moduleName + ']', 'error: ', detail);
+
+        return errorMsg;
+    },
+    MergeArrayOfObjects: function (arrayTo, arrayFrom){
+        var merged = JSON.parse(JSON.stringify(arrayTo));
+
+        firstLevel: for(var i = 0; i < arrayFrom.length; i++){
+            var newItem = arrayFrom[i];
+
+            for(var j = 0; j < merged.length; j++){
+                var oldItem = merged[j];
+                if(newItem.user_id === oldItem.user_id){
+                    oldItem = newItem;
+                    continue firstLevel;
+                }
+            }
+            merged.push(newItem);
+        }
+        return merged;
     }
-
-    if(this.loggers){
-      for(var i=0;i<this.loggers.length;++i){
-        this.loggers[i](arguments);
-      }
-    }
-  },
-  isWebRTCAvailble: function() {
-    /** Shims */
-    var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection,
-        IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate,
-        SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription,
-        isAvaible = true;
-
-    if(!RTCPeerConnection || !IceCandidate || !SessionDescription) {
-      isAvaible = false;
-    }
-
-    return isAvaible;
-  },
-  getError: function(code, detail, moduleName) {
-    var errorMsg = {
-      code: code,
-      status: 'error',
-      detail: detail
-    };
-
-    switch(code){
-      case 401:
-        errorMsg.message = 'Unauthorized';
-        break;
-
-      case 403:
-        errorMsg.message = 'Forbidden';
-        break;
-
-      case 408:
-        errorMsg.message = 'Request Timeout';
-        break;
-
-      case 422:
-        errorMsg.message = 'Unprocessable Entity';
-        break;
-
-      case 502:
-        errorMsg.message = 'Bad Gateway';
-        break;
-
-      default:
-        errorMsg.message = 'Unknown error';
-        break;
-    }
-
-    this.QBLog('[' + moduleName + ']', 'error: ', detail);
-
-    return errorMsg;
-  }
 };
 
 module.exports = Utils;

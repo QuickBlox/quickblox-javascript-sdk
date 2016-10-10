@@ -1,9 +1,14 @@
+'use strict';
+
+/** JSHint inline rules */
+/* globals Strophe, $msg */
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC signaling processor)
  */
 
-require('strophe');
+require('strophe.js');
 
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
@@ -11,15 +16,15 @@ var Utils = require('../../qbUtils');
 var config = require('../../qbConfig');
 
 function WebRTCSignalingProvider(service, connection) {
-  this.service = service;
-  this.connection = connection;
+    this.service = service;
+    this.connection = connection;
 }
 
 WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates, ext) {
-  var extension = ext || {};
-  extension["iceCandidates"] = iceCandidates;
+    var extension = ext || {};
+    extension.iceCandidates = iceCandidates;
 
-  this.sendMessage(userId, extension, SignalingConstants.SignalingType.CANDIDATE);
+    this.sendMessage(userId, extension, SignalingConstants.SignalingType.CANDIDATE);
 };
 
 WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingType) {

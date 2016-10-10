@@ -1,9 +1,11 @@
+'use strict';
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC signaling provider)
  */
 
-require('strophe');
+require('strophe.js');
 
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');

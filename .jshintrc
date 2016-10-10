@@ -1,11 +1,13 @@
 {
-  "strict"     : false,
-  "devel"      : true,
-  "browser"    : true,
-  "browserify" : true,
-  "jasmine"    : true,
-  "jquery"     : true,
-  "predef"     : [
+  "strict": true,
+  "devel": true,
+  "esversion": 6,
+  "browser": true,
+  "node": true,
+  "browserify": true,
+  "jasmine": true,
+  "jquery": true,
+  "globals": [
     "jasmine",
     "describe",
     "xdescribe",

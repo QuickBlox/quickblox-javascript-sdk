@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -107,7 +109,7 @@ ContentProxy.prototype = {
         if(isBrowser){
           data.append('file', file, createResult.name);
         }else{
-          data['file'] = file;
+          data.file = file;
         }
 
         uploadParams.data = data;

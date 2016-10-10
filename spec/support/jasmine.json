@@ -1,7 +1,7 @@
 {
   "spec_dir": "spec",
   "spec_files": [
-    "QB-CoreSpec.js",
+    "QB-ChatSpec.js",
     "QB-HelpersSpec.js",
     "QB-ChatSpec.js",
     "QB-UsersSpec.js",
@@ -11,6 +11,6 @@
     "QB-PushnotificationsSpec.js",
     "QB-WebRTCSpec.js"
   ],
-  "stopSpecOnExpectationFailure": false,
+  "stopSpecOnExpectationFailure": true,
   "random": false
 }

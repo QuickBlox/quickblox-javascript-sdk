@@ -1,0 +1,11 @@
+{
+  "name": "rivescript",
+  "version": "0.0.1",
+  "description": "www.rivescript.com enabled chat bot",
+  "main": "index.js",
+  "author": "QuickBlox team",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "rivescript": "^1.12.2"
+  }
+}
