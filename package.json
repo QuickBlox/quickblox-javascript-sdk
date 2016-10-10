@@ -49,6 +49,7 @@
     "babel-preset-es2015": "^6.16.0",
     "babelify": "^7.3.0",
     "browserify": "^13.1.0",
+    "cross-env": "^3.1.2",
     "ghooks": "^1.3.2",
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
@@ -76,10 +77,9 @@
   },
   "scripts": {
     "setDependencies": "npm i && npm install -g grunt-cli && npm install -g jasmine",
-    "test": "jasmine",
-    "setNodeVarDevelopment": "export NODE_ENV=develop || set NODE_ENV=develop",
-    "develop": "npm run setNodeVarDevelopment && gulp",
     "build": "npm run lint && gulp transform && gulp uglify",
-    "lint": "jshint src --reporter=node_modules/jshint-stylish"
+    "lint": "jshint src --reporter=node_modules/jshint-stylish",
+    "develop": "cross-env NODE_ENV=develop gulp",
+    "test": "jasmine"
   }
 }

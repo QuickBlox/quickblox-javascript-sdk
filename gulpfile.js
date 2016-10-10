@@ -14,7 +14,8 @@ var rename = require('gulp-rename');
 var connect = require('gulp-connect');
 
 gulp.task('transform', function () {
-    var isDevelopment = process.env.NODE_ENV === 'development',
+    console.log('process.env.NODE_ENV', process.env.NODE_ENV);
+    var isDevelopment = process.env.NODE_ENV === 'develop',
         browserifyOpts = {
             debug: isDevelopment,
             standalone: 'QB'
@@ -45,4 +46,4 @@ gulp.task('watch', function () {
   gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
 });
 
-gulp.task('default', ['connect', 'watch']);
+gulp.task('default', ['transform', 'uglify', 'connect', 'watch']);
