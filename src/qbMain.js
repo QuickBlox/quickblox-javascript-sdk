@@ -32,7 +32,6 @@ QuickBlox.prototype = {
         Location = require('./modules/qbLocation'),
         PushNotifications = require('./modules/qbPushNotifications'),
         Data = require('./modules/qbData'),
-        Recorder = require('./modules/webrtc/qbRecorder'),
         conn;
 
     if (isBrowser) {
@@ -44,7 +43,7 @@ QuickBlox.prototype = {
       if( Utils.isWebRTCAvailble() ) {
         var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
         this.webrtc = new WebRTCClient(this.service, conn || null);
-        this.recorder = new Recorder();
+        this.Recorder = require('./modules/webrtc/qbRecorder');
       } else {
         this.webrtc = false;
       }

@@ -526,7 +526,7 @@
 
             if( _.isEmpty( app.currentSession)) {
                 return false;
-            } else {
+            } else if(QB.recorder && QB.recorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
                         connection = connections[app.mainVideo],
@@ -536,16 +536,9 @@
                         return false;
                     }
 
-                    if(QB.recorder && QB.recorder.isAvailable()) {
-                        if(!QB.recorder.isRecording){
-                            var streamForRecord = connection.stream;
-                            QB.recorder.start(streamForRecord, {}, 10);
-                        }
-                    }
+                    QB.recorder.start(connection.stream);
                 } else {
-                    if(QB.recorder && QB.recorder.isAvailable()) {
-                        QB.recorder.stop();
-                    }
+                    QB.recorder.stop();
                 }
             }
         });

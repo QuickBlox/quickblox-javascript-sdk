@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recorder</title>
+</head>
+<body>
+
+<video id="localVideo"></video>
+<button id="stop">Stop recording</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="quickblox.js"></script>
+<script>
+    /* globals QB*/
+    'use strict';
+
+    var CONFIG = {
+        debug: true,
+        webrtc: {
+            answerTimeInterval: 30,
+            dialingTimeInterval: 5,
+            disconnectTimeInterval: 30,
+            statsReportTimeInterval: 5
+        }
+    };
+
+    var CREDS = {
+        'appId': 39854,
+        'authKey': 'JtensAa9y4AM5Yk',
+        'authSecret': 'AsDFwwwxpr3LN5w'
+    };
+
+    QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG.APP_CONFIG);
+
+    // var rec = new QB.Recorder();
+
+    var calleesIds = [56, 76, 34]; // User's ids 
+    var sessionType = QB.webrtc.CallType.VIDEO; // AUDIO is also possible
+ 
+    var session = QB.webrtc.createNewSession(calleesIds, sessionType);
+
+    var mediaParams = {
+        audio: true,
+        video: true,
+        elemId: 'localVideo'
+    };
+
+    var recorder;
+ 
+    session.getUserMedia(mediaParams, function(err, stream) {
+        if(err){
+        } else {
+            recorder = new QB.Recorder(stream);
+            recorder.start();
+        }
+    });
+
+    $('#stop').on('click', function() {
+        recorder.stop();
+        recorder.download();
+    })
+
+
+
+</script>
+</body>
+</html>

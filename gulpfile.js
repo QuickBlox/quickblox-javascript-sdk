@@ -42,7 +42,9 @@ gulp.task('connect', function() {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
+    gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
 });
 
-gulp.task('default', ['transform', 'uglify', 'connect', 'watch']);
+gulp.task('default', ['transform', 'uglify', 'connect', 'watch'], function() {
+    console.log('Taks \'default\' is finished');
+});
