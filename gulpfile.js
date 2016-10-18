@@ -6,6 +6,7 @@ var babelify = require('babelify');
 var browserify = require('browserify');
 
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
 
 var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
@@ -21,14 +22,10 @@ gulp.task('transform', function () {
     };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        .transform(babelify, { presets: ['es2015'] })
+        .transform('babelify', { 'presets': ['es2015'] })
         .bundle()
         .pipe(source('quickblox.js'))
-        .pipe(gulp.dest('./'));
-});
-
-gulp.task('uglify', function () {
-    gulp.src('quickblox.js')
+        .pipe(buffer())
         .pipe(uglify())
         .pipe(rename('quickblox.min.js'))
         .pipe(gulp.dest('./'));
@@ -42,9 +39,7 @@ gulp.task('connect', function() {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
+    gulp.watch(['./src/**/*.js'], ['transform']);
 });
 
-gulp.task('default', ['transform', 'uglify', 'connect', 'watch'], function() {
-    console.log('Taks \'default\' is finished');
-});
+gulp.task('default', ['watch', 'connect', 'transform']);
