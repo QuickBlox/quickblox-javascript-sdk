@@ -8,6 +8,25 @@
             'rington': 'ringtoneSignal'
         };
 
+        var recorder;
+        var recorderOpts = {
+                callbacks: {
+                    onStartRecording: function onStartRecord() {
+                        console.log('[QB Recorder] onStartRecording');
+                        $('.j-record').addClass('active');
+                    },
+                    onStopRecording: function(blob) {
+                        console.log('[QB Recorder] onStopRecording');
+                        $('.j-record').removeClass('active');
+
+                        var down = confirm('Do you want to download video?');
+                        if(down) {
+                            recorder.download(blob, 'QB_WEBrtc_sample' + Date.now());
+                        }
+                    }
+                }
+            };
+
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
@@ -524,9 +543,9 @@
             var $btn = $(this),
                 isActive = $btn.hasClass('active');
 
-            if( _.isEmpty( app.currentSession)) {
+            if(_.isEmpty(app.currentSession)) {
                 return false;
-            } else if(QB.recorder && QB.recorder.isAvailable()) {
+            } else if(QB.Recorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
                         connection = connections[app.mainVideo],
@@ -535,33 +554,14 @@
                     if (!connection || connectionsCount !== 1){
                         return false;
                     }
-
-                    QB.recorder.start(connection.stream);
+                    console.info('HERE');
+                    recorder = new QB.Recorder(connection.stream, recorderOpts);
+                    recorder.start();
                 } else {
-                    QB.recorder.stop();
+                    recorder.stop();
                 }
             }
         });
-
-        if(QB.recorder && QB.recorder.isAvailable()) {
-            QB.recorder.onStartRecording = function(){
-                console.log('[QB Recorder] onStartRecording');
-                $('.j-record').addClass('active');
-            };
-        }
-
-        if(QB.recorder && QB.recorder.isAvailable()) {
-            QB.recorder.onStopRecording = function(){
-                console.log('[QB Recorder] onStopRecording');
-                $('.j-record').removeClass('active');
-                var down = confirm('Do you want to download video?');
-
-                if(down){
-                    QB.recorder.download('QB_WEBrtc_sample' + Date.now());
-                }
-            };
-        }
-
 
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
@@ -675,9 +675,9 @@
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
-            if(QB.recorder && QB.recorder.isAvailable()) {
-                QB.recorder.stop();
-            }
+            // if(QB.Recorder && QB.Recorder.isAvailable()) {
+            //     recorder.stop();
+            // }
 
         };
 
@@ -759,7 +759,7 @@
 
             app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
 
-            QB.recorder.stop();
+            // recorder.stop();
         };
 
         QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
