@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC signaling constants)
