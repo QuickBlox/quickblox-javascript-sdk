@@ -596,8 +596,6 @@ ChatProxy.prototype = {
             }
 
             connection.send(stanza);
-
-            return paramsCreateMsg.id;
         }
 
         if(Utils.getEnv().node) {
@@ -611,6 +609,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+
+        return paramsCreateMsg.id;
     },
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this,
@@ -640,8 +640,6 @@ ChatProxy.prototype = {
             }
 
             connection.send(stanza);
-
-            return paramsCreateMsg.id;
         }
 
         if(Utils.getEnv().node) {
@@ -655,6 +653,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+        
+        return paramsCreateMsg.id;
     },
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
