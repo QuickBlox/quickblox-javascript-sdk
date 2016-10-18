@@ -609,6 +609,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+
+        return paramsCreateMsg.id;
     },
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this,
@@ -634,7 +636,7 @@ ChatProxy.prototype = {
                 xmlns: chatUtils.MARKERS.CLIENT
               }).c('moduleIdentifier').t('SystemNotifications').up();
 
-             stanza = chatUtils.filledExtraParams(stanza, message.extension);
+              stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
@@ -651,6 +653,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+        
+        return paramsCreateMsg.id;
     },
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
