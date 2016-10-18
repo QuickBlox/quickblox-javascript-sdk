@@ -596,6 +596,8 @@ ChatProxy.prototype = {
             }
 
             connection.send(stanza);
+
+            return paramsCreateMsg.id;
         }
 
         if(Utils.getEnv().node) {
@@ -634,10 +636,12 @@ ChatProxy.prototype = {
                 xmlns: chatUtils.MARKERS.CLIENT
               }).c('moduleIdentifier').t('SystemNotifications').up();
 
-             stanza = chatUtils.filledExtraParams(stanza, message.extension);
+              stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
+
+            return paramsCreateMsg.id;
         }
 
         if(Utils.getEnv().node) {
