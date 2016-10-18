@@ -68,9 +68,12 @@ describe('Chat API', function() {
                     body: body,
                     extension: msgExtension,
                     markable: 1
-            };
+                },
+                msgId;
 
             function onMsgCallback(userId, receivedMessage) {
+                expect(msgId).toBeDefined();
+
                 expect(userId).toEqual(QBUser1.id);
 
                 expect(receivedMessage).toBeDefined();
@@ -83,19 +86,22 @@ describe('Chat API', function() {
             }
 
             QB.chat.onMessageListener = onMsgCallback;
-            QB.chat.send(QBUser1.id, msg);
+            msgId = QB.chat.send(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive system message', function(done) {
             var msg = {
-                body: 'Notification',
-                extension:{
-                    name: 'Walle',
-                    action: 'Found love'
-                }
-            };
+                    body: 'Notification',
+                    extension:{
+                        name: 'Walle',
+                        action: 'Found love'
+                    }
+                },
+                msgId;
 
             function onSystemMessageListenerCb(receivedMessage) {
+                expect(msgId).toBeDefined();
+
                 expect(receivedMessage).toBeDefined();
 
                 expect(receivedMessage.userId).toEqual(QBUser1.id);
@@ -106,8 +112,7 @@ describe('Chat API', function() {
             }
 
             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
-
-            QB.chat.sendSystemMessage(QBUser1.id, msg);
+            msgId = QB.chat.sendSystemMessage(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
