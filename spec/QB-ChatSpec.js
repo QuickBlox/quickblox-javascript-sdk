@@ -68,15 +68,13 @@ describe('Chat API', function() {
                     body: body,
                     extension: msgExtension,
                     markable: 1
-                },
-                msgId;
+                };
 
             function onMsgCallback(userId, receivedMessage) {
-                expect(msgId).toBeDefined();
-
                 expect(userId).toEqual(QBUser1.id);
 
                 expect(receivedMessage).toBeDefined();
+                expect(receivedMessage.id).toEqual(msg.id);
                 expect(receivedMessage.type).toEqual(msg.type);
                 expect(receivedMessage.body).toEqual(body);
                 expect(receivedMessage.extension).toEqual(msgExtension);
@@ -86,7 +84,7 @@ describe('Chat API', function() {
             }
 
             QB.chat.onMessageListener = onMsgCallback;
-            msgId = QB.chat.send(QBUser1.id, msg);
+            msg.id = QB.chat.send(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive system message', function(done) {
@@ -96,15 +94,13 @@ describe('Chat API', function() {
                         name: 'Walle',
                         action: 'Found love'
                     }
-                },
-                msgId;
+                };
 
             function onSystemMessageListenerCb(receivedMessage) {
-                expect(msgId).toBeDefined();
-
                 expect(receivedMessage).toBeDefined();
 
                 expect(receivedMessage.userId).toEqual(QBUser1.id);
+                expect(receivedMessage.id).toEqual(msg.id);
                 expect(receivedMessage.body).toEqual(msg.body);
                 expect(receivedMessage.extension).toEqual(msg.extension);
 
@@ -112,7 +108,7 @@ describe('Chat API', function() {
             }
 
             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
-            msgId = QB.chat.sendSystemMessage(QBUser1.id, msg);
+            msg.id = QB.chat.sendSystemMessage(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
