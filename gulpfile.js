@@ -6,7 +6,6 @@ var babelify = require('babelify');
 var browserify = require('browserify');
 
 var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
 
 var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
@@ -22,10 +21,14 @@ gulp.task('transform', function () {
     };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        .transform('babelify', { 'presets': ['es2015'] })
+        .transform(babelify, { presets: ['es2015'] })
         .bundle()
         .pipe(source('quickblox.js'))
-        .pipe(buffer())
+        .pipe(gulp.dest('./'));
+});
+
+gulp.task('uglify', function () {
+    gulp.src('quickblox.js')
         .pipe(uglify())
         .pipe(rename('quickblox.min.js'))
         .pipe(gulp.dest('./'));
@@ -39,7 +42,7 @@ gulp.task('connect', function() {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['./src/**/*.js'], ['transform']);
+  gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
 });
 
-gulp.task('default', ['watch', 'connect', 'transform']);
+gulp.task('default', ['transform', 'uglify', 'connect', 'watch']);
