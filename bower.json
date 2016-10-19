@@ -1,0 +1,46 @@
+{
+  "name": "quickblox",
+  "description": "QuickBlox JavaScript SDK",
+  "version": "2.3.4",
+  "homepage": "https://quickblox.com/developers/Javascript",
+  "main": "quickblox.js",
+  "license": "Apache 2.0",
+  "keywords": [
+    "quickblox",
+    "javascript",
+    "sdk",
+    "baas",
+    "cloud",
+    "api",
+    "chat",
+    "communication",
+    "messaging",
+    "webrtc"
+  ],
+  "authors": [
+    "Igor Khomenko <igor@quickblox.com>",
+    "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
+    "Dima Lobanov <dmytro.lobanov@injoit.com>",
+    "Iegor Kozakov <iegor.kozakov@injoit.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/QuickBlox/quickblox-javascript-sdk.git"
+  },
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "examples",
+    "src",
+    "lib",
+    "node_modules",
+    "plugins",
+    "samples",
+    "spec",
+    "npm-debug.log",
+    "Gruntfile.js",
+    "package.json"
+  ]
+}

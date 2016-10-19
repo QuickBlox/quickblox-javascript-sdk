@@ -68,12 +68,13 @@ describe('Chat API', function() {
                     body: body,
                     extension: msgExtension,
                     markable: 1
-            };
+                };
 
             function onMsgCallback(userId, receivedMessage) {
                 expect(userId).toEqual(QBUser1.id);
 
                 expect(receivedMessage).toBeDefined();
+                expect(receivedMessage.id).toEqual(msg.id);
                 expect(receivedMessage.type).toEqual(msg.type);
                 expect(receivedMessage.body).toEqual(body);
                 expect(receivedMessage.extension).toEqual(msgExtension);
@@ -83,27 +84,31 @@ describe('Chat API', function() {
             }
 
             QB.chat.onMessageListener = onMsgCallback;
-            QB.chat.send(QBUser1.id, msg);
+            msg.id = QB.chat.send(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive system message', function(done) {
-            var extension = {
-                name: 'Walle',
-                action: 'Found love'
-            };
+            var msg = {
+                    body: 'Notification',
+                    extension:{
+                        name: 'Walle',
+                        action: 'Found love'
+                    }
+                };
 
             function onSystemMessageListenerCb(receivedMessage) {
                 expect(receivedMessage).toBeDefined();
 
                 expect(receivedMessage.userId).toEqual(QBUser1.id);
-                expect(receivedMessage.extension).toEqual(extension);
+                expect(receivedMessage.id).toEqual(msg.id);
+                expect(receivedMessage.body).toEqual(msg.body);
+                expect(receivedMessage.extension).toEqual(msg.extension);
 
                 done();
             }
 
             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
-
-            QB.chat.sendSystemMessage(QBUser1.id, {'extension': extension});
+            msg.id = QB.chat.sendSystemMessage(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
         it('can send and receive \'delivered\' status', function(done) {
