@@ -313,6 +313,7 @@ function ChatProxy(service, webrtcModule, conn) {
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
             delay = chatUtils.getElement(stanza, 'delay'),
             moduleIdentifier = chatUtils.getElementText(extraParams, 'moduleIdentifier'),
+            bodyContent = chatUtils.getElementText(stanza, 'body'),
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
@@ -321,6 +322,7 @@ function ChatProxy(service, webrtcModule, conn) {
             message = {
                 id: messageId,
                 userId: self.helpers.getIdFromNode(from),
+                body: bodyContent,
                 extension: extraParamsParsed.extension
             };
 
@@ -608,6 +610,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+
+        return paramsCreateMsg.id;
     },
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this,
@@ -620,6 +624,12 @@ ChatProxy.prototype = {
 
         var stanza = chatUtils.createStanza(builder, paramsCreateMsg);
 
+        if (message.body) {
+            stanza.c('body', {
+                xmlns: chatUtils.MARKERS.CLIENT,
+            }).t(message.body).up();
+        }
+
         if(Utils.getEnv().browser) {
             // custom parameters
             if (message.extension) {
@@ -627,7 +637,7 @@ ChatProxy.prototype = {
                 xmlns: chatUtils.MARKERS.CLIENT
               }).c('moduleIdentifier').t('SystemNotifications').up();
 
-             stanza = chatUtils.filledExtraParams(stanza, message.extension);
+              stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
@@ -644,6 +654,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+        
+        return paramsCreateMsg.id;
     },
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
