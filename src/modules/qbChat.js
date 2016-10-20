@@ -62,7 +62,10 @@ function ChatProxy(service, webrtcModule, conn) {
     this.message = new MessageProxy(service);
     this.helpers = new Helpers();
     this.muc = new MucProxy(service);
-    this.streamManagement = new StreamManagement();
+
+    if (config.streamManagement.enable){
+        this.streamManagement = new StreamManagement(config.streamManagement);
+    }
 
 /*
  * User's callbacks (listener-functions):
@@ -79,6 +82,7 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onDisconnectedListener
  * - onReconnectListener
  */
+
     this._onMessage = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
@@ -388,7 +392,7 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.AUTHFAIL:
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
-                        
+
                         if (typeof callback === 'function') {
                             callback(err, null);
                         }
@@ -396,11 +400,15 @@ ChatProxy.prototype = {
                         if(self._isDisconnected && typeof self.onReconnectFailedListener === 'function'){
                             Utils.safeCallbackCall(self.onReconnectFailedListener, err);
                         }
-                        
+
                         break;
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
-                        self.streamManagement.enable(connection);
+
+                        if(config.streamManagement.enable){
+                            self.streamManagement.enable(connection);
+                        }
+
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
 
@@ -418,26 +426,27 @@ ChatProxy.prototype = {
 
                         // enable carbons
                         self._enableCarbons();
-                            
+
                         // get the roster
                         self.roster.get(function(contacts) {
                             roster = contacts;
-                        
+
                             // chat server will close your connection if you are not active in chat during one minute
                             // initial presence and an automatic reminder of it each 55 seconds
                             connection.send($pres().tree());
-                        
+
                             if (typeof callback === 'function') {
                                 callback(null, roster);
                             } else {
                                 self._isLogout = false;
-                        
+
                                 // recover the joined rooms
                                 rooms = Object.keys(joinedRooms);
+
                                 for (var i = 0, len = rooms.length; i < len; i++) {
                                     self.muc.join(rooms[i]);
                                 }
-                        
+
                                 // fire 'onReconnectListener'
                                 if (typeof self.onReconnectListener === 'function'){
                                     Utils.safeCallbackCall(self.onReconnectListener);

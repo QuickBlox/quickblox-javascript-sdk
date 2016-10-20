@@ -29,7 +29,12 @@ var config = {
 
 	    priceB: '0.99 $',
 	    priceC: '1.99 $'
-    }
+    },
+	streamManagement: {
+    	enable: true,
+    	timeIntermal: 1500, // set timeInterval to 1500ms (1.5 seconds)
+		debug: true
+	}
 };
 
 var QBUser1 = {
@@ -46,3 +51,15 @@ var QBUser1 = {
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
+
+var QBUnsendMsg = [];
+
+QB.chat.streamManagement.deliverErrorCallback = function(jid, msg){
+	QBUnsendMsg.push({
+		message: msg
+	});
+	console.group('sendErrorCallback');
+		console.log('jid', jid);
+		console.log('msg', msg);
+	console.groupEnd();
+};

@@ -8,28 +8,34 @@ var Utils = require('../qbUtils');
 
 /*
 * TODO
+*
 * 1. Add node.js Functionality
-* 2. Send messages again after error
-* 3. Add error callback
-* 4. Add success callback
-* 5.
+* 2. Send messages again after error (configuraible)
+* 3. return in the same session on reconnect (configuraible)
+*
 * */
 
 
-function StreamManagement() {
+function StreamManagement(options) {
 
 	this._NS = 'urn:xmpp:sm:3';
-	this._streamManagementEnabling = false;
-	this._isStreamManagementEnabled = false;
+
+    this._isStreamManagementEnabled = false;
+
 	// The last income server counter
 	this._serverProcesssedStanzasCounter = null;
+
 	// Counter of the incoming stanzas
 	this._clientProcessedStanzasCounter = null;
+
+	this._clientExpectStanzasCounter = null;
+
 	// The client send stanza counter.
 	this._clientSentStanzasCounter = null;
-	this._expectedStanzaCounter = null;
-	this._requestResponseIntervalCount = 0;
-	this.requestResponseInterval = 5;
+
+	this._timeInterval = options.timeIntermal;
+
+    this.sendErrorCallback = null;
 
 	// connection
 	this._c = null;
@@ -37,10 +43,9 @@ function StreamManagement() {
 	// Original connection.send method
 	this._originalSend = null;
 
-	// In progress stanzas йueue
+	// In progress stanzas queue
 	this._stanzasQueue = [];
 }
-
 
 StreamManagement.prototype.enable = function (connection) {
 	var self = this,
@@ -56,8 +61,25 @@ StreamManagement.prototype.enable = function (connection) {
 
 	if (Utils.getEnv().browser) {
 		this._c.send($build('enable', enableParams));
-		this._streamManagementEnabling = true;
 	}
+};
+
+StreamManagement.prototype._timeoutCallback = function () {
+    var self = this,
+        now = Date.now(),
+        updatedStanzasQueue = [];
+
+    if(self._stanzasQueue.length){
+        for(var i = 0; i < self._stanzasQueue.length; i++){
+            if(self._stanzasQueue[i] && self._stanzasQueue[i].time < now){
+                self._deliverErrorCallback(self._stanzasQueue[i]);
+            } else {
+                updatedStanzasQueue.push(self._stanzasQueue[i]);
+            }
+        }
+
+        self._stanzasQueue = updatedStanzasQueue;
+    }
 };
 
 StreamManagement.prototype._addEnableHandlers = function () {
@@ -75,7 +97,10 @@ StreamManagement.prototype._addEnableHandlers = function () {
 		var tagName = stanza.tagName || stanza.nodeTree.tagName;
 
 		if(tagName === 'enabled'){
-			this._isStreamManagementEnabled = true;
+			self._isStreamManagementEnabled = true;
+			self._clientExpectStanzasCounter = self._clientSentStanzasCounter+1;
+
+			setInterval(this._timeoutCallback.bind(this), this._timeInterval);
 		}
 
 		if(tagName === 'iq' || tagName === 'presence' || tagName === 'message'){
@@ -83,7 +108,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
 		}
 
 		if(tagName === 'r'){
-			console.log('r income');
+
 		}
 
 		if(tagName === 'a'){
@@ -92,9 +117,8 @@ StreamManagement.prototype._addEnableHandlers = function () {
 			if(Utils.getEnv().browser){
 				h = parseInt(stanza.getAttribute('h'));
 			}
-
 			this._setSentStanzasCounter(h);
-		}
+        }
 		return true;
 	}
 };
@@ -107,7 +131,7 @@ StreamManagement.prototype.send = function (stanza) {
 
 	self._originalSend.call(self._c, stanza);
 
-	if (tagName === 'message' || tagName === 'presence' || tagName === 'iq') {
+	if (tagName !== 'enable' && tagName !== 'resume' && tagName !== 'a' && tagName !== 'r') {
 		self._increaseSentStanzasCounter(stanza);
 	}
 };
@@ -115,22 +139,16 @@ StreamManagement.prototype.send = function (stanza) {
 StreamManagement.prototype._increaseSentStanzasCounter = function (stanza) {
 	var self = this;
 
-	if(self._streamManagementEnabling){
-		self._clientSentStanzasCounter++;
-		self._requestResponseIntervalCount++;
-		self._stanzasQueue.push(stanza);
+    self._clientSentStanzasCounter++;
 
-		console.info('_increaseSentStanzasCounter', self._clientSentStanzasCounter);
+    if(self._isStreamManagementEnabled){
+        self._stanzasQueue.push({
+            message: stanza,
+            time: Date.now() + self._timeInterval
+        });
 
-		if(self._isStreamManagementEnabled){
-			if (self._requestResponseIntervalCount === self.requestResponseInterval) {
-				self._requestResponseIntervalCount = 0;
-				self._expectedStanzaCounter = self._clientSentStanzasCounter;
-
-				this._originalSend.call(this._c, $build('r', { xmlns: this._NS }));
-			}
-		}
-	}
+        self._originalSend.call(self._c, $build('r', { xmlns: self._NS }));
+    }
 };
 
 StreamManagement.prototype.getClientSentStanzasCounter = function(){
@@ -138,18 +156,20 @@ StreamManagement.prototype.getClientSentStanzasCounter = function(){
 };
 
 StreamManagement.prototype._setSentStanzasCounter = function (count){
-	this._serverProcesssedStanzasCounter = count;
+    this._serverProcesssedStanzasCounter = count;
+    
+    if (this._clientExpectStanzasCounter !== count){
+        this._deliverErrorCallback(this._stanzasQueue[0]);
+    }
 
-	if (this._expectedStanzaCounter !== this._serverProcesssedStanzasCounter) {
-		// TO DO:
-		// add ERROR stanzas listener.
+    this._stanzasQueue.shift();
+    this._clientExpectStanzasCounter++;
+};
 
-		console.error('Stream Management stanzas counter mismatch. Client value: ' + this._expectedStanzaCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter);
-	} else {
-		// add SUCCESS stanzas listener.
-		this._stanzasQueue.length = 0;
-		console.info('Counters are same. Client value: ' + this._expectedStanzaCounter + ' - Server value: ' + this._serverProcesssedStanzasCounter)
-	}
+StreamManagement.prototype._deliverErrorCallback = function (data){
+    if(typeof self.deliverErrorCallback === 'function'){
+        self.deliverErrorCallback(data.time, data.message);
+    }
 };
 
 StreamManagement.prototype._increaseReceivedStanzasCounter = function(){
