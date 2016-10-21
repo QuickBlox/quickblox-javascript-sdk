@@ -144,33 +144,37 @@ function retrieveChatMessages(dialog, beforeDateSent){
 
 // sending messages after confirmation
 function clickSendMessage() {
-  var currentText = $('#message_text').val().trim();
-  if (currentText.length === 0){
-    return;
-  }
+    var currentText = $('#message_text').val().trim();
+  
+    if (currentText.length === 0){
+        return;
+    }
 
-  $('#message_text').val('').focus();
+    $('#message_text').val('').focus();
 
-  sendMessage(currentText, null);
+    sendMessage(currentText, null);
 }
 
 function clickSendAttachments(inputFile) {
-  // upload image
-  QB.content.createAndUpload({name: inputFile.name, file: inputFile, type:
-        inputFile.type, size: inputFile.size, 'public': false}, function(err, response){
-    if (err) {
-      console.log(err);
-    } else {
+    QB.content.createAndUpload({
+        public: false,
+        file: inputFile,
+        name: inputFile.name,
+        type: inputFile.type,
+        size: inputFile.size
+    }, function(err, response){
+        if(err) {
+            console.error(err);
+        } else {
+            $("#progress").fadeOut(400, function() {
+                $(".input-group-btn_change_load").removeClass("visibility_hidden");
+            });
 
-      $("#progress").fadeOut(400, function() {
-        $(".input-group-btn_change_load").removeClass("visibility_hidden");
-      });
+            var uploadedFile = response;
 
-      var uploadedFile = response;
+            sendMessage("[attachment]", uploadedFile.id);
 
-      sendMessage("[attachment]", uploadedFile.id);
-
-      $("input[type=file]").val('');
+            $("input[type=file]").val('');
     }
   });
 }
@@ -218,7 +222,6 @@ function sendMessage(text, attachmentFileId) {
 
 // show messages in UI
 function showMessage(userId, msg, attachmentFileId) {
-  // add a message to list
   var userLogin = getUserLoginById(userId);
   var messageHtml = buildMessageHTML(msg.body, userLogin, new Date(), attachmentFileId, msg.id);
 

@@ -30,15 +30,18 @@ function ContentProxy(service) {
 }
 
 ContentProxy.prototype = {
+    create: function(params, callback){
+        Utils.QBLog('[ContentProxy]', 'create', params);
 
-  create: function(params, callback){
-   Utils.QBLog('[ContentProxy]', 'create', params);
-
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: {blob:params}, type: 'POST'}, function(err,result){
-      if (err){ callback(err, null); }
-      else { callback (err, result.blob); }
-    });
-  },
+        this.service.ajax({
+            type: 'POST',
+            data: {blob: params},
+            url: Utils.getUrl(config.urls.blobs)
+        }, function(err, result) {
+            if (err){ callback(err, null); }
+            else { callback (err, result.blob); }
+        });
+    },
 
   list: function(params, callback){
     if (typeof params === 'function' && typeof callback ==='undefined') {
@@ -63,90 +66,98 @@ ContentProxy.prototype = {
     });
   },
 
-  createAndUpload: function(params, callback){
-    var createParams= {}, file, name, type, size, fileId, _this = this;
+    createAndUpload: function(params, callback){
+        var _this = this,
+            createParams= {},
+            file, name, type, size, fileId;
 
-    var clonedParams = JSON.parse(JSON.stringify(params));
-    clonedParams.file.data = "...";
-    Utils.QBLog('[ContentProxy]', 'createAndUpload', clonedParams);
+        var clonedParams = JSON.parse(JSON.stringify(params));
+        clonedParams.file.data = "...";
+    
+        Utils.QBLog('[ContentProxy]', 'createAndUpload', clonedParams);
 
-    file = params.file;
-    name = params.name || file.name;
-    type = params.type || file.type;
-    size = params.size || file.size;
+        file = params.file;
+        name = params.name || file.name;
+        type = params.type || file.type;
+        size = params.size || file.size;
 
-    createParams.name = name;
-    createParams.content_type = type;
-    if (params.public) { createParams.public = params.public; }
-    if (params.tag_list) { createParams.tag_list = params.tag_list; }
+        createParams.name = name;
+        createParams.content_type = type;
 
-    // Create a file object
-    //
-    this.create(createParams, function(err,createResult){
-      if (err) {
-        callback(err, null);
-      } else {
-        var uri = parseUri(createResult.blob_object_access.params);
-        var uploadUrl = uri.protocol + "://" + uri.authority + uri.path;
-        var uploadParams = {url: uploadUrl};
+        if(params.public) { createParams.public = params.public; }
+        if(params.tag_list) { createParams.tag_list = params.tag_list; }
 
-        var data;
-        if(isBrowser){
-          data = new FormData();
-        }else{
-          data = {};
-        }
-        fileId = createResult.id;
-
-        Object.keys(uri.queryKey).forEach(function(val) {
-          if(isBrowser){
-            data.append(val, decodeURIComponent(uri.queryKey[val]));
-          }else{
-            data[val] = decodeURIComponent(uri.queryKey[val]);
-          }
-        });
-
-        if(isBrowser){
-          data.append('file', file, createResult.name);
-        }else{
-          data.file = file;
-        }
-
-        uploadParams.data = data;
-
-        // Upload the file to Amazon S3
-        //
-        _this.upload(uploadParams, function(err, result) {
-          if (err) {
-            callback(err, null);
-          } else {
-            // Mark file as uploaded
-            //
-            _this.markUploaded({id: fileId, size: size}, function(err, result){
-              if (err) {
+        // Create a file object
+        this.create(createParams, function(err, createResult){
+            if(err) {
                 callback(err, null);
-              } else {
-                callback(null, createResult);
-              }
-            });
-          }
+            } else {
+                var uri = parseUri(createResult.blob_object_access.params);
+                var uploadUrl = uri.protocol + "://" + uri.authority + uri.path;
+                var uploadParams = {url: uploadUrl};
+
+                var data = isBrowser ? new FormData() : {};
+
+                fileId = createResult.id;
+
+                Object.keys(uri.queryKey).forEach(function(val) {
+                    if(isBrowser){
+                        data.append(val, decodeURIComponent(uri.queryKey[val]));
+                    } else {
+                        data[val] = decodeURIComponent(uri.queryKey[val]);
+                    }
+                });
+
+                if(isBrowser){
+                    data.append('file', file, createResult.name);
+                } else {
+                    data.file = file;
+                }
+
+                uploadParams.data = data;
+
+                // Upload the file to Amazon S3
+                _this.upload(uploadParams, function(err, result) {
+                    if (err) {
+                        callback(err, null);
+                    } else {
+                        // Mark file as uploaded
+                        _this.markUploaded({
+                            id: fileId,
+                            size: size
+                        }, function(err, result){
+                            if (err) {
+                                callback(err, null);
+                            } else {
+                                callback(null, createResult);
+                            }
+                        });
+                    }
+                });
+            }
         });
-      }
-    });
-  },
+    },
+    upload: function(params, callback){
+        Utils.QBLog('[ContentProxy]', 'upload');
 
-  upload: function(params, callback){
-    Utils.QBLog('[ContentProxy]', 'upload');
+        var uploadParams = {
+            type: 'POST',
+            dataType: 'text',
+            contentType: false,
+            processData: false,
+            url: params.url,
+            data: params.data
+        };
 
-    this.service.ajax({url: params.url, data: params.data, dataType: 'text',
-                       contentType: false, processData: false, type: 'POST'}, function(err,xmlDoc){
-      if (err) {
-        callback (err, null);
-      } else {
-        callback (null, {});
-      }
-    });
-  },
+        this.service.ajax(uploadParams, function(err,xmlDoc) {
+            console.info('Upload', uploadParams);
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, {});
+            }
+        });
+    },
 
   taggedForCurrentUser: function(callback) {
     Utils.QBLog('[ContentProxy]', 'taggedForCurrentUser');

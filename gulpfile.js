@@ -5,6 +5,7 @@ var gulp = require('gulp');
 var babelify = require('babelify');
 var browserify = require('browserify');
 
+var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 
 var jshint = require('gulp-jshint');
@@ -13,7 +14,9 @@ var rename = require('gulp-rename');
 
 var connect = require('gulp-connect');
 
-gulp.task('transform', function () {
+var notify = require("gulp-notify");
+
+gulp.task('build', function () {
     var isDevelopment = process.env.NODE_ENV === 'develop',
         browserifyOpts = {
             debug: isDevelopment,
@@ -21,16 +24,19 @@ gulp.task('transform', function () {
     };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        .transform(babelify, { presets: ['es2015'] })
+        // .transform(babelify, { presets: ['es2015'] })
         .bundle()
+        .on('error', function(error) {
+            notify('Failed when create a bundle <%= error.message %>')
+            this.emit('end');
+        })
         .pipe(source('quickblox.js'))
-        .pipe(gulp.dest('./'));
-});
-
-gulp.task('uglify', function () {
-    gulp.src('quickblox.js')
-        .pipe(uglify())
+        .pipe(buffer())
+        .pipe(uglify()).on('error', function(error){
+            console.log('Uglify Error <%= error.message %>');
+        })
         .pipe(rename('quickblox.min.js'))
+        .pipe(notify('Build task is finished.'))
         .pipe(gulp.dest('./'));
 });
 
@@ -42,7 +48,7 @@ gulp.task('connect', function() {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(['./src/**/*.js'], ['transform', 'uglify']);
+  gulp.watch(['./src/**/*.js'], ['build']);
 });
 
-gulp.task('default', ['transform', 'uglify', 'connect', 'watch']);
+gulp.task('default', ['build', 'connect', 'watch']);

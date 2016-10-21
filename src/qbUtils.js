@@ -183,7 +183,7 @@ var Utils = {
         }
 
         if(this.loggers){
-            for(let i=0;i<this.loggers.length;++i){
+            for(var i=0;i<this.loggers.length;++i){
                 this.loggers[i](arguments);
             }
         }

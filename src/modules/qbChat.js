@@ -1218,7 +1218,7 @@ PrivacyListProxy.prototype = {
             return iq;
         }
 
-        for (let index = 0, i = 0, len = listUserId.length; index < len; index++, i = i + 2) {
+        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i = i + 2) {
             userId = listUserId[index];
             mutualBlock = listPrivacy[userId].mutualBlock;
 

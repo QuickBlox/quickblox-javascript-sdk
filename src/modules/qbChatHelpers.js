@@ -185,7 +185,7 @@ var qbChatHelpers = {
 
                         if (nodeTextContentSize > 4096) {
                             var wholeNodeContent = "";
-                            for(let j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
+                            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
                                 wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
@@ -202,7 +202,7 @@ var qbChatHelpers = {
                 extension.attachments = attachments;
             }
         } else if(utils.getEnv().node) {
-            for (let i = 0, len = extraParams.children.length; i < len; i++) {
+            for (var i = 0, len = extraParams.children.length; i < len; i++) {
                 if(extraParams.children[i].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
                     extension.dialog_id = dialogId;
