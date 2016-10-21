@@ -262,6 +262,26 @@ function setupIsTypingHandler() {
   });
 }
 
+var QBUnsendMsg = [];
+
+function setupStreamManagementListeners(){
+    QB.chat.onSentMessageCallback = function(err, success){
+        console.log('onSentMessageCallback ');
+        if(err){
+            QBUnsendMsg.push({
+                message: msg
+            });
+            console.group('sendErrorCallback');
+                console.log('err', err);
+            console.groupEnd();
+        } else {
+            console.group('sendMessageSuccessCallback');
+                console.log('success', success);
+            console.groupEnd();
+        }
+    };
+}
+
 // delete timer and send 'stop typing' status
 function isTypingTimeoutCallback() {
   isTypingTimerId = undefined;

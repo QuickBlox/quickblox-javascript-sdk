@@ -65,6 +65,11 @@ function ChatProxy(service, webrtcModule, conn) {
 
     if (config.streamManagement.enable){
         this.streamManagement = new StreamManagement(config.streamManagement);
+        self.sentMessageCallback = function(err, success){
+            if(typeof self.onSentMessageCallback === 'function'){
+                self.onSentMessageCallback(err, success);
+            }
+        }
     }
 
 /*
@@ -407,6 +412,8 @@ ChatProxy.prototype = {
 
                         if(config.streamManagement.enable){
                             self.streamManagement.enable(connection);
+
+                            self.streamManagement.sentMessageCallback = self.sentMessageCallback;
                         }
 
                         self._isDisconnected = false;

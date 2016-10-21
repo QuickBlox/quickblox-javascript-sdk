@@ -52,6 +52,8 @@ function connectToChat(user) {
 
                     // setup scroll events handler
                     setupMsgScrollHandler();
+
+                    setupStreamManagementListeners();
                 }
             });
         }

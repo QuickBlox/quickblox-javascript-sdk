@@ -10,8 +10,7 @@ var Utils = require('../qbUtils');
 * TODO
 *
 * 1. Add node.js Functionality
-* 2. Send messages again after error (configuraible)
-* 3. return in the same session on reconnect (configuraible)
+* 2. return in the same session on reconnect (configuraible)
 *
 * */
 
@@ -33,9 +32,9 @@ function StreamManagement(options) {
 	// The client send stanza counter.
 	this._clientSentStanzasCounter = null;
 
-	this._timeInterval = options.timeIntermal;
+	this._timeInterval = 2000;
 
-    this.sendErrorCallback = null;
+	this.sentMessageCallback = null;
 
 	// connection
 	this._c = null;
@@ -72,7 +71,7 @@ StreamManagement.prototype._timeoutCallback = function () {
     if(self._stanzasQueue.length){
         for(var i = 0; i < self._stanzasQueue.length; i++){
             if(self._stanzasQueue[i] && self._stanzasQueue[i].time < now){
-                self._deliverErrorCallback(self._stanzasQueue[i]);
+				self._messageStatusCallback(self._stanzasQueue[i].message);
             } else {
                 updatedStanzasQueue.push(self._stanzasQueue[i]);
             }
@@ -157,19 +156,22 @@ StreamManagement.prototype.getClientSentStanzasCounter = function(){
 
 StreamManagement.prototype._setSentStanzasCounter = function (count){
     this._serverProcesssedStanzasCounter = count;
-    
-    if (this._clientExpectStanzasCounter !== count){
-        this._deliverErrorCallback(this._stanzasQueue[0]);
-    }
 
-    this._stanzasQueue.shift();
+	if (this._clientExpectStanzasCounter !== count){
+		this._messageStatusCallback(this._stanzasQueue[0].message);
+	} else {
+		this._messageStatusCallback(null, this._stanzasQueue[0].message)
+	}
+
+
+	this._stanzasQueue.shift();
     this._clientExpectStanzasCounter++;
 };
 
-StreamManagement.prototype._deliverErrorCallback = function (data){
-    if(typeof self.deliverErrorCallback === 'function'){
-        self.deliverErrorCallback(data.time, data.message);
-    }
+StreamManagement.prototype._messageStatusCallback = function(err, success){
+	if(typeof this.sentMessageCallback === 'function') {
+		this.sentMessageCallback(err, success);
+	}
 };
 
 StreamManagement.prototype._increaseReceivedStanzasCounter = function(){
