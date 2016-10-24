@@ -149,8 +149,7 @@ ContentProxy.prototype = {
             data: params.data
         };
 
-        this.service.ajax(uploadParams, function(err,xmlDoc) {
-            console.info('Upload', uploadParams);
+        this.service.ajax(uploadParams, function(err, xmlDoc) {
             if (err) {
                 callback (err, null);
             } else {

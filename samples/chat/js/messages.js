@@ -146,7 +146,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
 function clickSendMessage() {
     var currentText = $('#message_text').val().trim();
   
-    if (currentText.length === 0){
+    if (!currentText.length){
         return;
     }
 

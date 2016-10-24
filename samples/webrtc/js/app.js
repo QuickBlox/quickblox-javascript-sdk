@@ -554,7 +554,7 @@
                     if (!connection || connectionsCount !== 1){
                         return false;
                     }
-                    console.info('HERE');
+
                     recorder = new QB.Recorder(connection.stream, recorderOpts);
                     recorder.start();
                 } else {

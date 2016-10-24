@@ -24,7 +24,7 @@ gulp.task('build', function () {
     };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        // .transform(babelify, { presets: ['es2015'] })
+        // .transform(babelify, { presets: ['es2015'] }) // We are added babel, but doesn't use it now
         .bundle()
         .on('error', function(error) {
             notify('Failed when create a bundle <%= error.message %>')
@@ -33,7 +33,8 @@ gulp.task('build', function () {
         .pipe(source('quickblox.js'))
         .pipe(buffer())
         .pipe(uglify()).on('error', function(error){
-            console.log('Uglify Error <%= error.message %>');
+            notify('Uglify Error <%= error.message %>');
+            this.emit('end');
         })
         .pipe(rename('quickblox.min.js'))
         .pipe(notify('Build task is finished.'))
