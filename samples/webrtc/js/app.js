@@ -675,7 +675,7 @@
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
-            if(QB.Recorder && QB.Recorder.isAvailable()) {
+            if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
                 recorder.stop();
             }
 
@@ -759,7 +759,9 @@
 
             app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
 
-            recorder.stop();
+            if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+                recorder.stop();
+            }
         };
 
         QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
