@@ -62,12 +62,43 @@ function ChatProxy(service, webrtcModule, conn) {
     this.message = new MessageProxy(service);
     this.helpers = new Helpers();
     this.muc = new MucProxy(service);
+    this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
         this.streamManagement = new StreamManagement(config.streamManagement);
+
         self.sentMessageCallback = function(err, success){
             if(typeof self.onSentMessageCallback === 'function'){
-                self.onSentMessageCallback(err, success);
+
+                var stanza = err || success,
+                    responce = {},
+                    tagName = stanza.tagName,
+                    attachments = chatUtils.getAllElements(stanza, 'attachment') || '',
+                    body = chatUtils.getElementText(stanza, 'body') || '',
+                    jid =  chatUtils.getAttr(stanza, 'to') || '',
+                    messageId = chatUtils.getAttr(stanza, 'id') || '';
+
+                if(tagName === 'message' && (body || attachments.length)){
+                    responce.jid = jid;
+                    responce.messageId = messageId;
+                    responce.body = body;
+
+                    if(attachments){
+                        responce.attachments = [];
+                        for(var i = 0; i<attachments.length; i++){
+                            responce.attachments.push({
+                                'id': chatUtils.getAttr(attachments[i], 'id') || '',
+                                'type': chatUtils.getAttr(attachments[i], 'type') || ''
+                            })
+                        }
+                    }
+
+                    if(success){
+                        self.onSentMessageCallback(null, responce);
+                    } else if (err){
+                        self.onSentMessageCallback(responce);
+                    }
+                }
             }
         }
     }
@@ -367,14 +398,13 @@ function ChatProxy(service, webrtcModule, conn) {
 ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
     connect: function(params, callback) {
+
         Utils.QBLog('[ChatProxy]', 'connect', params);
 
         var self = this,
             err, rooms;
 
         var userJid = chatUtils.buildUserJid(params);
-
-        
 
         /** Connect for browser env. */
         if(Utils.getEnv().browser) {
@@ -440,7 +470,7 @@ ChatProxy.prototype = {
 
                             // chat server will close your connection if you are not active in chat during one minute
                             // initial presence and an automatic reminder of it each 55 seconds
-                            connection.send($pres().tree());
+                            connection.send($pres());
 
                             if (typeof callback === 'function') {
                                 callback(null, roster);
@@ -503,10 +533,18 @@ ChatProxy.prototype = {
             nClient.on('online', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
+                // if(config.streamManagement.enable){
+                //     self.streamManagement.enable(nClient);
+                //
+                //     self.streamManagement.sentMessageCallback = self.sentMessageCallback;
+                // }
+
                 self._isDisconnected = false;
                 self._isLogout = false;
 
                 /** Send first presence if user is online */
+                // var presence = chatUtils.createStanza(NodeClient.Stanza, 'presence');
+                // nClient.send(presence);
                 nClient.send('<presence/>');
 
                 userCurrentJid = nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;

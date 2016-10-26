@@ -22,9 +22,7 @@ var config = {
     muc: 'muc.chat.quickblox.com'
   },
   streamManagement: {
-    enable: true,
-    timeIntermal: 3000,
-    debug: true
+    enable: false
   },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',

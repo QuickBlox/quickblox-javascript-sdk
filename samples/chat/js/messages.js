@@ -266,11 +266,7 @@ var QBUnsendMsg = [];
 
 function setupStreamManagementListeners(){
     QB.chat.onSentMessageCallback = function(err, success){
-        console.log('onSentMessageCallback ');
         if(err){
-            QBUnsendMsg.push({
-                message: msg
-            });
             console.group('sendErrorCallback');
                 console.log('err', err);
             console.groupEnd();

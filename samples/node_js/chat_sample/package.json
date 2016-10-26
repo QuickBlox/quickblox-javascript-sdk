@@ -1,0 +1,11 @@
+{
+  "name": "universal_rivescript",
+  "version": "0.0.1",
+  "description": "www.rivescript.com enabled chat bot",
+  "main": "universal_rivescript.js",
+  "author": "QuickBlox team",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "rivescript": "^1.12.2"
+  }
+}
