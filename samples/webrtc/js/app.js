@@ -23,6 +23,10 @@
                         if(down) {
                             recorder.download(blob, 'QB_WEBrtc_sample' + Date.now());
                         }
+                    },
+                    onErrorRecording: function(error) {
+                        console.error('Recorder error', error);
+                        alert('Recored is failed' + error.message);
                     }
                 }
             };

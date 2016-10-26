@@ -8,6 +8,10 @@
  * Doc: https://w3c.github.io/mediacapture-record/MediaRecorder.html
  * Support: http://caniuse.com/#feat=mediarecorder (Firefox 47, Chrome 49, Opera 40)
  *
+ * !NOTE:
+ * 1. We recommend that you limit the duration of recording 3 minutes currently. 
+ * The long duration can lead to the crash of the tab.
+ *
  * User's callbacks (listener-functions):
  * - onStartRecording
  * - onPauseRecording
