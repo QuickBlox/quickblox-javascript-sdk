@@ -55,8 +55,6 @@ var qbListeners = {
     onMessageListener: function (userId, msg) {
         var answer;
 
-        console.log('inconing message');
-
         if (msg.type == 'groupchat') {
 
             // - skip own messages in the group chat, don't replay to them
@@ -159,13 +157,9 @@ QB.createSession({
 
             QB.chat.onSentMessageCallback = function (err, success) {
                 if (err) {
-                    console.group('sendErrorCallback');
-                    console.log('err', err);
-                    console.groupEnd();
+                    console.log('sendErrorCallback', err);
                 } else {
-                    console.group('sendMessageSuccessCallback');
-                    console.log('success', success);
-                    console.groupEnd();
+                    console.log('sendMessageSuccessCallback', success);
                 }
             };
         });

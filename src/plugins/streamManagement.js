@@ -31,7 +31,7 @@ function StreamManagement(options) {
 	}
 	// connection
 	this._c = null;
-
+	this.builder = null
 	// Original connection.send method
 	this._originalSend = null;
 
@@ -40,21 +40,27 @@ function StreamManagement(options) {
 }
 
 
-StreamManagement.prototype.enable = function (connection) {
+StreamManagement.prototype.enable = function (connection, client) {
 	var self = this,
+        stanza,
 		enableParams = {
 			xmlns: self._NS
 		};
 
-	this._c = connection;
+	self._c = connection;
 
-	this._originalSend = this._c.send;
-	this._c.send = this.send.bind(this);
-	this._addEnableHandlers();
+	self._originalSend = this._c.send;
+	self._c.send = this.send.bind(self);
+	self._addEnableHandlers();
 
-	if (Utils.getEnv().browser) {
-		this._c.send($build('enable', enableParams));
-	}
+    if(Utils.getEnv().browser){
+        stanza = $build('enable', enableParams)
+    } else if (Utils.getEnv().node){
+        self._nodeBuilder =  client.Stanza;
+        stanza = chatUtils.createStanza(self._nodeBuilder, enableParams, 'enable');
+    }
+
+	self._c.send(stanza);
 };
 
 /*
@@ -91,8 +97,8 @@ StreamManagement.prototype._addEnableHandlers = function () {
 
 	if (Utils.getEnv().browser) {
 		self._c.addHandler(_incomingStanzaHandler.bind(self));
-	} else if (Utils.getEnv().browser){
-		console.log('add handlers node');
+	} else if (Utils.getEnv().node){
+		self._c.on('stanza', _incomingStanzaHandler.bind(self))
 	}
 
 	function _incomingStanzaHandler (stanza){
@@ -114,23 +120,28 @@ StreamManagement.prototype._addEnableHandlers = function () {
 		}
 
 		if(tagName === 'r'){
-			self._originalSend.call(self._c, $build('a', { xmlns: self._NS, h: self._clientProcessedStanzasCounter}));
+			var params = {
+					xmlns: self._NS,
+					h: self._clientProcessedStanzasCounter
+				},
+                stanza = Utils.getEnv().browser ? $build('a', params) :
+                    chatUtils.createStanza(self._nodeBuilder, params, 'a');
+
+
+			self._originalSend.call(self._c, stanza);
 		}
 
 		if(tagName === 'a'){
-			var h;
+			var h = parseInt(chatUtils.getAttr(stanza, 'h'));
 
-			if(Utils.getEnv().browser){
-				h = parseInt(stanza.getAttribute('h'));
-			}
 			this._setSentStanzasCounter(h);
         }
+
 		return true;
 	}
 };
 
 StreamManagement.prototype.send = function (stanza) {
-
 	var self = this,
 		tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName,
 		type = chatUtils.getAttr(stanza, 'type');
@@ -152,8 +163,10 @@ StreamManagement.prototype._increaseSentStanzasCounter = function (stanza) {
             message: stanza,
             time: Date.now() + self._timeInterval
         });
+        var stanza = Utils.getEnv().browser ? $build('r', { xmlns: self._NS}) :
+            chatUtils.createStanza(self._nodeBuilder, { xmlns: self._NS}, 'r');
 
-        self._originalSend.call(self._c, $build('r', { xmlns: self._NS, id: self._clientSentStanzasCounter}));
+        self._originalSend.call(self._c, stanza);
     }
 };
 
@@ -162,7 +175,7 @@ StreamManagement.prototype.getClientSentStanzasCounter = function(){
 };
 
 StreamManagement.prototype._setSentStanzasCounter = function (count){
-	if (this._clientExpectStanzasCounter !== count){
+    if (this._clientExpectStanzasCounter !== count){
 		this._messageStatusCallback(this._stanzasQueue[0].message);
 	} else {
 		this._messageStatusCallback(null, this._stanzasQueue[0].message)
@@ -179,7 +192,9 @@ StreamManagement.prototype._messageStatusCallback = function(err, success){
 			resultXML;
 		if(Utils.getEnv().browser){
 			resultXML = stanza.nodeTree ? this._parser.parseFromString(stanza.nodeTree.outerHTML, "application/xml").childNodes[0] : stanza;
-		}
+		} else if(Utils.getEnv().node) {
+            resultXML = err || success
+        }
 
 		if (err) {
 			this.sentMessageCallback(resultXML);

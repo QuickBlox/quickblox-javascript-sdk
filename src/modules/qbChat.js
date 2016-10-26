@@ -67,12 +67,12 @@ function ChatProxy(service, webrtcModule, conn) {
     if (config.streamManagement.enable){
         this.streamManagement = new StreamManagement(config.streamManagement);
 
-        self.sentMessageCallback = function(err, success){
+        self._sentMessageCallback = function(err, success){
             if(typeof self.onSentMessageCallback === 'function'){
 
                 var stanza = err || success,
                     responce = {},
-                    tagName = stanza.tagName,
+                    tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName,
                     attachments = chatUtils.getAllElements(stanza, 'attachment') || '',
                     body = chatUtils.getElementText(stanza, 'body') || '',
                     jid =  chatUtils.getAttr(stanza, 'to') || '',
@@ -441,9 +441,8 @@ ChatProxy.prototype = {
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
                         if(config.streamManagement.enable){
-                            self.streamManagement.enable(connection);
-
-                            self.streamManagement.sentMessageCallback = self.sentMessageCallback;
+                            self.streamManagement.enable(connection, null);
+                            self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                         }
 
                         self._isDisconnected = false;
@@ -533,19 +532,17 @@ ChatProxy.prototype = {
             nClient.on('online', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
-                // if(config.streamManagement.enable){
-                //     self.streamManagement.enable(nClient);
-                //
-                //     self.streamManagement.sentMessageCallback = self.sentMessageCallback;
-                // }
+                if(config.streamManagement.enable){
+                    self.streamManagement.enable(nClient, NodeClient);
+                    self.streamManagement.sentMessageCallback = self._sentMessageCallback;
+                }
 
                 self._isDisconnected = false;
                 self._isLogout = false;
 
                 /** Send first presence if user is online */
-                // var presence = chatUtils.createStanza(NodeClient.Stanza, 'presence');
-                // nClient.send(presence);
-                nClient.send('<presence/>');
+                var presence = chatUtils.createStanza(NodeClient.Stanza, null,'presence');
+                nClient.send(presence);
 
                 userCurrentJid = nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
 
