@@ -323,7 +323,11 @@ function ChatProxy(service, webrtcModule, conn) {
 
                     // send initial presence if one of client (instance) goes offline
                     if (userId === currentUserId) {
-                        connection.send($pres().tree());
+                        if(Utils.getEnv().browser){
+                            connection.send($pres())
+                        } else if(Utils.getEnv().node){
+                            nClient.send(chatUtils.createStanza(NodeClient.Stanza, null,'presence'));
+                        }
                     }
 
                     break;
