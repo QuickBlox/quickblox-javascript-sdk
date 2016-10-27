@@ -83,7 +83,7 @@ function ChatProxy(service, webrtcModule, conn) {
                     responce.messageId = messageId;
                     responce.body = body;
 
-                    if(attachments){
+                    if(attachments.length){
                         responce.attachments = [];
                         for(var i = 0; i<attachments.length; i++){
                             responce.attachments.push({
