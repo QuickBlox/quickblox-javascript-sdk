@@ -1,7 +1,8 @@
-/*
- * QuickBlox JavaScript SDK
- * Chat Module
- */
+'use strict';
+
+/** JSHint inline rules */
+/* globals Strophe, $pres, $msg, $iq */
+
 var chatUtils = require('./qbChatHelpers'),
     config = require('../qbConfig'),
     Utils = require('../qbUtils'),
@@ -109,7 +110,7 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onMessageErrorListener (messageId, error)
  * - onMessageTypingListener
  * - onDeliveredStatusListener (messageId, dialogId, userId);
- * - onReadStatusListener
+ * - onReadStatusListener (messageId, dialogId, userId);
  * - onSystemMessageListener (message)
  * - onContactListListener (userId, type)
  * - onSubscribeListener (userId)
@@ -234,7 +235,7 @@ function ChatProxy(service, webrtcModule, conn) {
                  * if you make 'leave' from dialog
                  * stanza will be contains type="unavailable"
                  */
-                var type = stanza.attrs.type;
+                type = stanza.attrs.type;
 
                 /** LEAVE from dialog */
                 if(type && type === 'unavailable' && nodeStanzasCallbacks['muc:leave']) {
@@ -243,7 +244,7 @@ function ChatProxy(service, webrtcModule, conn) {
                         return;
                     }
                 }
-                
+
                 /** JOIN to dialog */
                 if(stanza.attrs.id) {
                     if(status && status.attrs.code == "110"){
@@ -359,6 +360,7 @@ function ChatProxy(service, webrtcModule, conn) {
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
             delay = chatUtils.getElement(stanza, 'delay'),
             moduleIdentifier = chatUtils.getElementText(extraParams, 'moduleIdentifier'),
+            bodyContent = chatUtils.getElementText(stanza, 'body'),
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
@@ -367,6 +369,7 @@ function ChatProxy(service, webrtcModule, conn) {
             message = {
                 id: messageId,
                 userId: self.helpers.getIdFromNode(from),
+                body: bodyContent,
                 extension: extraParamsParsed.extension
             };
 
@@ -562,7 +565,7 @@ ChatProxy.prototype = {
 
             nClient.on('reconnect', function () {
                 Utils.QBLog('[QBChat] client is reconnected');
-                
+
                 self._isDisconnected = true;
                 self._isLogout = true;
             });
@@ -579,9 +582,9 @@ ChatProxy.prototype = {
 
             nClient.on('stanza', function (stanza) {
                 Utils.QBLog('[QBChat] RECV', stanza.toString());
-               
+
                 /**
-                 * Detect typeof incoming stanza 
+                 * Detect typeof incoming stanza
                  * and fire the Listener
                  */
                 if (stanza.is('presence')) {
@@ -667,6 +670,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+
+        return paramsCreateMsg.id;
     },
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this,
@@ -679,6 +684,12 @@ ChatProxy.prototype = {
 
         var stanza = chatUtils.createStanza(builder, paramsCreateMsg);
 
+        if (message.body) {
+            stanza.c('body', {
+                xmlns: chatUtils.MARKERS.CLIENT,
+            }).t(message.body).up();
+        }
+
         if(Utils.getEnv().browser) {
             // custom parameters
             if (message.extension) {
@@ -686,7 +697,7 @@ ChatProxy.prototype = {
                 xmlns: chatUtils.MARKERS.CLIENT
               }).c('moduleIdentifier').t('SystemNotifications').up();
 
-             stanza = chatUtils.filledExtraParams(stanza, message.extension);
+              stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             connection.send(stanza);
@@ -703,6 +714,8 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
+        
+        return paramsCreateMsg.id;
     },
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
@@ -895,10 +908,9 @@ RosterProxy.prototype = {
             var items = _getItems(stanza);
             /** TODO */
             for (var i = 0, len = items.length; i < len; i++) {
-                var userId = chatUtils.getAttr(items[i], 'name'),
+                var userId = self.helpers.getIdFromNode( chatUtils.getAttr(items[i], 'jid') ),
                     ask = chatUtils.getAttr(items[i], 'ask'),
                     subscription = chatUtils.getAttr(items[i], 'subscription');
-
 
                 contacts[userId] = {
                     subscription: subscription,
@@ -1028,7 +1040,7 @@ RosterProxy.prototype = {
             };
 
         var pres = chatUtils.createStanza(builder, presParams, 'presence');
-        
+
         Utils.QBLog('[_sendSubscriptionPresence]', params);
 
         if(Utils.getEnv().browser){
@@ -1151,7 +1163,7 @@ MucProxy.prototype = {
             connection.sendIQ(iq, function(stanza) {
                 var items = stanza.getElementsByTagName('item'),
                     userId;
-                
+
                 for (var i = 0, len = items.length; i < len; i++) {
                     userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
                     onlineUsers.push(userId);
@@ -1181,7 +1193,7 @@ PrivacyListProxy.prototype = {
     create: function(list, callback) {
         var self = this,
             userId, userJid, userMuc,
-            userAction, 
+            userAction,
             mutualBlock,
             listPrivacy = {},
             listUserId = [];
@@ -1208,7 +1220,7 @@ PrivacyListProxy.prototype = {
 
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
 
-        iq.c('query', { 
+        iq.c('query', {
             xmlns: chatUtils.MARKERS.PRIVACY
         }).c('list', {
           name: list.name
@@ -1266,7 +1278,7 @@ PrivacyListProxy.prototype = {
             return iq;
         }
 
-        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i=i+2) {
+        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i = i + 2) {
             userId = listUserId[index];
             mutualBlock = listPrivacy[userId].mutualBlock;
 
@@ -1430,7 +1442,7 @@ PrivacyListProxy.prototype = {
             };
 
         if(Utils.getEnv().browser){
-            var iq = $iq(stanzaParams).c('query', {
+            iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             });
 
@@ -1828,18 +1840,6 @@ Helpers.prototype = {
             return null;
         }
         return arrayElements[arrayElements.length-1];
-    },
-    getUniqueId: function(suffix) {
-        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : r & 0x3 | 0x8;
-            return v.toString(16);
-        });
-        if (typeof(suffix) == 'string' || typeof(suffix) == 'number') {
-            return uuid + ':' + suffix;
-        } else {
-            return uuid + '';
-        }
     }
 };
 

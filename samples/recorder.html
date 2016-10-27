@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recorder</title>
+</head>
+<body>
+
+<video id="localVideo"></video>
+
+<div>
+    <button id="start">Start recording</button>
+    <button id="pause">Pause recording</button>
+    <button id="resume">Resume recording</button>
+    <button id="stop">Stop recording</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="../quickblox.min.js"></script>
+<script>
+    /* globals QB*/
+    'use strict';
+
+    var CONFIG = {
+        debug: true,
+        webrtc: {
+            answerTimeInterval: 30,
+            dialingTimeInterval: 5,
+            disconnectTimeInterval: 30,
+            statsReportTimeInterval: 5
+        }
+    };
+
+    var CREDS = {
+        'appId': 39854,
+        'authKey': 'JtensAa9y4AM5Yk',
+        'authSecret': 'AsDFwwwxpr3LN5w'
+    };
+
+    QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG.APP_CONFIG);
+
+    var calleesIds = [56, 76, 34]; // User's ids 
+    var sessionType = QB.webrtc.CallType.VIDEO; // AUDIO is also possible
+ 
+
+    var mediaParams = {
+        audio: true,
+        video: true,
+        elemId: 'localVideo'
+    };
+
+    var recorder;
+    var session;
+
+    $('#start').on('click', function() {
+        session = QB.webrtc.createNewSession(calleesIds, sessionType);
+        
+        session.getUserMedia(mediaParams, function(err, stream) {
+            if(err){
+                console.error('getUserMedia Error', err);
+            } else {
+                recorder = new QB.Recorder(stream, {
+                    callbacks: {
+                        onStartRecording: function startRecord() {
+                            console.log('Start recording...');
+                        },
+                        onErrorRecording: function errorRecord(error) {
+                            console.error('Record failed!', error);
+                        },
+                        onStopRecording: function stopRecord(blob) {
+                            console.log('Stop recording', blob);
+                            recorder.download(blob);
+                        },
+                        onPauseRecording: function pauseRecord() {
+                            console.log('Pause recording');
+                        },
+                        onResumeRecording: function resumeRecord() {
+                            console.log('Resume recording');
+                        }
+                    }
+                });
+                recorder.start();
+            }
+        });
+    });
+
+    $('#pause').on('click', function() {
+        recorder.pause();
+    });
+
+    $('#resume').on('click', function() {
+        recorder.resume();
+    });
+
+    $('#stop').on('click', function() {
+        recorder.stop();
+
+        session.stop({});
+        session = {};
+    });
+</script>
+</body>
+</html>

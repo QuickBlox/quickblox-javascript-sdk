@@ -8,8 +8,14 @@ npm-debug.log
 .idea/*
 .idea/workspace.xml
 
+# *Sublime
+*.sublime-*
+
 # Use command grunt for create quickblox.js
 quickblox.js
 
 #jasmine-npm generate
 .grunt
+
+# Cordova build
+**/build

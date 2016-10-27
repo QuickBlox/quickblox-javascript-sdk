@@ -1,3 +1,5 @@
+'use strict';
+
 var utils = require('../qbUtils');
 var config = require('../qbConfig');
 
@@ -16,13 +18,6 @@ var MARKERS = {
 
 var qbChatHelpers = {
     MARKERS: MARKERS,
-    getMyselfJid: function(conn) {
-        if(utils.getEnv().browser) {
-            return conn.jid;
-        } else if(utils.getEnv().node) {
-            return nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
-        }
-    },
     /**
      * @param {params} this object may contains Jid or Id property
      * @return {string} jid of user
@@ -32,9 +27,9 @@ var qbChatHelpers = {
 
         if ('userId' in params) {
             jid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
-          
+
             if ('resource' in params) {
-                jid = userJid + "/" + params.resource;
+                jid = jid + '/' + params.resource;
             }
         } else if ('jid' in params) {
             jid = params.jid;
@@ -109,9 +104,9 @@ var qbChatHelpers = {
     },
     _JStoXML: function(title, obj, msg) {
         var self = this;
-        
+
         msg.c(title);
-        
+
         Object.keys(obj).forEach(function(field) {
             if (typeof obj[field] === 'object') {
                 self._JStoXML(field, obj[field], msg);
@@ -161,6 +156,8 @@ var qbChatHelpers = {
         return stanza;
     },
     parseExtraParams: function(extraParams) {
+        var self = this;
+
         if(!extraParams){
             return null;
         }
@@ -178,7 +175,7 @@ var qbChatHelpers = {
                     var attributes = extraParams.childNodes[i].attributes;
 
                     for (var j = 0, len2 = attributes.length; j < len2; j++) {
-                        if (attributes[j].name === 'id' || attributes[j].name === 'size'){
+                        if (attributes[j].name === 'size'){
                             attach[attributes[j].name] = parseInt(attributes[j].value);
                         } else {
                             attach[attributes[j].name] = attributes[j].value;
@@ -190,7 +187,7 @@ var qbChatHelpers = {
                     // parse 'dialog_id'
                 } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
                     dialogId = extraParams.childNodes[i].textContent;
-                    extension['dialog_id'] = dialogId;
+                    extension.dialog_id = dialogId;
 
                     // parse other user's custom parameters
                 } else {
@@ -198,6 +195,7 @@ var qbChatHelpers = {
                         // Firefox issue with 4K XML node limit:
                         // http://www.coderholic.com/firefox-4k-xml-node-limit/
                         var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+
                         if (nodeTextContentSize > 4096) {
                             var wholeNodeContent = "";
                             for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
@@ -205,7 +203,7 @@ var qbChatHelpers = {
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
                         } else {
-                            extension = chatUtils._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
                         }
                     } else {
                         extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
@@ -220,9 +218,9 @@ var qbChatHelpers = {
             for (var i = 0, len = extraParams.children.length; i < len; i++) {
                 if(extraParams.children[i].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
-                    extension['dialog_id'] = dialogId;
+                    extension.dialog_id = dialogId;
                 }
-                 
+
                 if(extraParams.children[i].children.length === 1) {
                     var child = extraParams.children[i];
 
@@ -256,7 +254,7 @@ var qbChatHelpers = {
         var errorElement = stanzaError.getElementsByTagName('error')[0];
         var errorCode = parseInt(errorElement.getAttribute('code'));
         var errorText = errorElement.getElementsByTagName('text')[0].textContent;
-  
+
         return utils.getError(errorCode, errorText);
     },
     getLocalTime: function() {

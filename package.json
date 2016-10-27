@@ -1,15 +1,10 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.2.3",
+  "version": "2.3.4",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
-  "license": [
-    {
-      "type": "Apache 2.0",
-      "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/blob/master/LICENSE"
-    }
-  ],
+  "license": "(Apache-2.0)",
   "keywords": [
     "quickblox",
     "javascript",
@@ -25,12 +20,14 @@
   "maintainers": [
     "Igor Khomenko <igor@quickblox.com>",
     "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
-    "Dima Lobanov <dmytro.lobanov@injoit.com>"
+    "Dima Lobanov <dmytro.lobanov@injoit.com>",
+    "Iegor Kozakov <iegor.kozakov@injoit.com>"
   ],
   "contributors": [
     "Igor Khomenko <igor@quickblox.com>",
     "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
-    "Dima Lobanov <dmytro.lobanov@injoit.com>"
+    "Dima Lobanov <dmytro.lobanov@injoit.com>",
+    "Iegor Kozakov <iegor.kozakov@injoit.com>"
   ],
   "repository": {
     "type": "git",
@@ -49,16 +46,23 @@
     "xml2js": "^0.4.13"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.16.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.0",
+    "buffer": "^5.0.0",
+    "cross-env": "^3.1.2",
     "ghooks": "^1.3.2",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^3.2.1",
-    "grunt-contrib-connect": "^0.9.0",
-    "grunt-contrib-uglify": "^0.6.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-notify": "^0.4.1",
-    "grunt-parallel": "^0.4.1",
+    "gulp": "^3.9.1",
+    "gulp-connect": "^5.0.0",
+    "gulp-jshint": "^2.0.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
     "jasmine": "^2.4.1",
-    "load-grunt-tasks": "^1.0.0"
+    "jshint": "^2.9.3",
+    "jshint-stylish": "^2.2.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "autoupdate": {
     "source": "git",
@@ -75,8 +79,10 @@
     }
   },
   "scripts": {
-    "setDependencies": "npm i && npm install -g grunt-cli && npm install -g jasmine",
-    "build": "grunt",
-    "test": "jasmine"
+    "setDependencies": "npm i && npm install -g gulp-cli && npm install -g jasmine",
+    "lint": "jshint src --reporter=node_modules/jshint-stylish",
+    "build": "npm run lint && gulp transform && gulp uglify",
+    "develop": "cross-env NODE_ENV=develop gulp",
+    "start": "gulp connect"
   }
 }

@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC client)
@@ -12,7 +14,6 @@
  * - onUpdateCallListener(session, userID, extension)
  * - onInvalidEventsListener (state, session, userID, extension)
  */
-'use strict';
 
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
@@ -190,15 +191,15 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
 };
 
 WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
-    var session = this.sessions[sessionID];
+    var session = this.sessions[sessionID],
+        extensionClone = JSON.parse(JSON.stringify(extension));
+
+    this._cleanupExtension(extensionClone);
 
     Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
 
     if (session) {
         if (session.state === WebRTCSession.State.ACTIVE) {
-            var extensionClone = JSON.parse(JSON.stringify(extension));
-            this._cleanupExtension(extensionClone);
-
             if (typeof this.onAcceptCallListener === 'function') {
                 Utils.safeCallbackCall(this.onAcceptCallListener, session, userID, extensionClone);
             }

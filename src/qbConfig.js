@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -10,7 +12,7 @@
  */
 
 var config = {
-  version: '2.2.3',
+  version: '2.3.4',
   creds: {
     appId: '',
     authKey: '',

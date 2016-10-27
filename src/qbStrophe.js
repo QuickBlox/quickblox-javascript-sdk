@@ -1,4 +1,7 @@
 'use strict';
+/** JSHint inline rules */
+/* globals Strophe */
+
 /**
  * QuickBlox JavaScript SDK
  * Strophe Connection Object
