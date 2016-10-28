@@ -5,53 +5,54 @@
 
 /** Modules */
 var Utils = require('../qbUtils'),
-	chatUtils = require('../modules/qbChatHelpers');
+    chatUtils = require('../modules/qbChatHelpers');
 
 function StreamManagement(options) {
 
-	this._NS = 'urn:xmpp:sm:3';
+    this._NS = 'urn:xmpp:sm:3';
 
     this._isStreamManagementEnabled = false;
 
-	// Counter of the incoming stanzas
-	this._clientProcessedStanzasCounter = null;
+    // Counter of the incoming stanzas
+    this._clientProcessedStanzasCounter = null;
 
-	this._clientExpectStanzasCounter = null;
+    this._clientExpectStanzasCounter = null;
 
-	// The client send stanza counter.
-	this._clientSentStanzasCounter = null;
+    // The client send stanza counter.
+    this._clientSentStanzasCounter = null;
 
-	this._timeInterval = 2000;
+    this._timeInterval = 2000;
 
-	this.sentMessageCallback = null;
+    this.sentMessageCallback = null;
+
     if(Utils.getEnv().browser){
-		this._parser = new DOMParser();
-	} else if(Utils.getEnv().node){
-		this._parser = require('xml2js').parseString;
-	}
-	// connection
-	this._c = null;
-	this.builder = null
-	// Original connection.send method
-	this._originalSend = null;
+        this._parser = new DOMParser();
+    }
 
-	// In progress stanzas queue
-	this._stanzasQueue = [];
+    // connection
+    this._c = null;
+
+    this._nodeBuilder = null;
+    // Original connection.send method
+    this._originalSend = null;
+
+    // In progress stanzas queue
+    this._stanzasQueue = [];
 }
 
 
 StreamManagement.prototype.enable = function (connection, client) {
-	var self = this,
+    var self = this,
         stanza,
-		enableParams = {
-			xmlns: self._NS
-		};
+        enableParams = {
+            xmlns: self._NS
+        };
 
-	self._c = connection;
+    self._c = connection;
 
-	self._originalSend = this._c.send;
-	self._c.send = this.send.bind(self);
-	self._addEnableHandlers();
+    self._originalSend = this._c.send;
+    self._c.send = this.send.bind(self);
+    self._addEnableHandlers();
 
     if(Utils.getEnv().browser){
         stanza = $build('enable', enableParams)
@@ -60,7 +61,7 @@ StreamManagement.prototype.enable = function (connection, client) {
         stanza = chatUtils.createStanza(self._nodeBuilder, enableParams, 'enable');
     }
 
-	self._c.send(stanza);
+    self._c.send(stanza);
 };
 
 /*
@@ -69,9 +70,6 @@ StreamManagement.prototype.enable = function (connection, client) {
  * 1. Add node.js Functionality
  * 2. return in the same session on reconnect (configuraible)
  *
- if(Utils.getEnv().node){
- const
- }
  * */
 
 StreamManagement.prototype._timeoutCallback = function () {
@@ -82,7 +80,7 @@ StreamManagement.prototype._timeoutCallback = function () {
     if(self._stanzasQueue.length){
         for(var i = 0; i < self._stanzasQueue.length; i++){
             if(self._stanzasQueue[i] && self._stanzasQueue[i].time < now){
-				self._messageStatusCallback(self._stanzasQueue[i].message);
+                self._messageStatusCallback(self._stanzasQueue[i].message);
             } else {
                 updatedStanzasQueue.push(self._stanzasQueue[i]);
             }
@@ -93,76 +91,96 @@ StreamManagement.prototype._timeoutCallback = function () {
 };
 
 StreamManagement.prototype._addEnableHandlers = function () {
-	var self = this;
+    var self = this;
 
-	if (Utils.getEnv().browser) {
-		self._c.addHandler(_incomingStanzaHandler.bind(self));
-	} else if (Utils.getEnv().node){
-		self._c.on('stanza', _incomingStanzaHandler.bind(self))
-	}
+    if (Utils.getEnv().browser) {
+        self._c.addHandler(_incomingStanzaHandler.bind(self));
+    } else if (Utils.getEnv().node){
+        self._c.on('stanza', _incomingStanzaHandler.bind(self))
+    }
 
-	function _incomingStanzaHandler (stanza){
-		/*
-		* Getting incoming stanza tagName
-		* */
+    function _incomingStanzaHandler (stanza){
+        /*
+        * Getting incoming stanza tagName
+        * */
 
-		var tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName;
+        var tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName;
 
-		if(tagName === 'enabled'){
-			self._isStreamManagementEnabled = true;
-			self._clientExpectStanzasCounter = self._clientSentStanzasCounter+1;
+        if(tagName === 'enabled'){
+            self._isStreamManagementEnabled = true;
 
-			setInterval(this._timeoutCallback.bind(this), this._timeInterval);
-		}
+            self._clientExpectStanzasCounter = self._clientSentStanzasCounter;
 
-		if(chatUtils.getAttr(stanza, 'xmlns') !== self._NS){
-			self._increaseReceivedStanzasCounter();
-		}
+            setInterval(this._timeoutCallback.bind(this), this._timeInterval);
 
-		if(tagName === 'r'){
-			var params = {
-					xmlns: self._NS,
-					h: self._clientProcessedStanzasCounter
-				},
+            return true;
+        }
+
+        if(chatUtils.getAttr(stanza, 'xmlns') !== self._NS){
+            self._increaseReceivedStanzasCounter();
+        }
+
+        if(tagName === 'r'){
+            var params = {
+                    xmlns: self._NS,
+                    h: self._clientProcessedStanzasCounter
+                },
                 stanza = Utils.getEnv().browser ? $build('a', params) :
                     chatUtils.createStanza(self._nodeBuilder, params, 'a');
 
 
-			self._originalSend.call(self._c, stanza);
-		}
+            self._originalSend.call(self._c, stanza);
 
-		if(tagName === 'a'){
-			var h = parseInt(chatUtils.getAttr(stanza, 'h'));
-
-			this._setSentStanzasCounter(h);
+            return true;
         }
 
-		return true;
-	}
+        if(tagName === 'a'){
+            var h = parseInt(chatUtils.getAttr(stanza, 'h'));
+
+            this._setSentStanzasCounter(h);
+        }
+
+        return true;
+    }
 };
 
 StreamManagement.prototype.send = function (stanza) {
-	var self = this,
-		tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName,
-		type = chatUtils.getAttr(stanza, 'type');
+    var self = this,
+        stanzaXML = stanza.nodeTree ? this._parser.parseFromString(stanza.nodeTree.outerHTML, "application/xml").childNodes[0] : stanza,
+        tagName = stanzaXML.name || stanzaXML.tagName || stanzaXML.nodeTree.tagName,
+        type = chatUtils.getAttr(stanzaXML, 'type'),
+        xmlns = chatUtils.getAttr(stanzaXML, 'xmlns'),
+        body = chatUtils.getElementText(stanzaXML, 'body') || '',
+        attachments = chatUtils.getAllElements(stanzaXML, 'attachment') || '';
 
-	self._originalSend.call(self._c, stanza);
 
-	if (tagName !== 'enable' && tagName !== 'resume' && tagName !== 'a' && tagName !== 'r') {
-		self._increaseSentStanzasCounter(stanza);
-	}
-};
+    self._originalSend.call(self._c, stanza);
 
-StreamManagement.prototype._increaseSentStanzasCounter = function (stanza) {
-	var self = this;
+    if(xmlns !== self._NS) {
+        self._clientExpectStanzasCounter ++;
+    }
+
+    if (tagName === 'message' && (type === 'chat' || type === 'groupchat') && (body || attachments.length)) {
+        self._increaseSentStanzasCounter({
+            message: {
+                jid: chatUtils.getAttr(stanzaXML, 'to') || '',
+                messageId: chatUtils.getAttr(stanzaXML, 'id') || '',
+                body: body
+            },
+            time: Date.now() + self._timeInterval,
+            expext: self._clientSentStanzasCounter
+        });
+    }
 
     self._clientSentStanzasCounter++;
+};
+
+StreamManagement.prototype._increaseSentStanzasCounter = function (data) {
+    var self = this;
 
     if(self._isStreamManagementEnabled){
-        self._stanzasQueue.push({
-            message: stanza,
-            time: Date.now() + self._timeInterval
-        });
+        self._stanzasQueue.push(data);
+
         var stanza = Utils.getEnv().browser ? $build('r', { xmlns: self._NS}) :
             chatUtils.createStanza(self._nodeBuilder, { xmlns: self._NS}, 'r');
 
@@ -171,41 +189,31 @@ StreamManagement.prototype._increaseSentStanzasCounter = function (stanza) {
 };
 
 StreamManagement.prototype.getClientSentStanzasCounter = function(){
-	return this._clientSentStanzasCounter;
+    return this._clientSentStanzasCounter;
 };
 
 StreamManagement.prototype._setSentStanzasCounter = function (count){
-    if (this._clientExpectStanzasCounter !== count){
-		this._messageStatusCallback(this._stanzasQueue[0].message);
-	} else {
-		this._messageStatusCallback(null, this._stanzasQueue[0].message)
-	}
+    if (this._stanzasQueue[0].expext !== count){
+        this._messageStatusCallback(this._stanzasQueue[0].message);
+    } else {
+        this._messageStatusCallback(null, this._stanzasQueue[0].message)
+    }
 
-	this._stanzasQueue.shift();
-    this._clientExpectStanzasCounter++;
+    this._stanzasQueue.shift();
 };
 
 StreamManagement.prototype._messageStatusCallback = function(err, success){
-	if(typeof this.sentMessageCallback === 'function') {
-
-		var stanza = err || success,
-			resultXML;
-		if(Utils.getEnv().browser){
-			resultXML = stanza.nodeTree ? this._parser.parseFromString(stanza.nodeTree.outerHTML, "application/xml").childNodes[0] : stanza;
-		} else if(Utils.getEnv().node) {
-            resultXML = err || success
-        }
-
-		if (err) {
-			this.sentMessageCallback(resultXML);
+    if(typeof this.sentMessageCallback === 'function') {
+        if (err) {
+            this.sentMessageCallback(err);
         } else {
-			this.sentMessageCallback(null, resultXML);
-		}
-	}
+            this.sentMessageCallback(null, success);
+        }
+    }
 };
 
 StreamManagement.prototype._increaseReceivedStanzasCounter = function(){
-	this._clientProcessedStanzasCounter++;
+    this._clientProcessedStanzasCounter++;
 };
 
 module.exports = StreamManagement;

@@ -70,35 +70,10 @@ function ChatProxy(service, webrtcModule, conn) {
 
         self._sentMessageCallback = function(err, success){
             if(typeof self.onSentMessageCallback === 'function'){
-
-                var stanza = err || success,
-                    responce = {},
-                    tagName = stanza.name || stanza.tagName || stanza.nodeTree.tagName,
-                    attachments = chatUtils.getAllElements(stanza, 'attachment') || '',
-                    body = chatUtils.getElementText(stanza, 'body') || '',
-                    jid =  chatUtils.getAttr(stanza, 'to') || '',
-                    messageId = chatUtils.getAttr(stanza, 'id') || '';
-
-                if(tagName === 'message' && (body || attachments.length)){
-                    responce.jid = jid;
-                    responce.messageId = messageId;
-                    responce.body = body;
-
-                    if(attachments.length){
-                        responce.attachments = [];
-                        for(var i = 0; i<attachments.length; i++){
-                            responce.attachments.push({
-                                'id': chatUtils.getAttr(attachments[i], 'id') || '',
-                                'type': chatUtils.getAttr(attachments[i], 'type') || ''
-                            })
-                        }
-                    }
-
-                    if(success){
-                        self.onSentMessageCallback(null, responce);
-                    } else if (err){
-                        self.onSentMessageCallback(responce);
-                    }
+                if(success){
+                    self.onSentMessageCallback(null, success);
+                } else if (err){
+                    self.onSentMessageCallback(err);
                 }
             }
         }
