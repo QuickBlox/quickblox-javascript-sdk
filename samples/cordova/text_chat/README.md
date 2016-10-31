@@ -4,6 +4,8 @@
 
 This is a code sample for [QuickBlox](https://quickblox.com/) platform. It is a great way for developers using QuickBlox platform to learn how to integrate private and group chat, add text and image attachments sending into your application.
 
+[Cordova Get Started](https://cordova.apache.org/#getstarted) guide.
+
 ## Sample description
 
 <img src="http://quickblox.com/developers//images/7/74/Cordova_chat_sample1.png" border="1" alt="1-1 ang Group chats" width="600"> 
@@ -21,4 +23,16 @@ It allows:
 
 Original sample description & setup guide - [Apache Cordova (PhoneGap) Chat code sample](http://quickblox.com/developers/Sample-chat-cordova)
 
-
+## Steps to build this sample from scratch
+1. Create Cordova app:
+```
+cordova create hello com.example.hellochat HelloChat
+```
+2. Copy content from **samples/chat** to **www** folder of your Cordova app.
+3. Add platfroms:
+```
+cordova platform add ios --save &&
+cordova platform add android --save &&
+cordova platform add browser --save
+```
+4. 

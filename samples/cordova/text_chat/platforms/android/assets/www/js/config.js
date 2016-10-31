@@ -33,7 +33,7 @@ var QBUser1 = {
         name: 'quickuser',
         login: 'chatusr11',
         pass: 'chatusr11'
-    },
+    }, 
     QBUser2 = {
         id: 6729119,
         name: 'bloxuser',

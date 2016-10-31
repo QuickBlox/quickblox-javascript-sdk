@@ -27,9 +27,7 @@ function setupMsgScrollHandler() {
 // on message listener
 //
 function onMessage(userId, msg) {
-
-  // check if it's a mesasges for current dialog
-  //
+  // check if it's a message for current dialog
   if (isMessageForCurrentDialog(userId, msg.dialog_id)){
     dialogsMessages.push(msg);
 
@@ -72,30 +70,28 @@ function onReadStatusListener(messageId) {
 }
 
 function retrieveChatMessages(dialog, beforeDateSent){
-  // Load messages history
-  //
-  $(".load-msg").show(0);
+    // Load messages history
+    $(".load-msg").show(0);
 
-  var params = {chat_dialog_id: dialog._id,
-                     sort_desc: 'date_sent',
-                         limit: 10};
+    var params = {
+        chat_dialog_id: dialog._id,
+        sort_desc: 'date_sent',
+        limit: 10
+    };
 
-  // if we would like to load the previous history
-  if(beforeDateSent !== null){
-    params.date_sent = {lt: beforeDateSent};
-  }else{
-    currentDialog = dialog;
-    dialogsMessages = [];
-  }
+    // if we would like to load the previous history
+    if(beforeDateSent !== null){
+        params.date_sent = {lt: beforeDateSent};
+    } else {
+        currentDialog = dialog;
+        dialogsMessages = [];
+    }
 
-  QB.chat.message.list(params, function(err, messages) {
-    if (messages) {
-
-      console.log(messages);
-
-      if(messages.items.length === 0) {
-        $("#no-messages-label").removeClass('hide');
-      } else {
+    QB.chat.message.list(params, function(err, messages) {
+      if (messages) {
+        if(messages.items.length === 0) {
+          $("#no-messages-label").removeClass('hide');
+        } else {
         $("#no-messages-label").addClass('hide');
 
         messages.items.forEach(function(item, i, arr) {
@@ -181,42 +177,43 @@ function clickSendAttachments(inputFile) {
 
 // send text or attachment
 function sendMessage(text, attachmentFileId) {
+    stickerpipe.onUserMessageSent(stickerpipe.isSticker(text));
 
-  stickerpipe.onUserMessageSent(stickerpipe.isSticker(text));
-
-  var msg = {
-    type: currentDialog.type === 3 ? 'chat' : 'groupchat',
-    body: text,
-    extension: {
-      save_to_history: 1,
-    },
-    senderId: currentUser.id,
-    markable: 1
-  };
-  if(attachmentFileId !== null){
-    msg["extension"]["attachments"] = [{id: attachmentFileId, type: 'photo'}];
-  }
-
-  if (currentDialog.type === 3) {
-    opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
-    QB.chat.send(opponentId, msg);
-
-    $('.list-group-item.active .list-group-item-text').text(stickerpipe.isSticker(msg.body) ? 'Sticker' : msg.body);
-
-    if(attachmentFileId === null){
-      showMessage(currentUser.id, msg);
-    } else {
-      showMessage(currentUser.id, msg, attachmentFileId);
+    var msg = {
+        type: currentDialog.type === 3 ? 'chat' : 'groupchat',
+        body: text,
+        extension: {
+            save_to_history: 1,
+        },
+        markable: 1
+    };
+  
+    if(attachmentFileId !== null){
+        msg['extension']['attachments'] = [{id: attachmentFileId, type: 'photo'}];
     }
-  } else {
-    QB.chat.send(currentDialog.xmpp_room_jid, msg);
-  }
 
-  // claer timer and send 'stop typing' status
-  clearTimeout(isTypingTimerId);
-  isTypingTimeoutCallback();
+    if (currentDialog.type === 3) {
+        opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
+        
+        QB.chat.send(opponentId, msg);
 
-  dialogsMessages.push(msg);
+        $('.list-group-item.active .list-group-item-text')
+            .text(stickerpipe.isSticker(msg.body) ? 'Sticker' : msg.body);
+
+        if(attachmentFileId === null){
+            showMessage(currentUser.id, msg);
+        } else {
+            showMessage(currentUser.id, msg, attachmentFileId);
+        }
+    } else {
+        QB.chat.send(currentDialog.xmpp_room_jid, msg);
+    }
+
+    // claer timer and send 'stop typing' status
+    clearTimeout(isTypingTimerId);
+    isTypingTimeoutCallback();
+
+    dialogsMessages.push(msg);
 }
 
 // show messages in UI
@@ -269,11 +266,11 @@ function isTypingTimeoutCallback() {
 
 // send 'is typing' status
 function sendTypingStatus() {
-  if (currentDialog.type == 3) {
-    QB.chat.sendIsTypingStatus(opponentId);
-  } else {
-    QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
-  }
+    if (currentDialog.type == 3) {
+        QB.chat.sendIsTypingStatus(opponentId);
+    } else if(currentDialog && currentDialog.xmpp_room_jid) {
+        QB.chat.sendIsTypingStatus(currentDialog.xmpp_room_jid);
+    }
 }
 
 // send 'stop typing' status
