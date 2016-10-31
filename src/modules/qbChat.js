@@ -1218,7 +1218,7 @@ PrivacyListProxy.prototype = {
             return iq;
         }
 
-        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i = i + 2) {
+        for (var index = 0, j = 0, len = listUserId.length; index < len; index++, j = j + 2) {
             userId = listUserId[index];
             mutualBlock = listPrivacy[userId].mutualBlock;
 
@@ -1228,23 +1228,23 @@ PrivacyListProxy.prototype = {
 
             if(mutualBlock && userAction === 'deny'){
                 iq = createPrivacyItemMutal(iq, {
-                    order: i+1,
+                    order: j+1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItemMutal(iq, {
-                    order: i+2,
+                    order: j+2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 }).up().up();
             } else {
                 iq = createPrivacyItem(iq, {
-                    order: i+1,
+                    order: j+1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItem(iq, {
-                    order: i+2,
+                    order: j+2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 });

@@ -31,7 +31,6 @@ gulp.task('build', function () {
             this.emit('end');
         })
         .pipe(source('quickblox.js'))
-        .pipe(buffer())
         .pipe(uglify()).on('error', function(error){
             notify('Uglify Error <%= error.message %>');
             this.emit('end');
