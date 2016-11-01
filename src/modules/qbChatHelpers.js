@@ -198,8 +198,8 @@ var qbChatHelpers = {
 
                         if (nodeTextContentSize > 4096) {
                             var wholeNodeContent = "";
-                            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+                            for(var k=0; k<extraParams.childNodes[i].childNodes.length; ++k){
+                                wholeNodeContent += extraParams.childNodes[i].childNodes[k].textContent;
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
                         } else {
@@ -215,14 +215,14 @@ var qbChatHelpers = {
                 extension.attachments = attachments;
             }
         } else if(utils.getEnv().node) {
-            for (var i = 0, len = extraParams.children.length; i < len; i++) {
-                if(extraParams.children[i].name === 'dialog_id') {
+            for (var c = 0, lenght = extraParams.children.length; c < lenght; c++) {
+                if(extraParams.children[c].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
                     extension.dialog_id = dialogId;
                 }
 
-                if(extraParams.children[i].children.length === 1) {
-                    var child = extraParams.children[i];
+                if(extraParams.children[c].children.length === 1) {
+                    var child = extraParams.children[c];
 
                     extension[child.name] = child.children[0];
                 }

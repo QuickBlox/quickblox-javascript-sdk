@@ -14,8 +14,8 @@ These modules are combined through [browserify](http://browserify.org/) into a s
 To build the library, uses [gulp](http://gulpjs.com/) task runner.
 
 * You need to have the dependencies listed in the package.json available, use `npm install` to load them;
-* Install [gulp](https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md#getting-started) globally;
-* Install [jasmine](https://github.com/jasmine/jasmine#installation) globally. Uses for tests;
+* Install [gulp](https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md#getting-started) and globally;
+* Install [jasmine](https://github.com/jasmine/jasmine#installation) globally;
 * Change the 'version' properties in next files:
   * ./bower.json;
   * ./package.json;

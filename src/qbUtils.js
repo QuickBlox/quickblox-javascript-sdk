@@ -183,8 +183,8 @@ var Utils = {
         }
 
         if(this.loggers){
-            for(var i=0;i<this.loggers.length;++i){
-                this.loggers[i](arguments);
+            for(var j=0;j<this.loggers.length;++j){
+                this.loggers[j](arguments);
             }
         }
     },
