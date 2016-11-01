@@ -68,12 +68,12 @@ function ChatProxy(service, webrtcModule, conn) {
     if (config.streamManagement.enable){
         this.streamManagement = new StreamManagement(config.streamManagement);
 
-        self._sentMessageCallback = function(err, success){
+        self._sentMessageCallback = function(messageLost, messageSent){
             if(typeof self.onSentMessageCallback === 'function'){
-                if(success){
-                    self.onSentMessageCallback(null, success);
-                } else if (err){
-                    self.onSentMessageCallback(err);
+                if(messageSent){
+                    self.onSentMessageCallback(null, messageSent);
+                } else {
+                    self.onSentMessageCallback(messageLost);
                 }
             }
         }
@@ -93,6 +93,7 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onRejectSubscribeListener (userId)
  * - onDisconnectedListener
  * - onReconnectListener
+ * - onSentMessageCallback(messageLost, messageSent)
  */
 
     this._onMessage = function(stanza) {
