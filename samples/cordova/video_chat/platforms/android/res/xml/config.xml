@@ -1,17 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.quickblox.cordova.videochat" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <preference name="loglevel" value="DEBUG" />
-    <feature name="Device">
-        <param name="android-package" value="org.apache.cordova.device.Device" />
-    </feature>
+<widget id="io.cordova.hellocordova" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <feature name="Whitelist">
         <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
         <param name="onload" value="true" />
     </feature>
-    <allow-intent href="market:*" />
-    <name>QB VideoChat</name>
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <name>Video Chat</name>
     <description>
-      Apache Cordova web video / voice calls on WebRTC, code sample.
+        Apache Cordova simple code sample for Web Video (WebRTC) Chat (via QuickBlox SDK + API)
     </description>
     <author email="assist@quickblox.com" href="https://quickblox.com">
        QuickBlox Team
@@ -24,4 +22,6 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <allow-intent href="market:*" />
+    <preference name="loglevel" value="DEBUG" />
 </widget>

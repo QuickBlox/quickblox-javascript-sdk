@@ -18,14 +18,17 @@
         }
     },
     "installed_plugins": {
-        "cordova-plugin-device": {
-            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         },
         "cordova-plugin-iosrtc": {
-            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         },
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.quickblox.cordova.videochat"
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         }
     },
     "dependent_plugins": {},
@@ -46,8 +49,9 @@
         }
     ],
     "plugin_metadata": {
-        "cordova-plugin-device": "1.1.2",
-        "cordova-plugin-iosrtc": "3.0.0",
-        "cordova-plugin-whitelist": "1.2.2"
+        "cordova-plugin-whitelist": "1.3.0",
+        "cordova-plugin-iosrtc": "3.1.0",
+        "cordova-plugin-console": "1.0.4",
+        "cordova-plugin-device": "1.1.3"
     }
 }

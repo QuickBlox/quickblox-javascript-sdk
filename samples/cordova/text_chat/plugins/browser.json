@@ -7,6 +7,9 @@
         "files": {}
     },
     "installed_plugins": {
+        "cordova-plugin-websocket": {
+            "PACKAGE_NAME": "com.quickblox.cordova.chat"
+        },
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "com.quickblox.cordova.chat"
         }

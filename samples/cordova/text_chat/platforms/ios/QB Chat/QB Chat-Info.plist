@@ -34,12 +34,15 @@
     <string/>
     <key>UISupportedInterfaceOrientations</key>
     <array>
+      <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
+      <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
+      <string>UIInterfaceOrientationPortraitUpsideDown</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>UIRequiresFullScreen</key>
@@ -49,9 +52,5 @@
       <key>NSAllowsArbitraryLoads</key>
       <true/>
     </dict>
-    <key>UIInterfaceOrientation</key>
-    <array>
-      <string>UIInterfaceOrientationLandscapeLeft</string>
-    </array>
   </dict>
 </plist>
