@@ -714,18 +714,22 @@
                 console.log('Extension: ', extension);
             console.groupEnd();
 
+            app.currentSession = session;
+
             ui.insertOccupants().then(function(users) {
                 app.users = users;
-
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
-                app.currentSession = session;
 
                 /** close previous modal */
                 $(ui.income_call).modal('hide');
 
                 $('.j-ic_initiator').text(initiator.full_name);
-                $(ui.income_call).modal('show');
-                document.getElementById(sounds.rington).play();
+
+                // check the current session state
+                if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
+                    $(ui.income_call).modal('show');
+                    document.getElementById(sounds.rington).play();
+                }
             });
         };
 
