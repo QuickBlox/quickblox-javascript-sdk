@@ -62,14 +62,6 @@ StreamManagement.prototype.enable = function (connection, client) {
     self._c.send(stanza);
 };
 
-/*
- * TODO
- *
- * 1. Add node.js Functionality
- * 2. return in the same session on reconnect (configuraible)
- *
- * */
-
 StreamManagement.prototype._timeoutCallback = function () {
     var self = this,
         now = Date.now(),

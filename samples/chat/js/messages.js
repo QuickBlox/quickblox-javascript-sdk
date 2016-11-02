@@ -261,19 +261,11 @@ function setupIsTypingHandler() {
   });
 }
 
-var QBUnsendMsg = [];
-
 function setupStreamManagementListeners(){
-    QB.chat.onSentMessageCallback = function(err, success){
-        if(err){
-            console.group('sendErrorCallback');
-                console.log('err', err);
-            console.groupEnd();
-        } else {
-            console.group('sendMessageSuccessCallback');
-                console.log('success', success);
-            console.groupEnd();
-        }
+    QB.chat.onSentMessageCallback = function(messageLost, messageSent){
+        console.group('onSentMessageCallback');
+            messageLost ? console.log('Message was lost', messageLost) : console.log('Message was sent successfully', messageSent)
+        console.groupEnd();
     };
 }
 
