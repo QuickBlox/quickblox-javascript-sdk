@@ -370,14 +370,24 @@
           loadScriptAsync("js/stateBoard.js")
           loadScriptAsync("js/app.js")
       }
+
+      // Listen for orientation changes
+      //
+      window.addEventListener('orientationchange', doOnOrientationChange);
+      function doOnOrientationChange(){
+        if (window.device.platform === 'iOS') {
+            cordova.plugins.iosrtc.refreshVideos();
+        }
+      }
+
     </script>
 
     <!-- hack for github Pages -->
     <script>
-    console.log("aaaaa");
       var host = "quickblox.github.io";
-      if ((host == window.location.host) && (window.location.protocol != "https:"))
+      if ((host == window.location.host) && (window.location.protocol != "https:")){
         window.location.protocol = "https";
+      }
     </script>
 </body>
 </html>
