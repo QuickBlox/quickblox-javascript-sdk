@@ -69,7 +69,6 @@
     "target": "git://github.com/QuickBlox/quickblox-javascript-sdk.git",
     "basePath": "",
     "files": [
-      "quickblox.js",
       "quickblox.min.js"
     ]
   },
