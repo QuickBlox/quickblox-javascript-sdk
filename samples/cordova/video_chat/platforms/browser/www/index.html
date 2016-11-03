@@ -357,6 +357,7 @@
           }
 
           // Load JavaScript files async
+          //
           var loadScriptAsync = function(path){
               var jsScript = document.createElement("script");
               jsScript.type = "text/javascript";
@@ -370,14 +371,30 @@
           loadScriptAsync("js/stateBoard.js")
           loadScriptAsync("js/app.js")
       }
+
+      // Listen for orientation changes and scroll events
+      //
+      window.addEventListener('orientationchange', function(){
+        refreshVideoViewPosition();
+      });
+      window.addEventListener("scroll", function(){
+        refreshVideoViewPosition();
+      });
+      //
+      function refreshVideoViewPosition(){
+        if (window.device.platform === 'iOS') {
+            cordova.plugins.iosrtc.refreshVideos();
+        }
+      }
+
     </script>
 
     <!-- hack for github Pages -->
     <script>
-    console.log("aaaaa");
       var host = "quickblox.github.io";
-      if ((host == window.location.host) && (window.location.protocol != "https:"))
+      if ((host == window.location.host) && (window.location.protocol != "https:")){
         window.location.protocol = "https";
+      }
     </script>
 </body>
 </html>

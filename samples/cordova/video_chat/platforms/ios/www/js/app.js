@@ -188,9 +188,11 @@
                     return [item.name, item.value.trim()];
                 }));
 
-            if(localStorage.getItem('isAuth')) {
-                $('#already_auth').modal();
-                return false;
+            if (window.device.platform === 'browser') {
+              if(localStorage.getItem('isAuth')) {
+                  $('#already_auth').modal();
+                  return false;
+              }
             }
 
             $form.addClass('join-wait');
@@ -225,7 +227,9 @@
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
-                        localStorage.setItem('isAuth', true);
+                        if (window.device.platform === 'browser') {
+                          localStorage.setItem('isAuth', true);
+                        }
                         app.router.navigate('dashboard', { trigger: true });
                     }
                 });

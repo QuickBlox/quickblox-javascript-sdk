@@ -16,3 +16,5 @@ quickblox.js
 
 # Cordova build
 **/build
+
+*.xcarchive

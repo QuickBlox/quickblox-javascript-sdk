@@ -357,6 +357,7 @@
           }
 
           // Load JavaScript files async
+          //
           var loadScriptAsync = function(path){
               var jsScript = document.createElement("script");
               jsScript.type = "text/javascript";
@@ -371,10 +372,16 @@
           loadScriptAsync("js/app.js")
       }
 
-      // Listen for orientation changes
+      // Listen for orientation changes and scroll events
       //
-      window.addEventListener('orientationchange', doOnOrientationChange);
-      function doOnOrientationChange(){
+      window.addEventListener('orientationchange', function(){
+        refreshVideoViewPosition();
+      });
+      window.addEventListener("scroll", function(){
+        refreshVideoViewPosition();
+      });
+      //
+      function refreshVideoViewPosition(){
         if (window.device.platform === 'iOS') {
             cordova.plugins.iosrtc.refreshVideos();
         }
