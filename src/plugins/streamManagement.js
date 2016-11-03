@@ -116,7 +116,6 @@ StreamManagement.prototype._addEnableHandlers = function () {
                 stanza = Utils.getEnv().browser ? $build('a', params) :
                     chatUtils.createStanza(self._nodeBuilder, params, 'a');
 
-
             self._originalSend.call(self._c, stanza);
 
             return true;
@@ -132,25 +131,19 @@ StreamManagement.prototype._addEnableHandlers = function () {
     }
 };
 
-StreamManagement.prototype.send = function (stanza) {
+StreamManagement.prototype.send = function (stanza, message) {
     var self = this,
         stanzaXML = stanza.nodeTree ? this._parser.parseFromString(stanza.nodeTree.outerHTML, "application/xml").childNodes[0] : stanza,
         tagName = stanzaXML.name || stanzaXML.tagName || stanzaXML.nodeTree.tagName,
         type = chatUtils.getAttr(stanzaXML, 'type'),
-        xmlns = chatUtils.getAttr(stanzaXML, 'xmlns'),
-        body = chatUtils.getElementText(stanzaXML, 'body') || '',
+        bodyContent = chatUtils.getElementText(stanzaXML, 'body') || '',
         attachments = chatUtils.getAllElements(stanzaXML, 'attachment') || '';
-
 
     self._originalSend.call(self._c, stanza);
 
-    if (tagName === 'message' && (type === 'chat' || type === 'groupchat') && (body || attachments.length)) {
+    if (tagName === 'message' && (type === 'chat' || type === 'groupchat') && (bodyContent || attachments.length)) {
         self._sendStanzasRequest({
-            message: {
-                jid: chatUtils.getAttr(stanzaXML, 'to') || '',
-                messageId: chatUtils.getAttr(stanzaXML, 'id') || '',
-                body: body
-            },
+            message: message,
             time: Date.now() + self._timeInterval,
             expect: self._clientSentStanzasCounter
         });

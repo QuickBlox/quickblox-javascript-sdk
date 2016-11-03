@@ -185,6 +185,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (markable) {
             message.markable = 1;
         }
+
         if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
@@ -623,28 +624,31 @@ ChatProxy.prototype = {
             }).up();
         }
 
-        if(Utils.getEnv().browser) {
-            if (message.extension) {
-                stanza.c('extraParams', {
-                    xmlns: chatUtils.MARKERS.CLIENT
-                });
+        if (message.extension) {
+            stanza.c('extraParams', {
+                xmlns: chatUtils.MARKERS.CLIENT
+            });
 
-                stanza = chatUtils.filledExtraParams(stanza, message.extension);
-            }
-
-            connection.send(stanza);
+            stanza = chatUtils.filledExtraParams(stanza, message.extension);
         }
 
-        if(Utils.getEnv().node) {
-            if (message.extension) {
-                stanza.c('extraParams', {
-                    xmlns: chatUtils.MARKERS.CLIENT
-                });
-
-                stanza = chatUtils.filledExtraParams(stanza, message.extension);
+        if(Utils.getEnv().browser) {
+            if(config.streamManagement.enable){
+                message.id = paramsCreateMsg.id;
+                message.jid_or_user_id = jid_or_user_id;
+                connection.send(stanza, message);
+            } else {
+                connection.send(stanza);
+            }
+        } else if (Utils.getEnv().node) {
+            if(config.streamManagement.enable){
+                message.id = paramsCreateMsg.id;
+                message.jid_or_user_id = jid_or_user_id;
+                nClient.send(stanza, message);
+            } else {
+                nClient.send(stanza);
             }
 
-            nClient.send(stanza);
         }
 
         return paramsCreateMsg.id;

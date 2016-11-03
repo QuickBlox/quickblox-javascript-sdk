@@ -67,7 +67,7 @@ var qbListeners = {
                 mentionStartIndex = msg.body.indexOf(mentionPattern);
             }
 
-            if(userId != CONFIG.user.id && mentionStartIndex >= 0){
+            if(userId != USER.id && mentionStartIndex >= 0){
                 // build a reply
                 var realBody;
 
