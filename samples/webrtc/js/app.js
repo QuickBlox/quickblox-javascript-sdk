@@ -601,15 +601,18 @@
          * Chat:
          * - onDisconnectedListener
          * WebRTC:
-         * - onCallStatsReport
-         * - onSessionCloseListener
-         * - onUserNotAnswerListener
-         * - onUpdateCallListener
          * - onCallListener
+         * - onCallStatsReport
+         * - onUpdateCallListener
+         * 
          * - onAcceptCallListener
          * - onRejectCallListener
-         * - onStopCallListener
+         * - onUserNotAnswerListener
+         * 
          * - onRemoteStreamListener
+         * 
+         * - onStopCallListener
+         * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
          */
 
@@ -688,11 +691,6 @@
             } else {
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
-
-            if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
-                recorder.stop();
-            }
-
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
