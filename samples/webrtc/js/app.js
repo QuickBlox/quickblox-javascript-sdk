@@ -870,7 +870,7 @@
                $calleeStatus.text('connected');
            }
 
-           if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+           if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED) {
                app.helpers.toggleRemoteVideoView(userId, 'hide');
                $calleeStatus.text('disconnected');
            }
