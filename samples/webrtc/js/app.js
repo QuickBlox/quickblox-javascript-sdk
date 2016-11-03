@@ -10,6 +10,7 @@
 
         var recorder;
         var recorderOpts = {
+                mimeType: 'video/webm',
                 callbacks: {
                     onStartRecording: function onStartRecord() {
                         console.log('[QB Recorder] onStartRecording');
@@ -27,6 +28,7 @@
                     onErrorRecording: function(error) {
                         console.error('Recorder error', error);
                         alert('Recored is failed' + error.message);
+                        recorder.stop();
                     }
                 }
             };
@@ -634,6 +636,10 @@
                 if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
                     console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
+                    if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+                        recorder.pause();
+                    }
+                    
                     app.helpers.toggleRemoteVideoView(userId, 'hide');
                     $('.j-callee_status_' + userId).text('disconnected');
 
@@ -641,6 +647,10 @@
                         ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
                     }
                 } else {
+                    if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+                        recorder.resume();
+                    }
+                    
                     if(ffHack.waitingReconnectTimer) {
                         clearTimeout(ffHack.waitingReconnectTimer);
                         ffHack.waitingReconnectTimer = null;
