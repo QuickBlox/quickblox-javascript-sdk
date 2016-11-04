@@ -18,6 +18,9 @@
         },
         "cordova-plugin-device": {
             "PACKAGE_NAME": "io.cordova.hellocordova"
+        },
+        "cordova-custom-config": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         }
     },
     "dependent_plugins": {}

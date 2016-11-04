@@ -15,7 +15,8 @@ module.exports.metadata =
     "cordova-plugin-whitelist": "1.3.0",
     "cordova-plugin-iosrtc": "3.1.0",
     "cordova-plugin-console": "1.0.4",
-    "cordova-plugin-device": "1.1.3"
+    "cordova-plugin-device": "1.1.3",
+    "cordova-custom-config": "3.0.14"
 };
 // BOTTOM OF METADATA
 });

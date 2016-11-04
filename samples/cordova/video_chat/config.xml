@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.cordova.hellocordova" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Video Chat</name>
+<widget id="com.quickblox.cordova.video_chat" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>QB Video Chat</name>
     <description>
-        Apache Cordova simple code sample for Web Video (WebRTC) Chat (via QuickBlox SDK + API)
+        QuickBlox Apache Cordova simple code sample for Web Video (WebRTC) Chat (via QuickBlox SDK + API)
     </description>
     <author email="assist@quickblox.com" href="https://quickblox.com">
        QuickBlox Team
@@ -23,6 +23,12 @@
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
         <hook src="hooks/iosrtc-swift-support.js" type="after_platform_add" />
+        <config-file parent="NSCameraUsageDescription" platform="ios" target="*-Info.plist">
+            <string>Use camera for video calling</string>
+        </config-file>
+        <config-file parent="NSMicrophoneUsageDescription" platform="ios" target="*-Info.plist">
+            <string>Use microphone for video calling</string>
+        </config-file>
     </platform>
     <engine name="android" spec="~6.0.0" />
     <engine name="ios" spec="~4.3.0" />
@@ -30,4 +36,5 @@
     <plugin name="cordova-plugin-iosrtc" spec="~3.1.0" />
     <plugin name="cordova-plugin-console" spec="~1.0.4" />
     <plugin name="cordova-plugin-device" spec="~1.1.3" />
+    <plugin name="cordova-custom-config" spec="~3.0.14" />    
 </widget>

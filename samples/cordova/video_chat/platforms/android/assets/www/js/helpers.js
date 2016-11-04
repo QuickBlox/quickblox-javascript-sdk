@@ -9,7 +9,7 @@
     };
     app.network = {};
 
-    
+
     /* [getQueryVar get value of key from search string of url]
      * @param  {[string]} q [name of query]
      * @return {[string]}   [value of query]
@@ -207,7 +207,7 @@
                 usersHTML = '',
                 users = [];
 
-            QB.users.get({'tags': [app.caller.user_tags]}, function(err, result){
+            QB.users.get({'tags': [app.caller.user_tags], 'per_page': 100}, function(err, result){
                 if (err) {
                     reject(err);
                 } else {
