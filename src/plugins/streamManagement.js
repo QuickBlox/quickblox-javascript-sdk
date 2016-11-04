@@ -1,9 +1,13 @@
+'use strict';
+
 /**
  * QuickBlox JavaScript SDK
  * Chat Module (Chat Stream Management plugin)
  */
 
-/** Modules */
+/** JSHint inline rules */
+/* globals $build */
+
 var Utils = require('../qbUtils'),
     chatUtils = require('../modules/qbChatHelpers');
 
@@ -53,7 +57,7 @@ StreamManagement.prototype.enable = function (connection, client) {
     self._addEnableHandlers();
 
     if(Utils.getEnv().browser){
-        stanza = $build('enable', enableParams)
+        stanza = $build('enable', enableParams);
     } else if (Utils.getEnv().node){
         self._nodeBuilder =  client.Stanza;
         stanza = chatUtils.createStanza(self._nodeBuilder, enableParams, 'enable');
@@ -86,7 +90,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
     if (Utils.getEnv().browser) {
         self._c.addHandler(_incomingStanzaHandler.bind(self));
     } else if (Utils.getEnv().node){
-        self._c.on('stanza', _incomingStanzaHandler.bind(self))
+        self._c.on('stanza', _incomingStanzaHandler.bind(self));
     }
 
     function _incomingStanzaHandler (stanza){
@@ -99,7 +103,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
         if(tagName === 'enabled'){
             self._isStreamManagementEnabled = true;
 
-            setInterval(this._timeoutCallback.bind(this), this._timeInterval);
+            setInterval(self._timeoutCallback.bind(self), self._timeInterval);
 
             return true;
         }
@@ -113,10 +117,10 @@ StreamManagement.prototype._addEnableHandlers = function () {
                     xmlns: self._NS,
                     h: self._clientProcessedStanzasCounter
                 },
-                stanza = Utils.getEnv().browser ? $build('a', params) :
+                answerStanza = Utils.getEnv().browser ? $build('a', params) :
                     chatUtils.createStanza(self._nodeBuilder, params, 'a');
 
-            self._originalSend.call(self._c, stanza);
+            self._originalSend.call(self._c, answerStanza);
 
             return true;
         }
@@ -124,7 +128,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
         if(tagName === 'a'){
             var h = parseInt(chatUtils.getAttr(stanza, 'h'));
 
-            this._checkCounterOnIncomeStanza(h);
+            self._checkCounterOnIncomeStanza(h);
         }
 
         return true;
@@ -173,7 +177,7 @@ StreamManagement.prototype._checkCounterOnIncomeStanza = function (count){
     if (this._stanzasQueue[0].expect !== count){
         this.sentMessageCallback(this._stanzasQueue[0].message);
     } else {
-        this.sentMessageCallback(null, this._stanzasQueue[0].message)
+        this.sentMessageCallback(null, this._stanzasQueue[0].message);
     }
 
     this._stanzasQueue.shift();

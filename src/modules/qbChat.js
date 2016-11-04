@@ -76,7 +76,7 @@ function ChatProxy(service, webrtcModule, conn) {
                     self.onSentMessageCallback(messageLost);
                 }
             }
-        }
+        };
     }
 
 /*
@@ -302,7 +302,7 @@ function ChatProxy(service, webrtcModule, conn) {
                     // send initial presence if one of client (instance) goes offline
                     if (userId === currentUserId) {
                         if(Utils.getEnv().browser){
-                            connection.send($pres())
+                            connection.send($pres());
                         } else if(Utils.getEnv().node){
                             nClient.send(chatUtils.createStanza(NodeClient.Stanza, null,'presence'));
                         }
