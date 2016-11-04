@@ -1,31 +1,32 @@
 var QBApp = {
-  appId: 28287,
-  authKey: 'XydaWcf8OO9xhGT',
-  authSecret: 'JZfqTspCvELAmnW'
+    appId: 28287,
+    authKey: 'XydaWcf8OO9xhGT',
+    authSecret: 'JZfqTspCvELAmnW'
 };
 
 var config = {
-  chatProtocol: {
-    active: 2
-  },
-  debug: {
-    mode: 1,
-    file: null
-  },
-  stickerpipe: {
-    elId: 'stickers_btn',
+    chatProtocol: {
+        active: 2
+    },
+    streamManagement: {
+        enable: true
+    },
+    debug: {
+        mode: 1,
+        file: null
+    },
+    stickerpipe: {
+        elId: 'stickers_btn',
+        apiKey: '847b82c49db21ecec88c510e377b452c',
+        enableEmojiTab: false,
+        enableHistoryTab: true,
+        enableStoreTab: true,
 
-    apiKey: '847b82c49db21ecec88c510e377b452c',
+        userId: null,
 
-    enableEmojiTab: false,
-    enableHistoryTab: true,
-    enableStoreTab: true,
-
-    userId: null,
-
-    priceB: '0.99 $',
-    priceC: '1.99 $'
-  }
+        priceB: '0.99 $',
+        priceC: '1.99 $'
+    }
 };
 
 var QBUser1 = {
@@ -33,7 +34,7 @@ var QBUser1 = {
         name: 'quickuser',
         login: 'chatusr11',
         pass: 'chatusr11'
-    }, 
+    },
     QBUser2 = {
         id: 6729119,
         name: 'bloxuser',

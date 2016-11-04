@@ -9,7 +9,6 @@
 
 require('strophe.js');
 
-
 var config = require('./qbConfig');
 var chatPRTCL = config.chatProtocol;
 var Utils = require('./qbUtils');

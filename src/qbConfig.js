@@ -23,6 +23,9 @@ var config = {
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
   },
+  streamManagement: {
+    enable: false
+  },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',
     websocket: 'wss://chat.quickblox.com:5291',

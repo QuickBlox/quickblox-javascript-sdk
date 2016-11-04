@@ -145,7 +145,7 @@ function retrieveChatMessages(dialog, beforeDateSent){
 // sending messages after confirmation
 function clickSendMessage() {
     var currentText = $('#message_text').val().trim();
-  
+
     if (!currentText.length){
         return;
     }
@@ -259,6 +259,14 @@ function setupIsTypingHandler() {
       isTypingTimerId = setTimeout(isTypingTimeoutCallback, 5000);
     }
   });
+}
+
+function setupStreamManagementListeners(){
+    QB.chat.onSentMessageCallback = function(messageLost, messageSent){
+        console.group('onSentMessageCallback');
+            messageLost ? console.log('Message was lost', messageLost) : console.log('Message was sent successfully', messageSent)
+        console.groupEnd();
+    };
 }
 
 // delete timer and send 'stop typing' status

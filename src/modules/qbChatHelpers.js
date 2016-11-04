@@ -74,6 +74,19 @@ var qbChatHelpers = {
 
         return el ? el : null;
     },
+    getAllElements: function(stanza, elName) {
+        var el;
+
+        if(typeof stanza.querySelectorAll === 'function') {
+            el = stanza.querySelectorAll(elName);
+        } else if(typeof stanza.getChild === 'function'){
+            el = stanza.getChild(elName);
+        } else {
+            throw ERR_UNKNOWN_INTERFACE;
+        }
+
+        return el ? el : null;
+    },
     getElementText: function(stanza, elName) {
         var el,
             txt;
