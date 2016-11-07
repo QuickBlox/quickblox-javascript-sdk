@@ -67,7 +67,7 @@ function Recorder(mediaStream, opts) {
     self._mediaStream = null;
     self._userCallbacks = opts && opts.callbacks ? opts.callbacks : null; 
 
-    if(opts && opts.mimeType) {
+    if(clientMimeType) {
         typeOfRecorded = opts.mimeType.toString().toLowerCase().indexOf('audio') === -1 ? 'video' : 'audio';
     }
 
@@ -91,7 +91,7 @@ function Recorder(mediaStream, opts) {
 
     /* prepare setting for MediaRecorder */
     self.mediaRecorderOptions = {
-        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType),
+        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType)
         audioBitsPerSecond: opts && opts.audioBitsPerSecond ? opts.audioBitsPerSecond : BITS_PER_SECOND,
         videoBitsPerSecond : opts && opts.videoBitsPerSecond ? opts.videoBitsPerSecond : BITS_PER_SECOND,
         bitsPerSecond: opts && opts.bitsPerSecond ? opts.bitsPerSecond : BITS_PER_SECOND
@@ -131,17 +131,21 @@ Recorder.getSupportedMimeType = function(type, clientMimeType) {
         throw new Error('Set type of record is require.');
     }
 
-    if(clientMimeType && MediaRecorder.isTypeSupported(clientMimeType)) {
-        supportedMimeType = clientMimeType;
+    if(!MediaRecorder.isTypeSupported) {
+        supportedMimeType = 'video/mp4';
     } else {
-        Recorder._mimeTypes[type].some(function(item) {
-            if(MediaRecorder.isTypeSupported(item)) {
-                supportedMimeType = item;
-                return true;
-            }
+        if(clientMimeType && MediaRecorder.isTypeSupported(clientMimeType)) {
+            supportedMimeType = clientMimeType;
+        } else {
+            Recorder._mimeTypes[type].some(function(item) {
+                if(MediaRecorder.isTypeSupported(item)) {
+                    supportedMimeType = item;
+                    return true;
+                }
 
-            return false;
-        });
+                return false;
+            });
+        }
     }
 
     return supportedMimeType;
@@ -158,8 +162,7 @@ Recorder.prototype.getExtension = function() {
         extension = self.mediaRecorderOptions.mimeType.substring(endTypeMedia + 1),
         startCodecsInfo = extension.indexOf(';');
 
-
-    if(startCodecsInfo) {
+    if(startCodecsInfo !== -1) {
         extension = extension.substring(0, startCodecsInfo);
     }
 
@@ -239,10 +242,12 @@ Recorder.prototype.start = function() {
 };
 
 Recorder.prototype.stop = function() {
-    if(this._mediaRecorder){
-        this._mediaRecorder.stop();
+    var mediaRec = this._mediaRecorder;
+
+    if(mediaRec && mediaRec.state !== 'inactive' && mediaRec.state !== 'stopped'){
+        mediaRec.stop();
     } else {
-        console.warn('[Recorder stop]: MediaRecorder isn\'t created.');
+        console.warn('[Recorder stop]: MediaRecorder isn\'t created or has invalid state');
     }
 };
 
@@ -290,7 +295,6 @@ Recorder.prototype.download = function(blob, downloadFileName) {
     a.href = url;
     a.download = (downloadFileName || Date.now()) + '.' + self.getExtension();
 
-    /* Add link */
     document.body.appendChild(a);
 
     /* Start dowloading */

@@ -8,9 +8,8 @@
             'rington': 'ringtoneSignal'
         };
 
-        var recorder;
+        var recorder = null;
         var recorderOpts = {
-                mimeType: 'video/webm',
                 callbacks: {
                     onStartRecording: function onStartRecord() {
                         console.log('[QB Recorder] onStartRecording');
@@ -24,11 +23,11 @@
                         if(down) {
                             recorder.download(blob, 'QB_WEBrtc_sample' + Date.now());
                         }
+
+                        recorder = null;
                     },
                     onErrorRecording: function(error) {
                         console.error('Recorder error', error);
-                        alert('Recored is failed' + error.message);
-                        recorder.stop();
                     }
                 }
             };
@@ -74,6 +73,9 @@
         var remoteStreamCounter = 0;
 
         function closeConn(userId) {
+            if(recorder) {
+                recorder.stop()
+            }
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
             app.currentSession.closeConnection(userId);
         }
@@ -318,6 +320,10 @@
             /** Hangup */
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
+
+                    if(recorder) {
+                        recorder.stop();
+                    }
 
                     app.currentSession.stop({});
                     app.currentSession = {};
@@ -639,7 +645,7 @@
                 if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
                     console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
-                    if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+                    if(recorder) {
                         recorder.pause();
                     }
                     
@@ -650,7 +656,7 @@
                         ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
                     }
                 } else {
-                    if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+                    if(recorder) {
                         recorder.resume();
                     }
                     
@@ -676,6 +682,10 @@
             $('.j-caller__ctrl').removeClass('active');
             $(ui.sourceFilter).attr('disabled', false);
             $('.j-callees').empty();
+
+            if(!ffHack.isFirefox && recorder) {
+                recorder.stop();
+            }
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -775,7 +785,7 @@
 
             app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
 
-            if(QB.Recorder && QB.Recorder.isAvailable() && recorder) {
+            if(recorder) {
                 recorder.stop();
             }
         };
