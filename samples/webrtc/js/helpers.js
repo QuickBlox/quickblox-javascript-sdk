@@ -84,6 +84,7 @@
             });
         } else {
             /** It's for groups call */
+
             $('.j-callee_status_' + userId).text(title);
         }
     };
@@ -234,4 +235,21 @@
             });
         });
     };
+
+    app.helpers.getUsersStatus = function(){
+        var users = {};
+
+        if(app.calleesAnwered.length){
+            users.accepted = app.calleesAnwered;
+        }
+
+        if(app.calleesRejected.length){
+            users.rejected = app.calleesRejected;
+        }
+
+        return users;
+    };
+
+
+
 }(window, window.QB));

@@ -124,6 +124,7 @@
                 app.caller = {};
                 app.callees = {};
                 app.calleesAnwered = [];
+                app.calleesRejected = [];
                 app.users = [];
             },
             'dashboard': function() {
@@ -240,7 +241,7 @@
 
                         $(ui.filterSelect).val('no');
                         app.calleesAnwered = [];
-
+                        app.calleesRejected = [];
                         if(call.callTimer) {
                             $('#timer').addClass('invisible');
                             clearInterval(call.callTimer);
@@ -772,6 +773,8 @@
                     }
                 });
             } else {
+                var userInfo = _.findWhere(app.users, {'id': +userId})
+                app.calleesRejected.push(userInfo);
                 $('.j-callee_status_' + userId).text('Rejected');
             }
         };
@@ -808,9 +811,9 @@
 
             if(app.currentSession.currentUserID === app.currentSession.initiatorID) {
                 app.helpers.stateBoard.update({
-                    'title': 'tpl_accept_call',
+                    'title': 'tpl_call_status',
                     'property': {
-                        'users': app.calleesAnwered
+                        'users': app.helpers.getUsersStatus()
                     }
                 });
             }
@@ -917,16 +920,19 @@
                    $(ui.filterSelect).val('no');
 
                    app.calleesAnwered = [];
+                   app.calleesRejected = [];
                }
 
                 if (app.currentSession.currentUserID === app.currentSession.initiatorID && !isCallEnded) {
-                   /** get array if users without user who ends call */
+                    var userInfo = _.findWhere(app.users, {'id': +userId});
+                    /** get array if users without user who ends call */
                     app.calleesAnwered = _.reject(app.calleesAnwered, function(num){ return num.id === +userId; });
+                    app.calleesRejected.push(userInfo);
 
                     app.helpers.stateBoard.update({
-                       'title': 'tpl_accept_call',
+                       'title': 'tpl_call_status',
                        'property': {
-                           'users': app.calleesAnwered
+                           'users': app.helpers.getUsersStatus()
                         }
                     });
                 }
