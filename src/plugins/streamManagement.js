@@ -12,7 +12,7 @@
  - }
  * ```
  * 
- * Uses listeners by QB.chat.onSentMessageCallback
+ * Uses listener by QB.chat.onSentMessageCallback
  *
  * ```javascript
  * QB.chat.onSentMessageCallback = function (messageLost, messageSent) {
