@@ -12,6 +12,9 @@
  * 1. We recommend that you limit the duration of recording 3 minutes currently. 
  * The long duration can lead to the crash of the tab.
  *
+ * !KNOWN ISSUES:
+ * 1. Firefox will crash if a remote stream is broken.
+ *
  * User's callbacks (listener-functions):
  * - onStartRecording
  * - onPauseRecording
@@ -91,7 +94,7 @@ function Recorder(mediaStream, opts) {
 
     /* prepare setting for MediaRecorder */
     self.mediaRecorderOptions = {
-        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType)
+        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType),
         audioBitsPerSecond: opts && opts.audioBitsPerSecond ? opts.audioBitsPerSecond : BITS_PER_SECOND,
         videoBitsPerSecond : opts && opts.videoBitsPerSecond ? opts.videoBitsPerSecond : BITS_PER_SECOND,
         bitsPerSecond: opts && opts.bitsPerSecond ? opts.bitsPerSecond : BITS_PER_SECOND

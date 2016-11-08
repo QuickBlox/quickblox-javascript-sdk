@@ -2,19 +2,11 @@
 
 var gulp = require('gulp');
 
-var babelify = require('babelify');
 var browserify = require('browserify');
-
-var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
-
 var connect = require('gulp-connect');
-
-var notify = require("gulp-notify");
+var notify = require('gulp-notify');
 
 gulp.task('build', function () {
     var isDevelopment = process.env.NODE_ENV === 'develop',

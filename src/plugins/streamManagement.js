@@ -2,7 +2,27 @@
 
 /**
  * QuickBlox JavaScript SDK
- * Chat Module (Chat Stream Management plugin)
+ * Chat Stream Management plugin
+ * doc: http://xmpp.org/extensions/xep-0198.html
+ *
+ * To enable this features add to config 
+ * ```javascript
+ * streamManagement: {
+ -    enable: true
+ - }
+ * ```
+ * 
+ * Uses listeners by QB.chat.onSentMessageCallback
+ *
+ * ```javascript
+ * QB.chat.onSentMessageCallback = function (messageLost, messageSent) {
+ *     if (messageLost) {
+ *         console.error('sendErrorCallback', messageLost);
+ *     } else {
+ *         console.info('sendMessageSuccessCallback', messageSent);
+ *     }
+ * };
+ * ```
  */
 
 /** JSHint inline rules */
