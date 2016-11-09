@@ -8,6 +8,30 @@
             'rington': 'ringtoneSignal'
         };
 
+        var recorder = null;
+        var recorderOpts = {
+                callbacks: {
+                    onStartRecording: function onStartRecord() {
+                        console.log('[QB Recorder] onStartRecording');
+                        $('.j-record').addClass('active');
+                    },
+                    onStopRecording: function(blob) {
+                        console.log('[QB Recorder] onStopRecording');
+                        $('.j-record').removeClass('active');
+
+                        var down = confirm('Do you want to download video?');
+                        if(down) {
+                            recorder.download(blob, 'QB_WEBrtc_sample' + Date.now());
+                        }
+
+                        recorder = null;
+                    },
+                    onErrorRecording: function(error) {
+                        console.error('Recorder error', error);
+                    }
+                }
+            };
+
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
@@ -49,6 +73,9 @@
         var remoteStreamCounter = 0;
 
         function closeConn(userId) {
+            if(recorder) {
+                recorder.stop()
+            }
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
             app.currentSession.closeConnection(userId);
         }
@@ -98,7 +125,6 @@
                 app.callees = {};
                 app.calleesAnwered = [];
                 app.users = [];
-                app.videoMain = 0;
             },
             'dashboard': function() {
                 if(_.isEmpty(app.caller)) {
@@ -188,11 +214,9 @@
                     return [item.name, item.value.trim()];
                 }));
 
-            if (window.device.platform === 'browser') {
-              if(localStorage.getItem('isAuth')) {
-                  $('#already_auth').modal();
-                  return false;
-              }
+            if(localStorage.getItem('isAuth')) {
+                $('#already_auth').modal();
+                return false;
             }
 
             $form.addClass('join-wait');
@@ -227,9 +251,7 @@
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
-                        if (window.device.platform === 'browser') {
-                          localStorage.setItem('isAuth', true);
-                        }
+                        localStorage.setItem('isAuth', true);
                         app.router.navigate('dashboard', { trigger: true });
                     }
                 });
@@ -298,6 +320,10 @@
             /** Hangup */
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
+
+                    if(recorder) {
+                        recorder.stop();
+                    }
 
                     app.currentSession.stop({});
                     app.currentSession = {};
@@ -479,7 +505,6 @@
         $(document).on('click', '.j-callees__callee__video', function() {
             var $that = $(this),
                 userId = +($(this).data('user')),
-                classesName = [],
                 activeClass = [];
 
             if( app.currentSession.peerConnections[userId].stream && !_.isEmpty( $that.attr('src')) ) {
@@ -523,7 +548,32 @@
                    app.currentSession.mute( $btn.data('target') );
                }
            }
-       });
+        });
+        
+        /** Video recording */
+        $(document).on('click', '.j-record', function() {
+            var $btn = $(this),
+                isActive = $btn.hasClass('active');
+
+            if(_.isEmpty(app.currentSession)) {
+                return false;
+            } else if(QB.Recorder.isAvailable()) {
+                if(!isActive){
+                    var connections = app.currentSession.peerConnections,
+                        connection = connections[app.mainVideo],
+                        connectionsCount = Object.keys(connections).length;
+
+                    if (!connection || connectionsCount !== 1){
+                        return false;
+                    }
+
+                    recorder = new QB.Recorder(connection.stream, recorderOpts);
+                    recorder.start();
+                } else {
+                    recorder.stop();
+                }
+            }
+        });
 
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
@@ -557,15 +607,18 @@
          * Chat:
          * - onDisconnectedListener
          * WebRTC:
-         * - onCallStatsReport
-         * - onSessionCloseListener
-         * - onUserNotAnswerListener
-         * - onUpdateCallListener
          * - onCallListener
+         * - onCallStatsReport
+         * - onUpdateCallListener
+         * 
          * - onAcceptCallListener
          * - onRejectCallListener
-         * - onStopCallListener
+         * - onUserNotAnswerListener
+         * 
          * - onRemoteStreamListener
+         * 
+         * - onStopCallListener
+         * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
          */
 
@@ -592,6 +645,10 @@
                 if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
                     console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
 
+                    if(recorder) {
+                        recorder.pause();
+                    }
+                    
                     app.helpers.toggleRemoteVideoView(userId, 'hide');
                     $('.j-callee_status_' + userId).text('disconnected');
 
@@ -599,6 +656,10 @@
                         ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
                     }
                 } else {
+                    if(recorder) {
+                        recorder.resume();
+                    }
+                    
                     if(ffHack.waitingReconnectTimer) {
                         clearTimeout(ffHack.waitingReconnectTimer);
                         ffHack.waitingReconnectTimer = null;
@@ -621,6 +682,10 @@
             $('.j-caller__ctrl').removeClass('active');
             $(ui.sourceFilter).attr('disabled', false);
             $('.j-callees').empty();
+
+            if(!ffHack.isFirefox && recorder) {
+                recorder.stop();
+            }
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -667,18 +732,22 @@
                 console.log('Extension: ', extension);
             console.groupEnd();
 
+            app.currentSession = session;
+
             ui.insertOccupants().then(function(users) {
                 app.users = users;
-
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
-                app.currentSession = session;
 
                 /** close previous modal */
                 $(ui.income_call).modal('hide');
 
                 $('.j-ic_initiator').text(initiator.full_name);
-                $(ui.income_call).modal('show');
-                document.getElementById(sounds.rington).play();
+
+                // check the current session state
+                if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
+                    $(ui.income_call).modal('show');
+                    document.getElementById(sounds.rington).play();
+                }
             });
         };
 
@@ -715,6 +784,10 @@
             console.groupEnd();
 
             app.helpers.notifyIfUserLeaveCall(session, userId, 'hung up the call', 'Hung Up');
+
+            if(recorder) {
+                recorder.stop();
+            }
         };
 
         QB.webrtc.onAcceptCallListener = function onAcceptCallListener(session, userId, extension) {
@@ -747,6 +820,7 @@
             console.group('onRemoteStreamListener.');
                 console.log('userId: ', userId);
                 console.log('Session: ', session);
+                console.log('Stream: ', stream);
             console.groupEnd();
 
             var state = app.currentSession.connectionStateForUser(userId),
@@ -810,7 +884,7 @@
                $calleeStatus.text('connected');
            }
 
-           if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED){
+           if(connectionState === QB.webrtc.SessionConnectionState.DISCONNECTED) {
                app.helpers.toggleRemoteVideoView(userId, 'hide');
                $calleeStatus.text('disconnected');
            }

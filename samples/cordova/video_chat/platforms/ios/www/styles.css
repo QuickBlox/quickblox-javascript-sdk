@@ -50,7 +50,6 @@ b {
     position: relative;
     padding: 0 0 75% 0; /* 4:3 */
     background: #bfbfbf;
-    /*border: 1px solid #00ffff;*/
 }
 .qb-video_source {
     position: absolute;
@@ -59,7 +58,6 @@ b {
     width: 100%;
     height: 100%;
     margin: auto;
-    /*border: 1px solid #ffffff;*/
 }
 
 .qb-error {
@@ -530,6 +528,7 @@ b {
 
 .caller__frames_acts_btn {
     display: inline-block;
+    vertical-align: top;
     width: 20px;
     height: 20px;
 
@@ -551,6 +550,23 @@ b {
     }
     .caller__frames_acts_btn.active .svg_icon {
         fill: #41cc44;
+    }
+    .caller__frames_acts_btn_record {
+        display: inline-block;
+        vertical-align: top;
+        width: 20px;
+        height: 20px;
+
+        margin: 0 15px 0 0;
+
+        border: 3px solid #808080;
+        background: #808080;
+        border-radius: 50%;
+        box-shadow: inset 0px 0 0 3px #fff;
+    }
+    .caller__frames_acts_btn_record.active {
+        background: #cc0000;
+        border-color: #cc0000;
     }
 
 .caller__frames_fl {

@@ -258,6 +258,9 @@
                           </g>
                         </svg>
                     </button>
+
+                    <button class="caller__frames_acts_btn_record j-record" alt="record video">
+                    </button>
                 </div>
 
                 <div class="caller__frames_fl">
@@ -333,10 +336,6 @@
         </div>
     </script>
 
-
-    <!-- Cordova -->
-    <script type="text/javascript" src="cordova.js"></script>
-
     <!-- SCRIPT -->
     <!-- dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -348,7 +347,6 @@
       document.addEventListener('deviceready', onDeviceReady, false);
 
       function onDeviceReady() {
-          console.log("onDeviceReady RUN");
 
           // Just for iOS devices.
           // Read more here https://github.com/eface2face/cordova-plugin-iosrtc
@@ -365,37 +363,28 @@
               jsScript.src = path;
               document.getElementsByTagName("body")[0].appendChild(jsScript);
           }
-          loadScriptAsync("https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.3.4/quickblox.min.js");
+          loadScriptAsync("https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.4.0/quickblox.min.js");
           loadScriptAsync("config.js")
           loadScriptAsync("js/helpers.js")
           loadScriptAsync("js/stateBoard.js")
           loadScriptAsync("js/app.js")
       }
 
-      // Listen for orientation changes and scroll events
+      // Listen for orientation changes
       //
-      window.addEventListener('orientationchange', function(){
-        refreshVideoViewPosition();
-      });
-      window.addEventListener("scroll", function(){
-        console.log("SCROLL");
-        refreshVideoViewPosition();
-      });
-      //
-      function refreshVideoViewPosition(){
+      window.addEventListener('orientationchange', doOnOrientationChange);
+      function doOnOrientationChange(){
         if (window.device.platform === 'iOS') {
             cordova.plugins.iosrtc.refreshVideos();
         }
       }
-
     </script>
 
     <!-- hack for github Pages -->
     <script>
       var host = "quickblox.github.io";
-      if ((host == window.location.host) && (window.location.protocol != "https:")){
+      if ((host == window.location.host) && (window.location.protocol != "https:"))
         window.location.protocol = "https";
-      }
     </script>
 </body>
 </html>

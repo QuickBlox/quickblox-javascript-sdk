@@ -28,21 +28,8 @@
     <string>1.0.0</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true/>
-    </dict>
-    <key>NSCameraUsageDescription</key>
-    <string>Use camera for video calling</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Use microphone for video calling</string>
-    <key>UIMainStoryboardFile</key>
-    <string>CDVLaunchScreen</string>
-    <key>UIMainStoryboardFile~ipad</key>
-    <string>CDVLaunchScreen</string>
-    <key>UIRequiresFullScreen</key>
-    <true/>
+    <key>NSMainNibFile</key>
+    <string>NSMainNibFile~ipad</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -56,5 +43,16 @@
       <string>UIInterfaceOrientationPortraitUpsideDown</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>UIRequiresFullScreen</key>
+    <true/>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Use camera for video calling</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Use microphone for video calling</string>
   </dict>
 </plist>
