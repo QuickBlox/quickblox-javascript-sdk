@@ -12,7 +12,7 @@
  */
 
 var config = {
-  version: '2.3.4',
+  version: '2.4.0',
   creds: {
     appId: '',
     authKey: '',
