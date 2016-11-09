@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.quickblox.cordova.text_chat" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>QB Text Chat</name>
+    <description>
+        Apache Cordova simple code sample for Web XMPP Chat (via QuickBlox SDK + API)
+    </description>
+    <author email="assist@quickblox.com" href="https://quickblox.com">
+       QuickBlox Team
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="android-minSdkVersion" value="19" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+        <config-file parent="NSPhotoLibraryUsageDescription" platform="ios" target="*-Info.plist">
+            <string>Use photo library to send file attachments</string>
+        </config-file>
+        <config-file parent="NSCameraUsageDescription" platform="ios" target="*-Info.plist">
+            <string>Use camera to send file attachments</string>
+        </config-file>
+
+    </platform>
+    <engine name="ios" spec="~4.3.0" />
+    <engine name="android" spec="~6.0.0" />
+    <engine name="browser" spec="~4.1.0" />
+    <plugin name="cordova-plugin-whitelist" spec="1" />
+    <plugin name="cordova-plugin-websocket" spec="~0.12.0" />
+    <plugin name="cordova-plugin-console" spec="~1.0.4" />
+    <plugin name="cordova-custom-config" spec="~3.0.14" />
+</widget>
