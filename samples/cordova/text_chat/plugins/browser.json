@@ -12,6 +12,12 @@
         },
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "com.quickblox.cordova.chat"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "com.quickblox.cordova.text_chat"
+        },
+        "cordova-custom-config": {
+            "PACKAGE_NAME": "com.quickblox.cordova.text_chat"
         }
     },
     "dependent_plugins": {}

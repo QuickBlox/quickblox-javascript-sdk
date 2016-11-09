@@ -17,7 +17,7 @@
        under the License.
  */
 
-package com.quickblox.cordova.chat;
+package com.quickblox.cordova.text_chat;
 
 import android.os.Bundle;
 import org.apache.cordova.*;

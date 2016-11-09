@@ -146,8 +146,6 @@ function updateDialogsList(dialogId, text){
 
 // Choose dialog
 function triggerDialog(dialogId){
-    console.info('Select a dialog with id: ' + dialogId + ', name: ' + dialogs[dialogId].name);
-
     // deselect
     var kids = $('#dialogs-list').children();
     kids.removeClass('active').addClass('inactive');
