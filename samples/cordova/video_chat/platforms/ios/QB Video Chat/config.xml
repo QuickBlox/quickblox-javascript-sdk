@@ -18,12 +18,12 @@
     <feature name="Console">
         <param name="ios-package" value="CDVLogger" />
     </feature>
-    <feature name="Device">
-        <param name="ios-package" value="CDVDevice" />
-    </feature>
     <feature name="iosrtcPlugin">
         <param name="ios-package" value="iosrtcPlugin" />
         <param name="onload" value="true" />
+    </feature>
+    <feature name="Device">
+        <param name="ios-package" value="CDVDevice" />
     </feature>
     <name>QB Video Chat</name>
     <description>

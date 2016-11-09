@@ -214,9 +214,11 @@
                     return [item.name, item.value.trim()];
                 }));
 
-            if(localStorage.getItem('isAuth')) {
-                $('#already_auth').modal();
-                return false;
+            if (window.device.platform === 'browser') {
+              if(localStorage.getItem('isAuth')) {
+                  $('#already_auth').modal();
+                  return false;
+              }
             }
 
             $form.addClass('join-wait');
@@ -251,7 +253,9 @@
                     } else {
                         $form.removeClass('join-wait');
                         $form.trigger('reset');
-                        localStorage.setItem('isAuth', true);
+                        if (window.device.platform === 'browser') {
+                          localStorage.setItem('isAuth', true);
+                        }
                         app.router.navigate('dashboard', { trigger: true });
                     }
                 });
@@ -549,7 +553,7 @@
                }
            }
         });
-        
+
         /** Video recording */
         $(document).on('click', '.j-record', function() {
             var $btn = $(this),
@@ -610,13 +614,13 @@
          * - onCallListener
          * - onCallStatsReport
          * - onUpdateCallListener
-         * 
+         *
          * - onAcceptCallListener
          * - onRejectCallListener
          * - onUserNotAnswerListener
-         * 
+         *
          * - onRemoteStreamListener
-         * 
+         *
          * - onStopCallListener
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
@@ -648,7 +652,7 @@
                     if(recorder) {
                         recorder.pause();
                     }
-                    
+
                     app.helpers.toggleRemoteVideoView(userId, 'hide');
                     $('.j-callee_status_' + userId).text('disconnected');
 
@@ -659,7 +663,7 @@
                     if(recorder) {
                         recorder.resume();
                     }
-                    
+
                     if(ffHack.waitingReconnectTimer) {
                         clearTimeout(ffHack.waitingReconnectTimer);
                         ffHack.waitingReconnectTimer = null;

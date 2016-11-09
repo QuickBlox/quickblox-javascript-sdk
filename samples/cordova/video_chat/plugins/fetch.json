@@ -23,18 +23,18 @@
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-device": {
+    "cordova-custom-config": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-device"
+            "id": "cordova-custom-config@~3.0.14"
         },
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-custom-config": {
+    "cordova-plugin-device": {
         "source": {
             "type": "registry",
-            "id": "cordova-custom-config"
+            "id": "cordova-plugin-device"
         },
         "is_top_level": true,
         "variables": {}
