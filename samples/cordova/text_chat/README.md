@@ -22,18 +22,3 @@ It allows:
 ## Documentation
 
 Original sample description & setup guide - [Apache Cordova (PhoneGap) Chat code sample](http://quickblox.com/developers/Sample-chat-cordova)
-
-## Steps to build this sample from scratch
-1. Create Cordova app:
-```
-cordova create hello com.example.hellochat HelloChat
-```
-2. Copy content from **samples/chat** to **www** folder of your Cordova app.
-3. Add platfroms:
-```
-cordova platform add ios --save &&
-cordova platform add android --save &&
-cordova platform add browser --save
-```
-4. Replace relative path to QuickBlox framework in index.html to absolute via cdnjs.
-5. Install [WebSocket-for-Android](https://github.com/knowledgecode/WebSocket-for-Android) plugin to support WebSockets on Android <4.4
