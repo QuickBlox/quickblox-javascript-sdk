@@ -4,7 +4,7 @@
         webrtc: {
             answerTimeInterval: 30,
             dialingTimeInterval: 5,
-            disconnectTimeInterval: 30,
+            disconnectTimeInterval: 35,
             statsReportTimeInterval: 5
         }
     };

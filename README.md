@@ -4,8 +4,7 @@
 [![npm](https://img.shields.io/npm/v/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 [![npm](https://img.shields.io/npm/dm/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 
-The QuickBlox JavaScript SDK provides a JavaScript library making it even
-easier to access the QuickBlox cloud communication backend platform.
+The QuickBlox JavaScript SDK provides a JavaScript library making it even easier to access the QuickBlox cloud communication backend platform.
 
 [QuickBlox](https://quickblox.com) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.
 
@@ -16,7 +15,7 @@ easier to access the QuickBlox cloud communication backend platform.
 
 For the library to work, you need to include either [jQuery](http://jquery.com/) or [Zepto](http://zeptojs.com/) in your html before `quickblox.min.js`, like so:
 
-For correct work of JS SDK you must include the  library in your html before `quickblox.js`, like so:
+For correct work of JS SDK you must include the  library in your html before `quickblox.min.js`, like so:
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -68,7 +67,7 @@ You can look at it here http://quickblox.com/developers/Javascript
 
 # Questions and feedback
 
-Please raise questions, requests for help etc. via http://stackoverflow.com/questions/tagged/quickblox
+Please raise questions, requests for help etc. via http://stackoverflow.com/questions/tagged/quickbloxjs
 
 Feedback and suggestions for improvement always welcome :)
 

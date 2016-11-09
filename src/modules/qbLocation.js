@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -20,7 +22,7 @@ function GeoProxy(service){
 }
 
 GeoProxy.prototype = {
-
+  
   create: function(params, callback){
     Utils.QBLog('[GeoProxy]', 'create', params);
 

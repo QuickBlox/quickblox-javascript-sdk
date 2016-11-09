@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC session model)
@@ -315,10 +317,10 @@ WebRTCSession.prototype.reject = function(extension) {
 
   self._clearAnswerTimer();
 
-  ext["sessionID"] = self.ID;
-  ext["callType"] = self.callType;
-  ext["callerID"] = self.initiatorID;
-  ext["opponentsIDs"] = self.opponentsIDs;
+  ext.sessionID = self.ID;
+  ext.callType = self.callType;
+  ext.callerID = self.initiatorID;
+  ext.opponentsIDs = self.opponentsIDs;
 
   if(peersLen > 0){
     for (var key in self.peerConnections) {
@@ -396,7 +398,7 @@ WebRTCSession.prototype.update = function(extension) {
 
   Helpers.trace('Update, extension: ' + JSON.stringify(extension));
 
-  if(extension == null){
+  if(extension === null){
     Helpers.trace("extension is null, no parameters to update");
     return;
   }
@@ -448,7 +450,7 @@ WebRTCSession.snapshot = function(id) {
     dataURL = canvas.toDataURL();
 
     blob = Helpers.dataURItoBlob(dataURL, 'image/png');
-    blob.name = 'snapshot_' + getLocalTime() + '.png';
+    blob.name = 'snapshot_' + _getLocalTime() + '.png';
     blob.url = dataURL;
 
     return blob;
@@ -575,24 +577,25 @@ WebRTCSession.prototype.processOnIceCandidates = function(userID, extension) {
   }
 };
 
-WebRTCSession.prototype.processCall = function(peerConnection, extension) {
-  var extension = extension || {};
+WebRTCSession.prototype.processCall = function(peerConnection, ext) {
+  var extension = ext || {};
 
-  extension["sessionID"] = this.ID;
-  extension["callType"] = this.callType;
-  extension["callerID"] = this.initiatorID;
-  extension["opponentsIDs"] = this.opponentsIDs;
-  extension["sdp"] = peerConnection.localDescription.sdp;
+  extension.sessionID = this.ID;
+  extension.callType = this.callType;
+  extension.callerID = this.initiatorID;
+  extension.opponentsIDs = this.opponentsIDs;
+  extension.sdp = peerConnection.localDescription.sdp;
 
   this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
 };
 
 WebRTCSession.prototype.processIceCandidates = function(peerConnection, iceCandidates) {
   var extension = {};
-  extension["sessionID"] = this.ID;
-  extension["callType"] = this.callType;
-  extension["callerID"] = this.initiatorID;
-  extension["opponentsIDs"] = this.opponentsIDs;
+
+  extension.sessionID = this.ID;
+  extension.callType = this.callType;
+  extension.callerID = this.initiatorID;
+  extension.opponentsIDs = this.opponentsIDs;
 
   this.signalingProvider.sendCandidate(peerConnection.userID, iceCandidates, extension);
 };
@@ -874,6 +877,10 @@ function _prepareIceServers(iceServers) {
   });
 
   return iceServersCopy;
+}
+
+function _getLocalTime() {
+    return (new Date()).toTimeString().split(' ')[0];
 }
 
 module.exports = WebRTCSession;

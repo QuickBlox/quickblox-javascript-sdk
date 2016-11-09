@@ -8,8 +8,8 @@ npm-debug.log
 .idea/*
 .idea/workspace.xml
 
-# Use command grunt for create quickblox.js
-quickblox.js
+# *Sublime
+*.sublime-*
 
 #jasmine-npm generate
 .grunt
