@@ -8,5 +8,5 @@ branches:
 
 before_script: "npm run-script setDependencies"
 
-script: "grunt"
+script: "npm run build"
 after_success: "jasmine"

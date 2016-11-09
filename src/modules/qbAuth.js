@@ -1,9 +1,4 @@
-/*
- * QuickBlox JavaScript SDK
- *
- * Authentication Module
- *
- */
+'use strict';
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils'),

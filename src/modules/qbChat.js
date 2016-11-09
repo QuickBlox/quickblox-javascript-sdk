@@ -1,10 +1,12 @@
-/*
- * QuickBlox JavaScript SDK
- * Chat Module
- */
+'use strict';
+
+/** JSHint inline rules */
+/* globals Strophe, $pres, $msg, $iq */
+
 var chatUtils = require('./qbChatHelpers'),
     config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+    Utils = require('../qbUtils'),
+    StreamManagement = require('../plugins/streamManagement');
 
 var webrtc,
     roster = {},
@@ -31,6 +33,7 @@ var connection;
 var NodeClient,
     nClient,
     nodeStanzasCallbacks = {};
+
 
 if (Utils.getEnv().browser) {
     require('strophe.js');
@@ -60,6 +63,21 @@ function ChatProxy(service, webrtcModule, conn) {
     this.message = new MessageProxy(service);
     this.helpers = new Helpers();
     this.muc = new MucProxy(service);
+    this.chatUtils = chatUtils;
+
+    if (config.streamManagement.enable){
+        this.streamManagement = new StreamManagement(config.streamManagement);
+
+        self._sentMessageCallback = function(messageLost, messageSent){
+            if(typeof self.onSentMessageCallback === 'function'){
+                if(messageSent){
+                    self.onSentMessageCallback(null, messageSent);
+                } else {
+                    self.onSentMessageCallback(messageLost);
+                }
+            }
+        };
+    }
 
 /*
  * User's callbacks (listener-functions):
@@ -75,7 +93,9 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onRejectSubscribeListener (userId)
  * - onDisconnectedListener
  * - onReconnectListener
+ * - onSentMessageCallback(messageLost, messageSent)
  */
+
     this._onMessage = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
@@ -165,6 +185,7 @@ function ChatProxy(service, webrtcModule, conn) {
         if (markable) {
             message.markable = 1;
         }
+
         if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
@@ -191,7 +212,7 @@ function ChatProxy(service, webrtcModule, conn) {
                  * if you make 'leave' from dialog
                  * stanza will be contains type="unavailable"
                  */
-                var type = stanza.attrs.type;
+                type = stanza.attrs.type;
 
                 /** LEAVE from dialog */
                 if(type && type === 'unavailable' && nodeStanzasCallbacks['muc:leave']) {
@@ -280,7 +301,11 @@ function ChatProxy(service, webrtcModule, conn) {
 
                     // send initial presence if one of client (instance) goes offline
                     if (userId === currentUserId) {
-                        connection.send($pres().tree());
+                        if(Utils.getEnv().browser){
+                            connection.send($pres());
+                        } else if(Utils.getEnv().node){
+                            nClient.send(chatUtils.createStanza(NodeClient.Stanza, null,'presence'));
+                        }
                     }
 
                     break;
@@ -357,6 +382,7 @@ function ChatProxy(service, webrtcModule, conn) {
 ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
     connect: function(params, callback) {
+
         Utils.QBLog('[ChatProxy]', 'connect', params);
 
         var self = this,
@@ -398,6 +424,11 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
+                        if(config.streamManagement.enable){
+                            self.streamManagement.enable(connection, null);
+                            self.streamManagement.sentMessageCallback = self._sentMessageCallback;
+                        }
+
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
 
@@ -422,7 +453,7 @@ ChatProxy.prototype = {
 
                             // chat server will close your connection if you are not active in chat during one minute
                             // initial presence and an automatic reminder of it each 55 seconds
-                            connection.send($pres().tree());
+                            connection.send($pres());
 
                             if (typeof callback === 'function') {
                                 callback(null, roster);
@@ -431,6 +462,7 @@ ChatProxy.prototype = {
 
                                 // recover the joined rooms
                                 rooms = Object.keys(joinedRooms);
+
                                 for (var i = 0, len = rooms.length; i < len; i++) {
                                     self.muc.join(rooms[i]);
                                 }
@@ -484,11 +516,17 @@ ChatProxy.prototype = {
             nClient.on('online', function () {
                 Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
+                if(config.streamManagement.enable){
+                    self.streamManagement.enable(nClient, NodeClient);
+                    self.streamManagement.sentMessageCallback = self._sentMessageCallback;
+                }
+
                 self._isDisconnected = false;
                 self._isLogout = false;
 
                 /** Send first presence if user is online */
-                nClient.send('<presence/>');
+                var presence = chatUtils.createStanza(NodeClient.Stanza, null,'presence');
+                nClient.send(presence);
 
                 userCurrentJid = nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
 
@@ -586,28 +624,31 @@ ChatProxy.prototype = {
             }).up();
         }
 
-        if(Utils.getEnv().browser) {
-            if (message.extension) {
-                stanza.c('extraParams', {
-                    xmlns: chatUtils.MARKERS.CLIENT
-                });
+        if (message.extension) {
+            stanza.c('extraParams', {
+                xmlns: chatUtils.MARKERS.CLIENT
+            });
 
-                stanza = chatUtils.filledExtraParams(stanza, message.extension);
-            }
-
-            connection.send(stanza);
+            stanza = chatUtils.filledExtraParams(stanza, message.extension);
         }
 
-        if(Utils.getEnv().node) {
-            if (message.extension) {
-                stanza.c('extraParams', {
-                    xmlns: chatUtils.MARKERS.CLIENT
-                });
-
-                stanza = chatUtils.filledExtraParams(stanza, message.extension);
+        if(Utils.getEnv().browser) {
+            if(config.streamManagement.enable){
+                message.id = paramsCreateMsg.id;
+                message.jid_or_user_id = jid_or_user_id;
+                connection.send(stanza, message);
+            } else {
+                connection.send(stanza);
+            }
+        } else if (Utils.getEnv().node) {
+            if(config.streamManagement.enable){
+                message.id = paramsCreateMsg.id;
+                message.jid_or_user_id = jid_or_user_id;
+                nClient.send(stanza, message);
+            } else {
+                nClient.send(stanza);
             }
 
-            nClient.send(stanza);
         }
 
         return paramsCreateMsg.id;
@@ -1217,7 +1258,7 @@ PrivacyListProxy.prototype = {
             return iq;
         }
 
-        for (var index = 0, i = 0, len = listUserId.length; index < len; index++, i=i+2) {
+        for (var index = 0, j = 0, len = listUserId.length; index < len; index++, j = j + 2) {
             userId = listUserId[index];
             mutualBlock = listPrivacy[userId].mutualBlock;
 
@@ -1227,23 +1268,23 @@ PrivacyListProxy.prototype = {
 
             if(mutualBlock && userAction === 'deny'){
                 iq = createPrivacyItemMutal(iq, {
-                    order: i+1,
+                    order: j+1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItemMutal(iq, {
-                    order: i+2,
+                    order: j+2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 }).up().up();
             } else {
                 iq = createPrivacyItem(iq, {
-                    order: i+1,
+                    order: j+1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItem(iq, {
-                    order: i+2,
+                    order: j+2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 });
@@ -1381,7 +1422,7 @@ PrivacyListProxy.prototype = {
             };
 
         if(Utils.getEnv().browser){
-            var iq = $iq(stanzaParams).c('query', {
+            iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             });
 
@@ -1779,18 +1820,6 @@ Helpers.prototype = {
             return null;
         }
         return arrayElements[arrayElements.length-1];
-    },
-    getUniqueId: function(suffix) {
-        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : r & 0x3 | 0x8;
-            return v.toString(16);
-        });
-        if (typeof(suffix) == 'string' || typeof(suffix) == 'number') {
-            return uuid + ':' + suffix;
-        } else {
-            return uuid + '';
-        }
     }
 };
 

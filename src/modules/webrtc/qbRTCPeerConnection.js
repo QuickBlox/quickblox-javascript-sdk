@@ -1,3 +1,8 @@
+'use strict';
+
+/** JSHint inline rules (TODO: loopfunc will delete) */
+/* jshint loopfunc: true */
+
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC peer connection model)
@@ -217,7 +222,8 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
       this._startWaitingReconnectTimer();
       this.state = RTCPeerConnection.State.DISCONNECTED;
       connectionState = Helpers.SessionConnectionState.DISCONNECTED;
-  	} else if (newIceConnectionState === 'closed'){
+  	} else if (newIceConnectionState === 'closed') {
+      this._clearWaitingReconnectTimer();
       this.state = RTCPeerConnection.State.CLOSED;
       connectionState = Helpers.SessionConnectionState.CLOSED;
   	}

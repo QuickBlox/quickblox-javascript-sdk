@@ -16,7 +16,7 @@
      */
     app.helpers.getQueryVar = function(q){
         var query = window.location.search.substring(1),
-            vars = query.split("&"),
+            vars = query.split('&'),
             answ = false;
 
         vars.forEach(function(el, i){

@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -10,7 +12,7 @@
  */
 
 var config = {
-  version: '2.3.4',
+  version: '2.4.0',
   creds: {
     appId: '',
     authKey: '',
@@ -20,6 +22,9 @@ var config = {
     api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
+  },
+  streamManagement: {
+    enable: false
   },
   chatProtocol: {
     bosh: 'https://chat.quickblox.com:5281',

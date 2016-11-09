@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -41,6 +43,7 @@ QuickBlox.prototype = {
       if( Utils.isWebRTCAvailble() ) {
         var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
         this.webrtc = new WebRTCClient(this.service, conn || null);
+        this.Recorder = require('./modules/webrtc/qbRecorder');
       } else {
         this.webrtc = false;
       }

@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * QuickBlox JavaScript SDK
  *
@@ -75,7 +77,7 @@ DataProxy.prototype = {
           data: params.file,
           name: params.name
         }
-      }
+      };
     }
 
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),

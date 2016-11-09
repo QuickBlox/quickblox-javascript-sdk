@@ -1,3 +1,5 @@
+'use strict';
+
 var utils = require('../qbUtils');
 var config = require('../qbConfig');
 
@@ -16,13 +18,6 @@ var MARKERS = {
 
 var qbChatHelpers = {
     MARKERS: MARKERS,
-    getMyselfJid: function(conn) {
-        if(utils.getEnv().browser) {
-            return conn.jid;
-        } else if(utils.getEnv().node) {
-            return nClient.jid.user + '@' + nClient.jid._domain + '/' + nClient.jid._resource;
-        }
-    },
     /**
      * @param {params} this object may contains Jid or Id property
      * @return {string} jid of user
@@ -34,7 +29,7 @@ var qbChatHelpers = {
             jid = params.userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
 
             if ('resource' in params) {
-                jid = userJid + "/" + params.resource;
+                jid = jid + '/' + params.resource;
             }
         } else if ('jid' in params) {
             jid = params.jid;
@@ -71,6 +66,19 @@ var qbChatHelpers = {
 
         if(typeof stanza.querySelector === 'function') {
             el = stanza.querySelector(elName);
+        } else if(typeof stanza.getChild === 'function'){
+            el = stanza.getChild(elName);
+        } else {
+            throw ERR_UNKNOWN_INTERFACE;
+        }
+
+        return el ? el : null;
+    },
+    getAllElements: function(stanza, elName) {
+        var el;
+
+        if(typeof stanza.querySelectorAll === 'function') {
+            el = stanza.querySelectorAll(elName);
         } else if(typeof stanza.getChild === 'function'){
             el = stanza.getChild(elName);
         } else {
@@ -148,6 +156,8 @@ var qbChatHelpers = {
         return stanza;
     },
     parseExtraParams: function(extraParams) {
+        var self = this;
+
         if(!extraParams){
             return null;
         }
@@ -177,7 +187,7 @@ var qbChatHelpers = {
                     // parse 'dialog_id'
                 } else if (extraParams.childNodes[i].tagName === 'dialog_id') {
                     dialogId = extraParams.childNodes[i].textContent;
-                    extension['dialog_id'] = dialogId;
+                    extension.dialog_id = dialogId;
 
                     // parse other user's custom parameters
                 } else {
@@ -185,14 +195,15 @@ var qbChatHelpers = {
                         // Firefox issue with 4K XML node limit:
                         // http://www.coderholic.com/firefox-4k-xml-node-limit/
                         var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
+
                         if (nodeTextContentSize > 4096) {
                             var wholeNodeContent = "";
-                            for(var j=0; j<extraParams.childNodes[i].childNodes.length; ++j){
-                                wholeNodeContent += extraParams.childNodes[i].childNodes[j].textContent;
+                            for(var k=0; k<extraParams.childNodes[i].childNodes.length; ++k){
+                                wholeNodeContent += extraParams.childNodes[i].childNodes[k].textContent;
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
                         } else {
-                            extension = chatUtils._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                            extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
                         }
                     } else {
                         extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
@@ -204,14 +215,14 @@ var qbChatHelpers = {
                 extension.attachments = attachments;
             }
         } else if(utils.getEnv().node) {
-            for (var i = 0, len = extraParams.children.length; i < len; i++) {
-                if(extraParams.children[i].name === 'dialog_id') {
+            for (var c = 0, lenght = extraParams.children.length; c < lenght; c++) {
+                if(extraParams.children[c].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
-                    extension['dialog_id'] = dialogId;
+                    extension.dialog_id = dialogId;
                 }
 
-                if(extraParams.children[i].children.length === 1) {
-                    var child = extraParams.children[i];
+                if(extraParams.children[c].children.length === 1) {
+                    var child = extraParams.children[c];
 
                     extension[child.name] = child.children[0];
                 }
