@@ -9,9 +9,9 @@ This is a code sample for [QuickBlox](https://quickblox.com/) platform. It is a 
 
 ## Sample description
 
-<img src="http://quickblox.com/developers//images/a/a8/Webrtc_cordova_sample1.PNG" border="1" alt="List of users to have a video chat with" width="300"> 
-<img src="http://quickblox.com/developers//images/7/71/Webrtc_cordova_sample2.PNG" border="1" alt="iOS demo of Cordova Video Chat code sample" width="300"> 
-<img src="http://quickblox.com/developers//images/e/ea/Webrtc_cordova_sample3.PNG" border="1" alt="Android demo of Cordova Video Chat code sample" width="300"> 
+<img src="http://quickblox.com/developers//images/a/a8/Webrtc_cordova_sample1.PNG" border="1" alt="Main screen" width="300"> 
+<img src="http://quickblox.com/developers//images/7/71/Webrtc_cordova_sample2.PNG" border="1" alt="Accept call" width="300"> 
+<img src="http://quickblox.com/developers//images/e/ea/Webrtc_cordova_sample3.PNG" border="1" alt="Cordova video chat" width="300"> 
 
 It allows:
 
