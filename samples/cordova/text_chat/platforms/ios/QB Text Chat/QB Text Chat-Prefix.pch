@@ -17,7 +17,7 @@
  under the License.
  */
 //
-// Prefix header for all source files of the 'QB Chat' target in the 'QB Chat' project
+// Prefix header for all source files of the 'QB Text Chat' target in the 'QB Text Chat' project
 //
 
 #ifdef __OBJC__

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1D6058900D05DD3D006BFB54"
-               BuildableName = "QB Chat.app"
-               BlueprintName = "QB Chat"
-               ReferencedContainer = "container:QB Chat.xcodeproj">
+               BuildableName = "QB Text Chat.app"
+               BlueprintName = "QB Text Chat"
+               ReferencedContainer = "container:QB Text Chat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1D6058900D05DD3D006BFB54"
-            BuildableName = "QB Chat.app"
-            BlueprintName = "QB Chat"
-            ReferencedContainer = "container:QB Chat.xcodeproj">
+            BuildableName = "QB Text Chat.app"
+            BlueprintName = "QB Text Chat"
+            ReferencedContainer = "container:QB Text Chat.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1D6058900D05DD3D006BFB54"
-            BuildableName = "QB Chat.app"
-            BlueprintName = "QB Chat"
-            ReferencedContainer = "container:QB Chat.xcodeproj">
+            BuildableName = "QB Text Chat.app"
+            BlueprintName = "QB Text Chat"
+            ReferencedContainer = "container:QB Text Chat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -75,9 +75,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1D6058900D05DD3D006BFB54"
-            BuildableName = "QB Chat.app"
-            BlueprintName = "QB Chat"
-            ReferencedContainer = "container:QB Chat.xcodeproj">
+            BuildableName = "QB Text Chat.app"
+            BlueprintName = "QB Text Chat"
+            ReferencedContainer = "container:QB Text Chat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

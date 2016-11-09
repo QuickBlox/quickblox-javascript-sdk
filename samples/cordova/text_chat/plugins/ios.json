@@ -7,11 +7,11 @@
         "files": {}
     },
     "installed_plugins": {
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.quickblox.cordova.chat"
-        },
         "cordova-plugin-websocket": {
-            "PACKAGE_NAME": "com.quickblox.cordova.chat"
+            "PACKAGE_NAME": "com.quickblox.cordova.text_chat"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.quickblox.cordova.text_chat"
         }
     },
     "dependent_plugins": {}
