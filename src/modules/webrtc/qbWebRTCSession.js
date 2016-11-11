@@ -367,7 +367,7 @@ WebRTCSession.prototype.stop = function(extension) {
 
 /**
  * [function close connection with user]
- * @param  {[number]} userId [id of user]
+ * @param  {Number} userId [id of user]
  */
 WebRTCSession.prototype.closeConnection = function(userId) {
     var self = this,

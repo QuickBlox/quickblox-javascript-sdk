@@ -357,6 +357,7 @@ function ChatProxy(service, webrtcModule, conn) {
     };
 
     /** TODO! */
+
     this._onMessageErrorListener = function(stanza) {
         // <error code="503" type="cancel">
         //   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
@@ -1822,5 +1823,7 @@ Helpers.prototype = {
         return arrayElements[arrayElements.length-1];
     }
 };
-
+/**
+ * @namespace QB.chat
+ * */
 module.exports = ChatProxy;
