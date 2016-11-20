@@ -33,6 +33,29 @@ gulp.task('connect', function() {
     });
 });
 
+gulp.task('generate-build_version', function() {
+    var fs = require('fs');
+    const configPath = './src/qbConfig.js';
+
+    function incBuildVersion(buildVersion) {
+        return --buildVersion;
+    }
+
+    fs.readFile(configPath, 'utf8', function (error, config) {
+        if (error) {
+            throw new Error(error);
+        }
+    
+        var result = config.replace(/-\d{4}/g, incBuildVersion);
+
+        fs.writeFile(configPath, result, 'utf8', function (error) {
+            if (error) {
+                throw new Error(error);
+            }
+        });
+    });
+});
+
 gulp.task('watch', function () {
   gulp.watch(['./src/**/*.js'], ['build']);
 });

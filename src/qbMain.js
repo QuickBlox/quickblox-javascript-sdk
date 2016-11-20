@@ -21,6 +21,9 @@ QuickBlox.prototype = {
       config.set(configMap);
     }
 
+    this.version = config.version;
+    this.versionBuild = config.versionBuild;
+
     var Proxy = require('./qbProxy');
     this.service = new Proxy();
 
