@@ -22,7 +22,7 @@ QuickBlox.prototype = {
     }
 
     this.version = config.version;
-    this.versionBuild = config.versionBuild;
+    this.buildNumber = config.buildNumber;
 
     var Proxy = require('./qbProxy');
     this.service = new Proxy();
