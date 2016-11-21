@@ -31,7 +31,7 @@ function onMessage(userId, msg) {
   if (isMessageForCurrentDialog(userId, msg.dialog_id)){
     dialogsMessages.push(msg);
 
-    if (msg.markable === 1) {
+    if (msg.markable === 1 && userId != currentUser.id) {
       sendReadStatus(userId, msg.id, msg.dialog_id);
     }
 
@@ -61,10 +61,19 @@ function sendReadStatus(userId, messageId, dialogId) {
 }
 
 function onDeliveredStatusListener(messageId) {
-  $('#delivered_'+messageId).fadeIn(200);
+  showDeliveredСheckmark(messageId)
 }
 
 function onReadStatusListener(messageId) {
+  showReadСheckmark(messageId)
+}
+
+function showDeliveredСheckmark(messageId){
+  $('#read_'+messageId).fadeOut(100);
+  $('#delivered_'+messageId).fadeIn(200);
+}
+
+function showReadСheckmark(messageId){
   $('#delivered_'+messageId).fadeOut(100);
   $('#read_'+messageId).fadeIn(200);
 }
@@ -123,11 +132,9 @@ function retrieveChatMessages(dialog, beforeDateSent){
 
           // Show delivered statuses
           if (item.read_ids.length > 1 && messageSenderId === currentUser.id) {
-            $('#delivered_'+messageId).fadeOut(100);
-            $('#read_'+messageId).fadeIn(200);
+            showReadСheckmark(messageId);
           } else if (item.delivered_ids.length > 1 && messageSenderId === currentUser.id) {
-            $('#delivered_'+messageId).fadeIn(100);
-            $('#read_'+messageId).fadeOut(200);
+            showDeliveredСheckmark(messageId);
           }
 
           if (i > 5) {$('#messages-list').scrollTop($('#messages-list').prop('scrollHeight'));}
@@ -191,14 +198,14 @@ function sendMessage(text, attachmentFileId) {
         },
         markable: 1
     };
-  
+
     if(attachmentFileId !== null){
         msg['extension']['attachments'] = [{id: attachmentFileId, type: 'photo'}];
     }
 
     if (currentDialog.type === 3) {
         opponentId = QB.chat.helpers.getRecipientId(currentDialog.occupants_ids, currentUser.id);
-        
+
         QB.chat.send(opponentId, msg);
 
         $('.list-group-item.active .list-group-item-text')

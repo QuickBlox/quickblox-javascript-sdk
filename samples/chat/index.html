@@ -17,7 +17,7 @@
                     <span class="sr-only">Toggle navigation</span>
                     <span class="glyphicon glyphicon-cog"></span>
                 </button>
-            
+
                 <a href="https://quickblox.com/developers/Chat">
                     <img src="images/logo-quickblox.png" id="logo">
                 </a>
@@ -51,48 +51,52 @@
         <div class="panel panel-primary">
           <div class="panel-body">
             <div class="row">
+
               <div class="col-md-4">
                 <div class="list-header">
                   <h4 class="list-header-title">History</h4>
                 </div>
                 <div class="list-group pre-scrollable nice-scroll" id="dialogs-list">
-                <!-- list of chat dialogs will be here -->
+
+                  <!-- list of chat dialogs will be here -->
+
                 </div>
               </div>
-                <div id="mcs_container" class="col-md-8 nice-scroll">
-                  <div class="customScrollBox">
-                    <div class="container del-style">
-                      <div class="content list-group pre-scrollable nice-scroll" id="messages-list">
-                        <!-- list of chat messages will be here -->
-                      </div>
-                    </div>
+              <div id="mcs_container" class="col-md-8">
+                <div class="container del-style">
+                  <div class="content list-group pre-scrollable nice-scroll" id="messages-list">
+
+                    <!-- list of chat messages will be here -->
+
                   </div>
-                    <div><img src="images/ajax-loader.gif" class="load-msg"></div>
-                    <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
-	                  <div class="input-group">
-		                  <span class="input-group-btn input-group-btn_change_load">
-			              <input id="load-img" type="file">
-			                <button type="button" id="attach_btn" class="btn btn-default" onclick="$('#load-img').click();">
-				              <i class="icon-photo"></i>
-			                </button>
-		                  </span>
-		                  <span class="input-group-btn input-group-btn_change_load">
-			                <button type="button" id="stickers_btn" class="btn btn-default" onclick="">
-				              <i class="icon-sticker"></i>
-			                </button>
-		                  </span>
-
-		                  <span class="input-group-btn" style="width: 100%;">
-			                 <input type="text" class="form-control" id="message_text" placeholder="Enter message">
-		                  </span>
-
-		                  <span class="input-group-btn">
-			                <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
-		                  </span>
-	                    </div>
-                      <img src="images/ajax-loader.gif" id="progress">
-                    </form>
                 </div>
+
+                <div><img src="images/ajax-loader.gif" class="load-msg"></div>
+                <form class="form-inline" role="form" method="POST" action="" onsubmit="return submit_handler(this)">
+                  <div class="input-group">
+                    <span class="input-group-btn input-group-btn_change_load">
+  	                  <input id="load-img" type="file">
+  	                <button type="button" id="attach_btn" class="btn btn-default" onclick="$('#load-img').click();">
+  		              <i class="icon-photo"></i>
+  	                </button>
+                    </span>
+                    <span class="input-group-btn input-group-btn_change_load">
+  	                <button type="button" id="stickers_btn" class="btn btn-default" onclick="">
+  		              <i class="icon-sticker"></i>
+  	                </button>
+                    </span>
+
+                    <span class="input-group-btn" style="width: 100%;">
+  	                 <input type="text" class="form-control" id="message_text" placeholder="Enter message">
+                    </span>
+
+                    <span class="input-group-btn">
+  	                   <button  type="submit" id="send_btn" class="btn btn-default" onclick="clickSendMessage()">Send</button>
+                    </span>
+                    </div>
+                  <img src="images/ajax-loader.gif" id="progress">
+                </form>
+              </div>
               </div>
             </div>
           </div>

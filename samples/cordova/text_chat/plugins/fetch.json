@@ -1,0 +1,34 @@
+{
+    "cordova-plugin-whitelist": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-whitelist@1"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-websocket": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-websocket"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-console": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-console"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-custom-config": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-custom-config"
+        },
+        "is_top_level": true,
+        "variables": {}
+    }
+}
