@@ -48,6 +48,30 @@ gulp.task('connect', function() {
     });
 });
 
+gulp.task('generate-build_version', function() {
+    var fs = require('fs');
+    const configPath = './src/qbConfig.js';
+
+    function incBuildNumber(foundedString, p1, buildNumber, p2) {
+        var oldBuildNumber = +buildNumber;
+
+        return p1 + (oldBuildNumber + 1) + p2;
+    }
+
+    fs.readFile(configPath, 'utf8', function (error, config) {
+        if (error) {
+            throw new Error(error);
+        }
+        var result = config.replace(/(buildNumber:\s\')(\d{4})(')/g, incBuildNumber);
+
+        fs.writeFile(configPath, result, 'utf8', function (error) {
+            if (error) {
+                throw new Error(error);
+            }
+        });
+    });
+});
+
 gulp.task('jquery', function () {
     return builder({
         flags: [

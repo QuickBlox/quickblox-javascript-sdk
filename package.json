@@ -77,7 +77,7 @@
   "scripts": {
     "setDependencies": "npm i && npm install -g gulp-cli && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
-    "build": "npm run lint && gulp build",
+    "build": "npm run lint && gulp generate-build_version && gulp build",
     "develop": "cross-env NODE_ENV=develop gulp",
     "start": "gulp connect"
   }
