@@ -8,9 +8,9 @@ Please follow all rules from our [code style guidelines](https://github.com/Quic
 
 ## Modify and build the library
 
-The quickblox.js library is build from a number of **CommonJS modules** contained in the `src` folder. For example the `src/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
+The quickblox.min.js library is build from a number of **CommonJS modules** contained in the `src` folder. For example the `src/modules/qbUsers.js` module contains the code that deals with the [Users API](http://quickblox.com/developers/Users).
 
-These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere).
+These modules are combined through [browserify](http://browserify.org/) into a single `quickblox.min.js` file in the root and so this is the only file that needs to be included in a `<script>` tag OR in a RequireJS application OR in Node.js environment (everywhere).
 To build the library, uses [gulp](http://gulpjs.com/) task runner.
 
 * You need to have the dependencies listed in the package.json available, use `npm install` to load them;
