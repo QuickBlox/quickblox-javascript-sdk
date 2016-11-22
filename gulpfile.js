@@ -24,21 +24,21 @@ gulp.task('build', function () {
     return browserify('./src/qbMain.js', browserifyOpts)
         .bundle()
         .on('error', function(error) {
-            notify('Failed when create a bundle <%= error.message %>')
+            notify('Failed when create a bundle <%= error.message %>');
             this.emit('end');
         })
         .pipe(source('quickblox.min.js'))
-        .pipe(notify('Build task is finished.'))
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./'))
+        .pipe(notify('Build task is finished.'));
 });
 
-gulp.task('compress', function () {
+gulp.task('build_min', ['build'], function () {
     pump([
-            gulp.src('./quickblox.min.js'),
-            uglify(),
-            gulp.dest('./')
-        ]
-    );
+        gulp.src('./quickblox.min.js'),
+        uglify(),
+        notify('Compress task is finished.'),
+        gulp.dest('./')
+    ]);
 });
 
 gulp.task('connect', function() {
@@ -100,4 +100,4 @@ gulp.task('watch', function () {
   gulp.watch(['./src/**/*.js'], ['build']);
 });
 
-gulp.task('default', ['build', 'connect', 'watch']);
+gulp.task('default', ['build_sdk', 'connect', 'watch']);
