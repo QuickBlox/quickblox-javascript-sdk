@@ -2,19 +2,17 @@
 
 var gulp = require('gulp');
 
-var babelify = require('babelify');
 var browserify = require('browserify');
-
-var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
 
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
-
 var connect = require('gulp-connect');
+var notify = require('gulp-notify');
 
-var notify = require("gulp-notify");
+var uglify = require('gulp-uglify');
+var pump = require('pump');
+
+var fs = require('fs');
+var builder = require('jquery-custom');
 
 gulp.task('build', function () {
     var isDevelopment = process.env.NODE_ENV === 'develop',
@@ -34,11 +32,44 @@ gulp.task('build', function () {
         .pipe(gulp.dest('./'));
 });
 
+gulp.task('compress', function () {
+    pump([
+            gulp.src('./quickblox.min.js'),
+            uglify(),
+            gulp.dest('./')
+        ]
+    );
+});
+
 gulp.task('connect', function() {
     connect.server({
         port: 8080,
         https: true
     });
+});
+
+gulp.task('jquery', function () {
+    return builder({
+        flags: [
+            '-deprecated',
+            '-dimensions',
+            '-effects',
+            '-event',
+            '-event/alias',
+            '-event/focusin',
+            '-event/trigger',
+            '-offset',
+            '-wrap',
+            '-core/ready',
+            '-exports/global',
+            '-sizzle'
+        ],
+    }, function (err, compiledContent) {
+        if (err) return console.error(err);
+        fs.writeFile('./src/plugins/jquery.ajax.js', compiledContent, function (err) {
+            if (err) return console.error(err);
+        })
+    })
 });
 
 gulp.task('watch', function () {
