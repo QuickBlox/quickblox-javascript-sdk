@@ -91,7 +91,7 @@ function Recorder(mediaStream, opts) {
 
     /* prepare setting for MediaRecorder */
     self.mediaRecorderOptions = {
-        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType)
+        mimeType: Recorder.getSupportedMimeType(typeOfRecorded, clientMimeType),
         audioBitsPerSecond: opts && opts.audioBitsPerSecond ? opts.audioBitsPerSecond : BITS_PER_SECOND,
         videoBitsPerSecond : opts && opts.videoBitsPerSecond ? opts.videoBitsPerSecond : BITS_PER_SECOND,
         bitsPerSecond: opts && opts.bitsPerSecond ? opts.bitsPerSecond : BITS_PER_SECOND
