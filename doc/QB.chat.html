@@ -45,7 +45,9 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="QB.version"><a href="QB.html#.version">version</a></li>
+                <li data-name="QB.this.buildNumber"><a href="QB.html#.this.buildNumber">this.buildNumber</a></li>
+            
+                <li data-name="QB.this.version"><a href="QB.html#.this.version">this.version</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -87,6 +89,65 @@
             
             </ul>
             <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.connect"><a href="QB.chat.html#.connect">connect</a></li>
+            
+                <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
+            
+                <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
+            
+                <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
+            
+                <li data-name="QB.chat.onMessageTypingListener"><a href="QB.chat.html#.onMessageTypingListener">onMessageTypingListener</a></li>
+            
+                <li data-name="QB.chat.onSentMessageCallback"><a href="QB.chat.html#.onSentMessageCallback">onSentMessageCallback</a></li>
+            
+                <li data-name="QB.chat.send"><a href="QB.chat.html#.send">send</a></li>
+            
+                <li data-name="QB.chat.sendIsStopTypingStatus"><a href="QB.chat.html#.sendIsStopTypingStatus">sendIsStopTypingStatus</a></li>
+            
+                <li data-name="QB.chat.sendIsTypingStatus"><a href="QB.chat.html#.sendIsTypingStatus">sendIsTypingStatus</a></li>
+            
+                <li data-name="QB.chat.sendReadStatus"><a href="QB.chat.html#.sendReadStatus">sendReadStatus</a></li>
+            
+                <li data-name="QB.chat.sendSystemMessage"><a href="QB.chat.html#.sendSystemMessage">sendSystemMessage</a></li>
+            
+                <li data-name="QB.chat#onDeliveredStatusListener"><a href="QB.chat.html#onDeliveredStatusListener">onDeliveredStatusListener</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="QB.chat.roster">
+            <span class="title">
+                <a href="QB.chat.roster.html">QB.chat.roster</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.roster.add"><a href="QB.chat.roster.html#.add">add</a></li>
+            
+                <li data-name="QB.chat.roster.confirm"><a href="QB.chat.roster.html#.confirm">confirm</a></li>
+            
+                <li data-name="QB.chat.roster.get"><a href="QB.chat.roster.html#.get">get</a></li>
+            
+                <li data-name="QB.chat.roster.reject"><a href="QB.chat.roster.html#.reject">reject</a></li>
+            
+                <li data-name="QB.chat.roster.remove"><a href="QB.chat.roster.html#.remove">remove</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -159,9 +220,1667 @@
     
     
     
+        <h3 class="subsection-title">Namespaces</h3>
+        
+        <dl>
+            <dt><a href="namespaces.html#QB.chat.roster"><a href="QB.chat.roster.html">roster</a></a></dt>
+            <dd></dd>
+        </dl>
     
     
     
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".connect">
+            
+            <span class="type-signature static">static</span>QB.chat.connect<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 445
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Connect to chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Connect to chat parameters.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#chatConnectCallback">chatConnectCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The chatConnectCallback callback.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".disconnect">
+            
+            <span class="type-signature static">static</span>QB.chat.disconnect<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 907
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Logout from Chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onMessageErrorListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onMessageErrorListener<span class="signature">(error, message)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 109
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Blocked entities will be receiving an error when try to chat with a user in a 1-1 chat and will be receiving nothing in a group chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The error object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onMessageListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onMessageListener<span class="signature">(error, message)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 101
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        You need to set onMessageListener function, to get messages. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The error object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onMessageTypingListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onMessageTypingListener<span class="signature">(isTyping, userId, dialogId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 125
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Show typing status in chat or groupchat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>isTyping</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Typing Status</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The dialog id</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onSentMessageCallback">
+            
+            <span class="type-signature static">static</span>QB.chat.onSentMessageCallback<span class="signature">(error, message)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 117
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        This feature defines an approach for ensuring that message was delivered to the server. This feature is unenabled by default. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The error object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".send">
+            
+            <span class="type-signature static">static</span>QB.chat.send<span class="signature">(jid_or_user_id, message)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 676
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send message to 1 to 1 or group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_dialog">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid_or_user_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The message object.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        String
+                        
+                    
+            </td>
+            <td class="description last">messageId</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".sendIsStopTypingStatus">
+            
+            <span class="type-signature static">static</span>QB.chat.sendIsStopTypingStatus<span class="signature">(jid_or_user_id)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 815
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send is stop typing status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid_or_user_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".sendIsTypingStatus">
+            
+            <span class="type-signature static">static</span>QB.chat.sendIsTypingStatus<span class="signature">(jid_or_user_id)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 788
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send is typing status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid_or_user_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".sendReadStatus">
+            
+            <span class="type-signature static">static</span>QB.chat.sendReadStatus<span class="signature">(params)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 875
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send is read status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters. Consist of messageId, userId and dialogId keys.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".sendSystemMessage">
+            
+            <span class="type-signature static">static</span>QB.chat.sendSystemMessage<span class="signature">(jid_or_user_id, message)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 738
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send system message (system notification) to 1 to 1 or group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid_or_user_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The message object.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        String
+                        
+                    
+            </td>
+            <td class="description last">messageId</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="onDeliveredStatusListener">
+            
+            onDeliveredStatusListener<span class="signature">(messageId, dialogId, userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 134
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        will receive delivery confirmations <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>messageId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Typing Status</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The dialog id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                User Id.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
     
     
     
@@ -178,7 +1897,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 11 2016 18:58:30 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 19:30:50 GMT+0200 (EET)
         </footer>
     </div>
 </div>

@@ -53,6 +53,7 @@ function ChatProxy(service, webrtcModule, conn) {
     connection = conn;
 
     this.service = service;
+
     this.roster = new RosterProxy(service);
 
     this._isLogout = false;
@@ -79,10 +80,11 @@ function ChatProxy(service, webrtcModule, conn) {
         };
     }
 
-/*
+/**
  * User's callbacks (listener-functions):
  * - onMessageListener
  * - onMessageErrorListener (messageId, error)
+ * - onSentMessageCallback(messageLost, messageSent)
  * - onMessageTypingListener
  * - onDeliveredStatusListener (messageId, dialogId, userId);
  * - onReadStatusListener (messageId, dialogId, userId);
@@ -93,8 +95,59 @@ function ChatProxy(service, webrtcModule, conn) {
  * - onRejectSubscribeListener (userId)
  * - onDisconnectedListener
  * - onReconnectListener
- * - onSentMessageCallback(messageLost, messageSent)
  */
+
+
+/**
+ * You need to set onMessageListener function, to get messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
+ * @function onMessageListener
+ * @memberOf QB.chat
+ * @param {Number} error - The error object
+ * @param {Object} message - Object of subscribed users.
+ **/
+
+/**
+ * Blocked entities will be receiving an error when try to chat with a user in a 1-1 chat and will be receiving nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
+ * @function onMessageErrorListener
+ * @memberOf QB.chat
+ * @param {Number} error - The error object
+ * @param {Object} message - Object of subscribed users.
+ **/
+
+/**
+ * This feature defines an approach for ensuring that message was delivered to the server. This feature is unenabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
+ * @function onSentMessageCallback
+ * @memberOf QB.chat
+ * @param {Number} error - The error object
+ * @param {Object} message - Object of subscribed users.
+ **/
+
+/**
+ * Show typing status in chat or groupchat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
+ * @function onMessageTypingListener
+ * @memberOf QB.chat
+ * @param {Boolean} isTyping - Typing Status
+ * @param {Number} userId - Object of subscribed users.
+ * @param {String} dialogId -The dialog id
+ **/
+
+/**
+ * will receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
+ * @function onDeliveredStatusListener
+ * @memberOf QB.chat
+ * @param {String} messageId - Typing Status
+ * @param {String} dialogId -The dialog id
+ * @param {Number} userId - User Id.
+ **/
+
+/**
+ * You can manage 'read' notifications in chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
+ * @function onReadStatusListener
+ * @memberOf QB.chat
+ * @param {String} messageId - Typing Status
+ * @param {String} dialogId -The dialog id
+ * @param {Number} userId - User Id.
+ **/
 
     this._onMessage = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
@@ -382,8 +435,20 @@ function ChatProxy(service, webrtcModule, conn) {
 /* Chat module: Core
 ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
-    connect: function(params, callback) {
 
+    /**
+     * Connect to chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat More info.}
+     * @memberof QB.chat
+     * @param {Object} params - Connect to chat parameters.
+     * @param {chatConnectCallback} callback - The chatConnectCallback callback.
+     * */
+    connect: function(params, callback) {
+        /**
+         * This callback will return session object.
+         * @callback chatConnectCallback
+         * @param {Object} error - The error object
+         * @param {Object} roster - Object of subscribed users.
+         * */
         Utils.QBLog('[ChatProxy]', 'connect', params);
 
         var self = this,
@@ -600,6 +665,14 @@ ChatProxy.prototype = {
             });
         }
     },
+
+    /**
+     * Send message to 1 to 1 or group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_dialog More info.}
+     * @memberof QB.chat
+     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {Object} message - The message object.
+     * @returns {String} messageId
+     * */
     send: function(jid_or_user_id, message) {
         var self = this,
             builder = Utils.getEnv().browser ? $msg : NodeClient.Stanza;
@@ -654,6 +727,14 @@ ChatProxy.prototype = {
 
         return paramsCreateMsg.id;
     },
+
+    /**
+     * Send system message (system notification) to 1 to 1 or group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
+     * @memberof QB.chat
+     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {Object} message - The message object.
+     * @returns {String} messageId
+     * */
     sendSystemMessage: function(jid_or_user_id, message) {
         var self = this,
             builder = Utils.getEnv().browser ? $msg : NodeClient.Stanza,
@@ -698,6 +779,12 @@ ChatProxy.prototype = {
         
         return paramsCreateMsg.id;
     },
+
+    /**
+     * Send is typing status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
+     * @memberof QB.chat
+     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * */
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
@@ -719,6 +806,12 @@ ChatProxy.prototype = {
             nClient.send(stanza);
         }
     },
+
+    /**
+     * Send is stop typing status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
+     * @memberof QB.chat
+     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * */
     sendIsStopTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
@@ -740,6 +833,12 @@ ChatProxy.prototype = {
             nClient.send(stanza);
         }
     },
+
+    /**
+     * Send is delivered status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
+     * @memberof QB.chats
+     * @param {Object} params - Object of parameters. Consist of messageId, userId and dialogId keys.
+     * */
     sendDeliveredStatus: function(params) {
         var self = this,
             stanzaParams = {
@@ -767,6 +866,12 @@ ChatProxy.prototype = {
             nClient.send(stanza);
         }
     },
+
+    /**
+     * Send is read status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
+     * @memberof QB.chat
+     * @param {Object} params - Object of parameters. Consist of messageId, userId and dialogId keys.
+     * */
     sendReadStatus: function(params) {
         var self = this,
             stanzaParams = {
@@ -794,6 +899,11 @@ ChatProxy.prototype = {
             nClient.send(stanza);
         }
     },
+
+    /**
+     * Logout from Chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
+     * @memberof QB.chat
+     * */
     disconnect: function() {
         joinedRooms = {};
         this._isLogout = true;
@@ -806,6 +916,7 @@ ChatProxy.prototype = {
             nClient.end();
         }
     },
+
     addListener: function(params, callback) {
         if(Utils.getEnv().node) {
             throw new Error(unsupportedError);
@@ -859,13 +970,28 @@ ChatProxy.prototype = {
  * default - Mutual Subscription
  *
 ----------------------------------------------------------------------------- */
+/**
+ * @namespace QB.chat.roster
+ * */
 function RosterProxy(service) {
     this.service = service;
     this.helpers = new Helpers();
 }
 
 RosterProxy.prototype = {
+
+    /**
+     * Get contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List More info.}
+     * @memberof QB.chat.roster
+     * @param {getRosterCallback} callback - The callback function.
+     * */
     get: function(callback) {
+        /**
+         * This callback will return session object.
+         * @callback getRosterCallback
+         * @param {Object} roster - Object of subscribed users.
+         * */
+
         var self = this,
             items, userId, contacts = {},
             iqParams = {
@@ -913,7 +1039,19 @@ RosterProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Add users to contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Add_users More info.}
+     * @memberof QB.chat.roster
+     * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {addRosterCallback} callback - The callback function.
+     * */
     add: function(jidOrUserId, callback) {
+
+        /**
+         * Callback for QB.chat.roster.add(). Will run without parameters.
+         * @callback addRosterCallback
+         * */
         var self = this;
         var userJid = this.helpers.jidOrUserId(jidOrUserId);
         var userId = this.helpers.getIdFromNode(userJid).toString();
@@ -932,7 +1070,19 @@ RosterProxy.prototype = {
             callback();
         }
     },
+
+    /**
+     * Confirm subscription with some user. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Confirm_subscription_request More info.}
+     * @memberof QB.chat.roster
+     * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {confirmRosterCallback} callback - The callback function.
+     * */
     confirm: function(jidOrUserId, callback) {
+
+        /**
+         * Callback for QB.chat.roster.confirm(). Will run without parameters.
+         * @callback confirmRosterCallback
+         * */
         var self = this;
         var userJid = this.helpers.jidOrUserId(jidOrUserId);
         var userId = this.helpers.getIdFromNode(userJid).toString();
@@ -957,7 +1107,19 @@ RosterProxy.prototype = {
             callback();
         }
     },
+
+    /**
+     * Reject subscription with some user. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reject_subscription_request More info.}
+     * @memberof QB.chat.roster
+     * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {rejectRosterCallback} callback - The callback function.
+     * */
     reject: function(jidOrUserId, callback) {
+
+        /**
+         * Callback for QB.chat.roster.reject(). Will run without parameters.
+         * @callback confirmRosterCallback
+         * */
         var self = this;
         var userJid = this.helpers.jidOrUserId(jidOrUserId);
         var userId = this.helpers.getIdFromNode(userJid).toString();
@@ -976,7 +1138,20 @@ RosterProxy.prototype = {
             callback();
         }
     },
+
+
+    /**
+     * Remove subscription with some user from your contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Remove_users More info.}
+     * @memberof QB.chat.roster
+     * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
+     * @param {removeRosterCallback} callback - The callback function.
+     * */
     remove: function(jidOrUserId, callback) {
+
+        /**
+         * Callback for QB.chat.roster.remove(). Will run without parameters.
+         * @callback removeRosterCallback
+         * */
         var self = this,
             userJid = this.helpers.jidOrUserId(jidOrUserId),
             userId = this.helpers.getIdFromNode(userJid);

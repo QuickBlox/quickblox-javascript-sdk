@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: QB</title>
+    <title>Namespace: roster</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -158,7 +158,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.html">Namespace: QB</h1>
+        <h1 class="page-title" data-filename="QB.chat.roster.html">Namespace: roster</h1>
         
 
 
@@ -167,7 +167,9 @@
     
 <header>
     <h2>
-    QB
+        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
+    
+    roster
     </h2>
     
 </header>  
@@ -218,108 +220,7 @@
     
     
     
-        <h3 class="subsection-title">Namespaces</h3>
-        
-        <dl>
-            <dt><a href="namespaces.html#QB.chat"><a href="QB.chat.html">chat</a></a></dt>
-            <dd></dd>
-        </dl>
     
-    
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".this.buildNumber"><span class="type-signature static">static</span>QB.this.buildNumber</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Return current build number of QuickBlox JavaScript SDK
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".this.version"><span class="type-signature static">static</span>QB.this.version</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Return current version of QuickBlox JavaScript SDK
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
     
     
     
@@ -329,14 +230,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".createSession">
+        <h4 class="name" id=".add">
             
-            <span class="type-signature static">static</span>QB.createSession<span class="signature">(appIdOrToken, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.roster.add<span class="signature">(jidOrUserId, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            qbMain.js, line 118
+            modules/qbChat.js, line 1049
         </div>
         
     </div>
@@ -347,7 +248,7 @@
     
     
     <div class="description">
-        Will create new session. <a target="_blank" href="https://quickblox.com/developers/Javascript#Authorization">More info</a>
+        Add users to contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Add_users">More info.</a>
     </div>
     
 
@@ -378,400 +279,7 @@
 	
         <tr>
             
-                <td class="name"><code>appIdOrToken</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Should be applecationID or QBtoken.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#destroySessionCallback">destroySessionCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                -</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".destroySession">
-            
-            <span class="type-signature static">static</span>QB.destroySession<span class="signature">(callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 133
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Will destroy current session.  <a target="_blank" href="https://quickblox.com/developers/Authentication_and_Authorization#API_Session_Destroy">More info</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#destroySessionCallback">destroySessionCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The destroySessionCallback callback.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getSession">
-            
-            <span class="type-signature static">static</span>QB.getSession<span class="signature">(callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 102
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Will return current session
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#getSessionCallback">getSessionCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The getSessionCallback callback.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".init">
-            
-            <span class="type-signature static">static</span>QB.init<span class="signature">(appIdOrToken, authKeyOrAppId, authSecret, configMap)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 27
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>appIdOrToken</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-|
-
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Application ID (from your admin panel) or Session Token.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>authKeyOrAppId</code></td>
+                <td class="name"><code>jidOrUserId</code></td>
             
             
             <td class="type">
@@ -790,20 +298,139 @@
             
             <td class="description last">
                 
-                Authorization key or Application ID. You need to set Application ID if you use sessionToken as appIdOrToken parameter.</td>
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>authSecret</code></td>
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#addRosterCallback">addRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".confirm">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.confirm<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1080
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Confirm subscription with some user. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Confirm_subscription_request">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
             
             
             <td class="type">
             
                 
 <span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
 
 
             
@@ -813,20 +440,20 @@
             
             <td class="description last">
                 
-                Authorization secret key (from your admin panel).</td>
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>configMap</code></td>
+                <td class="name"><code>callback</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#confirmRosterCallback">confirmRosterCallback</a></span>
 
 
             
@@ -836,7 +463,7 @@
             
             <td class="description last">
                 
-                An Object of settings for QuickBlox SDK.</td>
+                The callback function.</td>
         </tr>
 	
 	
@@ -887,14 +514,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".login">
+        <h4 class="name" id=".get">
             
-            <span class="type-signature static">static</span>QB.login<span class="signature">(params, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.roster.get<span class="signature">(callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            qbMain.js, line 149
+            modules/qbChat.js, line 988
         </div>
         
     </div>
@@ -905,7 +532,7 @@
     
     
     <div class="description">
-        Login to QuickBlox application. <a target="_blank" href="https://quickblox.com/developers/Javascript#Authorization">More info</a>
+        Get contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List">More info.</a>
     </div>
     
 
@@ -936,36 +563,13 @@
 	
         <tr>
             
-                <td class="name"><code>params</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object login of params.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
                 <td class="name"><code>callback</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#loginCallback">loginCallback</a></span>
+<span class="param-type"><a href="global.html#getRosterCallback">getRosterCallback</a></span>
 
 
             
@@ -975,7 +579,7 @@
             
             <td class="description last">
                 
-                .</td>
+                The callback function.</td>
         </tr>
 	
 	
@@ -1026,14 +630,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".logout">
+        <h4 class="name" id=".reject">
             
-            <span class="type-signature static">static</span>QB.logout<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.chat.roster.reject<span class="signature">(jidOrUserId, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            qbMain.js, line 164
+            modules/qbChat.js, line 1117
         </div>
         
     </div>
@@ -1044,7 +648,7 @@
     
     
     <div class="description">
-        Remove user from current session, but doesn't destroy it.
+        Reject subscription with some user. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reject_subscription_request">More info.</a>
     </div>
     
 
@@ -1075,13 +679,16 @@
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>jidOrUserId</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#logoutCallback">logoutCallback</a></span>
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
 
 
             
@@ -1091,7 +698,172 @@
             
             <td class="description last">
                 
-                Should be applecationID or QBtoken.</td>
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">rejectRosterCallback</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".remove">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.remove<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1149
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Remove subscription with some user from your contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Remove_users">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#removeRosterCallback">removeRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
         </tr>
 	
 	

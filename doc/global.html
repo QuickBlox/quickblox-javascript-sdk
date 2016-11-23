@@ -45,7 +45,9 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="QB.version"><a href="QB.html#.version">version</a></li>
+                <li data-name="QB.this.buildNumber"><a href="QB.html#.this.buildNumber">this.buildNumber</a></li>
+            
+                <li data-name="QB.this.version"><a href="QB.html#.this.version">this.version</a></li>
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -87,6 +89,65 @@
             
             </ul>
             <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.connect"><a href="QB.chat.html#.connect">connect</a></li>
+            
+                <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
+            
+                <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
+            
+                <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
+            
+                <li data-name="QB.chat.onMessageTypingListener"><a href="QB.chat.html#.onMessageTypingListener">onMessageTypingListener</a></li>
+            
+                <li data-name="QB.chat.onSentMessageCallback"><a href="QB.chat.html#.onSentMessageCallback">onSentMessageCallback</a></li>
+            
+                <li data-name="QB.chat.send"><a href="QB.chat.html#.send">send</a></li>
+            
+                <li data-name="QB.chat.sendIsStopTypingStatus"><a href="QB.chat.html#.sendIsStopTypingStatus">sendIsStopTypingStatus</a></li>
+            
+                <li data-name="QB.chat.sendIsTypingStatus"><a href="QB.chat.html#.sendIsTypingStatus">sendIsTypingStatus</a></li>
+            
+                <li data-name="QB.chat.sendReadStatus"><a href="QB.chat.html#.sendReadStatus">sendReadStatus</a></li>
+            
+                <li data-name="QB.chat.sendSystemMessage"><a href="QB.chat.html#.sendSystemMessage">sendSystemMessage</a></li>
+            
+                <li data-name="QB.chat#onDeliveredStatusListener"><a href="QB.chat.html#onDeliveredStatusListener">onDeliveredStatusListener</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="QB.chat.roster">
+            <span class="title">
+                <a href="QB.chat.roster.html">QB.chat.roster</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.roster.add"><a href="QB.chat.roster.html#.add">add</a></li>
+            
+                <li data-name="QB.chat.roster.confirm"><a href="QB.chat.roster.html#.confirm">confirm</a></li>
+            
+                <li data-name="QB.chat.roster.get"><a href="QB.chat.roster.html#.get">get</a></li>
+            
+                <li data-name="QB.chat.roster.reject"><a href="QB.chat.roster.html#.reject">reject</a></li>
+            
+                <li data-name="QB.chat.roster.remove"><a href="QB.chat.roster.html#.remove">remove</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -265,6 +326,53 @@ We need a way to hide it if sach situation happened."
 <dd>
     
     <div class="description">
+        QuickBlox JavaScript SDK
+
+Proxy Module
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="config">config</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
         Modules
     </div>
     
@@ -362,53 +470,6 @@ We need a way to hide it if sach situation happened."
     <div class="description">
         QuickBlox JavaScript SDK
 WebRTC Module (WebRTC helpers)
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="config">config</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        QuickBlox JavaScript SDK
-
-Proxy Module
     </div>
     
     
@@ -759,7 +820,7 @@ WebRTC Module (WebRTC client)
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 361
+            modules/qbChat.js, line 414
         </div>
         
     </div>
@@ -902,7 +963,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1613
+            modules/qbChat.js, line 1788
         </div>
         
     </div>
@@ -1044,7 +1105,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1676
+            modules/qbChat.js, line 1851
         </div>
         
     </div>
@@ -1348,6 +1409,358 @@ WebRTC Module (WebRTC signaling constants)
                 
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id="addRosterCallback">
+            
+            addRosterCallback<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1051
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Callback for QB.chat.roster.add(). Will run without parameters.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="chatConnectCallback">
+            
+            chatConnectCallback<span class="signature">(error, roster)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 446
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        This callback will return session object.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The error object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>roster</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="confirmRosterCallback">
+            
+            confirmRosterCallback<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1082
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Callback for QB.chat.roster.confirm(). Will run without parameters.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="confirmRosterCallback">
+            
+            confirmRosterCallback<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1119
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Callback for QB.chat.roster.reject(). Will run without parameters.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="destroySessionCallback">
             
             destroySessionCallback<span class="signature">(error, result)</span>
@@ -1355,7 +1768,7 @@ WebRTC Module (WebRTC signaling constants)
     
         
         <div class="tag-source">
-            qbMain.js, line 127
+            qbMain.js, line 134
         </div>
         
     </div>
@@ -1493,6 +1906,122 @@ WebRTC Module (WebRTC signaling constants)
                 
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id="getRosterCallback">
+            
+            getRosterCallback<span class="signature">(roster)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 989
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        This callback will return session object.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>roster</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of subscribed users.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="getSessionCallback">
             
             getSessionCallback<span class="signature">(error, session)</span>
@@ -1500,7 +2029,7 @@ WebRTC Module (WebRTC signaling constants)
     
         
         <div class="tag-source">
-            qbMain.js, line 96
+            qbMain.js, line 103
         </div>
         
     </div>
@@ -1639,7 +2168,7 @@ WebRTC Module (WebRTC signaling constants)
     
         
         <div class="tag-source">
-            qbMain.js, line 112
+            qbMain.js, line 119
         </div>
         
     </div>
@@ -1778,7 +2307,7 @@ WebRTC Module (WebRTC signaling constants)
     
         
         <div class="tag-source">
-            qbMain.js, line 143
+            qbMain.js, line 150
         </div>
         
     </div>
@@ -1923,7 +2452,7 @@ WebRTC Module (WebRTC signaling constants)
     
         
         <div class="tag-source">
-            qbMain.js, line 158
+            qbMain.js, line 165
         </div>
         
     </div>
@@ -2057,6 +2586,77 @@ WebRTC Module (WebRTC signaling constants)
     
 </dd>
 
+            
+                
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="removeRosterCallback">
+            
+            removeRosterCallback<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1151
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Callback for QB.chat.roster.remove(). Will run without parameters.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
             </dl>
     
     
@@ -2072,7 +2672,7 @@ WebRTC Module (WebRTC signaling constants)
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 11 2016 18:58:30 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 19:30:50 GMT+0200 (EET)
         </footer>
     </div>
 </div>

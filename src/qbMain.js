@@ -16,11 +16,6 @@ var isBrowser = typeof window !== 'undefined';
 function QuickBlox() {}
 
 QuickBlox.prototype = {
-    /**
-     * Return current version of QuickBlox JavaScript SDK
-     * @memberof QB
-     * */
-    version: config.version,
 
     /**
      * @memberof QB
@@ -34,11 +29,16 @@ QuickBlox.prototype = {
             config.set(configMap);
         }
 
-
-
-        var Proxy = require('./qbProxy');
-        this.service = new Proxy();
+    /**
+     * Return current version of QuickBlox JavaScript SDK
+     * @memberof QB
+     * */
     this.version = config.version;
+
+    /**
+     * Return current build number of QuickBlox JavaScript SDK
+     * @memberof QB
+     * */
     this.buildNumber = config.buildNumber;
 
     var Proxy = require('./qbProxy');
