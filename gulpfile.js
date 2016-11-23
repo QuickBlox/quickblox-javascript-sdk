@@ -32,11 +32,11 @@ gulp.task('build', function () {
         .pipe(notify('Build task is finished.'));
 });
 
-gulp.task('build_min', ['build'], function () {
+gulp.task('minify', function () {
     pump([
         gulp.src('./quickblox.min.js'),
         uglify(),
-        notify('Compress task is finished.'),
+        notify('Minify task is finished.'),
         gulp.dest('./')
     ]);
 });
@@ -89,9 +89,17 @@ gulp.task('jquery', function () {
             '-sizzle'
         ],
     }, function (err, compiledContent) {
-        if (err) return console.error(err);
+        if (err){
+            notify('Can\'t build jquery lib.');
+            return console.error(err);
+        }
+
         fs.writeFile('./src/plugins/jquery.ajax.js', compiledContent, function (err) {
-            if (err) return console.error(err);
+            if (err){
+                notify('Can\'t build jquery lib.');
+                return console.error(err);
+            }
+            notify('Jquery task is finished.');
         })
     })
 });
@@ -100,4 +108,4 @@ gulp.task('watch', function () {
   gulp.watch(['./src/**/*.js'], ['build']);
 });
 
-gulp.task('default', ['build_sdk', 'connect', 'watch']);
+gulp.task('default', ['build', 'connect', 'watch']);
