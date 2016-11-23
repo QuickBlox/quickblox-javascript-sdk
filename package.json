@@ -52,9 +52,12 @@
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
     "gulp-notify": "^2.2.0",
+    "gulp-uglify": "^2.0.0",
     "jasmine": "^2.4.1",
+    "jquery-custom": "^1.1.1",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
+    "pump": "^1.0.1",
     "vinyl-source-stream": "^1.1.0"
   },
   "autoupdate": {
@@ -74,7 +77,7 @@
   "scripts": {
     "setDependencies": "npm i && npm install -g gulp-cli && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
-    "build": "npm run lint && gulp build",
+    "build": "npm run lint && gulp generate-build_version && gulp build && gulp minify",
     "develop": "cross-env NODE_ENV=develop gulp",
     "start": "gulp connect"
   }
