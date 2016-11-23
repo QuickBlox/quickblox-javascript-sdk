@@ -33,6 +33,14 @@
 
 p {display: block;}
 
+.ver {
+  position: relative;
+  display: block;
+  padding: 20px;
+  line-height: 20px;
+  color: #333;
+}
+
 .panel {
   -webkit-box-shadow: none;
   box-shadow:none;

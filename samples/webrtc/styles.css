@@ -107,6 +107,7 @@ b {
     }
 
 .inner {
+    position: relative;
     width: 90%;
     max-width: 890px;
     margin: 0 auto;
@@ -150,6 +151,7 @@ b {
 }
 
 .header__title {
+    position: relative;
     font-size: 26px;
     font-weight: 300;
     line-height: 35px;
@@ -158,6 +160,12 @@ b {
     .header__logo,
     .header__title {
         text-align: center;
+    }
+
+    .header_version {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
     }
 
 @media all and (min-width: 780px) {

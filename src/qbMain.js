@@ -34,8 +34,15 @@ QuickBlox.prototype = {
             config.set(configMap);
         }
 
+
+
         var Proxy = require('./qbProxy');
         this.service = new Proxy();
+    this.version = config.version;
+    this.buildNumber = config.buildNumber;
+
+    var Proxy = require('./qbProxy');
+    this.service = new Proxy();
 
         /** include dependencies */
         var Auth = require('./modules/qbAuth'),
