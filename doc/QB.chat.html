@@ -96,7 +96,13 @@
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
             
+                <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
+            
+                <li data-name="QB.chat.onContactListListener"><a href="QB.chat.html#.onContactListListener">onContactListListener</a></li>
+            
                 <li data-name="QB.chat.onDeliveredStatusListener"><a href="QB.chat.html#.onDeliveredStatusListener">onDeliveredStatusListener</a></li>
+            
+                <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
@@ -106,7 +112,15 @@
             
                 <li data-name="QB.chat.onReadStatusListener"><a href="QB.chat.html#.onReadStatusListener">onReadStatusListener</a></li>
             
+                <li data-name="QB.chat.onReconnectListener"><a href="QB.chat.html#.onReconnectListener">onReconnectListener</a></li>
+            
+                <li data-name="QB.chat.onRejectSubscribeListener"><a href="QB.chat.html#.onRejectSubscribeListener">onRejectSubscribeListener</a></li>
+            
                 <li data-name="QB.chat.onSentMessageCallback"><a href="QB.chat.html#.onSentMessageCallback">onSentMessageCallback</a></li>
+            
+                <li data-name="QB.chat.onSubscribeListener"><a href="QB.chat.html#.onSubscribeListener">onSubscribeListener</a></li>
+            
+                <li data-name="QB.chat.onSystemMessageListener"><a href="QB.chat.html#.onSystemMessageListener">onSystemMessageListener</a></li>
             
                 <li data-name="QB.chat.send"><a href="QB.chat.html#.send">send</a></li>
             
@@ -117,6 +131,39 @@
                 <li data-name="QB.chat.sendReadStatus"><a href="QB.chat.html#.sendReadStatus">sendReadStatus</a></li>
             
                 <li data-name="QB.chat.sendSystemMessage"><a href="QB.chat.html#.sendSystemMessage">sendSystemMessage</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="QB.chat.roster">
+            <span class="title">
+                <a href="QB.chat.roster.html">QB.chat.roster</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.roster.add"><a href="QB.chat.roster.html#.add">add</a></li>
+            
+                <li data-name="QB.chat.roster.confirm"><a href="QB.chat.roster.html#.confirm">confirm</a></li>
+            
+                <li data-name="QB.chat.roster.get"><a href="QB.chat.roster.html#.get">get</a></li>
+            
+                <li data-name="QB.chat.roster.reject"><a href="QB.chat.roster.html#.reject">reject</a></li>
+            
+                <li data-name="QB.chat.roster.remove"><a href="QB.chat.roster.html#.remove">remove</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -227,6 +274,9 @@
         <dl>
             <dt><a href="namespaces.html#QB.chat.roster"><a href="QB.chat.roster.html">roster</a></a></dt>
             <dd></dd>
+        
+            <dt><a href="namespaces.html#QB.chat.roster"><a href="QB.chat.roster.html">roster</a></a></dt>
+            <dd></dd>
         </dl>
     
     
@@ -246,7 +296,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 445
+            modules/qbChat.js, line 498
         </div>
         
     </div>
@@ -385,7 +435,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 907
+            modules/qbChat.js, line 960
         </div>
         
     </div>
@@ -404,6 +454,261 @@
     
     
     
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onConfirmSubscribeListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onConfirmSubscribeListener<span class="signature">(userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 176
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive confirm request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The sender ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onContactListListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onContactListListener<span class="signature">(userId, type)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 161
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive user status (online / offline). <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The sender ID</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                If user leave the chat, type will be 'unavailable'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
     
     
     
@@ -566,6 +871,77 @@
 	
 	</tbody>
 </table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onDisconnectedListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onDisconnectedListener<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 192
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Run after disconnect from chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     
@@ -1213,6 +1589,193 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".onReconnectListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onReconnectListener<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 198
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        By default Javascript SDK reconnects automatically when connection to server is lost. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onRejectSubscribeListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onRejectSubscribeListener<span class="signature">(userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 184
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive reject request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The sender ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id=".onSentMessageCallback">
             
             <span class="type-signature static">static</span>QB.chat.onSentMessageCallback<span class="signature">(error, message)</span>
@@ -1352,6 +1915,238 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".onSubscribeListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onSubscribeListener<span class="signature">(userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 169
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive subscription request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The sender ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onSystemMessageListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onSystemMessageListener<span class="signature">(receivedMessage)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 153
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        These messages work over separated channel and won't be mixed with the regular chat messages. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>receivedMessage</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Recieved Message. Always have type: 'headline'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id=".send">
             
             <span class="type-signature static">static</span>QB.chat.send<span class="signature">(jid_or_user_id, message)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
@@ -1359,7 +2154,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 676
+            modules/qbChat.js, line 729
         </div>
         
     </div>
@@ -1530,7 +2325,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 815
+            modules/qbChat.js, line 868
         </div>
         
     </div>
@@ -1649,7 +2444,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 788
+            modules/qbChat.js, line 841
         </div>
         
     </div>
@@ -1768,7 +2563,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 875
+            modules/qbChat.js, line 928
         </div>
         
     </div>
@@ -1884,7 +2679,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 738
+            modules/qbChat.js, line 791
         </div>
         
     </div>
@@ -2061,7 +2856,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 23:42:51 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 24 2016 14:18:33 GMT+0200 (EET)
         </footer>
     </div>
 </div>

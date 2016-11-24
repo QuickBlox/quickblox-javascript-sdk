@@ -96,7 +96,13 @@
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
             
+                <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
+            
+                <li data-name="QB.chat.onContactListListener"><a href="QB.chat.html#.onContactListListener">onContactListListener</a></li>
+            
                 <li data-name="QB.chat.onDeliveredStatusListener"><a href="QB.chat.html#.onDeliveredStatusListener">onDeliveredStatusListener</a></li>
+            
+                <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
@@ -106,7 +112,15 @@
             
                 <li data-name="QB.chat.onReadStatusListener"><a href="QB.chat.html#.onReadStatusListener">onReadStatusListener</a></li>
             
+                <li data-name="QB.chat.onReconnectListener"><a href="QB.chat.html#.onReconnectListener">onReconnectListener</a></li>
+            
+                <li data-name="QB.chat.onRejectSubscribeListener"><a href="QB.chat.html#.onRejectSubscribeListener">onRejectSubscribeListener</a></li>
+            
                 <li data-name="QB.chat.onSentMessageCallback"><a href="QB.chat.html#.onSentMessageCallback">onSentMessageCallback</a></li>
+            
+                <li data-name="QB.chat.onSubscribeListener"><a href="QB.chat.html#.onSubscribeListener">onSubscribeListener</a></li>
+            
+                <li data-name="QB.chat.onSystemMessageListener"><a href="QB.chat.html#.onSystemMessageListener">onSystemMessageListener</a></li>
             
                 <li data-name="QB.chat.send"><a href="QB.chat.html#.send">send</a></li>
             
@@ -117,6 +131,39 @@
                 <li data-name="QB.chat.sendReadStatus"><a href="QB.chat.html#.sendReadStatus">sendReadStatus</a></li>
             
                 <li data-name="QB.chat.sendSystemMessage"><a href="QB.chat.html#.sendSystemMessage">sendSystemMessage</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="QB.chat.roster">
+            <span class="title">
+                <a href="QB.chat.roster.html">QB.chat.roster</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.roster.add"><a href="QB.chat.roster.html#.add">add</a></li>
+            
+                <li data-name="QB.chat.roster.confirm"><a href="QB.chat.roster.html#.confirm">confirm</a></li>
+            
+                <li data-name="QB.chat.roster.get"><a href="QB.chat.roster.html#.get">get</a></li>
+            
+                <li data-name="QB.chat.roster.reject"><a href="QB.chat.roster.html#.reject">reject</a></li>
+            
+                <li data-name="QB.chat.roster.remove"><a href="QB.chat.roster.html#.remove">remove</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -239,7 +286,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1049
+            modules/qbChat.js, line 1103
         </div>
         
     </div>
@@ -381,7 +428,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1080
+            modules/qbChat.js, line 1134
         </div>
         
     </div>
@@ -523,7 +570,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 988
+            modules/qbChat.js, line 1042
         </div>
         
     </div>
@@ -639,7 +686,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1117
+            modules/qbChat.js, line 1171
         </div>
         
     </div>
@@ -781,7 +828,769 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1149
+            modules/qbChat.js, line 1203
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Remove subscription with some user from your contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Remove_users">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#removeRosterCallback">removeRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+</article>
+
+</section>  
+
+
+
+
+
+
+<section>
+    
+<header>
+    <h2>
+        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
+    
+    roster
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+        
+        
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+        
+        
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".add">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.add<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1103
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Add users to contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Add_users">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#addRosterCallback">addRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".confirm">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.confirm<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1134
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Confirm subscription with some user. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Confirm_subscription_request">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#confirmRosterCallback">confirmRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".get">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.get<span class="signature">(callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1042
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive contact list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#getRosterCallback">getRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".reject">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.reject<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1171
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Reject subscription with some user. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reject_subscription_request">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jidOrUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#rejectRosterCallback">rejectRosterCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".remove">
+            
+            <span class="type-signature static">static</span>QB.chat.roster.remove<span class="signature">(jidOrUserId, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1203
         </div>
         
     </div>
@@ -929,7 +1738,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 23:42:51 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 24 2016 14:18:33 GMT+0200 (EET)
         </footer>
     </div>
 </div>

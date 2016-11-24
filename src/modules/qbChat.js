@@ -149,6 +149,59 @@ function ChatProxy(service, webrtcModule, conn) {
  * @param {Number} userId - User Id.
  **/
 
+
+/**
+ * These messages work over separated channel and won't be mixed with the regular chat messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
+ * @function onSystemMessageListener
+ * @memberOf QB.chat
+ * @param {Object} receivedMessage - Recieved Message. Always have type: 'headline'
+ **/
+
+
+/**
+ * Receive user status (online / offline). {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+ * @function onContactListListener
+ * @memberOf QB.chat
+ * @param {Number} userId - The sender ID
+ * @param {String} type - If user leave the chat, type will be 'unavailable'
+ **/
+
+/**
+ * Receive subscription request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+ * @function onSubscribeListener
+ * @memberOf QB.chat
+ * @param {Number} userId - The sender ID
+ **/
+
+/**
+ * Receive confirm request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+ * @function onConfirmSubscribeListener
+ * @memberOf QB.chat
+ * @param {Number} userId - The sender ID
+ **/
+
+
+/**
+ * Receive reject request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+ * @function onRejectSubscribeListener
+ * @memberOf QB.chat
+ * @param {Number} userId - The sender ID
+ **/
+
+
+/**
+ * Run after disconnect from chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
+ * @function onDisconnectedListener
+ * @memberOf QB.chat
+ **/
+
+/**
+ * By default Javascript SDK reconnects automatically when connection to server is lost. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection More info.}
+ * @function onReconnectListener
+ * @memberOf QB.chat
+ **/
+
+
     this._onMessage = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
@@ -971,8 +1024,9 @@ ChatProxy.prototype = {
  *
 ----------------------------------------------------------------------------- */
 /**
+ * @memberof QB.chat
  * @namespace QB.chat.roster
- * */
+ **/
 function RosterProxy(service) {
     this.service = service;
     this.helpers = new Helpers();
@@ -1213,6 +1267,11 @@ RosterProxy.prototype = {
  * http://xmpp.org/extensions/xep-0045.html
  *
 ----------------------------------------------------------------------------- */
+
+/**
+ * @memberof QB.chat
+ * @namespace QB.chat.roster
+ * */
 function MucProxy(service) {
     this.service = service;
     this.helpers = new Helpers();
