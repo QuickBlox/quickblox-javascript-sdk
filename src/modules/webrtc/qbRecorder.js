@@ -12,6 +12,9 @@
  * 1. We recommend that you limit the duration of recording 3 minutes currently. 
  * The long duration can lead to the crash of the tab.
  *
+ * !KNOWN ISSUES:
+ * 1. Firefox will crash if a remote stream is broken.
+ *
  * User's callbacks (listener-functions):
  * - onStartRecording
  * - onPauseRecording
