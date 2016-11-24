@@ -1024,7 +1024,6 @@ ChatProxy.prototype = {
  *
 ----------------------------------------------------------------------------- */
 /**
- * @memberof QB.chat
  * @namespace QB.chat.roster
  **/
 function RosterProxy(service) {
@@ -1269,8 +1268,7 @@ RosterProxy.prototype = {
 ----------------------------------------------------------------------------- */
 
 /**
- * @memberof QB.chat
- * @namespace QB.chat.roster
+ * @namespace QB.chat.muc
  * */
 function MucProxy(service) {
     this.service = service;

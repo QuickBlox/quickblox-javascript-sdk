@@ -81,7 +81,7 @@
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "build": "npm run lint && gulp generate-build_version && gulp build && gulp minify && npm run doc",
     "develop": "cross-env NODE_ENV=develop gulp",
-    "doc": "rm -r doc || mkdir doc && jsdoc -c ./jsdoc.conf.json",
+    "doc": "rm -r docs || mkdir docs && jsdoc -c ./jsdoc.conf.json",
     "start": "gulp connect"
   }
 }

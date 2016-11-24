@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Module: Recorder</title>
+    <title>Index</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -138,9 +138,9 @@
             </ul>
         </li>
     
-        <li class="item" data-name="QB.chat.roster">
+        <li class="item" data-name="QB.chat.muc">
             <span class="title">
-                <a href="QB.chat.roster.html">QB.chat.roster</a>
+                <a href="QB.chat.muc.html">QB.chat.muc</a>
                 
                 <span class="static">static</span>
                 
@@ -152,18 +152,6 @@
             
             </ul>
             <ul class="methods itemMembers">
-            
-            <span class="subtitle">Methods</span>
-            
-                <li data-name="QB.chat.roster.add"><a href="QB.chat.roster.html#.add">add</a></li>
-            
-                <li data-name="QB.chat.roster.confirm"><a href="QB.chat.roster.html#.confirm">confirm</a></li>
-            
-                <li data-name="QB.chat.roster.get"><a href="QB.chat.roster.html#.get">get</a></li>
-            
-                <li data-name="QB.chat.roster.reject"><a href="QB.chat.roster.html#.reject">reject</a></li>
-            
-                <li data-name="QB.chat.roster.remove"><a href="QB.chat.roster.html#.remove">remove</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -207,128 +195,83 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="module-Recorder.html">Module: Recorder</h1>
+        <h1 class="page-title" data-filename="index.html">Index</h1>
         
 
 
-
-<section>
-    
-<header>
-    <h2>
-    Recorder
-    </h2>
-    
-</header>  
-
-<article>
-    <div class="container-overview">
-    
-    
-    
-        
-            <div class="description">Stream Record Module
-Doc: https://w3c.github.io/mediacapture-record/MediaRecorder.html
-Support: http://caniuse.com/#feat=mediarecorder (Firefox 47, Chrome 49, Opera 40)
-
-!NOTE:
-1. We recommend that you limit the duration of recording 3 minutes currently. 
-The long duration can lead to the crash of the tab.
-
-!KNOWN ISSUES:
-1. Firefox will crash if a remote stream is broken.
-
-User's callbacks (listener-functions):
-- onStartRecording
-- onPauseRecording
-- onStopRecording
-- onErrorRecording</div>
-        
-        
-        
-<dl class="details">
-    
-        
-    
-    
     
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
 
-        
-        
-            <h3>Example</h3>
-            
+    <h3> </h3>
+
+
+
+
+
+
+
 
     
-    <pre class="prettyprint"><code>var options = {
-    mimeType: 'video/mp4', // or set 'video' or 'audio' only
-    audioBitsPerSecond : 256 * 8 * 1024,
-    videoBitsPerSecond : 256 * 8 * 1024,
-    bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip audioBitsPerSecond / videoBitsPerSecond
-    callbacks: {
-        onStartRecording: function startRecord() {
-            console.log('Start recording...');
-        },
-        onErrorRecording: function errorRecord(error) {
-            //...
-        },
-        onPauseRecording: function pauseRecord() {
-            //...
-        },
-        onStopRecording: function stopRecord(blob) {
-            //...
-        },
-        onResumeRecording: function resimeRecord() {
-            //...
-        }
-    }
-}
 
-var recorder = new QB.Recorder(stream, options);
-// start record
-recorder.record();</code></pre>
-    
 
-        
-    
-    </div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</article>
 
-</section>  
+
+    <section>
+        <article class="readme"><h1>QuickBlox JavaScript SDK</h1><p><a target="_blank" href="https://travis-ci.org/QuickBlox/quickblox-javascript-sdk"><img src="https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages" alt="travis-ci"></a>
+<a target="_blank" href="https://www.npmjs.com/package/quickblox"><img src="https://img.shields.io/npm/v/quickblox.svg" alt="npm"></a>
+<a target="_blank" href="https://www.npmjs.com/package/quickblox"><img src="https://img.shields.io/npm/dm/quickblox.svg" alt="npm"></a></p>
+<p>The QuickBlox JavaScript SDK provides a JavaScript library making it even easier to access the QuickBlox cloud communication backend platform.</p>
+<p><a target="_blank" href="https://quickblox.com">QuickBlox</a> is a suite of communication features &amp; data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.</p>
+<h1>Install</h1><h2>Dependencies for browser</h2><p>For the library to work, you need to include either <a target="_blank" href="http://jquery.com/">jQuery</a> or <a target="_blank" href="http://zeptojs.com/">Zepto</a> in your html before <code>quickblox.min.js</code>, like so:</p>
+<p>For correct work of JS SDK you must include the  library in your html before <code>quickblox.min.js</code>, like so:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js&quot;>&lt;/script>
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.4.0/quickblox.min.js&quot;>&lt;/script></code></pre><h2>Bower and RequireJS</h2><p>If you use bower package manager for your project, you can install JS SDK through bower:</p>
+<pre class="prettyprint source"><code>bower install quickblox --save</code></pre><p>When you use <strong>RequireJS</strong>, you are able to use quickblox as AMD module. SDK supports <a target="_blank" href="https://github.com/umdjs/umd">UMD (Universal Module Definition)</a> pattern for JavaScript modules. So it is possible to use SDK everywhere (as browser global variable, with AMD module loader like RequireJS or as CommonJS module for Node.js environment).</p>
+<h2>Node.js and NPM integration</h2><p>Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like that:</p>
+<pre class="prettyprint source"><code>npm install quickblox --save</code></pre><p>And you're ready to go:</p>
+<pre class="prettyprint source lang-javascript"><code>var QB = require('quickblox');
+
+// OR to create many QB instances
+var QuickBlox = require('quickblox').QuickBlox;
+var QB1 = new QuickBlox();
+var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/archive/gh-pages.zip">QuickBlox JavaScript SDK, zip archive</a></p>
+<h1>Browsers support</h1><table>
+<thead>
+<tr>
+<th style="text-align:center">IE</th>
+<th style="text-align:center">Firefox</th>
+<th style="text-align:center">Chrome</th>
+<th style="text-align:center">Safari</th>
+<th style="text-align:center">Opera</th>
+<th style="text-align:center">Android Browser</th>
+<th style="text-align:center">Blackberry Browser</th>
+<th style="text-align:center">Opera Mobile</th>
+<th style="text-align:center">Chrome for Android</th>
+<th style="text-align:center">Firefox for Android</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">10+</td>
+<td style="text-align:center">4+</td>
+<td style="text-align:center">13+</td>
+<td style="text-align:center">6+</td>
+<td style="text-align:center">12+</td>
+<td style="text-align:center">4.4+</td>
+<td style="text-align:center">10+</td>
+<td style="text-align:center">12+</td>
+<td style="text-align:center">35+</td>
+<td style="text-align:center">30+</td>
+</tr>
+</tbody>
+</table>
+<h1>Documentation</h1><p>You can look at it here http://quickblox.com/developers/Javascript</p>
+<h1>Questions and feedback</h1><p>Please raise questions, requests for help etc. via http://stackoverflow.com/questions/tagged/quickbloxjs</p>
+<p>Feedback and suggestions for improvement always welcome :)</p>
+<h1>How to contribute</h1><p>See more information at <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md">contributing.md</a></p>
+<h1>License</h1><p>Apache 2.0</p></article>
+    </section>
+
 
 
 
@@ -337,7 +280,7 @@ recorder.record();</code></pre>
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 24 2016 14:18:33 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Nov 24 2016 18:27:01 GMT+0200 (EET)
         </footer>
     </div>
 </div>
