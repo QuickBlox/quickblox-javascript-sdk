@@ -96,11 +96,15 @@
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
             
+                <li data-name="QB.chat.onDeliveredStatusListener"><a href="QB.chat.html#.onDeliveredStatusListener">onDeliveredStatusListener</a></li>
+            
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
                 <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
             
                 <li data-name="QB.chat.onMessageTypingListener"><a href="QB.chat.html#.onMessageTypingListener">onMessageTypingListener</a></li>
+            
+                <li data-name="QB.chat.onReadStatusListener"><a href="QB.chat.html#.onReadStatusListener">onReadStatusListener</a></li>
             
                 <li data-name="QB.chat.onSentMessageCallback"><a href="QB.chat.html#.onSentMessageCallback">onSentMessageCallback</a></li>
             
@@ -113,8 +117,6 @@
                 <li data-name="QB.chat.sendReadStatus"><a href="QB.chat.html#.sendReadStatus">sendReadStatus</a></li>
             
                 <li data-name="QB.chat.sendSystemMessage"><a href="QB.chat.html#.sendSystemMessage">sendSystemMessage</a></li>
-            
-                <li data-name="QB.chat#onDeliveredStatusListener"><a href="QB.chat.html#onDeliveredStatusListener">onDeliveredStatusListener</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -234,7 +236,7 @@
 <dd>
     
     <div class="description">
-        we use this timeout to fix next issue:
+        We use this timeout to fix next issue:
 "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
 We need a way to hide it if sach situation happened."
     </div>
@@ -418,12 +420,8 @@ Proxy Module
 <dd>
     
     <div class="description">
-        User's callbacks (listener-functions):
-- onUserNotAnswerListener(session, userID)
-- onRemoteStreamListener(session, userID, stream)
-- onSessionConnectionStateChangedListener(session, userID, connectionState)
-- onSessionCloseListener(session)
-- onCallStatsReport(session, userId, stats, error)
+        QuickBlox JavaScript SDK
+WebRTC Module (WebRTC helpers)
     </div>
     
     
@@ -468,8 +466,12 @@ Proxy Module
 <dd>
     
     <div class="description">
-        QuickBlox JavaScript SDK
-WebRTC Module (WebRTC helpers)
+        User's callbacks (listener-functions):
+- onUserNotAnswerListener(session, userID)
+- onRemoteStreamListener(session, userID, stream)
+- onSessionConnectionStateChangedListener(session, userID, connectionState)
+- onSessionCloseListener(session)
+- onCallStatsReport(session, userId, stats, error)
     </div>
     
     
@@ -1427,7 +1429,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        Callback for QB.chat.roster.add(). Will run without parameters.
+        Callback for QB.chat.roster.add(). Run without parameters.
     </div>
     
 
@@ -1498,7 +1500,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return session object.
+        This callback Returns error or contact list.
     </div>
     
 
@@ -1637,7 +1639,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        Callback for QB.chat.roster.confirm(). Will run without parameters.
+        Callback for QB.chat.roster.confirm(). Run without parameters.
     </div>
     
 
@@ -1690,14 +1692,14 @@ WebRTC Module (WebRTC signaling constants)
                 
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="confirmRosterCallback">
+        <h4 class="name" id="createSession">
             
-            confirmRosterCallback<span class="signature">()</span>
+            createSession<span class="signature">(error, session)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1119
+            qbMain.js, line 119
         </div>
         
     </div>
@@ -1708,7 +1710,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        Callback for QB.chat.roster.reject(). Will run without parameters.
+        This callback return session object.
     </div>
     
 
@@ -1716,6 +1718,74 @@ WebRTC Module (WebRTC signaling constants)
     
     
     
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The error object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Contains of session object</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
     
     
     
@@ -1779,7 +1849,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return error if in will get an error or empty string if everything goes well.
+        This callback returns error or empty string.
     </div>
     
 
@@ -1924,7 +1994,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return session object.
+        This callback Return contact list.
     </div>
     
 
@@ -2040,146 +2110,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return session object.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The error object</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>session</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Contains of session object</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-            
-                
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="getSessionCallback">
-            
-            getSessionCallback<span class="signature">(error, session)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 119
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        This callback will return session object.
+        This callback return session object.
     </div>
     
 
@@ -2318,7 +2249,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return error if can not login and user Object if login was successful.
+        This callback return error or user Object.
     </div>
     
 
@@ -2463,7 +2394,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        This callback will return error if can not login and user Object if login was successful.
+        This callback return error or user Object.
     </div>
     
 
@@ -2590,6 +2521,77 @@ WebRTC Module (WebRTC signaling constants)
                 
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id="rejectRosterCallback">
+            
+            rejectRosterCallback<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1119
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Callback for QB.chat.roster.reject(). Run without parameters.
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+            
+                
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="removeRosterCallback">
             
             removeRosterCallback<span class="signature">()</span>
@@ -2608,7 +2610,7 @@ WebRTC Module (WebRTC signaling constants)
     
     
     <div class="description">
-        Callback for QB.chat.roster.remove(). Will run without parameters.
+        Callback for QB.chat.roster.remove(). Run without parameters.
     </div>
     
 
@@ -2672,7 +2674,7 @@ WebRTC Module (WebRTC signaling constants)
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 19:30:50 GMT+0200 (EET)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 23 2016 23:42:51 GMT+0200 (EET)
         </footer>
     </div>
 </div>

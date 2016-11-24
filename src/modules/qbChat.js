@@ -107,7 +107,7 @@ function ChatProxy(service, webrtcModule, conn) {
  **/
 
 /**
- * Blocked entities will be receiving an error when try to chat with a user in a 1-1 chat and will be receiving nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
+ * Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
  * @function onMessageErrorListener
  * @memberOf QB.chat
  * @param {Number} error - The error object
@@ -115,7 +115,7 @@ function ChatProxy(service, webrtcModule, conn) {
  **/
 
 /**
- * This feature defines an approach for ensuring that message was delivered to the server. This feature is unenabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
+ * This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
  * @function onSentMessageCallback
  * @memberOf QB.chat
  * @param {Number} error - The error object
@@ -132,7 +132,7 @@ function ChatProxy(service, webrtcModule, conn) {
  **/
 
 /**
- * will receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
+ * Receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
  * @function onDeliveredStatusListener
  * @memberOf QB.chat
  * @param {String} messageId - Typing Status
@@ -437,14 +437,14 @@ function ChatProxy(service, webrtcModule, conn) {
 ChatProxy.prototype = {
 
     /**
-     * Connect to chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat More info.}
+     * Connection to the chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat More info.}
      * @memberof QB.chat
-     * @param {Object} params - Connect to chat parameters.
+     * @param {Object} params - Connect to the chat parameters.
      * @param {chatConnectCallback} callback - The chatConnectCallback callback.
      * */
     connect: function(params, callback) {
         /**
-         * This callback will return session object.
+         * This callback Returns error or contact list.
          * @callback chatConnectCallback
          * @param {Object} error - The error object
          * @param {Object} roster - Object of subscribed users.
@@ -901,7 +901,7 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Logout from Chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
+     * Logout from the Chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
      * @memberof QB.chat
      * */
     disconnect: function() {
@@ -981,13 +981,13 @@ function RosterProxy(service) {
 RosterProxy.prototype = {
 
     /**
-     * Get contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List More info.}
+     * Receive contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List More info.}
      * @memberof QB.chat.roster
      * @param {getRosterCallback} callback - The callback function.
      * */
     get: function(callback) {
         /**
-         * This callback will return session object.
+         * This callback Return contact list.
          * @callback getRosterCallback
          * @param {Object} roster - Object of subscribed users.
          * */
@@ -1049,7 +1049,7 @@ RosterProxy.prototype = {
     add: function(jidOrUserId, callback) {
 
         /**
-         * Callback for QB.chat.roster.add(). Will run without parameters.
+         * Callback for QB.chat.roster.add(). Run without parameters.
          * @callback addRosterCallback
          * */
         var self = this;
@@ -1080,7 +1080,7 @@ RosterProxy.prototype = {
     confirm: function(jidOrUserId, callback) {
 
         /**
-         * Callback for QB.chat.roster.confirm(). Will run without parameters.
+         * Callback for QB.chat.roster.confirm(). Run without parameters.
          * @callback confirmRosterCallback
          * */
         var self = this;
@@ -1117,8 +1117,8 @@ RosterProxy.prototype = {
     reject: function(jidOrUserId, callback) {
 
         /**
-         * Callback for QB.chat.roster.reject(). Will run without parameters.
-         * @callback confirmRosterCallback
+         * Callback for QB.chat.roster.reject(). Run without parameters.
+         * @callback rejectRosterCallback
          * */
         var self = this;
         var userJid = this.helpers.jidOrUserId(jidOrUserId);
@@ -1149,7 +1149,7 @@ RosterProxy.prototype = {
     remove: function(jidOrUserId, callback) {
 
         /**
-         * Callback for QB.chat.roster.remove(). Will run without parameters.
+         * Callback for QB.chat.roster.remove(). Run without parameters.
          * @callback removeRosterCallback
          * */
         var self = this,

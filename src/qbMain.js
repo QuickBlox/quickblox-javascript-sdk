@@ -20,9 +20,9 @@ QuickBlox.prototype = {
     /**
      * @memberof QB
      * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.
-     * @param {String | Number} authKeyOrAppId - Authorization key or Application ID. You need to set Application ID if you use sessionToken as appIdOrToken parameter.
+     * @param {String | Number} authKeyOrAppId - Authorization key or Application ID. You need to set up Application ID if you use session token as appIdOrToken parameter.
      * @param {String} authSecret - Authorization secret key (from your admin panel).
-     * @param {Object} configMap - An Object of settings for QuickBlox SDK.
+     * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
         if (configMap && typeof configMap === 'object') {
@@ -95,13 +95,13 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Will return current session
+     * Return current session
      * @memberof QB
-     * @param {getSessionCallback} callback - The getSessionCallback callback.
+     * @param {getSessionCallback} callback - The getSessionCallback function.
      * */
     getSession: function(callback) {
         /**
-         * This callback will return session object.
+         * This callback return session object.
          * @callback getSessionCallback
          * @param {Object} error - The error object
          * @param {Object} session - Contains of session object
@@ -110,15 +110,15 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Will create new session. {@link https://quickblox.com/developers/Javascript#Authorization More info}
+     * Creat new session. {@link https://quickblox.com/developers/Javascript#Authorization More info}
      * @memberof QB
      * @param {String} appIdOrToken Should be applecationID or QBtoken.
-     * @param {destroySessionCallback} callback -
+     * @param {createSessionCallback} callback -
      * */
     createSession: function(params, callback) {
         /**
-         * This callback will return session object.
-         * @callback getSessionCallback
+         * This callback return session object.
+         * @callback createSession
          * @param {Object} error - The error object
          * @param {Object} session - Contains of session object
          * */
@@ -126,13 +126,13 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Will destroy current session.  {@link https://quickblox.com/developers/Authentication_and_Authorization#API_Session_Destroy More info}
+     * Destroy current session.  {@link https://quickblox.com/developers/Authentication_and_Authorization#API_Session_Destroy More info}
      * @memberof QB
-     * @param {destroySessionCallback} callback - The destroySessionCallback callback.
+     * @param {destroySessionCallback} callback - The destroySessionCallback function.
      * */
     destroySession: function(callback) {
         /**
-         * This callback will return error if in will get an error or empty string if everything goes well.
+         * This callback returns error or empty string.
          * @callback destroySessionCallback
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | String} result - String (" ") if session was removed successfully.
@@ -143,12 +143,12 @@ QuickBlox.prototype = {
     /**
      * Login to QuickBlox application. {@link https://quickblox.com/developers/Javascript#Authorization More info}
      * @memberof QB
-     * @param {Object} params - Object login of params.
-     * @param {loginCallback} callback - .
+     * @param {Object} params - Params object for login into the session.
+     * @param {loginCallback} callback - The loginCallback function.
      * */
     login: function(params, callback) {
         /**
-         * This callback will return error if can not login and user Object if login was successful.
+         * This callback return error or user Object.
          * @callback loginCallback
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | Object} result - User data object if everything goes well and null on error.
@@ -159,11 +159,11 @@ QuickBlox.prototype = {
     /**
      * Remove user from current session, but doesn't destroy it.
      * @memberof QB
-     * @param {logoutCallback} callback Should be applecationID or QBtoken.
+     * @param {logoutCallback} callback - The logoutCallback function.
      * */
     logout: function(callback) {
         /**
-         * This callback will return error if can not login and user Object if login was successful.
+         * This callback return error or user Object.
          * @callback logoutCallback
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | String} result - String (" ") if session was removed successfully.
