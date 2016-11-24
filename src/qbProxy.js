@@ -19,14 +19,10 @@ var versionNum = config.version;
 var isBrowser = typeof window !== 'undefined';
 
 if (!isBrowser) {
-var request = require('request');
+    var request = require('request');
 }
 
-var ajax = isBrowser && window.jQuery && window.jQuery.ajax || isBrowser && window.Zepto && window.Zepto.ajax;
-
-if (isBrowser && !ajax) {
-  throw new Error('Quickblox requires jQuery or Zepto');
-}
+var ajax = require('./plugins/jquery.ajax').ajax;
 
 function ServiceProxy() {
   this.qbInst = {

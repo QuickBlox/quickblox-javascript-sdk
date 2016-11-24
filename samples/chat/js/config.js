@@ -6,7 +6,7 @@ var QBApp = {
 
 var config = {
     chatProtocol: {
-        active: 2
+        active: 1
     },
     streamManagement: {
         enable: true
@@ -43,3 +43,5 @@ var QBUser1 = {
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);
+
+$('.j-version').text('v.' + QB.version + '.' + QB.buildNumber);

@@ -200,6 +200,9 @@
             CONFIG.APP_CONFIG
         );
 
+        /* Insert version + versiobBuild to sample for QA */
+        $('.j-version').text('v.' + QB.version + '.' + QB.buildNumber);
+
         var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
 
         app.router = new Router();
