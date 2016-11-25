@@ -2,15 +2,8 @@
 
 var gulp = require('gulp');
 
-var babelify = require('babelify');
 var browserify = require('browserify');
-
-var buffer = require('vinyl-buffer');
 var source = require('vinyl-source-stream');
-
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
 
 var connect = require('gulp-connect');
 var notify = require('gulp-notify');
@@ -31,12 +24,21 @@ gulp.task('build', function () {
     return browserify('./src/qbMain.js', browserifyOpts)
         .bundle()
         .on('error', function(error) {
-            notify('Failed when create a bundle <%= error.message %>')
+            notify('Failed when create a bundle <%= error.message %>');
             this.emit('end');
         })
         .pipe(source('quickblox.min.js'))
-        .pipe(notify('Build task is finished.'))
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./'))
+        .pipe(notify('Build task is finished.'));
+});
+
+gulp.task('minify', function () {
+    pump([
+        gulp.src('./quickblox.min.js'),
+        uglify(),
+        notify('Minify task is finished.'),
+        gulp.dest('./')
+    ]);
 });
 
 gulp.task('compress', function () {
@@ -52,6 +54,30 @@ gulp.task('connect', function() {
     connect.server({
         port: 8080,
         https: true
+    });
+});
+
+gulp.task('generate-build_version', function() {
+    var fs = require('fs');
+    const configPath = './src/qbConfig.js';
+
+    function incBuildNumber(foundedString, p1, buildNumber, p2) {
+        var oldBuildNumber = +buildNumber;
+
+        return p1 + (oldBuildNumber + 1) + p2;
+    }
+
+    fs.readFile(configPath, 'utf8', function (error, config) {
+        if (error) {
+            throw new Error(error);
+        }
+        var result = config.replace(/(buildNumber:\s\')(\d{4})(')/g, incBuildNumber);
+
+        fs.writeFile(configPath, result, 'utf8', function (error) {
+            if (error) {
+                throw new Error(error);
+            }
+        });
     });
 });
 
@@ -72,9 +98,17 @@ gulp.task('jquery', function () {
             '-sizzle'
         ],
     }, function (err, compiledContent) {
-        if (err) return console.error(err);
+        if (err){
+            notify('Can\'t build jquery lib.');
+            return console.error(err);
+        }
+
         fs.writeFile('./src/plugins/jquery.ajax.js', compiledContent, function (err) {
-            if (err) return console.error(err);
+            if (err){
+                notify('Can\'t build jquery lib.');
+                return console.error(err);
+            }
+            notify('Jquery task is finished.');
         })
     })
 });

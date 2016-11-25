@@ -46,9 +46,9 @@ function WebRTCClient(service, connection) {
 
 /**
  * [Return data or all active devices]
- * @param  {[string]} spec [specify what type of devices you wnat to get.
+ * @param  {String} spec [specify what type of devices you wnat to get.
  *                         Possible values: audioinput, audiooutput,  videoinput]
- * @return {[array]}       [array of devices]
+ * @returns {Array}       [array of devices]
  */
 WebRTCClient.prototype.getMediaDevices = function(spec) {
     var specDevices = [],
