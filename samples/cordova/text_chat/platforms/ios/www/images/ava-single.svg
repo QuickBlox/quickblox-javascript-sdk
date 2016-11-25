@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="147px" height="147px" viewBox="0 0 147 147" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.2.2 (9983) - http://www.bohemiancoding.com/sketch -->
+    <title>ava-single</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="-icons" sketch:type="MSArtboardGroup" transform="translate(-1536.000000, -470.000000)">
+            <g id="ava-single" sketch:type="MSLayerGroup" transform="translate(1536.000000, 470.000000)">
+                <path d="M0.661,0.526 L146.661,0.526 L146.661,146.526 L0.661,146.526 L0.661,0.526 Z" id="Fill-1" fill="#D2D2D1" sketch:type="MSShapeGroup"></path>
+                <path d="M106.137,61.031 C106.137,43.095 91.597,28.555 73.661,28.555 C55.725,28.555 41.185,43.095 41.185,61.031 C41.185,71.704 46.335,81.174 54.284,87.094 C36.874,96.759 23.608,119.07 19.506,146.526 L127.815,146.526 C123.713,119.07 110.447,96.759 93.037,87.094 C100.987,81.174 106.137,71.704 106.137,61.031" id="Fill-2" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+            </g>
+        </g>
+    </g>
+</svg>

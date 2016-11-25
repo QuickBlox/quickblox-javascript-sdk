@@ -1,0 +1,27 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-custom-config": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        },
+        "cordova-plugin-iosrtc": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        }
+    },
+    "dependent_plugins": {}
+}
