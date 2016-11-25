@@ -55,7 +55,7 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
   this.currentUserID = currentUserID;
 
   /**
-   * we use this timeout to fix next issue:
+   * We use this timeout to fix next issue:
    * "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
    * We need a way to hide it if sach situation happened."
    */
@@ -367,7 +367,7 @@ WebRTCSession.prototype.stop = function(extension) {
 
 /**
  * [function close connection with user]
- * @param  {[number]} userId [id of user]
+ * @param  {Number} userId [id of user]
  */
 WebRTCSession.prototype.closeConnection = function(userId) {
     var self = this,
