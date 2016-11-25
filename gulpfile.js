@@ -19,17 +19,17 @@ gulp.task('build', function () {
         browserifyOpts = {
             debug: isDevelopment,
             standalone: 'QB'
-    };
+        };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        .bundle()
-        .on('error', function(error) {
-            notify('Failed when create a bundle <%= error.message %>');
-            this.emit('end');
-        })
-        .pipe(source('quickblox.min.js'))
-        .pipe(gulp.dest('./'))
-        .pipe(notify('Build task is finished.'));
+    .bundle()
+    .on('error', function(error) {
+        notify('Failed when create a bundle <%= error.message %>');
+        this.emit('end');
+    })
+    .pipe(source('quickblox.min.js'))
+    .pipe(notify('Build task is finished.'))
+    .pipe(gulp.dest('./'));
 });
 
 gulp.task('minify', function () {
@@ -41,15 +41,6 @@ gulp.task('minify', function () {
     ]);
 });
 
-gulp.task('compress', function () {
-    pump([
-            gulp.src('./quickblox.min.js'),
-            uglify(),
-            gulp.dest('./')
-        ]
-    );
-});
-
 gulp.task('connect', function() {
     connect.server({
         port: 8080,
@@ -58,7 +49,6 @@ gulp.task('connect', function() {
 });
 
 gulp.task('generate-build_version', function() {
-    var fs = require('fs');
     const configPath = './src/qbConfig.js';
 
     function incBuildNumber(foundedString, p1, buildNumber, p2) {

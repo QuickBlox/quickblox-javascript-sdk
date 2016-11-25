@@ -78,15 +78,12 @@
             }
 
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
-
             app.currentSession.closeConnection(userId);
         }
 
         var ffHack = {
             waitingReconnectTimer: null,
             waitingReconnectTimeoutCallback: function(userId, cb) {
-                console.info('Start waitingReconnectTimeoutCallback for Firefox');
-
                 clearTimeout(this.waitingReconnectTimer);
                 cb(userId);
             },
@@ -669,7 +666,6 @@
                     if(ffHack.waitingReconnectTimer) {
                         clearTimeout(ffHack.waitingReconnectTimer);
                         ffHack.waitingReconnectTimer = null;
-                        console.info('clearTimeout(ffHack.waitingReconnectTimer)');
                     }
 
                     app.helpers.toggleRemoteVideoView(userId, 'show');
@@ -691,16 +687,6 @@
 
             if(!ffHack.isFirefox && recorder) {
                 recorder.stop();
-            } else {
-                app.currentSession = {};
-
-                if(call.callTimer) {
-                    $('#timer').addClass('invisible');
-                    clearInterval(call.callTimer);
-                    call.callTimer = null;
-                    call.callTime = 0;
-                    app.helpers.network = {};
-                }
             }
 
             app.currentSession.detachMediaStream('main_video');
@@ -717,6 +703,17 @@
                 });
             } else {
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
+            }
+
+            if(ffHack.isFirefox) {
+                app.currentSession = {};
+                if(call.callTimer) {
+                    $('#timer').addClass('invisible');
+                    clearInterval(call.callTimer);
+                    call.callTimer = null;
+                    call.callTime = 0;
+                    app.helpers.network = {};
+                }
             }
         };
 
