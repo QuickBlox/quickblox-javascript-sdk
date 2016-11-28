@@ -168,18 +168,34 @@
             <button class='fw-link j-logout'>Logout</button>
         </script>
 
-        <script type="text/template" id="tpl_accept_call">
-            <%  _.each(users, function(el, i, list) { %>
-                <% if(list.length === 1){ %>
-                    <b><%= el.full_name %></b> has accepted the call
-                <% } else { %>
-                    <% if( (i+1) === list.length) { %>
-                        <b><%= el.full_name %></b> have accepted the call
+        <script type="text/template" id="tpl_call_status">
+            <% if(typeof(users.accepted) !== 'undefined') { %>
+                <%  _.each(users.accepted, function(el, i, list) { %>
+                    <% if(list.length === 1){ %>
+                        <b><%= el.full_name %></b> has accepted the call.
                     <% } else { %>
-                        <b><%= el.full_name %></b>,
+                        <% if( (i+1) === list.length) { %>
+                            <b><%= el.full_name %></b> have accepted the call.
+                        <% } else { %>
+                            <b><%= el.full_name %></b>,
+                        <% } %>
                     <% } %>
-                <% } %>
-            <% }); %>
+                <% }); %>
+            <% } %>
+
+            <% if(typeof(users.rejected) !== 'undefined') { %>
+                <%  _.each(users.rejected, function(el, i, list) { %>
+                    <% if(list.length === 1){ %>
+                        <b><%= el.full_name %></b> has rejecterd the call.
+                    <% } else { %>
+                        <% if( (i+1) === list.length) { %>
+                            <b><%= el.full_name %></b> have rejecterd the call.
+                        <% } else { %>
+                            <b><%= el.full_name %></b>,
+                        <% } %>
+                    <% } %>
+                <% }); %>
+            <% } %>
         </script>
 
         <script type="text/template" id="tpl_call_stop">
