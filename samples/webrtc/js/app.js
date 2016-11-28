@@ -581,17 +581,18 @@
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
-                if (user) {
-                    app.caller = {};
-                    app.users = [];
+                if (!user) {
 
-                    QB.chat.disconnect();
-                    localStorage.removeItem('isAuth');
-                    app.router.navigate('join', {'trigger': true});
-                    app.helpers.setFooterPosition();
-                } else  {
-                    console.error('Logout failed:', err);
+                    console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
                 }
+
+                app.caller = {};
+                app.users = [];
+
+                QB.chat.disconnect();
+                localStorage.removeItem('isAuth');
+                app.router.navigate('join', {'trigger': true});
+                app.helpers.setFooterPosition();
             });
         });
 
