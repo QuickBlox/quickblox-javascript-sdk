@@ -660,6 +660,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * DtlsSrtpKeyAgreement: true
    * RtpDataChannels: true
    */
+
   var pcConfig = {
     iceServers: _prepareIceServers(config.webrtc.iceServers)
   };
@@ -698,13 +699,23 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
   var isAllConnectionsClosed = true;
 
   for (var key in this.peerConnections) {
-    var peerCon = this.peerConnections[key];
+      var peerCon = this.peerConnections[key],
+          peerState;
 
-    if(peerCon.signalingState !== 'closed'){
-      isAllConnectionsClosed = false;
-      break;
-    }
+      try {
+          peerState = peerCon.signalingState;
+      } catch (err){
+          Helpers.traceError(err);
+          // need to set peerState to 'closed' on error. FF will crashed without this part.
+          peerState = 'closed';
+      }
+
+      if(peerState !== 'closed'){
+          isAllConnectionsClosed = false;
+          break;
+      }
   }
+
 
   Helpers.trace("All peer connections closed: " + isAllConnectionsClosed);
 
