@@ -11,22 +11,23 @@
         var recorder = null;
         var recorderOpts = {
                 callbacks: {
-                    onStartRecording: function onStartRecord() {
+                    onStart: function onStartRecord() {
                         console.log('[QB Recorder] onStartRecording');
                         $('.j-record').addClass('active');
                     },
-                    onStopRecording: function(blob) {
+                    onStop: function(blob) {
                         console.log('[QB Recorder] onStopRecording');
                         $('.j-record').removeClass('active');
 
                         var down = confirm('Do you want to download video?');
+
                         if(down) {
-                            recorder.download(blob, 'QB_WEBrtc_sample' + Date.now());
+                            recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
                         }
 
                         recorder = null;
                     },
-                    onErrorRecording: function(error) {
+                    onError: function(error) {
                         console.error('Recorder error', error);
                     }
                 }
@@ -560,7 +561,7 @@
 
             if(_.isEmpty(app.currentSession)) {
                 return false;
-            } else if(QB.Recorder.isAvailable()) {
+            } else if(qbMediaRecorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
                         connection = connections[app.mainVideo],
@@ -570,7 +571,7 @@
                         return false;
                     }
 
-                    recorder = new QB.Recorder(connection.stream, recorderOpts);
+                    recorder = new qbMediaRecorder(connection.stream, recorderOpts);
                     recorder.start();
                 } else {
                     recorder.stop();
