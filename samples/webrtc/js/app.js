@@ -417,17 +417,15 @@
         $(document).on('click', '.j-accept', function() {
             var $videoSourceFilter = $(ui.sourceFilter),
                 mediaParams = {
-                    audio: true,
-                    video: {
-                        optional: [
-                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
-                        ]
+                    'audio': true,
+                    'video': {
+                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
-                    elemId: 'localVideo',
-                    options: {
-                        muted: true,
-                        mirror: true
-                    }
+                    'options': {
+                        'muted': true,
+                        'mirror': true
+                    },
+                    'elemId': 'localVideo'
                 },
                 videoElems = '';
 
