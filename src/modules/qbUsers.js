@@ -57,6 +57,7 @@ UsersProxy.prototype = {
     this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
   },
 
+  // params is required object!!! If you want to get users without any parameters, set empty object as the parameter.
   get: function(params, callback) {
     Utils.QBLog('[UsersProxy]', 'get', params);
 

@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "license": "(Apache-2.0)",
@@ -52,9 +52,14 @@
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
     "gulp-notify": "^2.2.0",
+    "gulp-uglify": "^2.0.0",
+    "jaguarjs-jsdoc": "^1.0.1",
+    "jsdoc": "^3.4.3",
     "jasmine": "^2.4.1",
+    "jquery-custom": "^1.1.1",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
+    "pump": "^1.0.1",
     "vinyl-source-stream": "^1.1.0"
   },
   "autoupdate": {
@@ -72,10 +77,11 @@
     }
   },
   "scripts": {
-    "setDependencies": "npm i && npm install -g gulp-cli && npm install -g jasmine",
+    "setDependencies": "npm i && npm install -g gulp-cli && npm install rimraf -g &&npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
-    "build": "npm run lint && gulp build",
+    "build": "npm run lint && gulp generate-build_version && gulp build && gulp minify && npm run doc",
     "develop": "cross-env NODE_ENV=develop gulp",
+    "doc": "rimraf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
     "start": "gulp connect"
   }
 }

@@ -1,0 +1,28 @@
+{
+  "tags":{
+      "allowUnknownTags":true
+  },
+  "source":{
+      "include":[
+          "./src",
+          "./README.md"
+      ],
+      "includePattern":".+\\.js(doc|x)?$",
+      "excludePattern":"(^|\\/|\\\\)_"
+  },
+  "plugins":[
+
+  ],
+  "templates":{
+      "applicationName": "QuickBlox JavaScript SDK",
+      "linenums": false
+  },
+  "opts":{
+      "template":"./node_modules/jaguarjs-jsdoc/",
+      "destination":"./docs/",
+      "encoding": "utf8",
+      "recurse": true,
+      "private": true,
+      "lenient": true
+  }
+}

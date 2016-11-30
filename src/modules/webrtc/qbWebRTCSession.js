@@ -55,7 +55,7 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
   this.currentUserID = currentUserID;
 
   /**
-   * we use this timeout to fix next issue:
+   * We use this timeout to fix next issue:
    * "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
    * We need a way to hide it if sach situation happened."
    */
@@ -367,7 +367,7 @@ WebRTCSession.prototype.stop = function(extension) {
 
 /**
  * [function close connection with user]
- * @param  {[number]} userId [id of user]
+ * @param  {Number} userId [id of user]
  */
 WebRTCSession.prototype.closeConnection = function(userId) {
     var self = this,
@@ -660,6 +660,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
    * DtlsSrtpKeyAgreement: true
    * RtpDataChannels: true
    */
+
   var pcConfig = {
     iceServers: _prepareIceServers(config.webrtc.iceServers)
   };
@@ -698,13 +699,23 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function (){
   var isAllConnectionsClosed = true;
 
   for (var key in this.peerConnections) {
-    var peerCon = this.peerConnections[key];
+      var peerCon = this.peerConnections[key],
+          peerState;
 
-    if(peerCon.signalingState !== 'closed'){
-      isAllConnectionsClosed = false;
-      break;
-    }
+      try {
+          peerState = peerCon.signalingState;
+      } catch (err){
+          Helpers.traceError(err);
+          // need to set peerState to 'closed' on error. FF will crashed without this part.
+          peerState = 'closed';
+      }
+
+      if(peerState !== 'closed'){
+          isAllConnectionsClosed = false;
+          break;
+      }
   }
+
 
   Helpers.trace("All peer connections closed: " + isAllConnectionsClosed);
 
