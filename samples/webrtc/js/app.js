@@ -581,7 +581,6 @@
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
                 if (!user) {
-
                     console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
                 }
 
@@ -751,7 +750,7 @@
             ui.insertOccupants().then(function(users) {
                 app.users = users;
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
-
+                app.callees = {};
                 /** close previous modal */
                 $(ui.income_call).modal('hide');
 
@@ -761,6 +760,7 @@
                 if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
+
                 }
             });
         };
