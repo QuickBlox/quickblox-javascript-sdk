@@ -25,24 +25,25 @@ QuickBlox.prototype = {
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
+        console.log('test');
         if (configMap && typeof configMap === 'object') {
             config.set(configMap);
         }
 
-    /**
-     * Return current version of QuickBlox JavaScript SDK
-     * @memberof QB
-     * */
-    this.version = config.version;
+        /**
+         * Return current version of QuickBlox JavaScript SDK
+         * @memberof QB
+         * */
+        this.version = config.version;
 
-    /**
-     * Return current build number of QuickBlox JavaScript SDK
-     * @memberof QB
-     * */
-    this.buildNumber = config.buildNumber;
+        /**
+         * Return current build number of QuickBlox JavaScript SDK
+         * @memberof QB
+         * */
+        this.buildNumber = config.buildNumber;
 
-    var Proxy = require('./qbProxy');
-    this.service = new Proxy();
+        var Proxy = require('./qbProxy');
+        this.service = new Proxy();
 
         /** include dependencies */
         var Auth = require('./modules/qbAuth'),
@@ -63,7 +64,6 @@ QuickBlox.prototype = {
             if( Utils.isWebRTCAvailble() ) {
                 var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
                 this.webrtc = new WebRTCClient(this.service, conn || null);
-                this.Recorder = require('./modules/webrtc/qbRecorder');
             } else {
                 this.webrtc = false;
             }

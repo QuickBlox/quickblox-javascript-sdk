@@ -19,17 +19,17 @@ gulp.task('build', function () {
         browserifyOpts = {
             debug: isDevelopment,
             standalone: 'QB'
-    };
+        };
 
     return browserify('./src/qbMain.js', browserifyOpts)
-        .bundle()
-        .on('error', function(error) {
-            notify('Failed when create a bundle <%= error.message %>');
-            this.emit('end');
-        })
-        .pipe(source('quickblox.min.js'))
-        .pipe(gulp.dest('./'))
-        .pipe(notify('Build task is finished.'));
+    .bundle()
+    .on('error', function(error) {
+        notify('Failed when create a bundle.');
+        this.emit('end');
+    })
+    .pipe(source('quickblox.min.js'))
+    .pipe(gulp.dest('./'))
+    .pipe(notify('Build task is finished.'));
 });
 
 gulp.task('minify', function () {
@@ -105,7 +105,7 @@ gulp.task('jquery', function () {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(['./src/**/*.js'], ['build']);
+    gulp.watch(['./src/**/*.js'], ['build']);
 });
 
 gulp.task('default', ['build', 'connect', 'watch']);
