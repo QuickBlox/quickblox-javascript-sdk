@@ -24,7 +24,7 @@ gulp.task('build', function () {
     return browserify('./src/qbMain.js', browserifyOpts)
         .bundle()
         .on('error', function(error) {
-            notify('Failed when create a bundle <%= error.message %>');
+            notify('Failed when create a bundle.');
             this.emit('end');
         })
         .pipe(source('quickblox.min.js'))
