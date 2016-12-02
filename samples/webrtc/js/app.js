@@ -462,15 +462,16 @@
                             opponents.push(userID);
                         }
                     });
-
                     opponents.forEach(function(userID, i, arr) {
+                        console.log('opponents.forEach userID', userID);
+
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
-
+                        console.log('opponents.forEach peerState', peerState);
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({
                                 'userID': userID,
-                                'name': userInfo.full_name,
+                                'name': userInfo ? userInfo.full_name : 'Unknown user',
                                 'state': app.helpers.getConStateName(peerState)
                             });
 
@@ -479,7 +480,6 @@
                             }
                         }
                     });
-
                     $('.j-callees').append(videoElems);
                     app.helpers.stateBoard.update({
                         'title': 'tpl_during_call',
@@ -701,7 +701,14 @@
                     }
                 });
             } else {
-                app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
+                app.helpers.stateBoard.update({
+                    title: 'tpl_default',
+                    property: {
+                        'tag': app.caller.user_tags,
+                        'name':  app.caller.full_name,
+                    }
+                });
+                // app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
             if(ffHack.isFirefox) {
@@ -786,7 +793,7 @@
                     }
                 });
             } else {
-                var userInfo = _.findWhere(app.users, {'id': +userId})
+                var userInfo = _.findWhere(app.users, {'id': +userId});
                 app.calleesRejected.push(userInfo);
                 $('.j-callee_status_' + userId).text('Rejected');
             }

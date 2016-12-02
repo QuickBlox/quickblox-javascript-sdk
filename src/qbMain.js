@@ -25,7 +25,6 @@ QuickBlox.prototype = {
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
-        console.log('test');
         if (configMap && typeof configMap === 'object') {
             config.set(configMap);
         }
