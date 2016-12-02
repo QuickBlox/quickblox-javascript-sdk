@@ -1276,14 +1276,27 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype = {
-    join: function(jid, callback) {
+
+    /**
+     * Join to the group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {joinMacCallback} callback - The callback function.
+     * */
+    join: function(dialogJid, callback) {
+        /**
+         * Callback for QB.chat.muc.join().
+         * @param {Object} resultStanza - Returns the stanza.
+         * @callback joinMacCallback
+         * */
+
         var self = this,
             id = chatUtils.getUniqueId('join');
 
         var presParams = {
                 id: id,
                 from: userCurrentJid,
-                to: self.helpers.getRoomJid(jid)
+                to: self.helpers.getRoomJid(dialogJid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1293,7 +1306,7 @@ MucProxy.prototype = {
             xmlns: chatUtils.MARKERS.MUC
         }).c('history', { maxstanzas: 0 });
 
-        joinedRooms[jid] = true;
+        joinedRooms[dialogJid] = true;
 
         if (Utils.getEnv().browser) {
             if (typeof callback === 'function') {
@@ -1309,7 +1322,20 @@ MucProxy.prototype = {
             nClient.send(pres);
         }
     },
+
+    /**
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {leaveMacCallback} callback - The callback function.
+     * */
     leave: function(jid, callback) {
+        /**
+         * Callback for QB.chat.muc.leave().
+         * run without parameters;
+         * @callback leaveMacCallback
+         * */
+
         var self = this,
             presParams = {
                 type: 'unavailable',
@@ -1339,7 +1365,20 @@ MucProxy.prototype = {
             nClient.send(pres);
         }
     },
+
+    /**
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {listOnlineUsersMacCallback} callback - The callback function.
+     * */
     listOnlineUsers: function(dialogJID, callback) {
+        /**
+         * Callback for QB.chat.muc.leave().
+         * @param {Object} Users - list of online users
+         * @callback listOnlineUsersMacCallback
+         * */
+
         var self = this,
             onlineUsers = [];
 
@@ -1402,8 +1441,22 @@ function PrivacyListProxy(service) {
     this.helpers = new Helpers();
 }
 
+/**
+ * @namespace QB.chat.privacylist
+ **/
 PrivacyListProxy.prototype = {
+    /**
+     * Create a privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list More info.}
+     * @memberof QB.chat.privacylist
+     * @param {Object} list - privacy list object.
+     * @param {createPrivacylistCallback} callback - The callback function.
+     * */
     create: function(list, callback) {
+        /**
+         * Callback for QB.chat.privacylist.create().
+         * @param {Object} error - The error object
+         * @callback createPrivacylistCallback
+         * */
         var self = this,
             userId, userJid, userMuc,
             userAction,
@@ -1547,7 +1600,21 @@ PrivacyListProxy.prototype = {
             };
         }
     },
+
+    /**
+     * Get the privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list More info.}
+     * @memberof QB.chat.privacylist
+     * @param {String} name - The name of the list.
+     * @param {getListPrivacylistCallback} callback - The callback function.
+     * */
     getList: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.getList().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
+         * @callback getListPrivacylistCallback
+         * */
+
         var self = this,
             items, userJid, userId,
             usersList = [], list = {};
@@ -1620,7 +1687,21 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Update the privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {String} name - The name of the list.
+     * @param {updatePrivacylistCallback} callback - The callback function.
+     * */
     update: function(list, callback) {
+        /**
+         * Callback for QB.chat.privacylist.update().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
+         * @callback updatePrivacylistCallback
+         * */
+
         var self = this;
 
         self.getList(list.name, function(error, response) {
@@ -1645,7 +1726,21 @@ PrivacyListProxy.prototype = {
             }
         });
     },
+
+    /**
+     * Get names of privacy lists. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names More info.}
+     * Run without parameters
+     * @memberof QB.chat.privacylist
+     * @param {getNamesPrivacylistCallback} callback - The callback function.
+     * */
     getNames: function(callback) {
+        /**
+         * Callback for QB.chat.privacylist.getNames().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object (var names = response.names;)
+         * @callback getNamesPrivacylistCallback
+         * */
+
         var self = this,
             iq,
             stanzaParams = {
@@ -1726,7 +1821,20 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Delete privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {deletePrivacylistCallback} callback - The callback function.
+     * */
     delete: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.delete().
+         * @param {Object} error - The error object
+         * @callback deletePrivacylistCallback
+         * */
+
         var iq = $iq({
             from: connection.jid,
             type: 'set',
@@ -1748,7 +1856,20 @@ PrivacyListProxy.prototype = {
             }
         });
     },
+
+    /**
+     * Set as default privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {setAsDefaultPrivacylistCallback} callback - The callback function.
+     * */
     setAsDefault: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.setAsDefault().
+         * @param {Object} error - The error object
+         * @callback setAsDefaultPrivacylistCallback
+         * */
+
         var iq,
             stanzaParams = {
                 'from': connection ? connection.jid : nClient.jid.user,
@@ -1792,7 +1913,20 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Set as active privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {setAsActivePrivacylistCallback} callback - The callback function.
+     * */
     setAsActive: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.setAsActive().
+         * @param {Object} error - The error object
+         * @callback setAsActivePrivacylistCallback
+         * */
+
         var iq,
             stanzaParams = {
             'from': connection ? connection.jid : nClient.jid.user,

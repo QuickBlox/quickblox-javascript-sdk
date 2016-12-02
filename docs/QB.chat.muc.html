@@ -153,6 +153,51 @@
             </ul>
             <ul class="methods itemMembers">
             
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.muc.join"><a href="QB.chat.muc.html#.join">join</a></li>
+            
+                <li data-name="QB.chat.muc.leave"><a href="QB.chat.muc.html#.leave">leave</a></li>
+            
+                <li data-name="QB.chat.muc.listOnlineUsers"><a href="QB.chat.muc.html#.listOnlineUsers">listOnlineUsers</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
+        <li class="item" data-name="QB.chat.privacylist">
+            <span class="title">
+                <a href="QB.chat.privacylist.html">QB.chat.privacylist</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.chat.privacylist.create"><a href="QB.chat.privacylist.html#.create">create</a></li>
+            
+                <li data-name="QB.chat.privacylist.delete"><a href="QB.chat.privacylist.html#.delete">delete</a></li>
+            
+                <li data-name="QB.chat.privacylist.getList"><a href="QB.chat.privacylist.html#.getList">getList</a></li>
+            
+                <li data-name="QB.chat.privacylist.getNames"><a href="QB.chat.privacylist.html#.getNames">getNames</a></li>
+            
+                <li data-name="QB.chat.privacylist.setAsActive"><a href="QB.chat.privacylist.html#.setAsActive">setAsActive</a></li>
+            
+                <li data-name="QB.chat.privacylist.setAsDefault"><a href="QB.chat.privacylist.html#.setAsDefault">setAsDefault</a></li>
+            
+                <li data-name="QB.chat.privacylist.update"><a href="QB.chat.privacylist.html#.update">update</a></li>
+            
             </ul>
             <ul class="events itemMembers">
             
@@ -261,6 +306,427 @@
     
     
     
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".join">
+            
+            <span class="type-signature static">static</span>QB.chat.muc.join<span class="signature">(dialogJid, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1286
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Join to the group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogJid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use dialog jid to join to this dialog.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#joinMacCallback">joinMacCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".leave">
+            
+            <span class="type-signature static">static</span>QB.chat.muc.leave<span class="signature">(dialogJid, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1332
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Leave group chat dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogJid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use dialog jid to join to this dialog.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#leaveMacCallback">leaveMacCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".listOnlineUsers">
+            
+            <span class="type-signature static">static</span>QB.chat.muc.listOnlineUsers<span class="signature">(dialogJid, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1375
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Leave group chat dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogJid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Use dialog jid to join to this dialog.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#listOnlineUsersMacCallback">listOnlineUsersMacCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
     
     
     
@@ -276,7 +742,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Nov 30 2016 15:51:27 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 02 2016 19:06:57 GMT+0200 (EET)
         </footer>
     </div>
 </div>
