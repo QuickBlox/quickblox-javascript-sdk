@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: privacylist</title>
+    <title>Namespace: message</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -355,7 +355,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.privacylist.html">Namespace: privacylist</h1>
+        <h1 class="page-title" data-filename="QB.chat.message.html">Namespace: message</h1>
         
 
 
@@ -366,7 +366,7 @@
     <h2>
         <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
     
-    privacylist
+    message
     </h2>
     
 </header>  
@@ -429,12 +429,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.create<span class="signature">(list, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1454
+            modules/qbChat.js, line 2138
         </div>
         
     </div>
@@ -445,7 +445,7 @@
     
     
     <div class="description">
-        Create a privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list">More info.</a>
+        Create message. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Put_chat_messages_to_history">More info.</a>
     </div>
     
 
@@ -476,7 +476,7 @@
 	
         <tr>
             
-                <td class="name"><code>list</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
@@ -492,7 +492,7 @@
             
             <td class="description last">
                 
-                privacy list object.</td>
+                Object of parameters.</td>
         </tr>
 	
 	
@@ -505,7 +505,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createPrivacylistCallback">createPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#createMessageCallback">createMessageCallback</a></span>
 
 
             
@@ -568,12 +568,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.delete<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.delete<span class="signature">(id, params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1831
+            modules/qbChat.js, line 2189
         </div>
         
     </div>
@@ -584,7 +584,7 @@
     
     
     <div class="description">
-        Delete privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list">More info.</a>
+        Delete message. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_chat_messages">More info.</a>
     </div>
     
 
@@ -615,7 +615,7 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
@@ -631,7 +631,30 @@
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                The message id.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters.</td>
         </tr>
 	
 	
@@ -644,7 +667,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deletePrivacylistCallback">deletePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deleteMessageCallback">deleteMessageCallback</a></span>
 
 
             
@@ -705,14 +728,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getList">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getList<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.list<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1610
+            modules/qbChat.js, line 2116
         </div>
         
     </div>
@@ -723,7 +746,7 @@
     
     
     <div class="description">
-        Get the privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list">More info.</a>
+        get a chat history. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#List_chat_messages">More info.</a>
     </div>
     
 
@@ -754,13 +777,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Object</span>
 
 
             
@@ -770,7 +793,7 @@
             
             <td class="description last">
                 
-                The name of the list.</td>
+                Object of parameters.</td>
         </tr>
 	
 	
@@ -783,7 +806,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getListPrivacylistCallback">getListPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#listMessageCallback">listMessageCallback</a></span>
 
 
             
@@ -844,14 +867,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getNames">
+        <h4 class="name" id=".unreadCount">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getNames<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.unreadCount<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1736
+            modules/qbChat.js, line 2220
         </div>
         
     </div>
@@ -862,8 +885,7 @@
     
     
     <div class="description">
-        Get names of privacy lists. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names">More info.</a>
-Run without parameters
+        Get unread messages counter for one or group of dialogs. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Unread_messages_count">More info.</a>
     </div>
     
 
@@ -894,13 +916,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getNamesPrivacylistCallback">getNamesPrivacylistCallback</a></span>
+<span class="param-type">Object</span>
 
 
             
@@ -910,123 +932,7 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1923
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
+                Object of parameters.</td>
         </tr>
 	
 	
@@ -1039,146 +945,7 @@ Run without parameters
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".setAsDefault">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1866
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Set as default privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#setAsDefaultPrivacylistCallback">setAsDefaultPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#unreadCountMessageCallback">unreadCountMessageCallback</a></span>
 
 
             
@@ -1241,12 +1008,12 @@ Run without parameters
     <div class="nameContainer">
         <h4 class="name" id=".update">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.update<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.update<span class="signature">(id, params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1697
+            modules/qbChat.js, line 2162
         </div>
         
     </div>
@@ -1257,7 +1024,7 @@ Run without parameters
     
     
     <div class="description">
-        Update the privacy list.
+        Update message. <a target="_blank" href="http://quickblox.com/developers/Chat#Update_message">More info.</a>
     </div>
     
 
@@ -1288,7 +1055,7 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
@@ -1304,7 +1071,30 @@ Run without parameters
             
             <td class="description last">
                 
-                The name of the list.</td>
+                The message id.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters. You can set change read, delivered or message parameter.</td>
         </tr>
 	
 	
@@ -1317,7 +1107,7 @@ Run without parameters
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#updatePrivacylistCallback">updatePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#updateMessageCallback">updateMessageCallback</a></span>
 
 
             
