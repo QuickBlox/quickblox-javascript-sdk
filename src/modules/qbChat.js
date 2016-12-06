@@ -67,17 +67,20 @@ function ChatProxy(service, webrtcModule, conn) {
     this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
-        this.streamManagement = new StreamManagement(config.streamManagement);
-
-        self._sentMessageCallback = function(messageLost, messageSent){
-            if(typeof self.onSentMessageCallback === 'function'){
-                if(messageSent){
-                    self.onSentMessageCallback(null, messageSent);
-                } else {
-                    self.onSentMessageCallback(messageLost);
+        if(config.chatProtocol.active === 2){
+            this.streamManagement = new StreamManagement(config.streamManagement);
+            self._sentMessageCallback = function(messageLost, messageSent){
+                if(typeof self.onSentMessageCallback === 'function'){
+                    if(messageSent){
+                        self.onSentMessageCallback(null, messageSent);
+                    } else {
+                        self.onSentMessageCallback(messageLost);
+                    }
                 }
-            }
-        };
+            };
+        } else {
+            console.warn('[QBchat] StreamManagement:', 'Stream management does not supported by BOSH protocol. Set WebSocket as the "chatProtocol" parameter to use this functionality. http://quickblox.com/developers/Javascript#Configuration');
+        }
     }
 
 /**
@@ -543,7 +546,7 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
-                        if(config.streamManagement.enable){
+                        if(config.streamManagement.enable && config.chatProtocol.active === 2){
                             self.streamManagement.enable(connection, null);
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                         }
