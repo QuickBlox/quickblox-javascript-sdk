@@ -32,7 +32,7 @@
                     }
                 }
             };
-
+        var isAudio = false;
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
@@ -358,10 +358,23 @@
                 }
 
                 app.helpers.stateBoard.update({'title': 'create_session'});
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
+                isAudio = this.getAttribute('data-call') === 'audio';
+
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+
+                if(isAudio) {
+                    mediaParams = {
+                        audio: true,
+                        video: false
+                    };
+                    document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                    document.querySelector('.j-actions[data-call="video"]').setAttribute('j-caller__ctrl', true);
+                } else {
+                    document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+                }
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
                         var errorMsg = '';
 
                         app.currentSession.stop({});
@@ -374,6 +387,12 @@
                             }
                         });
                     } else {
+                        var callParameters = {};
+
+                        if(isAudio){
+                            callParameters.callType = 2
+                        }
+
                         app.currentSession.call({}, function(error) {
                             if(error) {
                                 console.warn(error.detail);
@@ -382,7 +401,7 @@
 
                                 app.helpers.stateBoard.update({'title': 'calling'});
 
-                                document.getElementById(sounds.call).play();
+                                // document.getElementById(sounds.call).play();
 
                                 Object.keys(app.callees).forEach(function(id, i, arr) {
                                     videoElems += compiled({
@@ -716,6 +735,9 @@
                     app.helpers.network = {};
                 }
             }
+
+            document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
+            document.querySelector('.j-caller__ctrl').removeAttribute('disabled');
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
