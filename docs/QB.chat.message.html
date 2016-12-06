@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: QB</title>
+    <title>Namespace: message</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -355,7 +355,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.html">Namespace: QB</h1>
+        <h1 class="page-title" data-filename="QB.chat.message.html">Namespace: message</h1>
         
 
 
@@ -364,7 +364,9 @@
     
 <header>
     <h2>
-    QB
+        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
+    
+    message
     </h2>
     
 </header>  
@@ -415,108 +417,7 @@
     
     
     
-        <h3 class="subsection-title">Namespaces</h3>
-        
-        <dl>
-            <dt><a href="namespaces.html#QB.chat"><a href="QB.chat.html">chat</a></a></dt>
-            <dd></dd>
-        </dl>
     
-    
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".this.buildNumber"><span class="type-signature static">static</span>QB.this.buildNumber</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Return current build number of QuickBlox JavaScript SDK
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".this.version"><span class="type-signature static">static</span>QB.this.version</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Return current version of QuickBlox JavaScript SDK
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
     
     
     
@@ -526,14 +427,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".createSession">
+        <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.createSession<span class="signature">(appIdOrToken, callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            qbMain.js, line 117
+            modules/qbChat.js, line 2138
         </div>
         
     </div>
@@ -544,565 +445,7 @@
     
     
     <div class="description">
-        Creat new session. <a target="_blank" href="https://quickblox.com/developers/Javascript#Authorization">More info</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>appIdOrToken</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Should be applecationID or QBtoken.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">createSessionCallback</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                -</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".destroySession">
-            
-            <span class="type-signature static">static</span>QB.destroySession<span class="signature">(callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 132
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Destroy current session.  <a target="_blank" href="https://quickblox.com/developers/Authentication_and_Authorization#API_Session_Destroy">More info</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#destroySessionCallback">destroySessionCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The destroySessionCallback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getSession">
-            
-            <span class="type-signature static">static</span>QB.getSession<span class="signature">(callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 101
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Return current session
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#getSessionCallback">getSessionCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The getSessionCallback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".init">
-            
-            <span class="type-signature static">static</span>QB.init<span class="signature">(appIdOrToken, authKeyOrAppId, authSecret, configMap)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 27
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>appIdOrToken</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-|
-
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Application ID (from your admin panel) or Session Token.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>authKeyOrAppId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Authorization key or Application ID. You need to set up Application ID if you use session token as appIdOrToken parameter.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>authSecret</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Authorization secret key (from your admin panel).</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>configMap</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Settings object for QuickBlox SDK.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".login">
-            
-            <span class="type-signature static">static</span>QB.login<span class="signature">(params, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            qbMain.js, line 148
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Login to QuickBlox application. <a target="_blank" href="https://quickblox.com/developers/Javascript#Authorization">More info</a>
+        Create message. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Put_chat_messages_to_history">More info.</a>
     </div>
     
 
@@ -1149,7 +492,7 @@
             
             <td class="description last">
                 
-                Params object for login into the session.</td>
+                Object of parameters.</td>
         </tr>
 	
 	
@@ -1162,7 +505,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#loginCallback">loginCallback</a></span>
+<span class="param-type"><a href="global.html#createMessageCallback">createMessageCallback</a></span>
 
 
             
@@ -1172,7 +515,7 @@
             
             <td class="description last">
                 
-                The loginCallback function.</td>
+                The callback function.</td>
         </tr>
 	
 	
@@ -1223,14 +566,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".logout">
+        <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.logout<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.chat.message.delete<span class="signature">(id, params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            qbMain.js, line 163
+            modules/qbChat.js, line 2189
         </div>
         
     </div>
@@ -1241,7 +584,7 @@
     
     
     <div class="description">
-        Remove user from current session, but doesn't destroy it.
+        Delete message. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_chat_messages">More info.</a>
     </div>
     
 
@@ -1272,13 +615,13 @@
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#logoutCallback">logoutCallback</a></span>
+<span class="param-type">String</span>
 
 
             
@@ -1288,7 +631,493 @@
             
             <td class="description last">
                 
-                The logoutCallback function.</td>
+                The message id.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#deleteMessageCallback">deleteMessageCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".list">
+            
+            <span class="type-signature static">static</span>QB.chat.message.list<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 2116
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        get a chat history. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#List_chat_messages">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#listMessageCallback">listMessageCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".unreadCount">
+            
+            <span class="type-signature static">static</span>QB.chat.message.unreadCount<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 2220
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get unread messages counter for one or group of dialogs. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Unread_messages_count">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#unreadCountMessageCallback">unreadCountMessageCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".update">
+            
+            <span class="type-signature static">static</span>QB.chat.message.update<span class="signature">(id, params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 2162
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Update message. <a target="_blank" href="http://quickblox.com/developers/Chat#Update_message">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The message id.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters. You can set change read, delivered or message parameter.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#updateMessageCallback">updateMessageCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The callback function.</td>
         </tr>
 	
 	
