@@ -1276,14 +1276,27 @@ function MucProxy(service) {
 }
 
 MucProxy.prototype = {
-    join: function(jid, callback) {
+
+    /**
+     * Join to the group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {joinMacCallback} callback - The callback function.
+     * */
+    join: function(dialogJid, callback) {
+        /**
+         * Callback for QB.chat.muc.join().
+         * @param {Object} resultStanza - Returns the stanza.
+         * @callback joinMacCallback
+         * */
+
         var self = this,
             id = chatUtils.getUniqueId('join');
 
         var presParams = {
                 id: id,
                 from: userCurrentJid,
-                to: self.helpers.getRoomJid(jid)
+                to: self.helpers.getRoomJid(dialogJid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1293,7 +1306,7 @@ MucProxy.prototype = {
             xmlns: chatUtils.MARKERS.MUC
         }).c('history', { maxstanzas: 0 });
 
-        joinedRooms[jid] = true;
+        joinedRooms[dialogJid] = true;
 
         if (Utils.getEnv().browser) {
             if (typeof callback === 'function') {
@@ -1309,7 +1322,20 @@ MucProxy.prototype = {
             nClient.send(pres);
         }
     },
+
+    /**
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {leaveMacCallback} callback - The callback function.
+     * */
     leave: function(jid, callback) {
+        /**
+         * Callback for QB.chat.muc.leave().
+         * run without parameters;
+         * @callback leaveMacCallback
+         * */
+
         var self = this,
             presParams = {
                 type: 'unavailable',
@@ -1339,7 +1365,20 @@ MucProxy.prototype = {
             nClient.send(pres);
         }
     },
+
+    /**
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
+     * @memberof QB.chat.muc
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {listOnlineUsersMacCallback} callback - The callback function.
+     * */
     listOnlineUsers: function(dialogJID, callback) {
+        /**
+         * Callback for QB.chat.muc.leave().
+         * @param {Object} Users - list of online users
+         * @callback listOnlineUsersMacCallback
+         * */
+
         var self = this,
             onlineUsers = [];
 
@@ -1402,8 +1441,22 @@ function PrivacyListProxy(service) {
     this.helpers = new Helpers();
 }
 
+/**
+ * @namespace QB.chat.privacylist
+ **/
 PrivacyListProxy.prototype = {
+    /**
+     * Create a privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list More info.}
+     * @memberof QB.chat.privacylist
+     * @param {Object} list - privacy list object.
+     * @param {createPrivacylistCallback} callback - The callback function.
+     * */
     create: function(list, callback) {
+        /**
+         * Callback for QB.chat.privacylist.create().
+         * @param {Object} error - The error object
+         * @callback createPrivacylistCallback
+         * */
         var self = this,
             userId, userJid, userMuc,
             userAction,
@@ -1547,7 +1600,21 @@ PrivacyListProxy.prototype = {
             };
         }
     },
+
+    /**
+     * Get the privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list More info.}
+     * @memberof QB.chat.privacylist
+     * @param {String} name - The name of the list.
+     * @param {getListPrivacylistCallback} callback - The callback function.
+     * */
     getList: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.getList().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
+         * @callback getListPrivacylistCallback
+         * */
+
         var self = this,
             items, userJid, userId,
             usersList = [], list = {};
@@ -1620,7 +1687,21 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Update the privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {String} name - The name of the list.
+     * @param {updatePrivacylistCallback} callback - The callback function.
+     * */
     update: function(list, callback) {
+        /**
+         * Callback for QB.chat.privacylist.update().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
+         * @callback updatePrivacylistCallback
+         * */
+
         var self = this;
 
         self.getList(list.name, function(error, response) {
@@ -1645,7 +1726,21 @@ PrivacyListProxy.prototype = {
             }
         });
     },
+
+    /**
+     * Get names of privacy lists. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names More info.}
+     * Run without parameters
+     * @memberof QB.chat.privacylist
+     * @param {getNamesPrivacylistCallback} callback - The callback function.
+     * */
     getNames: function(callback) {
+        /**
+         * Callback for QB.chat.privacylist.getNames().
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object (var names = response.names;)
+         * @callback getNamesPrivacylistCallback
+         * */
+
         var self = this,
             iq,
             stanzaParams = {
@@ -1726,7 +1821,20 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Delete privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {deletePrivacylistCallback} callback - The callback function.
+     * */
     delete: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.delete().
+         * @param {Object} error - The error object
+         * @callback deletePrivacylistCallback
+         * */
+
         var iq = $iq({
             from: connection.jid,
             type: 'set',
@@ -1748,7 +1856,20 @@ PrivacyListProxy.prototype = {
             }
         });
     },
+
+    /**
+     * Set as default privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {setAsDefaultPrivacylistCallback} callback - The callback function.
+     * */
     setAsDefault: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.setAsDefault().
+         * @param {Object} error - The error object
+         * @callback setAsDefaultPrivacylistCallback
+         * */
+
         var iq,
             stanzaParams = {
                 'from': connection ? connection.jid : nClient.jid.user,
@@ -1792,7 +1913,20 @@ PrivacyListProxy.prototype = {
             nClient.send(iq);
         }
     },
+
+    /**
+     * Set as active privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
+     * @param {String} name - The name of privacy list.
+     * @memberof QB.chat.privacylist
+     * @param {setAsActivePrivacylistCallback} callback - The callback function.
+     * */
     setAsActive: function(name, callback) {
+        /**
+         * Callback for QB.chat.privacylist.setAsActive().
+         * @param {Object} error - The error object
+         * @callback setAsActivePrivacylistCallback
+         * */
+
         var iq,
             stanzaParams = {
             'from': connection ? connection.jid : nClient.jid.user,
@@ -1839,7 +1973,7 @@ PrivacyListProxy.prototype = {
     }
 };
 
-/**
+/*
  * DialogProxy
  */
 function DialogProxy(service) {
@@ -1847,8 +1981,24 @@ function DialogProxy(service) {
     this.helpers = new Helpers();
 }
 
+/**
+ * @namespace QB.chat.dialog
+ **/
 DialogProxy.prototype = {
+    /**
+     * Retrieve list of dialogs. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_list_of_dialogs More info.}
+     * @memberof QB.chat.dialog
+     * @param {Object} params - Some filters to get only chat dialogs you need.
+     * @param {listDialogCallback} callback - The callback function.
+     * */
     list: function(params, callback) {
+        /**
+         * Callback for QB.chat.dialog.list().
+         * @param {Object} error - The error object
+         * @param {Object} resDialogs - the dialog list
+         * @callback listDialogCallback
+         * */
+
         if (typeof params === 'function' && typeof callback === 'undefined') {
             callback = params;
             params = {};
@@ -1861,7 +2011,21 @@ DialogProxy.prototype = {
             data: params
         }, callback);
     },
+
+    /**
+     * Create new dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
+     * @memberof QB.chat.dialog
+     * @param {Object} params - Object of parameters.
+     * @param {createDialogCallback} callback - The callback function.
+     * */
     create: function(params, callback) {
+        /**
+         * Callback for QB.chat.dialog.create().
+         * @param {Object} error - The error object
+         * @param {Object} createdDialog - the dialog object
+         * @callback createDialogCallback
+         * */
+
         if (params.occupants_ids instanceof Array) {
             params.occupants_ids = params.occupants_ids.join(', ');
         }
@@ -1874,7 +2038,22 @@ DialogProxy.prototype = {
             data: params
         }, callback);
     },
+
+    /**
+     * Update group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Update_group_dialog More info.}
+     * @memberof QB.chat.dialog
+     * @param {String} id - The dialog ID.
+     * @param {Object} params - Object of parameters.
+     * @param {updateDialogCallback} callback - The callback function.
+     * */
     update: function(id, params, callback) {
+        /**
+         * Callback for QB.chat.dialog.update()
+         * @param {Object} error - The error object
+         * @param {Object} res - the dialog object
+         * @callback updateDialogCallback
+         * */
+
         Utils.QBLog('[DialogProxy]', 'update', params);
 
         this.service.ajax({
@@ -1883,7 +2062,21 @@ DialogProxy.prototype = {
             data: params
         }, callback);
     },
+
+    /**
+     * Delete a dialog or dialogs. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_dialog More info.}
+     * @memberof QB.chat.dialog
+     * @param {Array} id - The dialog IDs array.
+     * @param {Object | function} params_or_callback - Object of parameters or callback function.
+     * @param {deleteDialogCallback} callback - The callback function.
+     * */
     delete: function(id, params_or_callback, callback) {
+        /**
+         * Callback for QB.chat.dialog.delete()
+         * @param {Object} error - The error object
+         * @callback deleteDialogCallback
+         * */
+
         var ajaxParams = {
             url: Utils.getUrl(dialogUrl, id),
             type: 'DELETE',
@@ -1910,8 +2103,24 @@ function MessageProxy(service) {
     this.helpers = new Helpers();
 }
 
+/**
+ * @namespace QB.chat.message
+ **/
 MessageProxy.prototype = {
+    /**
+     * get a chat history. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#List_chat_messages More info.}
+     * @memberof QB.chat.message
+     * @param {Object} params - Object of parameters.
+     * @param {listMessageCallback} callback - The callback function.
+     * */
     list: function(params, callback) {
+        /**
+         * Callback for QB.chat.message.list()
+         * @param {Object} error - The error object
+         * @param {Object} messages - The messages object.
+         * @callback listMessageCallback
+         * */
+
         Utils.QBLog('[MessageProxy]', 'list', params);
 
         this.service.ajax({
@@ -1919,7 +2128,21 @@ MessageProxy.prototype = {
             data: params
         }, callback);
     },
+
+    /**
+     * Create message. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Put_chat_messages_to_history More info.}
+     * @memberof QB.chat.message
+     * @param {Object} params - Object of parameters.
+     * @param {createMessageCallback} callback - The callback function.
+     * */
     create: function(params, callback) {
+        /**
+         * Callback for QB.chat.message.create()
+         * @param {Object} error - The error object
+         * @param {Object} messages - The message object.
+         * @callback createMessageCallback
+         * */
+
         Utils.QBLog('[MessageProxy]', 'create', params);
 
         this.service.ajax({
@@ -1928,7 +2151,22 @@ MessageProxy.prototype = {
             data: params
         }, callback);
     },
+
+    /**
+     * Update message. {@link http://quickblox.com/developers/Chat#Update_message More info.}
+     * @memberof QB.chat.message
+     * @param {String} id - The message id.
+     * @param {Object} params - Object of parameters. You can set change read, delivered or message parameter.
+     * @param {updateMessageCallback} callback - The callback function.
+     * */
     update: function(id, params, callback) {
+        /**
+         * Callback for QB.chat.message.update()
+         * @param {Object} error - The error object
+         * @param {Object} messages - The message object.
+         * @callback updateMessageCallback
+         * */
+
         var attrAjax = {
             'type': 'PUT',
             'dataType': 'text',
@@ -1940,7 +2178,22 @@ MessageProxy.prototype = {
 
         this.service.ajax(attrAjax, callback);
     },
+
+    /**
+     * Delete message. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_chat_messages More info.}
+     * @memberof QB.chat.message
+     * @param {String} id - The message id.
+     * @param {Object} params - Object of parameters.
+     * @param {deleteMessageCallback} callback - The callback function.
+     * */
     delete: function(id, params_or_callback, callback) {
+        /**
+         * Callback for QB.chat.message.delete()
+         * @param {Object} error - The error object.
+         * @param {String} res - Empty string.
+         * @callback deleteMessageCallback
+         * */
+
         var ajaxParams = {
                 url: Utils.getUrl(messageUrl, id),
                 type: 'DELETE',
@@ -1957,7 +2210,21 @@ MessageProxy.prototype = {
             this.service.ajax(ajaxParams, callback);
         }
     },
+
+    /**
+     * Get unread messages counter for one or group of dialogs. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Unread_messages_count More info.}
+     * @memberof QB.chat.message
+     * @param {Object} params - Object of parameters.
+     * @param {unreadCountMessageCallback} callback - The callback function.
+     * */
     unreadCount: function(params, callback) {
+        /**
+         * Callback for QB.chat.message.unreadCount()
+         * @param {Object} error - The error object.
+         * @param {Object} res - The requested dialogs Object.
+         * @callback unreadCountMessageCallback
+         * */
+
         Utils.QBLog('[MessageProxy]', 'unreadCount', params);
 
         this.service.ajax({
@@ -1971,9 +2238,25 @@ MessageProxy.prototype = {
 /* Helpers
 ----------------------------------------------------------------------------- */
 function Helpers() {}
-
+/**
+ * @namespace QB.chat.helpers
+ * */
 Helpers.prototype = {
+
+    /**
+     * Get unique id.
+     * @memberof QB.chat.helpers
+     * @param {String | Number} suffix - not required parameter.
+     * @returns {String} - UniqueId.
+     * */
     getUniqueId: chatUtils.getUniqueId,
+
+    /**
+     * Get unique id.
+     * @memberof QB.chat.helpers
+     * @param {String | Number} jid_or_user_id - Jid or user id.
+     * @returns {String} - jid.
+     * */
     jidOrUserId: function(jid_or_user_id) {
         var jid;
         if (typeof jid_or_user_id === 'string') {
@@ -1986,6 +2269,12 @@ Helpers.prototype = {
         return jid;
     },
 
+    /**
+     * Get the chat type.
+     * @memberof QB.chat.helpers
+     * @param {String | Number} jid_or_user_id - Jid or user id.
+     * @returns {String} - jid.
+     * */
     typeChat: function(jid_or_user_id) {
         var chatType;
         if (typeof jid_or_user_id === 'string') {
@@ -1998,9 +2287,16 @@ Helpers.prototype = {
         return chatType;
     },
 
+    /**
+     * Get the recipint id.
+     * @memberof QB.chat.helpers
+     * @param {Array} occupantsIds - Array of user ids.
+     * @param {Number} UserId - Jid or user id.
+     * @returns {Number} recipient - recipient id.
+     * */
     getRecipientId: function(occupantsIds, UserId) {
         var recipient = null;
-        occupantsIds.forEach(function(item, i, arr) {
+        occupantsIds.forEach(function(item) {
             if(item != UserId){
                 recipient = item;
             }
@@ -2008,6 +2304,13 @@ Helpers.prototype = {
         return recipient;
     },
 
+    /**
+     * Get the User jid id.
+     * @memberof QB.chat.helpers
+     * @param {Number} UserId - The user id.
+     * @param {Number} appId - The application id.
+     * @returns {String} jid - The user jid.
+     * */
     getUserJid: function(userId, appId) {
         if(!appId){
             return userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
@@ -2015,38 +2318,86 @@ Helpers.prototype = {
         return userId + '-' + appId + '@' + config.endpoints.chat;
     },
 
+    /**
+     * Get the User nick with the muc domain.
+     * @memberof QB.chat.helpers
+     * @param {Number} UserId - The user id.
+     * @returns {String} mucDomainWithNick - The mac domain with he nick.
+     * */
     getUserNickWithMucDomain: function(userId) {
         return config.endpoints.muc + '/' + userId;
     },
 
+    /**
+     * Get the User id from jid.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - The user jid.
+     * @returns {Number} id - The user id.
+     * */
     getIdFromNode: function(jid) {
         if (jid.indexOf('@') < 0) return null;
         return parseInt(jid.split('@')[0].split('-')[0]);
     },
 
+    /**
+     * Get the dialog id from jid.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - The dialog jid.
+     * @returns {String} dialogId - The dialog id.
+     * */
     getDialogIdFromNode: function(jid) {
         if (jid.indexOf('@') < 0) return null;
         return jid.split('@')[0].split('_')[1];
     },
 
+    /**
+     * Get the room jid from dialog id.
+     * @memberof QB.chat.helpers
+     * @param {String} dialogId - The dialog id.
+     * @returns {String} jid - The dialog jid.
+     * */
     getRoomJidFromDialogId: function(dialogId) {
         return config.creds.appId + '_' + dialogId + '@' + config.endpoints.muc;
     },
 
+    /**
+     * Get the room jid from dialog id.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - The dialog jid.
+     * @returns {String} jid - The room jid.
+     * */
     getRoomJid: function(jid) {
         return jid + '/' + this.getIdFromNode(userCurrentJid);
     },
 
+    /**
+     * Get the room jid from the dialog id.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - resourse jid.
+     * @returns {String} jid - The room jid.
+     * */
     getIdFromResource: function(jid) {
         var s = jid.split('/');
         if (s.length < 2) return null;
         s.splice(0, 1);
         return parseInt(s.join('/'));
     },
+
+    /**
+     * Get the room jid from dialog id.
+     * @memberof QB.chat.helpers
+     * @returns {String} BsonObjectId - The bson object id.
+     **/
     getBsonObjectId: function() {
         return Utils.getBsonObjectId();
     },
 
+    /**
+     * Get the user id from the room jid.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - resourse jid.
+     * @returns {String} userId - The user id.
+     * */
     getUserIdFromRoomJid: function(jid) {
         var arrayElements = jid.toString().split('/');
         if(arrayElements.length === 0){

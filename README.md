@@ -58,9 +58,9 @@ var QB2 = new QuickBlox();
 
 # Browsers support
 
-| IE   | Firefox | Chrome | Safari | Opera | Android Browser | Blackberry Browser | Opera Mobile | Chrome for Android | Firefox for Android |
-|:----:|:-------:|:------:|:------:|:-----:|:---------------:|:------------------:|:------------:|:------------------:|:------------------------:|
-| 10+  |  4+     | 13+    |  6+    |  12+	 |       4.4+	     |         10+        |	     12+	    |         35+        |	         30+             |
+| IE   | Firefox | Chrome | Safari | Opera | Node.js |
+|:----:|:-------:|:------:|:------:|:-----:|:-------:|
+| 10+  |  30+    | 30+    |  7.1+  |  23+  |    4+   |
 
 # Documentation
 
