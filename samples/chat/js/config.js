@@ -6,7 +6,7 @@ var QBApp = {
 
 var config = {
     chatProtocol: {
-        active: 2
+        active: 1
     },
     streamManagement: {
         enable: true
