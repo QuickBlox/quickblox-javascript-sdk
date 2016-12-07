@@ -359,7 +359,7 @@
 
                 app.helpers.stateBoard.update({'title': 'create_session'});
 
-                isAudio = this.getAttribute('data-call') === 'audio';
+                isAudio = $btn.data('call') === 'audio';
 
                 app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
 
@@ -401,7 +401,7 @@
 
                                 app.helpers.stateBoard.update({'title': 'calling'});
 
-                                // document.getElementById(sounds.call).play();
+                                document.getElementById(sounds.call).play();
 
                                 Object.keys(app.callees).forEach(function(id, i, arr) {
                                     videoElems += compiled({
@@ -435,7 +435,7 @@
 
         /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
-            isAudio = app.currentSession.callType === 2;
+            isAudio = app.currentSession.callType === QB.webrtc.CallType.AUDIO;
 
             var $videoSourceFilter = $(ui.sourceFilter),
                 mediaParams;
