@@ -483,6 +483,10 @@ b {
     width: 135px;
 }
 
+.caller__ctrl{
+    height: 100px;
+}
+
 .caller__ctrl_btn {
     width: 100%;
     padding: 10px 20px;

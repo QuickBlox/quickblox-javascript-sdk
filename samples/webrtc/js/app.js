@@ -369,7 +369,7 @@
                         video: false
                     };
                     document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
-                    document.querySelector('.j-actions[data-call="video"]').setAttribute('j-caller__ctrl', true);
+                    document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
                 } else {
                     document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
                 }
@@ -435,7 +435,19 @@
 
         /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
+            isAudio = app.currentSession.callType === 2;
+
             var $videoSourceFilter = $(ui.sourceFilter),
+                mediaParams;
+
+            if(isAudio){
+                mediaParams = {
+                    audio: true,
+                    video: false
+                };
+                document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
+            } else {
                 mediaParams = {
                     audio: true,
                     video: {
@@ -448,14 +460,17 @@
                         muted: true,
                         mirror: true
                     }
-                },
-                videoElems = '';
+                };
+                document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+            }
+
+            var videoElems = '';
 
             $(ui.income_call).modal('hide');
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
                     var errorMsg = '';
 
                     app.currentSession.stop({});
@@ -737,7 +752,7 @@
             }
 
             document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
-            document.querySelector('.j-caller__ctrl').removeAttribute('disabled');
+            document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
