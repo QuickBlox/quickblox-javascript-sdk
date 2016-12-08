@@ -1,0 +1,12 @@
+engines:
+  eslint:
+    enabled: true
+  complexity:
+    enabled: true
+  duplication:
+    enabled: false
+
+exclude_paths:
+- "spec/"
+- "docs/"
+- "samples/"
