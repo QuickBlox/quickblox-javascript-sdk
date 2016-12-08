@@ -1,9 +1,8 @@
+languages:
+  JavaScript: true
 engines:
-  eslint:
+  markdownlint:
     enabled: true
-  duplication:
-    enabled: false
-
 exclude_paths:
 - "spec/"
 - "docs/"
