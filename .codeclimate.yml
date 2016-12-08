@@ -5,6 +5,9 @@ engines:
     enabled: true
   eslint:
     enabled: true
+ratings:
+  paths:
+  - "src/**/*.js"
 exclude_paths:
 - "spec/"
 - "docs/"
