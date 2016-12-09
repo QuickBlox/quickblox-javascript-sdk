@@ -7,11 +7,11 @@
   "rules": {
     "strict": 2,
     "no-alert": 2,
-    "no-labels": 0,
-    "no-empty-label": 0,
-    "no-unused-vars": 0,
-    "no-console": 0,
-    "no-mixed-spaces-and-tabs": 0,
-    "no-extra-boolean-cast": 0
+    "no-labels": 1,
+    "no-empty-label": 1,
+    "no-unused-vars": 1,
+    "no-console": 1,
+    "no-mixed-spaces-and-tabs": 1,
+    "no-extra-boolean-cast": 1
     }
 } 
