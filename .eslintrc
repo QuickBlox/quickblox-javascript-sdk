@@ -5,11 +5,9 @@
     "commonjs": true
   },
   "rules": {
-    "strict": 1,
-    "no-alert": 1,
-    "no-labels": 1,
-    "no-empty-label": 1,
-    "no-unused-vars": 1,
+    "strict": [2, 'global'],
+    "no-alert": 2,
+    "no-unused-vars": 2,
     "no-console": 1,
     "no-mixed-spaces-and-tabs": 1,
     "no-extra-boolean-cast": 1
