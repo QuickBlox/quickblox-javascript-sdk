@@ -5,8 +5,8 @@
     "commonjs": true
   },
   "rules": {
-    "strict": 2,
-    "no-alert": 2,
+    "strict": 1,
+    "no-alert": 1,
     "no-labels": 1,
     "no-empty-label": 1,
     "no-unused-vars": 1,
