@@ -71,49 +71,48 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  * @param {function} A callback to get a result of the function
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    var getUserMedia = navigator.mediaDevices.getUserMedia;
 
-  if(!getUserMedia) {
-    throw new Error('getUserMedia() is not supported in your browser');
-  }
-
-  getUserMedia = getUserMedia.bind(navigator);
-
-  var self = this;
-
-  /**
-   * Additional parameters for Media Constraints
-   * http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
-   *
-   * googEchoCancellation: true
-   * googAutoGainControl: true
-   * googNoiseSuppression: true
-   * googHighpassFilter: true
-   * minWidth: 640
-   * minHeight: 480
-   * maxWidth: 1280
-   * maxHeight: 720
-   * minFrameRate: 60
-   * maxAspectRatio: 1.333
-   */
-
-  getUserMedia(
-    {
-      audio: params.audio || false,
-      video: params.video || false
-
-    },function(stream) {
-      self.localStream = stream;
-
-      if (params.elemId){
-        self.attachMediaStream(params.elemId, stream, params.options);
-      }
-
-      callback(null, stream);
-    },function(err) {
-      callback(err, null);
+    if(!getUserMedia) {
+       throw new Error('getUserMedia() is not supported in your browser');
     }
-  );
+
+    getUserMedia = getUserMedia.bind(navigator);
+
+    var self = this;
+
+    /**
+     * Additional parameters for Media Constraints
+     * http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
+     *
+     * googEchoCancellation: true
+     * googAutoGainControl: true
+     * googNoiseSuppression: true
+     * googHighpassFilter: true
+     * minWidth: 640
+     * minHeight: 480
+     * maxWidth: 1280
+     * maxHeight: 720
+     * minFrameRate: 60
+     * maxAspectRatio: 1.333
+     */
+
+    getUserMedia({
+        audio: params.audio || false,
+        video: params.video || false
+
+    }).then(function(stream) {
+        self.localStream = stream;
+        console.log('before attach media stream');
+        if (params.elemId){
+          self.attachMediaStream(params.elemId, stream, params.options);
+        }
+
+        callback(null, stream);
+    }).catch(function(err) {
+        console.log('getUser media',err);
+        callback(err, null);
+    });
 };
 
 /**

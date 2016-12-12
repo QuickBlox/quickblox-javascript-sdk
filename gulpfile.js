@@ -24,6 +24,7 @@ gulp.task('build', function () {
     return browserify('./src/qbMain.js', browserifyOpts)
         .bundle()
         .on('error', function(error) {
+            throw new Error(error);
             notify('Failed when create a bundle.');
             this.emit('end');
         })

@@ -12,9 +12,9 @@
 var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
-var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
-var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+var RTCPeerConnection = window.RTCPeerConnection;
+var RTCSessionDescription = window.RTCSessionDescription;
+var RTCIceCandidate = window.RTCIceCandidate;
 var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
@@ -344,23 +344,6 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
  * PRIVATE
  */
 function _getStats(peer, selector, successCallback, errorCallback) {
-    /**
-     * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
-     */
-    if (navigator.mozGetUserMedia) {
-        peer.getStats(selector,
-            function (res) {
-                var items = [];
-                
-                res.forEach(function (result) {
-                    items.push(result);
-                });
-
-                successCallback(items);
-            },
-            errorCallback
-        );
-    } else {
         peer.getStats(function (res) {
             var items = [];
 
@@ -378,7 +361,7 @@ function _getStats(peer, selector, successCallback, errorCallback) {
             });
             successCallback(items);
         });
-    }
+    // }
 }
 
 module.exports = RTCPeerConnection;

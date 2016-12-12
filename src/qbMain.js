@@ -9,8 +9,11 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-
 var isBrowser = typeof window !== 'undefined';
+
+if(isBrowser){
+    require('webrtc-adapter');
+}
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
