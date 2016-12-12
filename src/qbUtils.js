@@ -1,11 +1,6 @@
-'use strict';
+/* eslint no-console: "off" */
 
-/*
- * QuickBlox JavaScript SDK
- *
- * Utilities
- *
- */
+'use strict';
 
 var config = require('./qbConfig');
 
@@ -162,7 +157,7 @@ var Utils = {
             } else if(typeof config.debug.mode === 'object'){
                 var self = this;
                 
-                config.debug.mode.forEach(function(mode, i, arr) {
+                config.debug.mode.forEach(function(mode) {
                     if(mode === 1){
                         logger = consoleLoggerFunction();
                         self.loggers.push(logger);
