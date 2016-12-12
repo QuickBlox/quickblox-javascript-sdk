@@ -78,7 +78,7 @@
     }
   },
   "scripts": {
-    "setDependencies": "npm i && npm install -g gulp-cli && npm install rimraf -g &&npm install -g jasmine",
+    "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "develop": "cross-env NODE_ENV=develop gulp",
     "build": "npm run lint && gulp build && gulp minify",

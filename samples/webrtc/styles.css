@@ -484,10 +484,14 @@ b {
     width: 135px;
 }
 
+.caller__ctrl{
+    height: 100px;
+}
+
 .caller__ctrl_btn {
     width: 100%;
-    padding: 10px 25px;
-
+    padding: 10px 20px;
+    margin: 0 0 10px 0;
     font-size: 18px;
     font-weight: 600;
     color: #025fca;
@@ -498,8 +502,11 @@ b {
 
     transition: all .3s ease;
 }
-    .caller__ctrl_btn:before {
-        content: 'Start Call'
+    .caller__ctrl_btn.m-video_call:before {
+        content: 'Video Call'
+    }
+    .caller__ctrl_btn.m-audio_call:before {
+        content: 'Audio Call'
     }
     .caller__ctrl_btn:hover {
         background: #025fca;

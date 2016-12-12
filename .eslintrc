@@ -1,0 +1,15 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "commonjs": true
+  },
+  "rules": {
+    "strict": [2, 'global'],
+    "no-alert": 2,
+    "no-unused-vars": 2,
+    "no-console": 1,
+    "no-mixed-spaces-and-tabs": 1,
+    "no-extra-boolean-cast": 1
+    }
+} 
