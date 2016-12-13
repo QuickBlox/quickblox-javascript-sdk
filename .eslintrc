@@ -6,8 +6,10 @@
   },
   "rules": {
     "strict": [2, 'global'],
+    "no-unused-vars": ["error", { "vars": "all", "args": "none" }],
+    "no-labels": 0,
+    "no-empty-label": 0,
     "no-alert": 2,
-    "no-unused-vars": 2,
     "no-console": 1,
     "no-mixed-spaces-and-tabs": 1,
     "no-extra-boolean-cast": 1
