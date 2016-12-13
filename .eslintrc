@@ -5,7 +5,7 @@
     "commonjs": true
   },
   "rules": {
-    "strict": [2, 'global'],
+    "strict": [2, "global"],
     "no-unused-vars": ["error", { "vars": "all", "args": "none" }],
     "no-labels": 0,
     "no-empty-label": 0,
