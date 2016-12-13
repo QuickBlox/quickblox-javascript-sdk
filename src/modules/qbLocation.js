@@ -2,17 +2,18 @@
 
 /*
  * QuickBlox JavaScript SDK
- *
  * Location module
- *
  */
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
 var geoFindUrl = config.urls.geodata + '/find';
+var deprecatedMsg = 'Avoid using it, this feature wii be removed in future version.';
 
-function LocationProxy(service){
+function LocationProxy(service) {
+  Utils.QBLog('Deprecated!', deprecatedMsg + 'Instread of it use Custom Object (https://quickblox.com/developers/Sample-customobjects-javascript)');
+
   this.service = service;
   this.geodata = new GeoProxy(service);
 }
@@ -22,9 +23,9 @@ function GeoProxy(service){
 }
 
 GeoProxy.prototype = {
-  
   create: function(params, callback){
     Utils.QBLog('[GeoProxy]', 'create', params);
+    Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
       if (err){ callback(err, null); }
@@ -33,6 +34,8 @@ GeoProxy.prototype = {
   },
 
   update: function(params, callback){
+    Utils.QBLog('Deprecated!', deprecatedMsg);
+
     var allowedProps = ['longitude', 'latitude', 'status'], prop, msg = {};
     for (prop in params) {
       if (params.hasOwnProperty(prop)) {
@@ -53,6 +56,7 @@ GeoProxy.prototype = {
 
   get: function(id, callback){
     Utils.QBLog('[GeoProxy]', 'get', id);
+    Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
        if (err) { callback (err, null); }
@@ -61,6 +65,8 @@ GeoProxy.prototype = {
   },
 
   list: function(params, callback){
+    Utils.QBLog('Deprecated!', deprecatedMsg);
+
     if (typeof params === 'function') {
       callback = params;
       params = undefined;
@@ -73,6 +79,7 @@ GeoProxy.prototype = {
 
   delete: function(id, callback){
     Utils.QBLog('[GeoProxy]', 'delete', id);
+    Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
                      function(err,res){
@@ -83,6 +90,7 @@ GeoProxy.prototype = {
 
   purge: function(days, callback){
     Utils.QBLog('[GeoProxy]', 'purge', days);
+    Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},
                      function(err, res){
@@ -90,7 +98,6 @@ GeoProxy.prototype = {
                       else { callback(null, true);}
                      });
   }
-
 };
 
 module.exports = LocationProxy;
