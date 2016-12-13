@@ -79,7 +79,7 @@ function ChatProxy(service, webrtcModule, conn) {
                 }
             };
         } else {
-            console.warn('[QBchat] StreamManagement:', 'Stream management does not supported by BOSH protocol. Set WebSocket as the "chatProtocol" parameter to use this functionality. http://quickblox.com/developers/Javascript#Configuration');
+            Utils.QBLog('[QBchat] StreamManagement:', 'Stream management does not supported by BOSH protocol. Set WebSocket as the "chatProtocol" parameter to use this functionality. http://quickblox.com/developers/Javascript#Configuration');
         }
     }
 
