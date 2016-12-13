@@ -9,10 +9,10 @@ var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
 var geoFindUrl = config.urls.geodata + '/find';
-var deprecatedMsg = 'Avoid using it, this feature wii be removed in future version.';
+var deprecatedMsg = 'Avoid using it, this feature will be removed in future version. Instread of it use Custom Object (https://quickblox.com/developers/Sample-customobjects-javascript)';
 
 function LocationProxy(service) {
-  Utils.QBLog('Deprecated!', deprecatedMsg + 'Instread of it use Custom Object (https://quickblox.com/developers/Sample-customobjects-javascript)');
+  Utils.QBLog('Deprecated!', deprecatedMsg);
 
   this.service = service;
   this.geodata = new GeoProxy(service);
