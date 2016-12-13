@@ -971,6 +971,8 @@ ChatProxy.prototype = {
     },
 
     addListener: function(params, callback) {
+        Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
+
         if(Utils.getEnv().node) {
             throw new Error(unsupportedError);
         }
@@ -984,6 +986,8 @@ ChatProxy.prototype = {
         }
     },
     deleteListener: function(ref) {
+        Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
+
         if(Utils.getEnv().node) {
             throw new Error(unsupportedError);
         }
