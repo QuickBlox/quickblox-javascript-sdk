@@ -1,0 +1,17 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "commonjs": true
+  },
+  "rules": {
+    "strict": [2, "global"],
+    "no-unused-vars": [2, { "args": "none" }],
+    "no-labels": 0,
+    "no-empty-label": 0,
+    "no-alert": 2,
+    "no-console": 1,
+    "no-mixed-spaces-and-tabs": 1,
+    "no-extra-boolean-cast": 1
+    }
+} 
