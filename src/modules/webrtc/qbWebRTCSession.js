@@ -848,8 +848,4 @@ function _prepareIceServers(iceServers) {
   return iceServersCopy;
 }
 
-function _getLocalTime() {
-    return (new Date()).toTimeString().split(' ')[0];
-}
-
 module.exports = WebRTCSession;
