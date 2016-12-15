@@ -101,7 +101,7 @@ var Utils = {
             for(var i=0;i<this.loggers.length;++i){
                 this.loggers[i](arguments);
             }
-        
+
             return;
         }
 
@@ -127,9 +127,9 @@ var Utils = {
                         data.push(JSON.stringify(args[i]));
                     }
           
-                    data = data.join(" ");
+                    data = data.join(' ');
 
-                    var toLog = "\n" + new Date() + ". " + data;
+                    var toLog = '\n' + new Date() + '. ' + data;
             
                     fs.appendFile(config.debug.file, toLog, function(err) {
                         if(err) {
