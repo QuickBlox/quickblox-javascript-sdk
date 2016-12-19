@@ -71,13 +71,9 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  * @param {function} A callback to get a result of the function
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
-    var getUserMedia = navigator.mediaDevices.getUserMedia;
-
-    if(!getUserMedia) {
+    if(!navigator.mediaDevices.getUserMedia) {
        throw new Error('getUserMedia() is not supported in your browser');
     }
-
-    getUserMedia = getUserMedia.bind(navigator);
 
     var self = this;
 
@@ -97,20 +93,19 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
      * maxAspectRatio: 1.333
      */
 
-    getUserMedia({
+    navigator.mediaDevices.getUserMedia({
         audio: params.audio || false,
         video: params.video || false
 
     }).then(function(stream) {
         self.localStream = stream;
-        console.log('before attach media stream');
         if (params.elemId){
+            console.warn('Add my video');
           self.attachMediaStream(params.elemId, stream, params.options);
         }
 
         callback(null, stream);
     }).catch(function(err) {
-        console.log('getUser media',err);
         callback(err, null);
     });
 };
@@ -121,24 +116,29 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
  * @param {object} The steram to attach
  * @param {object} The additional options
  */
+var counter = 0;
 WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
-  var elem = document.getElementById(id);
+    var elem = document.getElementById(id);
+    if (elem) {
+        var URL = window.URL.createObjectURL(stream);
+        console.info('attach mediastream elem', elem);
+        elem.src = URL;
 
-  if (elem) {
-    var URL = window.URL || window.webkitURL;
-    elem.src = URL.createObjectURL(stream);
+        if (options && options.muted) elem.muted = true;
 
-    if (options && options.muted) elem.muted = true;
+        if (options && options.mirror) {
+            elem.style.webkitTransform = 'scaleX(-1)';
+            elem.style.transform = 'scaleX(-1)';
+        }
 
-    if (options && options.mirror) {
-      elem.style.webkitTransform = 'scaleX(-1)';
-      elem.style.transform = 'scaleX(-1)';
+        counter++;
+        console.log(elem.paused);
+        elem.play();
+        console.log(counter);
+
+    } else {
+        throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
     }
-
-    elem.play();
-  } else {
-    throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
-  }
 };
 
 /**
@@ -148,6 +148,7 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 WebRTCSession.prototype.connectionStateForUser = function(userID){
   var peerConnection = this.peerConnections[userID];
 
+    console.log('connectionStateForUser state',peerConnection.state);
   if(peerConnection){
     return peerConnection.state;
   }
@@ -272,6 +273,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
 
   if(peerConnection){
+
     peerConnection.addLocalStream(this.localStream);
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.getRemoteSDP(), function(error){
@@ -617,6 +619,7 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
  * DELEGATES (peer connection)
  */
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
+    console.log('WebRTCSession.prototype._onRemoteStreamListener',userID, stream);
   if (typeof this.onRemoteStreamListener === 'function'){
     Utils.safeCallbackCall(this.onRemoteStreamListener, this, userID, stream);
   }

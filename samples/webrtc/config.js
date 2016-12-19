@@ -2,7 +2,7 @@
     'use strict';
 
     var CONFIG = {
-        debug: true,
+        debug: false,
         webrtc: {
             answerTimeInterval: 30,
             dialingTimeInterval: 5,

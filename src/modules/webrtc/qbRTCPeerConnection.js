@@ -43,7 +43,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.state = RTCPeerConnection.State.NEW;
 
   this.onicecandidate = this.onIceCandidateCallback;
-  this.onaddstream = this.onAddRemoteStreamCallback;
+  this.ontrack = this.onTrackRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
@@ -180,14 +180,13 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
 };
 
 /** handler of remote media stream */
-RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
-  var self = this;
-
-  if (typeof this.delegate._onRemoteStreamListener === 'function'){
-    this.delegate._onRemoteStreamListener(this.userID, event.stream);
-  }
-
-  self._getStatsWrap();
+RTCPeerConnection.prototype.onTrackRemoteStreamCallback = function(event) {
+    var self = this;
+    console.log('onTrackRemoteStreamCallback',event.streams);
+    if (typeof this.delegate._onRemoteStreamListener === 'function'){
+        this.delegate._onRemoteStreamListener(this.userID, event.streams[0]);
+    }
+    self._getStatsWrap();
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
@@ -254,7 +253,6 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
             Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
             return;
         }
-
         statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
         var _statsReportCallback = function() {
@@ -344,24 +342,17 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
  * PRIVATE
  */
 function _getStats(peer, selector, successCallback, errorCallback) {
-        peer.getStats(function (res) {
-            var items = [];
-
-            res.result().forEach(function (result) {
-                var item = {};
-                
-                result.names().forEach(function (name) {
-                    item[name] = result.stat(name);
-                });
-         
-                item.id = result.id;
-                item.type = result.type;
-                item.timestamp = result.timestamp;
-                items.push(item);
-            });
-            successCallback(items);
+    peer.getStats(selector, function (res) {
+        var items = [];
+        res.forEach(function (result) {
+            var item = {};
+            item.id = result.id;
+            item.type = result.type;
+            item.timestamp = result.timestamp;
+            items.push(item);
         });
-    // }
+        successCallback(items);
+    }, errorCallback);
 }
 
 module.exports = RTCPeerConnection;

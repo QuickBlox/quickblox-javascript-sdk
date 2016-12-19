@@ -190,9 +190,9 @@ var Utils = {
     },
     isWebRTCAvailble: function() {
         /** Shims */
-        var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection,
-            IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate,
-            SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription,
+        var RTCPeerConnection = window.RTCPeerConnection,
+            IceCandidate = window.RTCIceCandidate,
+            SessionDescription = window.RTCSessionDescription,
             isAvaible = true;
 
         if(!RTCPeerConnection || !IceCandidate || !SessionDescription) {

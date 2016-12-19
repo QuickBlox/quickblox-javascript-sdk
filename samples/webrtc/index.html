@@ -20,7 +20,7 @@
         <header class="header">
             <div class="inner">
                 <div class="header__logo">
-                    <img class="header__logo_img" src="images/Logo_qb.svg"></img>
+                    <img class="header__logo_img" src="images/Logo_qb.svg"/>
                 </div>
 
                 <h2 class="header__title">JavaScript WebRTC Sample</h2>
@@ -42,11 +42,11 @@
 
                     <div class="join__body">
                         <div class="join__row">
-                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,19}$">
+                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,19}$" value="user">
                         </div>
 
                         <div class="join__row">
-                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][a-zA-Z0-9]{2,14}$">
+                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][a-zA-Z0-9]{2,14}$" value="jstest">
                         </div>
 
                         <div class="join__row">
@@ -70,18 +70,18 @@
 
         <!-- SOUNDS -->
         <audio id="callingSignal" loop preload="auto">
-            <source src="audio/calling.ogg"></source>
-            <source src="audio/calling.mp3"></source>
+            <source src="audio/calling.ogg" />
+            <source src="audio/calling.mp3" />
         </audio>
 
         <audio id="ringtoneSignal" loop preload="auto">
-            <source src="audio/ringtone.ogg"></source>
-            <source src="audio/ringtone.mp3"></source>
+            <source src="audio/ringtone.ogg" />
+            <source src="audio/ringtone.mp3" />
         </audio>
 
         <audio id="endCallSignal" preload="auto">
-            <source src="audio/end_of_call.ogg"></source>
-            <source src="audio/end_of_call.mp3"></source>
+            <source src="audio/end_of_call.ogg" />
+            <source src="audio/end_of_call.mp3" />
         </audio>
     </div>
 
@@ -363,6 +363,9 @@
 
     <!-- Check our qbMediaRecorder https://github.com/QuickBlox/javascript-media-recorder -->
     <script src="https://unpkg.com/media-recorder-js@0.1.0/mediaRecorder.js"></script>
+
+    <!-- Adapter -->
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
     <!-- QB -->
     <script src="../../quickblox.min.js"></script>
