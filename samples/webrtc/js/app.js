@@ -503,11 +503,10 @@
 
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
-                        console.log('opponents.forEach peerState', peerState);
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({
                                 'userID': userID,
-                                'name': userInfo ? userInfo.full_name : 'Unknown user',
+                                'name': userInfo ? userInfo.full_name : 'userID ' + userID,
                                 'state': app.helpers.getConStateName(peerState)
                             });
 
@@ -744,7 +743,6 @@
                         'name':  app.caller.full_name,
                     }
                 });
-                // app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
             if(ffHack.isFirefox) {
