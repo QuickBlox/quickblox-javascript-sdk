@@ -499,7 +499,6 @@
                         }
                     });
                     opponents.forEach(function(userID, i, arr) {
-                        console.log('opponents.forEach userID', userID);
 
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
