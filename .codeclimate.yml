@@ -1,0 +1,16 @@
+languages:
+  JavaScript: true
+engines:
+  markdownlint:
+    enabled: true
+  eslint:
+    enabled: true
+ratings:
+  paths:
+  - "src/**/*.js"
+exclude_paths:
+- "*.min.*"
+- "spec/"
+- "docs/"
+- "samples/"
+- "src/plugins/jquery.ajax.js"

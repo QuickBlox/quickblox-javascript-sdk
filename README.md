@@ -1,6 +1,7 @@
 # QuickBlox JavaScript SDK
 
 [![travis-ci](https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages)](https://travis-ci.org/QuickBlox/quickblox-javascript-sdk)
+[![Code Climate](https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk/badges/gpa.svg)](https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk)
 [![npm](https://img.shields.io/npm/v/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 [![npm](https://img.shields.io/npm/dm/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 
@@ -8,19 +9,20 @@ The QuickBlox JavaScript SDK provides a JavaScript library making it even easier
 
 [QuickBlox](https://quickblox.com) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.
 
-
 # Install
 
 ## Dependencies for browser
 
 For the library to work, you need to include either [jQuery](http://jquery.com/) or [Zepto](http://zeptojs.com/) in your html before `quickblox.min.js`, like so:
 
-For correct work of JS SDK you must include the  library in your html before `quickblox.min.js`, like so:
+For correct work of JS SDK you must include the library in your html before `quickblox.min.js`, like so:
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.4.0/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.5.0/quickblox.min.js"></script>
 ```
+
+Begin with version 2.5.0 no dependencies for work correctly is not needed.
 
 ## Bower and RequireJS
 
@@ -57,9 +59,9 @@ var QB2 = new QuickBlox();
 
 # Browsers support
 
-| IE   | Firefox | Chrome | Safari | Opera | Android Browser | Blackberry Browser | Opera Mobile | Chrome for Android | Firefox for Android |
-|:----:|:-------:|:------:|:------:|:-----:|:---------------:|:------------------:|:------------:|:------------------:|:------------------------:|
-| 10+  |  4+     | 13+    |  6+    |  12+	 |       4.4+	     |         10+        |	     12+	    |         35+        |	         30+             |
+| IE   | Firefox | Chrome | Safari | Opera | Node.js |
+|:----:|:-------:|:------:|:------:|:-----:|:-------:|
+| 10+  |  30+    | 30+    |  7.1+  |  23+  |    4+   |
 
 # Documentation
 

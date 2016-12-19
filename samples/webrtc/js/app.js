@@ -32,7 +32,7 @@
                     }
                 }
             };
-
+        var isAudio = false;
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
@@ -358,10 +358,23 @@
                 }
 
                 app.helpers.stateBoard.update({'title': 'create_session'});
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
+                isAudio = $btn.data('call') === 'audio';
+
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+
+                if(isAudio) {
+                    mediaParams = {
+                        audio: true,
+                        video: false
+                    };
+                    document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                    document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
+                } else {
+                    document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+                }
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
                         var errorMsg = '';
 
                         app.currentSession.stop({});
@@ -374,6 +387,12 @@
                             }
                         });
                     } else {
+                        var callParameters = {};
+
+                        if(isAudio){
+                            callParameters.callType = 2
+                        }
+
                         app.currentSession.call({}, function(error) {
                             if(error) {
                                 console.warn(error.detail);
@@ -416,25 +435,42 @@
 
         /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
+            isAudio = app.currentSession.callType === QB.webrtc.CallType.AUDIO;
+
             var $videoSourceFilter = $(ui.sourceFilter),
+                mediaParams;
+
+            if(isAudio){
                 mediaParams = {
-                    'audio': true,
-                    'video': {
-                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
+                    audio: true,
+                    video: false
+                };
+                document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
+            } else {
+                mediaParams = {
+                    audio: true,
+                    video: {
+                        optional: [
+                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
+                        ]
                     },
-                    'options': {
-                        'muted': true,
-                        'mirror': true
-                    },
-                    'elemId': 'localVideo'
-                },
-                videoElems = '';
+                    elemId: 'localVideo',
+                    options: {
+                        muted: true,
+                        mirror: true
+                    }
+                };
+                document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+            }
+
+            var videoElems = '';
 
             $(ui.income_call).modal('hide');
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
                     var errorMsg = '';
 
                     app.currentSession.stop({});
@@ -721,6 +757,9 @@
                     app.helpers.network = {};
                 }
             }
+
+            document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
+            document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
