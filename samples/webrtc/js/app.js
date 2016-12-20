@@ -7,7 +7,6 @@
             'end': 'endCallSignal',
             'rington': 'ringtoneSignal'
         };
-
         var recorder = null;
         var recorderOpts = {
                 callbacks: {
@@ -82,14 +81,14 @@
             app.currentSession.closeConnection(userId);
         }
 
-        /*var ffHack = {
+        var ffHack = {
             waitingReconnectTimer: null,
             waitingReconnectTimeoutCallback: function(userId, cb) {
                 clearTimeout(this.waitingReconnectTimer);
                 cb(userId);
             },
             isFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1
-        };*/
+        };
 
         var Router = Backbone.Router.extend({
             'routes': {
@@ -105,10 +104,10 @@
             },
             'join': function() {
                 /** Before use WebRTC checking WebRTC is avaible */
-                // if (!QB.webrtc) {
-                //     alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
-                //     return;
-                // }
+                if (!QB.webrtc) {
+                    alert('Error: ' + CONFIG.MESSAGES.webrtc_not_avaible);
+                    return;
+                }
 
                 if (!_.isEmpty(app.caller)) {
                     app.router.navigate('dashboard');
@@ -468,7 +467,7 @@
 
             $(ui.income_call).modal('hide');
             document.getElementById(sounds.rington).pause();
-            console.log('ACCEPT THE CALL app.currentSession',app.currentSession);
+
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                 if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
                     var errorMsg = '';
@@ -666,48 +665,48 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
-            // console.group('onCallStatsReport');
-            //     console.log('userId: ', userId);
-            //     console.log('session: ', session);
-            //     console.log('stats: ', stats);
-            // console.groupEnd();
+            console.group('onCallStatsReport');
+                console.log('userId: ', userId);
+                console.log('session: ', session);
+                console.log('stats: ', stats);
+            console.groupEnd();
 
             /**
              * Hack for Firefox
              * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
              */
-            // if(ffHack.isFirefox) {
-            //     var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
-            //         webrtcConf = CONFIG.APP_CONFIG.webrtc,
-            //         timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
-            //
-            //     if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-            //         console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
-            //
-            //         if(recorder) {
-            //             recorder.pause();
-            //         }
-            //
-            //         app.helpers.toggleRemoteVideoView(userId, 'hide');
-            //         $('.j-callee_status_' + userId).text('disconnected');
-            //
-            //         if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
-            //             ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
-            //         }
-            //     } else {
-            //         if(recorder) {
-            //             recorder.resume();
-            //         }
-            //
-            //         if(ffHack.waitingReconnectTimer) {
-            //             clearTimeout(ffHack.waitingReconnectTimer);
-            //             ffHack.waitingReconnectTimer = null;
-            //         }
-            //
-            //         app.helpers.toggleRemoteVideoView(userId, 'show');
-            //         $('.j-callee_status_' + userId).text('connected');
-            //     }
-            // }
+            if(ffHack.isFirefox) {
+                var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
+                    webrtcConf = CONFIG.APP_CONFIG.webrtc,
+                    timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
+
+                if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
+                    console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
+
+                    if(recorder) {
+                        recorder.pause();
+                    }
+
+                    app.helpers.toggleRemoteVideoView(userId, 'hide');
+                    $('.j-callee_status_' + userId).text('disconnected');
+
+                    if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
+                        ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
+                    }
+                } else {
+                    if(recorder) {
+                        recorder.resume();
+                    }
+
+                    if(ffHack.waitingReconnectTimer) {
+                        clearTimeout(ffHack.waitingReconnectTimer);
+                        ffHack.waitingReconnectTimer = null;
+                    }
+
+                    app.helpers.toggleRemoteVideoView(userId, 'show');
+                    $('.j-callee_status_' + userId).text('connected');
+                }
+            }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
@@ -721,9 +720,9 @@
             $(ui.sourceFilter).attr('disabled', false);
             $('.j-callees').empty();
 
-            // if(!ffHack.isFirefox && recorder) {
-            //     recorder.stop();
-            // }
+            if(!ffHack.isFirefox && recorder) {
+                recorder.stop();
+            }
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -741,16 +740,16 @@
                 app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
             }
 
-            // if(ffHack.isFirefox) {
-            //     app.currentSession = {};
-            //     if(call.callTimer) {
-            //         $('#timer').addClass('invisible');
-            //         clearInterval(call.callTimer);
-            //         call.callTimer = null;
-            //         call.callTime = 0;
-            //         app.helpers.network = {};
-            //     }
-            // }
+            if(ffHack.isFirefox) {
+                app.currentSession = {};
+                if(call.callTimer) {
+                    $('#timer').addClass('invisible');
+                    clearInterval(call.callTimer);
+                    call.callTimer = null;
+                    call.callTime = 0;
+                    app.helpers.network = {};
+                }
+            }
 
             document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
             document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
@@ -887,7 +886,8 @@
 
             app.currentSession.peerConnections[userId].stream = stream;
 
-            console.info('onRemoteStreamListener add video to the video element');
+            console.info('onRemoteStreamListener add video to the video element', stream);
+
             app.currentSession.attachMediaStream('remote_video_' + userId, stream);
 
             if( remoteStreamCounter === 0) {

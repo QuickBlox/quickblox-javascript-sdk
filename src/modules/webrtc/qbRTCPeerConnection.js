@@ -43,7 +43,7 @@ RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
   this.state = RTCPeerConnection.State.NEW;
 
   this.onicecandidate = this.onIceCandidateCallback;
-  this.ontrack = this.onTrackRemoteStreamCallback;
+  this.onaddstream = this.onAddRemoteStreamCallback;
   this.onsignalingstatechange = this.onSignalingStateCallback;
   this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
@@ -180,11 +180,11 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
 };
 
 /** handler of remote media stream */
-RTCPeerConnection.prototype.onTrackRemoteStreamCallback = function(event) {
+RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
     var self = this;
-    console.log('onTrackRemoteStreamCallback',event.streams);
+
     if (typeof this.delegate._onRemoteStreamListener === 'function'){
-        this.delegate._onRemoteStreamListener(this.userID, event.streams[0]);
+        this.delegate._onRemoteStreamListener(this.userID, event.stream);
     }
     self._getStatsWrap();
 };

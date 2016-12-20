@@ -100,7 +100,6 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     }).then(function(stream) {
         self.localStream = stream;
         if (params.elemId){
-            console.warn('Add my video');
           self.attachMediaStream(params.elemId, stream, params.options);
         }
 
@@ -116,12 +115,11 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
  * @param {object} The steram to attach
  * @param {object} The additional options
  */
-var counter = 0;
 WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
     if (elem) {
         var URL = window.URL.createObjectURL(stream);
-        console.info('attach mediastream elem', elem);
+
         elem.src = URL;
 
         if (options && options.muted) elem.muted = true;
@@ -131,10 +129,7 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
             elem.style.transform = 'scaleX(-1)';
         }
 
-        counter++;
-        console.log(elem.paused);
         elem.play();
-        console.log(counter);
 
     } else {
         throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
@@ -148,7 +143,6 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 WebRTCSession.prototype.connectionStateForUser = function(userID){
   var peerConnection = this.peerConnections[userID];
 
-    console.log('connectionStateForUser state',peerConnection.state);
   if(peerConnection){
     return peerConnection.state;
   }

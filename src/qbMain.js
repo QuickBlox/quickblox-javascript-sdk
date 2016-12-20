@@ -8,10 +8,10 @@
  */
 
 var isBrowser = typeof window !== 'undefined';
-//
-// if(isBrowser){
-//     require('webrtc-adapter');
-// }
+
+if(isBrowser){
+    require('webrtc-adapter');
+}
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
