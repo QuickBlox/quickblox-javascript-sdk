@@ -117,6 +117,7 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
  */
 WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
+
     if (elem) {
         var URL = window.URL.createObjectURL(stream);
 

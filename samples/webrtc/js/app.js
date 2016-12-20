@@ -7,6 +7,7 @@
             'end': 'endCallSignal',
             'rington': 'ringtoneSignal'
         };
+
         var recorder = null;
         var recorderOpts = {
                 callbacks: {
@@ -449,7 +450,7 @@
                 document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
             } else {
                 mediaParams = {
-                    audio: false,
+                    audio: true,
                     video: {
                         deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
