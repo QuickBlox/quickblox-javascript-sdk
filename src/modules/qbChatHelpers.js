@@ -163,7 +163,9 @@ var qbChatHelpers = {
         }
 
         var extension = {};
-        var dialogId;
+        var dialogId,
+            attach,
+            attributes;
 
         var attachments = [];
 
@@ -171,8 +173,8 @@ var qbChatHelpers = {
             for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
                 // parse attachments
                 if (extraParams.childNodes[i].tagName === 'attachment') {
-                    var attach = {};
-                    var attributes = extraParams.childNodes[i].attributes;
+                    attach = {};
+                    attributes = extraParams.childNodes[i].attributes;
 
                     for (var j = 0, len2 = attributes.length; j < len2; j++) {
                         if (attributes[j].name === 'size'){
@@ -211,12 +213,25 @@ var qbChatHelpers = {
                 }
             }
 
-            if (attachments.length > 0) {
-                extension.attachments = attachments;
-            }
         } else if(utils.getEnv().node) {
             for (var c = 0, lenght = extraParams.children.length; c < lenght; c++) {
-                if(extraParams.children[c].name === 'dialog_id') {
+                if (extraParams.children[c].name === 'attachment') {
+                    attach = {};
+                    attributes = extraParams.children[c].attrs;
+
+                    var attrKeys = Object.keys(attributes);
+
+                    for (var l = 0; l < attrKeys.length; l++) {
+                        if(attrKeys[l] === 'size'){
+                            attach.size = parseInt(attributes.size);
+                        } else {
+                            attach[attrKeys[l]] = attributes[attrKeys[l]];
+                        }
+                    }
+
+                    attachments.push(attach);
+                    
+                } else if (extraParams.children[c].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
                     extension.dialog_id = dialogId;
                 }
@@ -227,6 +242,10 @@ var qbChatHelpers = {
                     extension[child.name] = child.children[0];
                 }
             }
+        }
+
+        if (attachments.length > 0) {
+            extension.attachments = attachments;
         }
 
         if(extension.moduleIdentifier) {
