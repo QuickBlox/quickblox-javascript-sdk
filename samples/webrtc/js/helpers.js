@@ -123,7 +123,7 @@
           } else if(action === 'clear') {
               /** detachMediaStream take videoElementId */
               app.currentSession.detachMediaStream('remote_video_' + userId);
-              $video.removeClass('wait');
+              $video.parents('.j-callee').removeClass('wait');
           }
         }
     };
