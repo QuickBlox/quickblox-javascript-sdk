@@ -755,8 +755,13 @@
                 }
             }
 
-            document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
-            document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
+            if(document.querySelector('.j-actions[hidden]')){
+                document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
+            }
+            if(document.querySelector('.j-caller__ctrl')){
+                document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
+            }
+
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {

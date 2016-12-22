@@ -444,24 +444,30 @@ function ChatProxy(service, webrtcModule, conn) {
             to = chatUtils.getAttr(stanza, 'to'),
             messageId = chatUtils.getAttr(stanza, 'id'),
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
+            userId = self.helpers.getIdFromNode(from),
             delay = chatUtils.getElement(stanza, 'delay'),
             moduleIdentifier = chatUtils.getElementText(extraParams, 'moduleIdentifier'),
             bodyContent = chatUtils.getElementText(stanza, 'body'),
+            extraParamsParsed = chatUtils.parseExtraParams(extraParams),
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-            var extraParamsParsed = chatUtils.parseExtraParams(extraParams);
-
             message = {
                 id: messageId,
-                userId: self.helpers.getIdFromNode(from),
+                userId: userId,
                 body: bodyContent,
                 extension: extraParamsParsed.extension
             };
 
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
+        } else if(webrtc && !delay && moduleIdentifier === 'WebRTCVideoChat'){
+            webrtc._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
         }
 
+        /**
+         * we must return true to keep the handler alive
+         * returning false would remove it after it finishes
+         */
         return true;
     };
 
@@ -560,11 +566,6 @@ ChatProxy.prototype = {
                         connection.addHandler(self._onIQ, null, 'iq');
                         connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
                         connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
-
-                        // set signaling callbacks
-                        if(webrtc){
-                            connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
-                        }
 
                         // enable carbons
                         self._enableCarbons();

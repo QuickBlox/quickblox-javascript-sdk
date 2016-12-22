@@ -17,19 +17,11 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
   self.delegate = delegate;
   self.connection = connection;
 
-  this._onMessage = function(stanza) {
-    var from = stanza.getAttribute('from');
-    var extraParams = stanza.querySelector('extraParams');
-    var delay = stanza.querySelector('delay');
-    var userId = Helpers.getIdFromNode(from);
-    var extension = self._getExtension(extraParams);
+  this._onMessage = function(from, extraParams, delay, userId) {
 
-    if (delay || extension.moduleIdentifier !== SignalingConstants.MODULE_ID){
-      return true;
-    }
-
-    var sessionId = extension.sessionID;
-    var signalType = extension.signalType;
+    var extension = self._getExtension(extraParams),
+      sessionId = extension.sessionID,
+      signalType = extension.signalType;
 
     /** cleanup */
     delete extension.moduleIdentifier;
@@ -73,12 +65,6 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         }
         break;
     }
-
-    /**
-     * we must return true to keep the handler alive
-     * returning false would remove it after it finishes
-     */
-    return true;
   };
 
   this._getExtension = function(extraParams) {
