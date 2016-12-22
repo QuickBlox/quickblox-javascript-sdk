@@ -663,11 +663,11 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
-            console.group('onCallStatsReport');
-                console.log('userId: ', userId);
-                console.log('session: ', session);
-                console.log('stats: ', stats);
-            console.groupEnd();
+            // console.group('onCallStatsReport');
+            //     console.log('userId: ', userId);
+            //     console.log('session: ', session);
+            //     console.log('stats: ', stats);
+            // console.groupEnd();
 
             /**
              * Hack for Firefox
