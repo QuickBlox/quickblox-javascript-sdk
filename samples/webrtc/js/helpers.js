@@ -113,8 +113,6 @@
     app.helpers.toggleRemoteVideoView = function(userId, action) {
       var $video = $('#remote_video_' + userId);
 
-        console.log('toggleRemoteVideoView', arguments);
-
       if(!_.isEmpty(app.currentSession) && $video.length){
           if(action === 'show') {
               $video.parents('.j-callee').removeClass('wait');
