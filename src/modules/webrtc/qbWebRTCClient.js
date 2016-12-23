@@ -243,6 +243,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     var session = this.sessions[sessionID],
         extensionClone = JSON.parse(JSON.stringify(extension));
 
+
     if (session && (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)) {
         this._cleanupExtension(extensionClone);
 
@@ -250,7 +251,8 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
             Utils.safeCallbackCall(this.onStopCallListener, session, userID, extensionClone);
         }
 
-        session.processOnStop(userID, extension);
+        // Need to make this asynchronously, to keep the strophe handler alive
+        setTimeout(session.processOnStop.bind(session), 10, userID, extension);
     } else {
         if (typeof this.onInvalidEventsListener === 'function'){
           Utils.safeCallbackCall(this.onInvalidEventsListener, 'onStop', session, userID, extensionClone);
