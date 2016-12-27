@@ -374,7 +374,7 @@
                     document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
                 }
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                         var errorMsg = '';
 
                         app.currentSession.stop({});
@@ -470,20 +470,17 @@
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
+                if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                     var errorMsg = '';
 
                     app.currentSession.stop({});
 
-                    if(err && err.message) {
-                        errorMsg += 'Error: ' + err.message;
-                    } else {
-                        errorMsg += 'tpl_device_not_found';
-                    }
-
                     app.helpers.stateBoard.update({
-                        'title': errorMsg,
-                        'isError': 'qb-error'
+                        'title': 'tpl_device_not_found',
+                        'isError': 'qb-error',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
                     });
                 } else {
                     var opponents = [app.currentSession.initiatorID],

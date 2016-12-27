@@ -70,16 +70,20 @@ StreamManagement.prototype.enable = function (connection, client) {
             xmlns: self._NS
         };
 
-    self._c = connection;
-
-    self._originalSend = this._c.send;
-    self._c.send = this.send.bind(self);
-    self._addEnableHandlers();
+    if(!self._isStreamManagementEnabled){
+        self._c = connection;
+        self._originalSend = this._c.send;
+        self._c.send = this.send.bind(self);
+    }
 
     if(Utils.getEnv().browser){
+        this._clientProcessedStanzasCounter = null;
+        this._clientSentStanzasCounter = null;
+        self._addEnableHandlers();
         stanza = $build('enable', enableParams);
     } else if (Utils.getEnv().node){
         self._nodeBuilder =  client.Stanza;
+        self._addEnableHandlers();
         stanza = chatUtils.createStanza(self._nodeBuilder, enableParams, 'enable');
     }
 
