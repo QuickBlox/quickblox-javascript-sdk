@@ -12,8 +12,6 @@ var geoFindUrl = config.urls.geodata + '/find';
 var deprecatedMsg = 'Avoid using it, this feature will be removed in future version. Instread of it use Custom Object (https://quickblox.com/developers/Sample-customobjects-javascript)';
 
 function LocationProxy(service) {
-  Utils.QBLog('Deprecated!', deprecatedMsg);
-
   this.service = service;
   this.geodata = new GeoProxy(service);
 }
