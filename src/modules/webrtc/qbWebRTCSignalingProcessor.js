@@ -7,7 +7,6 @@
 
 require('strophe.js');
 
-var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
 function WebRTCSignalingProcessor(service, delegate, connection) {
