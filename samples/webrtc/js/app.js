@@ -742,7 +742,6 @@
             }
 
             if(ffHack.isFirefox) {
-                app.currentSession = {};
                 if(call.callTimer) {
                     $('#timer').addClass('invisible');
                     clearInterval(call.callTimer);
