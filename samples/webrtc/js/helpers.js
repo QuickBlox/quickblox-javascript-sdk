@@ -150,8 +150,6 @@
             'password': 'webAppPass'
         };
 
-        console.log('userRequiredParams',userRequiredParams);
-
         return new Promise(function(resolve, reject) {
             QB.createSession(function(csErr, csRes){
                 if(csErr) {
