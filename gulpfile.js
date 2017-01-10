@@ -19,7 +19,7 @@ gulp.task('build', function () {
         browserifyOpts = {
             debug: isDevelopment,
             standalone: 'QB'
-    };
+        };
 
     return browserify('./src/qbMain.js', browserifyOpts)
         .bundle()
@@ -106,7 +106,7 @@ gulp.task('jquery', function () {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(['./src/**/*.js'], ['build']);
+    gulp.watch(['./src/**/*.js'], ['build']);
 });
 
 gulp.task('default', ['build', 'connect', 'watch']);

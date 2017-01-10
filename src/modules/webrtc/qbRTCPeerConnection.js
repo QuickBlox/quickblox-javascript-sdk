@@ -32,7 +32,7 @@ RTCPeerConnection.State = {
 };
 
 RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
-  Helpers.trace("RTCPeerConnection init. userID: " + userID + ", sessionID: " + sessionID + ", type: " + type);
+  Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
 
   this.delegate = delegate;
   this.sessionID = sessionID;
@@ -236,7 +236,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
 /**
  * PRIVATE
  */
- RTCPeerConnection.prototype._clearStatsReportTimer = function(){
+RTCPeerConnection.prototype._clearStatsReportTimer = function(){
    if(this.statsReportTimer){
      clearInterval(this.statsReportTimer);
      this.statsReportTimer = null;

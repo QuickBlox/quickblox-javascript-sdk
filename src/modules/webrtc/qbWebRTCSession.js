@@ -426,48 +426,6 @@ WebRTCSession.prototype.unmute = function(type) {
 };
 
 /**
- * Creates a snapshot
- * @param {string} Id of element to make a shapshot from
- */
-WebRTCSession.snapshot = function(id) {
-  var video = document.getElementById(id),
-      canvas = document.createElement('canvas'),
-      context = canvas.getContext('2d'),
-      dataURL, blob;
-
-  if (video) {
-    canvas.width = video.clientWidth;
-    canvas.height = video.clientHeight;
-    if (video.style.transform === 'scaleX(-1)') {
-      context.translate(canvas.width, 0);
-      context.scale(-1, 1);
-    }
-    context.drawImage(video, 0, 0, video.clientWidth, video.clientHeight);
-    dataURL = canvas.toDataURL();
-
-    blob = Helpers.dataURItoBlob(dataURL, 'image/png');
-    blob.name = 'snapshot_' + _getLocalTime() + '.png';
-    blob.url = dataURL;
-
-    return blob;
-  }
-};
-
-/**
- * Adds the CSS filters to video stream http://css-tricks.com/almanac/properties/f/filter/
- * @param {string} Id of element to apply filters to
- * @param {string} Filters string
- */
-WebRTCSession.filter = function(id, filters) {
-  var video = document.getElementById(id);
-
-  if (video) {
-    video.style.webkitFilter = filters;
-    video.style.filter = filters;
-  }
-};
-
-/**
  * DELEGATES (rtc client)
  */
 WebRTCSession.prototype.processOnCall = function(callerID, extension) {
@@ -672,7 +630,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
 
 /** close peer connection and local stream */
 WebRTCSession.prototype._close = function() {
-  Helpers.trace("_close");
+  Helpers.trace('_close');
 
   for (var key in this.peerConnections) {
     var peer = this.peerConnections[key];
@@ -848,7 +806,7 @@ WebRTCSession.prototype._uniqueOpponentsIDsWithoutInitiator = function(){
 };
 
 WebRTCSession.prototype.toString = function sessionToString() {
-  return 'ID: ' + this.ID + ', initiatorID:  ' + this.initiatorID + ', opponentsIDs: ' + this.opponentsIDs + ', state: ' + this.state + ", callType: " + this.callType;
+  return 'ID: ' + this.ID + ', initiatorID:  ' + this.initiatorID + ', opponentsIDs: ' + this.opponentsIDs + ', state: ' + this.state + ', callType: ' + this.callType;
 };
 
 function generateUUID(){
@@ -885,10 +843,6 @@ function _prepareIceServers(iceServers) {
   });
 
   return iceServersCopy;
-}
-
-function _getLocalTime() {
-    return (new Date()).toTimeString().split(' ')[0];
 }
 
 module.exports = WebRTCSession;

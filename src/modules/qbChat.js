@@ -67,17 +67,20 @@ function ChatProxy(service, webrtcModule, conn) {
     this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
-        this.streamManagement = new StreamManagement(config.streamManagement);
-
-        self._sentMessageCallback = function(messageLost, messageSent){
-            if(typeof self.onSentMessageCallback === 'function'){
-                if(messageSent){
-                    self.onSentMessageCallback(null, messageSent);
-                } else {
-                    self.onSentMessageCallback(messageLost);
+        if(config.chatProtocol.active === 2){
+            this.streamManagement = new StreamManagement(config.streamManagement);
+            self._sentMessageCallback = function(messageLost, messageSent){
+                if(typeof self.onSentMessageCallback === 'function'){
+                    if(messageSent){
+                        self.onSentMessageCallback(null, messageSent);
+                    } else {
+                        self.onSentMessageCallback(messageLost);
+                    }
                 }
-            }
-        };
+            };
+        } else {
+            Utils.QBLog('[QBchat] StreamManagement:', 'BOSH protocol doesn\'t support stream management. Set WebSocket as the "chatProtocol" parameter to use this functionality. http://quickblox.com/developers/Javascript#Configuration');
+        }
     }
 
 /**
@@ -441,24 +444,30 @@ function ChatProxy(service, webrtcModule, conn) {
             to = chatUtils.getAttr(stanza, 'to'),
             messageId = chatUtils.getAttr(stanza, 'id'),
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
+            userId = self.helpers.getIdFromNode(from),
             delay = chatUtils.getElement(stanza, 'delay'),
             moduleIdentifier = chatUtils.getElementText(extraParams, 'moduleIdentifier'),
             bodyContent = chatUtils.getElementText(stanza, 'body'),
+            extraParamsParsed = chatUtils.parseExtraParams(extraParams),
             message;
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
-            var extraParamsParsed = chatUtils.parseExtraParams(extraParams);
-
             message = {
                 id: messageId,
-                userId: self.helpers.getIdFromNode(from),
+                userId: userId,
                 body: bodyContent,
                 extension: extraParamsParsed.extension
             };
 
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
+        } else if(webrtc && !delay && moduleIdentifier === 'WebRTCVideoChat'){
+            webrtc._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
         }
 
+        /**
+         * we must return true to keep the handler alive
+         * returning false would remove it after it finishes
+         */
         return true;
     };
 
@@ -543,7 +552,7 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
-                        if(config.streamManagement.enable){
+                        if(config.streamManagement.enable && config.chatProtocol.active === 2){
                             self.streamManagement.enable(connection, null);
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                         }
@@ -557,11 +566,6 @@ ChatProxy.prototype = {
                         connection.addHandler(self._onIQ, null, 'iq');
                         connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
                         connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
-
-                        // set signaling callbacks
-                        if(webrtc){
-                            connection.addHandler(webrtc._onMessage, null, 'message', 'headline');
-                        }
 
                         // enable carbons
                         self._enableCarbons();
@@ -971,6 +975,8 @@ ChatProxy.prototype = {
     },
 
     addListener: function(params, callback) {
+        Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
+
         if(Utils.getEnv().node) {
             throw new Error(unsupportedError);
         }
@@ -984,6 +990,8 @@ ChatProxy.prototype = {
         }
     },
     deleteListener: function(ref) {
+        Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
+
         if(Utils.getEnv().node) {
             throw new Error(unsupportedError);
         }

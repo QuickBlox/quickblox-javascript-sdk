@@ -375,7 +375,7 @@
                 }
 
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                         var errorMsg = '';
 
                         app.currentSession.stop({});
@@ -470,20 +470,17 @@
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || isAudio ? false : !stream.getVideoTracks().length) {
+                if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                     var errorMsg = '';
 
                     app.currentSession.stop({});
 
-                    if(err && err.message) {
-                        errorMsg += 'Error: ' + err.message;
-                    } else {
-                        errorMsg += 'tpl_device_not_found';
-                    }
-
                     app.helpers.stateBoard.update({
-                        'title': errorMsg,
-                        'isError': 'qb-error'
+                        'title': 'tpl_device_not_found',
+                        'isError': 'qb-error',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
                     });
                 } else {
                     var opponents = [app.currentSession.initiatorID],
@@ -498,15 +495,14 @@
                             opponents.push(userID);
                         }
                     });
-
                     opponents.forEach(function(userID, i, arr) {
+
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
-
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({
                                 'userID': userID,
-                                'name': userInfo.full_name,
+                                'name': userInfo ? userInfo.full_name : 'userID ' + userID,
                                 'state': app.helpers.getConStateName(peerState)
                             });
 
@@ -515,7 +511,6 @@
                             }
                         }
                     });
-
                     $('.j-callees').append(videoElems);
                     app.helpers.stateBoard.update({
                         'title': 'tpl_during_call',
@@ -617,17 +612,17 @@
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
-                if (user) {
-                    app.caller = {};
-                    app.users = [];
-
-                    QB.chat.disconnect();
-                    localStorage.removeItem('isAuth');
-                    app.router.navigate('join', {'trigger': true});
-                    app.helpers.setFooterPosition();
-                } else  {
-                    console.error('Logout failed:', err);
+                if (!user) {
+                    console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
                 }
+
+                app.caller = {};
+                app.users = [];
+
+                QB.chat.disconnect();
+                localStorage.removeItem('isAuth');
+                app.router.navigate('join', {'trigger': true});
+                app.helpers.setFooterPosition();
             });
         });
 
@@ -738,11 +733,16 @@
                     }
                 });
             } else {
-                app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
+                app.helpers.stateBoard.update({
+                    title: 'tpl_default',
+                    property: {
+                        'tag': app.caller.user_tags,
+                        'name':  app.caller.full_name,
+                    }
+                });
             }
 
             if(ffHack.isFirefox) {
-                app.currentSession = {};
                 if(call.callTimer) {
                     $('#timer').addClass('invisible');
                     clearInterval(call.callTimer);
@@ -752,8 +752,13 @@
                 }
             }
 
-            document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
-            document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
+            if(document.querySelector('.j-actions[hidden]')){
+                document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
+            }
+            if(document.querySelector('.j-caller__ctrl')){
+                document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
+            }
+
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
@@ -790,7 +795,7 @@
             ui.insertOccupants().then(function(users) {
                 app.users = users;
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
-
+                app.callees = {};
                 /** close previous modal */
                 $(ui.income_call).modal('hide');
 
@@ -800,6 +805,7 @@
                 if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
+
                 }
             });
         };
@@ -825,7 +831,7 @@
                     }
                 });
             } else {
-                var userInfo = _.findWhere(app.users, {'id': +userId})
+                var userInfo = _.findWhere(app.users, {'id': +userId});
                 app.calleesRejected.push(userInfo);
                 $('.j-callee_status_' + userId).text('Rejected');
             }

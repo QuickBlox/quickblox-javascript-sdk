@@ -1,11 +1,6 @@
-'use strict';
+/* eslint no-console: 2 */
 
-/*
- * QuickBlox JavaScript SDK
- *
- * Utilities
- *
- */
+'use strict';
 
 var config = require('./qbConfig');
 
@@ -106,7 +101,7 @@ var Utils = {
             for(var i=0;i<this.loggers.length;++i){
                 this.loggers[i](arguments);
             }
-        
+
             return;
         }
 
@@ -132,9 +127,9 @@ var Utils = {
                         data.push(JSON.stringify(args[i]));
                     }
           
-                    data = data.join(" ");
+                    data = data.join(' ');
 
-                    var toLog = "\n" + new Date() + ". " + data;
+                    var toLog = '\n' + new Date() + '. ' + data;
             
                     fs.appendFile(config.debug.file, toLog, function(err) {
                         if(err) {
@@ -162,7 +157,7 @@ var Utils = {
             } else if(typeof config.debug.mode === 'object'){
                 var self = this;
                 
-                config.debug.mode.forEach(function(mode, i, arr) {
+                config.debug.mode.forEach(function(mode) {
                     if(mode === 1){
                         logger = consoleLoggerFunction();
                         self.loggers.push(logger);

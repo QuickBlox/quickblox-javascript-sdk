@@ -9,6 +9,7 @@ ratings:
   paths:
   - "src/**/*.js"
 exclude_paths:
+- "*.min.*"
 - "spec/"
 - "docs/"
 - "samples/"
