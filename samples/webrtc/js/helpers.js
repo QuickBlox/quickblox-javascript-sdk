@@ -121,7 +121,7 @@
           } else if(action === 'clear') {
               /** detachMediaStream take videoElementId */
               app.currentSession.detachMediaStream('remote_video_' + userId);
-              $video.removeClass('wait');
+              $video.parents('.j-callee').removeClass('wait');
           }
         }
     };
@@ -160,8 +160,8 @@
                         if(loginErr) {
                             /** Login failed, trying to create account */
                             QB.users.create({
-                                'login': _getUui(),
-                                'password': 'webAppPass',
+                                'login': userRequiredParams.login,
+                                'password': userRequiredParams.password,
                                 'full_name': data.username,
                                 'tag_list': data.room
                             }, function(createErr, createUser){

@@ -1,12 +1,5 @@
 'use strict';
 
-/**
- * QuickBlox JavaScript SDK
- *
- * Proxy Module
- *
- */
-
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 
@@ -32,30 +25,26 @@ function ServiceProxy() {
 }
 
 ServiceProxy.prototype = {
+    setSession: function(session) {
+        this.qbInst.session = session;
+    },
+    getSession: function() {
+        return this.qbInst.session;
+    },
+    handleResponse: function(error, response, next, retry) {
+        // can add middleware here...
 
-  setSession: function(session) {
-    this.qbInst.session = session;
-  },
-
-  getSession: function() {
-    return this.qbInst.session;
-  },
-
-  handleResponse: function(error, response, next, retry) {
-    // can add middleware here...
-    var _this = this;
-    if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-      config.on.sessionExpired(function(){next(error,response);}, retry);
-    } else {
-      if (error) {
-        next(error, null);
-      } else {
-        if (config.addISOTime) response = Utils.injectISOTimes(response);
-        next(null, response);
-      }
-    }
-  },
-
+        if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+            config.on.sessionExpired(function(){next(error,response);}, retry);
+        } else {
+            if (error) {
+                next(error, null);
+            } else {
+                if (config.addISOTime) response = Utils.injectISOTimes(response);
+                next(null, response);
+            }
+        }
+    },
     ajax: function(params, callback) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
@@ -181,13 +170,13 @@ ServiceProxy.prototype = {
             if(!isJSONRequest){
                 form = r.form();
                 
-                Object.keys(ajaxCall.data).forEach(function(item,i,ar){
+                Object.keys(ajaxCall.data).forEach(function(item,i,arr){
                     form.append(item, ajaxCall.data[item]);
                 });
             } else if(params.isFileUpload) {
                 form = r.form();
                 
-                Object.keys(ajaxCall.data).forEach(function(item,i,ar){
+                Object.keys(ajaxCall.data).forEach(function(item,i,arr){
                     if(item === "file"){
                         form.append(item, ajaxCall.data[item].data, {filename: ajaxCall.data[item].name});
                     } else {

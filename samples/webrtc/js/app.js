@@ -32,7 +32,7 @@
                     }
                 }
             };
-
+        var isAudio = false;
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
@@ -358,10 +358,23 @@
                 }
 
                 app.helpers.stateBoard.update({'title': 'create_session'});
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), QB.webrtc.CallType.VIDEO);
 
+                isAudio = $btn.data('call') === 'audio';
+
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+
+                if(isAudio) {
+                    mediaParams = {
+                        audio: true,
+                        video: false
+                    };
+                    document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                    document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
+                } else {
+                    document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+                }
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                    if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                    if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                         var errorMsg = '';
 
                         app.currentSession.stop({});
@@ -374,6 +387,12 @@
                             }
                         });
                     } else {
+                        var callParameters = {};
+
+                        if(isAudio){
+                            callParameters.callType = 2
+                        }
+
                         app.currentSession.call({}, function(error) {
                             if(error) {
                                 console.warn(error.detail);
@@ -416,7 +435,19 @@
 
         /** ACCEPT */
         $(document).on('click', '.j-accept', function() {
+            isAudio = app.currentSession.callType === QB.webrtc.CallType.AUDIO;
+
             var $videoSourceFilter = $(ui.sourceFilter),
+                mediaParams;
+
+            if(isAudio){
+                mediaParams = {
+                    audio: true,
+                    video: false
+                };
+                document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
+                document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
+            } else {
                 mediaParams = {
                     audio: true,
                     video: {
@@ -429,27 +460,27 @@
                         muted: true,
                         mirror: true
                     }
-                },
-                videoElems = '';
+                };
+                document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
+            }
+
+            var videoElems = '';
 
             $(ui.income_call).modal('hide');
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
-                if (err || !stream.getAudioTracks().length || !stream.getVideoTracks().length) {
+                if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                     var errorMsg = '';
 
                     app.currentSession.stop({});
 
-                    if(err && err.message) {
-                        errorMsg += 'Error: ' + err.message;
-                    } else {
-                        errorMsg += 'tpl_device_not_found';
-                    }
-
                     app.helpers.stateBoard.update({
-                        'title': errorMsg,
-                        'isError': 'qb-error'
+                        'title': 'tpl_device_not_found',
+                        'isError': 'qb-error',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
                     });
                 } else {
                     var opponents = [app.currentSession.initiatorID],
@@ -464,15 +495,14 @@
                             opponents.push(userID);
                         }
                     });
-
                     opponents.forEach(function(userID, i, arr) {
+
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
-
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({
                                 'userID': userID,
-                                'name': userInfo.full_name,
+                                'name': userInfo ? userInfo.full_name : 'userID ' + userID,
                                 'state': app.helpers.getConStateName(peerState)
                             });
 
@@ -481,7 +511,6 @@
                             }
                         }
                     });
-
                     $('.j-callees').append(videoElems);
                     app.helpers.stateBoard.update({
                         'title': 'tpl_during_call',
@@ -582,17 +611,17 @@
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
             QB.users.delete(app.caller.id, function(err, user){
-                if (user) {
-                    app.caller = {};
-                    app.users = [];
-
-                    QB.chat.disconnect();
-                    localStorage.removeItem('isAuth');
-                    app.router.navigate('join', {'trigger': true});
-                    app.helpers.setFooterPosition();
-                } else  {
-                    console.error('Logout failed:', err);
+                if (!user) {
+                    console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
                 }
+
+                app.caller = {};
+                app.users = [];
+
+                QB.chat.disconnect();
+                localStorage.removeItem('isAuth');
+                app.router.navigate('join', {'trigger': true});
+                app.helpers.setFooterPosition();
             });
         });
 
@@ -703,11 +732,16 @@
                     }
                 });
             } else {
-                app.helpers.notifyIfUserLeaveCall(session, session.opponentsIDs[0], 'closed');
+                app.helpers.stateBoard.update({
+                    title: 'tpl_default',
+                    property: {
+                        'tag': app.caller.user_tags,
+                        'name':  app.caller.full_name,
+                    }
+                });
             }
 
             if(ffHack.isFirefox) {
-                app.currentSession = {};
                 if(call.callTimer) {
                     $('#timer').addClass('invisible');
                     clearInterval(call.callTimer);
@@ -716,6 +750,14 @@
                     app.helpers.network = {};
                 }
             }
+
+            if(document.querySelector('.j-actions[hidden]')){
+                document.querySelector('.j-actions[hidden]').removeAttribute('hidden');
+            }
+            if(document.querySelector('.j-caller__ctrl')){
+                document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
+            }
+
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {
@@ -752,7 +794,7 @@
             ui.insertOccupants().then(function(users) {
                 app.users = users;
                 var initiator = _.findWhere(app.users, {id: session.initiatorID});
-
+                app.callees = {};
                 /** close previous modal */
                 $(ui.income_call).modal('hide');
 
@@ -762,6 +804,7 @@
                 if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
+
                 }
             });
         };
@@ -787,7 +830,7 @@
                     }
                 });
             } else {
-                var userInfo = _.findWhere(app.users, {'id': +userId})
+                var userInfo = _.findWhere(app.users, {'id': +userId});
                 app.calleesRejected.push(userInfo);
                 $('.j-callee_status_' + userId).text('Rejected');
             }
