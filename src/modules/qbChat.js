@@ -575,7 +575,7 @@ ChatProxy.prototype = {
                         connection.send($pres());
 
                         if (typeof callback === 'function') {
-                            if (params.connectWithoutRoster) {
+                            if (params.connectWithoutGettingRoster) {
                                 // connected and return nothing as result
                                 callback(null, undefined);
                             } else {
