@@ -20,7 +20,8 @@ var ajax = require('./plugins/jquery.ajax').ajax;
 function ServiceProxy() {
   this.qbInst = {
     config: config,
-    session: null
+    session: null,
+    _onSessionExpired: null
   };
 }
 
@@ -35,7 +36,9 @@ ServiceProxy.prototype = {
         // can add middleware here...
 
         if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-            config.on.sessionExpired(function(){next(error,response);}, retry);
+            config.on.sessionExpired(function() { 
+                next(error, response);
+            }, retry);
         } else {
             if (error) {
                 next(error, null);

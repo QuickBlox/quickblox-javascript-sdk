@@ -99,7 +99,8 @@ var config = {
     mode: 0,
     file: null
   },
-  addISOTime: false
+  addISOTime: false,
+  sessionManagement: true
 };
 
 config.set = function(options) {

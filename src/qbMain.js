@@ -9,6 +9,7 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+var sessionManager = require('./qbSession');
 
 var isBrowser = typeof window !== 'undefined';
 
@@ -25,6 +26,8 @@ QuickBlox.prototype = {
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
+        var self = this;
+
         if (configMap && typeof configMap === 'object') {
             config.set(configMap);
         }
@@ -78,6 +81,8 @@ QuickBlox.prototype = {
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
 
+        var sessionManagerParams = {};
+
         // Initialization by outside token
         if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
 
@@ -85,11 +90,31 @@ QuickBlox.prototype = {
                 config.creds.appId = authKeyOrAppId;
             }
 
+            if(config.sessionManagement) {
+                sessionManagerParams.sessionToken = appIdOrToken;
+                sessionManagerParams.appId = authKeyOrAppId;
+            }
+  
             this.service.setSession({ token: appIdOrToken });
         } else {
             config.creds.appId = appIdOrToken;
             config.creds.authKey = authKeyOrAppId;
             config.creds.authSecret = authSecret;
+
+            if(config.sessionManagement) {
+                sessionManagerParams = {
+                    appId: appIdOrToken,
+                    authKey: authKeyOrAppId,
+                    authSecret: authSecret
+                };
+            }
+        }
+
+        if(config.sessionManagement) {
+            self.sessionManager = new sessionManager();
+            return self.sessionManager.create(sessionManagerParams).then(function(sessionToken) {
+                self.service.setSession({ token: sessionToken });
+            });
         }
     },
 
@@ -142,17 +167,23 @@ QuickBlox.prototype = {
     /**
      * Login to QuickBlox application. {@link https://quickblox.com/developers/Javascript#Authorization More info}
      * @memberof QB
-     * @param {Object} params - Params object for login into the session.
+     * @param {Object} data - Params object for login into the session.
      * @param {loginCallback} callback - The loginCallback function.
      * */
-    login: function(params, callback) {
+    login: function(data, callback) {
         /**
          * This callback return error or user Object.
          * @callback loginCallback
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | Object} result - User data object if everything goes well and null on error.
          * */
-        this.auth.login(params, callback);
+        this.auth.login(data, this.sessionManager.getReqHeaders, function(error, result) {
+        //     // UPD session
+        //     self.sessionManager.get().then(function(responce) {
+        //         console.info(responce);
+        //     })
+        //     callback(error, result);
+        });
     },
 
     /**

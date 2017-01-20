@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Session</title>
+</head>
+<body>
+
+
+<script src="../quickblox.min.js"></script>
+
+<script>
+var config = {
+    debug: true
+};
+
+var creds = {
+    'appId': 39854,
+    'authKey': 'JtensAa9y4AM5Yk',
+    'authSecret': 'AsDFwwwxpr3LN5w'
+}
+
+// 22870126
+var user = {
+    email: 'session@session.com',
+    login: 'session',
+    password: '49249session'
+}
+
+var userParams = {
+    email: 'garry@gmail.com',
+    password: 'garry5santos'
+};
+
+
+// By session ('asdasdasd', creds.appId)
+QB.init(creds.appId, creds.authKey, creds.authSecret).then(function(sessionToken) {
+    console.info(`Success init ${sessionToken}`);
+    
+    QB.login(userParams, function(err, result) {
+
+        console.info(result);
+        console.error(err);
+    });
+});
+
+// QB.createSession(function(err, result) {
+//     // console.info(result);
+// });
+</script>
+</body>
+</html>
