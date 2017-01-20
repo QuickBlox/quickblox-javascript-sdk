@@ -8,10 +8,8 @@
     <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
 
     <link rel="stylesheet" href="./css/reset.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/login.css">
-    <link rel="stylesheet" href="./css/dashboard.css">
 
     <script src="./js/libs/path.min.js"></script>
     <script src="./js/libs/underscore.min.js"></script>
@@ -19,7 +17,6 @@
 </head>
 <body>
     <div id="page"></div>
-
 
     <!-- Underscore templates  -->
     <script type="text/template" id="tpl_login">
@@ -62,57 +59,100 @@
 
     <script type="text/template" id="tpl_dachboardContainer">
         <div class="dashboard">
-            <div class="sidebar j-sidebar">
-                <div class="sidebar__header">
-                    <a href="https://quickblox.com/" class="dashboard__logo">
-                        <img src="./img/qb-logo.svg" alt="QuickBlox">
-                    </a>
+            <div class="sidebar">
+                <div class="sidebar__inner">
+                    <div class="sidebar__header">
+                        <a href="https://quickblox.com/" class="dashboard__logo">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                        </a>
 
-                    <div class="dashboard__status_wrap">
-                        <h2 class="dashboard__title">Text Chat Sample</h2>
-                        <p class="dashboard__status j-dashboard_status">
-                            Logged in as <%- user.name %>
-                        </p>
+                        <div class="dashboard__status_wrap">
+                            <h2 class="dashboard__title">Text Chat Sample</h2>
+                            <p class="dashboard__status j-dashboard_status">
+                                Logged in as <%- user.name %>
+                            </p>
+                        </div>
+                        <a href="#" class="logout">logout</a>
                     </div>
-                    <a href="#" class="logout">logout</a>
-                </div>
-                <div class="sidebar__content">
-                    <ul class="sidebar__tabs">
-                        <li class="sidebar__tab">
-                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link active" data-action="chat">chats</a>
-                        </li>
-                        <li class="sidebar__tab">
-                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-action="public">public chats</a>
-                        </li>
-                        <li class="sidebar__tab m-sidebar__tab_new">
-                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link m-sidebar__tab_link_new" data-action="create">create new chats</a>
-                        </li>
-                    </ul>
+                    <div class="sidebar__content">
+                        <ul class="sidebar__tabs">
+                            <li class="sidebar__tab">
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link active" data-type="chat">chats</a>
+                            </li>
+                            <li class="sidebar__tab">
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
+                            </li>
+                            <li class="sidebar__tab m-sidebar__tab_new">
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link m-sidebar__tab_link_new" data-type="create">create new chats</a>
+                            </li>
+                        </ul>
+                        <ul class="sidebar__conversation_links j-conversation_links_container">
+
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="content j-content">
-                <div class="dashboard__wellcome">
-                    <div class="wellcome__inner">
-                        <h3 class="wellcome__title">
-                            Wellcome to qiockblox chat sample!
-                        </h3>
-                        <p class="wellcome__description">
-                            Please select you opponent to start chatting.
-                        </p>
-                    </div>
+                <h1 class="content__title j-content__title">
+                    Wellcome to QuickBlox chat sample!
+                </h1>
+                <div class="content__inner j-content__inner">
+                    <p class="wellcome__message">
+                        Please select you opponent to start chatting.
+                    </p>
                 </div>
             </div>
         </div>
-
     </script>
 
-    <script type="text/template" id="tpl_dachboardHeader">
-
+    <script type="text/template" id="tpl_userConversations">
+            <% var num = _.random(1, 10) %>
+            <li class="dialog__item j-dialog__item" id="<%- dialog._id %>" data-name="<%- dialog.name %>">
+                <span class="dialog__avatar m-user__img_<%- num %> <%- dialog.type === 2 ? 'group' : 'chat' %>" data-style="num"></span>
+                <div class="dialog__info">
+                    <p class="dialog__name"><%- dialog.name %></p>
+                    <p class="dialog__last_message j-dialog__last_message <%- dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
+                </div>
+                <span class="dialog__last_message_date j-dialog__last_message_date">
+                    <%- dialog.last_message_date_sent %>
+                </span>
+            </li>
     </script>
 
-    <script src="./js/QBconfig.js"></script>
-    <script src="./js/helpers.js"></script>
-    <script src="./js/app.js"></script>
-    <script src="./js/router.js"></script>
+    <script type="text/template" id="tpl_chatInput">
+        <div class="messages j-messages"></div>
+        <form name="send_message" class="send_message">
+            <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
+            <div class="message__actions">
+                <button class="send_btn">send</button>
+                <button class="attach_btn"></button>
+            </div>
+        </form>
+    </script>
+
+    <script type="text/template" id="tpl_message">
+        <div class="message__wrap" id="<%- message.id %>">
+            <span class="message__avatar m-user__img_<%- sender.color %>"></span>
+            <div class="message__content_wrap">
+                <p class="message__sender_name"><%- sender.name %></p>
+                <% if (message.attachments.length) { %>
+                    <% _.each(message.attachments, function(attachment){ %>
+                        <img src="<%- attachment.src %>" alt="attachment" class="message_attachment">
+                    <% }); %>
+                <img src="">
+                <% } else { %>
+                    <p class="message__text"><%- message.message %></p>
+                <% } %>
+            </div>
+
+        </div>
+    </script>
+
+    <script src="./js/QBconfig.js" defer></script>
+    <script src="./js/cahce.js" defer></script>
+    <script src="js/listeners.js" defer></script>
+    <script src="./js/helpers.js" defer></script>
+    <script src="./js/app.js" defer></script>
+    <script src="js/rout.js" defer></script>
 </body>
 </html>

@@ -24,20 +24,20 @@ Listeners.prototype.onMessageListener = function(){
 
 };
 
-Listeners.prototype.onSentMessageCallback(){
+Listeners.prototype.onSentMessageCallback = function(){
 
 };
 
 Listeners.prototype.onMessageTypingListener = function(){
 
-}
+};
 
 Listeners.prototype.onReadStatusListener = function(){
 
-}
+};
 
-Listeners.prototype. = function(){
-
-}
+Listeners.prototype.setListeners = function(){
+    console.log('set QB listeners');
+};
 
 var listeners = new Listeners();

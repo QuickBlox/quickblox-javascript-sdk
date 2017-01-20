@@ -12,12 +12,11 @@ var QBconfig = {
             enable: true
         },
         debug: {
-            mode: 1,
+            mode: 0,
             file: null
         },
     }
 };
-
 
 var usersList = [
     {
@@ -33,3 +32,8 @@ var usersList = [
         pass: 'chatusr22'
     }
 ];
+
+var appConfig = {
+    dilogsPerRequers: 30,
+    messagesPerRequers: 30
+};

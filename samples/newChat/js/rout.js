@@ -1,7 +1,7 @@
 'use strict';
 
 Path.map("#login").to(function(){
-    helpers.clearMainView();
+    helpers.clearView(app.page);
     // usersList - variable from QBconfig.js file
     var loginTemplate = helpers.fillTemplate('tpl_login',{
         users: usersList,
@@ -13,19 +13,17 @@ Path.map("#login").to(function(){
 });
 
 Path.map("#dashboard").to(function(){
-    app.user = usersList[0];
     if(!app.user){
-        helpers.redirrectToPage('login');
+        helpers.redirectToPage('login');
         return false;
     }
 
-    app.login();
-    helpers.clearMainView();
+    helpers.clearView(app.page);
 
     var dashboardTemplate = helpers.fillTemplate('tpl_dachboardContainer', {user: app.user});
-    app.page.innerHTML = dashboardTemplate;
 
-    app.tabSelectInit();
+    app.page.innerHTML = dashboardTemplate;
+    app.loadDashboard();
 });
 
 Path.root("#login");
