@@ -1,0 +1,18 @@
+body, html {
+    height: 100%;
+    width: 100%;
+    background-color: #f0f2f4;
+    font-family: 'Roboto', sans-serif;
+}
+
+select, button {
+    appearance:none;
+    -moz-appearance:none;
+    -webkit-appearance:none;
+    outline: none;
+}
+
+#page {
+    height: 100%;
+    width: 100%;
+}

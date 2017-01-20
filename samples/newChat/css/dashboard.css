@@ -1,0 +1,97 @@
+.dashboard {
+    max-width: 990px;
+    border-top: none;
+    border: 1px solid #DADFE1;
+    margin: 0 auto;
+
+    background-color: white;
+
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.sidebar {
+    border-right: 1px solid #DADFE1;
+    width: 320px;
+    float: left;
+    height: 100%;
+}
+
+.sidebar__header {
+    padding: 21px 19px 18px;
+}
+
+.dashboard__logo {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 20px 0 0;
+}
+
+.dashboard__status_wrap {
+    display: inline-block;
+    vertical-align: top;
+}
+.dashboard__title {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #4A4A4A;
+}
+
+.dashboard__status {
+    font-size: 13px;
+    line-height: 15px;
+    color: #778594;
+}
+
+.logout {
+    width: 18px;
+    height: 18px;
+    background-image: url('../img/ic_exit_to_app.svg');
+    overflow: hidden;
+    float: right;
+    font-size: 0;
+    margin-top: 10px;
+}
+
+.sidebar__tabs {
+    font-size: 0;
+    letter-spacing: 0;
+}
+
+.sidebar__tab {
+    display: inline-block;
+    vertical-align: middle;
+    width: 40%;
+}
+
+.sidebar__tab.m-sidebar__tab_new {
+    width: 20%
+}
+
+.sidebar__tab_link {
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 40px;
+    font-weight: 500;
+    color: #778594;
+    text-transform: uppercase;
+    display: block;
+    text-align: center;
+}
+
+.sidebar__tab_link.m-sidebar__tab_link_new {
+    font-size: 0;
+    background: url('../img/group-chat.svg') no-repeat 50%, 50%;
+}
+
+.sidebar__tab_link:hover,
+.sidebar__tab_link.active {
+    box-shadow: inset 0 -2px 0 0 #18C942;
+}
+
+.content {
+    float: right;
+    width: 100%;
+    max-width: 667px;
+}

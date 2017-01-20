@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>QuickBlox chat code sample</title>
+    <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
+
+    <link rel="stylesheet" href="./css/reset.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="./css/dashboard.css">
+
+    <script src="./js/libs/path.min.js"></script>
+    <script src="./js/libs/underscore.min.js"></script>
+    <script src="../../quickblox.min.js"></script>
+</head>
+<body>
+    <div id="page"></div>
+
+
+    <!-- Underscore templates  -->
+    <script type="text/template" id="tpl_login">
+        <div class="login__wrapper">
+            <div class="login__container">
+                <div class="login__inner">
+                    <div class="login__top">
+                        <a href="https://quickblox.com/" class="login__logo">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                        </a>
+                        <h1>Quickblox Chat Sample</h1>
+                    </div>
+                    <div class="login__user_list">
+                        <select name="login__select " class="login__select j-login__select">
+                            <option selected disabled>Select User</option>
+                            <% _.each(users, function(user) { %>
+                                <option value="<%- user.id %>"><%- user.name %></option>
+                            <% }); %>
+                        </select>
+                        <hr/>
+                    </div>
+                    <div class="login__button_wrap">
+                        <button class="login__button j-login__button" disabled>
+                            login
+                        </button>
+                    </div>
+                </div>
+                <div class="login__footer">
+                    <div class="footer__logo_wrap">
+                        <a href="https://quickblox.com/" class="footer__logo">
+                            <img src="./img/qblogo-grey.svg" alt="QuickBlox">
+                        </a>
+                        <p>by QuickBlox</p>
+                    </div>
+                    <span class="footer__version">v. <%- version %></span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_dachboardContainer">
+        <div class="dashboard">
+            <div class="sidebar j-sidebar">
+                <div class="sidebar__header">
+                    <a href="https://quickblox.com/" class="dashboard__logo">
+                        <img src="./img/qb-logo.svg" alt="QuickBlox">
+                    </a>
+
+                    <div class="dashboard__status_wrap">
+                        <h2 class="dashboard__title">Text Chat Sample</h2>
+                        <p class="dashboard__status j-dashboard_status">
+                            Logged in as <%- user.name %>
+                        </p>
+                    </div>
+                    <a href="#" class="logout">logout</a>
+                </div>
+                <div class="sidebar__content">
+                    <ul class="sidebar__tabs">
+                        <li class="sidebar__tab">
+                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link active" data-action="chat">chats</a>
+                        </li>
+                        <li class="sidebar__tab">
+                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-action="public">public chats</a>
+                        </li>
+                        <li class="sidebar__tab m-sidebar__tab_new">
+                            <a href="#" class="sidebar__tab_link j-sidebar__tab_link m-sidebar__tab_link_new" data-action="create">create new chats</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content j-content">
+                <div class="dashboard__wellcome">
+                    <div class="wellcome__inner">
+                        <h3 class="wellcome__title">
+                            Wellcome to qiockblox chat sample!
+                        </h3>
+                        <p class="wellcome__description">
+                            Please select you opponent to start chatting.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="tpl_dachboardHeader">
+
+    </script>
+
+    <script src="./js/QBconfig.js"></script>
+    <script src="./js/helpers.js"></script>
+    <script src="./js/app.js"></script>
+    <script src="./js/router.js"></script>
+</body>
+</html>
