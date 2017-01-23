@@ -9,18 +9,25 @@
 
 function App (config) {
     this._config = config;
-    this._isLogin = false;
     this.user = null;
     this.token = null;
     this.dialogId = null;
     this.prevDialogId = null;
     this.limit = config.limit || 50;
+    this.scroll = {
+        messages: null,
+        dialogs: null,
+        users: null
+    };
+
     // Elements
     this.page = document.querySelector('#page');
     this.contentTitle = null;
     this.contentInner = null;
     this.messagesContainer = null;
     this.conversationLinks = null;
+
+    //
     this.init(this._config);
 };
 
@@ -95,6 +102,7 @@ App.prototype.tabSelectInit = function(){
 
     function tabClickEvent (e){
         e.preventDefault();
+
         var tab = e.currentTarget;
 
         if(tab.classList.contains('active')){
@@ -102,6 +110,7 @@ App.prototype.tabSelectInit = function(){
         }
 
         _.each(tabs, removeActiveClass);
+
         tab.classList.add('active');
 
         if(tab.dataset.type === 'create'){
@@ -135,7 +144,6 @@ App.prototype.loadDialogs = function(type){
         }
 
         var dialogs = resDialogs.items;
-
         // add info about users to cache.
         var pearToPearDialogs = dialogs.filter(function(dialog){
             if(dialog.type === 3) {
@@ -156,6 +164,11 @@ App.prototype.loadDialogs = function(type){
         _.each(dialogs, function(dialog){
             self.buildDialog(dialog);
         });
+
+        if(self.dialogId){
+            var dialog = document.getElementById(self.dialogId);
+            if(dialog) dialog.classList.add('selected');
+        }
     });
 };
 
@@ -163,7 +176,7 @@ App.prototype.buildDialog = function(dialog, setAsFirst){
     var self = this,
         compiledDialogParams = helpers.compileDialogParams(dialog);
 
-    cache.setDilog(dialog._id, compiledDialogParams);
+    cache.setDialog(dialog._id, compiledDialogParams);
 
     var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
         elem = helpers.toHtml(template)[0];
@@ -202,10 +215,11 @@ App.prototype.renderDialog = function(id){
         helpers.clearView(this.contentInner);
         this.contentInner.innerHTML = helpers.fillTemplate('tpl_chatInput');
         self.messagesContainer = document.querySelector('.j-messages');
+        document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
-        if(self.prevDialogId) cache.setDilog(self.prevDialogId, null, null, draft);
+        if(self.prevDialogId) cache.setDialog(self.prevDialogId, null, null, draft);
 
         helpers.clearView(self.messagesContainer);
     }
@@ -218,7 +232,7 @@ App.prototype.renderDialog = function(id){
         for(var i = 0; i < dialogData.messages.length; i++){
             self.renderMessage(dialogData.messages[i], false);
         }
-
+        self.scrollTo('messages', 'bottom');
     } else {
         self.getMessages({
             chat_dialog_id: self.dialogId,
@@ -233,11 +247,42 @@ App.prototype.getMessages = function(params){
     var self = this;
     QB.chat.message.list(params, function(err, messages) {
         if (messages) {
-            cache.setDilog(params.chat_dialog_id, null, messages.items);
+            cache.setDialog(params.chat_dialog_id, null, messages.items, null);
 
             for(var i=0;i<messages.items.length; i++){
                 var message = helpers.fillMessagePrams(messages.items[i]);
                 self.renderMessage(message, false);
+            }
+
+            if(!params.skip){
+                self.scrollTo('messages', 'bottom');
+            }
+
+
+            if(!cache.getDialog(params.chat_dialog_id).full){
+                console.log('can load more');
+                if (!self.messagesContainer.querySelector('.load_more__btn')) {
+                    var tpl = helpers.fillTemplate('tpl_loadMoreMessages'),
+                        btnWrap = helpers.toHtml(tpl)[0],
+                        btn = btnWrap.firstElementChild;
+
+                    btn.addEventListener('click', function(){
+                        self.getMessages({
+                            chat_dialog_id: self.dialogId,
+                            sort_desc: 'date_sent',
+                            limit: self.limit,
+                            skip: cache.getDialog(self.dialogId).messages.length
+                        });
+                    });
+
+                    self.messagesContainer.insertBefore(btnWrap, self.messagesContainer.firstElementChild);
+                } else {
+
+                }
+            } else {
+                if (self.messagesContainer.querySelector('.load_more__btn')) {
+                    console.log('need to remove');
+                }
             }
         } else {
             console.log(err);
@@ -251,6 +296,20 @@ App.prototype.renderMessage = function(message, setAsFirst){
     var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
+    if(message.attachments.length){
+        var images = elem.querySelectorAll('.message_attachment');
+        for(var i = 0; i < images.length; i++){
+            images[i].addEventListener('load', function(e){
+                var img = e.target,
+                    imgPos = self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop - img.offsetTop + self.contentTitle.offsetHeight,
+                    scrollHeight = self.messagesContainer.scrollTop + img.offsetHeight;
+
+                img.classList.add('loaded');
+
+                if(imgPos > 0) app.messagesContainer.scrollTop = scrollHeight;
+            });
+        }
+    }
     if(setAsFirst) {
         self.messagesContainer.appendChild(elem);
     } else {
@@ -268,10 +327,51 @@ App.prototype.createDialog = function(){
     console.log('create new dialog');
 };
 
-App.prototype.sendMessage = function(){
-    var msg = {
+App.prototype.sendMessage = function(e){
+    e.preventDefault();
 
-    };
+    var self = this,
+        dialog = cache.getDialog(self.dialogId),
+        msg = {
+            type: dialog.type === 3 ? 'chat' : 'groupchat',
+            body: document.forms.send_message.message_feald.value,
+            extension: {
+                save_to_history: 1,
+            }
+        },
+        messageId = QB.chat.send(dialog.jidOrUserId, msg);
+
+    document.forms.send_message.message_feald.value = '';
+
+    msg.id = messageId;
+    msg.extension.dialog_id = app.dialogId;
+
+    var message = helpers.fillNewMessagePrams(self.user.id, msg);
+
+    cache.setDialog(self.dialogId, null, message);
+
+    if(dialog.type === 3) {
+        self.renderMessage(message, true);
+    }
+};
+
+App.prototype.scrollTo = function (item, position) {
+    var self = this,
+        // users: null
+        elem = item === 'messages' ? self.messagesContainer :
+            'messages' ? self.conversationLinks : false,
+        elemHeight = elem.offsetHeight,
+        elemScrollHeight = elem.scrollHeight;
+
+    if(position === 'bottom'){
+        if((elemScrollHeight - elemHeight) > 0) {
+            elem.scrollTop = elemScrollHeight;
+        }
+    } else if (position === 'top'){
+        elem.scrollTop = 0;
+    } else if(+position) {
+        elem.scrollTop = +position
+    }
 };
 
 // QBconfig was loaded from QBconfig.js file

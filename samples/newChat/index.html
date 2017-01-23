@@ -125,13 +125,13 @@
             <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
             <div class="message__actions">
                 <button class="send_btn">send</button>
-                <button class="attach_btn"></button>
+                <input type="file" class="attach_btn" multiple></input>
             </div>
         </form>
     </script>
 
     <script type="text/template" id="tpl_message">
-        <div class="message__wrap" id="<%- message.id %>">
+        <div class="message__wrap" id="<%- message._id %>">
             <span class="message__avatar m-user__img_<%- sender.color %>"></span>
             <div class="message__content_wrap">
                 <p class="message__sender_name"><%- sender.name %></p>
@@ -144,6 +144,12 @@
                 <% } %>
             </div>
 
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_loadMoreMessages">
+        <div class="load_more__wrap">
+            <button class="load_more__btn">Load More</button>
         </div>
     </script>
 

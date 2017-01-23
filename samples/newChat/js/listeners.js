@@ -18,14 +18,12 @@
  */
 
 
-function Listeners(){};
+function Listeners(){}
 
 Listeners.prototype.onMessageListener = function(userId, message){
     var msg = helpers.fillNewMessagePrams(userId, message);
 
-    cache.setDilog(message.dialog_id, null, msg, msg.message);
-
-
+    cache.setDialog(message.dialog_id, null, msg);
 
     if(app.dialogId === msg.chat_dialog_id){
         app.renderMessage(msg, true);
@@ -35,7 +33,6 @@ Listeners.prototype.onMessageListener = function(userId, message){
     } else {
         console.log('create new dialog');
     }
-
 };
 
 Listeners.prototype.onSentMessageCallback = function(){
@@ -51,9 +48,7 @@ Listeners.prototype.onReadStatusListener = function(){
 };
 
 Listeners.prototype.setListeners = function(){
-
-    QB.chat.onMessageListener = this.onMessageListener
-    console.log('set QB listeners');
+    QB.chat.onMessageListener = this.onMessageListener;
 };
 
 var listeners = new Listeners();

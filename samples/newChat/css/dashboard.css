@@ -296,6 +296,22 @@
     END WELLCOME MESSAGE
 */
 
+.load_more__btn {
+    display: block;
+    color: white;
+    background-color: #4054B2;
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px;
+    width: 130px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    margin: 0 auto 20px
+}
+
 .messages {
     flex: 1 1 100%;
     overflow: hidden;
@@ -332,6 +348,13 @@
 .message_attachment {
     width: 100%;
     max-width: 328px;
+    position: absolute;
+    visibility: hidden;
+}
+
+.message_attachment.loaded {
+    position: static;
+    visibility: visible;
 }
 
 .send_message {

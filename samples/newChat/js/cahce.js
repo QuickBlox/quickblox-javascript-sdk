@@ -28,25 +28,40 @@ function CACHE () {
     this.user = function(){};
 }
 
-CACHE.prototype.setDilog = function(id, dialog, messages, draft){
+CACHE.prototype.setDialog = function(id, dialog, messages, draft){
     // CHECK, do we have this method in our cache module.
     if(!this._dialogs[id]){
         this._dialogs[id] = {
-            count: null,
+            full: false,
             messages: [],
             draft: draft || '',
             users: dialog.users || [],
-            name: dialog.name || ''
+            name: dialog.name || '',
+            type: dialog.type,
+            jidOrUserId: dialog.xmpp_room_jid || getRecipientUserId(dialog.users)
         };
     }
 
     if(messages && Array.isArray(messages)){
         this._dialogs[id].messages = this._dialogs[id].messages.concat(messages);
+        if(messages.length > app.limit){
+            this._dialogs[id].full = true;
+        }
     } else if (messages){
         this._dialogs[id].messages.unshift(messages);
     }
 
     this._dialogs[id].draft = draft || null;
+
+    function getRecipientUserId (users){
+        if(users.length === 2){
+            return users.filter(function(user){
+                if(user !== app.user.id){
+                    return user;
+                }
+            })[0];
+        }
+    }
 };
 
 CACHE.prototype.getDialog = function(id){

@@ -51,12 +51,11 @@ Helpers.prototype.fillMessagePrams = function(message){
 };
 
 Helpers.prototype.fillNewMessagePrams = function(userId, msg){
-    console.log(msg);
     return {
         _id: msg.id,
         attachments: msg.extension.attachments || [],
-        created_at: +msg.extension.date_sent,
-        date_sent: +msg.extension.date_sent,
+        created_at: +msg.extension.date_sent || Date.now(),
+        date_sent: +msg.extension.date_sent  || Date.now(),
         delivered_ids: [],
         message: msg.body,
         read_ids: [],
