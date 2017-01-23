@@ -6,6 +6,13 @@
 </head>
 <body>
 
+<button id="login" >Login</button>
+<button id="send_request" >Send a request</button>
+
+<hr>
+
+<button id="remove_session" type="button">Remove the session</button>
+
 
 <script src="../quickblox.min.js"></script>
 
@@ -27,26 +34,50 @@ var user = {
     password: '49249session'
 }
 
+// email sessionmanagment@test.com
+// login sessionmanagment
+// pass 49249sessionmanagment
+// id 23125767
 var userParams = {
-    email: 'garry@gmail.com',
-    password: 'garry5santos'
+    email: 'sessionmanagment@test.com',
+    password: '49249sessionmanagment'
 };
 
+var removeSession = document.getElementById('remove_session');
+var sendRequest = document.getElementById('send_request');
+var login = document.getElementById('login');
 
 // By session ('asdasdasd', creds.appId)
-QB.init(creds.appId, creds.authKey, creds.authSecret).then(function(sessionToken) {
+QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sessionToken) {
     console.info(`Success init ${sessionToken}`);
-    
-    QB.login(userParams, function(err, result) {
-
-        console.info(result);
-        console.error(err);
+ 
+    removeSession.addEventListener('click', function() {
+        QB.destroySession(function() {
+            console.info('Destroy the session');
+        })
+        
+        return false;
     });
-});
 
-// QB.createSession(function(err, result) {
-//     // console.info(result);
-// });
+    /* LOGIN */
+    login.addEventListener('click', function() {
+        QB.login(userParams, function(err, result) {
+            console.log('LOGIN Callback', result, err);
+        });
+
+        return false;
+    });
+    
+    /* SEND REQUEST */
+    sendRequest.addEventListener('click', function() {
+        QB.chat.dialog.list(null, function(err, resDialogs) {
+            err ? console.error(err) : console.info(resDialogs);
+        });
+
+        return false;
+    });
+
+});
 </script>
 </body>
 </html>

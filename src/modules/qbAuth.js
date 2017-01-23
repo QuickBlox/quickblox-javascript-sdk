@@ -52,28 +52,39 @@ AuthProxy.prototype = {
   },
 
   destroySession: function(callback) {
-    var _this = this;
     Utils.QBLog('[AuthProxy]', 'destroySession');
 
-    this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
-                      function(err, res) {
-                        if (err) {
-                          callback(err, null);
-                        } else {
-                          _this.service.setSession(null);
-                          callback(null, res);
-                        }
-                      });
+    var _this = this,
+        reqParams = {
+          type: 'DELETE',
+          dataType: 'text',
+          url: Utils.getUrl(config.urls.session)
+        };
+
+    this.service.ajax(reqParams, function(err, res) {
+      if (err) {
+        callback(err, null);
+      } else {
+        _this.service.setSession(null);
+        callback(null, res);
+      }
+    }, true);
   },
 
   login: function(params, callback) {
     Utils.QBLog('[AuthProxy]', 'login', params);
+    
+    var reqParams = {
+      type: 'POST',
+      url: Utils.getUrl(config.urls.login),
+      data: params
+    };
 
-    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-                      function(err, res) {
-                        if (err) { callback(err, null); }
-                        else { callback(null, res.user); }
-                      });
+    this.service.ajax(reqParams,
+      function(err, res) {
+        if (err) { callback(err, null); }
+        else { callback(null, res.user); }
+      }, true);
   },
 
   logout: function(callback) {

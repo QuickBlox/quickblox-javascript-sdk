@@ -9,7 +9,6 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-var sessionManager = require('./qbSession');
 
 var isBrowser = typeof window !== 'undefined';
 
@@ -43,6 +42,34 @@ QuickBlox.prototype = {
          * @memberof QB
          * */
         this.buildNumber = config.buildNumber;
+
+        var sessionManagerParams = {};
+
+        // Initialization by outside token
+        if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
+            if(typeof authKeyOrAppId === 'number'){
+                config.creds.appId = authKeyOrAppId;
+            }
+
+            if(config.sessionManagement) {
+                sessionManagerParams.sessionToken = appIdOrToken;
+                sessionManagerParams.appId = authKeyOrAppId;
+            }
+  
+            this.service.setSession({ token: appIdOrToken });
+        } else {
+            config.creds.appId = appIdOrToken;
+            config.creds.authKey = authKeyOrAppId;
+            config.creds.authSecret = authSecret;
+
+            if(config.sessionManagement) {
+                sessionManagerParams = {
+                    appId: appIdOrToken,
+                    authKey: authKeyOrAppId,
+                    authSecret: authSecret
+                };
+            }
+        }
 
         var Proxy = require('./qbProxy');
         this.service = new Proxy();
@@ -81,40 +108,9 @@ QuickBlox.prototype = {
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
 
-        var sessionManagerParams = {};
-
-        // Initialization by outside token
-        if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
-
-            if(typeof authKeyOrAppId === 'number'){
-                config.creds.appId = authKeyOrAppId;
-            }
-
-            if(config.sessionManagement) {
-                sessionManagerParams.sessionToken = appIdOrToken;
-                sessionManagerParams.appId = authKeyOrAppId;
-            }
-  
-            this.service.setSession({ token: appIdOrToken });
-        } else {
-            config.creds.appId = appIdOrToken;
-            config.creds.authKey = authKeyOrAppId;
-            config.creds.authSecret = authSecret;
-
-            if(config.sessionManagement) {
-                sessionManagerParams = {
-                    appId: appIdOrToken,
-                    authKey: authKeyOrAppId,
-                    authSecret: authSecret
-                };
-            }
-        }
-
         if(config.sessionManagement) {
-            self.sessionManager = new sessionManager();
-            return self.sessionManager.create(sessionManagerParams).then(function(sessionToken) {
-                self.service.setSession({ token: sessionToken });
-            });
+            // return promise
+            return this.service._initSession(sessionManagerParams);
         }
     },
 
@@ -177,12 +173,8 @@ QuickBlox.prototype = {
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | Object} result - User data object if everything goes well and null on error.
          * */
-        this.auth.login(data, this.sessionManager.getReqHeaders, function(error, result) {
-        //     // UPD session
-        //     self.sessionManager.get().then(function(responce) {
-        //         console.info(responce);
-        //     })
-        //     callback(error, result);
+        this.auth.login(data, function(error, result) {
+            callback(error, result);
         });
     },
 

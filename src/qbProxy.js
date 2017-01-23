@@ -2,6 +2,7 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+var sessionManager = require('./qbSession');
 
 var versionNum = config.version;
 
@@ -17,15 +18,27 @@ if (!isBrowser) {
 
 var ajax = require('./plugins/jquery.ajax').ajax;
 
-function ServiceProxy() {
-  this.qbInst = {
-    config: config,
-    session: null,
-    _onSessionExpired: null
-  };
+function ServiceProxy(sessionParams) {
+    var self = this;
+
+    self.qbInst = {
+        config: config,
+        session: null
+    };
+
+    self.sessionManager = null;
+
+    if(!config.sessionManagement) {
+        self.qbInst.session = null;
+    } else {
+        self.sessionManager = new sessionManager();
+    }
 }
 
 ServiceProxy.prototype = {
+    _initSession: function(sessionParams) {
+        return this.sessionManager.create(sessionParams);
+    },
     setSession: function(session) {
         this.qbInst.session = session;
     },
@@ -48,7 +61,7 @@ ServiceProxy.prototype = {
             }
         }
     },
-    ajax: function(params, callback) {
+    ajax: function(params, callback, isNeededUpdateSession) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
         var _this = this,
@@ -78,9 +91,15 @@ ServiceProxy.prototype = {
             data: params.data || ' ',
             timeout: config.timeout,
             beforeSend: function(jqXHR, settings) {
+                // console.info(config.sessionManagement);
+                // console.info(config.sessionManagement);
+
                 if (settings.url.indexOf('s3.amazonaws.com') === -1) {
                     if (_this.qbInst.session && _this.qbInst.session.token) {
                         jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
+                        jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
+                    } else if (config.sessionManagement && _this.sessionManager) {
+                        jqXHR.setRequestHeader('QB-Token', _this.sessionManager.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
                     }
                 }
@@ -89,7 +108,11 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    _this.handleResponse(null, data, callback, retry);
+                    if(isNeededUpdateSession) {
+                        _this.sessionManager.get().then(function() {
+                            _this.handleResponse(null, data, callback, retry);
+                        });
+                    }
                 } else {
                     callback(null, data);
                 }

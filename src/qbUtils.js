@@ -107,7 +107,7 @@ var Utils = {
 
         var logger;
         this.loggers = [];
-
+        
         var consoleLoggerFunction = function(){
             var logger = function(args){
                 console.log.apply(console, Array.prototype.slice.call(args));
@@ -144,7 +144,6 @@ var Utils = {
 
         // Build loggers
         // format "debug: { }"
-
         if(typeof config.debug === 'object'){
             if(typeof config.debug.mode === 'number'){
                 if(config.debug.mode == 1){

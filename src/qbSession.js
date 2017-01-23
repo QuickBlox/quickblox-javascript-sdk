@@ -28,12 +28,9 @@ var UTILS = require('./qbUtils');
  * @param {String} args.[].authSecret - 
  * 
  */
-function SessionManager() {
+function SessionManager(params) {
     this.session = null;
     this.queue = [];
-
-    // create AS
-    // this.session = this.create(params);
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
@@ -48,7 +45,7 @@ SessionManager.prototype.create = function(params) {
             'data': self._createASRequestParams(params)
         }).done(function(response) {
             self.session = response.session;
-  
+
             resolve(self.session.token);
         }).fail(function(jqXHR, textStatus) {
             reject(jqXHR, textStatus);
@@ -95,7 +92,7 @@ SessionManager.prototype._createASRequestParams = function (params) {
 
 SessionManager.prototype.get = function() {
     var self = this;
-
+    console.info('SessionManager GET');
     var reqParams = {
         'url': UTILS.getUrl(CONFIG.urls.session),
         beforeSend: function(jqXHR) {
@@ -108,16 +105,11 @@ SessionManager.prototype.get = function() {
         SessionManager._ajax(reqParams)
             .done(function(response) {
                 resolve(response);
-                console.info(response);
+                console.info('SessionManager GET', response);
             }).fail(function(jqXHR, textStatus) {
                 reject(jqXHR, textStatus);
             });
     });
-};
-
-SessionManager.prototype.getReqHeaders = function(jqXHR) {
-    jqXHR.setRequestHeader('QB-Token', this.session.token);
-    jqXHR.setRequestHeader('QB-SDK', 'JS ' + CONFIG.version + ' - Client');
 };
 
 SessionManager.prototype.destroy = function(){
