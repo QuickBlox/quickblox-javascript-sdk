@@ -139,9 +139,8 @@
                     <% _.each(message.attachments, function(attachment){ %>
                         <img src="<%- attachment.src %>" alt="attachment" class="message_attachment">
                     <% }); %>
-                <img src="">
                 <% } else { %>
-                    <p class="message__text"><%- message.message %></p>
+                    <p class="message__text"><%- message.message || message.body %></p>
                 <% } %>
             </div>
 

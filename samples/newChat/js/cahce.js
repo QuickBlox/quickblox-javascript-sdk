@@ -34,7 +34,7 @@ CACHE.prototype.setDilog = function(id, dialog, messages, draft){
         this._dialogs[id] = {
             count: null,
             messages: [],
-            draft: draft || null,
+            draft: draft || '',
             users: dialog.users || [],
             name: dialog.name || ''
         };
@@ -43,7 +43,7 @@ CACHE.prototype.setDilog = function(id, dialog, messages, draft){
     if(messages && Array.isArray(messages)){
         this._dialogs[id].messages = this._dialogs[id].messages.concat(messages);
     } else if (messages){
-        this._dialogs[id].messages.push(messages);
+        this._dialogs[id].messages.unshift(messages);
     }
 
     this._dialogs[id].draft = draft || null;

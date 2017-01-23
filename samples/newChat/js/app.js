@@ -13,6 +13,7 @@ function App (config) {
     this.user = null;
     this.token = null;
     this.dialogId = null;
+    this.prevDialogId = null;
     this.limit = config.limit || 50;
     // Elements
     this.page = document.querySelector('#page');
@@ -79,6 +80,9 @@ App.prototype.loadDashboard = function(){
     this.contentTitle = document.querySelector('.j-content__title');
     this.contentInner =  document.querySelector('.j-content__inner');
     this.conversationLinks = document.querySelector('.j-conversation_links_container');
+
+    listeners.setListeners();
+
     this.loadDialogs('chat');
     this.tabSelectInit();
 };
@@ -174,6 +178,7 @@ App.prototype.buildDialog = function(dialog, setAsFirst){
         }
 
         elem.classList.add('selected');
+        self.prevDialogId = self.dialogId;
         self.dialogId = e.currentTarget.id;
         self.renderDialog(e.currentTarget.id);
     });
@@ -198,12 +203,17 @@ App.prototype.renderDialog = function(id){
         this.contentInner.innerHTML = helpers.fillTemplate('tpl_chatInput');
         self.messagesContainer = document.querySelector('.j-messages');
     } else {
-        var lastMessage = document.forms.send_message.message_feald.value;
-        cache.setDilog(app.dialogId, null, lastMessage);
+        var draft = document.forms.send_message.message_feald.value;
+
+        if(self.prevDialogId) cache.setDilog(self.prevDialogId, null, null, draft);
+
         helpers.clearView(self.messagesContainer);
     }
 
     var dialogData = cache.getDialog(self.dialogId);
+
+    document.forms.send_message.message_feald.value = dialogData.draft;
+
     if(dialogData && dialogData.messages.length){
         for(var i = 0; i < dialogData.messages.length; i++){
             self.renderMessage(dialogData.messages[i], false);
@@ -227,7 +237,6 @@ App.prototype.getMessages = function(params){
 
             for(var i=0;i<messages.items.length; i++){
                 var message = helpers.fillMessagePrams(messages.items[i]);
-
                 self.renderMessage(message, false);
             }
         } else {
@@ -238,19 +247,31 @@ App.prototype.getMessages = function(params){
 
 App.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
-        sender = cache.getUser(message.sender_id),
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+        sender = cache.getUser(message.sender_id);
+    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
-    if(!setAsFirst) {
+    if(setAsFirst) {
         self.messagesContainer.appendChild(elem);
     } else {
         self.messagesContainer.insertBefore(elem, self.messagesContainer.firstElementChild);
     }
 };
 
+App.prototype.changeLastMessagePreview = function(dialogId, msg){
+    var dialog = document.getElementById(dialogId);
+
+    dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
+};
+
 App.prototype.createDialog = function(){
     console.log('create new dialog');
+};
+
+App.prototype.sendMessage = function(){
+    var msg = {
+
+    };
 };
 
 // QBconfig was loaded from QBconfig.js file

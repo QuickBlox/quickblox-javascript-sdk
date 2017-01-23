@@ -50,6 +50,21 @@ Helpers.prototype.fillMessagePrams = function(message){
     return message;
 };
 
+Helpers.prototype.fillNewMessagePrams = function(userId, msg){
+    console.log(msg);
+    return {
+        _id: msg.id,
+        attachments: msg.extension.attachments || [],
+        created_at: +msg.extension.date_sent,
+        date_sent: +msg.extension.date_sent,
+        delivered_ids: [],
+        message: msg.body,
+        read_ids: [],
+        sender_id: userId,
+        chat_dialog_id: msg.extension.dialog_id
+    };
+};
+
 Helpers.prototype.addEvent = function(elems, eventType, callback){
     _.each(elems, addEvent);
 
