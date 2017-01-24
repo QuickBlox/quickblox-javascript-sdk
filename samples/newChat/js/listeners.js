@@ -28,6 +28,7 @@ Listeners.prototype.onMessageListener = function(userId, message){
     if(app.dialogId === msg.chat_dialog_id){
         app.renderMessage(msg, true);
         app.changeLastMessagePreview(msg.chat_dialog_id, msg);
+        app.scrollTo('messages', 'bottom');
     } else if (cache.getDialog(msg.chat_dialog_id)){
         app.changeLastMessagePreview(msg.chat_dialog_id, msg);
     } else {

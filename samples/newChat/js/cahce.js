@@ -44,7 +44,7 @@ CACHE.prototype.setDialog = function(id, dialog, messages, draft){
 
     if(messages && Array.isArray(messages)){
         this._dialogs[id].messages = this._dialogs[id].messages.concat(messages);
-        if(messages.length > app.limit){
+        if(messages.length < app.limit){
             this._dialogs[id].full = true;
         }
     } else if (messages){
@@ -75,7 +75,9 @@ CACHE.prototype.setUser = function(user){
     _.each(usersArray, function(user){
         self._users[user.id] = {
             name: user.name,
-            color: user.color
+            color: user.color,
+            lastSeen: user.last_request_at,
+            id: user.id
         }
     })
 };
@@ -119,7 +121,6 @@ CACHE.prototype.checkCachedUsersInDialog = function(id){
                     }
                 }
             });
-
             app.renderDialog(id);
         });
     }

@@ -97,7 +97,14 @@
 
 .sidebar__tab_link.m-sidebar__tab_link_new {
     font-size: 0;
-    background: url('../img/group-chat.svg') no-repeat 50%, 50%;
+    background-color: #778594;
+    -webkit-mask: url(../img/group-chat.svg) no-repeat 50% 50%;
+    mask: url(../img/group-chat.svg) no-repeat 50% 50%;
+}
+
+.sidebar__tab_link.m-sidebar__tab_link_new:hover,
+.sidebar__tab_link.m-sidebar__tab_link_new.active {
+    background-color: #18C942;
 }
 
 .sidebar__tab_link:hover,

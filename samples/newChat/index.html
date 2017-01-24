@@ -153,6 +153,23 @@
         </div>
     </script>
 
+    <script type="text/template" id="tpl_newGroupChatTitle">
+        <button class="back_to_dialog j-back_to_dialog"></button>
+        <h1 class="group_chat__title">New Group Chat</h1>
+    </script>
+
+    <script type="text/template" id="tpl_newGroupChatContent">
+        <p class="group__chat__description">Select participants:</p>
+        <ul class="group_chat__user_list j-group_chat__user_list">
+        </ul>
+    </script>
+
+    <script type="text/template" id="tpl_newGroupChatUser">
+        <li data-id="<%- user.id %>">
+            <%- user.name %>
+        </li>
+    </script>
+
     <script src="./js/QBconfig.js" defer></script>
     <script src="./js/cahce.js" defer></script>
     <script src="js/listeners.js" defer></script>

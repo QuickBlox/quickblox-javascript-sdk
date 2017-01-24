@@ -7,6 +7,7 @@ body, html {
     width: 100%;
     background-color: #f0f2f4;
     font-family: 'Roboto', sans-serif;
+    overflow: hidden
 }
 
 select, button, textarea {
@@ -18,7 +19,7 @@ select, button, textarea {
 
 #page {
     height: 100%;
-    width: 100%;
+    width: 100%;;
 }
 
 /*

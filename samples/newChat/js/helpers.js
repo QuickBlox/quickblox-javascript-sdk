@@ -20,7 +20,6 @@ Helpers.prototype.clearView = function(view){
 
 Helpers.prototype.compileDialogParams = function(dialog){
     var lastDate;
-
     if(dialog.last_message_date_sent){
         var date = new Date(dialog.last_message_date_sent);
         lastDate = date.getHours() + ':' + date.getMinutes();
@@ -33,7 +32,8 @@ Helpers.prototype.compileDialogParams = function(dialog){
         last_message: dialog.last_message === '[attachment]' ? 'Attachment' : dialog.last_message,
         attachment: dialog.last_message === '[attachment]',
         last_message_date_sent: lastDate,
-        users: dialog.occupants_ids || []
+        users: dialog.occupants_ids || [],
+        xmpp_room_jid: dialog.xmpp_room_jid
     };
 };
 

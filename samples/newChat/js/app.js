@@ -13,7 +13,10 @@ function App (config) {
     this.token = null;
     this.dialogId = null;
     this.prevDialogId = null;
-    this.limit = config.limit || 50;
+    this.messagesLimit = appConfig.messagesPerRequers || 50;
+    this.usersLimit = appConfig.usersPerRequest || 50;
+    this.usersPage = null;
+
     this.scroll = {
         messages: null,
         dialogs: null,
@@ -26,8 +29,8 @@ function App (config) {
     this.contentInner = null;
     this.messagesContainer = null;
     this.conversationLinks = null;
+    this.userListConteiner = null;
 
-    //
     this.init(this._config);
 };
 
@@ -114,7 +117,7 @@ App.prototype.tabSelectInit = function(){
         tab.classList.add('active');
 
         if(tab.dataset.type === 'create'){
-            self.createDialog();
+            self.buildCreateDialogTpl();
         } else {
             self.loadDialogs(tab.dataset.type);
         }
@@ -237,7 +240,7 @@ App.prototype.renderDialog = function(id){
         self.getMessages({
             chat_dialog_id: self.dialogId,
             sort_desc: 'date_sent',
-            limit: self.limit,
+            limit: self.messagesLimit,
             skip: 0
         });
     }
@@ -249,45 +252,55 @@ App.prototype.getMessages = function(params){
         if (messages) {
             cache.setDialog(params.chat_dialog_id, null, messages.items, null);
 
+            if(self.dialogId !== params.chat_dialog_id) return false;
+
             for(var i=0;i<messages.items.length; i++){
                 var message = helpers.fillMessagePrams(messages.items[i]);
                 self.renderMessage(message, false);
             }
 
+            self.initLoadMoreBtn();
+
             if(!params.skip){
                 self.scrollTo('messages', 'bottom');
             }
 
-
-            if(!cache.getDialog(params.chat_dialog_id).full){
-                console.log('can load more');
-                if (!self.messagesContainer.querySelector('.load_more__btn')) {
-                    var tpl = helpers.fillTemplate('tpl_loadMoreMessages'),
-                        btnWrap = helpers.toHtml(tpl)[0],
-                        btn = btnWrap.firstElementChild;
-
-                    btn.addEventListener('click', function(){
-                        self.getMessages({
-                            chat_dialog_id: self.dialogId,
-                            sort_desc: 'date_sent',
-                            limit: self.limit,
-                            skip: cache.getDialog(self.dialogId).messages.length
-                        });
-                    });
-
-                    self.messagesContainer.insertBefore(btnWrap, self.messagesContainer.firstElementChild);
-                } else {
-
-                }
-            } else {
-                if (self.messagesContainer.querySelector('.load_more__btn')) {
-                    console.log('need to remove');
-                }
-            }
         } else {
             console.log(err);
         }
     });
+};
+
+App.prototype.initLoadMoreBtn = function(){
+    var self = this,
+        loadBtn = self.messagesContainer.querySelector('.load_more__btn');
+
+    if(!cache.getDialog(self.dialogId).full){
+        if (!loadBtn) {
+            var tpl = helpers.fillTemplate('tpl_loadMoreMessages'),
+                btnWrap = helpers.toHtml(tpl)[0],
+                btn = btnWrap.firstElementChild;
+
+            btn.addEventListener('click', function(){
+                btn.innerText = 'Loading...';
+
+                self.getMessages({
+                    chat_dialog_id: self.dialogId,
+                    sort_desc: 'date_sent',
+                    limit: self.messagesLimit,
+                    skip: cache.getDialog(self.dialogId).messages.length
+                });
+            });
+            self.messagesContainer.insertBefore(btnWrap, self.messagesContainer.firstElementChild);
+        } else {
+            loadBtn.innerText = 'Load more';
+            self.messagesContainer.insertBefore(loadBtn.parentElement, self.messagesContainer.firstElementChild);
+        }
+    } else {
+        if (loadBtn) {
+            self.messagesContainer.removeChild(loadBtn.parentElement);
+        }
+    }
 };
 
 App.prototype.renderMessage = function(message, setAsFirst){
@@ -323,10 +336,6 @@ App.prototype.changeLastMessagePreview = function(dialogId, msg){
     dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
 };
 
-App.prototype.createDialog = function(){
-    console.log('create new dialog');
-};
-
 App.prototype.sendMessage = function(e){
     e.preventDefault();
 
@@ -346,13 +355,71 @@ App.prototype.sendMessage = function(e){
     msg.id = messageId;
     msg.extension.dialog_id = app.dialogId;
 
-    var message = helpers.fillNewMessagePrams(self.user.id, msg);
+    var message = helpers.fillNewMessagePrams(self.user.id, msg),
+        scrollPosition = self.messagesContainer.scrollHeight - (self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop);
 
     cache.setDialog(self.dialogId, null, message);
 
     if(dialog.type === 3) {
         self.renderMessage(message, true);
     }
+
+    if(scrollPosition < 10) {
+        self.scrollTo('messages', 'bottom');
+    }
+};
+
+App.prototype.buildCreateDialogTpl = function(){
+    var self = this,
+        titleTpl = helpers.fillTemplate('tpl_newGroupChatTitle'),
+        contentTpl = helpers.fillTemplate('tpl_newGroupChatContent');
+
+
+    helpers.clearView(self.contentTitle);
+    helpers.clearView(self.contentInner);
+
+
+    self.contentTitle.innerHTML = titleTpl;
+    self.contentInner.innerHTML = contentTpl;
+
+    self.messagesContainer = null;
+    self.usersPage = null;
+
+    var backToDialog = self.contentTitle.querySelector('.j-back_to_dialog');
+
+    self.userListConteiner = self.contentInner.querySelector('.j-group_chat__user_list');
+
+    self.getUserList();
+    console.log('create new dialog');
+};
+
+App.prototype.getUserList = function(){
+    var self = this,
+        params = {
+            page: self.usersPage,
+            per_page: self.usersLimit
+        };
+
+    QB.users.listUsers(params, function(err, responce){
+        var users = responce.items;
+        self.usersPage = ++responce.current_page;
+
+        _.each(users, function(data){
+            var user = data.user;
+            user.color = _.random(1, 10);
+            user.name = user.full_name || user.login;
+            cache.setUser(user);
+            self.buildUserItem(user);
+        });
+    });
+};
+
+App.prototype.buildUserItem = function(user){
+    var self = this,
+        userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
+        elem = helpers.toHtml(userTpl)[0];
+
+    self.userListConteiner.appendChild(elem);
 };
 
 App.prototype.scrollTo = function (item, position) {
@@ -373,6 +440,8 @@ App.prototype.scrollTo = function (item, position) {
         elem.scrollTop = +position
     }
 };
+
+
 
 // QBconfig was loaded from QBconfig.js file
 var app = new App(QBconfig);
