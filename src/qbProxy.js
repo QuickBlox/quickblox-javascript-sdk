@@ -91,10 +91,7 @@ ServiceProxy.prototype = {
             data: params.data || ' ',
             timeout: config.timeout,
             beforeSend: function(jqXHR, settings) {
-                // console.info(config.sessionManagement);
-                // console.info(config.sessionManagement);
-
-                if (settings.url.indexOf('s3.amazonaws.com') === -1) {
+                 if (settings.url.indexOf('s3.amazonaws.com') === -1) {
                     if (_this.qbInst.session && _this.qbInst.session.token) {
                         jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');

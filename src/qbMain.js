@@ -16,7 +16,6 @@ var isBrowser = typeof window !== 'undefined';
 function QuickBlox() {}
 
 QuickBlox.prototype = {
-
     /**
      * @memberof QB
      * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.
@@ -44,32 +43,6 @@ QuickBlox.prototype = {
         this.buildNumber = config.buildNumber;
 
         var sessionManagerParams = {};
-
-        // Initialization by outside token
-        if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
-            if(typeof authKeyOrAppId === 'number'){
-                config.creds.appId = authKeyOrAppId;
-            }
-
-            if(config.sessionManagement) {
-                sessionManagerParams.sessionToken = appIdOrToken;
-                sessionManagerParams.appId = authKeyOrAppId;
-            }
-  
-            this.service.setSession({ token: appIdOrToken });
-        } else {
-            config.creds.appId = appIdOrToken;
-            config.creds.authKey = authKeyOrAppId;
-            config.creds.authSecret = authSecret;
-
-            if(config.sessionManagement) {
-                sessionManagerParams = {
-                    appId: appIdOrToken,
-                    authKey: authKeyOrAppId,
-                    authSecret: authSecret
-                };
-            }
-        }
 
         var Proxy = require('./qbProxy');
         this.service = new Proxy();
@@ -107,6 +80,32 @@ QuickBlox.prototype = {
         this.location = new Location(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
+
+        // Initialization by outside token
+        if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
+            if(typeof authKeyOrAppId === 'number'){
+                config.creds.appId = authKeyOrAppId;
+            }
+
+            if(config.sessionManagement) {
+                sessionManagerParams.sessionToken = appIdOrToken;
+                sessionManagerParams.appId = authKeyOrAppId;
+            }
+  
+            this.service.setSession({ token: appIdOrToken });
+        } else {
+            config.creds.appId = appIdOrToken;
+            config.creds.authKey = authKeyOrAppId;
+            config.creds.authSecret = authSecret;
+
+            if(config.sessionManagement) {
+                sessionManagerParams = {
+                    appId: appIdOrToken,
+                    authKey: authKeyOrAppId,
+                    authSecret: authSecret
+                };
+            }
+        }
 
         if(config.sessionManagement) {
             // return promise
