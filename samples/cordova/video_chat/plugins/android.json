@@ -13,13 +13,13 @@
         "cordova-plugin-console": {
             "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
         },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
+        },
         "cordova-plugin-iosrtc": {
             "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
         },
         "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
-        },
-        "cordova-plugin-device": {
             "PACKAGE_NAME": "com.quickblox.cordova.video_chat"
         }
     },

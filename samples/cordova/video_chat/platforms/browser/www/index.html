@@ -355,6 +355,8 @@
           // Read more here https://github.com/eface2face/cordova-plugin-iosrtc
           if (window.device.platform === 'iOS') {
               cordova.plugins.iosrtc.registerGlobals();
+          }else if (window.device.platform === 'Android') {
+            //
           }
 
           // Load JavaScript files async
