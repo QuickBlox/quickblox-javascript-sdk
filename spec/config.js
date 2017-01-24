@@ -27,10 +27,7 @@
       chatProtocol: {
         active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
       },
-      'debug': {
-          'mode': 0,
-          'file': null
-      }
+      'debug': true
     };
 
 

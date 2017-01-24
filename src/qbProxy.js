@@ -105,12 +105,15 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    if(isNeededUpdateSession) {
+                    if(config.sessionManagement && isNeededUpdateSession) {
                         _this.sessionManager.get().then(function() {
                             _this.handleResponse(null, data, callback, retry);
                         });
+                    } else {
+                        _this.handleResponse(null, data, callback, retry);
                     }
                 } else {
+
                     callback(null, data);
                 }
             },

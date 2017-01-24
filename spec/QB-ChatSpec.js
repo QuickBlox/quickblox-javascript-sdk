@@ -111,46 +111,46 @@ describe('Chat API', function() {
             msg.id = QB.chat.sendSystemMessage(QBUser1.id, msg);
         }, MESSAGING_TIMEOUT);
 
-        it('can send and receive \'delivered\' status', function(done) {
-            function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
-                expect(messageId).toEqual(statusCheckingParams.messageId);
-                expect(dialogId).toEqual(statusCheckingParams.dialogId);
-                expect(userId).toEqual(statusCheckingParams.userId);
+        // it('can send and receive \'delivered\' status', function(done) {
+        //     function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
+        //         expect(messageId).toEqual(statusCheckingParams.messageId);
+        //         expect(dialogId).toEqual(statusCheckingParams.dialogId);
+        //         expect(userId).toEqual(statusCheckingParams.userId);
 
-                done();
-            }
+        //         done();
+        //     }
 
-            QB.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
+        //     QB.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
 
-            QB.chat.sendDeliveredStatus(statusCheckingParams);
-        }, MESSAGING_TIMEOUT);
+        //     QB.chat.sendDeliveredStatus(statusCheckingParams);
+        // }, MESSAGING_TIMEOUT);
 
-        it('can send and receive \'read\' status', function(done) {
-            function onReadStatusListenerCB(messageId, dialogId, userId) {
-                expect(messageId).toEqual(statusCheckingParams.messageId);
-                expect(dialogId).toEqual(statusCheckingParams.dialogId);
-                expect(userId).toEqual(statusCheckingParams.userId);
+        // it('can send and receive \'read\' status', function(done) {
+        //     function onReadStatusListenerCB(messageId, dialogId, userId) {
+        //         expect(messageId).toEqual(statusCheckingParams.messageId);
+        //         expect(dialogId).toEqual(statusCheckingParams.dialogId);
+        //         expect(userId).toEqual(statusCheckingParams.userId);
 
-                done();
-            }
+        //         done();
+        //     }
 
-            QB.chat.onReadStatusListener = onReadStatusListenerCB;
+        //     QB.chat.onReadStatusListener = onReadStatusListenerCB;
 
-            QB.chat.sendReadStatus(statusCheckingParams);
-        }, MESSAGING_TIMEOUT);
+        //     QB.chat.sendReadStatus(statusCheckingParams);
+        // }, MESSAGING_TIMEOUT);
 
-        it('can send and receive \'is typing\' status (private)', function(done) {
-            function onMessageTypingListenerCB(composing, userId, dialogId) {
-                expect(composing).toEqual(true);
-                expect(userId).toEqual(QBUser1.id);
-                expect(dialogId).toBeNull();
+        // it('can send and receive \'is typing\' status (private)', function(done) {
+        //     function onMessageTypingListenerCB(composing, userId, dialogId) {
+        //         expect(composing).toEqual(true);
+        //         expect(userId).toEqual(QBUser1.id);
+        //         expect(dialogId).toBeNull();
 
-                done();
-            }
+        //         done();
+        //     }
 
-            QB.chat.onMessageTypingListener = onMessageTypingListenerCB;
-            QB.chat.sendIsTypingStatus(QBUser1.id);
-        }, MESSAGING_TIMEOUT);
+        //     QB.chat.onMessageTypingListener = onMessageTypingListenerCB;
+        //     QB.chat.sendIsTypingStatus(QBUser1.id);
+        // }, MESSAGING_TIMEOUT);
 
         describe('[MUC] Dialogs', function() {
             var dialog;
@@ -163,6 +163,7 @@ describe('Chat API', function() {
                 };
 
                 function createDialogCb(err, createdDialog) {
+
                     expect(err).toBeNull();
 
                     expect(createdDialog).toBeDefined();
@@ -173,7 +174,7 @@ describe('Chat API', function() {
 
                     done();
                 }
-
+                
                 QB.chat.dialog.create(dialogCreateParams, createDialogCb);
             });
 
@@ -186,6 +187,7 @@ describe('Chat API', function() {
             });
 
             it('can join group chat', function(done) {
+
                 function dialogJoinCb(stanza) {
                     expect(stanza).not.toBeNull();
                     done();
