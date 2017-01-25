@@ -140,7 +140,8 @@
     }
 
     .dialog__avatar,
-    .message__avatar{
+    .message__avatar,
+    .user__avatar {
         width: 48px;
         height: 48px;
         display: inline-block;
@@ -152,7 +153,8 @@
         margin: 0 16px 0 0;
     }
     .dialog__avatar.chat,
-    .message__avatar {
+    .message__avatar,
+    .user__avatar {
         background-image: url('../img/ic_account_circle.svg');
     }
 
@@ -161,52 +163,62 @@
     }
 
     .dialog__avatar.m-user__img_1,
-    .message__avatar.m-user__img_1 {
+    .message__avatar.m-user__img_1,
+    .user__avatar.m-user__img_1 {
         background-color: #FF9600;
     }
 
     .dialog__avatar.m-user__img_2,
-    .message__avatar.m-user__img_2{
+    .message__avatar.m-user__img_2,
+    .user__avatar.m-user__img_2 {
         background-color: #CDDA49;
     }
 
     .dialog__avatar.m-user__img_3,
-    .message__avatar.m-user__img_3 {
+    .message__avatar.m-user__img_3,
+    .user__avatar.m-user__img_3 {
         background-color: #159588;
     }
 
     .dialog__avatar.m-user__img_4,
-    .message__avatar.m-user__img_4 {
+    .message__avatar.m-user__img_4,
+    .user__avatar.m-user__img_4 {
         background-color: #FF2D55;
     }
 
     .dialog__avatar.m-user__img_5,
-    .message__avatar.m-user__img_5 {
+    .message__avatar.m-user__img_5,
+    .user__avatar.m-user__img_5 {
         background-color: #44DB5E;
     }
 
     .dialog__avatar.m-user__img_6,
-    .message__avatar.m-user__img_6 {
+    .message__avatar.m-user__img_6,
+    .user__avatar.m-user__img_6 {
         background-color: #1FBCD2;
     }
 
     .dialog__avatar.m-user__img_7,
-    .message__avatar.m-user__img_7 {
+    .message__avatar.m-user__img_7,
+    .user__avatar.m-user__img_7 {
         background-color: #007AFF;
     }
 
     .dialog__avatar.m-user__img_8,
-    .message__avatar.m-user__img_8 {
+    .message__avatar.m-user__img_8,
+    .user__avatar.m-user__img_8 {
         background-color: #9B2FAE;
     }
 
     .dialog__avatar.m-user__img_9,
-    .message__avatar.m-user__img_9 {
+    .message__avatar.m-user__img_9,
+    .user__avatar.m-user__img_9 {
         background-color: #54C7FC;
     }
 
     .dialog__avatar.m-user__img_10,
-    .message__avatar.m-user__img_10 {
+    .message__avatar.m-user__img_10,
+    .user__avatar.m-user__img_10 {
         background-color: #4054B2;
     }
 
@@ -258,7 +270,7 @@
 }
 
 .content__title {
-    display: block;
+    display: flex;
     padding: 19px 16px;
     font-size: 15px;
     font-weight: 500;
@@ -398,3 +410,102 @@
     font: 500 15px/18px 'Roboto', sans-serif;
     text-transform: uppercase;
 }
+
+
+.back_to_dialog {
+    border: none;
+    width: 24px;
+    height: 24px;
+    background-color: #778594;
+    -webkit-mask: url(../img/ic_arrow_back.svg) no-repeat 50% 50%;
+    mask: url(../img/ic_arrow_back.svg) no-repeat 50% 50%;
+    cursor: pointer;
+    flex: 0 0 24px;
+    padding: 0;
+    margin: 0 16px 0 0;
+}
+
+.back_to_dialog:hover {
+    background-color: #18C942;
+}
+
+.group_chat__title {
+    font-size: 22px;
+    line-height: 25px;
+    color: #4A4A4A;
+    flex: 1 1 100%;
+}
+
+.group_chat__user_list {
+    flex: 1 1 100%;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.group__chat__description {
+    font-size: 15px;
+    line-height: 18px;
+    color: #778594;
+    padding: 7px 24px;
+}
+
+.user__item {
+    padding: 8px 24px;
+    display: flex;
+    cursor: pointer;
+}
+
+.user__item:hover,
+.user__item.selected {
+    background-color: #f5f4f2;
+}
+
+.user__name {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    color: #4A4A4A;
+    margin: 0 0 3px;
+}
+.user__last_seen {
+    font-size: 13px;
+    line-height: 15px;
+    color: #778594;
+}
+
+.create_dialog_form {
+    border-top: 1px solid #DADFE1;
+    display: flex;
+    flex: 0 0 66px;
+    padding: 13px 18px;
+}
+
+.dialog_name {
+    flex: 1 1 100%;
+    font-size: 16px;
+    line-height: 19px;
+    border: none;
+    margin: 0 10px 0 0;
+}
+
+.create_dialog_btn {
+    width: 96px;
+    flex: 0 0 96px;
+    background-color: #28C849;
+    border-radius: 2px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 40px;
+    color: #FFFFFF;
+    border: none;
+    text-transform: uppercase;
+    padding: 0;
+    cursor: pointer;
+}
+
+.create_dialog_btn:disabled {
+    background-color: #80E491;
+}
+
+

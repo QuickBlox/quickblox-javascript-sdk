@@ -10,7 +10,7 @@ body, html {
     overflow: hidden
 }
 
-select, button, textarea {
+select, button, textarea, input {
     appearance:none;
     -moz-appearance:none;
     -webkit-appearance:none;
@@ -25,6 +25,7 @@ select, button, textarea {
 /*
  * SCROLLBAR CUSTOMIZATION
  */
+
 ::-webkit-scrollbar {
     width: 5px;
 }

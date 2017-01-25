@@ -273,11 +273,11 @@ App.prototype.getMessages = function(params){
 
 App.prototype.initLoadMoreBtn = function(){
     var self = this,
-        loadBtn = self.messagesContainer.querySelector('.load_more__btn');
+        loadBtn = self.messagesContainer.querySelector('.j-load_more__btn');
 
     if(!cache.getDialog(self.dialogId).full){
         if (!loadBtn) {
-            var tpl = helpers.fillTemplate('tpl_loadMoreMessages'),
+            var tpl = helpers.fillTemplate('tpl_loadMore'),
                 btnWrap = helpers.toHtml(tpl)[0],
                 btn = btnWrap.firstElementChild;
 
@@ -389,8 +389,30 @@ App.prototype.buildCreateDialogTpl = function(){
 
     self.userListConteiner = self.contentInner.querySelector('.j-group_chat__user_list');
 
+    document.forms.create_dialog.addEventListener('submit', function(e){
+       e.preventDefault();
+
+        var items = self.userListConteiner.querySelectorAll('.selected'),
+            type = items.length > 1 ? 2 : 3,
+            name = document.forms.create_dialog.dialog_name.value,
+            occupants_ids = [];
+
+        _.each(items, function(user){
+            occupants_ids.push(+user.id);
+        });
+
+
+        var params = {
+            type: type,
+            occupants_ids: occupants_ids,
+            name: name
+        };
+
+        console.log(params);
+    });
+
     self.getUserList();
-    console.log('create new dialog');
+
 };
 
 App.prototype.getUserList = function(){
@@ -401,16 +423,26 @@ App.prototype.getUserList = function(){
         };
 
     QB.users.listUsers(params, function(err, responce){
+
+        if(err){
+            console.error(err);
+            return false;
+        }
+
         var users = responce.items;
         self.usersPage = ++responce.current_page;
 
         _.each(users, function(data){
             var user = data.user;
+
             user.color = _.random(1, 10);
             user.name = user.full_name || user.login;
             cache.setUser(user);
             self.buildUserItem(user);
         });
+
+        self.initLoadMoreUsers(users.length < self.usersLimit);
+
     });
 };
 
@@ -419,7 +451,46 @@ App.prototype.buildUserItem = function(user){
         userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
         elem = helpers.toHtml(userTpl)[0];
 
+    elem.addEventListener('click', function(){
+        elem.classList.toggle('selected');
+
+        if(self.userListConteiner.querySelectorAll('.selected').length > 0){
+            self.contentInner.querySelector('.j-create_dialog_btn').removeAttribute('disabled');
+        } else {
+            self.contentInner.querySelector('.j-create_dialog_btn').setAttribute('disabled', true);
+        }
+    });
+
     self.userListConteiner.appendChild(elem);
+};
+
+App.prototype.initLoadMoreUsers = function(remove){
+    var self = this,
+        btn = self.contentInner.querySelector('.j-load_more__btn');
+    if(!remove){
+        if(!btn) {
+            var tpl = helpers.fillTemplate('tpl_loadMore'),
+                btnWrap = helpers.toHtml(tpl)[0];
+
+            btn = btnWrap.firstElementChild;
+
+            self.userListConteiner.appendChild(btnWrap);
+
+            btn.addEventListener('click', function(){
+                btn.innerText = 'Loading...';
+                self.getUserList();
+            });
+
+            self.userListConteiner.appendChild(btnWrap);
+
+        } else {
+            btn.innerText = 'Load more';
+            self.userListConteiner.appendChild(btn.parentElement);
+        }
+    } else if(btn) {
+        self.userListConteiner.removeChild(btn.parentElement);
+    }
+
 };
 
 App.prototype.scrollTo = function (item, position) {

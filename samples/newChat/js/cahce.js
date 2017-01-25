@@ -73,11 +73,15 @@ CACHE.prototype.setUser = function(user){
         usersArray = [].concat(user);
 
     _.each(usersArray, function(user){
-        self._users[user.id] = {
-            name: user.name,
-            color: user.color,
-            lastSeen: user.last_request_at,
-            id: user.id
+        if(!self._users[user.id]){
+            self._users[user.id] = {
+                name: user.name,
+                color: user.color,
+                lastSeen: user.last_request_at,
+                id: user.id
+            }
+        } else if(user.last_request_at){
+            self._users[user.id].lastSeen = user.last_request_at;
         }
     })
 };

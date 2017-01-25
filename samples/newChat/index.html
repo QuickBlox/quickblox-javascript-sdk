@@ -93,9 +93,9 @@
                 </div>
             </div>
             <div class="content j-content">
-                <h1 class="content__title j-content__title">
+                <div class="content__title j-content__title">
                     Wellcome to QuickBlox chat sample!
-                </h1>
+                </div>
                 <div class="content__inner j-content__inner">
                     <p class="wellcome__message">
                         Please select you opponent to start chatting.
@@ -108,7 +108,7 @@
     <script type="text/template" id="tpl_userConversations">
             <% var num = _.random(1, 10) %>
             <li class="dialog__item j-dialog__item" id="<%- dialog._id %>" data-name="<%- dialog.name %>">
-                <span class="dialog__avatar m-user__img_<%- num %> <%- dialog.type === 2 ? 'group' : 'chat' %>" data-style="num"></span>
+                <span class="dialog__avatar m-user__img_<%- num %> <%- dialog.type === 2 ? 'group' : 'chat' %>"></span>
                 <div class="dialog__info">
                     <p class="dialog__name"><%- dialog.name %></p>
                     <p class="dialog__last_message j-dialog__last_message <%- dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
@@ -147,9 +147,9 @@
         </div>
     </script>
 
-    <script type="text/template" id="tpl_loadMoreMessages">
-        <div class="load_more__wrap">
-            <button class="load_more__btn">Load More</button>
+    <script type="text/template" id="tpl_loadMore">
+        <div class="load_more__wrap j-load_more__wrap">
+            <button class="load_more__btn j-load_more__btn">Load More</button>
         </div>
     </script>
 
@@ -160,14 +160,25 @@
 
     <script type="text/template" id="tpl_newGroupChatContent">
         <p class="group__chat__description">Select participants:</p>
-        <ul class="group_chat__user_list j-group_chat__user_list">
-        </ul>
+        <div class="group_chat__user_list j-group_chat__user_list">
+        </div>
+        <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
+            <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name">
+            <button class="create_dialog_btn j-create_dialog_btn" type="submit" disabled>create</button>
+        </form>
     </script>
 
     <script type="text/template" id="tpl_newGroupChatUser">
-        <li data-id="<%- user.id %>">
-            <%- user.name %>
-        </li>
+        <div class="user__item" id="<%- user.id %>">
+            <span class="user__avatar m-user__img_<%- user.color %>"></span>
+            <div class="user__details">
+                <p class="user__name"><%- user.name %></p>
+                <% if (user.last_request_at) { %>
+                    <p class="user__last_seen"><%- user.last_request_at %></p>
+                <% } %>
+            </div>
+
+        </div>
     </script>
 
     <script src="./js/QBconfig.js" defer></script>
