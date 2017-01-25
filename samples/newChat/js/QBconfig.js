@@ -41,23 +41,23 @@ var appConfig = {
 */
 
  var QBconfig = {
- credentials: {
- appId: 52816,
- authKey: '28FpyzMXfZydQRG',
- authSecret: 'Qdrw3hGyKV9mSRe'
- },
- appConfig: {
- chatProtocol: {
- active: 2
- },
- streamManagement: {
- enable: true
- },
- debug: {
- mode: 0,
- file: null
- },
- }
+     credentials: {
+         appId: 52816,
+         authKey: '28FpyzMXfZydQRG',
+         authSecret: 'Qdrw3hGyKV9mSRe'
+     },
+     appConfig: {
+         chatProtocol: {
+         active: 2
+     },
+     streamManagement: {
+        enable: true
+     },
+     debug: {
+         mode: 0,
+         file: null
+     },
+     }
  };
 
  var usersList = [

@@ -92,7 +92,7 @@ CACHE.prototype.getUser = function(id){
 
 CACHE.prototype.checkCachedUsersInDialog = function(id){
     var self = this,
-        userList = this._dialogs[id].users,
+        userList = self._dialogs[id].users,
         unsetUsers = [],
         result;
 

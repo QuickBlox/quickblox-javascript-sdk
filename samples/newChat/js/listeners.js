@@ -21,6 +21,15 @@
 function Listeners(){}
 
 Listeners.prototype.onMessageListener = function(userId, message){
+    // This is a notification about dialog creation
+
+    if (message.extension && message.extension.notification_type === '1') {
+        if(message.extension._id) {
+            app.loadDialogById(message.extension._id);
+        }
+        return false;
+    }
+
     var msg = helpers.fillNewMessagePrams(userId, message);
 
     cache.setDialog(message.dialog_id, null, msg);

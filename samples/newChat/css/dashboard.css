@@ -132,7 +132,6 @@
 .message__avatar {
     flex: 0 0 48px;
 }
-
     /* DIALOG STYLES */
     .dialog__item {
         padding: 16px;
@@ -458,6 +457,11 @@
 .user__item:hover,
 .user__item.selected {
     background-color: #f5f4f2;
+}
+
+.user__item.selected .user__avatar {
+    background-color: #28C849;
+    background-image: url('../img/ic_done.svg');
 }
 
 .user__name {
