@@ -20,7 +20,6 @@ AuthProxy.prototype = {
   },
 
   createSession: function(params, callback) {
-
     if (config.creds.appId === '' ||
         config.creds.authKey === '' ||
         config.creds.authSecret === '') {
@@ -90,7 +89,13 @@ AuthProxy.prototype = {
   logout: function(callback) {
     Utils.QBLog('[AuthProxy]', 'logout');
 
-    this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
+    var reqParams = {
+      type: 'DELETE',
+      dataType:'text',
+      url: Utils.getUrl(config.urls.login)
+    };
+
+    this.service.ajax(reqParams, callback, true);
   }
 
 };

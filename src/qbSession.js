@@ -28,22 +28,30 @@ var UTILS = require('./qbUtils');
  * @param {String} args.[].authSecret - 
  * 
  */
-function SessionManager(params) {
+function SessionManager() {
     this.session = null;
-    this.queue = [];
+    this.lastRequest = {};
+    this.createSessionParams = {}; // saved params for create a session again
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
 
 SessionManager.prototype.create = function(params) {
-    var self = this;
+    var self = this,
+        reqData = {
+            'type': 'POST',
+            'url': UTILS.getUrl(CONFIG.urls.session)
+        };
+   
+    if(params) {
+        self.createSessionParams = params;
+        reqData.data = self._createASRequestParams(params);
+    } else {
+        reqData.data = self._createASRequestParams(self.createSessionParams);
+    }
 
     return new Promise(function(resolve, reject) {
-        SessionManager._ajax({
-            'type': 'POST',
-            'url': UTILS.getUrl(CONFIG.urls.session),
-            'data': self._createASRequestParams(params)
-        }).done(function(response) {
+        SessionManager._ajax(reqData).done(function(response) {
             self.session = response.session;
 
             resolve(self.session.token);
@@ -90,9 +98,12 @@ SessionManager.prototype._createASRequestParams = function (params) {
     return reqParams;
 };
 
-SessionManager.prototype.get = function() {
+/*
+ * Get session info from server
+ */
+SessionManager.prototype.sync = function() {
     var self = this;
-    console.info('SessionManager GET');
+
     var reqParams = {
         'url': UTILS.getUrl(CONFIG.urls.session),
         beforeSend: function(jqXHR) {
@@ -104,9 +115,12 @@ SessionManager.prototype.get = function() {
     return new Promise(function(resolve, reject) {
         SessionManager._ajax(reqParams)
             .done(function(response) {
+                self.session = response;
+                console.info('SYNC', self.session);
+
                 resolve(response);
-                console.info('SessionManager GET', response);
             }).fail(function(jqXHR, textStatus) {
+                console.error('SYNC', textStatus);
                 reject(jqXHR, textStatus);
             });
     });

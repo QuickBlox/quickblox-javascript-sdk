@@ -7,18 +7,22 @@
 <body>
 
 <button id="login" >Login</button>
+<button id="logout" >Logout</button>
+
+<hr>
+
 <button id="send_request" >Send a request</button>
 
 <hr>
 
-<button id="remove_session" type="button">Remove the session</button>
+<button id="destroy_session" type="button">Destroy the session</button>
 
 
 <script src="../quickblox.min.js"></script>
 
 <script>
 var config = {
-    debug: true
+    sessionManagement: true
 };
 
 var creds = {
@@ -43,21 +47,17 @@ var userParams = {
     password: '49249sessionmanagment'
 };
 
-var removeSession = document.getElementById('remove_session');
-var sendRequest = document.getElementById('send_request');
 var login = document.getElementById('login');
+var logout = document.getElementById('logout');
+
+var sendRequest = document.getElementById('send_request');
+
+var destroySession = document.getElementById('destroy_session');
+
 
 // By session ('asdasdasd', creds.appId)
 QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sessionToken) {
     console.info(`Success init ${sessionToken}`);
- 
-    removeSession.addEventListener('click', function() {
-        QB.destroySession(function() {
-            console.info('Destroy the session');
-        })
-        
-        return false;
-    });
 
     /* LOGIN */
     login.addEventListener('click', function() {
@@ -67,7 +67,16 @@ QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sess
 
         return false;
     });
-    
+
+    /* LOGOUT */
+    logout.addEventListener('click', function() {
+        QB.logout(function(err, result) {
+            console.log('LOGIN Callback', result, err);
+        });
+
+        return false;
+    });
+
     /* SEND REQUEST */
     sendRequest.addEventListener('click', function() {
         QB.chat.dialog.list(null, function(err, resDialogs) {
@@ -76,7 +85,14 @@ QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sess
 
         return false;
     });
-
+ 
+    destroySession.addEventListener('click', function() {
+        QB.destroySession(function() {
+            console.info('Destroyed the session');
+        });
+        
+        return false;
+    });
 });
 </script>
 </body>

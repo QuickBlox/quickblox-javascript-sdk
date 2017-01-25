@@ -47,17 +47,27 @@ ServiceProxy.prototype = {
     },
     handleResponse: function(error, response, next, retry) {
         // can add middleware here...
+        var self = this;
 
-        if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-            config.on.sessionExpired(function() { 
-                next(error, response);
-            }, retry);
+        if(config.sessionManagement && error && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+            self.sessionManager.create().then(function() {
+                var lr = self.sessionManager.lastRequest;
+
+                console.info(self.sessionManager.lastRequest);
+                self.ajax(lr.params, lr.cb, lr.isNeededUpdateSession);
+            });
         } else {
-            if (error) {
-                next(error, null);
+            if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+                config.on.sessionExpired(function() { 
+                    next(error, response);
+                }, retry);
             } else {
-                if (config.addISOTime) response = Utils.injectISOTimes(response);
-                next(null, response);
+                if (error) {
+                    next(error, null);
+                } else {
+                    if (config.addISOTime) response = Utils.injectISOTimes(response);
+                    next(null, response);
+                }
             }
         }
     },
@@ -96,6 +106,12 @@ ServiceProxy.prototype = {
                         jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
                     } else if (config.sessionManagement && _this.sessionManager) {
+                        _this.sessionManager.lastRequest = {
+                            params: params,
+                            cb: callback,
+                            isNeededUpdateSession: isNeededUpdateSession
+                        };
+
                         jqXHR.setRequestHeader('QB-Token', _this.sessionManager.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
                     }
@@ -105,15 +121,18 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    if(config.sessionManagement && isNeededUpdateSession) {
-                        _this.sessionManager.get().then(function() {
-                            _this.handleResponse(null, data, callback, retry);
-                        });
+                    if(config.sessionManagement) {
+                        if(isNeededUpdateSession) {
+                            _this.sessionManager.sync().then(function() {
+                                _this.handleResponse(null, data, callback, retry);
+                            });
+                        }
+
+                        _this.sessionManager.lastRequest = {};
                     } else {
                         _this.handleResponse(null, data, callback, retry);
                     }
                 } else {
-
                     callback(null, data);
                 }
             },
