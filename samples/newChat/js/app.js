@@ -11,16 +11,19 @@ function App (config) {
     this._config = config;
     this.user = null;
     this.token = null;
+
+    this.users = new User();
+    this.dialog = new Dialog();
+
+    this.dialog.user = this.users;
+
     this.dialogId = null;
     this.prevDialogId = null;
-    this.messagesLimit = appConfig.messagesPerRequers || 50;
     this.usersLimit = appConfig.usersPerRequest || 50;
     this.usersPage = null;
 
     // Elements
     this.page = document.querySelector('#page');
-    this.contentTitle = null;
-    this.contentInner = null;
     this.messagesContainer = null;
     this.conversationLinks = null;
     this.userListConteiner = null;
@@ -85,13 +88,12 @@ App.prototype.login = function(){
 };
 
 App.prototype.loadDashboard = function(){
-    this.contentTitle = document.querySelector('.j-content__title');
-    this.contentInner =  document.querySelector('.j-content__inner');
-    this.conversationLinks = document.querySelector('.j-conversation_links_container');
+    var self = this,
+        logoutBtn = document.querySelector('.j-logout');
 
+    this.dialog.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
+    self.loadWelcomeTpl();
     listeners.setListeners();
-
-    var logoutBtn = document.querySelector('.j-logout');
 
     logoutBtn.addEventListener('click', function(){
         QB.chat.disconnect();
@@ -103,8 +105,18 @@ App.prototype.loadDashboard = function(){
         });
     });
 
-    this.loadDialogs('chat');
+    self.dialog.loadDialogs('chat');
     this.tabSelectInit();
+};
+
+App.prototype.loadWelcomeTpl = function(){
+
+    var self = this,
+        content = document.querySelector('.j-content'),
+        welcomeTpl = helpers.fillTemplate('tpl_welcome');
+
+    helpers.clearView(content);
+    content.innerHTML = welcomeTpl;
 };
 
 App.prototype.tabSelectInit = function(){
@@ -133,57 +145,57 @@ App.prototype.tabSelectInit = function(){
 
             createDialogTab.classList.remove('active');
             tab.classList.add('active');
-            self.loadDialogs(tab.dataset.type);
+            self.dialog.loadDialogs(tab.dataset.type);
         });
     });
 };
 
-App.prototype.loadDialogs = function(type){
-    var self = this,
-        filter = {};
-
-    if(type === 'chat'){
-        filter['type[in]'] = '2,3';
-    } else {
-        filter.type = 1;
-    }
-
-    helpers.clearView(self.conversationLinks);
-
-    QB.chat.dialog.list(filter, function(err, resDialogs){
-        if(err){
-            console.error(err);
-            return;
-        }
-
-        var dialogs = resDialogs.items;
-        // add info about users to cache.
-        var pearToPearDialogs = dialogs.filter(function(dialog){
-            if(dialog.type === 3) {
-                return true
-            }
-        }).map(function(dialog){
-            return {
-                name: dialog.name,
-                id: dialog.occupants_ids.filter(function(id){
-                    if(id !== self.user.id) return id;
-                })[0],
-                color: _.random(1, 10)
-            }
-        });
-
-        cache.setUser(pearToPearDialogs);
-
-        _.each(dialogs, function(dialog){
-            self.buildDialog(dialog);
-        });
-
-        if(self.dialogId){
-            var dialog = document.getElementById(self.dialogId);
-            if(dialog) dialog.classList.add('selected');
-        }
-    });
-};
+// App.prototype.loadDialogs = function(type){
+//     var self = this,
+//         filter = {};
+//
+//     if(type === 'chat'){
+//         filter['type[in]'] = '2,3';
+//     } else {
+//         filter.type = 1;
+//     }
+//
+//     helpers.clearView(self.conversationLinks);
+//
+//     QB.chat.dialog.list(filter, function(err, resDialogs){
+//         if(err){
+//             console.error(err);
+//             return;
+//         }
+//
+//         var dialogs = resDialogs.items;
+//         // add info about users to cache.
+//         var pearToPearDialogs = dialogs.filter(function(dialog){
+//             if(dialog.type === 3) {
+//                 return true
+//             }
+//         }).map(function(dialog){
+//             return {
+//                 name: dialog.name,
+//                 id: dialog.occupants_ids.filter(function(id){
+//                     if(id !== self.user.id) return id;
+//                 })[0],
+//                 color: _.random(1, 10)
+//             }
+//         });
+//
+//         cache.setUser(pearToPearDialogs);
+//
+//         _.each(dialogs, function(dialog){
+//             self.buildDialog(dialog);
+//         });
+//
+//         if(self.dialogId){
+//             var dialog = document.getElementById(self.dialogId);
+//             if(dialog) dialog.classList.add('selected');
+//         }
+//     });
+// };
 
 App.prototype.loadDialogById = function(id, renderMessages) {
     var self = this;
@@ -212,99 +224,99 @@ App.prototype.loadDialogById = function(id, renderMessages) {
     });
 };
 
-App.prototype.buildDialog = function(dialog, setAsFirst){
-    var self = this,
-        compiledDialogParams = helpers.compileDialogParams(dialog);
+// App.prototype.buildDialog = function(dialog, setAsFirst){
+//     var self = this,
+//         compiledDialogParams = helpers.compileDialogParams(dialog);
+//
+//     cache.setDialog(dialog._id, compiledDialogParams);
+//
+//     var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
+//         elem = helpers.toHtml(template)[0];
+//
+//     elem.addEventListener('click', function(e){
+//         if(elem.classList.contains('selected') && document.forms.send_message) return false;
+//
+//         var selectedDialog = document.querySelector('.dialog__item.selected');
+//
+//         if(selectedDialog){
+//             selectedDialog.classList.remove('selected');
+//         }
+//
+//         elem.classList.add('selected');
+//         self.prevDialogId = self.dialogId;
+//         self.dialogId = e.currentTarget.id;
+//         self.renderDialog(e.currentTarget.id);
+//     });
+//
+//     if(!setAsFirst) {
+//         self.conversationLinks.appendChild(elem);
+//     } else {
+//         self.conversationLinks.insertBefore(elem, self.conversationLinks.firstElementChild);
+//     }
+// };
 
-    cache.setDialog(dialog._id, compiledDialogParams);
+// App.prototype.renderDialog = function(id){
+//     var self = this,
+//         dialog = cache.getDialog(id);
+//
+//     if(!cache.checkCachedUsersInDialog(id)) return false;
+//
+//     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
+//     this.contentTitle.innerText = dialog.name;
+//
+//     if(!document.forms.send_message){
+//         helpers.clearView(this.contentInner);
+//         this.contentInner.innerHTML = helpers.fillTemplate('tpl_chatInput');
+//         self.messagesContainer = document.querySelector('.j-messages');
+//         document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
+//     } else {
+//         var draft = document.forms.send_message.message_feald.value;
+//
+//         if(self.prevDialogId) cache.setDialog(self.prevDialogId, null, null, draft);
+//
+//         helpers.clearView(self.messagesContainer);
+//     }
+//
+//     document.forms.send_message.message_feald.value = dialog.draft;
+//
+//     if(dialog && dialog.messages.length){
+//         for(var i = 0; i < dialog.messages.length; i++){
+//             self.renderMessage(dialog.messages[i], false);
+//         }
+//         self.scrollTo('messages', 'bottom');
+//     }
+//
+//     self.getMessages({
+//         chat_dialog_id: self.dialogId,
+//         sort_desc: 'date_sent',
+//         limit: self.messagesLimit,
+//         skip: dialog.messages.length
+//     });
+// };
 
-    var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
-        elem = helpers.toHtml(template)[0];
-
-    elem.addEventListener('click', function(e){
-        if(elem.classList.contains('selected') && document.forms.send_message) return false;
-
-        var selectedDialog = document.querySelector('.dialog__item.selected');
-
-        if(selectedDialog){
-            selectedDialog.classList.remove('selected');
-        }
-
-        elem.classList.add('selected');
-        self.prevDialogId = self.dialogId;
-        self.dialogId = e.currentTarget.id;
-        self.renderDialog(e.currentTarget.id);
-    });
-
-    if(!setAsFirst) {
-        self.conversationLinks.appendChild(elem);
-    } else {
-        self.conversationLinks.insertBefore(elem, self.conversationLinks.firstElementChild);
-    }
-};
-
-App.prototype.renderDialog = function(id){
-    var self = this,
-        dialog = cache.getDialog(id);
-
-    if(!cache.checkCachedUsersInDialog(id)) return false;
-
-    document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
-    this.contentTitle.innerText = dialog.name;
-
-    if(!document.forms.send_message){
-        helpers.clearView(this.contentInner);
-        this.contentInner.innerHTML = helpers.fillTemplate('tpl_chatInput');
-        self.messagesContainer = document.querySelector('.j-messages');
-        document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
-    } else {
-        var draft = document.forms.send_message.message_feald.value;
-
-        if(self.prevDialogId) cache.setDialog(self.prevDialogId, null, null, draft);
-
-        helpers.clearView(self.messagesContainer);
-    }
-
-    document.forms.send_message.message_feald.value = dialog.draft;
-
-    if(dialog && dialog.messages.length){
-        for(var i = 0; i < dialog.messages.length; i++){
-            self.renderMessage(dialog.messages[i], false);
-        }
-        self.scrollTo('messages', 'bottom');
-    }
-
-    self.getMessages({
-        chat_dialog_id: self.dialogId,
-        sort_desc: 'date_sent',
-        limit: self.messagesLimit,
-        skip: dialog.messages.length
-    });
-};
-
-App.prototype.getMessages = function(params){
-    var self = this;
-    QB.chat.message.list(params, function(err, messages) {
-        if (!err) {
-            cache.setDialog(params.chat_dialog_id, null, messages.items, null);
-
-            if (self.dialogId !== params.chat_dialog_id) return false;
-
-            for (var i = 0; i < messages.items.length; i++) {
-                var message = helpers.fillMessagePrams(messages.items[i]);
-                self.renderMessage(message, false);
-            }
-
-            self.initLoadMoreMessages();
-
-            if (!params.skip) {
-                self.scrollTo('messages', 'bottom');
-            }
-        } else {
-            console.error(err);
-        }
-    });
-};
+// App.prototype.getMessages = function(params){
+//     var self = this;
+//     QB.chat.message.list(params, function(err, messages) {
+//         if (!err) {
+//             cache.setDialog(params.chat_dialog_id, null, messages.items, null);
+//
+//             if (self.dialogId !== params.chat_dialog_id) return false;
+//
+//             for (var i = 0; i < messages.items.length; i++) {
+//                 var message = helpers.fillMessagePrams(messages.items[i]);
+//                 self.renderMessage(message, false);
+//             }
+//
+//             self.initLoadMoreMessages();
+//
+//             if (!params.skip) {
+//                 self.scrollTo('messages', 'bottom');
+//             }
+//         } else {
+//             console.error(err);
+//         }
+//     });
+// };
 
 App.prototype.initLoadMoreMessages = function(){
     var self = this,
@@ -338,32 +350,32 @@ App.prototype.initLoadMoreMessages = function(){
     }
 };
 
-App.prototype.renderMessage = function(message, setAsFirst){
-    var self = this,
-        sender = cache.getUser(message.sender_id);
-    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
-        elem = helpers.toHtml(messagesHtml)[0];
-
-    if(message.attachments.length){
-        var images = elem.querySelectorAll('.message_attachment');
-        for(var i = 0; i < images.length; i++){
-            images[i].addEventListener('load', function(e){
-                var img = e.target,
-                    imgPos = self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop - img.offsetTop + self.contentTitle.offsetHeight,
-                    scrollHeight = self.messagesContainer.scrollTop + img.offsetHeight;
-
-                img.classList.add('loaded');
-
-                if(imgPos > 0) app.messagesContainer.scrollTop = scrollHeight;
-            });
-        }
-    }
-    if(setAsFirst) {
-        self.messagesContainer.appendChild(elem);
-    } else {
-        self.messagesContainer.insertBefore(elem, self.messagesContainer.firstElementChild);
-    }
-};
+// App.prototype.renderMessage = function(message, setAsFirst){
+//     var self = this,
+//         sender = cache.getUser(message.sender_id);
+//     var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+//         elem = helpers.toHtml(messagesHtml)[0];
+//
+//     if(message.attachments.length){
+//         var images = elem.querySelectorAll('.message_attachment');
+//         for(var i = 0; i < images.length; i++){
+//             images[i].addEventListener('load', function(e){
+//                 var img = e.target,
+//                     imgPos = self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop - img.offsetTop + self.contentTitle.offsetHeight,
+//                     scrollHeight = self.messagesContainer.scrollTop + img.offsetHeight;
+//
+//                 img.classList.add('loaded');
+//
+//                 if(imgPos > 0) app.messagesContainer.scrollTop = scrollHeight;
+//             });
+//         }
+//     }
+//     if(setAsFirst) {
+//         self.messagesContainer.appendChild(elem);
+//     } else {
+//         self.messagesContainer.insertBefore(elem, self.messagesContainer.firstElementChild);
+//     }
+// };
 
 App.prototype.changeLastMessagePreview = function(dialogId, msg){
     var dialog = document.getElementById(dialogId);
@@ -371,38 +383,38 @@ App.prototype.changeLastMessagePreview = function(dialogId, msg){
     dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
 };
 
-App.prototype.sendMessage = function(e){
-    e.preventDefault();
-
-    var self = this,
-        dialog = cache.getDialog(self.dialogId),
-        msg = {
-            type: dialog.type === 3 ? 'chat' : 'groupchat',
-            body: document.forms.send_message.message_feald.value,
-            extension: {
-                save_to_history: 1,
-            }
-        },
-        messageId = QB.chat.send(dialog.jidOrUserId, msg);
-
-    document.forms.send_message.message_feald.value = '';
-
-    msg.id = messageId;
-    msg.extension.dialog_id = app.dialogId;
-
-    var message = helpers.fillNewMessagePrams(self.user.id, msg),
-        scrollPosition = self.messagesContainer.scrollHeight - (self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop);
-
-    cache.setDialog(self.dialogId, null, message);
-
-    if(dialog.type === 3) {
-        self.renderMessage(message, true);
-    }
-
-    if(scrollPosition < 10) {
-        self.scrollTo('messages', 'bottom');
-    }
-};
+// App.prototype.sendMessage = function(e){
+//     e.preventDefault();
+//
+//     var self = this,
+//         dialog = cache.getDialog(self.dialogId),
+//         msg = {
+//             type: dialog.type === 3 ? 'chat' : 'groupchat',
+//             body: document.forms.send_message.message_feald.value,
+//             extension: {
+//                 save_to_history: 1,
+//             }
+//         },
+//         messageId = QB.chat.send(dialog.jidOrUserId, msg);
+//
+//     document.forms.send_message.message_feald.value = '';
+//
+//     msg.id = messageId;
+//     msg.extension.dialog_id = app.dialogId;
+//
+//     var message = helpers.fillNewMessagePrams(self.user.id, msg),
+//         scrollPosition = self.messagesContainer.scrollHeight - (self.messagesContainer.offsetHeight + self.messagesContainer.scrollTop);
+//
+//     cache.setDialog(self.dialogId, null, message);
+//
+//     if(dialog.type === 3) {
+//         self.renderMessage(message, true);
+//     }
+//
+//     if(scrollPosition < 10) {
+//         self.scrollTo('messages', 'bottom');
+//     }
+// };
 
 App.prototype.buildCreateDialogTpl = function(){
     var self = this,
@@ -566,24 +578,6 @@ App.prototype.createDialog = function(params) {
             self.loadDialogById(createdDialog._id, true);
         }
     });
-};
-
-App.prototype.scrollTo = function (item, position) {
-    var self = this,
-        elem = item === 'messages' ? self.messagesContainer :
-            'messages' ? self.conversationLinks : false,
-        elemHeight = elem.offsetHeight,
-        elemScrollHeight = elem.scrollHeight;
-
-    if(position === 'bottom'){
-        if((elemScrollHeight - elemHeight) > 0) {
-            elem.scrollTop = elemScrollHeight;
-        }
-    } else if (position === 'top'){
-        elem.scrollTop = 0;
-    } else if(+position) {
-        elem.scrollTop = +position
-    }
 };
 
 // QBconfig was loaded from QBconfig.js file

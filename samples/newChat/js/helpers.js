@@ -20,6 +20,7 @@ Helpers.prototype.clearView = function(view){
 
 Helpers.prototype.compileDialogParams = function(dialog){
     var lastDate;
+
     if(dialog.last_message_date_sent){
         var date = new Date(dialog.last_message_date_sent);
         lastDate = date.getHours() + ':' + date.getMinutes();
@@ -89,6 +90,22 @@ Helpers.prototype.toHtml = function(str){
     }
 
     return elements;
+};
+
+Helpers.prototype.scrollTo = function (elem, position) {
+    var self = this,
+        elemHeight = elem.offsetHeight,
+        elemScrollHeight = elem.scrollHeight;
+
+    if(position === 'bottom'){
+        if((elemScrollHeight - elemHeight) > 0) {
+            elem.scrollTop = elemScrollHeight;
+        }
+    } else if (position === 'top'){
+        elem.scrollTop = 0;
+    } else if(+position) {
+        elem.scrollTop = +position
+    }
 };
 
 var helpers = new Helpers();

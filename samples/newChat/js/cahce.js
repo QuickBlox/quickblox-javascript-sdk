@@ -43,9 +43,9 @@ CACHE.prototype.setDialog = function(id, dialog, messages, draft){
     }
 
     if(messages && Array.isArray(messages)){
-        console.log(messages.length, app.messagesLimit, messages.length < app.limit);
         this._dialogs[id].messages = this._dialogs[id].messages.concat(messages);
-        if(messages.length < app.messagesLimit){
+
+        if(messages.length < app.dialog.message.limit){
             this._dialogs[id].full = true;
         }
     } else if (messages){
@@ -84,7 +84,7 @@ CACHE.prototype.setUser = function(user){
         } else if(user.last_request_at){
             self._users[user.id].lastSeen = user.last_request_at;
         }
-    })
+    });
 };
 
 CACHE.prototype.getUser = function(id){
@@ -126,7 +126,7 @@ CACHE.prototype.checkCachedUsersInDialog = function(id){
                     }
                 }
             });
-            app.renderDialog(id);
+            app.dialog.renderDialog(id);
         });
     }
 

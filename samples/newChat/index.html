@@ -86,22 +86,26 @@
                                 <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">create new chats</a>
                             </li>
                         </ul>
-                        <ul class="sidebar__conversation_links j-conversation_links_container">
+                        <ul class="sidebar__dilog_list j-sidebar__dilog_list">
 
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="content j-content">
-                <div class="content__title j-content__title">
-                    Wellcome to QuickBlox chat sample!
-                </div>
-                <div class="content__inner j-content__inner">
-                    <p class="wellcome__message">
-                        Please select you opponent to start chatting.
-                    </p>
-                </div>
+
             </div>
+        </div>
+    </script>
+
+    <script  type="text/template" id="tpl_welcome">
+        <div class="content__title j-content__title">
+                Wellcome to QuickBlox chat sample!
+        </div>
+        <div class="content__inner j-content__inner">
+            <p class="wellcome__message">
+                Please select you opponent to start chatting.
+            </p>
         </div>
     </script>
 
@@ -119,15 +123,20 @@
             </li>
     </script>
 
-    <script type="text/template" id="tpl_chatInput">
-        <div class="messages j-messages"></div>
-        <form name="send_message" class="send_message">
-            <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
-            <div class="message__actions">
-                <button class="send_btn">send</button>
-                <input type="file" class="attach_btn" multiple></input>
-            </div>
-        </form>
+    <script type="text/template" id="tpl_conversationContainer">
+        <div class="content__title j-content__title">
+            <%- title %>
+        </div>
+        <div class="content__inner j-content__inner">
+            <div class="messages j-messages"></div>
+            <form name="send_message" class="send_message">
+                <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
+                <div class="message__actions">
+                    <button class="send_btn">send</button>
+                    <input type="file" class="attach_btn" multiple></input>
+                </div>
+            </form>
+        </div>
     </script>
 
     <script type="text/template" id="tpl_message">
@@ -182,6 +191,9 @@
     </script>
 
     <script src="./js/QBconfig.js" defer></script>
+    <script src="./js/user.js" defer></script>
+    <script src="./js/dialog.js" defer></script>
+    <script src="./js/message.js" defer></script>
     <script src="./js/cahce.js" defer></script>
     <script src="js/listeners.js" defer></script>
     <script src="./js/helpers.js" defer></script>
