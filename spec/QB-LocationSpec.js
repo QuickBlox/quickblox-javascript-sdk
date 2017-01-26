@@ -10,6 +10,8 @@ describe('Location API', function() {
     var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
+    var geodataId;
+
     beforeAll(function(done){
         QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret);
 
@@ -42,6 +44,7 @@ describe('Location API', function() {
                 expect(res).not.toBeNull();
                 expect(res.id).toBeGreaterThan(0);
 
+                geodataId = res.id;
                 done();
             }
         });
@@ -104,7 +107,7 @@ describe('Location API', function() {
             if (err) {
                 done.fail('List geodata error: ' + JSON.stringify(err));
             } else {
-                QB.location.geodata.delete(res.items[0].geo_datum.id, function(err, result){
+                QB.location.geodata.delete(geodataId, function(err, result){
                     if (err) {
                         done.fail('Delete existing geodata error: ' + JSON.stringify(err));
                     } else {
