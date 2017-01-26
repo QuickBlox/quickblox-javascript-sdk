@@ -25,7 +25,7 @@ Listeners.prototype.onMessageListener = function(userId, message){
 
     if (message.extension && message.extension.notification_type === '1') {
         if(message.extension._id) {
-            app.loadDialogById(message.extension._id);
+            app.loadDialogById(message.extension._id, false);
         }
         return false;
     }

@@ -43,8 +43,9 @@ CACHE.prototype.setDialog = function(id, dialog, messages, draft){
     }
 
     if(messages && Array.isArray(messages)){
+        console.log(messages.length, app.messagesLimit, messages.length < app.limit);
         this._dialogs[id].messages = this._dialogs[id].messages.concat(messages);
-        if(messages.length < app.limit){
+        if(messages.length < app.messagesLimit){
             this._dialogs[id].full = true;
         }
     } else if (messages){

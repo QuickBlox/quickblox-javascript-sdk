@@ -185,7 +185,7 @@ App.prototype.loadDialogs = function(type){
     });
 };
 
-App.prototype.loadDialogById = function(id) {
+App.prototype.loadDialogById = function(id, renderMessages) {
     var self = this;
 
     QB.chat.dialog.list({_id: id}, function(err, res){
@@ -193,9 +193,21 @@ App.prototype.loadDialogById = function(id) {
             compiledDialogParams = helpers.compileDialogParams(dialog);
 
         if(dialog){
-            cache.setDialog(dialog._id, compiledDialogParams);
-            self.dialogId = dialog._id;
-            self.buildDialog(compiledDialogParams);
+            var conversatinLink = document.getElementById(dialog._id);
+
+            if(!conversatinLink){
+                cache.setDialog(dialog._id, compiledDialogParams);
+                self.buildDialog(compiledDialogParams, true);
+            } else {
+                self.conversationLinks.insertBefore(conversatinLink, self.conversationLinks.firstElementChild);
+            }
+
+            if(renderMessages && conversatinLink) {
+                self.dialogId = dialog._id;
+                conversatinLink.click();
+            } else {
+                document.getElementById(dialog._id).click();
+            }
         }
     });
 };
@@ -237,8 +249,7 @@ App.prototype.renderDialog = function(id){
 
     if(!cache.checkCachedUsersInDialog(id)) return false;
 
-
-
+    document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
     this.contentTitle.innerText = dialog.name;
 
     if(!document.forms.send_message){
@@ -254,23 +265,21 @@ App.prototype.renderDialog = function(id){
         helpers.clearView(self.messagesContainer);
     }
 
-    var dialogData = cache.getDialog(self.dialogId);
+    document.forms.send_message.message_feald.value = dialog.draft;
 
-    document.forms.send_message.message_feald.value = dialogData.draft;
-
-    if(dialogData && dialogData.messages.length){
-        for(var i = 0; i < dialogData.messages.length; i++){
-            self.renderMessage(dialogData.messages[i], false);
+    if(dialog && dialog.messages.length){
+        for(var i = 0; i < dialog.messages.length; i++){
+            self.renderMessage(dialog.messages[i], false);
         }
         self.scrollTo('messages', 'bottom');
-    } else {
-        self.getMessages({
-            chat_dialog_id: self.dialogId,
-            sort_desc: 'date_sent',
-            limit: self.messagesLimit,
-            skip: 0
-        });
     }
+
+    self.getMessages({
+        chat_dialog_id: self.dialogId,
+        sort_desc: 'date_sent',
+        limit: self.messagesLimit,
+        skip: dialog.messages.length
+    });
 };
 
 App.prototype.getMessages = function(params){
@@ -427,8 +436,6 @@ App.prototype.buildCreateDialogTpl = function(){
             occupants_ids.push(+user.id);
         });
 
-        console.log(occupants_ids);
-
         if(!name && type === 2) {
             var userNames = [];
 
@@ -556,7 +563,7 @@ App.prototype.createDialog = function(params) {
                     QB.chat.send(itemOccupanId, msg);
                 }
             });
-            self.loadDialogById(createdDialog._id);
+            self.loadDialogById(createdDialog._id, true);
         }
     });
 };
