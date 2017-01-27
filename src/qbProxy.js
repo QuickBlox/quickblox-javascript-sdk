@@ -36,7 +36,7 @@ function ServiceProxy(sessionParams) {
 }
 
 ServiceProxy.prototype = {
-    _initSession: function(sessionParams) {
+    _initSessionManager: function(sessionParams) {
         return this.sessionManager.create(sessionParams);
     },
     setSession: function(session) {
@@ -53,8 +53,9 @@ ServiceProxy.prototype = {
             self.sessionManager.create().then(function() {
                 var lr = self.sessionManager.lastRequest;
 
-                console.info(self.sessionManager.lastRequest);
-                self.ajax(lr.params, lr.cb, lr.isNeededUpdateSession);
+                self.sessionManager.create().then(function() {
+                    self.ajax(lr.params, lr.cb, lr.isNeededUpdateSession);
+                });
             });
         } else {
             if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
@@ -126,6 +127,8 @@ ServiceProxy.prototype = {
                             _this.sessionManager.sync().then(function() {
                                 _this.handleResponse(null, data, callback, retry);
                             });
+                        } else {
+                            _this.handleResponse(null, data, callback, retry);
                         }
 
                         _this.sessionManager.lastRequest = {};

@@ -83,7 +83,7 @@ QuickBlox.prototype = {
 
         // Initialization by outside token
         if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
-            if(typeof authKeyOrAppId === 'number'){
+            if(typeof authKeyOrAppId === 'number') {
                 config.creds.appId = authKeyOrAppId;
             }
 
@@ -107,9 +107,9 @@ QuickBlox.prototype = {
             }
         }
 
-        if(config.sessionManagement) {
+        if(config.sessionManagement.enable) {
             // return promise
-            return this.service._initSession(sessionManagerParams);
+            return this.service._initSessionManager(sessionManagerParams);
         }
     },
 

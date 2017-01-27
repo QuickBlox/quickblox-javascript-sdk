@@ -100,7 +100,10 @@ var config = {
     file: null
   },
   addISOTime: false,
-  sessionManagement: false
+  sessionManagement: {
+    enable: false,
+    onerror: null
+  }
 };
 
 config.set = function(options) {

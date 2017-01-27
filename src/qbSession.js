@@ -29,9 +29,12 @@ var UTILS = require('./qbUtils');
  * 
  */
 function SessionManager() {
-    this.session = null;
-    this.lastRequest = {};
+    this.session = null; // all info all session
+    this.onerror = null; // save a handler for session reestablish error 
+    this.lastRequest = {}; // a parameters for the last request
     this.createSessionParams = {}; // saved params for create a session again
+
+    // console.info(CONFIG);
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
