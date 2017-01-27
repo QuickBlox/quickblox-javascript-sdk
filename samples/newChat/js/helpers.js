@@ -31,11 +31,25 @@ Helpers.prototype.compileDialogParams = function(dialog){
         name: dialog.name,
         type: dialog.type,
         last_message: dialog.last_message === '[attachment]' ? 'Attachment' : dialog.last_message,
+        messages: [],
         attachment: dialog.last_message === '[attachment]',
         last_message_date_sent: lastDate,
         users: dialog.occupants_ids || [],
-        xmpp_room_jid: dialog.xmpp_room_jid
+        jidOrUserId: dialog.xmpp_room_jid || dialog.jidOrUserId ||getRecipientUserId(dialog.occupants_ids),
+        full: false,
+        draft: ''
     };
+
+    function getRecipientUserId(users){
+        if(users.length === 2){
+            return users.filter(function(user){
+                if(user !== app.user.id){
+                    return user;
+                }
+            })[0];
+        }
+    }
+
 };
 
 Helpers.prototype.fillMessagePrams = function(message){
@@ -107,5 +121,6 @@ Helpers.prototype.scrollTo = function (elem, position) {
         elem.scrollTop = +position
     }
 };
+
 
 var helpers = new Helpers();

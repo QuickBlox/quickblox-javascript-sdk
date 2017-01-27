@@ -25,21 +25,22 @@ Listeners.prototype.onMessageListener = function(userId, message){
 
     if (message.extension && message.extension.notification_type === '1') {
         if(message.extension._id) {
-            app.loadDialogById(message.extension._id, false);
+            dialogModule.loadDialogById(message.extension._id, false);
         }
         return false;
     }
 
     var msg = helpers.fillNewMessagePrams(userId, message);
 
-    cache.setDialog(message.dialog_id, null, msg);
+    dialogModule._cache[message.dialog_id].messages.unshift(msg);
 
-    if(app.dialogId === msg.chat_dialog_id){
-        app.renderMessage(msg, true);
-        app.changeLastMessagePreview(msg.chat_dialog_id, msg);
-        app.scrollTo('messages', 'bottom');
-    } else if (cache.getDialog(msg.chat_dialog_id)){
-        app.changeLastMessagePreview(msg.chat_dialog_id, msg);
+    if(dialogModule.dialogId === msg.chat_dialog_id){
+        messageModule.renderMessage(msg, true);
+
+        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
+
+    } else if (dialogModule._cache[msg.chat_dialog_id]){
+        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
     } else {
         console.log('create new dialog');
     }

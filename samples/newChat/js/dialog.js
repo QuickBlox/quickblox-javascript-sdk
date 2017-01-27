@@ -1,23 +1,24 @@
 'use strict';
 
 function Dialog() {
-    this.dialogsListContainer = null;
-
+    this._cache = {};
     this.user = null;
-
-    this.message = new Message();
-    this.message.dialog = this;
-    
     this.dialogId = null;
     this.prevDialogId = null;
+
     this.content = null;
+    this.dialogsListContainer = null;
+    this.messagesContainer;
 }
+
+Dialog.prototype.init = function(){
+    this.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
+    this.content = document.querySelector('.j-content');
+};
 
 Dialog.prototype.loadDialogs = function(type) {
     var self = this,
         filter = {};
-
-    this.content = document.querySelector('.j-content');
 
     if(type === 'chat'){
         filter['type[in]'] = '2,3';
@@ -34,7 +35,7 @@ Dialog.prototype.loadDialogs = function(type) {
         }
 
         var dialogs = resDialogs.items;
-        // add info about users to cache.
+        
         var pearToPearDialogs = dialogs.filter(function(dialog){
             if(dialog.type === 3) {
                 return true
@@ -43,7 +44,7 @@ Dialog.prototype.loadDialogs = function(type) {
             return {
                 name: dialog.name,
                 id: dialog.occupants_ids.filter(function(id){
-                    if(id !== self.user.id) return id;
+                    if(id !== app.user.id) return id;
                 })[0],
                 color: _.random(1, 10)
             }
@@ -63,10 +64,13 @@ Dialog.prototype.loadDialogs = function(type) {
 };
 
 Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
+
     var self = this,
         compiledDialogParams = helpers.compileDialogParams(dialog);
-
-    cache.setDialog(dialog._id, compiledDialogParams);
+    
+    if(!self._cache[dialog._id]){
+        self._cache[dialog._id] = compiledDialogParams;
+    }
 
     var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
         elem = helpers.toHtml(template)[0];
@@ -95,20 +99,21 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
 
 Dialog.prototype.renderDialog = function(id){
     var self = this,
-        dialog = cache.getDialog(id);
+        dialog = self._cache[id];
 
-    if(!cache.checkCachedUsersInDialog(id)) return false;
+    if(!self.checkCachedUsersInDialog(id)) return false;
 
     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
 
     if(!document.forms.send_message){
         helpers.clearView(this.content);
-        this.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
-        self.message.init();
+        self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
+        self.messagesContainer = document.querySelector('.j-messages');
+        messageModule.init();
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
-        if(self.prevDialogId) cache.setDialog(self.prevDialogId, null, null, draft);
+        if(self.prevDialogId) self._cache[self.prevDialogId].draft = draft;
 
         helpers.clearView(self.messagesContainer);
     }
@@ -117,17 +122,41 @@ Dialog.prototype.renderDialog = function(id){
 
     if(dialog && dialog.messages.length){
         for(var i = 0; i < dialog.messages.length; i++){
-            self.renderMessage(dialog.messages[i], false);
+            messageModule.renderMessage(dialog.messages[i], false);
         }
-        self.scrollTo('messages', 'bottom');
+        
+        helpers.scrollTo(self.messagesContainer, 'bottom');
+        
+        if(dialog.messages.length < messageModule.limit){
+            messageModule.getMessages(self.dialogId);
+        } else if (!dialog.full){
+            messageModule.initLoadMoreMessages();
+        }
+
+    } else {
+        messageModule.getMessages(self.dialogId);
     }
 
-    self.message.getMessages({
-        chat_dialog_id: self.dialogId,
-        sort_desc: 'date_sent',
-        limit: self.messagesLimit,
-        skip: dialog.messages.length
-    });
+};
+
+Dialog.prototype.checkCachedUsersInDialog = function(id){
+    var self = this,
+        userList = self._cache[id].users,
+        unsetUsers = [];
+
+    for(var i = 0; i < userList.length; i++){
+        if(!userModule._cache[userList[i]]){
+            unsetUsers.push(userList[i]);
+        }
+    }
+
+    if(unsetUsers.length) {
+        userModule.getUsersByIds(unsetUsers, function(){
+            self.renderDialog(id);
+        });
+    }
+
+    return !unsetUsers.length;
 };
 
 Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
@@ -135,3 +164,65 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
 
     dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
 };
+
+
+Dialog.prototype.createDialog = function(params) {
+    var self = this;
+
+    QB.chat.dialog.create(params, function(err, createdDialog) {
+        if (err) {
+            console.log(err);
+        } else {
+            var occupants = createdDialog.occupants_ids;
+
+            for(var i = 0; i < occupants.length; i++){
+                if (occupants[i] != app.user.id) {
+                    var msg = {
+                        type: 'chat',
+                        extension: {
+                            notification_type: 1,
+                            _id: createdDialog._id,
+                        }
+                    };
+                    QB.chat.send(occupants[i], msg);
+                }
+            }
+
+            self.loadDialogById(createdDialog._id, true);
+        }
+    });
+};
+
+
+Dialog.prototype.loadDialogById = function(id, renderMessages) {
+    var self = this;
+
+    QB.chat.dialog.list({_id: id}, function(err, res){
+        console.log(res);
+        var dialog = res.items[0],
+            compiledDialogParams = helpers.compileDialogParams(dialog);
+
+
+        if(dialog){
+            var conversatinLink = document.getElementById(dialog._id);
+
+            if(!conversatinLink){
+                self._cache[dialog._id] = compiledDialogParams;
+
+                self.buildDialog(compiledDialogParams, true);
+
+            } else {
+                self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
+            }
+
+            if(renderMessages && conversatinLink) {
+                self.dialogId = dialog._id;
+                conversatinLink.click();
+            } else {
+                document.getElementById(dialog._id).click();
+            }
+        }
+    });
+};
+
+var dialogModule = new Dialog();

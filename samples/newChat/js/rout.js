@@ -2,12 +2,11 @@
 
 Path.map("#login").to(function(){
     helpers.clearView(app.page);
-    // usersList - variable from QBconfig.js file
-    var loginTemplate = helpers.fillTemplate('tpl_login',{
+
+    app.page.innerHTML = helpers.fillTemplate('tpl_login',{
         users: usersList,
         version: QB.version
     });
-    app.page.innerHTML = loginTemplate;
 
     app.setLoginListeners();
 });
@@ -20,10 +19,9 @@ Path.map("#dashboard").to(function(){
 
     helpers.clearView(app.page);
 
-    var dashboardTemplate = helpers.fillTemplate('tpl_dachboardContainer', {user: app.user});
-
-    app.page.innerHTML = dashboardTemplate;
+    app.page.innerHTML = helpers.fillTemplate('tpl_dachboardContainer', {user: app.user});
     app.loadDashboard();
+    
 });
 
 Path.root("#login");

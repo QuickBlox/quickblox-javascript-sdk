@@ -48,15 +48,15 @@ var appConfig = {
      },
      appConfig: {
          chatProtocol: {
-         active: 2
-     },
-     streamManagement: {
-        enable: true
-     },
-     debug: {
-         mode: 0,
-         file: null
-     },
+             active: 2
+         },
+         streamManagement: {
+            enable: true
+         },
+         debug: {
+             mode: 1,
+             file: null
+         }
      }
  };
 
@@ -113,6 +113,6 @@ var appConfig = {
 
  var appConfig = {
      dilogsPerRequers: 30,
-     messagesPerRequers: 30,
+     messagesPerRequests: 30,
      usersPerRequest: 2
  };

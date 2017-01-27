@@ -3,7 +3,7 @@
 function Message() {
     this.container = null;
     this.dialog = null;
-    this.limit = appConfig.messagesPerRequers || 50;
+    this.limit = appConfig.messagesPerRequest || 50;
 }
 
 Message.prototype.init = function(){
@@ -16,49 +16,60 @@ Message.prototype.sendMessage = function(e) {
     e.preventDefault();
 
     var self = this,
-        dialogId = self.dialog.dialogId,
-        dialog = cache.getDialog(dialogId),
-
+        dialogId = dialogModule.dialogId,
+        dialog = dialogModule._cache[dialogId],
         msg = {
             type: dialog.type === 3 ? 'chat' : 'groupchat',
             body: document.forms.send_message.message_feald.value,
             extension: {
-                save_to_history: 1,
+                save_to_history: 1
             }
-        },
+        };
 
-        messageId = QB.chat.send(dialog.jidOrUserId, msg);
+    var messageId = QB.chat.send(dialog.jidOrUserId, msg);
 
     document.forms.send_message.message_feald.value = '';
 
     msg.id = messageId;
     msg.extension.dialog_id = dialogId;
 
-    var message = helpers.fillNewMessagePrams(app.user.id, msg),
-        scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
+    var message = helpers.fillNewMessagePrams(app.user.id, msg);
 
-    cache.setDialog(dialogId, null, message);
+    console.log(message);
+
+    dialogModule._cache[dialogId].messages.unshift(message);
 
     if(dialog.type === 3) {
         self.renderMessage(message, true);
     }
 
-    if(scrollPosition < 10) {
-        helpers.scrollTo(self.container, 'bottom');
-    }
+    dialogModule.changeLastMessagePreview(dialogId, message);
 };
 
-Message.prototype.getMessages = function(params) {
-    var self = this;
+Message.prototype.getMessages = function(dialigId) {
+    var self = this,
+        params = {
+            chat_dialog_id: dialigId,
+            sort_desc: 'date_sent',
+            limit: self.limit,
+            skip: dialogModule._cache[dialigId].messages.length
+        };
 
     QB.chat.message.list(params, function(err, messages) {
         if (!err) {
-            cache.setDialog(params.chat_dialog_id, null, messages.items, null);
+            var dialog = dialogModule._cache[params.chat_dialog_id];
 
-            if (self.dialog.dialogId !== params.chat_dialog_id) return false;
+            dialog.messages = dialog.messages.concat(messages.items);
+
+            if(messages.items.length < self.limit){
+                dialog.full = true;
+            }
+
+            if (dialogModule.dialogId !== params.chat_dialog_id) return false;
 
             for (var i = 0; i < messages.items.length; i++) {
                 var message = helpers.fillMessagePrams(messages.items[i]);
+
                 self.renderMessage(message, false);
             }
 
@@ -75,7 +86,7 @@ Message.prototype.getMessages = function(params) {
 
 Message.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
-        sender = cache.getUser(message.sender_id),
+        sender = userModule._cache[message.sender_id],
         messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
@@ -94,7 +105,13 @@ Message.prototype.renderMessage = function(message, setAsFirst){
         }
     }
     if(setAsFirst) {
+        var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
+
         self.container.appendChild(elem);
+
+        if(scrollPosition < 10){
+            helpers.scrollTo(self.container, 'bottom');
+        }
     } else {
         self.container.insertBefore(elem, self.container.firstElementChild);
     }
@@ -103,8 +120,9 @@ Message.prototype.renderMessage = function(message, setAsFirst){
 Message.prototype.initLoadMoreMessages = function(){
     var self = this,
         loadBtn = self.container.querySelector('.j-load_more__btn'),
-        dialogId = self.dialog.dialogId;
-    if(!cache.getDialog(dialogId).full){
+        dialogId = dialogModule.dialogId;
+
+    if(!dialogModule._cache[dialogId].full){
         if (!loadBtn) {
             var tpl = helpers.fillTemplate('tpl_loadMore'),
                 btnWrap = helpers.toHtml(tpl)[0],
@@ -112,14 +130,10 @@ Message.prototype.initLoadMoreMessages = function(){
 
             btn.addEventListener('click', function(){
                 btn.innerText = 'Loading...';
-
-                self.getMessages({
-                    chat_dialog_id: dialogId,
-                    sort_desc: 'date_sent',
-                    limit: self.limit,
-                    skip: cache.getDialog(dialogId).messages.length
-                });
+                console.log(dialogModule._cache[dialogId].messages.length);
+                self.getMessages(dialogId);
             });
+
             self.container.insertBefore(btnWrap, self.container.firstElementChild);
         } else {
             loadBtn.innerText = 'Load more';
@@ -132,3 +146,4 @@ Message.prototype.initLoadMoreMessages = function(){
     }
 };
 
+var messageModule = new Message();

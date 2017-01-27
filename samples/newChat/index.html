@@ -162,19 +162,20 @@
         </div>
     </script>
 
-    <script type="text/template" id="tpl_newGroupChatTitle">
-        <button class="back_to_dialog j-back_to_dialog"></button>
-        <h1 class="group_chat__title">New Group Chat</h1>
-    </script>
-
-    <script type="text/template" id="tpl_newGroupChatContent">
-        <p class="group__chat__description">Select participants:</p>
-        <div class="group_chat__user_list j-group_chat__user_list">
+    <script type="text/template" id="tpl_newGroupChat">
+        <div class="content__title j-content__title">
+            <button class="back_to_dialog j-back_to_dialog"></button>
+            <h1 class="group_chat__title">New Group Chat</h1>
         </div>
-        <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
-            <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name">
-            <button class="create_dialog_btn j-create_dialog_btn" type="submit" disabled>create</button>
-        </form>
+        <div class="content__inner j-content__inner">
+            <p class="group__chat__description">Select participants:</p>
+            <div class="group_chat__user_list j-group_chat__user_list">
+            </div>
+            <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
+                <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name">
+                <button class="create_dialog_btn j-create_dialog_btn" type="submit" disabled>create</button>
+            </form>
+        </div>
     </script>
 
     <script type="text/template" id="tpl_newGroupChatUser">
