@@ -56,7 +56,7 @@ Message.prototype.getMessages = function(dialigId) {
 
     QB.chat.message.list(params, function(err, messages) {
         if (!err) {
-            var dialog = dialogModule._cache[params.chat_dialog_id];
+            var dialog = dialogModule._cache[dialigId];
 
             dialog.messages = dialog.messages.concat(messages.items);
 
@@ -64,21 +64,56 @@ Message.prototype.getMessages = function(dialigId) {
                 dialog.full = true;
             }
 
-            if (dialogModule.dialogId !== params.chat_dialog_id) return false;
+            if (dialogModule.dialogId !== dialigId) return false;
 
-            for (var i = 0; i < messages.items.length; i++) {
-                var message = helpers.fillMessagePrams(messages.items[i]);
+            if(dialogModule._cache[dialigId].type === 1){
+                self.checkUsersInPublickDialogMessages(messages.items, params.skip);
+            } else {
+                for (var i = 0; i < messages.items.length; i++) {
+                    var message = helpers.fillMessagePrams(messages.items[i]);
+                    self.renderMessage(message, false);
+                }
 
-                self.renderMessage(message, false);
-            }
+                self.initLoadMoreMessages();
 
-            self.initLoadMoreMessages();
-
-            if (!params.skip) {
-                helpers.scrollTo(self.container, 'bottom');
+                if (!params.skip) {
+                    helpers.scrollTo(self.container, 'bottom');
+                }
             }
         } else {
             console.error(err);
+        }
+    });
+};
+
+Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
+    var self = this,
+        messages = [].concat(items),
+        userList = [];
+
+    for(var i = 0; i < messages.length; i++){
+        var id = messages[i].sender_id;
+
+        if(userList.indexOf(id) ===  -1) {
+            userList.push(id);
+        }
+    }
+
+    userModule.getUsersByIds(userList, function(err){
+        if(err){
+            console.log(err);
+            return false;
+        }
+
+        for(var i = 0; i < messages.length; i++){
+            var message = helpers.fillMessagePrams(messages[i]);
+            self.renderMessage(message, false);
+        }
+
+        self.initLoadMoreMessages();
+
+        if (!skip) {
+            helpers.scrollTo(self.container, 'bottom');
         }
     });
 };
@@ -100,6 +135,13 @@ Message.prototype.renderMessage = function(message, setAsFirst){
                 img.classList.add('loaded');
 
                 if(imgPos > 0) self.container.scrollTop = scrollHeight;
+            });
+            images[i].addEventListener('error', function(e){
+                var img = e.target,
+                    errorMessageTpl = helpers.fillTemplate('tpl_attachmentLoadError'),
+                    errorElem = helpers.toHtml(errorMessageTpl)[0];
+
+                img.parentElement.replaceChild(errorElem, img);
             });
         }
     }
@@ -129,7 +171,6 @@ Message.prototype.initLoadMoreMessages = function(){
 
             btn.addEventListener('click', function(){
                 btn.innerText = 'Loading...';
-                console.log(dialogModule._cache[dialogId].messages.length);
                 self.getMessages(dialogId);
             });
 

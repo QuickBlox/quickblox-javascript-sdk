@@ -50,7 +50,12 @@ Dialog.prototype.loadDialogs = function(type) {
             }
         });
 
-        cache.setUser(pearToPearDialogs);
+        _.each(pearToPearDialogs, function(user){
+            if(!userModule._cache[user.id]){
+                userModule._cache[user.id] = user;
+            }
+
+        });
 
         _.each(dialogs, function(dialog){
             self.buildDialog(dialog);
@@ -188,7 +193,7 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
 
 Dialog.prototype.createDialog = function(params) {
     var self = this;
-
+    console.log(params.occupants_ids);
     QB.chat.dialog.create(params, function(err, createdDialog) {
         if (err) {
             console.log(err);

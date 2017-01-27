@@ -375,6 +375,11 @@
     visibility: visible;
 }
 
+.attachment__error {
+    font-size: 14px;
+    color: red;
+}
+
 .send_message {
     border-top: 1px solid #DADFE1;
 }

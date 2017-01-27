@@ -26,16 +26,26 @@ User.prototype.getUsersByIds = function(userList, callback){
             callback(err);
         } else {
             var users = responce.items;
-            _.each(users, function(data){
-                var user = data.user;
-                if(!self._cache[user.id]){
-                    self._cache[user.id] = {
-                        name: user.login,
-                        color: _.random(1, 10)
+
+            _.each(userList, function(id){
+                var user = users.find(function(item){
+                    return item.user.id === id;
+                });
+
+                if(!self._cache[id]){
+                    if(user){
+                        self._cache[id] = {
+                            name: user.user.login,
+                            color: _.random(1, 10)
+                        };
+                    } else {
+                        self._cache[id] = {
+                            name: 'Unknown user (' + id + ')',
+                            color: _.random(1, 10)
+                        };
                     }
                 }
             });
-
             callback(null, true);
         }
     });

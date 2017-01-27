@@ -56,9 +56,8 @@ Helpers.prototype.compileDialogParams = function(dialog){
 Helpers.prototype.fillMessagePrams = function(message){
     if(message.attachments){
         var attachments = message.attachments;
-
         for(var i = 0; i < attachments.length; i++) {
-            var src =  QB.content.publicUrl(attachments[i].id) + '/' + '/download.xml?token=' + app.token;
+            var src =  QB.content.publicUrl(attachments[i].id) + '.json?token=' + app.token;
             attachments[i].src = src;
         }
     }
