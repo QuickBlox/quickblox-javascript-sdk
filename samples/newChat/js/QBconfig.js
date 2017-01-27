@@ -54,7 +54,7 @@ var appConfig = {
             enable: true
          },
          debug: {
-             mode: 1,
+             mode: 0,
              file: null
          }
      }

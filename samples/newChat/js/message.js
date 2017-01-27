@@ -23,7 +23,8 @@ Message.prototype.sendMessage = function(e) {
             body: document.forms.send_message.message_feald.value,
             extension: {
                 save_to_history: 1
-            }
+            },
+            markable: 1
         };
 
     var messageId = QB.chat.send(dialog.jidOrUserId, msg);
@@ -34,8 +35,6 @@ Message.prototype.sendMessage = function(e) {
     msg.extension.dialog_id = dialogId;
 
     var message = helpers.fillNewMessagePrams(app.user.id, msg);
-
-    console.log(message);
 
     dialogModule._cache[dialogId].messages.unshift(message);
 

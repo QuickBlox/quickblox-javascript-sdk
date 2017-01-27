@@ -64,12 +64,15 @@ Dialog.prototype.loadDialogs = function(type) {
 };
 
 Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
-
     var self = this,
         compiledDialogParams = helpers.compileDialogParams(dialog);
     
     if(!self._cache[dialog._id]){
         self._cache[dialog._id] = compiledDialogParams;
+    }
+
+    if(dialog.type === 2 && !dialog.joined) {
+        self.joinToDialog(dialog._id);
     }
 
     var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
@@ -95,6 +98,23 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
     } else {
         self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
     }
+};
+
+Dialog.prototype.joinToDialog = function(id){
+
+    var self = this,
+        jidOrUserId = self._cache[id].jidOrUserId;
+
+    QB.chat.muc.join(jidOrUserId, function(resultStanza) {
+        var joined = true;
+        for (var i = 0; i < resultStanza.childNodes.length; i++) {
+            var elItem = resultStanza.childNodes.item(i);
+            if (elItem.tagName === 'error'){
+                joined = false;
+            }
+        }
+        self._cache[id].joined = joined;
+    });
 };
 
 Dialog.prototype.renderDialog = function(id){

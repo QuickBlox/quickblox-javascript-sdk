@@ -180,8 +180,7 @@ App.prototype.buildCreateDialogTpl = function(){
                 if(id === self.user.id) {
                     userNames.push(self.user.name);
                 } else {
-                    var name = cache.getUser(id);
-                    userNames.push(cache.getUser(id).name);
+                    userNames.push(userModule._cache[id].name);
                 }
             });
             name = userNames.join(', ');

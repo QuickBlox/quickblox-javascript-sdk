@@ -37,7 +37,8 @@ Helpers.prototype.compileDialogParams = function(dialog){
         users: dialog.occupants_ids || [],
         jidOrUserId: dialog.xmpp_room_jid || dialog.jidOrUserId ||getRecipientUserId(dialog.occupants_ids),
         full: false,
-        draft: ''
+        draft: '',
+        joined: false
     };
 
     function getRecipientUserId(users){
