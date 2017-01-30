@@ -185,31 +185,39 @@ Dialog.prototype.checkCachedUsersInDialog = function(id){
 };
 
 Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
-    var dialog = document.getElementById(dialogId);
+    var self = this,
+        dialog = document.getElementById(dialogId);
 
-    dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
+    self._cache[dialogId].last_message = msg.message;
+
+    if(dialog){
+        dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
+    }
 };
 
 
 Dialog.prototype.createDialog = function(params) {
     var self = this;
-    console.log(params.occupants_ids);
+
     QB.chat.dialog.create(params, function(err, createdDialog) {
         if (err) {
             console.log(err);
         } else {
-            var occupants = createdDialog.occupants_ids;
+            var occupants = createdDialog.occupants_ids,
+                msg = {
+                type: 'chat',
+                extension: {
+                    notification_type: 1,
+                    dialog_id: createdDialog._id,
+                    dialog_name: createdDialog.name,
+                    dialog_type: createdDialog.type,
+                    occupants_ids: occupants.join(', ')
+                }
+            };
 
             for(var i = 0; i < occupants.length; i++){
                 if (occupants[i] != app.user.id) {
-                    var msg = {
-                        type: 'chat',
-                        extension: {
-                            notification_type: 1,
-                            _id: createdDialog._id,
-                        }
-                    };
-                    QB.chat.send(occupants[i], msg);
+                    QB.chat.sendSystemMessage(occupants[i], msg);
                 }
             }
 
@@ -223,28 +231,30 @@ Dialog.prototype.loadDialogById = function(id, renderMessages) {
     var self = this;
 
     QB.chat.dialog.list({_id: id}, function(err, res){
-        console.log(res);
         var dialog = res.items[0],
             compiledDialogParams = helpers.compileDialogParams(dialog);
 
 
         if(dialog){
-            var conversatinLink = document.getElementById(dialog._id);
+            var type = dialog.type === 1 ? 'public' : 'chat',
+                activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
-            if(!conversatinLink){
-                self._cache[dialog._id] = compiledDialogParams;
+            if(activeTab && type === activeTab.dataset.type){
+                var conversatinLink = document.getElementById(dialog._id);
 
-                self.buildDialog(compiledDialogParams, true);
+                if(!conversatinLink){
+                    self._cache[dialog._id] = compiledDialogParams;
 
-            } else {
-                self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
-            }
+                    self.buildDialog(compiledDialogParams, true);
 
-            if(renderMessages && conversatinLink) {
-                self.dialogId = dialog._id;
-                conversatinLink.click();
-            } else {
-                document.getElementById(dialog._id).click();
+                } else {
+                    self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
+                }
+
+                if(renderMessages && conversatinLink) {
+                    self.dialogId = dialog._id;
+                    conversatinLink.click();
+                }
             }
         }
     });

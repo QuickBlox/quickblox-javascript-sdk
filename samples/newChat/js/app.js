@@ -87,6 +87,7 @@ App.prototype.loadDashboard = function(){
         logoutBtn = document.querySelector('.j-logout');
 
     self.content = document.querySelector('.j-content');
+
     dialogModule.init();
 
     self.loadWelcomeTpl();
@@ -96,7 +97,7 @@ App.prototype.loadDashboard = function(){
     logoutBtn.addEventListener('click', function(){
         QB.chat.disconnect();
 
-        QB.logout(function(){
+        QB.logout(function(err){
             if(err){
                 console.error(err);
             }
@@ -189,8 +190,11 @@ App.prototype.buildCreateDialogTpl = function(){
         var params = {
             type: type,
             occupants_ids: occupants_ids,
-            name: name
         };
+
+        if(type !== 3 && name) {
+            params.name = name;
+        }
 
         dialogModule.createDialog(params);
     });

@@ -1,8 +1,8 @@
 var QBconfig = {
     credentials: {
-        appId: 28783,
-        authKey: 'b5bVGCHHv6rcAmD',
-        authSecret: 'ySwEpardeE7ZXHB'
+        appId: 53036,
+        authKey: 'ZdJacVeNw3B3FBF',
+        authSecret: 'AQadYv32xN54Oad'
     },
     appConfig: {
         chatProtocol: {
@@ -18,102 +18,72 @@ var QBconfig = {
     }
 };
 
-var usersList = [
-    {
-        id: 23285724,
-        name: 'DemoChatUser1',
-        login: 'DemoChatUser1',
-        pass: 'DemoChatUser1'
-    },
-    {
-        id: 23285731,
-        name: 'DemoChatUser2',
-        login: 'DemoChatUser2',
-        pass: 'DemoChatUser2'
-    }
-];
-
 var appConfig = {
     dilogsPerRequers: 30,
-    messagesPerRequers: 30,
-    usersPerRequest: 100
+    messagesPerRequest: 30,
+    usersPerRequest: 20
 };
-/*
 
- var QBconfig = {
-     credentials: {
-         appId: 52816,
-         authKey: '28FpyzMXfZydQRG',
-         authSecret: 'Qdrw3hGyKV9mSRe'
-     },
-     appConfig: {
-         chatProtocol: {
-             active: 2
-         },
-         streamManagement: {
-            enable: true
-         },
-         debug: {
-             mode: 0,
-             file: null
-         }
-     }
- };
 
- var usersList = [
-     {
-         id: 23161706,
-         name: 'user1',
-         login: 'user1',
-         pass: 'test1test'
-     },
-     {
-         id: 23161730,
-         name: 'user2',
-         login: 'user2',
-         pass: 'test1test'
-     },
-     {
-         id: 23161747,
-         name: 'user3',
-         login: 'user3',
-         pass: 'test1test'
-     },
-     {
-         id: 23161772,
-         name: 'user4',
-         login: 'user4',
-         pass: 'test1test'
-     },
-     {
-         id: 23161776,
-         name: 'user5',
-         login: 'user5',
-         pass: 'test1test'
-     },
-     {
-         id: 23161781,
-         name: 'user6',
-         login: 'user6',
-         pass: 'test1test'
-     },
-     {
-         id: 23161788,
-         name: 'user7',
-         login: 'user7',
-         pass: 'test1test'
-     },
-     {
-         id: 23161795,
-         name: 'user8',
-         login: 'user8',
-         pass: 'test1test'
-     }
- ];
-
- var appConfig = {
-     dilogsPerRequers: 30,
-     messagesPerRequests: 30,
-     usersPerRequest: 2
- };
-*/
+var usersList = [
+    {
+        id: 23398045,
+        name: 'Chat User 1',
+        login: 'chatuser-1',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398116,
+        name: 'Chat User 2',
+        login: 'chatuser-2',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398127,
+        name: 'Chat User 3',
+        login: 'chatuser-3',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398133,
+        name: 'Chat User 4',
+        login: 'chatuser-4',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398152,
+        name: 'Chat User 5',
+        login: 'chatuser-5',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398159,
+        name: 'Chat User 6',
+        login: 'chatuser-6',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398166,
+        name: 'Chat User 7',
+        login: 'chatuser-7',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398171,
+        name: 'Chat User 8',
+        login: 'chatuser-8',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398178,
+        name: 'Chat User 9',
+        login: 'chatuser-9',
+        pass: 'x6Bt0VDy5'
+    },
+    {
+        id: 23398182,
+        name: 'Chat User 10',
+        login: 'chatuser-10',
+        pass: 'x6Bt0VDy5'
+    }
+];

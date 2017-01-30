@@ -54,6 +54,7 @@ Message.prototype.getMessages = function(dialigId) {
             skip: dialogModule._cache[dialigId].messages.length
         };
 
+    console.log(self.limit);
     QB.chat.message.list(params, function(err, messages) {
         if (!err) {
             var dialog = dialogModule._cache[dialigId];
@@ -164,6 +165,7 @@ Message.prototype.initLoadMoreMessages = function(){
         dialogId = dialogModule.dialogId;
 
     if(!dialogModule._cache[dialogId].full){
+        console.log('not full');
         if (!loadBtn) {
             var tpl = helpers.fillTemplate('tpl_loadMore'),
                 btnWrap = helpers.toHtml(tpl)[0],
