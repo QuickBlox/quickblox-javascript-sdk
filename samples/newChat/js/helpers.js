@@ -37,7 +37,10 @@ Helpers.prototype.compileDialogParams = function(dialog){
         users: dialog.occupants_ids || [],
         jidOrUserId: dialog.xmpp_room_jid || dialog.jidOrUserId ||getRecipientUserId(dialog.occupants_ids),
         full: false,
-        draft: '',
+        draft: {
+            message: '',
+            attachments: []
+        },
         joined: false
     };
 
@@ -54,29 +57,47 @@ Helpers.prototype.compileDialogParams = function(dialog){
 };
 
 Helpers.prototype.fillMessagePrams = function(message){
+    var self = this;
+
     if(message.attachments){
         var attachments = message.attachments;
         for(var i = 0; i < attachments.length; i++) {
-            var src =  QB.content.publicUrl(attachments[i].id) + '.json?token=' + app.token;
-            attachments[i].src = src;
+            attachments[i].src = self.getSrcFromAttachmentId(attachments[i].id);
         }
     }
 
     return message;
 };
 
+Helpers.prototype.getSrcFromAttachmentId = function(id) {
+    return QB.content.publicUrl(id) + '.json?token=' + app.token;
+};
+
 Helpers.prototype.fillNewMessagePrams = function(userId, msg){
-    return {
-        _id: msg.id,
-        attachments: msg.extension.attachments || [],
-        created_at: +msg.extension.date_sent || Date.now(),
-        date_sent: +msg.extension.date_sent  || Date.now(),
-        delivered_ids: [],
-        message: msg.body,
-        read_ids: [],
-        sender_id: userId,
-        chat_dialog_id: msg.extension.dialog_id
-    };
+    var self = this,
+        message = {
+            _id: msg.id,
+            attachments: [],
+            created_at: +msg.extension.date_sent || Date.now(),
+            date_sent: +msg.extension.date_sent  || Date.now(),
+            delivered_ids: [],
+            message: msg.body,
+            read_ids: [],
+            sender_id: userId,
+            chat_dialog_id: msg.extension.dialog_id
+        };
+
+    if(msg.extension.attachments){
+        var attachments = msg.extension.attachments;
+
+        for(var i = 0; i < attachments.length; i++) {
+            attachments[i].src = self.getSrcFromAttachmentId(attachments[i].id);
+        }
+
+        message.attachments = attachments;
+    }
+
+    return message;
 };
 
 Helpers.prototype.addEvent = function(elems, eventType, callback){

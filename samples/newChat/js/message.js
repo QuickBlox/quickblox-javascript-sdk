@@ -2,34 +2,55 @@
 
 function Message() {
     this.container = null;
+    this.attachment_previews = null;
     this.dialog = null;
     this.limit = appConfig.messagesPerRequest || 50;
+    this.attachmentIds = [];
 }
 
 Message.prototype.init = function(){
     var self = this;
+
     self.container = document.querySelector('.j-messages');
+    self.attachment_previews = document.querySelector('.j-attachments_preview');
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
+    document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
 };
 
 Message.prototype.sendMessage = function(e) {
     e.preventDefault();
-
     var self = this,
         dialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[dialogId],
         msg = {
             type: dialog.type === 3 ? 'chat' : 'groupchat',
-            body: document.forms.send_message.message_feald.value,
+            body: document.forms.send_message.message_feald.value.trim(),
             extension: {
                 save_to_history: 1
             },
             markable: 1
         };
 
+
+    if(self.attachmentIds.length){
+        msg.extension.attachments = [];
+        for(var i = 0; i < self.attachmentIds.length; i++){
+            var attachment = {id: self.attachmentIds[i], type: 'photo'};
+            msg.extension.attachments.push({id: self.attachmentIds[i], type: 'photo'});
+        }
+
+        if(!msg.body) msg.body = '[attachment]';
+    }
+
+    // Don't send empty message
+    if(!msg.body) return false;
+
     var messageId = QB.chat.send(dialog.jidOrUserId, msg);
 
     document.forms.send_message.message_feald.value = '';
+
+    self.attachmentIds = [];
+    helpers.clearView(self.attachment_previews);
 
     msg.id = messageId;
     msg.extension.dialog_id = dialogId;
@@ -41,7 +62,6 @@ Message.prototype.sendMessage = function(e) {
     if(dialog.type === 3) {
         self.renderMessage(message, true);
     }
-
     dialogModule.changeLastMessagePreview(dialogId, message);
 };
 
@@ -54,7 +74,6 @@ Message.prototype.getMessages = function(dialigId) {
             skip: dialogModule._cache[dialigId].messages.length
         };
 
-    console.log(self.limit);
     QB.chat.message.list(params, function(err, messages) {
         if (!err) {
             var dialog = dialogModule._cache[dialigId];
@@ -121,8 +140,9 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
 
 Message.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
-        sender = userModule._cache[message.sender_id],
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+        sender = userModule._cache[message.sender_id];
+    console.log({message: message, sender: sender});
+    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
     if(message.attachments.length){
@@ -165,7 +185,6 @@ Message.prototype.initLoadMoreMessages = function(){
         dialogId = dialogModule.dialogId;
 
     if(!dialogModule._cache[dialogId].full){
-        console.log('not full');
         if (!loadBtn) {
             var tpl = helpers.fillTemplate('tpl_loadMore'),
                 btnWrap = helpers.toHtml(tpl)[0],
@@ -186,6 +205,49 @@ Message.prototype.initLoadMoreMessages = function(){
             self.container.removeChild(loadBtn.parentElement);
         }
     }
+};
+
+Message.prototype.prepareToUpload = function (e){
+    var self = this,
+        files = e.currentTarget.files;
+
+    for(var i = 0; i < files.length; i++){
+        var file = files[i];
+        self.UploadFilesAndGetIds(file);
+    };
+};
+
+Message.prototype.UploadFilesAndGetIds = function(file){
+    var self = this,
+        preview = self.addImagePreview(file);
+
+    QB.content.createAndUpload({
+        public: false,
+        file: file,
+        name: file.name,
+        type: file.type,
+        size: file.size
+    }, function(err, response){
+        if(err) {
+            preview.classList.remove('m-blink');
+            preview.classList.add('m-error');
+        } else {
+            self.attachmentIds.push(response.uid);
+            preview.dataset.id = response.uid;
+            preview.classList.remove('m-blink');
+        }
+    });
+
+    self.attachment_previews.appendChild(preview);
+};
+
+Message.prototype.addImagePreview = function(file, count){
+    var img = document.createElement('img');
+
+    img.classList.add('attachment_preview__item', 'm-blink');
+    img.src = URL.createObjectURL(file);
+
+    return img;
 };
 
 var messageModule = new Message();

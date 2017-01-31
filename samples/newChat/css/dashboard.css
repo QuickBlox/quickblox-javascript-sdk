@@ -361,6 +361,7 @@
 .message__text {
     overflow: hidden;
     text-overflow: ellipsis;
+    margin: 0 0 10px;
 }
 
 .message_attachment {
@@ -400,17 +401,48 @@
 
 .message__actions {
     display: flex;
+    flex-wrap: nowrap;
     width: 100%;
-    flex-direction: row-reverse;
     padding: 15px 25px;
 }
 
+.attachments_preview {
+    flex: 1 1 100%;
+}
+
+.attach_btn {
+    flex: 0 0 20px;
+    overflow: hidden;
+    text-indent: -999px;
+    background-color: #778594;
+    -webkit-mask: url(../img/ic_attachment.svg) no-repeat 50% 50%;
+    mask: url(../img/ic_attachment.svg) no-repeat 50% 50%;
+    cursor: pointer;
+}
+
+.attach_input {
+    display: none;
+}
+
+.attachment_preview__item {
+    width: 25px;
+    margin: 0 5px 0 0;
+}
+
+.attachment_preview__item.m-blink {
+    -webkit-animation: blink 1s infinite alternate;
+    -moz-animation:    blink 1s infinite alternate;
+    -o-animation:      blink 1s infinite alternate;
+    animation:         blink 1s infinite alternate;
+}
+
 .send_btn {
+    flex: 0 0 38px;
     cursor: pointer;
     color: #17D04B;
     background: transparent;
     border: none;
-
+    cursor: pointer;
     font: 500 15px/18px 'Roboto', sans-serif;
     text-transform: uppercase;
 }
@@ -517,4 +549,19 @@
     background-color: #80E491;
 }
 
-
+@-webkit-keyframes blink {
+    0%   { opacity: .9; }
+    100% { opacity: .5; }
+}
+@-moz-keyframes blink {
+    0%   { opacity: .9; }
+    100% { opacity: .5; }
+}
+@-o-keyframes blink {
+    0%   { opacity: .9; }
+    100% { opacity: .5; }
+}
+@keyframes blink {
+    0%   { opacity: .9; }
+    100% { opacity: .5; }
+}

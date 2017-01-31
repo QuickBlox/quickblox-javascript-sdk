@@ -8,7 +8,8 @@ function Dialog() {
 
     this.content = null;
     this.dialogsListContainer = null;
-    this.messagesContainer;
+    this.messagesContainer = null;
+    this.attachmentsPreviewContainer = null;
 }
 
 Dialog.prototype.init = function(){
@@ -134,16 +135,39 @@ Dialog.prototype.renderDialog = function(id){
         helpers.clearView(this.content);
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
         self.messagesContainer = document.querySelector('.j-messages');
+        self.attachmentsPreviewContainer = self.content.querySelector('.j-attachments_preview');
+
         messageModule.init();
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
-        if(self.prevDialogId) self._cache[self.prevDialogId].draft = draft;
+        if(self.prevDialogId){
+            self._cache[self.prevDialogId].draft.message = draft;
+
+            if(messageModule.attachmentIds.length){
+                self._cache[self.prevDialogId].draft.attacnments = messageModule.attachmentIds;
+            }
+        }
+
+        messageModule.attachmentIds = dialog.draft.attachments;
 
         helpers.clearView(self.messagesContainer);
     }
 
-    document.forms.send_message.message_feald.value = dialog.draft;
+    document.forms.send_message.message_feald.value = dialog.draft.message;
+    if(dialog.draft.attachments.length){
+        var attachments = dialog.draft.attachments;
+
+
+        for(var j = 0; j < attachments.length; j++){
+            var img = document.createElement('img');
+
+            img.classList.add('attachment_preview__item');
+            img.src = helpers.getSrcFromAttachmentId(attachments[j]);
+
+            self.attachmentsPreviewContainer.append(img);
+        }
+    }
 
     if(dialog && dialog.messages.length){
         for(var i = 0; i < dialog.messages.length; i++){
@@ -161,7 +185,6 @@ Dialog.prototype.renderDialog = function(id){
     } else {
         messageModule.getMessages(self.dialogId);
     }
-
 };
 
 Dialog.prototype.checkCachedUsersInDialog = function(id){
