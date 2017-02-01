@@ -66,6 +66,10 @@ Helpers.prototype.fillMessagePrams = function(message){
         }
     }
 
+    if(message.message === '[attachment]'){
+        message.message = '';
+    }
+
     return message;
 };
 

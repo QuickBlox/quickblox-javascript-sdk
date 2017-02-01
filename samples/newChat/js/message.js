@@ -6,6 +6,7 @@ function Message() {
     this.dialog = null;
     this.limit = appConfig.messagesPerRequest || 50;
     this.attachmentIds = [];
+    this.dialogTitle = null;
 }
 
 Message.prototype.init = function(){
@@ -13,6 +14,7 @@ Message.prototype.init = function(){
 
     self.container = document.querySelector('.j-messages');
     self.attachment_previews = document.querySelector('.j-attachments_preview');
+    self.dialogTitle = document.querySelector('.j-content__title');
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
 };
@@ -141,7 +143,6 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
 Message.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
         sender = userModule._cache[message.sender_id];
-    console.log({message: message, sender: sender});
     var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
@@ -155,7 +156,9 @@ Message.prototype.renderMessage = function(message, setAsFirst){
 
                 img.classList.add('loaded');
 
-                if(imgPos > 0) self.container.scrollTop = scrollHeight;
+                if(imgPos >= 0) {
+                    self.container.scrollTop = scrollHeight + 5;
+                }
             });
             images[i].addEventListener('error', function(e){
                 var img = e.target,
@@ -171,7 +174,7 @@ Message.prototype.renderMessage = function(message, setAsFirst){
 
         self.container.appendChild(elem);
 
-        if(scrollPosition < 10){
+        if(scrollPosition < 50){
             helpers.scrollTo(self.container, 'bottom');
         }
     } else {

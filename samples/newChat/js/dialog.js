@@ -10,24 +10,42 @@ function Dialog() {
     this.dialogsListContainer = null;
     this.messagesContainer = null;
     this.attachmentsPreviewContainer = null;
+    this.limit = appConfig.dilogsPerRequers || 30;
 }
 
 Dialog.prototype.init = function(){
-    this.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
-    this.content = document.querySelector('.j-content');
+    var self = this;
+
+    self.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
+    self.content = document.querySelector('.j-content');
+
+    self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs(e){
+        var container = self.dialogsListContainer,
+            position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
+        
+        if(position <= 50 && !container.classList.contains('loading')) {
+            console.log('need to load');
+            var type = document.querySelector('.j-sidebar__tab_link.active').dataset.type;
+            console.log(type);
+            self.loadDialogs(type);
+        }
+    });
 };
 
 Dialog.prototype.loadDialogs = function(type) {
     var self = this,
-        filter = {};
+        filter = {
+            limit: self.limit,
+            skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length
+        };
+
+    self.dialogsListContainer.classList.add('loading');
 
     if(type === 'chat'){
         filter['type[in]'] = '2,3';
     } else {
         filter.type = 1;
     }
-
-    helpers.clearView(self.dialogsListContainer);
 
     QB.chat.dialog.list(filter, function(err, resDialogs){
         if(err){
@@ -66,6 +84,8 @@ Dialog.prototype.loadDialogs = function(type) {
             var dialog = document.getElementById(self.dialogId);
             if(dialog) dialog.classList.add('selected');
         }
+
+        self.dialogsListContainer.classList.remove('loading');
     });
 };
 

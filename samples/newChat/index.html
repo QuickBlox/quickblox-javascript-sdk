@@ -152,9 +152,11 @@
                 <% } %>
 
                 <% if (message.attachments.length) { %>
-                    <% _.each(message.attachments, function(attachment){ %>
-                        <img src="<%- attachment.src %>" alt="attachment" class="message_attachment">
-                    <% }); %>
+                    <div class="message__attachments_wtap">
+                        <% _.each(message.attachments, function(attachment){ %>
+                            <img src="<%- attachment.src %>" alt="attachment" class="message_attachment">
+                        <% }); %>
+                    </div>
                 <% } %>
             </div>
 

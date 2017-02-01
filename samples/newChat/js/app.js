@@ -145,6 +145,8 @@ App.prototype.tabSelectInit = function(){
 
             createDialogTab.classList.remove('active');
             tab.classList.add('active');
+
+            helpers.clearView(dialogModule.dialogsListContainer);
             dialogModule.loadDialogs(tab.dataset.type);
         });
     });
