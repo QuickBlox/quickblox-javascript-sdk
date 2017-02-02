@@ -147,6 +147,7 @@ App.prototype.tabSelectInit = function(){
             tab.classList.add('active');
 
             helpers.clearView(dialogModule.dialogsListContainer);
+            dialogModule.dialogsListContainer.classList.remove('full');
             dialogModule.loadDialogs(tab.dataset.type);
         });
     });
@@ -162,6 +163,7 @@ App.prototype.buildCreateDialogTpl = function(){
 
     var backToDialog = self.content.querySelector('.j-back_to_dialog');
 
+    backToDialog.addEventListener('click', self.backToDialog.bind(self));
     self.userListConteiner = self.content.querySelector('.j-group_chat__user_list');
 
     document.forms.create_dialog.addEventListener('submit', function(e){
@@ -202,6 +204,16 @@ App.prototype.buildCreateDialogTpl = function(){
     });
     
     userModule.intGettingUsers();
+};
+
+App.prototype.backToDialog = function(){
+    var self = this;
+
+    if(dialogModule.dialogId){
+        dialogModule.renderDialog(dialogModule.dialogId);
+    } else {
+        self.loadWelcomeTpl();
+    }
 };
 
 // QBconfig was loaded from QBconfig.js file

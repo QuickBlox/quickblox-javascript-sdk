@@ -22,11 +22,13 @@ Dialog.prototype.init = function(){
     self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs(e){
         var container = self.dialogsListContainer,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-        
+
+        if(container.classList.contains('full')){
+            e.currentTarget.removeEventListener('scroll', loadMoreDialogs);
+        }
+
         if(position <= 50 && !container.classList.contains('loading')) {
-            console.log('need to load');
             var type = document.querySelector('.j-sidebar__tab_link.active').dataset.type;
-            console.log(type);
             self.loadDialogs(type);
         }
     });
@@ -85,6 +87,9 @@ Dialog.prototype.loadDialogs = function(type) {
             if(dialog) dialog.classList.add('selected');
         }
 
+        if(dialogs.length < self.limit){
+            self.dialogsListContainer.classList.add('full');
+        }
         self.dialogsListContainer.classList.remove('loading');
     });
 };
@@ -114,6 +119,7 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
         }
 
         elem.classList.add('selected');
+
         self.prevDialogId = self.dialogId;
         self.dialogId = e.currentTarget.id;
         self.renderDialog(e.currentTarget.id);
@@ -156,8 +162,8 @@ Dialog.prototype.renderDialog = function(id){
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
         self.messagesContainer = document.querySelector('.j-messages');
         self.attachmentsPreviewContainer = self.content.querySelector('.j-attachments_preview');
-
         messageModule.init();
+
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
@@ -170,14 +176,14 @@ Dialog.prototype.renderDialog = function(id){
         }
 
         messageModule.attachmentIds = dialog.draft.attachments;
-
         helpers.clearView(self.messagesContainer);
     }
+
+    messageModule.setLoadMoreMessagesListener();
 
     document.forms.send_message.message_feald.value = dialog.draft.message;
     if(dialog.draft.attachments.length){
         var attachments = dialog.draft.attachments;
-
 
         for(var j = 0; j < attachments.length; j++){
             var img = document.createElement('img');
@@ -198,10 +204,7 @@ Dialog.prototype.renderDialog = function(id){
         
         if(dialog.messages.length < messageModule.limit){
             messageModule.getMessages(self.dialogId);
-        } else if (!dialog.full){
-            messageModule.initLoadMoreMessages();
         }
-
     } else {
         messageModule.getMessages(self.dialogId);
     }

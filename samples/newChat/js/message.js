@@ -17,6 +17,7 @@ Message.prototype.init = function(){
     self.dialogTitle = document.querySelector('.j-content__title');
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
+    // self.container.addEventListener('scroll'. self.getMessages.bind(self));
 };
 
 Message.prototype.sendMessage = function(e) {
@@ -67,18 +68,43 @@ Message.prototype.sendMessage = function(e) {
     dialogModule.changeLastMessagePreview(dialogId, message);
 };
 
-Message.prototype.getMessages = function(dialigId) {
+Message.prototype.setLoadMoreMessagesListener = function(){
+    var self = this;
+
+    self.container.classList.remove('full');
+
+    if(!self.container.dataset.load){
+        self.container.dataset.load = 'true';
+        self.container.addEventListener('scroll', function loadMoreMessages(e){
+            var elem = e.currentTarget,
+                dialog = dialogModule._cache[dialogModule.dialogId];
+
+            if(!dialog.full){
+                if(elem.scrollTop < 150 && !elem.classList.contains('loading')) {
+                    self.getMessages(dialogModule.dialogId);
+                }
+            } else {
+                elem.removeEventListener('scroll', loadMoreMessages);
+                delete self.container.dataset.load;
+            }
+        });
+    }
+};
+
+Message.prototype.getMessages = function(dialogId) {
     var self = this,
         params = {
-            chat_dialog_id: dialigId,
+            chat_dialog_id: dialogId,
             sort_desc: 'date_sent',
             limit: self.limit,
-            skip: dialogModule._cache[dialigId].messages.length
+            skip: dialogModule._cache[dialogId].messages.length
         };
+
+    self.container.classList.add('loading');
 
     QB.chat.message.list(params, function(err, messages) {
         if (!err) {
-            var dialog = dialogModule._cache[dialigId];
+            var dialog = dialogModule._cache[dialogId];
 
             dialog.messages = dialog.messages.concat(messages.items);
 
@@ -86,17 +112,15 @@ Message.prototype.getMessages = function(dialigId) {
                 dialog.full = true;
             }
 
-            if (dialogModule.dialogId !== dialigId) return false;
+            if (dialogModule.dialogId !== dialogId) return false;
 
-            if(dialogModule._cache[dialigId].type === 1){
+            if(dialogModule._cache[dialogId].type === 1){
                 self.checkUsersInPublickDialogMessages(messages.items, params.skip);
             } else {
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
                     self.renderMessage(message, false);
                 }
-
-                self.initLoadMoreMessages();
 
                 if (!params.skip) {
                     helpers.scrollTo(self.container, 'bottom');
@@ -105,6 +129,7 @@ Message.prototype.getMessages = function(dialigId) {
         } else {
             console.error(err);
         }
+        self.container.classList.remove('loading');
     });
 };
 
@@ -131,8 +156,6 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
             var message = helpers.fillMessagePrams(messages[i]);
             self.renderMessage(message, false);
         }
-
-        self.initLoadMoreMessages();
 
         if (!skip) {
             helpers.scrollTo(self.container, 'bottom');
@@ -179,34 +202,6 @@ Message.prototype.renderMessage = function(message, setAsFirst){
         }
     } else {
         self.container.insertBefore(elem, self.container.firstElementChild);
-    }
-};
-
-Message.prototype.initLoadMoreMessages = function(){
-    var self = this,
-        loadBtn = self.container.querySelector('.j-load_more__btn'),
-        dialogId = dialogModule.dialogId;
-
-    if(!dialogModule._cache[dialogId].full){
-        if (!loadBtn) {
-            var tpl = helpers.fillTemplate('tpl_loadMore'),
-                btnWrap = helpers.toHtml(tpl)[0],
-                btn = btnWrap.firstElementChild;
-
-            btn.addEventListener('click', function(){
-                btn.innerText = 'Loading...';
-                self.getMessages(dialogId);
-            });
-
-            self.container.insertBefore(btnWrap, self.container.firstElementChild);
-        } else {
-            loadBtn.innerText = 'Load more';
-            self.container.insertBefore(loadBtn.parentElement, self.container.firstElementChild);
-        }
-    } else {
-        if (loadBtn) {
-            self.container.removeChild(loadBtn.parentElement);
-        }
     }
 };
 

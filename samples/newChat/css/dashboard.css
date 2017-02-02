@@ -118,6 +118,16 @@
     text-align: left;
 }
 
+.sidebar__dilog_list.loading:after {
+    content: "";
+    display: block;
+    background: url(../img/loader2.gif);
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+    margin: 15px auto;
+}
+
 .sidebar__dilog_list .dialog__item {
     display: flex;
     flex-wrap: nowrap;
@@ -337,6 +347,16 @@
     overflow-y: auto;
     padding: 10px 25px;
     width: 100%;
+}
+
+.messages.loading:before {
+    content: "";
+    display: block;
+    background: url(../img/loader2.gif);
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+    margin: 15px auto;
 }
 
 .message__wrap {
