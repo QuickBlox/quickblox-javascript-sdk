@@ -102,7 +102,8 @@ var config = {
   addISOTime: false,
   sessionManagement: {
     enable: false,
-    onerror: null
+    onerror: null, // handler
+    expiredTime: 2 // in hours
   }
 };
 

@@ -71,9 +71,7 @@
     ]
   },
   "config": {
-    "ghooks": {
-      "pre-commit": "npm run lint"
-    }
+
   },
   "scripts": {
     "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",

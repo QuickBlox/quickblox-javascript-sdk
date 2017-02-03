@@ -28,7 +28,7 @@ function ServiceProxy(sessionParams) {
 
     self.sessionManager = null;
 
-    if(!config.sessionManagement) {
+    if(!config.sessionManagement.enable) {
         self.qbInst.session = null;
     } else {
         self.sessionManager = new sessionManager();
@@ -107,11 +107,11 @@ ServiceProxy.prototype = {
                         jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
                     } else if (config.sessionManagement && _this.sessionManager) {
-                        _this.sessionManager.lastRequest = {
-                            params: params,
-                            cb: callback,
-                            isNeededUpdateSession: isNeededUpdateSession
-                        };
+                        // _this.sessionManager.lastRequest = {
+                        //     params: params,
+                        //     cb: callback,
+                        //     isNeededUpdateSession : isNeededUpdateSession
+                        // };
 
                         jqXHR.setRequestHeader('QB-Token', _this.sessionManager.session.token);
                         jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');

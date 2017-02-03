@@ -6,6 +6,11 @@
 </head>
 <body>
 
+<button id="init" >Init the SDK</button>
+<button id="initWithParams" >Init the SDK with params</button>
+
+<hr>
+
 <button id="login" >Login</button>
 <button id="logout" >Logout</button>
 
@@ -38,20 +43,23 @@ var creds = {
 }
 
 // 22870126
-var user = {
-    email: 'session@session.com',
-    login: 'session',
-    password: '49249session'
-}
+// var user = {
+//     email: 'session@session.com',
+//     login: 'session',
+//     password: '49249session'
+// }
 
 // email sessionmanagment@test.com
 // login sessionmanagment
 // pass 49249sessionmanagment
 // id 23125767
-var userParams = {
-    email: 'sessionmanagment@test.com',
-    password: '49249sessionmanagment'
-};
+// var userParams = {
+//     email: 'sessionmanagment@test.com',
+//     password: '49249sessionmanagment'
+// };
+
+var init = document.getElementById('init');
+var initByParams = document.getElementById('initWithParams');
 
 var login = document.getElementById('login');
 var logout = document.getElementById('logout');
@@ -62,7 +70,8 @@ var sendRequestLogged = document.getElementById('send_request_logged');
 var destroySession = document.getElementById('destroy_session');
 
 
-// By session ('asdasdasd', creds.appId)
+
+/* START FUN! */
 QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sessionToken) {
     console.info(`Success init ${sessionToken}`);
 

@@ -9,6 +9,21 @@ var UTILS = require('./qbUtils');
 /**
  * @private
  * SessionManager - Session AutoManagment
+ * SessionManager является частью qbProxy
+ * 
+ * 1. How is SessionManager works?
+ * SessionManager управляет сессией, обновляет и сохраняет (document.cookie) предыдущее состояние,
+ * а так же данные для повторного создания сессии.
+ * 
+ *   
+ *
+ * Cases:
+ * 1. 
+ *  - QB.init(creds.appId, creds.authKey, creds.authSecret, config);
+ *  - QB.login();
+ *
+ * 
+ * 
  *
  * There are 3 types of session (http://quickblox.com/developers/Authentication_and_Authorization#Access_Rights):
  * 1. API Application (AS). 
@@ -38,20 +53,35 @@ function SessionManager() {
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
+SessionManager._getSessionTokenFromCookie(name) {
+    var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)")
+    var matches = document.cookie.match();
 
+    return matches ? decodeURIComponent(matches[1]) : false;
+};
+
+/**
+ * Создание сессии
+ * 1. Сначала SessionManager проверяет document.cookie на наличие ключа qbst.
+ *
+ * 
+ */
 SessionManager.prototype.create = function(params) {
     var self = this,
         reqData = {
             'type': 'POST',
             'url': UTILS.getUrl(CONFIG.urls.session)
         };
-   
-    if(params) {
-        self.createSessionParams = params;
-        reqData.data = self._createASRequestParams(params);
-    } else {
-        reqData.data = self._createASRequestParams(self.createSessionParams);
-    }
+
+    // save a parameters for createation a session next time automatically
+    self.createSessionParams = params;
+    // 
+    reqData.data = self._createASRequestParams(params);
+
+    //     reqData.data = self._createASRequestParams(params);
+    // } else {
+    //     reqData.data = self._createASRequestParams(self.createSessionParams);
+    // }
 
     return new Promise(function(resolve, reject) {
         SessionManager._ajax(reqData).done(function(response) {
@@ -63,6 +93,16 @@ SessionManager.prototype.create = function(params) {
         });
     });
 };
+
+SessionManager.prototype.getSessionFromCookie = function() {
+    var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
+        sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
+
+    if(sessionToken && sessionDateExp) {
+        sessionDateExp
+    }
+
+}
 
 SessionManager.prototype._createASRequestParams = function (params) {
     function randomNonce() {

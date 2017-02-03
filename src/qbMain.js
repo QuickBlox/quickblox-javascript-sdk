@@ -87,7 +87,7 @@ QuickBlox.prototype = {
                 config.creds.appId = authKeyOrAppId;
             }
 
-            if(config.sessionManagement) {
+            if(config.sessionManagement.enable) {
                 sessionManagerParams.sessionToken = appIdOrToken;
                 sessionManagerParams.appId = authKeyOrAppId;
             }
@@ -98,7 +98,7 @@ QuickBlox.prototype = {
             config.creds.authKey = authKeyOrAppId;
             config.creds.authSecret = authSecret;
 
-            if(config.sessionManagement) {
+            if(config.sessionManagement.enable) {
                 sessionManagerParams = {
                     appId: appIdOrToken,
                     authKey: authKeyOrAppId,
@@ -108,7 +108,7 @@ QuickBlox.prototype = {
         }
 
         if(config.sessionManagement.enable) {
-            // return promise
+            // return a promise
             return this.service._initSessionManager(sessionManagerParams);
         }
     },
