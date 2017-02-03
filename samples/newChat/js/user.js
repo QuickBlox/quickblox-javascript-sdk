@@ -51,12 +51,26 @@ User.prototype.getUsersByIds = function(userList, callback){
     });
 };
 
-User.prototype.intGettingUsers = function(){
-    this.content = document.querySelector('.j-content');
-    this.userListConteiner = document.querySelector('.j-group_chat__user_list');
+User.prototype.initGettingUsers = function(){
+    var self = this;
+    self.content = document.querySelector('.j-content');
+    self.userListConteiner = document.querySelector('.j-group_chat__user_list');
 
-    this.page = null;
-    this.getUsers();
+    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e){
+        var container = self.userListConteiner,
+            position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
+        console.log('scroll');
+        if(container.classList.contains('full')){
+            container.removeEventListener('scroll', loadMoreUsers);
+        }
+
+        if(position <= 50 && !container.classList.contains('loading')) {
+            self.getUsers();
+        }
+    });
+    self.page = null;
+
+    self.getUsers();
 };
 
 User.prototype.getUsers = function(){
@@ -65,7 +79,9 @@ User.prototype.getUsers = function(){
             page: self.page,
             per_page: self.limit
         };
-    
+
+    self.userListConteiner.classList.add('loading');
+
     QB.users.listUsers(params, function(err, responce){
         
         if(err){
@@ -96,7 +112,10 @@ User.prototype.getUsers = function(){
             }
         });
 
-        self.initLoadMoreUsers(users.length < self.limit);
+        if(users.length < self.limit){
+            self.userListConteiner.classList.add('full');
+        }
+        self.userListConteiner.classList.remove('loading');
     });
 };
 

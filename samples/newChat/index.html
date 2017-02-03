@@ -59,7 +59,7 @@
 
     <script type="text/template" id="tpl_dachboardContainer">
         <div class="dashboard">
-            <div class="sidebar">
+            <div class="sidebar j-sidebar active">
                 <div class="sidebar__inner">
                     <div class="sidebar__header">
                         <a href="https://quickblox.com/" class="dashboard__logo">
@@ -125,7 +125,8 @@
 
     <script type="text/template" id="tpl_conversationContainer">
         <div class="content__title j-content__title">
-            <%- title %>
+            <button class="open_sidebar j-open_sidebar"></button>
+            <h1 class="dialog__title j-dialog__title"><%- title %></h1>
         </div>
         <div class="content__inner j-content__inner">
             <div class="messages j-messages"></div>

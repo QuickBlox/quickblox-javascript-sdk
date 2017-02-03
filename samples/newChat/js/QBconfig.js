@@ -21,9 +21,8 @@ var QBconfig = {
 var appConfig = {
     dilogsPerRequers: 15,
     messagesPerRequest: 30,
-    usersPerRequest: 20
+    usersPerRequest: 15
 };
-
 
 var usersList = [
     {

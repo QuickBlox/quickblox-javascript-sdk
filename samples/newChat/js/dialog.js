@@ -6,7 +6,9 @@ function Dialog() {
     this.dialogId = null;
     this.prevDialogId = null;
 
+    this.sidebar = null;
     this.content = null;
+    this.dialogTitle = null;
     this.dialogsListContainer = null;
     this.messagesContainer = null;
     this.attachmentsPreviewContainer = null;
@@ -16,15 +18,16 @@ function Dialog() {
 Dialog.prototype.init = function(){
     var self = this;
 
+    self.sidebar = document.querySelector('.j-sidebar');
     self.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
     self.content = document.querySelector('.j-content');
 
     self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs(e){
         var container = self.dialogsListContainer,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-
+        console.log(scroll);
         if(container.classList.contains('full')){
-            e.currentTarget.removeEventListener('scroll', loadMoreDialogs);
+            container.removeEventListener('scroll', loadMoreDialogs);
         }
 
         if(position <= 50 && !container.classList.contains('loading')) {
@@ -110,6 +113,7 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
         elem = helpers.toHtml(template)[0];
 
     elem.addEventListener('click', function(e){
+        self.sidebar.classList.remove('active');
         if(elem.classList.contains('selected') && document.forms.send_message) return false;
 
         var selectedDialog = document.querySelector('.dialog__item.selected');
@@ -162,8 +166,13 @@ Dialog.prototype.renderDialog = function(id){
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
         self.messagesContainer = document.querySelector('.j-messages');
         self.attachmentsPreviewContainer = self.content.querySelector('.j-attachments_preview');
-        messageModule.init();
+        self.dialogTitle = document.querySelector('.j-dialog__title');
 
+        document.querySelector('.j-open_sidebar').addEventListener('click', function(e){
+            self.sidebar.classList.add('active');
+        }.bind(self));
+
+        messageModule.init();
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
@@ -176,6 +185,7 @@ Dialog.prototype.renderDialog = function(id){
         }
 
         messageModule.attachmentIds = dialog.draft.attachments;
+        self.dialogTitle.innrText = dialog.name;
         helpers.clearView(self.messagesContainer);
     }
 

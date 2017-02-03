@@ -17,6 +17,7 @@ function App (config) {
 
     // Elements
     this.page = document.querySelector('#page');
+    this.sidebar = null;
     this.content = null;
     this.conversationLinks = null;
     this.userListConteiner = null;
@@ -87,6 +88,7 @@ App.prototype.loadDashboard = function(){
         logoutBtn = document.querySelector('.j-logout');
 
     self.content = document.querySelector('.j-content');
+    self.sidebar = document.querySelector('.j-sidebar');
 
     dialogModule.init();
 
@@ -125,6 +127,7 @@ App.prototype.tabSelectInit = function(){
         createDialogTab = document.querySelector('.j-sidebar__create_dilalog');
 
     createDialogTab.addEventListener('click', function(e){
+        self.sidebar.classList.remove('active');
         if(e.currentTarget.classList.contains('active')) return false;
 
         createDialogTab.classList.add('active');
@@ -164,6 +167,7 @@ App.prototype.buildCreateDialogTpl = function(){
     var backToDialog = self.content.querySelector('.j-back_to_dialog');
 
     backToDialog.addEventListener('click', self.backToDialog.bind(self));
+
     self.userListConteiner = self.content.querySelector('.j-group_chat__user_list');
 
     document.forms.create_dialog.addEventListener('submit', function(e){
@@ -203,12 +207,13 @@ App.prototype.buildCreateDialogTpl = function(){
         dialogModule.createDialog(params);
     });
     
-    userModule.intGettingUsers();
+    userModule.initGettingUsers();
 };
 
-App.prototype.backToDialog = function(){
+App.prototype.backToDialog = function(e){
     var self = this;
-
+    self.sidebar.classList.add('active');
+    event.currentTarget.classList.remove('active');
     if(dialogModule.dialogId){
         dialogModule.renderDialog(dialogModule.dialogId);
     } else {

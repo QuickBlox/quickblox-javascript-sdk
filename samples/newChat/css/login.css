@@ -6,53 +6,47 @@
     height: 100%;
 }
 
-.login__wrapper:before {
-    content: '';
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
-    width: 0;
-}
-
 .login__container {
-    display: inline-block;
-    vertical-align: middle;
+    display: flex;
+    height: 100%;
     max-width: 416px;
-
+    flex-direction: column;
 }
 
 .login__inner {
-    padding: 61px 56px 56px;
-    width: 100%;
-
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 1 100%;
+    padding: 20px;
     background-color: #FFFFFF;
-    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2), 0 1px 3px 0 rgba(0,0,0,0.1);
-    border-radius: 4px;
-
     box-sizing: border-box;
 }
 
 .login__logo {
-    display: inline-block;
-    vertical-align: middle;
-    margin: 0 20px 0 0;
+    display: block;
+    width: 100px;
+    margin: 0 auto 20px;
+}
+
+.login__logo img {
+    width: 100%;
+}
+
+.login__top {
+    margin: 0 0 50px;
 }
 
 .login__top h1{
     display: inline-block;
     vertical-align: middle;
-    font-size: 22px;
-    line-height: 25px;
+    font-size: 27px;
     color: #4A4A4A;
-}
-
-.login__top {
-    margin: 0 0 74px;
 }
 
 .login__user_list {
     position: relative;
-    margin: 0 0 81px;
+    margin: 0 0 70px;
 }
 
 .login__user_list:before {
@@ -79,7 +73,7 @@
 }
 .login__user_list hr {
     box-sizing: border-box;
-    width: 304px;
+    width: 100%;
     height: 2px;
     border: 1px solid #C5CACE;
 }
@@ -107,8 +101,15 @@
 }
 
 .login__footer {
+    flex: 0 0 100px;
+
     text-align: left;
-    padding: 16px 0 0;
+    padding: 16px 20px 0;
+}
+.login__footer:after {
+    content: '';
+    display: table;
+    clear: both;
 }
 
 .footer__logo_wrap {
@@ -134,4 +135,52 @@
     font-size: 13px;
     line-height: 15px;
     color: #C5CACE;
+}
+
+@media screen and (min-width: 440px) {
+    .login__wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login__container {
+        height: auto;
+    }
+
+    .login__inner {
+        flex: 0 0 390px;
+        padding: 61px 56px 56px;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2), 0 1px 3px 0 rgba(0,0,0,0.1);
+        border-radius: 4px;
+    }
+
+    .login__top {
+        margin: 0 0 74px;
+    }
+
+    .login__logo {
+        display: inline-block;
+        vertical-align: middle;
+        width: 36px;
+        margin: 0 20px 0 0;
+    }
+
+    .login__top h1 {
+        font-size: 22px;
+        line-height: 25px;
+    }
+
+    .login__user_list hr {
+        width: 304px;
+    }
+
+    .login__user_list {
+        position: relative;
+        margin: 0 0 81px;
+    }
+
+    .login__footer {
+        padding: 16px 0 0;
+    }
 }
