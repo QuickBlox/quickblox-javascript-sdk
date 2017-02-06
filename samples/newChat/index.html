@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="./css/reset.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
-
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="./js/libs/path.min.js" defer></script>
     <script src="./js/libs/underscore.min.js" defer></script>
     <script src="../../quickblox.min.js" defer></script>
@@ -83,7 +83,9 @@
                                 <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
-                                <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">create new chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">
+                                    <i class="material-icons">supervisor_account</i>
+                                </a>
                             </li>
                         </ul>
                         <ul class="sidebar__dilog_list j-sidebar__dilog_list">
@@ -100,19 +102,25 @@
 
     <script  type="text/template" id="tpl_welcome">
         <div class="content__title j-content__title">
-                Wellcome to QuickBlox chat sample!
+                Welcome to QuickBlox chat sample!
         </div>
         <div class="content__inner j-content__inner">
-            <p class="wellcome__message">
-                Please select you opponent to start chatting.
-            </p>
+            <div class="welcome__message">
+                <p>Please select you opponent to start chatting.</p>
+            </div>
         </div>
     </script>
 
     <script type="text/template" id="tpl_userConversations">
             <% var num = _.random(1, 10) %>
             <li class="dialog__item j-dialog__item" id="<%- dialog._id %>" data-name="<%- dialog.name %>">
-                <span class="dialog__avatar m-user__img_<%- num %> <%- dialog.type === 2 ? 'group' : 'chat' %>"></span>
+                <span class="dialog__avatar m-user__img_<%- num %> m-type_<%- dialog.type === 2 ? 'group' : 'chat' %>" >
+                    <% if(dialog.type === 2) { %>
+                        <i class="material-icons">supervisor_account</i>
+                    <% } else { %>
+                        <i class="material-icons">account_circle</i>
+                    <% } %>
+                </span>
                 <div class="dialog__info">
                     <p class="dialog__name"><%- dialog.name %></p>
                     <p class="dialog__last_message j-dialog__last_message <%- dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
@@ -134,7 +142,8 @@
                 <input name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></input>
                 <div class="message__actions">
                     <div class="attachments_preview j-attachments_preview"></div>
-                    <label for="attach_btn" class="attach_btn">attach image
+                    <label for="attach_btn" class="attach_btn">
+                        <i class="material-icons">attachment</i>
                         <input type="file" id="attach_btn" name="attach_file" class="attach_input" accept="image/*" multiple></input>
                     </label>
                     <button class="send_btn">send</button>
@@ -145,7 +154,9 @@
 
     <script type="text/template" id="tpl_message">
         <div class="message__wrap" id="<%- message._id %>">
-            <span class="message__avatar m-user__img_<%- sender.color %>"></span>
+            <span class="message__avatar m-user__img_<%- sender.color %>">
+                <i class="material-icons">account_circle</i>
+            </span>
             <div class="message__content_wrap">
                 <p class="message__sender_name"><%- sender.name %></p>
                 <% if (message.message || message.body) { %>
@@ -172,7 +183,9 @@
 
     <script type="text/template" id="tpl_newGroupChat">
         <div class="content__title j-content__title">
-            <button class="back_to_dialog j-back_to_dialog"></button>
+            <button class="back_to_dialog j-back_to_dialog">
+                <i class="material-icons">arrow_back</i>
+            </button>
             <h1 class="group_chat__title">New Group Chat</h1>
         </div>
         <div class="content__inner j-content__inner">
@@ -188,7 +201,10 @@
 
     <script type="text/template" id="tpl_newGroupChatUser">
         <div class="user__item" id="<%- user.id %>">
-            <span class="user__avatar m-user__img_<%- user.color %>"></span>
+            <span class="user__avatar m-user__img_<%- user.color %>">
+                <i class="material-icons m-user_icon">account_circle</i>
+                <!--<i class="material-icons m-done">done</i>-->
+            </span>
             <div class="user__details">
                 <p class="user__name"><%- user.name %></p>
                 <% if (user.last_request_at) { %>

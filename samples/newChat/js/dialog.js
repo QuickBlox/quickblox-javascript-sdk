@@ -307,9 +307,9 @@ Dialog.prototype.loadDialogById = function(id, renderMessages) {
                     self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
                 }
 
-                if(renderMessages && conversatinLink) {
+                if(renderMessages) {
                     self.dialogId = dialog._id;
-                    conversatinLink.click();
+                    document.getElementById(dialog._id).click();
                 }
             }
         }

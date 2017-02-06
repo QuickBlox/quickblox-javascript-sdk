@@ -77,7 +77,7 @@
 }
 
 .sidebar__tabs {
-    flex:1 0 40px;
+    flex:0 0 40px;
     font-size: 0;
     letter-spacing: 0;
 }
@@ -103,16 +103,19 @@
     text-align: center;
 }
 
+.sidebar__tab_link i {
+    display: block;
+    line-height:40px;
+}
+
 .sidebar__tab_link.m-sidebar__tab_link_new {
-    font-size: 0;
-    background-color: #778594;
-    -webkit-mask: url(../img/group-chat.svg) no-repeat 50% 50%;
-    mask: url(../img/group-chat.svg) no-repeat 50% 50%;
+    color: #778594;
 }
 
 .sidebar__tab_link.m-sidebar__tab_link_new:hover,
 .sidebar__tab_link.m-sidebar__tab_link_new.active {
-    background-color: #18C942;
+    color: #18C942;
+    box-shadow: none;
 }
 
 .sidebar__tab_link:hover,
@@ -157,7 +160,26 @@
     background-repeat: no-repeat;
     background-position: 50% 50%;
     margin: 0 16px 0 0;
+    position: relative;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
+
+.dialog__avatar i,
+.message__avatar i,
+.user__avatar i {
+    font-size: 60px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dialog__avatar.m-type_group i {
+    font-size: 35px;
+}
+
 /* DIALOG STYLES */
     .open_sidebar {
         border: none;
@@ -184,86 +206,123 @@
         cursor: pointer;
     }
 
-    .dialog__avatar.chat:before,
-    .message__avatar:before,
-    .user__avatar:before {
-        content: '';
-        display: block;
-        background-color: #fff;
-        width: 100%;
-        height: 100%;
-        -webkit-mask: url('../img/ic_account_circle.svg') no-repeat 50% 50%;
-        mask: url('../img/ic_account_circle.svg') no-repeat 50% 50%;
-    }
-
-    .dialog__avatar.group:before {
-        content: '';
-        display: block;
-        background-color: #fff;
-        width: 100%;
-        height: 100%;
-        opacity: 0.5;
-        -webkit-mask: url('../img/ic-group.svg') no-repeat 50% 50%;
-        mask: url('../img/ic-group.svg') no-repeat 50% 50%;
-    }
-
     .dialog__avatar.m-user__img_1,
     .message__avatar.m-user__img_1,
     .user__avatar.m-user__img_1 {
-        background-color: #FF9600;
+        color: #FF9600;
+        background-color: #ffd599;
     }
 
     .dialog__avatar.m-user__img_2,
     .message__avatar.m-user__img_2,
     .user__avatar.m-user__img_2 {
-        background-color: #CDDA49;
+        color: #CDDA49;
+        background-color: #ebfcb6;
     }
 
     .dialog__avatar.m-user__img_3,
     .message__avatar.m-user__img_3,
     .user__avatar.m-user__img_3 {
-        background-color: #159588;
+        color: #159588;
+        background-color: #a1d5cf;
     }
 
     .dialog__avatar.m-user__img_4,
     .message__avatar.m-user__img_4,
     .user__avatar.m-user__img_4 {
-        background-color: #FF2D55;
+        color: #FF2D55;
+        background-color: #ffabbb;
     }
 
     .dialog__avatar.m-user__img_5,
     .message__avatar.m-user__img_5,
     .user__avatar.m-user__img_5 {
-        background-color: #44DB5E;
+        color: #44DB5E;
+        background-color: #b4f1bf;
     }
 
     .dialog__avatar.m-user__img_6,
     .message__avatar.m-user__img_6,
     .user__avatar.m-user__img_6 {
-        background-color: #1FBCD2;
+        color: #1FBCD2;
+        background-color: #a5e4ed;
     }
 
     .dialog__avatar.m-user__img_7,
     .message__avatar.m-user__img_7,
     .user__avatar.m-user__img_7 {
-        background-color: #007AFF;
+        color: #007AFF;
+        background-color: #99caff;
     }
 
     .dialog__avatar.m-user__img_8,
     .message__avatar.m-user__img_8,
     .user__avatar.m-user__img_8 {
-        background-color: #9B2FAE;
+        color: #9B2FAE;
+        background-color: #d5acdf;
     }
 
     .dialog__avatar.m-user__img_9,
     .message__avatar.m-user__img_9,
     .user__avatar.m-user__img_9 {
-        background-color: #54C7FC;
+        color: #54C7FC;
+        background-color: #bbe9fe;
     }
 
     .dialog__avatar.m-user__img_10,
     .message__avatar.m-user__img_10,
     .user__avatar.m-user__img_10 {
+        color: #4054B2;
+        background-color: #b3bbe0;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_1 {
+        color: #ffd599;
+        background-color: #FF9600;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_2 {
+        color:  #ebfcb6;
+        background-color: #CDDA49;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_3 {
+        color: #a1d5cf;
+        background-color: #159588;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_4 {
+        color: #ffabbb;
+        background-color: #FF2D55;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_5 {
+        color: #b4f1bf;
+        background-color: #44DB5E;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_6 {
+        color: #a5e4ed;
+        background-color: #1FBCD2;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_7 {
+        color: #99caff;
+        background-color: #007AFF;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_8 {
+        color: #d5acdf;
+        background-color: #9B2FAE;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_9 {
+        color: #bbe9fe;
+        background-color: #54C7FC;
+    }
+
+    .dialog__avatar.m-type_group.m-user__img_10 {
+        color: #b3bbe0;
         background-color: #4054B2;
     }
 
@@ -322,7 +381,7 @@
     line-height: 18px;
     color: #4A4A4A;
     border-bottom: 1px solid #DADFE1;
-    flex: 1 0 58px;
+    flex: 0 0 58px;
     box-sizing: border-box;
 }
 
@@ -334,30 +393,24 @@
     flex-wrap: nowrap;
 }
 /*
-    WELLCOME MESSAGE
+    WELCOME MESSAGE
 */
 
-.wellcome__message {
-    display: inline-block;
-    vertical-align: middle;
+.welcome__message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1 1 100%;
     text-align: center;
     height: 100%;
     color: #778594;
     -moz-user-select: none;
-    -khtml-user-select: none;
+    -webkit-user-select: none;
     user-select: none;
 }
 
-.wellcome__message:before {
-    content:"";
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
-    width: 0;
-}
-
 /*
-    END WELLCOME MESSAGE
+    END WELCOME MESSAGE
 */
 
 .load_more__btn {
@@ -472,11 +525,14 @@
 .attach_btn {
     flex: 0 0 20px;
     overflow: hidden;
-    text-indent: -999px;
-    background-color: #778594;
-    -webkit-mask: url(../img/ic_attachment.svg) no-repeat 50% 50%;
-    mask: url(../img/ic_attachment.svg) no-repeat 50% 50%;
+    color: #778594;
     cursor: pointer;
+}
+
+.attach_btn i {
+    font-size: 22px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .attach_input {
@@ -511,9 +567,8 @@
     border: none;
     width: 24px;
     height: 24px;
-    background-color: #778594;
-    -webkit-mask: url(../img/ic_arrow_back.svg) no-repeat 50% 50%;
-    mask: url(../img/ic_arrow_back.svg) no-repeat 50% 50%;
+    color: #778594;
+    background: transparent;
     cursor: pointer;
     flex: 0 0 24px;
     padding: 0;
@@ -521,7 +576,7 @@
 }
 
 .back_to_dialog:hover {
-    background-color: #18C942;
+    color: #18C942;
 }
 
 .group_chat__title {
@@ -568,6 +623,10 @@
 .user__item.selected .user__avatar {
     background-color: #28C849;
     background-image: url('../img/ic_done.svg');
+}
+
+.user__item.selected i {
+    display: none;
 }
 
 .user__name {
