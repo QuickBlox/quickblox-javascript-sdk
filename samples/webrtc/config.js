@@ -12,12 +12,12 @@
     };
 
     var CREDENTIALS = {
-        'test': {
+        'prod': {
             'appId': 40718,
             'authKey': 'AnB-JpA6r4y6RmS',
             'authSecret': '3O7Sr5Pg4Qjexwn'
         },
-        'prod': {
+        'test': {
             'appId': 39854,
             'authKey': 'JtensAa9y4AM5Yk',
             'authSecret': 'AsDFwwwxpr3LN5w'
