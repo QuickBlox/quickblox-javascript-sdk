@@ -570,32 +570,37 @@ ChatProxy.prototype = {
                         // enable carbons
                         self._enableCarbons();
 
-                        // get the roster
-                        self.roster.get(function(contacts) {
-                            roster = contacts;
+                        // chat server will close your connection if you are not active in chat during one minute
+                        // initial presence and an automatic reminder of it each 55 seconds
+                        connection.send($pres());
 
-                            // chat server will close your connection if you are not active in chat during one minute
-                            // initial presence and an automatic reminder of it each 55 seconds
-                            connection.send($pres());
-
-                            if (typeof callback === 'function') {
-                                callback(null, roster);
+                        if (typeof callback === 'function') {
+                            if (params.connectWithoutGettingRoster) {
+                                // connected and return nothing as result
+                                callback(null, undefined);
                             } else {
-                                self._isLogout = false;
-
-                                // recover the joined rooms
-                                rooms = Object.keys(joinedRooms);
-
-                                for (var i = 0, len = rooms.length; i < len; i++) {
-                                    self.muc.join(rooms[i]);
-                                }
-
-                                // fire 'onReconnectListener'
-                                if (typeof self.onReconnectListener === 'function'){
-                                    Utils.safeCallbackCall(self.onReconnectListener);
-                                }
+                                // get the roster
+                                self.roster.get(function(contacts) {
+                                    roster = contacts;
+                                    // connected and return roster as result
+                                    callback(null, roster);
+                                });
                             }
-                        });
+                        } else {
+                            self._isLogout = false;
+
+                            // recover the joined rooms
+                            rooms = Object.keys(joinedRooms);
+
+                            for (var i = 0, len = rooms.length; i < len; i++) {
+                                self.muc.join(rooms[i]);
+                            }
+
+                            // fire 'onReconnectListener'
+                            if (typeof self.onReconnectListener === 'function'){
+                                Utils.safeCallbackCall(self.onReconnectListener);
+                            }
+                        }
 
                         break;
                     case Strophe.Status.DISCONNECTING:

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.quickblox.cordova.video_chat" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.quickblox.cordova.video_chat" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>QB Video Chat</name>
     <description>
         QuickBlox Apache Cordova simple code sample for Web Video (WebRTC) Chat (via QuickBlox SDK + API)
@@ -18,6 +18,14 @@
     <allow-intent href="geo:*" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <preference name="android-minSdkVersion" value="21" />
+        <preference name="android-targetSdkVersion" value="21" />
+        <config-file parent="/*" target="AndroidManifest.xml">
+          <uses-permission android:name="android.permission.RECORD_AUDIO" />
+          <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+          <uses-permission android:name="android.permission.CAMERA" />
+          <uses-feature android:name="android.hardware.camera" />
+        </config-file>
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
@@ -33,8 +41,8 @@
     <plugin name="cordova-plugin-iosrtc" spec="~3.1.0" />
     <plugin name="cordova-plugin-console" spec="~1.0.4" />
     <engine name="ios" spec="~4.3.0" />
-    <engine name="android" spec="~6.0.0" />
     <engine name="browser" spec="~4.1.0" />
     <plugin name="cordova-custom-config" spec="~3.0.14" />
     <plugin name="cordova-plugin-device" spec="~1.1.3" />
+    <engine name="android" spec="~6.1.1" />
 </widget>

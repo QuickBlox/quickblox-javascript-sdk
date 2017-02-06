@@ -394,6 +394,9 @@
                             callParameters.callType = 2
                         }
 
+                        // Call to users
+                        //
+                        var pushRecipients = [];
                         app.currentSession.call({}, function(error) {
                             if(error) {
                                 console.warn(error.detail);
@@ -410,6 +413,7 @@
                                         'name': app.callees[id],
                                         'state': 'connecting'
                                     });
+                                    pushRecipients.push(id);
                                 });
 
                                 $('.j-callees').append(videoElems);
@@ -419,6 +423,27 @@
                                 app.helpers.setFooterPosition();
                             }
                         });
+
+                        // and also send push notification about incoming call
+                        // (corrently only iOS/Android users will receive it)
+                        //
+                        var params = {
+                          notification_type: 'push',
+                          user: {ids: pushRecipients},
+                          environment: 'development', // environment, can be 'production' as well.
+                          message: QB.pushnotifications.base64Encode(app.caller.full_name + ' is calling you')
+                        };
+                        //
+                        QB.pushnotifications.events.create(params, function(err, response) {
+                          if (err) {
+                            console.log(err);
+                          } else {
+                            // success
+                            console.log("Push Notification is sent.");
+                          }
+                        });
+
+
                     }
                 });
             }
@@ -583,7 +608,7 @@
                }
            }
         });
-        
+
         /** Video recording */
         $(document).on('click', '.j-record', function() {
             var $btn = $(this),
@@ -644,13 +669,13 @@
          * - onCallListener
          * - onCallStatsReport
          * - onUpdateCallListener
-         * 
+         *
          * - onAcceptCallListener
          * - onRejectCallListener
          * - onUserNotAnswerListener
-         * 
+         *
          * - onRemoteStreamListener
-         * 
+         *
          * - onStopCallListener
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
