@@ -60,6 +60,9 @@ QuickBlox.prototype = {
             var Connection = require('./qbStrophe');
             conn = new Connection();
 
+            /** add atapter.js*/
+            require('webrtc-adapter');
+
             /** add WebRTC API if API is avaible */
             if( Utils.isWebRTCAvailble() ) {
                 var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
