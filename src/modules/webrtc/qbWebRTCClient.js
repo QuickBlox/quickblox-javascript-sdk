@@ -15,6 +15,8 @@
  * - onInvalidEventsListener (state, session, userID, extension)
  */
 
+require('webrtc-adapter');
+
 var WebRTCSession = require('./qbWebRTCSession');
 var WebRTCSignalingProcessor = require('./qbWebRTCSignalingProcessor');
 var WebRTCSignalingProvider = require('./qbWebRTCSignalingProvider');

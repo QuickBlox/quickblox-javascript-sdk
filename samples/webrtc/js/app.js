@@ -560,7 +560,7 @@
                     if(activeClass.length) {
                         app.helpers.changeFilter('#main_video', activeClass[0]);
                     }
-                    console.log('change user on main video');
+
                     app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userId].stream);
                     app.mainVideo = userId;
                 }

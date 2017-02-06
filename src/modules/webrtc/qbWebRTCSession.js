@@ -572,7 +572,6 @@ WebRTCSession.prototype.processOnNotAnswer = function(peerConnection) {
  * DELEGATES (peer connection)
  */
 WebRTCSession.prototype._onRemoteStreamListener = function(userID, stream) {
-    console.log('WebRTCSession.prototype._onRemoteStreamListener',userID, stream);
   if (typeof this.onRemoteStreamListener === 'function'){
     Utils.safeCallbackCall(this.onRemoteStreamListener, this, userID, stream);
   }
