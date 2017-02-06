@@ -8,10 +8,10 @@
     };
 
     var QBUser1 = {
-            'id': 6126733,
-            'login': "js_jasmine1",
-            'password': "js_jasmine1",
-            'email': "js_jasmine1@quickblox.com"
+            'id': 23286054,
+            'login': "js_jasmine11",
+            'password': "js_jasmine11",
+            'email': "js_jasmine11@quickblox.com"
         },
         QBUser2 = {
             'id': 6126741,
