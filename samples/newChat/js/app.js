@@ -3,7 +3,7 @@
  * Before start chatting you need to follow this steps:
  * 1. Initialize QB SDK ( QB.init() );
  * 2. Create user session (QB.createSession());
- * 3. Connect to chat in a creqte session callback (QB.chat.connect());
+ * 3. Connect to the chat in the create session callback (QB.chat.connect());
  * 4. Set listeners;
  */
 

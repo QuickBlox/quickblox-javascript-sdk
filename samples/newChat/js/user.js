@@ -119,7 +119,6 @@ User.prototype.getUsers = function(){
     });
 };
 
-
 User.prototype.buildUserItem = function(user){
     var self = this,
         userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
@@ -136,35 +135,6 @@ User.prototype.buildUserItem = function(user){
     });
     
     self.userListConteiner.appendChild(elem);
-};
-
-User.prototype.initLoadMoreUsers = function(remove){
-    var self = this,
-        btn = self.content.querySelector('.j-load_more__btn');
-    
-    if(!remove){
-        if(!btn) {
-            var tpl = helpers.fillTemplate('tpl_loadMore'),
-                btnWrap = helpers.toHtml(tpl)[0];
-            
-            btn = btnWrap.firstElementChild;
-            
-            self.userListConteiner.appendChild(btnWrap);
-            
-            btn.addEventListener('click', function(){
-                btn.innerText = 'Loading...';
-                self.getUsers();
-            });
-            
-            self.userListConteiner.appendChild(btnWrap);
-            
-        } else {
-            btn.innerText = 'Load more';
-            self.userListConteiner.appendChild(btn.parentElement);
-        }
-    } else if(btn) {
-        self.userListConteiner.removeChild(btn.parentElement);
-    }
 };
 
 var userModule = new User();

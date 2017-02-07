@@ -19,7 +19,7 @@ Path.map("#dashboard").to(function(){
 
     helpers.clearView(app.page);
 
-    app.page.innerHTML = helpers.fillTemplate('tpl_dachboardContainer', {user: app.user});
+    app.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', {user: app.user});
     app.loadDashboard();
     
 });

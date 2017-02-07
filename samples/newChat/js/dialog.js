@@ -60,7 +60,7 @@ Dialog.prototype.loadDialogs = function(type) {
 
         var dialogs = resDialogs.items;
         
-        var pearToPearDialogs = dialogs.filter(function(dialog){
+        var peerToPearDialogs = dialogs.filter(function(dialog){
             if(dialog.type === 3) {
                 return true
             }
@@ -74,7 +74,7 @@ Dialog.prototype.loadDialogs = function(type) {
             }
         });
 
-        _.each(pearToPearDialogs, function(user){
+        _.each(peerToPearDialogs, function(user){
             if(!userModule._cache[user.id]){
                 userModule._cache[user.id] = user;
             }
@@ -257,7 +257,7 @@ Dialog.prototype.createDialog = function(params) {
 
     QB.chat.dialog.create(params, function(err, createdDialog) {
         if (err) {
-            console.log(err);
+            console.error(err);
         } else {
             var occupants = createdDialog.occupants_ids,
                 msg = {
