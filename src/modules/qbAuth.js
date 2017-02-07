@@ -79,11 +79,12 @@ AuthProxy.prototype = {
       data: params
     };
 
-    this.service.ajax(reqParams,
-      function(err, res) {
-        if (err) { callback(err, null); }
-        else { callback(null, res.user); }
-      }, true);
+    function cbWrap(err, res) {
+      if (err) { callback(err, null); }
+      else { callback(null, res.user); }
+    }
+
+    this.service.ajax(reqParams, cbWrap, true);
   },
 
   logout: function(callback) {

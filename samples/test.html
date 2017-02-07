@@ -16,7 +16,7 @@
 
 <hr>
 
-<button id="send_request" >Send a request</button>
+<button id="send_request" >Send a request without user logged</button>
 <button id="send_request_logged" >Send a request as user</button>
 
 <hr>
@@ -72,17 +72,44 @@ var destroySession = document.getElementById('destroy_session');
 
 
 /* START FUN! */
-QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sessionToken) {
-    console.info(`Success init ${sessionToken}`);
-
-    /* LOGIN */
-    login.addEventListener('click', function() {
-        QB.login(userParams, function(err, result) {
-            console.log('LOGIN Callback', result, err);
-        });
-
-        return false;
+init.addEventListener('click', function() {
+  QB.init(creds.appId, creds.authKey, creds.authSecret, config)
+    .then(function(sessionToken) {
+      console.info(`Success init by READ access with token ${sessionToken}`);
     });
+
+    return false;
+});
+
+/* LOGIN */
+login.addEventListener('click', function() {
+  QB.login(userParams, function(err, result) {
+     console.log('LOGIN Callback', result, err);
+  });
+
+  return false;
+});
+
+/* SEND REQUEST without user logged */
+sendRequest.addEventListener('click', function() {
+  QB.users.listUsers(function(err, res){
+    console.info(err, res);
+    if(err) {
+        console.error(err)
+    } else {
+        console.info('SEND REQUEST without user logged', res);
+    }
+  });
+
+  return false;
+});
+
+
+initByParams.addEventListener('click', function() {
+    return false;
+});
+
+
 
     /* LOGOUT */
     logout.addEventListener('click', function() {
@@ -93,19 +120,7 @@ QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sess
         return false;
     });
 
-    /* SEND REQUEST without user logged */
-    sendRequest.addEventListener('click', function() {
-        QB.users.listUsers(function(err, res){
-            console.info(err, res);
-            if(err) {
-                console.error(err)
-            } else {
-                console.info('SEND REQUEST without user logged', res);
-            }
-        });
 
-        return false;
-    });
 
     /* SEND REQUEST with user logged*/
     sendRequestLogged.addEventListener('click', function() {
@@ -123,7 +138,6 @@ QB.init(creds.appId, creds.authKey, creds.authSecret, config).then(function(sess
         
         return false;
     });
-});
 </script>
 </body>
 </html>

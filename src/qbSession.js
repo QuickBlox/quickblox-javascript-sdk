@@ -10,32 +10,34 @@ var UTILS = require('./qbUtils');
  * @private
  * SessionManager - Session AutoManagment
  * SessionManager является частью qbProxy
- * 
- * 1. How is SessionManager works?
- * SessionManager управляет сессией, обновляет и сохраняет (document.cookie) предыдущее состояние,
- * а так же данные для повторного создания сессии.
- * 
- *   
- *
- * Cases:
- * 1. 
- *  - QB.init(creds.appId, creds.authKey, creds.authSecret, config);
- *  - QB.login();
- *
- * 
- * 
  *
  * There are 3 types of session (http://quickblox.com/developers/Authentication_and_Authorization#Access_Rights):
  * 1. API Application (AS). 
  * 2. User session (US).
  * 3. Account owner (AO).
+ * 
+ * 1. How is SessionManager works?
+ * SessionManager управляет сессией, обновляет и сохраняет (document.cookie - qb*) предыдущее состояние,
+ * а так же данные для повторного создания сессии.
  *
- * There 4 ways to create a session:
- * 1. Create a AS (without user auth)
- * Need to know: AppID
- * 2. Create a user (US)
- * 3. Login a user (US)
- * 4. Set a exist session (AS/US) 
+ * Cases:
+ * 1. Создание API Application (AS).
+ * ```javascript
+ *  QB.init(creds.appId, creds.authKey, creds.authSecret, config); // return a Promise with get a session token.
+ * ```
+ *
+ * 2. Update AS to User session.
+ * After create a AS session by QB.init with apps parameters you can login by user.
+ * ```javascript
+ * QB.login(userParams, function(err, result) {
+ *   console.log('LOGIN Callback', result, err);
+ * });
+ * ```
+ * 
+ * 1. 
+ *  - QB.init(creds.appId, creds.authKey, creds.authSecret, config);
+ *  - QB.login();
+
  *
  * @param {Object} [args] - Object of parameters
  * @param {Number} args[].appId - id of current app, get a appId from qb admin panel. Require param
@@ -53,19 +55,13 @@ function SessionManager() {
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
-SessionManager._getSessionTokenFromCookie(name) {
-    var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)")
+SessionManager._getSessionTokenFromCookie = function(name) {
+    var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)");
     var matches = document.cookie.match();
 
     return matches ? decodeURIComponent(matches[1]) : false;
 };
 
-/**
- * Создание сессии
- * 1. Сначала SessionManager проверяет document.cookie на наличие ключа qbst.
- *
- * 
- */
 SessionManager.prototype.create = function(params) {
     var self = this,
         reqData = {
@@ -75,13 +71,8 @@ SessionManager.prototype.create = function(params) {
 
     // save a parameters for createation a session next time automatically
     self.createSessionParams = params;
-    // 
-    reqData.data = self._createASRequestParams(params);
 
-    //     reqData.data = self._createASRequestParams(params);
-    // } else {
-    //     reqData.data = self._createASRequestParams(self.createSessionParams);
-    // }
+    reqData.data = self._createASRequestParams(params);
 
     return new Promise(function(resolve, reject) {
         SessionManager._ajax(reqData).done(function(response) {
@@ -98,11 +89,11 @@ SessionManager.prototype.getSessionFromCookie = function() {
     var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
         sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
 
-    if(sessionToken && sessionDateExp) {
-        sessionDateExp
-    }
+    // if(sessionToken && sessionDateExp) {
+    //     sessionDateExp
+    // }
 
-}
+};
 
 SessionManager.prototype._createASRequestParams = function (params) {
     function randomNonce() {
