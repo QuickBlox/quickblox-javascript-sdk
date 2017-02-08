@@ -169,7 +169,7 @@
 .dialog__avatar i,
 .message__avatar i,
 .user__avatar i {
-    font-size: 60px;
+    font-size: 57px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -178,6 +178,26 @@
 
 .dialog__avatar.m-type_group i {
     font-size: 35px;
+}
+
+.message__avatar {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+}
+
+.message__avatar i {
+    font-size: 46px;
+}
+
+.user__avatar {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+}
+
+.user__avatar i {
+    font-size: 50px;
 }
 
 /* DIALOG STYLES */

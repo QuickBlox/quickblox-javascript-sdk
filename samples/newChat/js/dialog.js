@@ -25,7 +25,7 @@ Dialog.prototype.init = function(){
     self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs(e){
         var container = self.dialogsListContainer,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-        console.log(scroll);
+
         if(container.classList.contains('full')){
             container.removeEventListener('scroll', loadMoreDialogs);
         }
@@ -176,8 +176,10 @@ Dialog.prototype.renderDialog = function(id){
     } else {
         var draft = document.forms.send_message.message_feald.value;
 
+
         if(self.prevDialogId){
             self._cache[self.prevDialogId].draft.message = draft;
+            messageModule.sendStopTypingStatus(self.prevDialogId);
 
             if(messageModule.attachmentIds.length){
                 self._cache[self.prevDialogId].draft.attacnments = messageModule.attachmentIds;
@@ -281,7 +283,6 @@ Dialog.prototype.createDialog = function(params) {
         }
     });
 };
-
 
 Dialog.prototype.loadDialogById = function(id, renderMessages) {
     var self = this;

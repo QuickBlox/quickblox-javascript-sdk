@@ -7,6 +7,9 @@ function Message() {
     this.limit = appConfig.messagesPerRequest || 50;
     this.attachmentIds = [];
     this.dialogTitle = null;
+    this._typingTimer = null;
+    this._typingTime = null;
+    this.typingUsers = {};
 }
 
 Message.prototype.init = function(){
@@ -17,7 +20,46 @@ Message.prototype.init = function(){
     self.dialogTitle = document.querySelector('.j-content__title');
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
-    // self.container.addEventListener('scroll'. self.getMessages.bind(self));
+    document.forms.send_message.message_feald.addEventListener('input', self.typingStatusesListeners.bind(self));
+};
+
+Message.prototype.typingStatusesListeners = function(){
+    var self = this,
+        dialogId = dialogModule.dialogId;
+
+    self._typingTime = Date.now();
+
+    if(!self._typingTimer){
+        self.sendIsTypingStatus(dialogId);
+
+        self._typingTimer = setInterval(function(){
+            if((Date.now() - self._typingTime) / 1000 >= 3){
+                self.sendStopTypingStatus(dialogId);
+            }
+        }, 500);
+    }
+
+};
+
+Message.prototype.sendIsTypingStatus = function(dialogId){
+    var self = this,
+        dialog = dialogModule._cache[dialogId];
+
+    QB.chat.sendIsTypingStatus(dialog.jidOrUserId);
+    console.log('start typing', dialog.jidOrUserId);
+};
+
+Message.prototype.sendStopTypingStatus = function(dialogId){
+    var self = this,
+        dialog = dialogModule._cache[dialogId];
+
+    QB.chat.sendIsStopTypingStatus(dialog.jidOrUserId);
+
+    clearInterval(self._typingTimer);
+    self._typingTimer = null;
+    self._typingTime = null;
+
+    console.log('Stop typing', dialog.jidOrUserId);
 };
 
 Message.prototype.sendMessage = function(e) {
@@ -239,13 +281,53 @@ Message.prototype.UploadFilesAndGetIds = function(file){
     self.attachment_previews.appendChild(preview);
 };
 
-Message.prototype.addImagePreview = function(file, count){
+Message.prototype.addImagePreview = function(file){
     var img = document.createElement('img');
 
     img.classList.add('attachment_preview__item', 'm-blink');
     img.src = URL.createObjectURL(file);
 
     return img;
+};
+
+Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
+    var self = this;
+
+    if(!self.typingUsers[dialogId]){
+        self.typingUsers[dialogId] = [];
+    }
+
+
+    if(isTyping) {
+        self.typingUsers[dialogId].push(userId);
+        self.renderTypingUsers(dialogId)
+    } else {
+        var list = self.typingUsers[dialogId];
+        self.typingUsers[dialogId] = list.filter(function(id){
+            return id !== userId;
+        });
+    }
+};
+
+Message.prototype.renderTypingUsers = function(dialogId){
+    var self = this,
+        userList = self.typingUsers[dialogId],
+        users = userList.map(function(user){
+            if(userModule._cache[user]){
+                return userModule._cache[user]
+            }
+        });
+
+
+    if(users.length){
+        var tpl = helpers.fillTemplate('tpl_message__typing', {users: users}),
+            elem = helpers.toHtml(tpl)[0];
+
+        console.log(elem);
+
+        self.container.append(elem);
+    }
+
 };
 
 var messageModule = new Message();

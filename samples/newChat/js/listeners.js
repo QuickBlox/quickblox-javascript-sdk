@@ -40,8 +40,17 @@ Listeners.prototype.onSentMessageCallback = function(){
 
 };
 
-Listeners.prototype.onMessageTypingListener = function(){
+Listeners.prototype.onMessageTypingListener = function(isTyping, userId, dialogId) {
+    var currentDialogId = dialogModule.dialogId,
+        dialog = dialogModule._cache[currentDialogId];
 
+    if((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) {
+        if(isTyping) {
+            messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
+        } else {
+            messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
+        }
+    }
 };
 
 Listeners.prototype.onReadStatusListener = function(){
@@ -61,6 +70,7 @@ Listeners.prototype.onSystemMessageListener = function(message){
 Listeners.prototype.setListeners = function(){
     QB.chat.onMessageListener = this.onMessageListener;
     QB.chat.onSystemMessageListener = this.onSystemMessageListener;
+    QB.chat.onMessageTypingListener = this.onMessageTypingListener;
 };
 
 var listeners = new Listeners();

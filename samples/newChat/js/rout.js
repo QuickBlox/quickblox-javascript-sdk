@@ -12,7 +12,7 @@ Path.map("#login").to(function(){
 });
 
 Path.map("#dashboard").to(function(){
-    if(!app.user){
+    if(!app.user) {
         helpers.redirectToPage('login');
         return false;
     }

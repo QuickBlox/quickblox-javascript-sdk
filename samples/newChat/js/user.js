@@ -82,8 +82,7 @@ User.prototype.getUsers = function(){
 
     self.userListConteiner.classList.add('loading');
 
-    QB.users.listUsers(params, function(err, responce){
-        
+    QB.users.listUsers(params, function(err, responce) {
         if(err){
             console.error(err);
             return false;
