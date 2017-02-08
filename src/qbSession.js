@@ -21,24 +21,21 @@ var UTILS = require('./qbUtils');
  * а так же данные для повторного создания сессии.
  *
  * Cases:
- * 1. Создание API Application (AS).
- * ```javascript
- *  QB.init(creds.appId, creds.authKey, creds.authSecret, config); // return a Promise with get a session token.
- * ```
- *
- * 2. Update AS to User session.
- * After create a AS session by QB.init with apps parameters you can login by user.
- * ```javascript
- * QB.login(userParams, function(err, result) {
- *   console.log('LOGIN Callback', result, err);
- * });
- * ```
+ * 1.
+ *   1.1 Создание API Application (AS).
+ *   After this action you have a read rules.
+ *   ```javascript
+ *     QB.init(creds.appId, creds.authKey, creds.authSecret, config); // return a Promise with get a session token.
+ *   ```
+ *   
+ *   1.2 Update AS to User session.
+ *   After create a AS session by QB.init with apps parameters you can login by user.
+ *   ```javascript
+ *     QB.login(userParams, function(err, result) {
+ *       console.log('LOGIN Callback', result, err);
+ *     });
+ *   ```
  * 
- * 1. 
- *  - QB.init(creds.appId, creds.authKey, creds.authSecret, config);
- *  - QB.login();
-
- *
  * @param {Object} [args] - Object of parameters
  * @param {Number} args[].appId - id of current app, get a appId from qb admin panel. Require param
  * @param {String} args.[].authKey - Authentication Key, get a appId from qb admin panel.
@@ -50,8 +47,6 @@ function SessionManager() {
     this.onerror = null; // save a handler for session reestablish error 
     this.lastRequest = {}; // a parameters for the last request
     this.createSessionParams = {}; // saved params for create a session again
-
-    // console.info(CONFIG);
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
@@ -62,6 +57,10 @@ SessionManager._getSessionTokenFromCookie = function(name) {
     return matches ? decodeURIComponent(matches[1]) : false;
 };
 
+SessionManager.prototype._getSavedSessionToken = function() {
+
+};
+
 SessionManager.prototype.create = function(params) {
     var self = this,
         reqData = {
@@ -69,10 +68,32 @@ SessionManager.prototype.create = function(params) {
             'url': UTILS.getUrl(CONFIG.urls.session)
         };
 
+    var sessionTokenFromStorage = self._getSavedSessionToken();
+
     // save a parameters for createation a session next time automatically
     self.createSessionParams = params;
 
     reqData.data = self._createASRequestParams(params);
+
+    return new Promise(function(resolve, reject) {
+        SessionManager._ajax(reqData).done(function(response) {
+            self.session = response.session;
+
+            resolve(self.session.token);
+        }).fail(function(jqXHR, textStatus) {
+            reject(jqXHR, textStatus);
+        });
+    });
+};
+
+SessionManager.prototype.reestablish = function() {
+    var self = this,
+        reqData = {
+            'type': 'POST',
+            'url': UTILS.getUrl(CONFIG.urls.session)
+        };
+
+    reqData.data = self._createASRequestParams(self.createSessionParams);
 
     return new Promise(function(resolve, reject) {
         SessionManager._ajax(reqData).done(function(response) {
