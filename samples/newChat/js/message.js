@@ -3,6 +3,8 @@
 function Message() {
     this.container = null;
     this.attachment_previews = null;
+    this.typingContainer = null;
+
     this.dialog = null;
     this.limit = appConfig.messagesPerRequest || 50;
     this.attachmentIds = [];
@@ -18,6 +20,8 @@ Message.prototype.init = function(){
     self.container = document.querySelector('.j-messages');
     self.attachment_previews = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
+    self.typingContainer =  document.querySelector('.j-typing__status_wrapp');
+
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingStatusesListeners.bind(self));
@@ -237,7 +241,7 @@ Message.prototype.renderMessage = function(message, setAsFirst){
     if(setAsFirst) {
         var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
 
-        self.container.appendChild(elem);
+        self.container.insertBefore(elem, self.typingContainer.previousSibling);
 
         if(scrollPosition < 50){
             helpers.scrollTo(self.container, 'bottom');
@@ -300,13 +304,16 @@ Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
 
     if(isTyping) {
         self.typingUsers[dialogId].push(userId);
-        self.renderTypingUsers(dialogId)
+
     } else {
         var list = self.typingUsers[dialogId];
+
         self.typingUsers[dialogId] = list.filter(function(id){
             return id !== userId;
         });
     }
+    
+    self.renderTypingUsers(dialogId)
 };
 
 Message.prototype.renderTypingUsers = function(dialogId){
@@ -318,16 +325,20 @@ Message.prototype.renderTypingUsers = function(dialogId){
             }
         });
 
+    helpers.clearView(self.typingContainer);
 
     if(users.length){
         var tpl = helpers.fillTemplate('tpl_message__typing', {users: users}),
             elem = helpers.toHtml(tpl)[0];
 
-        console.log(elem);
+        var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
 
-        self.container.append(elem);
+        self.typingContainer.append(elem);
+
+        if(scrollPosition < 50){
+            helpers.scrollTo(self.container, 'bottom');
+        }
     }
-
 };
 
 var messageModule = new Message();

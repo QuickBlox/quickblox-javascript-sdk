@@ -44,12 +44,14 @@ Listeners.prototype.onMessageTypingListener = function(isTyping, userId, dialogI
     var currentDialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[currentDialogId];
 
+    console.group('onMessageTypingListener');
+        console.log(arguments);
+        console.log(1, (dialogId && currentDialogId === dialogId));
+        console.log(2, (!dialogId && dialog && dialog.jidOrUserId === userId));
+    console.groupEnd();
+
     if((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) {
-        if(isTyping) {
-            messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
-        } else {
-            messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
-        }
+        messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
     }
 };
 

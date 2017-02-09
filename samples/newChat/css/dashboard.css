@@ -474,6 +474,10 @@
     margin: 0 0 16px;
 }
 
+.message__wrap.m-typing {
+    align-items: center;
+}
+
 .message__content_wrap {
     flex: 1 0 480px;
     flex-wrap: nowrap;
