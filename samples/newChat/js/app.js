@@ -69,7 +69,7 @@ App.prototype.login = function(){
             QB.chat.connect({userId: self.user.id, password: self.user.pass}, function(err, roster) {
                 if (err) {
                     document.querySelector('.j-login__button').innerText = 'Login';
-                    console.log(err);
+                    console.error(err);
                     alert('Connect to chat Error');
                 } else {
                     helpers.redirectToPage('dashboard');
@@ -77,7 +77,7 @@ App.prototype.login = function(){
             });
         } else {
             document.querySelector('.j-login__button').innerText = 'Login';
-            console.log('create session Error',err);
+            console.error('create session Error',err);
             alert('Create session Error');
         }
     });

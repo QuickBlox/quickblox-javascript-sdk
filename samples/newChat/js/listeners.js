@@ -29,10 +29,7 @@ Listeners.prototype.onMessageListener = function(userId, message){
         messageModule.renderMessage(msg, true);
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
     } else if (dialogModule._cache[msg.chat_dialog_id]){
-
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
-    } else {
-        console.log('create new dialog');
     }
 };
 
@@ -43,12 +40,6 @@ Listeners.prototype.onSentMessageCallback = function(){
 Listeners.prototype.onMessageTypingListener = function(isTyping, userId, dialogId) {
     var currentDialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[currentDialogId];
-
-    console.group('onMessageTypingListener');
-        console.log(arguments);
-        console.log(1, (dialogId && currentDialogId === dialogId));
-        console.log(2, (!dialogId && dialog && dialog.jidOrUserId === userId));
-    console.groupEnd();
 
     if((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) {
         messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);

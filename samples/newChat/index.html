@@ -137,9 +137,7 @@
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
         </div>
         <div class="content__inner j-content__inner">
-            <div class=" messages j-messages">
-                <div class="typing__status_wrapp j-typing__status_wrapp"></div>
-            </div>
+            <div class=" messages j-messages"></div>
             <form name="send_message" class="send_message">
                 <input name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></input>
                 <div class="message__actions">
@@ -218,7 +216,7 @@
     </script>
 
     <script type="text/template" id="tpl_message__typing">
-        <div class="message__wrap m-typing" id="is__typing">
+        <div class="message__wrap m-typing j-istyping" id="is__typing">
             <% _.each(users, function(user){  %>
                 <span class="message__avatar m-user__img_<%- user.color %>">
                     <i class="material-icons">account_circle</i>

@@ -3,7 +3,6 @@
 function Message() {
     this.container = null;
     this.attachment_previews = null;
-    this.typingContainer = null;
 
     this.dialog = null;
     this.limit = appConfig.messagesPerRequest || 50;
@@ -20,7 +19,6 @@ Message.prototype.init = function(){
     self.container = document.querySelector('.j-messages');
     self.attachment_previews = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
-    self.typingContainer =  document.querySelector('.j-typing__status_wrapp');
 
     document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
@@ -50,7 +48,6 @@ Message.prototype.sendIsTypingStatus = function(dialogId){
         dialog = dialogModule._cache[dialogId];
 
     QB.chat.sendIsTypingStatus(dialog.jidOrUserId);
-    console.log('start typing', dialog.jidOrUserId);
 };
 
 Message.prototype.sendStopTypingStatus = function(dialogId){
@@ -62,8 +59,6 @@ Message.prototype.sendStopTypingStatus = function(dialogId){
     clearInterval(self._typingTimer);
     self._typingTimer = null;
     self._typingTime = null;
-
-    console.log('Stop typing', dialog.jidOrUserId);
 };
 
 Message.prototype.sendMessage = function(e) {
@@ -194,7 +189,7 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
 
     userModule.getUsersByIds(userList, function(err){
         if(err){
-            console.log(err);
+            console.error(err);
             return false;
         }
 
@@ -239,9 +234,14 @@ Message.prototype.renderMessage = function(message, setAsFirst){
         }
     }
     if(setAsFirst) {
-        var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
+        var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop),
+            typingElem = document.querySelector('.j-istyping');
 
-        self.container.insertBefore(elem, self.typingContainer.previousSibling);
+        if(typingElem) {
+            self.container.insertBefore(elem, typingElem.previousSibling);
+        } else {
+            self.container.appendChild(elem);
+        }
 
         if(scrollPosition < 50){
             helpers.scrollTo(self.container, 'bottom');
@@ -319,13 +319,16 @@ Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
 Message.prototype.renderTypingUsers = function(dialogId){
     var self = this,
         userList = self.typingUsers[dialogId],
+        typingElem = document.querySelector('.j-istyping'),
         users = userList.map(function(user){
             if(userModule._cache[user]){
                 return userModule._cache[user]
             }
         });
 
-    helpers.clearView(self.typingContainer);
+    if(typingElem){
+        self.container.removeChild(typingElem);
+    }
 
     if(users.length){
         var tpl = helpers.fillTemplate('tpl_message__typing', {users: users}),
@@ -333,7 +336,7 @@ Message.prototype.renderTypingUsers = function(dialogId){
 
         var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
 
-        self.typingContainer.append(elem);
+        self.container.append(elem);
 
         if(scrollPosition < 50){
             helpers.scrollTo(self.container, 'bottom');

@@ -59,7 +59,7 @@ User.prototype.initGettingUsers = function(){
     self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e){
         var container = self.userListConteiner,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-        console.log('scroll');
+
         if(container.classList.contains('full')){
             container.removeEventListener('scroll', loadMoreUsers);
         }
