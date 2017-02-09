@@ -41,7 +41,7 @@ Listeners.prototype.onMessageTypingListener = function(isTyping, userId, dialogI
     var currentDialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[currentDialogId];
 
-    if((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) {
+    if(((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) && userId !== app.user.id) {
         messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
     }
 };
