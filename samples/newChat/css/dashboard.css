@@ -563,17 +563,39 @@
     display: none;
 }
 
-.attachment_preview__item {
+.attachment_preview__wrap {
+    display: inline-block;
+    vertical-align: middle;
     width: 25px;
+    height: 25px;
+    position: relative;
     margin: 0 5px 0 0;
 }
 
-.attachment_preview__item.m-blink {
+.attachment_preview__wrap.m-loading:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height:100%;
+    width: 100%;
+    background: url(../img/loader2.gif) no-repeat 50% 50%;
+    background-size: 20px;
+}
+
+.attachment_preview__wrap.m-loading .attachment_preview__item {
     -webkit-animation: blink 1s infinite alternate;
     -moz-animation:    blink 1s infinite alternate;
     -o-animation:      blink 1s infinite alternate;
     animation:         blink 1s infinite alternate;
 }
+
+
+.attachment_preview__item {
+    max-width: 25px;
+    max-height: 25px;
+}
+
 
 .send_btn {
     flex: 0 0 38px;

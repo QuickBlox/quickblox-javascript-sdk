@@ -21,7 +21,6 @@ Path.map("#dashboard").to(function(){
 
     app.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', {user: app.user});
     app.loadDashboard();
-    
 });
 
 Path.root("#login");

@@ -39,7 +39,7 @@ Helpers.prototype.compileDialogParams = function(dialog){
         full: false,
         draft: {
             message: '',
-            attachments: []
+            attachments: {}
         },
         joined: false
     };
@@ -101,19 +101,11 @@ Helpers.prototype.fillNewMessagePrams = function(userId, msg){
         message.attachments = attachments;
     }
 
-    return message;
-};
-
-Helpers.prototype.addEvent = function(elems, eventType, callback){
-    _.each(elems, addEvent);
-
-    function addEvent(elem){
-        elem.addEventListener(eventType, callback);
+    if(message.message === '[attachment]'){
+        message.message = '';
     }
-};
 
-Helpers.prototype.removeclass = function(elem, classname){
-    elem.classList.remove(classname);
+    return message;
 };
 
 Helpers.prototype.toHtml = function(str){

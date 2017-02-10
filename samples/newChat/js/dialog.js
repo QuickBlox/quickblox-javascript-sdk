@@ -11,6 +11,7 @@ function Dialog() {
     this.dialogTitle = null;
     this.dialogsListContainer = null;
     this.messagesContainer = null;
+
     this.attachmentsPreviewContainer = null;
     this.limit = appConfig.dilogsPerRequers || 30;
 }
@@ -174,37 +175,23 @@ Dialog.prototype.renderDialog = function(id){
 
         messageModule.init();
     } else {
-        var draft = document.forms.send_message.message_feald.value;
-
-
         if(self.prevDialogId){
-            self._cache[self.prevDialogId].draft.message = draft;
             messageModule.sendStopTypingStatus(self.prevDialogId);
-
-            if(messageModule.attachmentIds.length){
-                self._cache[self.prevDialogId].draft.attacnments = messageModule.attachmentIds;
-            }
         }
 
-        messageModule.attachmentIds = dialog.draft.attachments;
-        self.dialogTitle.innrText = dialog.name;
+        self.dialogTitle.innerText = dialog.name;
         helpers.clearView(self.messagesContainer);
+        helpers.clearView(self.attachmentsPreviewContainer);
     }
 
     messageModule.setLoadMoreMessagesListener();
 
     document.forms.send_message.message_feald.value = dialog.draft.message;
-    if(dialog.draft.attachments.length){
-        var attachments = dialog.draft.attachments;
 
-        for(var j = 0; j < attachments.length; j++){
-            var img = document.createElement('img');
+    var attachments = dialog.draft.attachments;
 
-            img.classList.add('attachment_preview__item');
-            img.src = helpers.getSrcFromAttachmentId(attachments[j]);
-
-            self.attachmentsPreviewContainer.append(img);
-        }
+    for (var attach in attachments) {
+        messageModule.addImagePreview(null, {id: attach, src: attachments[attach]});
     }
 
     if(dialog && dialog.messages.length){
