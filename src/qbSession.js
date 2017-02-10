@@ -1,6 +1,7 @@
 'use strict';
 
 var CryptoSHA1 = require('crypto-js/hmac-sha1');
+
 var Promise = require('bluebird');
 
 var CONFIG = require('./qbConfig');
@@ -21,7 +22,9 @@ var UTILS = require('./qbUtils');
  * а так же данные для повторного создания сессии.
  *
  * Cases:
- * 1.
+ * 1.Перед создание сессии проверяется хранилище на наличие токена.
+ *   Если в хранилище есть токен, тогда проверяется соответствие appId и количество пройденного времени с config.expiredTime.
+ *   
  *   1.1 Создание API Application (AS).
  *   After this action you have a read rules.
  *   ```javascript
@@ -47,9 +50,12 @@ function SessionManager() {
     this.onerror = null; // save a handler for session reestablish error 
     this.lastRequest = {}; // a parameters for the last request
     this.createSessionParams = {}; // saved params for create a session again
+
+    this._savedTokenName = 'qbst';
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
+
 SessionManager._getSessionTokenFromCookie = function(name) {
     var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)");
     var matches = document.cookie.match();
@@ -57,34 +63,20 @@ SessionManager._getSessionTokenFromCookie = function(name) {
     return matches ? decodeURIComponent(matches[1]) : false;
 };
 
-SessionManager.prototype._getSavedSessionToken = function() {
+SessionManager._b64EncodeUnicode = function(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+}
 
-};
+SessionManager._b64DecodeUnicode = function(str) {
+     return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
 
-SessionManager.prototype.create = function(params) {
-    var self = this,
-        reqData = {
-            'type': 'POST',
-            'url': UTILS.getUrl(CONFIG.urls.session)
-        };
 
-    var sessionTokenFromStorage = self._getSavedSessionToken();
 
-    // save a parameters for createation a session next time automatically
-    self.createSessionParams = params;
-
-    reqData.data = self._createASRequestParams(params);
-
-    return new Promise(function(resolve, reject) {
-        SessionManager._ajax(reqData).done(function(response) {
-            self.session = response.session;
-
-            resolve(self.session.token);
-        }).fail(function(jqXHR, textStatus) {
-            reject(jqXHR, textStatus);
-        });
-    });
-};
 
 SessionManager.prototype.reestablish = function() {
     var self = this,
@@ -106,15 +98,23 @@ SessionManager.prototype.reestablish = function() {
     });
 };
 
-SessionManager.prototype.getSessionFromCookie = function() {
-    var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
-        sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
+// SessionManager.prototype.getSessionFromCookie = function() {
+//     var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
+//         sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
 
-    // if(sessionToken && sessionDateExp) {
-    //     sessionDateExp
-    // }
+//     // if(sessionToken && sessionDateExp) {
+//     //     sessionDateExp
+//     // }
 
-};
+// };
+
+SessionManager.prototype._saveSession = function(name, val) {
+    var now = new Date();
+
+    now.setTime(now.getTime() + CONFIG.sessionManagement.expiredTime * 3600 * 1000);
+    
+    document.cookie = "name=value; expires=" + now.toUTCString() + "; path=/";
+}
 
 SessionManager.prototype._createASRequestParams = function (params) {
     function randomNonce() {
@@ -151,6 +151,35 @@ SessionManager.prototype._createASRequestParams = function (params) {
     reqParams.signature = signRequest(reqParams, params.authSecret);
 
     return reqParams;
+};
+
+SessionManager.prototype.create = function(params) {
+    var self = this,
+        reqData = {
+            'type': 'POST',
+            'url': UTILS.getUrl(CONFIG.urls.session)
+        };
+
+    reqData.data = self._createASRequestParams(params);
+
+    return new Promise(function(resolve, reject) {
+        SessionManager._ajax(reqData).done(function(response) {
+            self.createSessionParams = params;
+            self.session = response.session;
+
+            self._saveSession(self.session.token);
+
+
+            
+            var timeExpired = "; expires=" + 
+            document.cookie = self._savedTokenName + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+            document.cookie = self._savedTokenName + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+
+            resolve(self.session.token);
+        }).fail(function(jqXHR, textStatus) {
+            reject(jqXHR, textStatus);
+        });
+    });
 };
 
 /*
