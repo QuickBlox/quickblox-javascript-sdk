@@ -182,6 +182,7 @@ Dialog.prototype.renderDialog = function(id){
         self.dialogTitle.innerText = dialog.name;
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
+        document.forms.send_message.attach_file.value = null;
     }
 
     messageModule.setLoadMoreMessagesListener();
