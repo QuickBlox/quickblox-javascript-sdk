@@ -2,9 +2,7 @@
 
 /*
  * QuickBlox JavaScript SDK
- *
  * Main SDK Module
- *
  */
 
 var config = require('./qbConfig');
