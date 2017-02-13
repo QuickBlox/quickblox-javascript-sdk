@@ -1,7 +1,6 @@
 'use strict';
 
 var CryptoSHA1 = require('crypto-js/hmac-sha1');
-
 var Promise = require('bluebird');
 
 var CONFIG = require('./qbConfig');
@@ -52,16 +51,11 @@ function SessionManager() {
     this.createSessionParams = {}; // saved params for create the session again
 
     this._SAVED_TOKEN_NAME = 'qbst';
+    this._SAVED_APP_ID = 'qbai';
+    this._SAVED_USER_ID = 'qbui';
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
-
-SessionManager._getFromCookie = function(name) {
-    var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)");
-    var matches = document.cookie.match();
-
-    return matches ? decodeURIComponent(matches[1]) : false;
-};
 
 SessionManager._b64EncodeUnicode = function(str) {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
@@ -75,42 +69,45 @@ SessionManager._b64DecodeUnicode = function(str) {
     }).join(''));
 };
 
-// SessionManager.prototype.reestablish = function() {
-//     var self = this,
-//         reqData = {
-//             'type': 'POST',
-//             'url': UTILS.getUrl(CONFIG.urls.session)
-//         };
+SessionManager._getFromCookie = function(name) {
+    var regExp = new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)");
+    var matches = document.cookie.match(regExp);
 
-//     reqData.data = self._createASRequestParams(self.createSessionParams);
+    return matches ? SessionManager._b64DecodeUnicode(matches[1]) : false;
+};
 
-//     return new Promise(function(resolve, reject) {
-//         SessionManager._ajax(reqData).done(function(response) {
-//             self.session = response.session;
+SessionManager.prototype.create = function(params) {
+    var self = this,
+        reqData = {
+            'type': 'POST',
+            'url': UTILS.getUrl(CONFIG.urls.session)
+        };
 
-//             resolve(self.session.token);
-//         }).fail(function(jqXHR, textStatus) {
-//             reject(jqXHR, textStatus);
-//         });
-//     });
-// };
+    return new Promise(function(resolve, reject) {
+        var savedToken = self._getSavedToken(params);
 
-// SessionManager.prototype.getSessionFromCookie = function() {
-//     var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
-//         sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
+        if(savedToken) {
+            self.session.token = savedToken;
+            resolve(self.session.token);
+        }
 
-//     // if(sessionToken && sessionDateExp) {
-//     //     sessionDateExp
-//     // }
+        reqData.data = self._createASRequestParams(params);
 
-// };
+        SessionManager._ajax(reqData).done(function(response) {
+            self.createSessionParams = params;
+            self.session = response.session;
 
-SessionManager.prototype._saveSession = function(name, val) {
-    var now = new Date();
+            // save cookies without expired time
+            // save for a browser session (when browser will be close cookie will be a remove)
+            document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
 
-    now.setTime(now.getTime() + CONFIG.sessionManagement.expiredTime * 3600 * 1000);
-    
-    document.cookie = name + '=value' + '; expires=' + now.toUTCString() + ';';
+
+            resolve(self.session.token);
+        }).fail(function(jqXHR, textStatus) {
+            reject(jqXHR, textStatus);
+        });
+    });
 };
 
 SessionManager.prototype._createASRequestParams = function (params) {
@@ -150,77 +147,122 @@ SessionManager.prototype._createASRequestParams = function (params) {
     return reqParams;
 };
 
-SessionManager.prototype.getSavedSession = function() {
-    var self = this;
+SessionManager.prototype._getSavedToken = function (params) {
+    var token = SessionManager._getFromCookie(this._SAVED_TOKEN_NAME);
 
-    var appId = self._getFromCookie('qbAppId');
-    var userId = self._getFromCookie('qbUId');
+    if(!token) {
+        return false;
+    }
 
-    var savedSession = {
-            token: self._getFromCookie(self._SAVED_TOKEN_NAME),
-            userId: userId
-        };
+    var appId = SessionManager._getFromCookie(this._SAVED_APP_ID);
+
+    if(params.appId === appId) {
+        return token;
+    } else {
+        return false;
+    }
 };
 
-SessionManager.prototype.create = function(params) {
-    var self = this,
-        reqData = {
-            'type': 'POST',
-            'url': UTILS.getUrl(CONFIG.urls.session)
-        };
 
-    // var savedSession = this.getSavedSession();
 
-    reqData.data = self._createASRequestParams(params);
 
-    return new Promise(function(resolve, reject) {
-        SessionManager._ajax(reqData).done(function(response) {
-            self.createSessionParams = params;
-            self.session = response.session;
 
-            self._saveSession(self.session.token);
 
-            // var timeExpired = "; expires=" + 
-            // document.cookie = self._savedTokenName + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-            // document.cookie = self._savedTokenName + '=' + SessionManager._b64EncodeUnicode(self.session.token);
 
-            resolve(self.session.token);
-        }).fail(function(jqXHR, textStatus) {
-            reject(jqXHR, textStatus);
-        });
-    });
-};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// SessionManager.prototype.reestablish = function() {
+//     var self = this,
+//         reqData = {
+//             'type': 'POST',
+//             'url': UTILS.getUrl(CONFIG.urls.session)
+//         };
+
+//     reqData.data = self._createASRequestParams(self.createSessionParams);
+
+//     return new Promise(function(resolve, reject) {
+//         SessionManager._ajax(reqData).done(function(response) {
+//             self.session = response.session;
+
+//             resolve(self.session.token);
+//         }).fail(function(jqXHR, textStatus) {
+//             reject(jqXHR, textStatus);
+//         });
+//     });
+// };
+
+// SessionManager.prototype.getSessionFromCookie = function() {
+//     var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
+//         sessionDateExp = SessionManager._getSessionTokenFromCookie('qbstte');
+
+//     // if(sessionToken && sessionDateExp) {
+//     //     sessionDateExp
+//     // }
+
+// };
+
 
 /*
  * Get session info from server
  */
-SessionManager.prototype.sync = function() {
-    var self = this;
+// SessionManager.prototype.sync = function() {
+//     var self = this;
 
-    var reqParams = {
-        'url': UTILS.getUrl(CONFIG.urls.session),
-        beforeSend: function(jqXHR) {
-            jqXHR.setRequestHeader('QB-Token', self.session.token);
-            jqXHR.setRequestHeader('QB-SDK', 'JS ' + CONFIG.version + ' - Client');
-        }
-    };
+//     var reqParams = {
+//         'url': UTILS.getUrl(CONFIG.urls.session),
+//         beforeSend: function(jqXHR) {
+//             jqXHR.setRequestHeader('QB-Token', self.session.token);
+//             jqXHR.setRequestHeader('QB-SDK', 'JS ' + CONFIG.version + ' - Client');
+//         }
+//     };
 
-    return new Promise(function(resolve, reject) {
-        SessionManager._ajax(reqParams)
-            .done(function(response) {
-                self.session = response;
-                console.info('SYNC', self.session);
+//     return new Promise(function(resolve, reject) {
+//         SessionManager._ajax(reqParams)
+//             .done(function(response) {
+//                 self.session = response;
+//                 console.info('SYNC', self.session);
 
-                resolve(response);
-            }).fail(function(jqXHR, textStatus) {
-                console.error('SYNC', textStatus);
-                reject(jqXHR, textStatus);
-            });
-    });
-};
+//                 resolve(response);
+//             }).fail(function(jqXHR, textStatus) {
+//                 console.error('SYNC', textStatus);
+//                 reject(jqXHR, textStatus);
+//             });
+//     });
+// };
 
-SessionManager.prototype.destroy = function(){
-    var self = this;
+// SessionManager.prototype.destroy = function(){
+//     var self = this;
     
     // var reqParams = {
     //     'type': 'DELETE',
@@ -241,6 +283,6 @@ SessionManager.prototype.destroy = function(){
     //             reject(jqXHR, textStatus);
     //         });
     // });
-};
+// };
 
 module.exports = SessionManager;
