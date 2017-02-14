@@ -37,7 +37,6 @@ var UTILS = require('./qbUtils');
  *       console.log('LOGIN Callback', result, err);
  *     });
  *   ```
- * 
  * @param {Object} [args] - Object of parameters
  * @param {Number} args[].appId - id of current app, get a appId from qb admin panel. Require param
  * @param {String} args.[].authKey - Authentication Key, get a appId from qb admin panel.
@@ -45,7 +44,7 @@ var UTILS = require('./qbUtils');
  * 
  */
 function SessionManager() {
-    this.session = null; // all info all session
+    this.session = null; // info session
     this.onerror = null; // save a handler for session reestablish error
     this.lastRequest = {}; // a parameters for the last request
     this.createSessionParams = {}; // saved params for create the session again
@@ -76,6 +75,13 @@ SessionManager._getFromCookie = function(name) {
     return matches ? SessionManager._b64DecodeUnicode(matches[1]) : false;
 };
 
+SessionManager.prototype.destroy = function(){
+    this.session = null;
+    this.onerror = null;
+    this.lastRequest = {};
+    this.createSessionParams = {};
+};
+
 SessionManager.prototype.create = function(params) {
     var self = this,
         reqData = {
@@ -83,30 +89,32 @@ SessionManager.prototype.create = function(params) {
             'url': UTILS.getUrl(CONFIG.urls.session)
         };
 
+    this.session = {};
+
     return new Promise(function(resolve, reject) {
         var savedToken = self._getSavedToken(params);
 
         if(savedToken) {
             self.session.token = savedToken;
             resolve(self.session.token);
+        } else {
+            reqData.data = self._createASRequestParams(params);
+
+            SessionManager._ajax(reqData).done(function(response) {
+                self.createSessionParams = params;
+                self.session = response.session;
+
+                // save cookies without expired time
+                // save for a browser session (when browser will be close cookie will be a remove)
+                document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+                document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
+
+                resolve(self.session.token);
+            }).fail(function(jqXHR, textStatus) {
+                this.session = null;
+                reject(jqXHR, textStatus);
+            });
         }
-
-        reqData.data = self._createASRequestParams(params);
-
-        SessionManager._ajax(reqData).done(function(response) {
-            self.createSessionParams = params;
-            self.session = response.session;
-
-            // save cookies without expired time
-            // save for a browser session (when browser will be close cookie will be a remove)
-            document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
-
-
-            resolve(self.session.token);
-        }).fail(function(jqXHR, textStatus) {
-            reject(jqXHR, textStatus);
-        });
     });
 };
 
@@ -156,7 +164,7 @@ SessionManager.prototype._getSavedToken = function (params) {
 
     var appId = SessionManager._getFromCookie(this._SAVED_APP_ID);
 
-    if(params.appId === appId) {
+    if(params.appId === (+appId)) {
         return token;
     } else {
         return false;
