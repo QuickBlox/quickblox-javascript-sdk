@@ -52,6 +52,8 @@ function SessionManager() {
     this._SAVED_TOKEN_NAME = 'qbst';
     this._SAVED_APP_ID = 'qbai';
     this._SAVED_USER_ID = 'qbui';
+
+    this._CREATE_SESSION_PARAMS = 'qbcsp';
 }
 
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
@@ -80,6 +82,15 @@ SessionManager.prototype.destroy = function(){
     this.onerror = null;
     this.lastRequest = {};
     this.createSessionParams = {};
+
+    var cookies = document.cookie.split(';');
+
+    for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eqPos = cookie.indexOf('=');
+        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    }
 };
 
 SessionManager.prototype.create = function(params) {
@@ -89,10 +100,10 @@ SessionManager.prototype.create = function(params) {
             'url': UTILS.getUrl(CONFIG.urls.session)
         };
 
-    this.session = {};
-
     return new Promise(function(resolve, reject) {
         var savedToken = self._getSavedToken(params);
+
+        self.session = {};
 
         if(savedToken) {
             self.session.token = savedToken;
@@ -107,7 +118,7 @@ SessionManager.prototype.create = function(params) {
                 // save cookies without expired time
                 // save for a browser session (when browser will be close cookie will be a remove)
                 document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-                document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
+                document.cookie = self._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params));
 
                 resolve(self.session.token);
             }).fail(function(jqXHR, textStatus) {
@@ -156,19 +167,45 @@ SessionManager.prototype._createASRequestParams = function (params) {
 };
 
 SessionManager.prototype._getSavedToken = function (params) {
+    var self = this;
     var token = SessionManager._getFromCookie(this._SAVED_TOKEN_NAME);
 
     if(!token) {
         return false;
     }
 
-    var appId = SessionManager._getFromCookie(this._SAVED_APP_ID);
+    var credsApp = JSON.parse(SessionManager._getFromCookie(this._CREATE_SESSION_PARAMS));
 
-    if(params.appId === (+appId)) {
+    if(params.appId === (+credsApp.appId)) {
+        self.createSessionParams = credsApp;
         return token;
     } else {
         return false;
     }
+};
+
+SessionManager.prototype.reestablish = function() {
+    var self = this,
+        reqData = {
+            'type': 'POST',
+            'url': UTILS.getUrl(CONFIG.urls.session)
+        };
+
+    reqData.data = self._createASRequestParams(self.createSessionParams);
+
+    return new Promise(function(resolve, reject) {
+        SessionManager._ajax(reqData).done(function(response) {
+            self.session = response.session;
+
+            document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
+
+            resolve(self.session.token);
+        }).fail(function(jqXHR, textStatus) {
+            this.session = null;
+            reject(jqXHR, textStatus);
+        });
+    });
 };
 
 
@@ -210,25 +247,6 @@ SessionManager.prototype._getSavedToken = function (params) {
 
 
 
-// SessionManager.prototype.reestablish = function() {
-//     var self = this,
-//         reqData = {
-//             'type': 'POST',
-//             'url': UTILS.getUrl(CONFIG.urls.session)
-//         };
-
-//     reqData.data = self._createASRequestParams(self.createSessionParams);
-
-//     return new Promise(function(resolve, reject) {
-//         SessionManager._ajax(reqData).done(function(response) {
-//             self.session = response.session;
-
-//             resolve(self.session.token);
-//         }).fail(function(jqXHR, textStatus) {
-//             reject(jqXHR, textStatus);
-//         });
-//     });
-// };
 
 // SessionManager.prototype.getSessionFromCookie = function() {
 //     var sessionToken = SessionManager._getSessionTokenFromCookie('qbst'),
