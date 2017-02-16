@@ -27,24 +27,24 @@ describe('Session Managment', function() {
                 tokenSaved = token; // save token for next cases
 
                 expect(token).not.toBeNull();
+                
                 done();
             });
         });
 
         it('can send a request', function (done) {
             QB.users.listUsers(function(err, res){
-                if(err) {
-                    done.fail('CAN SEND A REQUES got a error');
-                } else {
-                    expect(res).not.toBeNull();
-                    done();
-                }
+                expect(res).not.toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
             });
         });
 
         it('can destroy a session', function (done) {
             QB.destroySession(function(err) {
                 expect(err).toBeNull();
+
                 done();
             });
         });

@@ -117,8 +117,14 @@ SessionManager.prototype.create = function(params) {
 
                 // save cookies without expired time
                 // save for a browser session (when browser will be close cookie will be a remove)
-                document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-                document.cookie = self._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params));
+                var now = new Date();
+                var time = now.getTime();
+                var expireTime = CONFIG.sessionManagement.expiredTime * 3600;
+                
+                now.setTime(expireTime);
+
+                document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token) + ';expires='+ now.toGMTString() +';path=/';
+                document.cookie = self._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params)) + ';expires='+ now.toGMTString() +';path=/';
 
                 resolve(self.session.token);
             }).fail(function(jqXHR, textStatus) {
