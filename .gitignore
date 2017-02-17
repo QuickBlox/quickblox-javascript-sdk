@@ -18,3 +18,7 @@ npm-debug.log
 **/build
 
 *.xcarchive
+
+# Android
+.gradle
+.idea

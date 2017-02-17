@@ -71,49 +71,42 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
  * @param {function} A callback to get a result of the function
  */
 WebRTCSession.prototype.getUserMedia = function(params, callback) {
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-  if(!getUserMedia) {
-    throw new Error('getUserMedia() is not supported in your browser');
-  }
-
-  getUserMedia = getUserMedia.bind(navigator);
-
-  var self = this;
-
-  /**
-   * Additional parameters for Media Constraints
-   * http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
-   *
-   * googEchoCancellation: true
-   * googAutoGainControl: true
-   * googNoiseSuppression: true
-   * googHighpassFilter: true
-   * minWidth: 640
-   * minHeight: 480
-   * maxWidth: 1280
-   * maxHeight: 720
-   * minFrameRate: 60
-   * maxAspectRatio: 1.333
-   */
-
-  getUserMedia(
-    {
-      audio: params.audio || false,
-      video: params.video || false
-
-    },function(stream) {
-      self.localStream = stream;
-
-      if (params.elemId){
-        self.attachMediaStream(params.elemId, stream, params.options);
-      }
-
-      callback(null, stream);
-    },function(err) {
-      callback(err, null);
+    if(!navigator.mediaDevices.getUserMedia) {
+       throw new Error('getUserMedia() is not supported in your browser');
     }
-  );
+
+    var self = this;
+
+    /**
+     * Additional parameters for Media Constraints
+     * http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00
+     *
+     * googEchoCancellation: true
+     * googAutoGainControl: true
+     * googNoiseSuppression: true
+     * googHighpassFilter: true
+     * minWidth: 640
+     * minHeight: 480
+     * maxWidth: 1280
+     * maxHeight: 720
+     * minFrameRate: 60
+     * maxAspectRatio: 1.333
+     */
+
+    navigator.mediaDevices.getUserMedia({
+        audio: params.audio || false,
+        video: params.video || false
+
+    }).then(function(stream) {
+        self.localStream = stream;
+        if (params.elemId){
+          self.attachMediaStream(params.elemId, stream, params.options);
+        }
+
+        callback(null, stream);
+    }).catch(function(err) {
+        callback(err, null);
+    });
 };
 
 /**
@@ -123,23 +116,25 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
  * @param {object} The additional options
  */
 WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
-  var elem = document.getElementById(id);
+    var elem = document.getElementById(id);
 
-  if (elem) {
-    var URL = window.URL || window.webkitURL;
-    elem.src = URL.createObjectURL(stream);
+    if (elem) {
+        var URL = window.URL.createObjectURL(stream);
 
-    if (options && options.muted) elem.muted = true;
+        elem.src = URL;
 
-    if (options && options.mirror) {
-      elem.style.webkitTransform = 'scaleX(-1)';
-      elem.style.transform = 'scaleX(-1)';
+        if (options && options.muted) elem.muted = true;
+
+        if (options && options.mirror) {
+            elem.style.webkitTransform = 'scaleX(-1)';
+            elem.style.transform = 'scaleX(-1)';
+        }
+
+        elem.play();
+
+    } else {
+        throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
     }
-
-    elem.play();
-  } else {
-    throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
-  }
 };
 
 /**
@@ -273,6 +268,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   var peerConnection = this.peerConnections[userID];
 
   if(peerConnection){
+
     peerConnection.addLocalStream(this.localStream);
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.getRemoteSDP(), function(error){

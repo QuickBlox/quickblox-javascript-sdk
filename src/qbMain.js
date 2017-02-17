@@ -5,10 +5,11 @@
  * Main SDK Module
  */
 
+var isBrowser = typeof window !== 'undefined';
+
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 
-var isBrowser = typeof window !== 'undefined';
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -59,6 +60,9 @@ QuickBlox.prototype = {
             /** create Strophe Connection object */
             var Connection = require('./qbStrophe');
             conn = new Connection();
+
+            /** add atapter.js*/
+            require('webrtc-adapter');
 
             /** add WebRTC API if API is avaible */
             if( Utils.isWebRTCAvailble() ) {

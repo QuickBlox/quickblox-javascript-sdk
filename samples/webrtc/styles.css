@@ -470,6 +470,7 @@ b {
     min-height: 300px;
     float: right;
     padding: 0 0 0 14px;
+    box-sizing: border-box;
 }
 
 .frames {

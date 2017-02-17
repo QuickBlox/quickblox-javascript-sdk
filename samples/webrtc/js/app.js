@@ -373,6 +373,7 @@
                 } else {
                     document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
                 }
+
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
                     if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                         var errorMsg = '';
@@ -393,6 +394,9 @@
                             callParameters.callType = 2
                         }
 
+                        // Call to users
+                        //
+                        var pushRecipients = [];
                         app.currentSession.call({}, function(error) {
                             if(error) {
                                 console.warn(error.detail);
@@ -409,6 +413,7 @@
                                         'name': app.callees[id],
                                         'state': 'connecting'
                                     });
+                                    pushRecipients.push(id);
                                 });
 
                                 $('.j-callees').append(videoElems);
@@ -418,6 +423,27 @@
                                 app.helpers.setFooterPosition();
                             }
                         });
+
+                        // and also send push notification about incoming call
+                        // (corrently only iOS/Android users will receive it)
+                        //
+                        var params = {
+                          notification_type: 'push',
+                          user: {ids: pushRecipients},
+                          environment: 'development', // environment, can be 'production' as well.
+                          message: QB.pushnotifications.base64Encode(app.caller.full_name + ' is calling you')
+                        };
+                        //
+                        QB.pushnotifications.events.create(params, function(err, response) {
+                          if (err) {
+                            console.log(err);
+                          } else {
+                            // success
+                            console.log("Push Notification is sent.");
+                          }
+                        });
+
+
                     }
                 });
             }
@@ -451,9 +477,7 @@
                 mediaParams = {
                     audio: true,
                     video: {
-                        optional: [
-                            {sourceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined}
-                        ]
+                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
                     elemId: 'localVideo',
                     options: {
@@ -461,6 +485,7 @@
                         mirror: true
                     }
                 };
+
                 document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
             }
 
@@ -560,6 +585,7 @@
                     if(activeClass.length) {
                         app.helpers.changeFilter('#main_video', activeClass[0]);
                     }
+
                     app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[userId].stream);
                     app.mainVideo = userId;
                 }
@@ -582,7 +608,7 @@
                }
            }
         });
-        
+
         /** Video recording */
         $(document).on('click', '.j-record', function() {
             var $btn = $(this),
@@ -643,13 +669,13 @@
          * - onCallListener
          * - onCallStatsReport
          * - onUpdateCallListener
-         * 
+         *
          * - onAcceptCallListener
          * - onRejectCallListener
          * - onUserNotAnswerListener
-         * 
+         *
          * - onRemoteStreamListener
-         * 
+         *
          * - onStopCallListener
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
@@ -681,7 +707,7 @@
                     if(recorder) {
                         recorder.pause();
                     }
-                    
+
                     app.helpers.toggleRemoteVideoView(userId, 'hide');
                     $('.j-callee_status_' + userId).text('disconnected');
 
@@ -692,7 +718,7 @@
                     if(recorder) {
                         recorder.resume();
                     }
-                    
+
                     if(ffHack.waitingReconnectTimer) {
                         clearTimeout(ffHack.waitingReconnectTimer);
                         ffHack.waitingReconnectTimer = null;
@@ -891,6 +917,9 @@
             }
 
             app.currentSession.peerConnections[userId].stream = stream;
+
+            console.info('onRemoteStreamListener add video to the video element', stream);
+
             app.currentSession.attachMediaStream('remote_video_' + userId, stream);
 
             if( remoteStreamCounter === 0) {

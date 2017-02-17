@@ -1,0 +1,179 @@
+@import "./reset.css";
+@import "./login.css";
+@import "./dashboard.css";
+
+body, html {
+    height: 100%;
+    width: 100%;
+    background-color: #f0f2f4;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden
+}
+
+select, button, textarea, input {
+    appearance:none;
+    -moz-appearance:none;
+    -webkit-appearance:none;
+    outline: none;
+}
+
+#page {
+    height: 100%;
+    width: 100%;;
+}
+
+/*
+ * SCROLLBAR CUSTOMIZATION
+ */
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background-color: #ccc;
+    border-left: 1px solid #ccc;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #1FBCD2;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #4054B2;
+    cursor: pointer;
+}
+/*::-webkit-scrollbar*/
+
+
+/* Animation */
+
+#fountainG{
+    flex: 0 0 102px;
+    position: relative;
+    width: 102px;
+    height: 12px;
+}
+
+.fountainG{
+    position:absolute;
+    top:0;
+    background-color:rgba(0,0,0,0);
+    width:12px;
+    height:12px;
+    animation-name:bounce_fountainG;
+    -o-animation-name:bounce_fountainG;
+    -ms-animation-name:bounce_fountainG;
+    -webkit-animation-name:bounce_fountainG;
+    -moz-animation-name:bounce_fountainG;
+    animation-duration:1.5s;
+    -o-animation-duration:1.5s;
+    -ms-animation-duration:1.5s;
+    -webkit-animation-duration:1.5s;
+    -moz-animation-duration:1.5s;
+    animation-iteration-count:infinite;
+    -o-animation-iteration-count:infinite;
+    -ms-animation-iteration-count:infinite;
+    -webkit-animation-iteration-count:infinite;
+    -moz-animation-iteration-count:infinite;
+    animation-direction:normal;
+    -o-animation-direction:normal;
+    -ms-animation-direction:normal;
+    -webkit-animation-direction:normal;
+    -moz-animation-direction:normal;
+    transform:scale(.3);
+    -o-transform:scale(.3);
+    -ms-transform:scale(.3);
+    -webkit-transform:scale(.3);
+    -moz-transform:scale(.3);
+    border-radius:8px;
+    -o-border-radius:8px;
+    -ms-border-radius:8px;
+    -webkit-border-radius:8px;
+    -moz-border-radius:8px;
+}
+
+#fountainG_1{
+    left:0;
+    animation-delay:0.6s;
+    -o-animation-delay:0.6s;
+    -ms-animation-delay:0.6s;
+    -webkit-animation-delay:0.6s;
+    -moz-animation-delay:0.6s;
+}
+
+#fountainG_2{
+    left:13px;
+    animation-delay:0.75s;
+    -o-animation-delay:0.75s;
+    -ms-animation-delay:0.75s;
+    -webkit-animation-delay:0.75s;
+    -moz-animation-delay:0.75s;
+}
+
+#fountainG_3{
+    left:25px;
+    animation-delay:0.9s;
+    -o-animation-delay:0.9s;
+    -ms-animation-delay:0.9s;
+    -webkit-animation-delay:0.9s;
+    -moz-animation-delay:0.9s;
+}
+
+
+@keyframes bounce_fountainG{
+    0%{
+        transform:scale(1);
+        background-color:#778594;
+    }
+
+    100%{
+        transform:scale(.3);
+        background-color:white;
+    }
+}
+
+@-o-keyframes bounce_fountainG{
+    0%{
+        -o-transform:scale(1);
+        background-color:#778594;
+    }
+
+    100%{
+        -o-transform:scale(.3);
+        background-color:white;
+    }
+}
+
+@-ms-keyframes bounce_fountainG{
+    0%{
+        -ms-transform:scale(1);
+        background-color:#778594;
+    }
+
+    100%{
+        -ms-transform:scale(.3);
+        background-color: white;
+    }
+}
+
+@-webkit-keyframes bounce_fountainG{
+    0%{
+        -webkit-transform:scale(1);
+        background-color:#778594;
+    }
+
+    100%{
+        -webkit-transform:scale(.3);
+        background-color:white;
+    }
+}
+
+@-moz-keyframes bounce_fountainG{
+    0%{
+        -moz-transform:scale(1);
+        background-color:#778594;
+    }
+
+    100%{
+        -moz-transform:scale(.3);
+        background-color:rgb(223,227,229);
+    }
+}
