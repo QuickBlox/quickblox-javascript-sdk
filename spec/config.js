@@ -8,17 +8,10 @@
     };
 
     var QBUser1 = {
-<<<<<<< HEAD
-            'id': 23247245,
-            'login': "js_jasmine3",
-            'password': "js_jasmine3",
-            'email': "js_jasmine3@quickblox.com"
-=======
             'id': 23286054,
             'login': "js_jasmine11",
             'password': "js_jasmine11",
             'email': "js_jasmine11@quickblox.com"
->>>>>>> remotes/origin/develop.chatSample
         },
         QBUser2 = {
             'id': 6126741,
@@ -34,7 +27,10 @@
       chatProtocol: {
         active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
       },
-      'debug': true
+      'debug': {
+          'mode': 0,
+          'file': null
+      }
     };
 
 
