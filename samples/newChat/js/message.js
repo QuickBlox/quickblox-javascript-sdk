@@ -76,8 +76,6 @@ Message.prototype.sendMessage = function(e) {
             markable: 1
         };
 
-
-
     if(Object.keys(attachments).length){
         msg.extension.attachments = [];
 
@@ -91,10 +89,10 @@ Message.prototype.sendMessage = function(e) {
     // Don't send empty message
     if(!msg.body) return false;
 
-    var messageId = QB.chat.send(dialog.jidOrUserId, msg);
-
     document.forms.send_message.message_feald.value = '';
+    dialog.draft.message = null;
 
+    var messageId = QB.chat.send(dialog.jidOrUserId, msg);
     dialog.draft.attachments = {};
     helpers.clearView(self.attachmentPreviewContainer);
 
@@ -103,9 +101,8 @@ Message.prototype.sendMessage = function(e) {
 
     var message = helpers.fillNewMessagePrams(app.user.id, msg);
 
-    dialogModule._cache[dialogId].messages.unshift(message);
-
     if(dialog.type === 3) {
+        dialogModule._cache[dialogId].messages.unshift(message);
         self.renderMessage(message, true);
     }
 

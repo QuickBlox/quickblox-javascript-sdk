@@ -234,13 +234,13 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
     var self = this,
         dialog = document.getElementById(dialogId);
 
+    console.log(msg);
     self._cache[dialogId].last_message = msg.message;
 
     if(dialog){
         dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
     }
 };
-
 
 Dialog.prototype.createDialog = function(params) {
     var self = this;
@@ -249,21 +249,24 @@ Dialog.prototype.createDialog = function(params) {
         if (err) {
             console.error(err);
         } else {
-            var occupants = createdDialog.occupants_ids,
-                msg = {
-                type: 'chat',
-                extension: {
-                    notification_type: 1,
-                    dialog_id: createdDialog._id,
-                    dialog_name: createdDialog.name,
-                    dialog_type: createdDialog.type,
-                    occupants_ids: occupants.join(', ')
-                }
-            };
 
-            for(var i = 0; i < occupants.length; i++){
-                if (occupants[i] != app.user.id) {
-                    QB.chat.sendSystemMessage(occupants[i], msg);
+            if (params.type !== 3) {
+                var occupants = createdDialog.occupants_ids,
+                    msg = {
+                        type: 'chat',
+                        extension: {
+                            notification_type: 1,
+                            dialog_id: createdDialog._id,
+                            dialog_name: createdDialog.name,
+                            dialog_type: createdDialog.type,
+                            occupants_ids: occupants.join(', ')
+                        }
+                    };
+
+                for(var i = 0; i < occupants.length; i++){
+                    if (occupants[i] != app.user.id) {
+                        QB.chat.sendSystemMessage(occupants[i], msg);
+                    }
                 }
             }
 
