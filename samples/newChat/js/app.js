@@ -12,14 +12,10 @@ function App (config) {
     this.user = null;
     this.token = null;
 
-    this.dialogId = null;
-    this.prevDialogId = null;
-
     // Elements
     this.page = document.querySelector('#page');
     this.sidebar = null;
     this.content = null;
-    this.conversationLinks = null;
     this.userListConteiner = null;
     this.init(this._config);
 }
@@ -97,13 +93,14 @@ App.prototype.loadDashboard = function(){
     listeners.setListeners();
 
     logoutBtn.addEventListener('click', function(){
-        QB.chat.disconnect();
+        helpers.clearCache();
 
+        QB.chat.disconnect();
         QB.logout(function(err){
+            helpers.redirectToPage('login');
             if(err){
                 console.error(err);
             }
-            helpers.redirectToPage('login');
         });
     });
 

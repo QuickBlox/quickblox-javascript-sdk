@@ -2,7 +2,7 @@
 
 function Dialog() {
     this._cache = {};
-    this.user = null;
+    
     this.dialogId = null;
     this.prevDialogId = null;
 
@@ -319,45 +319,16 @@ Dialog.prototype.createDialog = function(params) {
     });
 };
 
-Dialog.prototype.getDialogById = function(id, renderDialog, renderMessages) {
+Dialog.prototype.getDialogById = function(id, callback) {
     var self = this;
-    console.log('== getDialogById ==', id, renderDialog, renderMessages);
 
     QB.chat.dialog.list({_id: id}, function(err, res){
+
         if(!self._cache[id]){
             self._cache[id] = helpers.compileDialogParams(res.items[0]);
         }
 
-        var dialog = self._cache[id];
-
-        if(dialog){
-            var type = dialog.type === 1 ? 'public' : 'chat',
-                activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
-            if(activeTab && type === activeTab.dataset.type){
-                console.log('SAME = ', activeTab.dataset.type, type);
-
-                if(renderDialog){
-                    var conversatinLink = document.getElementById(dialog._id);
-                    if(!conversatinLink) {
-                        console.log('replace link');
-                        self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
-                    } else {
-                        console.log('create link');
-                        self.renderDialog(dialog, true);
-                    }
-                }
-
-                if(renderMessages) {
-                    self.dialogId = dialog._id;
-                    if(conversatinLink){
-                        document.getElementById(dialog._id).click();
-                    } else {
-                        self.renderMessages(dialog._id);
-                    }
-                }
-            }
-        }
+        callback(self._cache[id]);
     });
 };
 

@@ -3,9 +3,8 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-
-    this.dialog = null;
     this.limit = appConfig.messagesPerRequest || 50;
+
     this.dialogTitle = null;
     this._typingTimer = null;
     this._typingTime = null;
@@ -278,8 +277,6 @@ Message.prototype.UploadFilesAndGetIds = function(file, dialogId){
             preview.classList.remove('m-loading');
             preview.classList.add('m-error');
         } else {
-            console.info('attachment response');
-            console.log(response);
             preview.id = response.uid;
             preview.classList.remove('m-loading');
 

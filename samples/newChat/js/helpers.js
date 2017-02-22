@@ -140,5 +140,19 @@ Helpers.prototype.scrollTo = function (elem, position) {
     }
 };
 
+Helpers.prototype.clearCache = function(){
+    if(messageModule._typingTime){
+        messageModule.sendStopTypingStatus(dialogModule.dialogId);
+    }
+    
+    messageModule._cache = {};
+    messageModule.typingUsers = {};
+
+    dialogModule._cache = {};
+    dialogModule.dialogId = null;
+    dialogModule.prevDialogId = null;
+
+    app.user = null;
+};
 
 var helpers = new Helpers();
