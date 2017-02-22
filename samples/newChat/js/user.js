@@ -35,12 +35,14 @@ User.prototype.getUsersByIds = function(userList, callback){
                 if(!self._cache[id]){
                     if(user){
                         self._cache[id] = {
-                            name: user.user.login,
+                            name: user.user.full_name || user.user.login,
+                            id: id,
                             color: _.random(1, 10)
                         };
                     } else {
                         self._cache[id] = {
                             name: 'Unknown user (' + id + ')',
+                            id: id,
                             color: _.random(1, 10)
                         };
                     }

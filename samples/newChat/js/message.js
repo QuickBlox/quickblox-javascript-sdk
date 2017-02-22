@@ -239,7 +239,7 @@ Message.prototype.renderMessage = function(message, setAsFirst){
             typingElem = document.querySelector('.j-istyping');
 
         if(typingElem) {
-            self.container.insertBefore(elem, typingElem.previousSibling);
+            self.container.insertBefore(elem, typingElem);
         } else {
             self.container.appendChild(elem);
         }
@@ -278,6 +278,8 @@ Message.prototype.UploadFilesAndGetIds = function(file, dialogId){
             preview.classList.remove('m-loading');
             preview.classList.add('m-error');
         } else {
+            console.info('attachment response');
+            console.log(response);
             preview.id = response.uid;
             preview.classList.remove('m-loading');
 

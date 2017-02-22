@@ -33,7 +33,7 @@ Listeners.prototype.onMessageListener = function(userId, message){
         dialog.messages.unshift(msg);
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
     } else {
-        dialogModule.loadDialogById(msg.chat_dialog_id, false);
+        dialogModule.getDialogById(msg.chat_dialog_id, true, false);
     }
 
     if(dialogModule.dialogId === msg.chat_dialog_id){
@@ -70,9 +70,10 @@ Listeners.prototype.onSystemMessageListener = function(message){
     console.group('onSystemMessageListener');
         console.log('message',message);
     console.groupEnd();
+
     if (message.extension && (message.extension.notification_type === '1' || message.extension.notification_type === 'creating_dialog')) {
         if(message.extension.dialog_id) {
-            dialogModule.loadDialogById(message.extension.dialog_id, false);
+            dialogModule.getDialogById(message.extension.dialog_id, false, false);
         }
         return false;
     }

@@ -137,23 +137,28 @@ App.prototype.tabSelectInit = function(){
     _.each(tabs, function(item){
         item.addEventListener('click', function(e){
             var tab = e.currentTarget;
-
-            if(tab.classList.contains('active')){
-                return false;
-            }
-
-            _.each(tabs, function(elem){
-                elem.classList.remove('active');
-            });
-
-            createDialogTab.classList.remove('active');
-            tab.classList.add('active');
-
-            helpers.clearView(dialogModule.dialogsListContainer);
-            dialogModule.dialogsListContainer.classList.remove('full');
-            dialogModule.loadDialogs(tab.dataset.type);
+            self.loadChatList(tab);
         });
     });
+};
+
+App.prototype.loadChatList = function(tab, callback){
+    var self = this,
+        tabs = document.querySelectorAll('.j-sidebar__tab_link');
+
+    if(tab.classList.contains('active')){
+        return false;
+    }
+
+    _.each(tabs, function(elem){
+        elem.classList.remove('active');
+    });
+
+    tab.classList.add('active');
+
+    helpers.clearView(dialogModule.dialogsListContainer);
+    dialogModule.dialogsListContainer.classList.remove('full');
+    dialogModule.loadDialogs(tab.dataset.type, callback);
 };
 
 App.prototype.buildCreateDialogTpl = function(){
@@ -215,7 +220,7 @@ App.prototype.backToDialog = function(e){
     self.sidebar.classList.add('active');
     event.currentTarget.classList.remove('active');
     if(dialogModule.dialogId){
-        dialogModule.renderDialog(dialogModule.dialogId);
+        dialogModule.renderMessages(dialogModule.dialogId);
     } else {
         self.loadWelcomeTpl();
     }

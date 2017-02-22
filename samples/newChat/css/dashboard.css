@@ -411,6 +411,7 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
+    overflow: hidden;
 }
 /*
     WELCOME MESSAGE
@@ -489,13 +490,16 @@
     font-weight: 500;
     line-height: 20px;
     color: #778594;
-    margin: 0 0 8px;
+    margin: 0 0 4px;
 }
 
 .message__text {
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4A4A4A;
 }
 
 .message_attachment {

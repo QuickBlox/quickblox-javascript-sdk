@@ -38,11 +38,12 @@ Dialog.prototype.init = function(){
     });
 };
 
-Dialog.prototype.loadDialogs = function(type) {
+Dialog.prototype.loadDialogs = function(type, callback) {
     var self = this,
         filter = {
             limit: self.limit,
-            skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length
+            skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length,
+            sort_desc: "updated_at"
         };
 
     self.dialogsListContainer.classList.add('loading');
@@ -59,9 +60,8 @@ Dialog.prototype.loadDialogs = function(type) {
             return;
         }
 
-        var dialogs = resDialogs.items;
-        
-        var peerToPearDialogs = dialogs.filter(function(dialog){
+        var dialogs = resDialogs.items,
+            peerToPearDialogs = dialogs.filter(function(dialog){
             if(dialog.type === 3) {
                 return true
             }
@@ -83,34 +83,44 @@ Dialog.prototype.loadDialogs = function(type) {
         });
 
         _.each(dialogs, function(dialog){
-            self.buildDialog(dialog);
+            if(!self._cache[dialog._id]){
+                self._cache[dialog._id] = helpers.compileDialogParams(dialog);
+            }
+
+            self.renderDialog(self._cache[dialog._id]);
         });
 
         if(self.dialogId){
-            var dialog = document.getElementById(self.dialogId);
-            if(dialog) dialog.classList.add('selected');
+            var dialogElem = document.getElementById(self.dialogId);
+            if(dialogElem) dialogElem.classList.add('selected');
         }
 
         if(dialogs.length < self.limit){
             self.dialogsListContainer.classList.add('full');
         }
         self.dialogsListContainer.classList.remove('loading');
+
+        if(callback) {
+            callback();
+        }
     });
 };
 
-Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
+Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
     var self = this,
-        compiledDialogParams = helpers.compileDialogParams(dialog);
-    
-    if(!self._cache[dialog._id]){
-        self._cache[dialog._id] = compiledDialogParams;
+        id = dialog._id,
+        elem = document.getElementById(id);
+
+    if(elem) {
+        self.replaceDialogLink(elem);
+        return elem;
     }
 
     if(dialog.type === 2 && !dialog.joined) {
-        self.joinToDialog(dialog._id);
+        self.joinToDialog(id);
     }
 
-    var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
+    var template = helpers.fillTemplate('tpl_userConversations', {dialog: dialog});
         elem = helpers.toHtml(template)[0];
 
     elem.addEventListener('click', function(e){
@@ -127,7 +137,7 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
 
         self.prevDialogId = self.dialogId;
         self.dialogId = e.currentTarget.id;
-        self.renderDialog(e.currentTarget.id);
+        self.renderMessages(e.currentTarget.id);
     });
 
     if(!setAsFirst) {
@@ -135,10 +145,27 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
     } else {
         self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
     }
+    return elem;
+};
+
+Dialog.prototype.replaceDialogLink = function(elem) {
+    var self = this,
+        elemsCollection = self.dialogsListContainer.children,
+        elemPosition;
+
+    elemPosition: for(var i = 0; i < elemsCollection.length; i++) {
+        if(elemsCollection[i] === elem){
+            elemPosition = i;
+            break elemPosition;
+        }
+    }
+
+    if (elemPosition > 5){
+        self.dialogsListContainer.replaceChild(elem, self.dialogsListContainer.firstElementChild);
+    }
 };
 
 Dialog.prototype.joinToDialog = function(id){
-
     var self = this,
         jidOrUserId = self._cache[id].jidOrUserId;
 
@@ -154,7 +181,7 @@ Dialog.prototype.joinToDialog = function(id){
     });
 };
 
-Dialog.prototype.renderDialog = function(id){
+Dialog.prototype.renderMessages = function(id){
     var self = this,
         dialog = self._cache[id];
 
@@ -223,7 +250,7 @@ Dialog.prototype.checkCachedUsersInDialog = function(id){
 
     if(unsetUsers.length) {
         userModule.getUsersByIds(unsetUsers, function(){
-            self.renderDialog(id);
+            self.renderMessages(id);
         });
     }
 
@@ -234,7 +261,6 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
     var self = this,
         dialog = document.getElementById(dialogId);
 
-    console.log(msg);
     self._cache[dialogId].last_message = msg.message;
 
     if(dialog){
@@ -249,7 +275,7 @@ Dialog.prototype.createDialog = function(params) {
         if (err) {
             console.error(err);
         } else {
-
+            var id = createdDialog._id;
             if (params.type !== 3) {
                 var occupants = createdDialog.occupants_ids,
                     msg = {
@@ -270,38 +296,65 @@ Dialog.prototype.createDialog = function(params) {
                 }
             }
 
-            self.loadDialogById(createdDialog._id, true);
+            /* Check dialog in cache */
+            if(!self._cache[id]){
+                self._cache[id] = helpers.compileDialogParams(createdDialog);
+            }
+
+            /* Check active tab [chat / public] */
+            var type = params.type === 1 ? 'public' : 'chat',
+                activeTab = document.querySelector('.j-sidebar__tab_link.active');
+
+            if(activeTab && type !== activeTab.dataset.type){
+                var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
+                app.loadChatList(tab, function(){
+                    self.renderDialog(self._cache[id], true).click();
+                });
+            } else {
+                self.renderDialog(self._cache[id], true).click();
+
+            }
+
         }
     });
 };
 
-Dialog.prototype.loadDialogById = function(id, renderMessages) {
+Dialog.prototype.getDialogById = function(id, renderDialog, renderMessages) {
     var self = this;
+    console.log('== getDialogById ==', id, renderDialog, renderMessages);
 
     QB.chat.dialog.list({_id: id}, function(err, res){
-        var dialog = res.items[0],
-            compiledDialogParams = helpers.compileDialogParams(dialog);
+        if(!self._cache[id]){
+            self._cache[id] = helpers.compileDialogParams(res.items[0]);
+        }
 
+        var dialog = self._cache[id];
 
         if(dialog){
             var type = dialog.type === 1 ? 'public' : 'chat',
                 activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
             if(activeTab && type === activeTab.dataset.type){
-                var conversatinLink = document.getElementById(dialog._id);
+                console.log('SAME = ', activeTab.dataset.type, type);
 
-                if(!conversatinLink){
-                    self._cache[dialog._id] = compiledDialogParams;
-
-                    self.buildDialog(compiledDialogParams, true);
-
-                } else {
-                    self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
+                if(renderDialog){
+                    var conversatinLink = document.getElementById(dialog._id);
+                    if(!conversatinLink) {
+                        console.log('replace link');
+                        self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
+                    } else {
+                        console.log('create link');
+                        self.renderDialog(dialog, true);
+                    }
                 }
 
                 if(renderMessages) {
                     self.dialogId = dialog._id;
-                    document.getElementById(dialog._id).click();
+                    if(conversatinLink){
+                        document.getElementById(dialog._id).click();
+                    } else {
+                        self.renderMessages(dialog._id);
+                    }
                 }
             }
         }
