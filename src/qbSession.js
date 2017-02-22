@@ -135,6 +135,25 @@ SessionManager.prototype.create = function(params) {
     });
 };
 
+SessionManager.prototype._getSavedToken = function (params) {
+    var self = this;
+    var token = SessionManager._getFromCookie(this._SAVED_TOKEN_NAME);
+
+    if(!token) {
+        return null;
+    }
+
+    var credsApp = JSON.parse(SessionManager._getFromCookie(this._CREATE_SESSION_PARAMS));
+
+    if(params.appId === (+credsApp.appId)) {
+        self.createSessionParams = credsApp;
+
+        return token;
+    } else {
+        return false;
+    }
+};
+
 SessionManager.prototype._createASRequestParams = function (params) {
     function randomNonce() {
         return Math.floor(Math.random() * 10000);
@@ -172,24 +191,6 @@ SessionManager.prototype._createASRequestParams = function (params) {
     return reqParams;
 };
 
-SessionManager.prototype._getSavedToken = function (params) {
-    var self = this;
-    var token = SessionManager._getFromCookie(this._SAVED_TOKEN_NAME);
-
-    if(!token) {
-        return false;
-    }
-
-    var credsApp = JSON.parse(SessionManager._getFromCookie(this._CREATE_SESSION_PARAMS));
-
-    if(params.appId === (+credsApp.appId)) {
-        self.createSessionParams = credsApp;
-        return token;
-    } else {
-        return false;
-    }
-};
-
 SessionManager.prototype.reestablish = function() {
     var self = this,
         reqData = {
@@ -204,7 +205,7 @@ SessionManager.prototype.reestablish = function() {
             self.session = response.session;
 
             document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(params.appId);
+            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(self.createSessionParams.appId);
 
             resolve(self.session.token);
         }).fail(function(jqXHR, textStatus) {

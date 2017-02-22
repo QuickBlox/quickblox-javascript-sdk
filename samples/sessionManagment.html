@@ -107,6 +107,15 @@ sendRequest.addEventListener('click', function() {
   return false;
 });
 
+/* DESTRIYED the session */
+destroySession.addEventListener('click', function() {
+    QB.destroySession(function() {
+        console.info('Destroyed the session');
+    });
+    
+    return false;
+});
+
 
 initByParams.addEventListener('click', function() {
     return false;
@@ -134,13 +143,7 @@ initByParams.addEventListener('click', function() {
         return false;
     });
  
-    destroySession.addEventListener('click', function() {
-        QB.destroySession(function() {
-            console.info('Destroyed the session');
-        });
-        
-        return false;
-    });
+
 </script>
 </body>
 </html>

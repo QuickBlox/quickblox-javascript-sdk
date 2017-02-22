@@ -65,9 +65,11 @@ AuthProxy.prototype = {
         callback(err, null);
       } else {
         _this.service.setSession(null);
+
         if(config.sessionManagement.enable) {
           _this.service.sessionManager.destroy();
         }
+        
         callback(null, res);
       }
     }, true);

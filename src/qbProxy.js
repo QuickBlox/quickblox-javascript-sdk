@@ -52,7 +52,7 @@ ServiceProxy.prototype = {
             status: '401 Unauthorized',
             message: 'Unauthorized'
         };
-        console.info('TETS', config.sessionManagement.enable, error)
+
         if(config.sessionManagement.enable) {
             if(!error) {
                 self.sessionManager.lastRequest = {};
