@@ -45,7 +45,7 @@ ServiceProxy.prototype = {
     getSession: function() {
         return this.qbInst.session;
     },
-    handleResponse: function(error, response, next, retry) {
+    handleResponse: function(error, response, next, retry, isNeededUpdateSession) {
         var self = this;
 
         var sessionError = {
@@ -56,6 +56,13 @@ ServiceProxy.prototype = {
         if(config.sessionManagement.enable) {
             if(!error) {
                 self.sessionManager.lastRequest = {};
+
+                /** login / logout */
+                if(isNeededUpdateSession) {
+                    self.sessionManager.updateUser({
+                        userId: response.user && response.user.id ? response.user.id : 0
+                    });
+                }
 
                 if(config.addISOTime) {
                     response = Utils.injectISOTimes(response);
@@ -140,7 +147,7 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    _this.handleResponse(null, data, callback, retry);
+                    _this.handleResponse(null, data, callback, retry, isNeededUpdateSession);
                 } else {
                     callback(null, data);
                 }

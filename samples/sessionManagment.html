@@ -45,21 +45,15 @@ var creds = {
     'authSecret': 'nE7AmRuwGRDwe-r'
 }
 
-// 22870126
-// var user = {
-//     email: 'session@session.com',
-//     login: 'session',
-//     password: '49249session'
-// }
-
+// https://adminstage1.quickblox.com/apps
 // email sessionmanagment@test.com
 // login sessionmanagment
 // pass 49249sessionmanagment
-// id 23125767
-// var userParams = {
-//     email: 'sessionmanagment@test.com',
-//     password: '49249sessionmanagment'
-// };
+// id 247
+var userParams = {
+    email: 'sessionmanagment@test.com',
+    password: '49249sessionmanagment'
+};
 
 var init = document.getElementById('init');
 var initByParams = document.getElementById('initWithParams');
@@ -87,7 +81,7 @@ init.addEventListener('click', function() {
 /* LOGIN */
 login.addEventListener('click', function() {
   QB.login(userParams, function(err, result) {
-     console.log('LOGIN Callback', result, err);
+     // console.log( 'LOGIN Callback', result, err);
   });
 
   return false;
@@ -107,6 +101,15 @@ sendRequest.addEventListener('click', function() {
   return false;
 });
 
+/* SEND REQUEST with user logged*/
+sendRequestLogged.addEventListener('click', function() {
+    QB.chat.dialog.list(null, function(err, resDialogs) {
+        err ? console.error(err) : console.info(resDialogs);
+    });
+
+    return false;
+});
+
 /* DESTRIYED the session */
 destroySession.addEventListener('click', function() {
     QB.destroySession(function() {
@@ -116,32 +119,18 @@ destroySession.addEventListener('click', function() {
     return false;
 });
 
+/* LOGOUT */
+logout.addEventListener('click', function() {
+    QB.logout(function(err, result) {
+        console.log('LOGIN Callback', result, err);
+    });
 
-initByParams.addEventListener('click', function() {
     return false;
 });
 
 
 
-    /* LOGOUT */
-    logout.addEventListener('click', function() {
-        QB.logout(function(err, result) {
-            console.log('LOGIN Callback', result, err);
-        });
 
-        return false;
-    });
-
-
-
-    /* SEND REQUEST with user logged*/
-    sendRequestLogged.addEventListener('click', function() {
-        QB.chat.dialog.list(null, function(err, resDialogs) {
-            err ? console.error(err) : console.info(resDialogs);
-        });
-
-        return false;
-    });
  
 
 </script>
