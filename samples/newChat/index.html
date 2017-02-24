@@ -138,13 +138,13 @@
         </div>
         <div class="content__inner j-content__inner">
             <div class=" messages j-messages"></div>
-            <form name="send_message" class="send_message">
+            <form name="send_message" class="send_message" autocomplete="off">
                 <input name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></input>
                 <div class="message__actions">
                     <div class="attachments_preview j-attachments_preview"></div>
                     <label for="attach_btn" class="attach_btn">
                         <i class="material-icons">attachment</i>
-                        <input type="file" id="attach_btn" name="attach_file" class="attach_input" accept="image/*" multiple></input>
+                        <input type="file" id="attach_btn" name="attach_file" class="attach_input" accept="image/*"/>
                     </label>
                     <button class="send_btn">send</button>
                 </div>
@@ -187,8 +187,8 @@
             <div class="group_chat__user_list j-group_chat__user_list">
             </div>
             <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
-                <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name">
-                <button class="create_dialog_btn j-create_dialog_btn" type="submit" disabled>create</button>
+                <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name" disabled>
+                <button class="create_dialog_btn j-create_dialog_btn"  type="submit" name="create_dialog_submit" disabled>create</button>
             </form>
         </div>
     </script>

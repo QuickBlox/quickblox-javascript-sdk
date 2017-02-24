@@ -41,6 +41,7 @@ App.prototype.setLoginListeners = function() {
     loginBtn.addEventListener('click', function(){
         var userId = +select.value;
         if (loginBtn.classList.contains('loading')) return false;
+
         self.user = _.findWhere(usersList, {id: userId});
         loginBtn.classList.add('loading');
 
@@ -72,7 +73,9 @@ App.prototype.login = function(){
                 }
             });
         } else {
-            document.querySelector('.j-login__button').innerText = 'Login';
+            var loginBdt = document.querySelector('.j-login__button');
+            loginBdt.innerText = 'Login';
+            loginBdt.classList.remove('loading');
             console.error('create session Error',err);
             alert('Create session Error');
         }
@@ -174,6 +177,10 @@ App.prototype.buildCreateDialogTpl = function(){
 
     document.forms.create_dialog.addEventListener('submit', function(e){
        e.preventDefault();
+
+        if(document.forms.create_dialog.create_dialog_submit.disabled) return false;
+
+        document.forms.create_dialog.create_dialog_submit.disabled = true;
 
         var users = self.userListConteiner.querySelectorAll('.selected'),
             type = users.length > 1 ? 2 : 3,

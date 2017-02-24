@@ -19,13 +19,9 @@ Helpers.prototype.clearView = function(view){
 };
 
 Helpers.prototype.compileDialogParams = function(dialog){
-    var lastDate;
-
-    if(dialog.last_message_date_sent){
-        // last_message_date_sent comes in UNIX time.
-        var date = new Date(dialog.last_message_date_sent * 1000);
+    // last_message_date_sent comes in UNIX time.
+    var date = new Date(dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at),
         lastDate = date.getHours() + ':' + date.getMinutes();
-    }
 
     return {
         _id: dialog._id,

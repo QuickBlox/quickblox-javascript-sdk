@@ -532,6 +532,8 @@
     padding: 17px 15px;
 
     font: 14px/16px 'Roboto', sans-serif;
+
+    box-sizing: border-box;
 }
 
 .message_feald::-webkit-input-placeholder {color:#C5CACE;}
@@ -696,7 +698,7 @@
     border-top: 1px solid #DADFE1;
     display: flex;
     flex: 0 0 66px;
-    padding: 13px 18px;
+    padding: 13px 18px 13px 8px;
 }
 
 .dialog_name {
@@ -705,6 +707,11 @@
     line-height: 19px;
     border: none;
     margin: 0 10px 0 0;
+    padding: 0 10px;
+}
+
+.dialog_name:disabled {
+    cursor: no-drop;
 }
 
 .create_dialog_btn {
@@ -725,6 +732,7 @@
 
 .create_dialog_btn:disabled {
     background-color: #80E491;
+    cursor: no-drop;
 }
 
 @-webkit-keyframes blink {

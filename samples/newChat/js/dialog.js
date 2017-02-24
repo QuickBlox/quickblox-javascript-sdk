@@ -216,12 +216,6 @@ Dialog.prototype.renderMessages = function(id){
 
     document.forms.send_message.message_feald.value = dialog.draft.message;
 
-    var attachments = dialog.draft.attachments;
-
-    for (var attach in attachments) {
-        messageModule.addImagePreview(null, {id: attach, src: attachments[attach]});
-    }
-
     if(dialog && dialog.messages.length){
         for(var i = 0; i < dialog.messages.length; i++){
             messageModule.renderMessage(dialog.messages[i], false);
@@ -264,7 +258,15 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
     self._cache[dialogId].last_message = msg.message;
 
     if(dialog){
-        dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
+        var messagePreview = dialog.querySelector('.j-dialog__last_message ');
+
+        if(msg.message) {
+            messagePreview.classList.remove('attachment');
+            messagePreview.innerText = msg.message;
+        } else {
+            messagePreview.classList.add('attachment');
+            messagePreview.innerText = 'Attachment';
+        }
     }
 };
 
@@ -312,9 +314,7 @@ Dialog.prototype.createDialog = function(params) {
                 });
             } else {
                 self.renderDialog(self._cache[id], true).click();
-
             }
-
         }
     });
 };

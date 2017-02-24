@@ -129,9 +129,15 @@ User.prototype.buildUserItem = function(user){
         elem.classList.toggle('selected');
         
         if(self.userListConteiner.querySelectorAll('.selected').length > 0){
-            self.content.querySelector('.j-create_dialog_btn').removeAttribute('disabled');
+            document.forms.create_dialog.create_dialog_submit.disabled = false;
         } else {
-            self.content.querySelector('.j-create_dialog_btn').setAttribute('disabled', true);
+            document.forms.create_dialog.create_dialog_submit.disabled = true;
+        }
+
+        if(self.userListConteiner.querySelectorAll('.selected').length >= 2){
+            document.forms.create_dialog.dialog_name.disabled = false;
+        } else {
+            document.forms.create_dialog.dialog_name.disabled = true;
         }
     });
     
