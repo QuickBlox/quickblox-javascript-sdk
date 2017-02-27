@@ -116,7 +116,7 @@ Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
         return elem;
     }
 
-    if(dialog.type === 2 && !dialog.joined) {
+    if(dialog.type !== 3 && !dialog.joined) {
         self.joinToDialog(id);
     }
 
@@ -185,10 +185,9 @@ Dialog.prototype.renderMessages = function(id){
     var self = this,
         dialog = self._cache[id];
 
-    if(!self.checkCachedUsersInDialog(id)) return false;
-
     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
 
+    if(!self.checkCachedUsersInDialog(id)) return false;
     if(!document.forms.send_message){
         helpers.clearView(this.content);
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
@@ -211,7 +210,6 @@ Dialog.prototype.renderMessages = function(id){
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
     }
-
     messageModule.setLoadMoreMessagesListener();
 
     document.forms.send_message.message_feald.value = dialog.draft.message;
@@ -247,7 +245,6 @@ Dialog.prototype.checkCachedUsersInDialog = function(id){
             self.renderMessages(id);
         });
     }
-
     return !unsetUsers.length;
 };
 

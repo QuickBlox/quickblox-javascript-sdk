@@ -232,6 +232,9 @@
         color: #FF9600;
         background-color: #ffd599;
     }
+    .message__avatar {
+        transition: .3s;
+    }
 
     .dialog__avatar.m-user__img_2,
     .message__avatar.m-user__img_2,
@@ -344,6 +347,11 @@
     .dialog__avatar.m-type_group.m-user__img_10 {
         color: #b3bbe0;
         background-color: #4054B2;
+    }
+
+    .message__avatar.m-user__img_not_loaded,
+    .message__avatar.m-typing_uncnown {
+        opacity: .1;
     }
 
     .dialog__info {
@@ -499,6 +507,20 @@
     margin: 0 0 10px;
     font-size: 14px;
     line-height: 20px;
+    color: #4A4A4A;
+    white-space: pre-wrap;
+}
+
+.message__text a {
+    color: #366BA9;
+}
+
+.message__timestamp {
+    width: 30px;
+    opacity: 0.6;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: right;
     color: #4A4A4A;
 }
 

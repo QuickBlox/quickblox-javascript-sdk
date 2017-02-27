@@ -19,9 +19,7 @@ Helpers.prototype.clearView = function(view){
 };
 
 Helpers.prototype.compileDialogParams = function(dialog){
-    // last_message_date_sent comes in UNIX time.
-    var date = new Date(dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at),
-        lastDate = date.getHours() + ':' + date.getMinutes();
+    var self = this;
 
     return {
         _id: dialog._id,
@@ -30,7 +28,8 @@ Helpers.prototype.compileDialogParams = function(dialog){
         last_message: dialog.last_message === '[attachment]' ? 'Attachment' : dialog.last_message,
         messages: [],
         attachment: dialog.last_message === '[attachment]',
-        last_message_date_sent: lastDate,
+        // last_message_date_sent comes in UNIX time.
+        last_message_date_sent: self.getTime(dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at),
         users: dialog.occupants_ids || [],
         jidOrUserId: dialog.xmpp_room_jid || dialog.jidOrUserId ||getRecipientUserId(dialog.occupants_ids),
         full: false,
@@ -53,8 +52,20 @@ Helpers.prototype.compileDialogParams = function(dialog){
 
 };
 
+Helpers.prototype.getTime = function(time){
+    var date = new Date(time),
+        hours = date.getHours() < 10 ? '0' + date.getHours() : date.getHours(),
+        minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+
+    return hours + ':' + minutes;
+};
+
 Helpers.prototype.fillMessagePrams = function(message){
     var self = this;
+
+    message.message = self.fillMessageBody(message.message);
+    // date_sent comes in UNIX time.
+    message.date_sent = self.getTime(message.date_sent * 1000);
 
     if(message.attachments){
         var attachments = message.attachments;
@@ -70,6 +81,15 @@ Helpers.prototype.fillMessagePrams = function(message){
     return message;
 };
 
+Helpers.prototype.fillMessageBody = function(str){
+    // replace links
+    return  str.replace(/(https?:\/\/[^\s]+)/g, function(url){
+        return '<a href="' + url + '" target="_blank">' + url + '</a>';
+    });
+
+
+};
+
 Helpers.prototype.getSrcFromAttachmentId = function(id) {
     return QB.content.publicUrl(id) + '.json?token=' + app.token;
 };
@@ -80,9 +100,9 @@ Helpers.prototype.fillNewMessagePrams = function(userId, msg){
             _id: msg.id,
             attachments: [],
             created_at: +msg.extension.date_sent || Date.now(),
-            date_sent: +msg.extension.date_sent  || Date.now(),
+            date_sent: self.getTime(+msg.extension.date_sent  || Date.now()),
             delivered_ids: [],
-            message: msg.body,
+            message: self.fillMessageBody(msg.body),
             read_ids: [],
             sender_id: userId,
             chat_dialog_id: msg.extension.dialog_id

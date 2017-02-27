@@ -139,7 +139,7 @@
         <div class="content__inner j-content__inner">
             <div class=" messages j-messages"></div>
             <form name="send_message" class="send_message" autocomplete="off">
-                <input name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></input>
+                <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
                 <div class="message__actions">
                     <div class="attachments_preview j-attachments_preview"></div>
                     <label for="attach_btn" class="attach_btn">
@@ -154,13 +154,13 @@
 
     <script type="text/template" id="tpl_message">
         <div class="message__wrap" id="<%- message._id %>">
-            <span class="message__avatar m-user__img_<%- sender.color %>">
+            <span class="message__avatar m-user__img_<%- sender ? sender.color : 'not_loaded' %>">
                 <i class="material-icons">account_circle</i>
             </span>
             <div class="message__content_wrap">
-                <p class="message__sender_name"><%- sender.name %></p>
+                <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
                 <% if (message.message || message.body) { %>
-                    <p class="message__text"><%- message.message || message.body %></p>
+                    <p class="message__text"><%= message.message || message.body %></p>
                 <% } %>
 
                 <% if (message.attachments.length) { %>
@@ -171,7 +171,9 @@
                     </div>
                 <% } %>
             </div>
-
+            <div class="message__timestamp">
+                <%- message.date_sent %>
+            </div>
         </div>
     </script>
 
@@ -212,7 +214,7 @@
     <script type="text/template" id="tpl_message__typing">
         <div class="message__wrap m-typing j-istyping" id="is__typing">
             <% _.each(users, function(user){  %>
-                <span class="message__avatar m-user__img_<%- user.color %>">
+                <span class="message__avatar <%- typeof user === 'number' ? 'm-typing_uncnown m-typing_' + user : 'm-user__img_' + user.color %>">
                     <i class="material-icons">account_circle</i>
                 </span>
             <% }); %>

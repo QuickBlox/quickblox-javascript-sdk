@@ -73,7 +73,8 @@ Message.prototype.sendMessage = function(dialogId) {
             type: dialog.type === 3 ? 'chat' : 'groupchat',
             body: sendMessageForm.message_feald ? sendMessageForm.message_feald.value.trim() : '',
             extension: {
-                save_to_history: 1
+                save_to_history: 1,
+                dialog_id: dialogId
             },
             markable: 1
         };
@@ -88,16 +89,17 @@ Message.prototype.sendMessage = function(dialogId) {
         msg.body = '[attachment]';
         dialog.draft.attachments = {};
     } else if (dialogModule.dialogId === dialogId && sendMessageForm){
+        var dialogElem = document.getElementById(dialogId);
+
+        dialogModule.replaceDialogLink(dialogElem);
         document.forms.send_message.message_feald.value = '';
         dialog.draft.message = null;
     }
 
     // Don't send empty message
     if(!msg.body) return false;
-
     msg.id = QB.chat.send(dialog.jidOrUserId, msg);
     msg.extension.dialog_id = dialogId;
-
     var message = helpers.fillNewMessagePrams(app.user.id, msg);
 
     if(dialog.type === 3) {
@@ -189,7 +191,6 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
     }
 
     if(!userList.length) return false;
-
     userModule.getUsersByIds(userList, function(err){
         if(err){
             console.error(err);
@@ -209,9 +210,24 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
 
 Message.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
-        sender = userModule._cache[message.sender_id];
-    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+        sender = userModule._cache[message.sender_id],
+        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
+
+    if(!sender){
+        userModule.getUsersByIds([message.sender_id], function(err){
+            if(!err) {
+                sender = userModule._cache[message.sender_id];
+
+                var userIcon = elem.querySelector('.message__avatar'),
+                    userName = elem.querySelector('.message__sender_name');
+
+                userIcon.classList.remove('m-user__img_not_loaded');
+                userIcon.classList.add('m-user__img_' + sender.color);
+                userName.innerText = sender.name;
+            }
+        });
+    }
 
     if(message.attachments.length){
         var images = elem.querySelectorAll('.message_attachment');
@@ -323,7 +339,6 @@ Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
 
     if(isTyping) {
         self.typingUsers[dialogId].push(userId);
-
     } else {
         var list = self.typingUsers[dialogId];
 
@@ -342,6 +357,19 @@ Message.prototype.renderTypingUsers = function(dialogId){
         users = userList.map(function(user){
             if(userModule._cache[user]){
                 return userModule._cache[user]
+            } else {
+                userModule.getUsersByIds([user], function (err) {
+                    if(err) return false;
+
+                    var className = 'm-typing_'+user,
+                        userElem = document.querySelector('.'+className);
+
+                    if(!userElem || !userModule._cache[user]) return false;
+
+                    userElem.classList.remove(className, 'm-typing_uncnown');
+                    userElem.classList.add('m-user__img_' + userModule._cache[user].color);
+                });
+                return user;
             }
         });
 
