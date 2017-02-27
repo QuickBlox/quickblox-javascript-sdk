@@ -10,18 +10,6 @@ body, html {
     overflow: hidden
 }
 
-select, button, textarea, input {
-    appearance:none;
-    -moz-appearance:none;
-    -webkit-appearance:none;
-    outline: none;
-}
-
-select:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 #000;
-}
-
 #page {
     height: 100%;
     width: 100%;;

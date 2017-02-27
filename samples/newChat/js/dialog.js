@@ -49,9 +49,9 @@ Dialog.prototype.loadDialogs = function(type, callback) {
     self.dialogsListContainer.classList.add('loading');
 
     if(type === 'chat'){
-        filter['type[in]'] = '2,3';
+        filter['type[in]'] = [DIALOG_TYPES.CHAT, DIALOG_TYPES.GROUPCHAT].toString();
     } else {
-        filter.type = 1;
+        filter.type = DIALOG_TYPES.PUBLICCHAT;
     }
 
     QB.chat.dialog.list(filter, function(err, resDialogs){
@@ -62,7 +62,7 @@ Dialog.prototype.loadDialogs = function(type, callback) {
 
         var dialogs = resDialogs.items,
             peerToPearDialogs = dialogs.filter(function(dialog){
-            if(dialog.type === 3) {
+            if(dialog.type === DIALOG_TYPES.CHAT) {
                 return true
             }
         }).map(function(dialog){
@@ -116,7 +116,7 @@ Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
         return elem;
     }
 
-    if(dialog.type !== 3 && !dialog.joined) {
+    if(dialog.type !== DIALOG_TYPES.CHAT && !dialog.joined) {
         self.joinToDialog(id);
     }
 
@@ -275,7 +275,7 @@ Dialog.prototype.createDialog = function(params) {
             console.error(err);
         } else {
             var id = createdDialog._id;
-            if (params.type !== 3) {
+            if (params.type !== DIALOG_TYPES.CHAT) {
                 var occupants = createdDialog.occupants_ids,
                     msg = {
                         type: 'chat',
@@ -301,7 +301,7 @@ Dialog.prototype.createDialog = function(params) {
             }
 
             /* Check active tab [chat / public] */
-            var type = params.type === 1 ? 'public' : 'chat',
+            var type = params.type === DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
                 activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
             if(activeTab && type !== activeTab.dataset.type){

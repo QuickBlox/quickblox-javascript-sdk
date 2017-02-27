@@ -38,7 +38,21 @@ q:before, q:after {
 	content: '';
 	content: none;
 }
+
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
+
+select, button, textarea, input {
+	appearance:none;
+	-moz-appearance:none;
+	-webkit-appearance:none;
+	outline: none;
+}
+
+select:-moz-focusring {
+	color: transparent;
+	text-shadow: 0 0 0 #000;
+}
+

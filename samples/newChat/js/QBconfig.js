@@ -86,3 +86,9 @@ var usersList = [
         pass: 'x6Bt0VDy5'
     }
 ];
+
+var DIALOG_TYPES = {
+    CHAT: 3,
+    GROUPCHAT: 2,
+    PUBLICCHAT: 1
+}

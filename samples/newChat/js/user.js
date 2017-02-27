@@ -13,13 +13,13 @@ function User() {
 User.prototype.getUsersByIds = function(userList, callback){
     var self = this,
         params = {
-        filter: {
-            field: 'id',
-            param: 'in',
-            value: userList
-        },
-        per_page: 100
-    };
+            filter: {
+                field: 'id',
+                param: 'in',
+                value: userList
+            },
+            per_page: 100
+        };
 
     QB.users.listUsers(params, function(err, responce){
         if(err) {
