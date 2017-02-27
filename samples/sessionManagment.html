@@ -34,7 +34,7 @@ var config = {
     sessionManagement: {
         enable: true,
         onerror: function() {
-            console.info('SDK can\'t reestablish a session. Check out the Internet connection.');
+            console.error('SDK can\'t reestablish a session. Check out the Internet connection.');
         }
     }
 };
@@ -66,8 +66,6 @@ var sendRequestLogged = document.getElementById('send_request_logged');
 
 var destroySession = document.getElementById('destroy_session');
 
-
-
 /* START FUN! */
 init.addEventListener('click', function() {
   QB.init(creds.appId, creds.authKey, creds.authSecret, config)
@@ -90,12 +88,7 @@ login.addEventListener('click', function() {
 /* SEND REQUEST without user logged */
 sendRequest.addEventListener('click', function() {
   QB.users.listUsers(function(err, res){
-    console.info(err, res);
-    if(err) {
-        console.error(err)
-    } else {
-        console.info('SEND REQUEST without user logged', res);
-    }
+    console.info('listUsers', err, res);
   });
 
   return false;

@@ -11,6 +11,12 @@ var QBconfig = {
         streamManagement: {
             enable: true
         },
+        sessionManagement: {
+             enable: true,
+             onerror: function() {
+                console.error('SDK can\'t reestablish a session.');
+            }
+        },
         debug: {
             mode: 0,
             file: null

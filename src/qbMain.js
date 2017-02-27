@@ -88,11 +88,6 @@ QuickBlox.prototype = {
             if(typeof authKeyOrAppId === 'number') {
                 config.creds.appId = authKeyOrAppId;
             }
-
-            if(config.sessionManagement.enable) {
-                sessionManagerParams.sessionToken = appIdOrToken;
-                sessionManagerParams.appId = authKeyOrAppId;
-            }
   
             this.service.setSession({ token: appIdOrToken });
         } else {
@@ -107,11 +102,10 @@ QuickBlox.prototype = {
                     authSecret: authSecret
                 };
             }
-        }
 
-        if(config.sessionManagement.enable) {
-            // return a promise
-            return this.service._initSessionManager(sessionManagerParams);
+            if(config.sessionManagement.enable) {
+                this.service._enableSessionManagment(sessionManagerParams);
+            }
         }
     },
 

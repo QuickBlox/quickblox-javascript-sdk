@@ -43,17 +43,26 @@ var UTILS = require('./qbUtils');
  * @param {String} args.[].authSecret - 
  * 
  */
-function SessionManager() {
-    this.session = null; // info session
+function SessionManager(appParameters) {
+    this.appParameters = appParameters;
+    this.userParameters = null;
+    this._isCreated = false;
+
+    this.session = null;
     this.onerror = null; // save a handler for session reestablish error
     this.lastRequest = {}; // a parameters for the last request
-    this.createSessionParams = {}; // saved params for create the session again
+
+    this._isReestablished = false;
 
     this._SAVED_TOKEN_NAME = 'qbst';
     this._SAVED_APP_ID = 'qbai';
     this._SAVED_USER_ID = 'qbui';
 
     this._CREATE_SESSION_PARAMS = 'qbcsp';
+}
+
+SessionManager.ERRORS = {
+    'reestablish': 'Can\'t reconnect to server. Please check the internet connection.'
 }
 
 /* Static methods */
@@ -89,9 +98,7 @@ SessionManager._saveToCookie = function([]) {
     document.cookie = self._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params)) + ';expires='+ now.toGMTString() +';path=/';
 };
 
-
-
-SessionManager.prototype.create = function(params) {
+SessionManager.prototype.create = function() {
     var self = this,
         reqData = {
             'type': 'POST',
@@ -99,30 +106,21 @@ SessionManager.prototype.create = function(params) {
         };
 
     return new Promise(function(resolve, reject) {
-        // params contains appId in any case
-        // var savedInfo = self._getSavedInfo(params);
-
         self.session = {};
 
-        // if(savedToken) {
-        //     self.session.token = savedToken;
-        //     self.session.id 
-        //     resolve(self.session.token);
-        // } else {
+        if(!self.userParameters) {
             reqData.data = self._createASRequestParams(params);
+        }
 
-            SessionManager._ajax(reqData).done(function(response) {
-                self.createSessionParams = params;
-                self.session = response.session;
+        SessionManager._ajax(reqData).done(function(response) {
+            self.session = response.session;
 
-                
+            resolve(self.session.token);
+        }).fail(function(jqXHR, textStatus) {
+            this.session = null;
 
-                resolve(self.session.token);
-            }).fail(function(jqXHR, textStatus) {
-                this.session = null;
-                reject(jqXHR, textStatus);
-            });
-        // }
+            reject(textStatus);
+        });
     });
 };
 
@@ -161,10 +159,6 @@ SessionManager.prototype.destroy = function(){
         document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
     }
 };
-
-
-
-
 
 SessionManager.prototype._createASRequestParams = function (params) {
     function randomNonce() {
@@ -213,17 +207,24 @@ SessionManager.prototype.reestablish = function() {
     reqData.data = self._createASRequestParams(self.createSessionParams);
 
     return new Promise(function(resolve, reject) {
-        SessionManager._ajax(reqData).done(function(response) {
-            self.session = response.session;
+        if(self._isReestablished) {
+            reject(SessionManager.ERRORS.reestablish);
+        } else {
+             self._isReestablished = true;
 
-            document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
-            document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(self.createSessionParams.appId);
+             SessionManager._ajax(reqData).done(function(response) {
+                self.session = response.session;
 
-            resolve(self.session.token);
-        }).fail(function(jqXHR, textStatus) {
-            this.session = null;
-            reject(jqXHR, textStatus);
-        });
+                document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token);
+                document.cookie = self._SAVED_APP_ID + '=' + SessionManager._b64EncodeUnicode(self.createSessionParams.appId);
+
+                self._isReestablished = false;
+                resolve(self.session.token);
+            }).fail(function(jqXHR, textStatus) {
+                this.session = null;
+                reject(textStatus);
+            });
+        }
     });
 };
 
