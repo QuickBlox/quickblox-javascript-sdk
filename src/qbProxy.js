@@ -37,7 +37,7 @@ ServiceProxy.prototype = {
     getSession: function() {
         return this.qbInst.session;
     },
-    handleResponse: function(error, response, next, retry, isNeededUpdateSession) {
+    handleResponse: function(error, response, next, retry) {
         var self = this;
 
         var sessionError = {
@@ -90,10 +90,7 @@ ServiceProxy.prototype = {
             }
         }
     },
-    _ajax: function() {
-
-    },
-    ajax: function(params, callback, isNeedUpdateRights) {
+    _ajax: function(params, callback) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
         var _this = this,
@@ -123,7 +120,7 @@ ServiceProxy.prototype = {
                 console.info('Cannot create a session. Try later.')
             })
         }
-
+        console.info(config.sessionManagement.enable);
         var ajaxCall = {
             url: params.url,
             type: params.type || 'GET',
@@ -152,7 +149,7 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    _this.handleResponse(null, data, callback, retry, isNeededUpdateSession);
+                    _this.handleResponse(null, data, callback, retry);
                 } else {
                     callback(null, data);
                 }
@@ -252,6 +249,9 @@ ServiceProxy.prototype = {
                 });
             }
         }
+    },
+    ajax: function(params, callback) {
+        this._ajax(params, callback);
     }
 };
 

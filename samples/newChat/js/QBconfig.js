@@ -12,8 +12,8 @@ var QBconfig = {
             enable: true
         },
         sessionManagement: {
-             enable: true,
-             onerror: function() {
+            enable: false,
+            onerror: function() {
                 console.error('SDK can\'t reestablish a session.');
             }
         },
