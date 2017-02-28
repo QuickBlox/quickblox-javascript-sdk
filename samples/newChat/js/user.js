@@ -13,13 +13,13 @@ function User() {
 User.prototype.getUsersByIds = function(userList, callback){
     var self = this,
         params = {
-        filter: {
-            field: 'id',
-            param: 'in',
-            value: userList
-        },
-        per_page: 100
-    };
+            filter: {
+                field: 'id',
+                param: 'in',
+                value: userList
+            },
+            per_page: 100
+        };
 
     QB.users.listUsers(params, function(err, responce){
         if(err) {
@@ -35,12 +35,14 @@ User.prototype.getUsersByIds = function(userList, callback){
                 if(!self._cache[id]){
                     if(user){
                         self._cache[id] = {
-                            name: user.user.login,
+                            name: user.user.full_name || user.user.login,
+                            id: id,
                             color: _.random(1, 10)
                         };
                     } else {
                         self._cache[id] = {
                             name: 'Unknown user (' + id + ')',
+                            id: id,
                             color: _.random(1, 10)
                         };
                     }
@@ -127,9 +129,15 @@ User.prototype.buildUserItem = function(user){
         elem.classList.toggle('selected');
         
         if(self.userListConteiner.querySelectorAll('.selected').length > 0){
-            self.content.querySelector('.j-create_dialog_btn').removeAttribute('disabled');
+            document.forms.create_dialog.create_dialog_submit.disabled = false;
         } else {
-            self.content.querySelector('.j-create_dialog_btn').setAttribute('disabled', true);
+            document.forms.create_dialog.create_dialog_submit.disabled = true;
+        }
+
+        if(self.userListConteiner.querySelectorAll('.selected').length >= 2){
+            document.forms.create_dialog.dialog_name.disabled = false;
+        } else {
+            document.forms.create_dialog.dialog_name.disabled = true;
         }
     });
     

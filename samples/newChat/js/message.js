@@ -3,9 +3,9 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-
-    this.dialog = null;
+    this.typingTymeout = appConfig.typingTymeout || 3
     this.limit = appConfig.messagesPerRequest || 50;
+
     this.dialogTitle = null;
     this._typingTimer = null;
     this._typingTime = null;
@@ -19,7 +19,12 @@ Message.prototype.init = function(){
     self.attachmentPreviewContainer = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
 
-    document.forms.send_message.addEventListener('submit', self.sendMessage.bind(self));
+    document.forms.send_message.addEventListener('submit', function(e){
+        e.preventDefault();
+
+        self.sendMessage(dialogModule.dialogId);
+    });
+
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingMessage.bind(self));
 };
@@ -34,7 +39,7 @@ Message.prototype.typingMessage = function(e){
         self.sendIsTypingStatus(dialogId);
 
         self._typingTimer = setInterval(function(){
-            if((Date.now() - self._typingTime) / 1000 >= 3){
+            if((Date.now() - self._typingTime) / 1000 >= self.typingTymeout){
                 self.sendStopTypingStatus(dialogId);
             }
         }, 500);
@@ -61,56 +66,52 @@ Message.prototype.sendStopTypingStatus = function(dialogId){
     self._typingTime = null;
 };
 
-Message.prototype.sendMessage = function(e) {
-    e.preventDefault();
+Message.prototype.sendMessage = function(dialogId) {
     var self = this,
-        dialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[dialogId],
         attachments = dialog.draft.attachments,
+        sendMessageForm = document.forms.send_message,
         msg = {
             type: dialog.type === 3 ? 'chat' : 'groupchat',
-            body: document.forms.send_message.message_feald.value.trim(),
+            body: sendMessageForm.message_feald ? sendMessageForm.message_feald.value.trim() : '',
             extension: {
-                save_to_history: 1
+                save_to_history: 1,
+                dialog_id: dialogId
             },
             markable: 1
         };
-
-
 
     if(Object.keys(attachments).length){
         msg.extension.attachments = [];
 
         for (var attach in attachments) {
-            msg.extension.attachments.push({id: attach, type: 'photo'});
+            msg.extension.attachments.push({id: attach, type: CONSTANTS.ATTACHMENT.TYPE});
         }
 
-        if(!msg.body) msg.body = '[attachment]';
+        msg.body = CONSTANTS.ATTACHMENT.BODY;
+        dialog.draft.attachments = {};
+    } else if (dialogModule.dialogId === dialogId && sendMessageForm){
+        var dialogElem = document.getElementById(dialogId);
+
+        dialogModule.replaceDialogLink(dialogElem);
+        document.forms.send_message.message_feald.value = '';
+        dialog.draft.message = null;
     }
 
     // Don't send empty message
     if(!msg.body) return false;
-
-    var messageId = QB.chat.send(dialog.jidOrUserId, msg);
-
-    document.forms.send_message.message_feald.value = '';
-
-    dialog.draft.attachments = {};
-    helpers.clearView(self.attachmentPreviewContainer);
-
-    msg.id = messageId;
+    msg.id = QB.chat.send(dialog.jidOrUserId, msg);
     msg.extension.dialog_id = dialogId;
-
-    var message = helpers.fillNewMessagePrams(app.user.id, msg);
-
-    dialogModule._cache[dialogId].messages.unshift(message);
+    var message = helpers.fillNewMessageParams(app.user.id, msg);
 
     if(dialog.type === 3) {
-        self.renderMessage(message, true);
+        dialogModule._cache[dialogId].messages.unshift(message);
+        if(dialogModule.dialogId === dialogId) {
+            self.renderMessage(message, true);
+        }
     }
 
     dialogModule.changeLastMessagePreview(dialogId, message);
-    document.forms.send_message.attach_file.value = null
 };
 
 Message.prototype.setLoadMoreMessagesListener = function(){
@@ -160,7 +161,7 @@ Message.prototype.getMessages = function(dialogId) {
             if (dialogModule.dialogId !== dialogId) return false;
 
             if(dialogModule._cache[dialogId].type === 1){
-                self.checkUsersInPublickDialogMessages(messages.items, params.skip);
+                self.checkUsersInPublicDialogMessages(messages.items, params.skip);
             } else {
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
@@ -178,7 +179,7 @@ Message.prototype.getMessages = function(dialogId) {
     });
 };
 
-Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
+Message.prototype.checkUsersInPublicDialogMessages = function(items, skip) {
     var self = this,
         messages = [].concat(items),
         userList = [];
@@ -191,6 +192,7 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
         }
     }
 
+    if(!userList.length) return false;
     userModule.getUsersByIds(userList, function(err){
         if(err){
             console.error(err);
@@ -210,9 +212,24 @@ Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
 
 Message.prototype.renderMessage = function(message, setAsFirst){
     var self = this,
-        sender = userModule._cache[message.sender_id];
-    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+        sender = userModule._cache[message.sender_id],
+        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
+
+    if(!sender){
+        userModule.getUsersByIds([message.sender_id], function(err){
+            if(!err) {
+                sender = userModule._cache[message.sender_id];
+
+                var userIcon = elem.querySelector('.message__avatar'),
+                    userName = elem.querySelector('.message__sender_name');
+
+                userIcon.classList.remove('m-user__img_not_loaded');
+                userIcon.classList.add('m-user__img_' + sender.color);
+                userName.innerText = sender.name;
+            }
+        });
+    }
 
     if(message.attachments.length){
         var images = elem.querySelectorAll('.message_attachment');
@@ -237,12 +254,13 @@ Message.prototype.renderMessage = function(message, setAsFirst){
             });
         }
     }
+
     if(setAsFirst) {
         var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop),
             typingElem = document.querySelector('.j-istyping');
 
         if(typingElem) {
-            self.container.insertBefore(elem, typingElem.previousSibling);
+            self.container.insertBefore(elem, typingElem);
         } else {
             self.container.appendChild(elem);
         }
@@ -251,7 +269,15 @@ Message.prototype.renderMessage = function(message, setAsFirst){
             helpers.scrollTo(self.container, 'bottom');
         }
     } else {
+        var containerHeightBeforeAppend = self.container.scrollHeight - self.container.scrollTop;
+
         self.container.insertBefore(elem, self.container.firstElementChild);
+
+        var containerHeightAfterAppend = self.container.scrollHeight - self.container.scrollTop;
+
+        if(containerHeightBeforeAppend !== containerHeightAfterAppend) {
+            self.container.scrollTop += containerHeightAfterAppend - containerHeightBeforeAppend;
+        }
     }
 };
 
@@ -262,11 +288,13 @@ Message.prototype.prepareToUpload = function (e){
 
     for(var i = 0; i < files.length; i++){
         var file = files[i];
-        self.UploadFilesAndGetIds(file, dialogId);
+        self.uploadFilesAndGetIds(file, dialogId);
     };
+
+    e.currentTarget.value = null;
 };
 
-Message.prototype.UploadFilesAndGetIds = function(file, dialogId){
+Message.prototype.uploadFilesAndGetIds = function(file, dialogId){
     var self = this,
         preview = self.addImagePreview(file);
 
@@ -281,51 +309,26 @@ Message.prototype.UploadFilesAndGetIds = function(file, dialogId){
             preview.classList.remove('m-loading');
             preview.classList.add('m-error');
         } else {
-            preview.id = response.uid;
-            preview.classList.remove('m-loading');
+            preview.remove();
 
             dialogModule._cache[dialogId].draft.attachments[response.uid] = helpers.getSrcFromAttachmentId(response.uid);
+
+            self.sendMessage(dialogId);
         }
     });
 };
 
-Message.prototype.addImagePreview = function(file, imgData){
+Message.prototype.addImagePreview = function(file){
     var self = this,
-        data;
-
-    if(file){
         data = {
             id: 'isLoading',
             src: URL.createObjectURL(file)
-        }
-    } else {
-        data = imgData;
-    }
-
-    var template = helpers.fillTemplate('tpl_attachmentPreview', data),
-        wrapper = helpers.toHtml(template)[0],
-        imgage = wrapper.firstElementChild;
+        },
+        template = helpers.fillTemplate('tpl_attachmentPreview', data),
+        wrapper = helpers.toHtml(template)[0];
 
     self.attachmentPreviewContainer.append(wrapper);
-
-    if(!file) {
-        imgage.addEventListener('load', function(e){
-            var img = e.target,
-                wrapper = img.parentElement;
-
-            wrapper.classList.remove('m-loading');
-        });
-
-        imgage.addEventListener('error', function(e){
-            var img = e.target,
-                wrapper = img.parentElement;
-
-            wrapper.classList.remove('m-loading');
-            wrapper.classList.add('m-error');
-        });
-    } else {
-        return wrapper
-    }
+    return wrapper;
 };
 
 Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
@@ -338,7 +341,6 @@ Message.prototype.setTypingStatuses = function(isTyping, userId, dialogId){
 
     if(isTyping) {
         self.typingUsers[dialogId].push(userId);
-
     } else {
         var list = self.typingUsers[dialogId];
 
@@ -357,6 +359,19 @@ Message.prototype.renderTypingUsers = function(dialogId){
         users = userList.map(function(user){
             if(userModule._cache[user]){
                 return userModule._cache[user]
+            } else {
+                userModule.getUsersByIds([user], function (err) {
+                    if(err) return false;
+
+                    var className = 'm-typing_'+user,
+                        userElem = document.querySelector('.'+className);
+
+                    if(!userElem || !userModule._cache[user]) return false;
+
+                    userElem.classList.remove(className, 'm-typing_uncnown');
+                    userElem.classList.add('m-user__img_' + userModule._cache[user].color);
+                });
+                return user;
             }
         });
 

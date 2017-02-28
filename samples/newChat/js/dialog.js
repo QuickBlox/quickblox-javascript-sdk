@@ -2,7 +2,7 @@
 
 function Dialog() {
     this._cache = {};
-    this.user = null;
+    
     this.dialogId = null;
     this.prevDialogId = null;
 
@@ -38,19 +38,20 @@ Dialog.prototype.init = function(){
     });
 };
 
-Dialog.prototype.loadDialogs = function(type) {
+Dialog.prototype.loadDialogs = function(type, callback) {
     var self = this,
         filter = {
             limit: self.limit,
-            skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length
+            skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length,
+            sort_desc: "updated_at"
         };
 
     self.dialogsListContainer.classList.add('loading');
 
     if(type === 'chat'){
-        filter['type[in]'] = '2,3';
+        filter['type[in]'] = [CONSTANTS.DIALOG_TYPES.CHAT, CONSTANTS.DIALOG_TYPES.GROUPCHAT].toString();
     } else {
-        filter.type = 1;
+        filter.type = CONSTANTS.DIALOG_TYPES.PUBLICCHAT;
     }
 
     QB.chat.dialog.list(filter, function(err, resDialogs){
@@ -59,10 +60,9 @@ Dialog.prototype.loadDialogs = function(type) {
             return;
         }
 
-        var dialogs = resDialogs.items;
-        
-        var peerToPearDialogs = dialogs.filter(function(dialog){
-            if(dialog.type === 3) {
+        var dialogs = resDialogs.items,
+            peerToPearDialogs = dialogs.filter(function(dialog){
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT) {
                 return true
             }
         }).map(function(dialog){
@@ -83,34 +83,44 @@ Dialog.prototype.loadDialogs = function(type) {
         });
 
         _.each(dialogs, function(dialog){
-            self.buildDialog(dialog);
+            if(!self._cache[dialog._id]){
+                self._cache[dialog._id] = helpers.compileDialogParams(dialog);
+            }
+
+            self.renderDialog(self._cache[dialog._id]);
         });
 
         if(self.dialogId){
-            var dialog = document.getElementById(self.dialogId);
-            if(dialog) dialog.classList.add('selected');
+            var dialogElem = document.getElementById(self.dialogId);
+            if(dialogElem) dialogElem.classList.add('selected');
         }
 
         if(dialogs.length < self.limit){
             self.dialogsListContainer.classList.add('full');
         }
         self.dialogsListContainer.classList.remove('loading');
+
+        if(callback) {
+            callback();
+        }
     });
 };
 
-Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
+Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
     var self = this,
-        compiledDialogParams = helpers.compileDialogParams(dialog);
-    
-    if(!self._cache[dialog._id]){
-        self._cache[dialog._id] = compiledDialogParams;
+        id = dialog._id,
+        elem = document.getElementById(id);
+
+    if(elem) {
+        self.replaceDialogLink(elem);
+        return elem;
     }
 
-    if(dialog.type === 2 && !dialog.joined) {
-        self.joinToDialog(dialog._id);
+    if(dialog.type !== CONSTANTS.DIALOG_TYPES.CHAT && !dialog.joined) {
+        self.joinToDialog(id);
     }
 
-    var template = helpers.fillTemplate('tpl_userConversations', {dialog: compiledDialogParams}),
+    var template = helpers.fillTemplate('tpl_userConversations', {dialog: dialog});
         elem = helpers.toHtml(template)[0];
 
     elem.addEventListener('click', function(e){
@@ -127,7 +137,7 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
 
         self.prevDialogId = self.dialogId;
         self.dialogId = e.currentTarget.id;
-        self.renderDialog(e.currentTarget.id);
+        self.renderMessages(e.currentTarget.id);
     });
 
     if(!setAsFirst) {
@@ -135,10 +145,27 @@ Dialog.prototype.buildDialog = function(dialog, setAsFirst) {
     } else {
         self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
     }
+    return elem;
+};
+
+Dialog.prototype.replaceDialogLink = function(elem) {
+    var self = this,
+        elemsCollection = self.dialogsListContainer.children,
+        elemPosition;
+
+    elemPosition: for(var i = 0; i < elemsCollection.length; i++) {
+        if(elemsCollection[i] === elem){
+            elemPosition = i;
+            break elemPosition;
+        }
+    }
+
+    if (elemPosition > 5){
+        self.dialogsListContainer.replaceChild(elem, self.dialogsListContainer.firstElementChild);
+    }
 };
 
 Dialog.prototype.joinToDialog = function(id){
-
     var self = this,
         jidOrUserId = self._cache[id].jidOrUserId;
 
@@ -154,14 +181,13 @@ Dialog.prototype.joinToDialog = function(id){
     });
 };
 
-Dialog.prototype.renderDialog = function(id){
+Dialog.prototype.renderMessages = function(id){
     var self = this,
         dialog = self._cache[id];
 
-    if(!self.checkCachedUsersInDialog(id)) return false;
-
     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
 
+    if(!self.checkCachedUsersInDialog(id)) return false;
     if(!document.forms.send_message){
         helpers.clearView(this.content);
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
@@ -184,16 +210,9 @@ Dialog.prototype.renderDialog = function(id){
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
     }
-
     messageModule.setLoadMoreMessagesListener();
 
     document.forms.send_message.message_feald.value = dialog.draft.message;
-
-    var attachments = dialog.draft.attachments;
-
-    for (var attach in attachments) {
-        messageModule.addImagePreview(null, {id: attach, src: attachments[attach]});
-    }
 
     if(dialog && dialog.messages.length){
         for(var i = 0; i < dialog.messages.length; i++){
@@ -223,7 +242,7 @@ Dialog.prototype.checkCachedUsersInDialog = function(id){
 
     if(unsetUsers.length) {
         userModule.getUsersByIds(unsetUsers, function(){
-            self.renderDialog(id);
+            self.renderMessages(id);
         });
     }
 
@@ -237,10 +256,17 @@ Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
     self._cache[dialogId].last_message = msg.message;
 
     if(dialog){
-        dialog.querySelector('.j-dialog__last_message ').innerText = msg.message;
+        var messagePreview = dialog.querySelector('.j-dialog__last_message ');
+
+        if(msg.message) {
+            messagePreview.classList.remove('attachment');
+            messagePreview.innerText = msg.message;
+        } else {
+            messagePreview.classList.add('attachment');
+            messagePreview.innerText = 'Attachment';
+        }
     }
 };
-
 
 Dialog.prototype.createDialog = function(params) {
     var self = this;
@@ -249,59 +275,57 @@ Dialog.prototype.createDialog = function(params) {
         if (err) {
             console.error(err);
         } else {
-            var occupants = createdDialog.occupants_ids,
-                msg = {
-                type: 'chat',
-                extension: {
-                    notification_type: 1,
-                    dialog_id: createdDialog._id,
-                    dialog_name: createdDialog.name,
-                    dialog_type: createdDialog.type,
-                    occupants_ids: occupants.join(', ')
-                }
-            };
+            var id = createdDialog._id;
+            if (params.type !== CONSTANTS.DIALOG_TYPES.CHAT) {
+                var occupants = createdDialog.occupants_ids,
+                    msg = {
+                        type: 'chat',
+                        extension: {
+                            notification_type: 1,
+                            dialog_id: createdDialog._id,
+                            dialog_name: createdDialog.name,
+                            dialog_type: createdDialog.type,
+                            occupants_ids: occupants.join(', ')
+                        }
+                    };
 
-            for(var i = 0; i < occupants.length; i++){
-                if (occupants[i] != app.user.id) {
-                    QB.chat.sendSystemMessage(occupants[i], msg);
+                for(var i = 0; i < occupants.length; i++){
+                    if (occupants[i] != app.user.id) {
+                        QB.chat.sendSystemMessage(occupants[i], msg);
+                    }
                 }
             }
 
-            self.loadDialogById(createdDialog._id, true);
+            /* Check dialog in cache */
+            if(!self._cache[id]){
+                self._cache[id] = helpers.compileDialogParams(createdDialog);
+            }
+
+            /* Check active tab [chat / public] */
+            var type = params.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                activeTab = document.querySelector('.j-sidebar__tab_link.active');
+
+            if(activeTab && type !== activeTab.dataset.type){
+                var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
+                app.loadChatList(tab, function(){
+                    self.renderDialog(self._cache[id], true).click();
+                });
+            } else {
+                self.renderDialog(self._cache[id], true).click();
+            }
         }
     });
 };
 
-Dialog.prototype.loadDialogById = function(id, renderMessages) {
+Dialog.prototype.getDialogById = function(id, callback) {
     var self = this;
 
     QB.chat.dialog.list({_id: id}, function(err, res){
-        var dialog = res.items[0],
-            compiledDialogParams = helpers.compileDialogParams(dialog);
 
-
-        if(dialog){
-            var type = dialog.type === 1 ? 'public' : 'chat',
-                activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
-            if(activeTab && type === activeTab.dataset.type){
-                var conversatinLink = document.getElementById(dialog._id);
-
-                if(!conversatinLink){
-                    self._cache[dialog._id] = compiledDialogParams;
-
-                    self.buildDialog(compiledDialogParams, true);
-
-                } else {
-                    self.dialogsListContainer.insertBefore(conversatinLink, self.dialogsListContainer.firstElementChild);
-                }
-
-                if(renderMessages) {
-                    self.dialogId = dialog._id;
-                    document.getElementById(dialog._id).click();
-                }
-            }
+        if(!self._cache[id]){
+            self._cache[id] = helpers.compileDialogParams(res.items[0]);
         }
+        callback(self._cache[id]);
     });
 };
 

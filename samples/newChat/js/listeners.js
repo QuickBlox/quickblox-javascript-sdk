@@ -21,15 +21,26 @@
 function Listeners(){}
 
 Listeners.prototype.onMessageListener = function(userId, message){
-    var msg = helpers.fillNewMessagePrams(userId, message);
+    var msg = helpers.fillNewMessageParams(userId, message),
+        dialog = dialogModule._cache[message.dialog_id];
 
-    dialogModule._cache[message.dialog_id].messages.unshift(msg);
+    if(dialog){
+        dialog.messages.unshift(msg);
+        dialogModule.renderDialog(dialog, true);
+        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
+    } else {
+        dialogModule.getDialogById(msg.chat_dialog_id, function(dialog){
+            var type = dialog.type === 1 ? 'public' : 'chat',
+                activeTab = document.querySelector('.j-sidebar__tab_link.active');
+
+            if(activeTab && type === activeTab.dataset.type){
+                dialogModule.renderDialog(dialog, true);
+            }
+        });
+    }
 
     if(dialogModule.dialogId === msg.chat_dialog_id){
         messageModule.renderMessage(msg, true);
-        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
-    } else if (dialogModule._cache[msg.chat_dialog_id]){
-        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
     }
 };
 
@@ -50,11 +61,17 @@ Listeners.prototype.onReadStatusListener = function(){
 
 };
 
-Listeners.prototype.onSystemMessageListener = function(message){
-    // This is a notification about dialog creation
+Listeners.prototype.onSystemMessageListener = function(message) {
     if (message.extension && (message.extension.notification_type === '1' || message.extension.notification_type === 'creating_dialog')) {
         if(message.extension.dialog_id) {
-            dialogModule.loadDialogById(message.extension.dialog_id, false);
+            dialogModule.getDialogById(message.extension.dialog_id, function(dialog) {
+                var type = dialog.type === 1 ? 'public' : 'chat',
+                    activeTab = document.querySelector('.j-sidebar__tab_link.active');
+
+                if (activeTab && type === activeTab.dataset.type) {
+                    dialogModule.renderDialog(dialog, true);
+                }
+            });
         }
         return false;
     }

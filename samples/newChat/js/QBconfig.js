@@ -27,7 +27,8 @@ var QBconfig = {
 var appConfig = {
     dilogsPerRequers: 15,
     messagesPerRequest: 30,
-    usersPerRequest: 15
+    usersPerRequest: 15,
+    typingTymeout: 3 // in seconds
 };
 
 var usersList = [
