@@ -12,7 +12,7 @@ var QBconfig = {
             enable: true
         },
         debug: {
-            mode: 1,
+            mode: 0,
             file: null
         },
     }
@@ -21,7 +21,8 @@ var QBconfig = {
 var appConfig = {
     dilogsPerRequers: 15,
     messagesPerRequest: 30,
-    usersPerRequest: 15
+    usersPerRequest: 15,
+    typingTymeout: 3 // 3 seconds
 };
 
 var usersList = [
@@ -87,8 +88,14 @@ var usersList = [
     }
 ];
 
-var DIALOG_TYPES = {
-    CHAT: 3,
-    GROUPCHAT: 2,
-    PUBLICCHAT: 1
-}
+var CONSTANTS = {
+    DIALOG_TYPES: {
+        CHAT: 3,
+        GROUPCHAT: 2,
+        PUBLICCHAT: 1
+    },
+    ATTACHMENT: {
+        TYPE : 'image',
+        BODY : '[attachment]'
+    }
+};

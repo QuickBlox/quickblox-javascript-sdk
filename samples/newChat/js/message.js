@@ -3,6 +3,7 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
+    this.typingTymeout = appConfig.typingTymeout || 3
     this.limit = appConfig.messagesPerRequest || 50;
 
     this.dialogTitle = null;
@@ -20,6 +21,7 @@ Message.prototype.init = function(){
 
     document.forms.send_message.addEventListener('submit', function(e){
         e.preventDefault();
+
         self.sendMessage(dialogModule.dialogId);
     });
 
@@ -37,7 +39,7 @@ Message.prototype.typingMessage = function(e){
         self.sendIsTypingStatus(dialogId);
 
         self._typingTimer = setInterval(function(){
-            if((Date.now() - self._typingTime) / 1000 >= 3){
+            if((Date.now() - self._typingTime) / 1000 >= self.typingTymeout){
                 self.sendStopTypingStatus(dialogId);
             }
         }, 500);
@@ -83,10 +85,10 @@ Message.prototype.sendMessage = function(dialogId) {
         msg.extension.attachments = [];
 
         for (var attach in attachments) {
-            msg.extension.attachments.push({id: attach, type: 'photo'});
+            msg.extension.attachments.push({id: attach, type: CONSTANTS.ATTACHMENT.TYPE});
         }
 
-        msg.body = '[attachment]';
+        msg.body = CONSTANTS.ATTACHMENT.BODY;
         dialog.draft.attachments = {};
     } else if (dialogModule.dialogId === dialogId && sendMessageForm){
         var dialogElem = document.getElementById(dialogId);
@@ -100,7 +102,7 @@ Message.prototype.sendMessage = function(dialogId) {
     if(!msg.body) return false;
     msg.id = QB.chat.send(dialog.jidOrUserId, msg);
     msg.extension.dialog_id = dialogId;
-    var message = helpers.fillNewMessagePrams(app.user.id, msg);
+    var message = helpers.fillNewMessageParams(app.user.id, msg);
 
     if(dialog.type === 3) {
         dialogModule._cache[dialogId].messages.unshift(message);
@@ -159,7 +161,7 @@ Message.prototype.getMessages = function(dialogId) {
             if (dialogModule.dialogId !== dialogId) return false;
 
             if(dialogModule._cache[dialogId].type === 1){
-                self.checkUsersInPublickDialogMessages(messages.items, params.skip);
+                self.checkUsersInPublicDialogMessages(messages.items, params.skip);
             } else {
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
@@ -177,7 +179,7 @@ Message.prototype.getMessages = function(dialogId) {
     });
 };
 
-Message.prototype.checkUsersInPublickDialogMessages = function(items, skip) {
+Message.prototype.checkUsersInPublicDialogMessages = function(items, skip) {
     var self = this,
         messages = [].concat(items),
         userList = [];
@@ -286,13 +288,13 @@ Message.prototype.prepareToUpload = function (e){
 
     for(var i = 0; i < files.length; i++){
         var file = files[i];
-        self.UploadFilesAndGetIds(file, dialogId);
+        self.uploadFilesAndGetIds(file, dialogId);
     };
 
     e.currentTarget.value = null;
 };
 
-Message.prototype.UploadFilesAndGetIds = function(file, dialogId){
+Message.prototype.uploadFilesAndGetIds = function(file, dialogId){
     var self = this,
         preview = self.addImagePreview(file);
 

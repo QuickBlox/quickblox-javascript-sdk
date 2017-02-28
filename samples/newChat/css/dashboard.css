@@ -433,8 +433,6 @@
     text-align: center;
     height: 100%;
     color: #778594;
-    -moz-user-select: none;
-    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -612,9 +610,6 @@
 }
 
 .attachment_preview__wrap.m-loading .attachment_preview__item {
-    -webkit-animation: blink 1s infinite alternate;
-    -moz-animation:    blink 1s infinite alternate;
-    -o-animation:      blink 1s infinite alternate;
     animation:         blink 1s infinite alternate;
 }
 
@@ -757,18 +752,6 @@
     cursor: no-drop;
 }
 
-@-webkit-keyframes blink {
-    0%   { opacity: .9; }
-    100% { opacity: .5; }
-}
-@-moz-keyframes blink {
-    0%   { opacity: .9; }
-    100% { opacity: .5; }
-}
-@-o-keyframes blink {
-    0%   { opacity: .9; }
-    100% { opacity: .5; }
-}
 @keyframes blink {
     0%   { opacity: .9; }
     100% { opacity: .5; }

@@ -8,11 +8,11 @@
     <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
-    <link rel="stylesheet" href="./css/style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
 
-    <script src="./js/libs/path.min.js" defer></script>
-    <script src="./js/libs/underscore.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/path.js/0.8.4/path.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js" defer></script>
     <script src="../../quickblox.min.js" defer></script>
 </head>
 <body>
@@ -33,7 +33,7 @@
                         <select name="login__select " class="login__select j-login__select">
                             <option selected disabled>Select User</option>
                             <% _.each(users, function(user) { %>
-                                <option value="<%- user.id %>"><%- user.name %></option>
+                                <option value="<%= user.id %>"><%- user.name %></option>
                             <% }); %>
                         </select>
                         <hr/>
@@ -51,7 +51,7 @@
                         </a>
                         <p>by QuickBlox</p>
                     </div>
-                    <span class="footer__version">v. <%- version %></span>
+                    <span class="footer__version">v. <%= version %></span>
                 </div>
             </div>
         </div>
@@ -113,8 +113,8 @@
 
     <script type="text/template" id="tpl_userConversations">
             <% var num = _.random(1, 10) %>
-            <li class="dialog__item j-dialog__item" id="<%- dialog._id %>" data-name="<%- dialog.name %>">
-                <span class="dialog__avatar m-user__img_<%- num %> m-type_<%- dialog.type === 2 ? 'group' : 'chat' %>" >
+            <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+                <span class="dialog__avatar m-user__img_<%= num %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
                     <% if(dialog.type === 2) { %>
                         <i class="material-icons">supervisor_account</i>
                     <% } else { %>
@@ -123,10 +123,10 @@
                 </span>
                 <div class="dialog__info">
                     <p class="dialog__name"><%- dialog.name %></p>
-                    <p class="dialog__last_message j-dialog__last_message <%- dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
+                    <p class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
                 </div>
                 <span class="dialog__last_message_date j-dialog__last_message_date">
-                    <%- dialog.last_message_date_sent %>
+                    <%= dialog.last_message_date_sent %>
                 </span>
             </li>
     </script>
@@ -153,26 +153,26 @@
     </script>
 
     <script type="text/template" id="tpl_message">
-        <div class="message__wrap" id="<%- message._id %>">
-            <span class="message__avatar m-user__img_<%- sender ? sender.color : 'not_loaded' %>">
+        <div class="message__wrap" id="<%= message._id %>">
+            <span class="message__avatar m-user__img_<%= sender ? sender.color : 'not_loaded' %>">
                 <i class="material-icons">account_circle</i>
             </span>
             <div class="message__content_wrap">
                 <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
                 <% if (message.message || message.body) { %>
-                    <p class="message__text"><%= message.message || message.body %></p>
+                    <p class="message__text"><%- message.message || message.body %></p>
                 <% } %>
 
                 <% if (message.attachments.length) { %>
                     <div class="message__attachments_wtap">
                         <% _.each(message.attachments, function(attachment){ %>
-                            <img src="<%- attachment.src %>" alt="attachment" class="message_attachment">
+                            <img src="<%= attachment.src %>" alt="attachment" class="message_attachment">
                         <% }); %>
                     </div>
                 <% } %>
             </div>
             <div class="message__timestamp">
-                <%- message.date_sent %>
+                <%= message.date_sent %>
             </div>
         </div>
     </script>
@@ -196,15 +196,15 @@
     </script>
 
     <script type="text/template" id="tpl_newGroupChatUser">
-        <div class="user__item" id="<%- user.id %>">
-            <span class="user__avatar m-user__img_<%- user.color %>">
+        <div class="user__item" id="<%= user.id %>">
+            <span class="user__avatar m-user__img_<%= user.color %>">
                 <i class="material-icons m-user_icon">account_circle</i>
                 <!--<i class="material-icons m-done">done</i>-->
             </span>
             <div class="user__details">
                 <p class="user__name"><%- user.name %></p>
                 <% if (user.last_request_at) { %>
-                    <p class="user__last_seen"><%- user.last_request_at %></p>
+                    <p class="user__last_seen"><%= user.last_request_at %></p>
                 <% } %>
             </div>
 
@@ -229,8 +229,8 @@
     </script>
 
     <script type="text/template" id="tpl_attachmentPreview">
-        <div class="attachment_preview__wrap m-loading" id="<%- id %>">
-            <img class="attachment_preview__item" src="<%- src %>">
+        <div class="attachment_preview__wrap m-loading" id="<%= id %>">
+            <img class="attachment_preview__item" src="<%= src %>">
         </div>
     </script>
 

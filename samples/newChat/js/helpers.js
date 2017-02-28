@@ -25,9 +25,9 @@ Helpers.prototype.compileDialogParams = function(dialog){
         _id: dialog._id,
         name: dialog.name,
         type: dialog.type,
-        last_message: dialog.last_message === '[attachment]' ? 'Attachment' : dialog.last_message,
+        last_message: dialog.last_message === CONSTANTS.ATTACHMENT.BODY ? 'Attachment' : dialog.last_message,
         messages: [],
-        attachment: dialog.last_message === '[attachment]',
+        attachment: dialog.last_message === CONSTANTS.ATTACHMENT.BODY,
         // last_message_date_sent comes in UNIX time.
         last_message_date_sent: self.getTime(dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at),
         users: dialog.occupants_ids || [],
@@ -74,7 +74,7 @@ Helpers.prototype.fillMessagePrams = function(message){
         }
     }
 
-    if(message.message === '[attachment]'){
+    if(message.message === CONSTANTS.ATTACHMENT.BODY){
         message.message = '';
     }
 
@@ -94,7 +94,7 @@ Helpers.prototype.getSrcFromAttachmentId = function(id) {
     return QB.content.publicUrl(id) + '.json?token=' + app.token;
 };
 
-Helpers.prototype.fillNewMessagePrams = function(userId, msg){
+Helpers.prototype.fillNewMessageParams = function(userId, msg){
     var self = this,
         message = {
             _id: msg.id,
@@ -118,7 +118,7 @@ Helpers.prototype.fillNewMessagePrams = function(userId, msg){
         message.attachments = attachments;
     }
 
-    if(message.message === '[attachment]'){
+    if(message.message === CONSTANTS.ATTACHMENT.BODY){
         message.message = '';
     }
 
