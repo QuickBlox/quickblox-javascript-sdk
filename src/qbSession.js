@@ -53,17 +53,16 @@ function SessionManager(appParameters) {
     this.lastRequest = {}; // a parameters for the last request
 
     this._isReestablished = false;
-
-    this._SAVED_TOKEN_NAME = 'qbst';
-    this._SAVED_APP_ID = 'qbai';
-    this._SAVED_USER_ID = 'qbui';
-
-    this._CREATE_SESSION_PARAMS = 'qbcsp';
 }
+
+SessionManager._SAVED_TOKEN_NAME = 'qbst';
+SessionManager._SAVED_APP_ID = 'qbai';
+SessionManager._SAVED_USER_ID = 'qbui';
+SessionManager._CREATE_SESSION_PARAMS = 'qbcsp';
 
 SessionManager.ERRORS = {
     'reestablish': 'Can\'t reconnect to server. Please check the internet connection.'
-}
+};
 
 /* Static methods */
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
@@ -87,18 +86,18 @@ SessionManager._getFromCookie = function(name) {
     return matches ? SessionManager._b64DecodeUnicode(matches[1]) : false;
 };
 
-SessionManager._saveToCookie = function([]) {
+SessionManager.prototype._saveToCookie = function(params) {
     var now = new Date();
     var time = now.getTime();
     var expireTime = CONFIG.sessionManagement.expiredTime * 3600;
     now.setTime(expireTime);
 
 
-    document.cookie = self._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(self.session.token) + ';expires='+ now.toGMTString() +';path=/';
-    document.cookie = self._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params)) + ';expires='+ now.toGMTString() +';path=/';
+    document.cookie = SessionManager._SAVED_TOKEN_NAME + '=' + SessionManager._b64EncodeUnicode(this.session.token) + ';expires='+ now.toGMTString() +';path=/';
+    document.cookie = SessionManager._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params)) + ';expires='+ now.toGMTString() +';path=/';
 };
 
-SessionManager.prototype.create = function() {
+SessionManager.prototype.create = function(params) {
     var self = this,
         reqData = {
             'type': 'POST',
@@ -230,7 +229,7 @@ SessionManager.prototype.reestablish = function() {
 
 SessionManager.prototype.updateUser = function(params){
     this.session.id = params.userId;
-    document.cookie = self._SAVED_USER_ID + '=' + SessionManager._b64EncodeUnicode(params.userId);
+    document.cookie = this._SAVED_USER_ID + '=' + SessionManager._b64EncodeUnicode(params.userId);
 
     console.info(this.session);
 };

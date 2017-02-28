@@ -50,12 +50,12 @@ ServiceProxy.prototype = {
                 self.sessionManager.lastRequest = {};
 
                 /** login / logout */
-                if(isNeededUpdateSession) {
-                    self.sessionManager.updateUser({
-                        userId: response.user && response.user.id ? response.user.id : 0
-                    });
-                    console.info(self.sessionManager.session);
-                }
+                // if(isNeededUpdateSession) {
+                //     self.sessionManager.updateUser({
+                //         userId: response.user && response.user.id ? response.user.id : 0
+                //     });
+                //     console.info(self.sessionManager.session);
+                // }
 
                 if(config.addISOTime) {
                     response = Utils.injectISOTimes(response);
@@ -117,8 +117,8 @@ ServiceProxy.prototype = {
             _this.sessionManager.create().then(function() {
 
             }).catch(function() {
-                console.info('Cannot create a session. Try later.')
-            })
+                console.info('Cannot create a session. Try later.');
+            });
         }
         console.info(config.sessionManagement.enable);
         var ajaxCall = {
@@ -136,8 +136,8 @@ ServiceProxy.prototype = {
 
                         _this.sessionManager.lastRequest = {
                             params: params,
-                            cb: callback,
-                            isNeededUpdateSession : isNeededUpdateSession
+                            cb: callback
+                            // isNeededUpdateSession : isNeededUpdateSession
                         };
 
                         jqXHR.setRequestHeader('QB-Token', _this.sessionManager.session.token);
