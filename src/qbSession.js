@@ -43,16 +43,18 @@ var UTILS = require('./qbUtils');
  * @param {String} args.[].authSecret - 
  * 
  */
-function SessionManager(appParameters) {
-    this.appParameters = appParameters;
-    this.userParameters = null;
-    this._isCreated = false;
+function SessionManager(params) {
+    this.appCreds = params;
+    this.user = null;
 
     this.session = null;
-    this.onerror = null; // save a handler for session reestablish error
-    this.lastRequest = {}; // a parameters for the last request
 
-    this._isReestablished = false;
+    // client's callback, save a handler for session reestablish error
+    this.onerror = null; 
+    this._isReestablishedOnce = false;
+
+    // parameters for the last request
+    this.lastRequest = {}; 
 }
 
 SessionManager._SAVED_TOKEN_NAME = 'qbst';
