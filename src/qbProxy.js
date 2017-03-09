@@ -91,6 +91,9 @@ ServiceProxy.prototype = {
         }
     },
     _ajax: function(params, callback) {
+        this.ajax(params, callback);
+    },
+    ajax: function(params, callback) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
         var _this = this,
@@ -113,14 +116,6 @@ ServiceProxy.prototype = {
             }
         };
 
-        if(config.sessionManagement.enable && !_this.sessionManager._isCreated) {
-            _this.sessionManager.create().then(function() {
-
-            }).catch(function() {
-                console.info('Cannot create a session. Try later.');
-            });
-        }
-        console.info(config.sessionManagement.enable);
         var ajaxCall = {
             url: params.url,
             type: params.type || 'GET',
@@ -249,9 +244,6 @@ ServiceProxy.prototype = {
                 });
             }
         }
-    },
-    ajax: function(params, callback) {
-        this._ajax(params, callback);
     }
 };
 

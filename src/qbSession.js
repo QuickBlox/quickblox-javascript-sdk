@@ -45,26 +45,23 @@ var UTILS = require('./qbUtils');
  */
 function SessionManager(params) {
     this.appCreds = params;
+    
     this.user = null;
-
     this.session = null;
 
     // client's callback, save a handler for session reestablish error
-    this.onerror = null; 
+    this.onerror = null;
     this._isReestablishedOnce = false;
 
     // parameters for the last request
-    this.lastRequest = {}; 
+    this.lastRequest = {};
 }
 
-SessionManager._SAVED_TOKEN_NAME = 'qbst';
-SessionManager._SAVED_APP_ID = 'qbai';
-SessionManager._SAVED_USER_ID = 'qbui';
-SessionManager._CREATE_SESSION_PARAMS = 'qbcsp';
+SessionManager._APP_CREDS = 'qbac';
 
-SessionManager.ERRORS = {
-    'reestablish': 'Can\'t reconnect to server. Please check the internet connection.'
-};
+// SessionManager._SAVED_TOKEN_NAME = 'qbst';
+// SessionManager._SAVED_APP_ID = 'qbai';
+// SessionManager._SAVED_USER_ID = 'qbui';
 
 /* Static methods */
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');

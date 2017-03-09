@@ -9,7 +9,6 @@ function AuthProxy(service) {
 }
 
 AuthProxy.prototype = {
-
   getSession: function(callback) {
     Utils.QBLog('[AuthProxy]', 'getSession');
 
@@ -77,7 +76,7 @@ AuthProxy.prototype = {
 
   login: function(params, callback) {
     Utils.QBLog('[AuthProxy]', 'login', params);
-    
+
     var reqParams = {
       type: 'POST',
       url: Utils.getUrl(config.urls.login),
@@ -85,11 +84,14 @@ AuthProxy.prototype = {
     };
 
     function cbWrap(err, res) {
-      if (err) { callback(err, null); }
-      else { callback(null, res.user); }
+      if (err) { 
+        callback(err, null); 
+      } else { 
+        callback(null, res.user);
+      }
     }
 
-    this.service.ajax(reqParams, cbWrap, true);
+    this.service.ajax(reqParams, cbWrap);
   },
 
   logout: function(callback) {
