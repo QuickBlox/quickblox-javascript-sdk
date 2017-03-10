@@ -71,9 +71,6 @@
       "quickblox.min.js"
     ]
   },
-  "config": {
-
-  },
   "scripts": {
     "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",

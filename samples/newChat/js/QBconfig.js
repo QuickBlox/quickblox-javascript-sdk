@@ -12,7 +12,7 @@ var QBconfig = {
             enable: true
         },
         sessionManagement: {
-            enable: false,
+            enable: true,
             onerror: function() {
                 console.error('SDK can\'t reestablish a session.');
             }
@@ -93,3 +93,15 @@ var usersList = [
         pass: 'x6Bt0VDy5'
     }
 ];
+
+var CONSTANTS = {
+    DIALOG_TYPES: {
+        CHAT: 3,
+        GROUPCHAT: 2,
+        PUBLICCHAT: 1
+    },
+    ATTACHMENT: {
+        TYPE : 'image',
+        BODY : '[attachment]'
+    }
+};

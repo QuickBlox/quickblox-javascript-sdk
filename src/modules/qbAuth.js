@@ -38,15 +38,22 @@ AuthProxy.prototype = {
 
     Utils.QBLog('[AuthProxy]', 'createSession', message);
 
-    this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
-                      function(err, res) {
-                        if (err) {
-                          callback(err, null);
-                        } else {
-                          _this.service.setSession(res.session);
-                          callback(null, res.session);
-                        }
-                      });
+    var reqParams = {
+      type: 'POST',
+      url: Utils.getUrl(config.urls.session),
+      data: message
+    };
+
+    function cbWrap(err, res) {
+      if (err) { 
+        callback(err, null); 
+      } else { 
+        _this.service.setSession(res.session);
+        callback(null, res.session);
+      }
+    }
+
+    this.service.ajax(reqParams, cbWrap);
   },
 
   destroySession: function(callback) {

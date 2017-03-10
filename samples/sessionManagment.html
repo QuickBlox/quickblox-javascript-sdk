@@ -6,6 +6,18 @@
 </head>
 <body>
 
+<p>
+  При включении Session Managment всегда сначала нужно сделать инициализацию SDK. <br>
+  <button id="init" >Init the SDK</button>
+</p>
+
+<p>
+  После можно сделать запрос (автоматичеси создаётся сессия с READ правами) <br>
+  <button id="send_request" >Send a request without user logged</button>
+</p>
+
+
+<!-- 
 <button id="init" >Init the SDK</button>
 <button id="initWithParams" >Init the SDK with params</button>
 
@@ -23,7 +35,7 @@
 
 <button id="destroy_session" type="button">Destroy the session</button>
 
-
+ -->
 <script src="../quickblox.min.js"></script>
 
 <script>
@@ -56,33 +68,12 @@ var userParams = {
 };
 
 var init = document.getElementById('init');
-var initByParams = document.getElementById('initWithParams');
-
-var login = document.getElementById('login');
-var logout = document.getElementById('logout');
-
 var sendRequest = document.getElementById('send_request');
-var sendRequestLogged = document.getElementById('send_request_logged');
 
-var destroySession = document.getElementById('destroy_session');
-
-/* START FUN! */
 init.addEventListener('click', function() {
-  QB.init(creds.appId, creds.authKey, creds.authSecret, config)
-    .then(function(sessionToken) {
-      console.info(`Success init by READ access with token ${sessionToken}`);
-    });
+  QB.init(creds.appId, creds.authKey, creds.authSecret, config);
 
     return false;
-});
-
-/* LOGIN */
-login.addEventListener('click', function() {
-  QB.login(userParams, function(err, result) {
-     // console.log( 'LOGIN Callback', result, err);
-  });
-
-  return false;
 });
 
 /* SEND REQUEST without user logged */
@@ -94,37 +85,57 @@ sendRequest.addEventListener('click', function() {
   return false;
 });
 
-/* SEND REQUEST with user logged*/
-sendRequestLogged.addEventListener('click', function() {
-    QB.chat.dialog.list(null, function(err, resDialogs) {
-        err ? console.error(err) : console.info(resDialogs);
-    });
 
-    return false;
-});
+// var initByParams = document.getElementById('initWithParams');
 
-/* DESTRIYED the session */
-destroySession.addEventListener('click', function() {
-    QB.destroySession(function() {
-        console.info('Destroyed the session');
-    });
+// var login = document.getElementById('login');
+// var logout = document.getElementById('logout');
+
+
+// var sendRequestLogged = document.getElementById('send_request_logged');
+
+// var destroySession = document.getElementById('destroy_session');
+
+// /* START FUN! */
+
+
+// /* LOGIN */
+// login.addEventListener('click', function() {
+//   QB.login(userParams, function(err, result) {
+//      // console.log( 'LOGIN Callback', result, err);
+//   });
+
+//   return false;
+// });
+
+
+
+// /* SEND REQUEST with user logged*/
+// sendRequestLogged.addEventListener('click', function() {
+//     QB.chat.dialog.list(null, function(err, resDialogs) {
+//         err ? console.error(err) : console.info(resDialogs);
+//     });
+
+//     return false;
+// });
+
+// /* DESTRIYED the session */
+// destroySession.addEventListener('click', function() {
+//     QB.destroySession(function() {
+//         console.info('Destroyed the session');
+//     });
     
-    return false;
-});
+//     return false;
+// });
 
-/* LOGOUT */
-logout.addEventListener('click', function() {
-    QB.logout(function(err, result) {
-        console.log('LOGIN Callback', result, err);
-    });
+// /* LOGOUT */
+// logout.addEventListener('click', function() {
+//     QB.logout(function(err, result) {
+//         console.log('LOGIN Callback', result, err);
+//     });
 
-    return false;
-});
-
-
-
-
- 
+//     return false;
+// });
 
 </script>
 </body>
