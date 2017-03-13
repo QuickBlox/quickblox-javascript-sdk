@@ -90,6 +90,9 @@ ServiceProxy.prototype = {
         }
     },
     ajax: function(params, callback) {
+        this._ajax(params, callback);
+    },
+    _ajax: function(params, callback) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
         var _this = this,
