@@ -90,7 +90,22 @@ ServiceProxy.prototype = {
         }
     },
     ajax: function(params, callback) {
-        this._ajax(params, callback);
+        var self = this;
+
+        if(config.sessionManagement.enable) {
+            console.info(self.sessionManager.isInited);
+            if(self.sessionManager.isInited) {
+                self._ajax(params, callback);
+            } else {
+                self.sessionManager.createSession().then(function() {
+                    self._ajax(params, callback);
+                }).catch(function(err) {
+                    throw err;
+                })
+            }
+        } else {
+            self._ajax(params, callback);
+        }
     },
     _ajax: function(params, callback) {
         Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});

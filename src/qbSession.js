@@ -45,8 +45,10 @@ var UTILS = require('./qbUtils');
  */
 function SessionManager(params) {
     this.appCreds = params;
-    
-    this.user = null;
+    this.userParams = null;
+
+    this.isInited = false;
+
     this.session = null;
 
     // client's callback, save a handler for session reestablish error
@@ -96,7 +98,7 @@ SessionManager.prototype._saveToCookie = function(params) {
     document.cookie = SessionManager._CREATE_SESSION_PARAMS + '=' + SessionManager._b64EncodeUnicode(JSON.stringify(params)) + ';expires='+ now.toGMTString() +';path=/';
 };
 
-SessionManager.prototype.create = function() {
+SessionManager.prototype.createSession = function() {
     var self = this,
         reqData = {
             'type': 'POST',
@@ -108,10 +110,13 @@ SessionManager.prototype.create = function() {
 
         if(!self.user) {
             reqData.data = self._createASRequestParams(self.appCreds);
+        } else {
+            reqData.data = self._createUSRequestParams(self.appCreds);
         }
-        console.info(reqData);
+
         SessionManager._ajax(reqData).done(function(response) {
             self.session = response.session;
+            self.isInited = true;
 
             resolve(self.session.token);
         }).fail(function(jqXHR, textStatus) {

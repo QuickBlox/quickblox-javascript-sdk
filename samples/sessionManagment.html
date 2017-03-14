@@ -18,31 +18,19 @@
 
 
 <!-- 
-<button id="init" >Init the SDK</button>
 <button id="initWithParams" >Init the SDK with params</button>
-
-<hr>
-
 <button id="login" >Login</button>
 <button id="logout" >Logout</button>
-
-<hr>
-
-<button id="send_request" >Send a request without user logged</button>
 <button id="send_request_logged" >Send a request as user</button>
-
-<hr>
-
 <button id="destroy_session" type="button">Destroy the session</button>
-
  -->
 <script src="../quickblox.min.js"></script>
 
 <script>
 var config = {
-    endpoints: {
-        api: 'apistage1.quickblox.com',
-    },
+    // endpoints: {
+    //     api: 'apistage1.quickblox.com',
+    // },
     sessionManagement: {
         enable: true,
         onerror: function() {
@@ -52,9 +40,9 @@ var config = {
 };
 
 var creds = {
-    'appId': 21,
-    'authKey': '3KZYRV352xJjhEh',
-    'authSecret': 'nE7AmRuwGRDwe-r'
+  appId: 53036,
+  authKey: 'ZdJacVeNw3B3FBF',
+  authSecret: 'AQadYv32xN54Oad'
 }
 
 // https://adminstage1.quickblox.com/apps
@@ -62,24 +50,31 @@ var creds = {
 // login sessionmanagment
 // pass 49249sessionmanagment
 // id 247
+// var userParams = {
+//     email: 'sessionmanagment@test.com',
+//     password: '49249sessionmanagment'
+// };
+
 var userParams = {
-    email: 'sessionmanagment@test.com',
-    password: '49249sessionmanagment'
+  login: 'chatuser-1',
+  password: 'x6Bt0VDy5'
 };
 
 var init = document.getElementById('init');
 var sendRequest = document.getElementById('send_request');
 
+/** INIT */
 init.addEventListener('click', function() {
   QB.init(creds.appId, creds.authKey, creds.authSecret, config);
 
-    return false;
+  console.info('Init the SDK');
+  return false;
 });
 
 /* SEND REQUEST without user logged */
 sendRequest.addEventListener('click', function() {
   QB.users.listUsers(function(err, res){
-    console.info('listUsers', err, res);
+    console.info('SENT REQUEST without user logged', err, res);
   });
 
   return false;
