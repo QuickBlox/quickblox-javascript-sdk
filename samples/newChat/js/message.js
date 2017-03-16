@@ -23,10 +23,21 @@ Message.prototype.init = function(){
         e.preventDefault();
 
         self.sendMessage(dialogModule.dialogId);
+        document.forms.send_message.message_feald.focus();
     });
 
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingMessage.bind(self));
+    document.forms.send_message.message_feald.addEventListener('keydown', function(e){
+       var key = e.keyCode;
+
+        if (key === 13) {
+            if(!e.ctrlKey && !e.shiftKey && !e.metaKey){
+                e.preventDefault();
+                self.sendMessage(dialogModule.dialogId);
+            }
+        }
+    });
 };
 
 Message.prototype.typingMessage = function(e){
@@ -102,6 +113,7 @@ Message.prototype.sendMessage = function(dialogId) {
     if(!msg.body) return false;
     msg.id = QB.chat.send(dialog.jidOrUserId, msg);
     msg.extension.dialog_id = dialogId;
+    
     var message = helpers.fillNewMessageParams(app.user.id, msg);
 
     if(dialog.type === 3) {
@@ -295,6 +307,11 @@ Message.prototype.prepareToUpload = function (e){
 };
 
 Message.prototype.uploadFilesAndGetIds = function(file, dialogId){
+
+    if(file.size >= CONSTANTS.ATTACHMENT.MAXSIZE) {
+        return alert(CONSTANTS.ATTACHMENT.MAXSIZEMESSAGE);
+    }
+
     var self = this,
         preview = self.addImagePreview(file);
 
@@ -327,7 +344,7 @@ Message.prototype.addImagePreview = function(file){
         template = helpers.fillTemplate('tpl_attachmentPreview', data),
         wrapper = helpers.toHtml(template)[0];
 
-    self.attachmentPreviewContainer.append(wrapper);
+    self.attachmentPreviewContainer.appendChild(wrapper);
     return wrapper;
 };
 
@@ -384,9 +401,7 @@ Message.prototype.renderTypingUsers = function(dialogId){
             elem = helpers.toHtml(tpl)[0];
 
         var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
-
-        self.container.append(elem);
-
+        self.container.appendChild(elem);
         if(scrollPosition < 50){
             helpers.scrollTo(self.container, 'bottom');
         }

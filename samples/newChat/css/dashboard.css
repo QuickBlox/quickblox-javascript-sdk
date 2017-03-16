@@ -383,11 +383,34 @@
         color: #007AFF;
     }
 
-    .dialog__last_message_date {
+
+    .dialog_additional_info {
         flex:0 0 24px;
+        text-align: right;
+    }
+
+    .dialog__last_message_date {
         font-size: 12px;
         line-height: 14px;
         color: #4A4A4A;
+        margin: 0 0 2px;
+        display: inline-block;
+    }
+
+    .dialog_unread_counter {
+        min-width: 23px;
+        background-color: #17D04B;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 19px;
+        color: #FFFFFF;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .dialog_unread_counter.hidden {
+        display: none;
     }
 /* END DIALOG STYLES */
 

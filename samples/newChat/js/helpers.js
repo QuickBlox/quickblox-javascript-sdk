@@ -20,11 +20,11 @@ Helpers.prototype.clearView = function(view){
 
 Helpers.prototype.compileDialogParams = function(dialog){
     var self = this;
-
     return {
         _id: dialog._id,
         name: dialog.name,
         type: dialog.type,
+        color: dialog.color,
         last_message: dialog.last_message === CONSTANTS.ATTACHMENT.BODY ? 'Attachment' : dialog.last_message,
         messages: [],
         attachment: dialog.last_message === CONSTANTS.ATTACHMENT.BODY,
@@ -32,6 +32,7 @@ Helpers.prototype.compileDialogParams = function(dialog){
         last_message_date_sent: self.getTime(dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at),
         users: dialog.occupants_ids || [],
         jidOrUserId: dialog.xmpp_room_jid || dialog.jidOrUserId ||getRecipientUserId(dialog.occupants_ids),
+        unread_messages_count: dialog.unread_messages_count,
         full: false,
         draft: {
             message: '',
@@ -62,8 +63,8 @@ Helpers.prototype.getTime = function(time){
 
 Helpers.prototype.fillMessagePrams = function(message){
     var self = this;
-
-    message.message = self.fillMessageBody(message.message);
+    
+    message.message = self.fillMessageBody(message.message || '');
     // date_sent comes in UNIX time.
     message.date_sent = self.getTime(message.date_sent * 1000);
 
@@ -86,8 +87,6 @@ Helpers.prototype.fillMessageBody = function(str){
     return  str.replace(/(https?:\/\/[^\s]+)/g, function(url){
         return '<a href="' + url + '" target="_blank">' + url + '</a>';
     });
-
-
 };
 
 Helpers.prototype.getSrcFromAttachmentId = function(id) {
@@ -100,7 +99,7 @@ Helpers.prototype.fillNewMessageParams = function(userId, msg){
             _id: msg.id,
             attachments: [],
             created_at: +msg.extension.date_sent || Date.now(),
-            date_sent: self.getTime(+msg.extension.date_sent  || Date.now()),
+            date_sent: self.getTime(+msg.extension.date_sent * 1000 || Date.now()),
             delivered_ids: [],
             message: self.fillMessageBody(msg.body),
             read_ids: [],

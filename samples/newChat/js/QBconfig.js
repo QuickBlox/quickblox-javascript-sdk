@@ -14,7 +14,7 @@ var QBconfig = {
         debug: {
             mode: 0,
             file: null
-        },
+        }
     }
 };
 
@@ -96,6 +96,8 @@ var CONSTANTS = {
     },
     ATTACHMENT: {
         TYPE : 'image',
-        BODY : '[attachment]'
+        BODY : '[attachment]',
+        MAXSIZE: 2 * 1000000, // set 2 megabytes,
+        MAXSIZEMESSAGE: 'Image is too large. Max size is 2 mb.'
     }
 };

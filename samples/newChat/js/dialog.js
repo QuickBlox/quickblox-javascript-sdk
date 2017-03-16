@@ -60,8 +60,12 @@ Dialog.prototype.loadDialogs = function(type, callback) {
             return;
         }
 
-        var dialogs = resDialogs.items,
-            peerToPearDialogs = dialogs.filter(function(dialog){
+        var dialogs = resDialogs.items.map(function(dialog){
+                dialog.color = _.random(1, 10);
+                return dialog;
+            });
+
+        var peerToPearDialogs = dialogs.filter(function(dialog){
             if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT) {
                 return true
             }
@@ -71,7 +75,7 @@ Dialog.prototype.loadDialogs = function(type, callback) {
                 id: dialog.occupants_ids.filter(function(id){
                     if(id !== app.user.id) return id;
                 })[0],
-                color: _.random(1, 10)
+                color: dialog.color
             }
         });
 
@@ -127,7 +131,8 @@ Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
         self.sidebar.classList.remove('active');
         if(elem.classList.contains('selected') && document.forms.send_message) return false;
 
-        var selectedDialog = document.querySelector('.dialog__item.selected');
+        var selectedDialog = document.querySelector('.dialog__item.selected'),
+            dialogElem = e.currentTarget;
 
         if(selectedDialog){
             selectedDialog.classList.remove('selected');
@@ -136,8 +141,16 @@ Dialog.prototype.renderDialog = function(dialog, setAsFirst) {
         elem.classList.add('selected');
 
         self.prevDialogId = self.dialogId;
-        self.dialogId = e.currentTarget.id;
-        self.renderMessages(e.currentTarget.id);
+        self.dialogId = dialogElem.id;
+        self.renderMessages(dialogElem.id);
+
+        self._cache[self.dialogId].unread_messages_count = 0;
+
+
+        var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+        unreadCounter.classList.add('hidden');
+        unreadCounter.innerText = '';
     });
 
     if(!setAsFirst) {
@@ -160,7 +173,7 @@ Dialog.prototype.replaceDialogLink = function(elem) {
         }
     }
 
-    if (elemPosition > 5){
+    if (elemPosition >= 5){
         self.dialogsListContainer.replaceChild(elem, self.dialogsListContainer.firstElementChild);
     }
 };
@@ -186,6 +199,7 @@ Dialog.prototype.renderMessages = function(id){
         dialog = self._cache[id];
 
     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
+
 
     if(!self.checkCachedUsersInDialog(id)) return false;
     if(!document.forms.send_message){
@@ -251,26 +265,33 @@ Dialog.prototype.checkCachedUsersInDialog = function(id){
 
 Dialog.prototype.changeLastMessagePreview = function(dialogId, msg){
     var self = this,
-        dialog = document.getElementById(dialogId);
+        dialog = document.getElementById(dialogId),
+        message = msg.message;
 
-    self._cache[dialogId].last_message = msg.message;
+        if(message.indexOf('\n') !== -1){
+            message = message.slice(0, message.indexOf('\n'));
+        }
+
+    self._cache[dialogId].last_message = message;
+    self._cache[dialogId].last_message_date_sent = msg.date_sent;
 
     if(dialog){
         var messagePreview = dialog.querySelector('.j-dialog__last_message ');
 
         if(msg.message) {
             messagePreview.classList.remove('attachment');
-            messagePreview.innerText = msg.message;
+            messagePreview.innerText = message;
         } else {
             messagePreview.classList.add('attachment');
             messagePreview.innerText = 'Attachment';
         }
+
+        dialog.querySelector('.j-dialog__last_message_date').innerText = msg.date_sent;
     }
 };
 
 Dialog.prototype.createDialog = function(params) {
     var self = this;
-
     QB.chat.dialog.create(params, function(err, createdDialog) {
         if (err) {
             console.error(err);
@@ -278,14 +299,23 @@ Dialog.prototype.createDialog = function(params) {
             var id = createdDialog._id;
             if (params.type !== CONSTANTS.DIALOG_TYPES.CHAT) {
                 var occupants = createdDialog.occupants_ids,
-                    msg = {
-                        type: 'chat',
+                    message_body = app.user.name + ' created new dialog with: ';
+
+                _.each(occupants, function(occupantId){
+                    message_body += userModule._cache[occupantId].name;
+                });
+
+                var msg = {
+                        type: 'groupchat',
+                        body: message_body,
                         extension: {
                             notification_type: 1,
                             dialog_id: createdDialog._id,
-                            dialog_name: createdDialog.name,
-                            dialog_type: createdDialog.type,
-                            occupants_ids: occupants.join(', ')
+                            room_name: createdDialog.name,
+                            room_updated_date: Math.floor(Date.now() / 1000),
+                            type: createdDialog.type,
+                            current_occupant_ids: occupants.join(','),
+                            date_sent: Math.floor(Date.now() / 1000)
                         }
                     };
 
