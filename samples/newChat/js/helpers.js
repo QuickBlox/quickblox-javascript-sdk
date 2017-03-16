@@ -24,7 +24,7 @@ Helpers.prototype.compileDialogParams = function(dialog){
         _id: dialog._id,
         name: dialog.name,
         type: dialog.type,
-        color: dialog.color,
+        color: dialog.color || _.random(1, 10),
         last_message: dialog.last_message === CONSTANTS.ATTACHMENT.BODY ? 'Attachment' : dialog.last_message,
         messages: [],
         attachment: dialog.last_message === CONSTANTS.ATTACHMENT.BODY,
