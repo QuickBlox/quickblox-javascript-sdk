@@ -2,7 +2,7 @@
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-var SessionManager = require('./qbSession');
+var SessionManager = require('./qbSessionManagement');
 
 var versionNum = config.version;
 
@@ -53,27 +53,27 @@ ServiceProxy.prototype = {
                 next(null, response);
             }
 
-            // if(!error) {
-            //     self.sessionManager.lastRequest = {};
+            if(!error) {
+                self.sessionManager.lastRequest = {};
 
-            //     if(config.addISOTime) {
-            //         response = Utils.injectISOTimes(response);
-            //     }
+                if(config.addISOTime) {
+                    response = Utils.injectISOTimes(response);
+                }
 
-            //     next(null, response);
-            // } else {
-            //     if(error.message === sessionError.message || error.status === sessionError.status) {
-            //         self.sessionManager.reestablish().then(function() {
-            //             var lr = self.sessionManager.lastRequest;
+                next(null, response);
+            } else {
+                if(error.message === sessionError.message || error.status === sessionError.status) {
+                    self.sessionManager.reestablishSession().then(function() {
+                        var lr = self.sessionManager.lastRequest;
 
-            //             self.ajax(lr.params, lr.cb, lr.isNeededUpdateSession);
-            //         }).catch(function(jqXHR, textStatus) {
-            //             self.sessionManager.onerror(jqXHR, textStatus);
-            //         });
-            //     } else {
-            //         next(error, null);
-            //     }
-            // }
+                        self.ajax(lr.params, lr.cb, lr.isNeededUpdateSession);
+                    }).catch(function(jqXHR, textStatus) {
+                        self.sessionManager.onerror(jqXHR, textStatus);
+                    });
+                } else {
+                    next(error, null);
+                }
+            }
         } else {
             if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
                 config.on.sessionExpired(function(){
@@ -93,14 +93,13 @@ ServiceProxy.prototype = {
         var self = this;
 
         if(config.sessionManagement.enable) {
-            console.info(self.sessionManager.isInited);
-            if(self.sessionManager.isInited) {
+            if(self.sessionManager.isSessionCreated) {
                 self._ajax(params, callback);
             } else {
                 self.sessionManager.createSession().then(function() {
                     self._ajax(params, callback);
                 }).catch(function(err) {
-                    throw err;
+                    self.sessionManager.onerror(err);
                 })
             }
         } else {
