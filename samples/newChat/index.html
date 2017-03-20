@@ -101,9 +101,10 @@
     </script>
 
     <script  type="text/template" id="tpl_welcome">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-welcome">
                 Welcome to QuickBlox chat sample!
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <div class="welcome__message">
                 <p>Please select you opponent to start chatting.</p>
@@ -136,10 +137,11 @@
     </script>
 
     <script type="text/template" id="tpl_conversationContainer">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-dialog">
             <button class="open_sidebar j-open_sidebar"></button>
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <div class=" messages j-messages"></div>
             <form name="send_message" class="send_message" autocomplete="off">
@@ -183,12 +185,13 @@
     </script>
 
     <script type="text/template" id="tpl_newGroupChat">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-create_dialog">
             <button class="back_to_dialog j-back_to_dialog">
                 <i class="material-icons">arrow_back</i>
             </button>
             <h1 class="group_chat__title">New Group Chat</h1>
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <p class="group__chat__description">Select participants:</p>
             <div class="group_chat__user_list j-group_chat__user_list">
@@ -242,6 +245,11 @@
 
     <script type="text/template" id="tpl_attachmentLoadError">
         <p class="attachment__error">Can't load attachment...</p>
+    </script>
+
+    <script type="text/template" id="tpl_lost_connection">
+        <div class="titile">Waiting for network.</div>
+        <div class="spinner"><img src="img/loader2.gif" alt="wating"></div>
     </script>
 
     <script src="./js/QBconfig.js" defer></script>

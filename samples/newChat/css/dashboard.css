@@ -444,9 +444,43 @@
     flex-wrap: nowrap;
     overflow: hidden;
 }
-/*
-    WELCOME MESSAGE
-*/
+
+.notifications {
+    display: flex;
+    padding: 19px 16px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    color: #4A4A4A;
+    border-bottom: 1px solid #DADFE1;
+    flex: 0 0 58px;
+    box-sizing: border-box;
+}
+
+.notifications.hidden {
+    display: none;
+}
+
+.notifications .title {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 18px;
+    color: #4A4A4A;
+    flex: 1 1 100%;
+}
+
+.notifications .spinner {
+    margin: 0 0 0 14px;
+}
+
+.notifications .spinner img{
+    width: 15px;
+    height: 15px;
+}
+
+    /*
+        WELCOME MESSAGE
+    */
 
 .welcome__message {
     display: flex;
