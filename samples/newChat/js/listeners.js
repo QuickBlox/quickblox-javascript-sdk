@@ -32,8 +32,6 @@ Listeners.prototype.onMessageListener = function (userId, message) {
             tabType = activeTab.dataset.type,
             dialogType = dialog.type === 1 ? "public" : "chat";
 
-        console.log(tabType, dialogType);
-
         if(tabType === dialogType){
             dialogModule.renderDialog(dialog, true);
             dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
