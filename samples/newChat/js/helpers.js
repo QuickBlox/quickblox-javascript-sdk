@@ -178,6 +178,7 @@ Helpers.prototype.clearCache = function () {
     dialogModule.dialogId = null;
     dialogModule.prevDialogId = null;
 
+    userModule._cache = {};
     app.user = null;
 };
 
