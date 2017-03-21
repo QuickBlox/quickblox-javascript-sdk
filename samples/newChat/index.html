@@ -33,7 +33,7 @@
                         <select name="login__select " class="login__select j-login__select">
                             <option selected disabled>Select User</option>
                             <% _.each(users, function(user) { %>
-                                <option value="<%= user.id %>"><%- user.name %></option>
+                                <option value="<%= user.id %>"><%- user.name || user.login %></option>
                             <% }); %>
                         </select>
                         <hr/>

@@ -1,8 +1,8 @@
 var QBconfig = {
     credentials: {
-        appId: 53036,
-        authKey: 'ZdJacVeNw3B3FBF',
-        authSecret: 'AQadYv32xN54Oad'
+        appId: 28783,
+        authKey: 'b5bVGCHHv6rcAmD',
+        authSecret: 'ySwEpardeE7ZXHB'
     },
     appConfig: {
         chatProtocol: {
@@ -27,64 +27,64 @@ var appConfig = {
 
 var usersList = [
     {
-        id: 23398045,
-        name: 'Chat User 1',
-        login: 'chatuser-1',
-        pass: 'x6Bt0VDy5'
+        id: 25431016,
+        name: 'Chat Demo User1',
+        login: 'chatdemouser1',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398116,
-        name: 'Chat User 2',
-        login: 'chatuser-2',
-        pass: 'x6Bt0VDy5'
+        id: 25431021,
+        name: 'Chat Demo User2',
+        login: 'chatdemouser2',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398127,
-        name: 'Chat User 3',
-        login: 'chatuser-3',
-        pass: 'x6Bt0VDy5'
+        id: 25431022,
+        name: 'Chat Demo User3',
+        login: 'chatdemouser3',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398133,
-        name: 'Chat User 4',
-        login: 'chatuser-4',
-        pass: 'x6Bt0VDy5'
+        id: 25431024,
+        name: 'Chat Demo User4',
+        login: 'chatdemouser4',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398152,
-        name: 'Chat User 5',
-        login: 'chatuser-5',
-        pass: 'x6Bt0VDy5'
+        id: 25431026,
+        name: 'Chat Demo User5',
+        login: 'chatdemouser5',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398159,
-        name: 'Chat User 6',
-        login: 'chatuser-6',
-        pass: 'x6Bt0VDy5'
+        id: 25431028,
+        name: 'Chat Demo User6',
+        login: 'chatdemouser6',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398166,
-        name: 'Chat User 7',
-        login: 'chatuser-7',
-        pass: 'x6Bt0VDy5'
+        id: 25431032,
+        name: 'Chat Demo User7',
+        login: 'chatdemouser7',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398171,
-        name: 'Chat User 8',
-        login: 'chatuser-8',
-        pass: 'x6Bt0VDy5'
+        id: 25431037,
+        name: 'Chat Demo User8',
+        login: 'chatdemouser8',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398178,
-        name: 'Chat User 9',
-        login: 'chatuser-9',
-        pass: 'x6Bt0VDy5'
+        id: 25431038,
+        name: 'Chat Demo User9',
+        login: 'chatdemouser9',
+        pass: 'awesomechatpwd'
     },
     {
-        id: 23398182,
-        name: 'Chat User 10',
-        login: 'chatuser-10',
-        pass: 'x6Bt0VDy5'
+        id: 25431041,
+        name: 'Chat Demo User10',
+        login: 'chatdemouser10',
+        pass: 'awesomechatpwd'
     }
 ];
 

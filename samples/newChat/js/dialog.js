@@ -317,10 +317,10 @@ Dialog.prototype.createDialog = function (params) {
             var id = createdDialog._id;
             if (params.type !== CONSTANTS.DIALOG_TYPES.CHAT) {
                 var occupants = createdDialog.occupants_ids,
-                    message_body = app.user.name + ' created new dialog with: ';
+                    message_body = (app.user.name || app.user.login) + ' created new dialog with: ';
 
                 _.each(occupants, function (occupantId) {
-                    message_body += userModule._cache[occupantId].name;
+                    message_body += (userModule._cache[occupantId].name || userModule._cache[occupantId].login);
                 });
 
                 var msg = {

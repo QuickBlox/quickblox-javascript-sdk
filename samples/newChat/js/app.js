@@ -213,7 +213,7 @@ App.prototype.buildCreateDialogTpl = function () {
             
             _.each(occupants_ids, function (id) {
                 if (id === self.user.id) {
-                    userNames.push(self.user.name);
+                    userNames.push(self.user.name || self.user.login);
                 } else {
                     userNames.push(userModule._cache[id].name);
                 }
