@@ -84,7 +84,7 @@
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
                                 <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">
-                                    <i class="material-icons">supervisor_account</i>
+                                    <i class="material-icons">add_circle_outline</i>
                                 </a>
                             </li>
                         </ul>
@@ -101,9 +101,10 @@
     </script>
 
     <script  type="text/template" id="tpl_welcome">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-welcome">
                 Welcome to QuickBlox chat sample!
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <div class="welcome__message">
                 <p>Please select you opponent to start chatting.</p>
@@ -112,9 +113,8 @@
     </script>
 
     <script type="text/template" id="tpl_userConversations">
-            <% var num = _.random(1, 10) %>
             <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
-                <span class="dialog__avatar m-user__img_<%= num %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
                     <% if(dialog.type === 2) { %>
                         <i class="material-icons">supervisor_account</i>
                     <% } else { %>
@@ -125,21 +125,28 @@
                     <p class="dialog__name"><%- dialog.name %></p>
                     <p class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
                 </div>
-                <span class="dialog__last_message_date j-dialog__last_message_date">
-                    <%= dialog.last_message_date_sent %>
-                </span>
+                <div class="dialog_additional_info">
+                    <span class="dialog__last_message_date j-dialog__last_message_date">
+                        <%= dialog.last_message_date_sent %>
+                    </span>
+                    <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
+                        <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
+                    </span>
+                </div>
             </li>
     </script>
 
     <script type="text/template" id="tpl_conversationContainer">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-dialog">
             <button class="open_sidebar j-open_sidebar"></button>
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <div class=" messages j-messages"></div>
             <form name="send_message" class="send_message" autocomplete="off">
-                <textarea name="message_feald" class="message_feald" id="message_feald" placeholder="Type a message"></textarea>
+                <textarea name="message_feald" class="message_feald" id="message_feald" autocomplete="off"
+                          autocorrect="off" autocapitalize="off" placeholder="Type a message" autofocus></textarea>
                 <div class="message__actions">
                     <div class="attachments_preview j-attachments_preview"></div>
                     <label for="attach_btn" class="attach_btn">
@@ -160,7 +167,7 @@
             <div class="message__content_wrap">
                 <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
                 <% if (message.message || message.body) { %>
-                    <p class="message__text"><%- message.message || message.body %></p>
+                    <p class="message__text"><%= message.message || message.body %></p>
                 <% } %>
 
                 <% if (message.attachments.length) { %>
@@ -178,18 +185,20 @@
     </script>
 
     <script type="text/template" id="tpl_newGroupChat">
-        <div class="content__title j-content__title">
+        <div class="content__title j-content__title j-create_dialog">
             <button class="back_to_dialog j-back_to_dialog">
                 <i class="material-icons">arrow_back</i>
             </button>
             <h1 class="group_chat__title">New Group Chat</h1>
         </div>
+        <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
             <p class="group__chat__description">Select participants:</p>
             <div class="group_chat__user_list j-group_chat__user_list">
             </div>
             <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
-                <input class="dialog_name" name="dialog_name" type="text" placeholder="Add conversation name" disabled>
+                <input class="dialog_name" name="dialog_name" type="text"  autocomplete="off"
+                       autocorrect="off" autocapitalize="off" placeholder="Add conversation name" disabled>
                 <button class="create_dialog_btn j-create_dialog_btn"  type="submit" name="create_dialog_submit" disabled>create</button>
             </form>
         </div>
@@ -236,6 +245,11 @@
 
     <script type="text/template" id="tpl_attachmentLoadError">
         <p class="attachment__error">Can't load attachment...</p>
+    </script>
+
+    <script type="text/template" id="tpl_lost_connection">
+        <div class="titile">Waiting for network.</div>
+        <div class="spinner"><img src="img/loader2.gif" alt="wating"></div>
     </script>
 
     <script src="./js/QBconfig.js" defer></script>

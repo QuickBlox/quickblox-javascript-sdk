@@ -10,7 +10,7 @@ function User() {
     this.content = null;
 }
 
-User.prototype.getUsersByIds = function(userList, callback){
+User.prototype.getUsersByIds = function (userList, callback) {
     var self = this,
         params = {
             filter: {
@@ -21,19 +21,19 @@ User.prototype.getUsersByIds = function(userList, callback){
             per_page: 100
         };
 
-    QB.users.listUsers(params, function(err, responce){
-        if(err) {
+    QB.users.listUsers(params, function (err, responce) {
+        if (err) {
             callback(err);
         } else {
             var users = responce.items;
 
-            _.each(userList, function(id){
-                var user = users.find(function(item){
+            _.each(userList, function (id) {
+                var user = users.find(function (item) {
                     return item.user.id === id;
                 });
 
-                if(!self._cache[id]){
-                    if(user){
+                if (!self._cache[id]) {
+                    if (user) {
                         self._cache[id] = {
                             name: user.user.full_name || user.user.login,
                             id: id,
@@ -53,20 +53,23 @@ User.prototype.getUsersByIds = function(userList, callback){
     });
 };
 
-User.prototype.initGettingUsers = function(){
+User.prototype.initGettingUsers = function () {
     var self = this;
     self.content = document.querySelector('.j-content');
     self.userListConteiner = document.querySelector('.j-group_chat__user_list');
 
-    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e){
+    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e) {
+
+        if (!navigator.onLine) return false;
+
         var container = self.userListConteiner,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
 
-        if(container.classList.contains('full')){
+        if (container.classList.contains('full')) {
             container.removeEventListener('scroll', loadMoreUsers);
         }
 
-        if(position <= 50 && !container.classList.contains('loading')) {
+        if (position <= 50 && !container.classList.contains('loading')) {
             self.getUsers();
         }
     });
@@ -75,7 +78,7 @@ User.prototype.initGettingUsers = function(){
     self.getUsers();
 };
 
-User.prototype.getUsers = function(){
+User.prototype.getUsers = function () {
     var self = this,
         params = {
             page: self.page,
@@ -84,8 +87,8 @@ User.prototype.getUsers = function(){
 
     self.userListConteiner.classList.add('loading');
 
-    QB.users.listUsers(params, function(err, responce) {
-        if(err){
+    QB.users.listUsers(params, function (err, responce) {
+        if (err) {
             console.error(err);
             return false;
         }
@@ -94,10 +97,10 @@ User.prototype.getUsers = function(){
         
         self.page = ++responce.current_page;
         
-        _.each(users, function(data){
+        _.each(users, function (data) {
             var user = data.user;
 
-            if(self._cache[user.id]){
+            if (self._cache[user.id]) {
                 self._cache[user.id].last_request_at = user.last_request_at;
             } else {
                 self._cache[user.id] = {
@@ -108,33 +111,33 @@ User.prototype.getUsers = function(){
                 };
             }
 
-            if(user.id !== app.user.id){
+            if (user.id !== app.user.id) {
                 self.buildUserItem(self._cache[user.id]);
             }
         });
 
-        if(users.length < self.limit){
+        if (users.length < self.limit) {
             self.userListConteiner.classList.add('full');
         }
         self.userListConteiner.classList.remove('loading');
     });
 };
 
-User.prototype.buildUserItem = function(user){
+User.prototype.buildUserItem = function (user) {
     var self = this,
         userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
         elem = helpers.toHtml(userTpl)[0];
     
-    elem.addEventListener('click', function(){
+    elem.addEventListener('click', function () {
         elem.classList.toggle('selected');
         
-        if(self.userListConteiner.querySelectorAll('.selected').length > 0){
+        if (self.userListConteiner.querySelectorAll('.selected').length > 0) {
             document.forms.create_dialog.create_dialog_submit.disabled = false;
         } else {
             document.forms.create_dialog.create_dialog_submit.disabled = true;
         }
 
-        if(self.userListConteiner.querySelectorAll('.selected').length >= 2){
+        if (self.userListConteiner.querySelectorAll('.selected').length >= 2) {
             document.forms.create_dialog.dialog_name.disabled = false;
         } else {
             document.forms.create_dialog.dialog_name.disabled = true;
