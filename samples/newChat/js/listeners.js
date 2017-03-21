@@ -27,19 +27,29 @@ Listeners.prototype.onMessageListener = function (userId, message) {
 
     if (dialog) {
         dialog.messages.unshift(msg);
-        dialogModule.renderDialog(dialog, true);
-        dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
 
-        if (dialogModule.dialogId === msg.chat_dialog_id) {
-            messageModule.renderMessage(msg, true);
-        } else {
-            dialog.unread_messages_count += 1;
-            var dialogElem = document.getElementById(msg.chat_dialog_id),
-                counter = dialogElem.querySelector('.j-dialog_unread_counter');
+        var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
+            tabType = activeTab.dataset.type,
+            dialogType = dialog.type === 1 ? "public" : "chat";
 
-            counter.classList.remove('hidden');
-            counter.innerText = dialog.unread_messages_count;
+        console.log(tabType, dialogType);
+
+        if(tabType === dialogType){
+            dialogModule.renderDialog(dialog, true);
+            dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
+
+            if (dialogModule.dialogId === msg.chat_dialog_id) {
+                messageModule.renderMessage(msg, true);
+            } else {
+                dialog.unread_messages_count += 1;
+                var dialogElem = document.getElementById(msg.chat_dialog_id),
+                    counter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+                counter.classList.remove('hidden');
+                counter.innerText = dialog.unread_messages_count;
+            }
         }
+
     } else {
         dialogModule.getDialogById(msg.chat_dialog_id, function (dialog) {
             var type = dialog.type === 1 ? 'public' : 'chat',
