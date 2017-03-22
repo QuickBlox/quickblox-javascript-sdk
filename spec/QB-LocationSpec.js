@@ -100,11 +100,17 @@ describe('Location API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
     it('can delete existing geodata', function(done){
-        QB.location.geodata.list(function(err, res) {
+        var params = {
+            'latitude': 51.50332,
+            'longitude':-0.12805,
+            'status': 'Go 50 meters left'
+        };
+
+        QB.location.geodata.create(params, function(err, res){
             if (err) {
-                done.fail('List geodata error: ' + JSON.stringify(err));
+                done.fail('Create geodata error: ' + JSON.stringify(err));
             } else {
-                QB.location.geodata.delete(res.items[0].geo_datum.id, function(err, result){
+                QB.location.geodata.delete(res.id, function(err, result){
                     if (err) {
                         done.fail('Delete existing geodata error: ' + JSON.stringify(err));
                     } else {

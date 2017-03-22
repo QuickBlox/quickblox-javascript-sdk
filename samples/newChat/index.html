@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>QuickBlox chat code sample</title>
+    <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/path.js/0.8.4/path.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js" defer></script>
+    <script src="../../quickblox.min.js" defer></script>
+</head>
+<body>
+    <div id="page"></div>
+
+    <!-- Underscore templates  -->
+    <script type="text/template" id="tpl_login">
+        <div class="login__wrapper">
+            <div class="login__container">
+                <div class="login__inner">
+                    <div class="login__top">
+                        <a href="https://quickblox.com/" class="login__logo">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                        </a>
+                        <h1>Quickblox Chat Sample</h1>
+                    </div>
+                    <div class="login__user_list">
+                        <select name="login__select " class="login__select j-login__select">
+                            <option selected disabled>Select User</option>
+                            <% _.each(users, function(user) { %>
+                                <option value="<%= user.id %>"><%- user.name || user.login %></option>
+                            <% }); %>
+                        </select>
+                        <hr/>
+                    </div>
+                    <div class="login__button_wrap">
+                        <button class="login__button j-login__button" disabled>
+                            login
+                        </button>
+                    </div>
+                </div>
+                <div class="login__footer">
+                    <div class="footer__logo_wrap">
+                        <a href="https://quickblox.com/" class="footer__logo">
+                            <img src="./img/qblogo-grey.svg" alt="QuickBlox">
+                        </a>
+                        <p>by QuickBlox</p>
+                    </div>
+                    <span class="footer__version">v. <%= version %></span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_dashboardContainer">
+        <div class="dashboard">
+            <div class="sidebar j-sidebar active">
+                <div class="sidebar__inner">
+                    <div class="sidebar__header">
+                        <a href="https://quickblox.com/" class="dashboard__logo">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                        </a>
+
+                        <div class="dashboard__status_wrap">
+                            <h2 class="dashboard__title">Text Chat Sample</h2>
+                            <p class="dashboard__status j-dashboard_status">
+                                Logged in as <%- user.name %>
+                            </p>
+                        </div>
+                        <a href="#" class="logout j-logout">logout</a>
+                    </div>
+                    <div class="sidebar__content">
+                        <ul class="sidebar__tabs">
+                            <li class="sidebar__tab">
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link active" data-type="chat">chats</a>
+                            </li>
+                            <li class="sidebar__tab">
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
+                            </li>
+                            <li class="sidebar__tab m-sidebar__tab_new">
+                                <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">
+                                    <i class="material-icons">add_circle_outline</i>
+                                </a>
+                            </li>
+                        </ul>
+                        <ul class="sidebar__dilog_list j-sidebar__dilog_list">
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="content j-content">
+
+            </div>
+        </div>
+    </script>
+
+    <script  type="text/template" id="tpl_welcome">
+        <div class="content__title j-content__title j-welcome">
+                Welcome to QuickBlox chat sample!
+        </div>
+        <div class="notifications j-notifications hidden"></div>
+        <div class="content__inner j-content__inner">
+            <div class="welcome__message">
+                <p>Please select you opponent to start chatting.</p>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_userConversations">
+            <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+                <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                    <% if(dialog.type === 2) { %>
+                        <i class="material-icons">supervisor_account</i>
+                    <% } else { %>
+                        <i class="material-icons">account_circle</i>
+                    <% } %>
+                </span>
+                <div class="dialog__info">
+                    <p class="dialog__name"><%- dialog.name %></p>
+                    <p class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
+                </div>
+                <div class="dialog_additional_info">
+                    <span class="dialog__last_message_date j-dialog__last_message_date">
+                        <%= dialog.last_message_date_sent %>
+                    </span>
+                    <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
+                        <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
+                    </span>
+                </div>
+            </li>
+    </script>
+
+    <script type="text/template" id="tpl_conversationContainer">
+        <div class="content__title j-content__title j-dialog">
+            <button class="open_sidebar j-open_sidebar"></button>
+            <h1 class="dialog__title j-dialog__title"><%- title %></h1>
+        </div>
+        <div class="notifications j-notifications hidden"></div>
+        <div class="content__inner j-content__inner">
+            <div class=" messages j-messages"></div>
+            <form name="send_message" class="send_message" autocomplete="off">
+                <textarea name="message_feald" class="message_feald" id="message_feald" autocomplete="off"
+                          autocorrect="off" autocapitalize="off" placeholder="Type a message" autofocus></textarea>
+                <div class="message__actions">
+                    <div class="attachments_preview j-attachments_preview"></div>
+                    <label for="attach_btn" class="attach_btn">
+                        <i class="material-icons">attachment</i>
+                        <input type="file" id="attach_btn" name="attach_file" class="attach_input" accept="image/*"/>
+                    </label>
+                    <button class="send_btn">send</button>
+                </div>
+            </form>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_message">
+        <div class="message__wrap" id="<%= message._id %>">
+            <span class="message__avatar m-user__img_<%= sender ? sender.color : 'not_loaded' %>">
+                <i class="material-icons">account_circle</i>
+            </span>
+            <div class="message__content_wrap">
+                <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
+                <% if (message.message || message.body) { %>
+                    <p class="message__text"><%= message.message || message.body %></p>
+                <% } %>
+
+                <% if (message.attachments.length) { %>
+                    <div class="message__attachments_wtap">
+                        <% _.each(message.attachments, function(attachment){ %>
+                            <img src="<%= attachment.src %>" alt="attachment" class="message_attachment">
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+            <div class="message__timestamp">
+                <%= message.date_sent %>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_newGroupChat">
+        <div class="content__title j-content__title j-create_dialog">
+            <button class="back_to_dialog j-back_to_dialog">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            <h1 class="group_chat__title">New Group Chat</h1>
+        </div>
+        <div class="notifications j-notifications hidden"></div>
+        <div class="content__inner j-content__inner">
+            <p class="group__chat__description">Select participants:</p>
+            <div class="group_chat__user_list j-group_chat__user_list">
+            </div>
+            <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
+                <input class="dialog_name" name="dialog_name" type="text"  autocomplete="off"
+                       autocorrect="off" autocapitalize="off" placeholder="Add conversation name" disabled>
+                <button class="create_dialog_btn j-create_dialog_btn"  type="submit" name="create_dialog_submit" disabled>create</button>
+            </form>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_newGroupChatUser">
+        <div class="user__item" id="<%= user.id %>">
+            <span class="user__avatar m-user__img_<%= user.color %>">
+                <i class="material-icons m-user_icon">account_circle</i>
+                <!--<i class="material-icons m-done">done</i>-->
+            </span>
+            <div class="user__details">
+                <p class="user__name"><%- user.name %></p>
+                <% if (user.last_request_at) { %>
+                    <p class="user__last_seen"><%= user.last_request_at %></p>
+                <% } %>
+            </div>
+
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_message__typing">
+        <div class="message__wrap m-typing j-istyping" id="is__typing">
+            <% _.each(users, function(user){  %>
+                <span class="message__avatar <%- typeof user === 'number' ? 'm-typing_uncnown m-typing_' + user : 'm-user__img_' + user.color %>">
+                    <i class="material-icons">account_circle</i>
+                </span>
+            <% }); %>
+            <% if (users.length){ %>
+                <div id="fountainG">
+                    <div id="fountainG_1" class="fountainG"></div>
+                    <div id="fountainG_2" class="fountainG"></div>
+                    <div id="fountainG_3" class="fountainG"></div>
+                </div>
+            <% } %>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_attachmentPreview">
+        <div class="attachment_preview__wrap m-loading" id="<%= id %>">
+            <img class="attachment_preview__item" src="<%= src %>">
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_attachmentLoadError">
+        <p class="attachment__error">Can't load attachment...</p>
+    </script>
+
+    <script type="text/template" id="tpl_lost_connection">
+        <div class="titile">Waiting for network.</div>
+        <div class="spinner"><img src="img/loader2.gif" alt="wating"></div>
+    </script>
+
+    <script src="./js/QBconfig.js" defer></script>
+    <script src="./js/user.js" defer></script>
+    <script src="./js/dialog.js" defer></script>
+    <script src="./js/message.js" defer></script>
+    <script src="./js/listeners.js" defer></script>
+    <script src="./js/helpers.js" defer></script>
+    <script src="./js/app.js" defer></script>
+    <script src="js/route.js" defer></script>
+</body>
+</html>

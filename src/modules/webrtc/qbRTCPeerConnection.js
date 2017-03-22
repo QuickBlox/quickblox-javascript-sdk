@@ -12,9 +12,9 @@
 var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
-var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-var RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
-var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
+var RTCPeerConnection = window.RTCPeerConnection;
+var RTCSessionDescription = window.RTCSessionDescription;
+var RTCIceCandidate = window.RTCIceCandidate;
 var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
@@ -181,13 +181,12 @@ RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
 
 /** handler of remote media stream */
 RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
-  var self = this;
+    var self = this;
 
-  if (typeof this.delegate._onRemoteStreamListener === 'function'){
-    this.delegate._onRemoteStreamListener(this.userID, event.stream);
-  }
-
-  self._getStatsWrap();
+    if (typeof this.delegate._onRemoteStreamListener === 'function'){
+        this.delegate._onRemoteStreamListener(this.userID, event.stream);
+    }
+    self._getStatsWrap();
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
@@ -254,7 +253,6 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
             Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
             return;
         }
-
         statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
         var _statsReportCallback = function() {
@@ -344,41 +342,17 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
  * PRIVATE
  */
 function _getStats(peer, selector, successCallback, errorCallback) {
-    /**
-     * http://stackoverflow.com/questions/25069419/webrtc-getstat-api-set-up
-     */
-    if (navigator.mozGetUserMedia) {
-        peer.getStats(selector,
-            function (res) {
-                var items = [];
-                
-                res.forEach(function (result) {
-                    items.push(result);
-                });
-
-                successCallback(items);
-            },
-            errorCallback
-        );
-    } else {
-        peer.getStats(function (res) {
-            var items = [];
-
-            res.result().forEach(function (result) {
-                var item = {};
-                
-                result.names().forEach(function (name) {
-                    item[name] = result.stat(name);
-                });
-         
-                item.id = result.id;
-                item.type = result.type;
-                item.timestamp = result.timestamp;
-                items.push(item);
-            });
-            successCallback(items);
+    peer.getStats(selector, function (res) {
+        var items = [];
+        res.forEach(function (result) {
+            var item = {};
+            item.id = result.id;
+            item.type = result.type;
+            item.timestamp = result.timestamp;
+            items.push(item);
         });
-    }
+        successCallback(items);
+    }, errorCallback);
 }
 
 module.exports = RTCPeerConnection;
