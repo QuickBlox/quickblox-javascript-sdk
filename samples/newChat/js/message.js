@@ -3,7 +3,7 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-    this.typingTymeout = appConfig.typingTymeout || 3
+    this.typingTymeout = appConfig.typingTymeout || 3;
     this.limit = appConfig.messagesPerRequest || 50;
 
     this.dialogTitle = null;
@@ -312,8 +312,6 @@ Message.prototype.prepareToUpload = function (e) {
         var file = files[i];
         self.uploadFilesAndGetIds(file, dialogId);
     }
-    ;
-
     e.currentTarget.value = null;
 };
 
@@ -334,8 +332,9 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
         size: file.size
     }, function (err, response) {
         if (err) {
-            preview.classList.remove('m-loading');
-            preview.classList.add('m-error');
+            preview.remove();
+            console.log(err);
+            alert('ERROR: ' + err.detail);
         } else {
             preview.remove();
 

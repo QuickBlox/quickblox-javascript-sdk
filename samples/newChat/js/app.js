@@ -238,8 +238,10 @@ App.prototype.buildCreateDialogTpl = function () {
 
 App.prototype.backToDialog = function (e) {
     var self = this;
+    console.log(event.currentTarget)
     self.sidebar.classList.add('active');
-    event.currentTarget.classList.remove('active');
+    document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
+    
     if (dialogModule.dialogId) {
         dialogModule.renderMessages(dialogModule.dialogId);
     } else {

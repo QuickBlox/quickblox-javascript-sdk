@@ -543,7 +543,7 @@
 }
 
 .message__content_wrap {
-    flex: 1 0 480px;
+    flex: 1 0;
     flex-wrap: nowrap;
     overflow: hidden;
 }
@@ -557,13 +557,13 @@
 }
 
 .message__text {
-    overflow: hidden;
-    text-overflow: ellipsis;
     margin: 0 0 10px;
     font-size: 14px;
     line-height: 20px;
     color: #4A4A4A;
-    white-space: pre-wrap;
+    overflow: hidden;
+    white-space: pre-line;
+    word-break: break-all
 }
 
 .message__text a {
