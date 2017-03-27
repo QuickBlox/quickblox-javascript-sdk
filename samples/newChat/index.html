@@ -28,21 +28,28 @@
                             <img src="./img/qb-logo.svg" alt="QuickBlox">
                         </a>
                         <h1>Quickblox Chat Sample</h1>
+                        <h3>Please enter your username and user group.
+                            Users within the same group will be able
+                            to communicate, create chats with each other
+                        </h3>
                     </div>
-                    <div class="login__user_list">
-                        <select name="login__select " class="login__select j-login__select">
-                            <option selected disabled>Select User</option>
-                            <% _.each(users, function(user) { %>
-                                <option value="<%= user.id %>"><%- user.name || user.login %></option>
-                            <% }); %>
-                        </select>
-                        <hr/>
-                    </div>
-                    <div class="login__button_wrap">
-                        <button class="login__button j-login__button" disabled>
-                            login
-                        </button>
-                    </div>
+                    
+                    <form name="loginForm" class="form">
+                        <div class="login_form__row">
+                            <label for="userName">User name</label>
+                            <input type="text" id="userName" name="userName"/>
+                        </div>
+                        <div class="login_form__row">
+                            <label for="userGroup">User group</label>
+                            <input type="text" id="userGroup" name="userGroup"/>
+                            </div>
+                        <div class="login__button_wrap">
+                            <button type="submit" class="login__button j-login__button" disabled>
+                                login
+                            </button>
+                        </div>
+                    </form>
+
                 </div>
                 <div class="login__footer">
                     <div class="footer__logo_wrap">
@@ -259,6 +266,7 @@
     <script src="./js/listeners.js" defer></script>
     <script src="./js/helpers.js" defer></script>
     <script src="./js/app.js" defer></script>
+    <script src="./js/login.js" defer></script>
     <script src="js/route.js" defer></script>
 </body>
 </html>
