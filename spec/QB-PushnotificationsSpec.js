@@ -149,18 +149,18 @@ describe('PushNotifications API', function() {
     //   });
     // }, REST_REQUESTS_TIMEOUT);
 
-    it('can get event\'s status by id', function(done){
-      QB.pushnotifications.events.status(eventId, function(err, response) {
-        if (err) {
-          done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
-        } else {
-          expect(response).not.toBeNull();
-          expect(response.event.id).toBe(eventId);
+    // it('can get event\'s status by id', function(done){
+    //   QB.pushnotifications.events.status(eventId, function(err, response) {
+    //     if (err) {
+    //       done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
+    //     } else {
+    //       expect(response).not.toBeNull();
+    //       expect(response.event.id).toBe(eventId);
 
-          done();
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
+    //       done();
+    //     }
+    //   });
+    // }, REST_REQUESTS_TIMEOUT);
 
     it("can delete event", function(done){
       QB.pushnotifications.events.delete(eventId, function(err, response) {
