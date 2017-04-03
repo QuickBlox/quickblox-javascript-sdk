@@ -51,6 +51,10 @@
     margin: 0 0 8px;
 }
 
+.login__button_wrap {
+    padding: 22px 0 0;
+}
+
 .login_form__row label {
     position: absolute;
     left: 0;
@@ -69,6 +73,11 @@
     line-height: 19px;
     color: #4A4A4A;
     padding: 7px 0 0;
+    border-bottom: 1px solid #C5CACE;
+}
+
+.login_form__row.filled input {
+    border-bottom: 2px solid #17D04B;
 }
 
 .login_form__row.filled label {
@@ -149,14 +158,14 @@
     }
 
     .login__inner {
-        flex: 0 0 390px;
+        flex: 0 0;
         padding: 61px 56px 56px;
         box-shadow: 0 1px 2px 0 rgba(0,0,0,0.2), 0 1px 3px 0 rgba(0,0,0,0.1);
         border-radius: 4px;
     }
 
     .login__top {
-        margin: 0 0 74px;
+        margin: 0 0 28px;
     }
 
     .login__logo {

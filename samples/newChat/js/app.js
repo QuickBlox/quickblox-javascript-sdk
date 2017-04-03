@@ -11,7 +11,8 @@ function App(config) {
     this._config = config;
     this.user = null;
     this.token = null;
-    
+    this.isDashboardLoaded = false;
+    this.room = null;
     // Elements
     this.page = document.querySelector('#page');
     this.sidebar = null;
@@ -27,10 +28,15 @@ App.prototype.init = function (config) {
     QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
 };
 
-App.prototype.loadDashboard = function () {
-    var self = this,
-        logoutBtn = document.querySelector('.j-logout');
-    
+App.prototype.loadDashboard = function (activeTabType, callback) {
+    var self = this;
+
+    helpers.clearView(app.page);
+    self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', {user: self.user});
+
+    var logoutBtn = document.querySelector('.j-logout');
+    loginModule.isLoginPageRendered = false;
+    self.isDashboardLoaded = true;
     self.content = document.querySelector('.j-content');
     self.sidebar = document.querySelector('.j-sidebar');
     
@@ -41,18 +47,23 @@ App.prototype.loadDashboard = function () {
     listeners.setListeners();
     
     logoutBtn.addEventListener('click', function () {
-        helpers.clearCache();
-        
-        QB.chat.disconnect();
-        QB.logout(function (err) {
-            helpers.redirectToPage('login');
-            if (err) {
-                console.error(err);
+        QB.users.delete(app.user.id, function(err, user){
+            if (!user) {
+                console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
+
+            localStorage.removeItem('user');
+
+            helpers.clearCache();
+
+            QB.chat.disconnect();
+
+            helpers.redirectToPage('login');
         });
+
     });
     
-    dialogModule.loadDialogs('chat');
+    dialogModule.loadDialogs(activeTabType, callback);
     
     this.tabSelectInit();
 };
@@ -72,6 +83,7 @@ App.prototype.tabSelectInit = function () {
         createDialogTab = document.querySelector('.j-sidebar__create_dilalog');
     
     createDialogTab.addEventListener('click', function (e) {
+        e.preventDefault();
         if (!self.checkInternetConnection()) {
             return false;
         }
@@ -86,6 +98,7 @@ App.prototype.tabSelectInit = function () {
     
     _.each(tabs, function (item) {
         item.addEventListener('click', function (e) {
+            e.preventDefault();
             if (!self.checkInternetConnection()) {
                 return false;
             }
@@ -97,6 +110,7 @@ App.prototype.tabSelectInit = function () {
 };
 
 App.prototype.loadChatList = function (tab, callback) {
+    console.log(tab);
     var tabs = document.querySelectorAll('.j-sidebar__tab_link');
     
     if (tab.classList.contains('active')) {

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/path.js/0.8.4/path.min.js" defer></script>
+    <script src="https://unpkg.com/navigo@4.3.6/lib/navigo.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js" defer></script>
     <script src="../../quickblox.min.js" defer></script>
 </head>
@@ -34,7 +34,7 @@
                         </h3>
                     </div>
                     
-                    <form name="loginForm" class="form">
+                    <form name="loginForm" class="login__form">
                         <div class="login_form__row">
                             <label for="userName">User name</label>
                             <input type="text" id="userName" name="userName"/>
@@ -84,7 +84,7 @@
                     <div class="sidebar__content">
                         <ul class="sidebar__tabs">
                             <li class="sidebar__tab">
-                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link active" data-type="chat">chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="chat">chats</a>
                             </li>
                             <li class="sidebar__tab">
                                 <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
@@ -121,25 +121,27 @@
 
     <script type="text/template" id="tpl_userConversations">
             <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
-                <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
-                    <% if(dialog.type === 2) { %>
-                        <i class="material-icons">supervisor_account</i>
-                    <% } else { %>
-                        <i class="material-icons">account_circle</i>
-                    <% } %>
-                </span>
-                <div class="dialog__info">
-                    <p class="dialog__name"><%- dialog.name %></p>
-                    <p class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></p>
-                </div>
-                <div class="dialog_additional_info">
-                    <span class="dialog__last_message_date j-dialog__last_message_date">
-                        <%= dialog.last_message_date_sent %>
+                <a class="dialog__item_link" href="#!/dialog/<%= dialog._id %>">
+                    <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                        <% if(dialog.type === 2) { %>
+                            <i class="material-icons">supervisor_account</i>
+                        <% } else { %>
+                            <i class="material-icons">account_circle</i>
+                        <% } %>
                     </span>
-                    <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
-                        <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
+                    <span class="dialog__info">
+                        <span class="dialog__name"><%- dialog.name %></span>
+                        <span class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></span>
                     </span>
-                </div>
+                    <span class="dialog_additional_info">
+                        <span class="dialog__last_message_date j-dialog__last_message_date">
+                            <%= dialog.last_message_date_sent %>
+                        </span>
+                        <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
+                            <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
+                        </span>
+                    </span>
+                </a>
             </li>
     </script>
 
@@ -257,6 +259,10 @@
     <script type="text/template" id="tpl_lost_connection">
         <div class="titile">Waiting for network.</div>
         <div class="spinner"><img src="img/loader2.gif" alt="wating"></div>
+    </script>
+
+    <script type="text/template" id="tpl_loading">
+        <div class="loading">Waiting for load.</div>
     </script>
 
     <script src="./js/QBconfig.js" defer></script>

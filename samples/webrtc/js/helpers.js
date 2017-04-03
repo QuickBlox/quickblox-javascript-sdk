@@ -156,6 +156,8 @@
                     reject(csErr);
                 } else {
                     /** In first trying to login */
+
+                    console.log(userRequiredParams);
                     QB.login(userRequiredParams, function(loginErr, loginUser){
                         if(loginErr) {
                             /** Login failed, trying to create account */
@@ -180,7 +182,7 @@
                             });
                         } else {
                             /** Update info */
-                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username ) {
+                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username) {
                                 QB.users.update(loginUser.id, {
                                     'full_name': data.username,
                                     'tag_list': data.room

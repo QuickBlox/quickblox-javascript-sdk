@@ -4,11 +4,56 @@ function User() {
     this._cache = {};
 
     this.limit = appConfig.usersPerRequest || 50;
-    this.page = null;
+    this.page = 1;
 
     this.userListConteiner = null;
     this.content = null;
 }
+
+User.prototype.initGettingUsers = function () {
+    var self = this;
+    self.content = document.querySelector('.j-content');
+    self.userListConteiner = document.querySelector('.j-group_chat__user_list');
+
+    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e) {
+
+        if (!navigator.onLine) return false;
+
+        var container = self.userListConteiner,
+            position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
+
+        if (container.classList.contains('full')) {
+            container.removeEventListener('scroll', loadMoreUsers);
+        }
+
+        if (position <= 50 && !container.classList.contains('loading')) {
+            self.getUsers();
+        }
+    });
+
+    self.page = 1;
+
+    self.getUsers();
+};
+
+User.prototype.addToCache = function(user) {
+    var self = this,
+        id = user.id;
+
+    if (!self._cache[id]) {
+        self._cache[id] = {
+            name: user.full_name || user.login || 'Unknown user (' + id + ')',
+            id: id,
+            color: _.random(1, 10),
+            last_request_at: user.last_request_at,
+            user_tags: user.user_tags
+        };
+    } else {
+        self._cache[id].last_request_at = user.last_request_at;
+    }
+
+    return self._cache[id];
+};
 
 User.prototype.getUsersByIds = function (userList, callback) {
     var self = this,
@@ -32,62 +77,27 @@ User.prototype.getUsersByIds = function (userList, callback) {
                     return item.user.id === id;
                 });
 
-                if (!self._cache[id]) {
-                    if (user) {
-                        self._cache[id] = {
-                            name: user.user.full_name || user.user.login,
-                            id: id,
-                            color: _.random(1, 10)
-                        };
-                    } else {
-                        self._cache[id] = {
-                            name: 'Unknown user (' + id + ')',
-                            id: id,
-                            color: _.random(1, 10)
-                        };
-                    }
-                }
+                self.addToCache(user);
             });
+
             callback(null, true);
         }
     });
-};
-
-User.prototype.initGettingUsers = function () {
-    var self = this;
-    self.content = document.querySelector('.j-content');
-    self.userListConteiner = document.querySelector('.j-group_chat__user_list');
-
-    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e) {
-
-        if (!navigator.onLine) return false;
-
-        var container = self.userListConteiner,
-            position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-
-        if (container.classList.contains('full')) {
-            container.removeEventListener('scroll', loadMoreUsers);
-        }
-
-        if (position <= 50 && !container.classList.contains('loading')) {
-            self.getUsers();
-        }
-    });
-    self.page = null;
-
-    self.getUsers();
 };
 
 User.prototype.getUsers = function () {
     var self = this,
         params = {
             page: self.page,
-            per_page: self.limit
+            per_page: self.limit,
+            tags: app.user.user_tags
         };
 
+    console.log('params', params);
+    console.log(self.page);
     self.userListConteiner.classList.add('loading');
 
-    QB.users.listUsers(params, function (err, responce) {
+    QB.users.get(params, function (err, responce) {
         if (err) {
             console.error(err);
             return false;
@@ -100,16 +110,7 @@ User.prototype.getUsers = function () {
         _.each(users, function (data) {
             var user = data.user;
 
-            if (self._cache[user.id]) {
-                self._cache[user.id].last_request_at = user.last_request_at;
-            } else {
-                self._cache[user.id] = {
-                    name: user.full_name || user.login,
-                    id: user.id,
-                    last_request_at: user.last_request_at,
-                    color: _.random(1, 10)
-                };
-            }
+            self.addToCache(user);
 
             if (user.id !== app.user.id) {
                 self.buildUserItem(self._cache[user.id]);
@@ -119,6 +120,7 @@ User.prototype.getUsers = function () {
         if (users.length < self.limit) {
             self.userListConteiner.classList.add('full');
         }
+
         self.userListConteiner.classList.remove('loading');
     });
 };

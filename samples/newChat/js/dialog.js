@@ -109,7 +109,7 @@ Dialog.prototype.loadDialogs = function (type, callback) {
         }
         self.dialogsListContainer.classList.remove('loading');
 
-        if (callback) {
+        if (typeof callback === 'function') {
             callback();
         }
     });
@@ -152,10 +152,10 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
 
         self.prevDialogId = self.dialogId;
         self.dialogId = dialogElem.id;
+        
         self.renderMessages(dialogElem.id);
 
         self._cache[self.dialogId].unread_messages_count = 0;
-
 
         var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
 
@@ -304,6 +304,7 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
 };
 
 Dialog.prototype.createDialog = function (params) {
+
     if (!app.checkInternetConnection()) {
         return false;
     }
