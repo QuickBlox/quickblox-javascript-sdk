@@ -50,12 +50,15 @@ User.prototype.addToCache = function(user) {
         };
     } else {
         self._cache[id].last_request_at = user.last_request_at;
+        if(user.user_tags){
+            self._cache[id].user_tags = user.user_tags;
+        }
     }
 
     return self._cache[id];
 };
 
-User.prototype.getUsersByIds = function (userList, callback) {
+User.prototype.getUsersByIds = function (userList) {
     var self = this,
         params = {
             filter: {
@@ -66,22 +69,23 @@ User.prototype.getUsersByIds = function (userList, callback) {
             per_page: 100
         };
 
-    QB.users.listUsers(params, function (err, responce) {
-        if (err) {
-            callback(err);
-        } else {
-            var users = responce.items;
+    return new Promise(function(resolve, reject) {
+        QB.users.listUsers(params, function (err, responce) {
+            if (err) {
+                reject(err);
+            } else {
+                var users = responce.items;
 
-            _.each(userList, function (id) {
-                var user = users.find(function (item) {
-                    return item.user.id === id;
+                _.each(userList, function (id) {
+                    var user = users.find(function (item) {
+                        return item.user.id === id;
+                    });
+
+                    self.addToCache(user);
                 });
-
-                self.addToCache(user);
-            });
-
-            callback(null, true);
-        }
+                resolve();
+            }
+        });
     });
 };
 

@@ -28,7 +28,7 @@ App.prototype.init = function (config) {
     QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
 };
 
-App.prototype.loadDashboard = function (activeTabType, callback) {
+App.prototype.renderDashboard = function () {
     var self = this;
 
     helpers.clearView(app.page);
@@ -39,32 +39,25 @@ App.prototype.loadDashboard = function (activeTabType, callback) {
     self.isDashboardLoaded = true;
     self.content = document.querySelector('.j-content');
     self.sidebar = document.querySelector('.j-sidebar');
-    
+
     dialogModule.init();
-    
+
     self.loadWelcomeTpl();
-    
+
     listeners.setListeners();
-    
+
     logoutBtn.addEventListener('click', function () {
         QB.users.delete(app.user.id, function(err, user){
             if (!user) {
                 console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
-
             localStorage.removeItem('user');
-
             helpers.clearCache();
-
             QB.chat.disconnect();
-
             helpers.redirectToPage('login');
         });
-
     });
-    
-    dialogModule.loadDialogs(activeTabType, callback);
-    
+
     this.tabSelectInit();
 };
 
@@ -110,7 +103,6 @@ App.prototype.tabSelectInit = function () {
 };
 
 App.prototype.loadChatList = function (tab, callback) {
-    console.log(tab);
     var tabs = document.querySelectorAll('.j-sidebar__tab_link');
     
     if (tab.classList.contains('active')) {

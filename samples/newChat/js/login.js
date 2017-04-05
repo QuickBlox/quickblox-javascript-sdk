@@ -5,17 +5,101 @@ function Login() {
     this.isLogin = false;
 }
 
-Login.prototype.init = function(callback){
-    var user = localStorage.getItem('user');
+Login.prototype.init = function(){
+    var self = this;
+    return new Promise(function(resolve, reject){
+        var user = localStorage.getItem('user');
+        if(user && !app.user){
+            var savedUser = JSON.parse(user);
+            app.room = savedUser.tag_list;
+            self.login(savedUser).then(function(){
+                resolve();
+            }).catch(function(error){
+                reject(error);
+            });
+            self.renderLoadingPage()
+        } else {
+            self.renderLoginPage();
+            resolve();
+        }
+    });
+};
 
-    if(user && !app.user){
-        var savedUser = JSON.parse(user);
-        app.room = savedUser.tag_list;
-        this.login(savedUser, callback);
-        this.renderLoadingPage()
-    } else {
-        this.renderLoginPage();
-    }
+Login.prototype.login = function (user) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        if(self.isLoginPageRendered){
+            document.querySelector('.j-login__button').innerText = 'loading...';
+        }
+
+        QB.createSession(function(csErr, csRes) {
+            app.token = csRes.token;
+            var userRequiredParams = {
+                'login':user.login,
+                'password': user.password
+            };
+            if (csErr) {
+                loginError(csErr);
+            } else {
+                QB.login(userRequiredParams, function(loginErr, loginUser){
+                    if(loginErr) {
+                        /** Login failed, trying to create account */
+                        QB.users.create(user, function (createErr, createUser) {
+                            if (createErr) {
+                                console.log('[create user] Error:', createErr);
+                                loginError(createErr);
+                            } else {
+                                QB.login(userRequiredParams, function (reloginErr, reloginUser) {
+                                    if (reloginErr) {
+                                        console.log('[relogin user] Error:', reloginErr);
+                                        loginError(reloginErr);
+                                    } else {
+                                        loginSuccess(reloginUser);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        /** Update info */
+                        if(loginUser.user_tags !== user.tag_list || loginUser.full_name !== user.full_name) {
+                            QB.users.update(loginUser.id, {
+                                'full_name': user.full_name,
+                                'tag_list': user.tag_list
+                            }, function(updateError, updateUser) {
+                                if(updateError) {
+                                    reject(updateError);
+                                } else {
+                                    loginSuccess(updateUser);
+                                }
+                            });
+                        } else {
+                            loginSuccess(loginUser);
+                        }
+                    }
+                });
+            }
+        });
+
+        function loginSuccess(userData){
+            app.user = userModule.addToCache(userData);
+            QB.chat.connect({userId: app.user.id, password: user.password}, function(err, roster){
+                if (err) {
+                    document.querySelector('.j-login__button').innerText = 'Login';
+                    console.error(err);
+                    reject(err);
+                } else {
+                    self.isLogin = true;
+                    resolve();
+                }
+            });
+        }
+
+        function loginError(error){
+            self.renderLoginPage();
+            alert(error + "\n" + error.detail);
+            reject(error);
+        }
+    });
 };
 
 Login.prototype.renderLoginPage = function(){
@@ -86,84 +170,6 @@ Login.prototype.setListeners = function(){
             }
         })
     });
-};
-
-Login.prototype.login = function (user, callback) {
-    var self = this;
-
-    if(this.isLoginPageRendered){
-        document.querySelector('.j-login__button').innerText = 'loading...';
-    }
-
-    QB.createSession(function(csErr, csRes) {
-        var userRequiredParams = {
-                'login':user.login,
-                'password': user.password
-            };
-        if (csErr) {
-            alert(csErr);
-        } else {
-            QB.login(userRequiredParams, function(loginErr, loginUser){
-
-                if(loginErr) {
-                    /** Login failed, trying to create account */
-                    QB.users.create(user, function (createErr, createUser) {
-                        if (createErr) {
-                            console.log('[create user] Error:', createErr);
-                            loginError(createErr);
-                        } else {
-                            QB.login(userRequiredParams, function (reloginErr, reloginUser) {
-                                if (reloginErr) {
-                                    console.log('[relogin user] Error:', reloginErr);
-                                    loginError(reloginErr);
-                                } else {
-                                    loginSuccess(reloginUser);
-                                }
-                            });
-                        }
-                    });
-                } else {
-                /** Update info */
-                if(loginUser.user_tags !== user.user_tags || loginUser.full_name !== user.full_name) {
-                    QB.users.update(loginUser.id, {
-                        'full_name': user.full_name,
-                        'tag_list': user.tag_list
-                    }, function(updateError, updateUser) {
-                        if(updateError) {
-                            console.log('APP [update user] Error:', updateError);
-                            reject(updateError);
-                        } else {
-                            loginSuccess(updateUser);
-                        }
-                    });
-                } else {
-                    loginSuccess(loginUser);
-                }
-            }
-            });
-        }
-    });
-
-    function loginSuccess(userData){
-        app.user = userModule.addToCache(userData);
-        QB.chat.connect({userId: app.user.id, password: user.password}, function(err, roster){
-            if (err) {
-                document.querySelector('.j-login__button').innerText = 'Login';
-                console.error(err);
-                alert('Connect to chat Error');
-            } else {
-                self.isLogin = true;
-                if(typeof callback === 'function'){
-                    callback();
-                }
-            }
-        });
-    }
-
-    function loginError(error){
-        self.renderLoginPage();
-        alert(error + "\n" + error.detail);
-    }
 };
 
 var loginModule = new Login();

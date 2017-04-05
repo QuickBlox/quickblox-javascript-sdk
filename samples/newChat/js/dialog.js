@@ -38,10 +38,7 @@ Dialog.prototype.init = function () {
     });
 };
 
-Dialog.prototype.loadDialogs = function (type, callback) {
-    if (!app.checkInternetConnection()) {
-        return false;
-    }
+Dialog.prototype.loadDialogs = function (type) {
 
     var self = this,
         filter = {
@@ -50,68 +47,69 @@ Dialog.prototype.loadDialogs = function (type, callback) {
             sort_desc: "updated_at"
         };
 
-    self.dialogsListContainer.classList.add('loading');
-
-    if (type === 'chat') {
-        filter['type[in]'] = [CONSTANTS.DIALOG_TYPES.CHAT, CONSTANTS.DIALOG_TYPES.GROUPCHAT].toString();
-    } else {
-        filter.type = CONSTANTS.DIALOG_TYPES.PUBLICCHAT;
-    }
-
-    QB.chat.dialog.list(filter, function (err, resDialogs) {
-        if (err) {
-            console.error(err);
-            alert(err);
-            return;
+    return new Promise(function(resolve, reject){
+        if (!app.checkInternetConnection()) {
+            reject(new Error('no internet connection'));
         }
 
-        var dialogs = resDialogs.items.map(function (dialog) {
-            dialog.color = _.random(1, 10);
-            return dialog;
-        });
+        self.dialogsListContainer.classList.add('loading');
 
-        var peerToPearDialogs = dialogs.filter(function (dialog) {
-            if (dialog.type === CONSTANTS.DIALOG_TYPES.CHAT) {
-                return true
-            }
-        }).map(function (dialog) {
-            return {
-                name: dialog.name,
-                id: dialog.occupants_ids.filter(function (id) {
-                    if (id !== app.user.id) return id;
-                })[0],
-                color: dialog.color
-            }
-        });
-
-        _.each(peerToPearDialogs, function (user) {
-            if (!userModule._cache[user.id]) {
-                userModule._cache[user.id] = user;
-            }
-
-        });
-
-        _.each(dialogs, function (dialog) {
-            if (!self._cache[dialog._id]) {
-                self._cache[dialog._id] = helpers.compileDialogParams(dialog);
-            }
-
-            self.renderDialog(self._cache[dialog._id]);
-        });
-
-        if (self.dialogId) {
-            var dialogElem = document.getElementById(self.dialogId);
-            if (dialogElem) dialogElem.classList.add('selected');
+        if (type === 'chat') {
+            filter['type[in]'] = [CONSTANTS.DIALOG_TYPES.CHAT, CONSTANTS.DIALOG_TYPES.GROUPCHAT].toString();
+        } else {
+            filter.type = CONSTANTS.DIALOG_TYPES.PUBLICCHAT;
         }
 
-        if (dialogs.length < self.limit) {
-            self.dialogsListContainer.classList.add('full');
-        }
-        self.dialogsListContainer.classList.remove('loading');
+        QB.chat.dialog.list(filter, function (err, resDialogs) {
+            if (err) {
+                console.error(err);
+                alert(err);
+                return;
+            }
 
-        if (typeof callback === 'function') {
-            callback();
-        }
+            var dialogs = resDialogs.items.map(function (dialog) {
+                dialog.color = _.random(1, 10);
+                return dialog;
+            });
+
+            var peerToPearDialogs = dialogs.filter(function (dialog) {
+                if (dialog.type === CONSTANTS.DIALOG_TYPES.CHAT) {
+                    return true
+                }
+            }).map(function (dialog) {
+                return {
+                    name: dialog.name,
+                    id: dialog.occupants_ids.filter(function (id) {
+                        if (id !== app.user.id) return id;
+                    })[0],
+                    color: dialog.color
+                }
+            });
+
+            _.each(peerToPearDialogs, function (user) {
+                userModule.addToCache(user);
+            });
+
+            _.each(dialogs, function (dialog) {
+                if (!self._cache[dialog._id]) {
+                    self._cache[dialog._id] = helpers.compileDialogParams(dialog);
+                }
+
+                self.renderDialog(self._cache[dialog._id]);
+            });
+
+            if (self.dialogId) {
+                var dialogElem = document.getElementById(self.dialogId);
+                if (dialogElem) dialogElem.classList.add('selected');
+            }
+
+            if (dialogs.length < self.limit) {
+                self.dialogsListContainer.classList.add('full');
+            }
+            self.dialogsListContainer.classList.remove('loading');
+
+            resolve();
+        });
     });
 };
 
@@ -204,13 +202,13 @@ Dialog.prototype.joinToDialog = function (id) {
     });
 };
 
-Dialog.prototype.renderMessages = function (id) {
+Dialog.prototype.renderMessages = function (dialogId) {
     var self = this,
-        dialog = self._cache[id];
+        dialog = self._cache[dialogId];
 
     document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
 
-    if (!self.checkCachedUsersInDialog(id)) return false;
+    if (!self.checkCachedUsersInDialog(dialogId)) return false;
 
     if (!document.forms.send_message) {
         helpers.clearView(this.content);
@@ -251,29 +249,6 @@ Dialog.prototype.renderMessages = function (id) {
     } else {
         messageModule.getMessages(self.dialogId);
     }
-};
-
-Dialog.prototype.checkCachedUsersInDialog = function (id) {
-    var self = this,
-        userList = self._cache[id].users,
-        unsetUsers = [];
-
-    for (var i = 0; i < userList.length; i++) {
-        if (!userModule._cache[userList[i]]) {
-            unsetUsers.push(userList[i]);
-        }
-    }
-
-    if (unsetUsers.length) {
-        userModule.getUsersByIds(unsetUsers, function (err) {
-            if (err) {
-                return true;
-            }
-            self.renderMessages(id);
-        });
-    }
-
-    return !unsetUsers.length;
 };
 
 Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
@@ -366,23 +341,47 @@ Dialog.prototype.createDialog = function (params) {
     });
 };
 
-Dialog.prototype.getDialogById = function (id, callback) {
-    if (!app.checkInternetConnection()) {
-        return false;
-    }
-
+Dialog.prototype.getDialogById = function (id) {
     var self = this;
+    return new Promise(function(resolve, reject){
+        if (!app.checkInternetConnection()) {
+            return false;
+        }
+        QB.chat.dialog.list({"_id": id}, function (err, res) {
+            if (err) {
+                console.error(err);
+                reject(err);
+            }
+            var dialog = res.items[0];
 
-    QB.chat.dialog.list({_id: id}, function (err, res) {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        if (!self._cache[id]) {
-            self._cache[id] = helpers.compileDialogParams(res.items[0]);
-        }
-        callback(self._cache[id]);
+            resolve(dialog);
+        });
     });
 };
+
+Dialog.prototype.checkCachedUsersInDialog = function (dialogId) {
+    var self = this,
+        userList = self._cache[dialogId].users,
+        unsetUsers = [];
+
+    return new Promise(function  (resolve, reject) {
+        for (var i = 0; i < userList.length; i++) {
+            if (!userModule._cache[userList[i]]) {
+                unsetUsers.push(userList[i]);
+            }
+        }
+
+        if (unsetUsers.length) {
+            userModule.getUsersByIds(unsetUsers).then(function(){
+                resolve();
+            }).catch(function(error){
+                reject(error);
+            });
+        } else {
+            resolve();
+        }
+    });
+};
+
 
 var dialogModule = new Dialog();
