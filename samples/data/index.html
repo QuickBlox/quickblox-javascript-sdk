@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Sample | Quickblox JS SDK</title>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app" id="j-app">
+    <p class="auth">Authorize...</p>
+  </main>
+
+  <!-- TEMPLATES -->
+  <script id="dashboard-tpl" type="text/x-handlebars-template">
+    <section class="panel">
+      {{!-- Header --}}
+      <header class="header">
+        <div class="logo">
+          <img src="./imgs/logo.svg" alt="Logo of Quickblox" class="logo_img">
+        </div>
+
+        <div class="header_data">
+          <h2 class="header_title">Data Sample</h2>
+          <p class="header_user">Logged in as {{full_name}}</p>
+        </div>
+
+        <button class="logout" id="j-logout">
+          <svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="Screens" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+              <g id="Group-Chat" transform="translate(-523.000000, -31.000000)">
+                <g id="ic_exit_to_app" transform="translate(520.000000, 28.000000)">
+                  <polygon id="Bounds" points="0 0 24 0 24 24 0 24"></polygon>
+                  <path d="M10.09,15.59 L11.5,17 L16.5,12 L11.5,7 L10.09,8.41 L12.67,11 L3,11 L3,13 L12.67,13 L10.09,15.59 L10.09,15.59 Z M19,3 L5,3 C3.89,3 3,3.9 3,5 L3,9 L5,9 L5,5 L19,5 L19,19 L5,19 L5,15 L3,15 L3,19 C3,20.1 3.89,21 5,21 L19,21 C20.1,21 21,20.1 21,19 L21,5 C21,3.9 20.1,3 19,3 L19,3 Z" class="icon" fill="#778594" opacity="0.8"></path>
+                </g>
+              </g>
+            </g>
+          </svg>
+        </button>
+      </header>
+      
+      {{!-- Wrapper for places --}}
+      <div id="j-places"></div>
+    </section>
+
+    <section class="map" id="j-map"></section>
+  </script>
+
+  <script id="places_preview-tpl" type="text/x-handlebars-template">
+    <div id="places">
+      {{#each items}}
+        <div class="places_item">
+          <h5 class="places_item__title">{{title}}</h5>
+          <p class="rate">{{rate}}</p>
+          <p class="places_item__desc">{{description}}</p>
+        </div>
+      {{else}}
+        <p class="places_item warning">No places saved, tap on map</p>
+      {{/each}}
+    </div>
+  </script>
+
+
+      <!--<div class="places j-places">
+        
+        <p class="places_item">No places saved, click on map</p>
+
+        <div class="place_preview">
+          <div class="place_preview__img">
+            <img src="" alt="%">
+          </div>
+
+          <div class="place_preview__data">
+            
+
+            <div class="rating">
+              <span class="rating__star rating__star_complete"></span>
+              <span class="rating__star rating__star_complete"></span>
+              <span class="rating__star rating__star_complete"></span>
+              <span class="rating__star"></span>
+              <span class="rating__star"></span>
+            </div>
+
+            <p class="place_preview__desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+          </div>
+        </div>
+      </div>
+    </section>-->
+
+ 
+  
+<!--   <a href="#!">Home</a>
+  <a href="#!/places/1">Place 1</a> -->
+
+<!-- Helper libraries -->
+<script src="https://unpkg.com/navigo@4.3.6"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+<!-- Quickblox SDK -->
+<script src="../../quickblox.min.js"></script>
+<!-- APP -->
+<script src="config.js"></script>
+<script src="./js/user.js"></script>
+<script src="./js/map.js"></script>
+<script src="./js/places.js"></script>
+<script src="app.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOlglXqBHw1T0G5x1UoVD3sP7FB3wWc6I"></script>
+</body>
+</html>
