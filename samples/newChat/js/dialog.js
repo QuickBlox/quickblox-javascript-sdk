@@ -62,9 +62,7 @@ Dialog.prototype.loadDialogs = function (type) {
 
         QB.chat.dialog.list(filter, function (err, resDialogs) {
             if (err) {
-                console.error(err);
-                alert(err);
-                return;
+                reject(err);
             }
 
             var dialogs = resDialogs.items.map(function (dialog) {
@@ -354,7 +352,11 @@ Dialog.prototype.getDialogById = function (id) {
             }
             var dialog = res.items[0];
 
-            resolve(dialog);
+            if(dialog) {
+                resolve(dialog);
+            } else {
+                reject(new Error('can\'t find dialog with this id: ' + id));
+            }
         });
     });
 };
@@ -370,7 +372,6 @@ Dialog.prototype.checkCachedUsersInDialog = function (dialogId) {
                 unsetUsers.push(userList[i]);
             }
         }
-
         if (unsetUsers.length) {
             userModule.getUsersByIds(unsetUsers).then(function(){
                 resolve();

@@ -4,27 +4,39 @@ var router = new Navigo(null, true, '#!');
 
 router.on({
     '': function(){
-        loginModule.init().then(function(){
-            router.navigate('/dashboard');
-        }).catch(function(error){
-            console.log('login error');
+        console.log('route /');
+        if(!loginModule.isLogin) {
             router.navigate('/login');
-        });
+        } else {
+            router.navigate('/dashboard');
+        }
     },
     '/login': function(){
-        loginModule.init().then(function(){
+        console.log('route /login');
+        if(!loginModule.isLogin) {
+            loginModule.init().then(function(isLogedIn){
+                if(isLogedIn){
+                    router.navigate('/dashboard');
+                } else {
+                    loginModule.renderLoginPage();
+                }
+            }).catch(function(error){
+                loginModule.renderLoginPage();
+                console.error(error);
+            });
+        } else {
             router.navigate('/dashboard');
-        }).catch(function(error){
-            console.log('login error');
-            app.renderDashboard('chat');
-        });
+        }
     },
     '/dashboard': function(){
+        console.log('route /dashboard');
         if(!loginModule.isLogin) {
-            console.log('logging in');
-            loginModule.init().then(function(){
+            loginModule.init().then(function(isLogedIn){
+                if(!isLogedIn){
+                    router.navigate('/login');
+                    return;
+                }
                 app.renderDashboard('chat');
-                console.log('start loading dialogs');
                 dialogModule.loadDialogs('chat');
             }).catch(function() {
                router.navigate('/login');
@@ -35,13 +47,43 @@ router.on({
         }
     },
     '/dialog/:dialogId': function(params){
+        console.log('route /dialog/ID');
         var dialogId = params.dialogId;
         dialogModule.dialogId = dialogId;
 
         if (!loginModule.isLogin){
-            loginModule.init().then(function(){
-                // render dashboard
-                app.renderDashboard();
+            loginModule.init().then(function(isLogedIn){
+                if(!isLogedIn){
+                    router.navigate('/login');
+                    return;
+                }
+
+                if(!app.isDashboardLoaded) {
+                    app.renderDashboard();
+                }
+                _renderSelectedDialog();
+            }).catch(function(error){
+                console.error(error);
+                router.navigate('/login');
+            });
+        } else {
+            _renderSelectedDialog();
+            // var dialog = dialogModule._cache[dialogId];
+            //
+            // if(dialog){
+            //     dialogModule.renderMessages(dialog, true);
+            // } else {
+            //     dialogModule.getDialogById(dialog, function(dialog){
+            //         var type = dialog.type === 1 ? 'public' : 'chat';
+            //         app.loadChatList(type);
+            //
+            //     });
+            // }
+        }
+
+        function _renderSelectedDialog(){
+            var currentDialog = dialogModule._cache[dialogId];
+            if(!currentDialog){
                 dialogModule.dialogsListContainer.classList.add('loading');
                 dialogModule.getDialogById(dialogId).then(function(dialog){
                     var dialogId = dialog._id,
@@ -51,8 +93,9 @@ router.on({
                     dialogModule.dialogId = dialogId;
 
                     if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
+                        console.log('from route');
                         userModule.addToCache({
-                            name: dialog.name,
+                            full_name: dialog.name,
                             id: dialog.occupants_ids.filter(function (id) {
                                 if (id !== app.user.id) return id;
                             })[0],
@@ -60,34 +103,25 @@ router.on({
                         });
                     }
 
-                    if(!dialogModule._cache[dialogId]){
-                        dialogModule._cache[dialogId] = helpers.compileDialogParams(dialog);
-                    }
+                    dialogModule._cache[dialogId] = helpers.compileDialogParams(dialog);
+                    currentDialog = dialogModule._cache[dialogId];
 
-                    dialogModule.renderMessages(dialogId);
+                    dialogModule.checkCachedUsersInDialog(dialogId).then(function(){
+                        dialogModule.renderMessages(dialogId);
+                    }).catch(function(error){
+                        console.error(error);
+                    });
                     app.loadChatList(tab);
-
-
                 }).catch(function(error){
-                    console.log(error);
-                });
-            }).catch(function(error){
-                app.renderDashboard('chat');
-            });
-        } else {
-            var dialog = dialogModule._cache[dialogId];
-
-            if(dialog){
-                dialogModule.renderMessages(dialog, true);
-            } else {
-                dialogModule.getDialogById(dialog, function(dialog){
-                    var type = dialog.type === 1 ? 'public' : 'chat';
-                    app.loadChatList(type);
+                    console.info('redirrect to dashboard');
+                    router.navigate('#!/dashboard');
+                    alert('can\'t find dialog with id: ' + dialogId);
                 });
             }
         }
     },
     'dialog/:dialogId/edit': function(params){
+        console.log('route /dialog/edit');
         var dialogId = params.dialogId;
         alert('/dialog/'+ dialogId + '/edit');
     }

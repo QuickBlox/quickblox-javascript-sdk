@@ -230,8 +230,9 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
 
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
-        sender = userModule._cache[message.sender_id],
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
+        sender = userModule._cache[message.sender_id];
+
+    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
         elem = helpers.toHtml(messagesHtml)[0];
 
     if (!sender) {

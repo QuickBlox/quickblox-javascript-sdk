@@ -102,22 +102,29 @@ App.prototype.tabSelectInit = function () {
     });
 };
 
-App.prototype.loadChatList = function (tab, callback) {
-    var tabs = document.querySelectorAll('.j-sidebar__tab_link');
-    
-    if (tab.classList.contains('active')) {
-        return false;
-    }
-    
-    _.each(tabs, function (elem) {
-        elem.classList.remove('active');
+App.prototype.loadChatList = function (tab) {
+    return new Promise(function(resolve, reject){
+        var tabs = document.querySelectorAll('.j-sidebar__tab_link');
+
+        if (tab.classList.contains('active')) {
+            return false;
+        }
+
+        _.each(tabs, function (elem) {
+            elem.classList.remove('active');
+        });
+
+        tab.classList.add('active');
+
+        helpers.clearView(dialogModule.dialogsListContainer);
+        dialogModule.dialogsListContainer.classList.remove('full');
+
+        dialogModule.loadDialogs(tab.dataset.type).then(function(dialogs) {
+            resolve(dialogs);
+        }).catch(function(error){
+            reject(error);
+        });
     });
-    
-    tab.classList.add('active');
-    
-    helpers.clearView(dialogModule.dialogsListContainer);
-    dialogModule.dialogsListContainer.classList.remove('full');
-    dialogModule.loadDialogs(tab.dataset.type, callback);
 };
 
 App.prototype.buildCreateDialogTpl = function () {

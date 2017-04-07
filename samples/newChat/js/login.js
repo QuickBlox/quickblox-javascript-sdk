@@ -7,20 +7,20 @@ function Login() {
 
 Login.prototype.init = function(){
     var self = this;
-    return new Promise(function(resolve, reject){
+
+    return new Promise(function(resolve, reject) {
         var user = localStorage.getItem('user');
         if(user && !app.user){
             var savedUser = JSON.parse(user);
             app.room = savedUser.tag_list;
-            self.login(savedUser).then(function(){
-                resolve();
-            }).catch(function(error){
-                reject(error);
-            });
-            self.renderLoadingPage()
+            var test = self.login(savedUser)
+                .then(function(){
+                    resolve(true);
+                }).catch(function(error){
+                    reject(error);
+                });
         } else {
-            self.renderLoginPage();
-            resolve();
+            resolve(false);
         }
     });
 };
@@ -29,9 +29,10 @@ Login.prototype.login = function (user) {
     var self = this;
     return new Promise(function(resolve, reject) {
         if(self.isLoginPageRendered){
-            document.querySelector('.j-login__button').innerText = 'loading...';
+            document.forms.loginForm.login_submit.innerText = 'loading...';
+        } else {
+            self.renderLoadingPage();
         }
-
         QB.createSession(function(csErr, csRes) {
             app.token = csRes.token;
             var userRequiredParams = {
@@ -46,12 +47,10 @@ Login.prototype.login = function (user) {
                         /** Login failed, trying to create account */
                         QB.users.create(user, function (createErr, createUser) {
                             if (createErr) {
-                                console.log('[create user] Error:', createErr);
                                 loginError(createErr);
                             } else {
                                 QB.login(userRequiredParams, function (reloginErr, reloginUser) {
                                     if (reloginErr) {
-                                        console.log('[relogin user] Error:', reloginErr);
                                         loginError(reloginErr);
                                     } else {
                                         loginSuccess(reloginUser);
@@ -67,7 +66,7 @@ Login.prototype.login = function (user) {
                                 'tag_list': user.tag_list
                             }, function(updateError, updateUser) {
                                 if(updateError) {
-                                    reject(updateError);
+                                    loginError(updateError);
                                 } else {
                                     loginSuccess(updateUser);
                                 }
@@ -95,6 +94,7 @@ Login.prototype.login = function (user) {
         }
 
         function loginError(error){
+            console.log(error);
             self.renderLoginPage();
             alert(error + "\n" + error.detail);
             reject(error);
@@ -138,11 +138,16 @@ Login.prototype.setListeners = function(){
 
         localStorage.setItem('user', JSON.stringify(user));
 
-        self.login(user);
+        self.login(user).then(function(){
+            router.navigate('/dashboard');
+        }).catch(function(error){
+            alert('lOGIN ERROR\n open console to get more info');
+            console.error(error);
+            document.forms.loginForm.login_submit.innerText = 'LOGIN...';
+        });
     });
 
     // add event listeners for each input;
-
     _.each(formInputs, function(i){
         i.addEventListener('focus', function(e){
             var elem = e.currentTarget,

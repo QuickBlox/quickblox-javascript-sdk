@@ -45,14 +45,10 @@ User.prototype.addToCache = function(user) {
             name: user.full_name || user.login || 'Unknown user (' + id + ')',
             id: id,
             color: _.random(1, 10),
-            last_request_at: user.last_request_at,
-            user_tags: user.user_tags
+            last_request_at: user.last_request_at
         };
     } else {
         self._cache[id].last_request_at = user.last_request_at;
-        if(user.user_tags){
-            self._cache[id].user_tags = user.user_tags;
-        }
     }
 
     return self._cache[id];
@@ -68,7 +64,6 @@ User.prototype.getUsersByIds = function (userList) {
             },
             per_page: 100
         };
-
     return new Promise(function(resolve, reject) {
         QB.users.listUsers(params, function (err, responce) {
             if (err) {
@@ -80,8 +75,7 @@ User.prototype.getUsersByIds = function (userList) {
                     var user = users.find(function (item) {
                         return item.user.id === id;
                     });
-
-                    self.addToCache(user);
+                    self.addToCache(user.user);
                 });
                 resolve();
             }
@@ -97,8 +91,6 @@ User.prototype.getUsers = function () {
             tags: app.user.user_tags
         };
 
-    console.log('params', params);
-    console.log(self.page);
     self.userListConteiner.classList.add('loading');
 
     QB.users.get(params, function (err, responce) {
