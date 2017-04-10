@@ -129,3 +129,20 @@ User.prototype.login = function(login) {
     });
   });
 }
+
+// remove user
+// cleanup session storage by marker
+User.prototype.logout = function() {
+  var self = this;
+
+  return new Promise(function(resolve, reject) {
+    QB.users.delete(self.id, function(err, user){
+      if (err) {
+        reject(err);
+      } else  {
+        sessionStorage.removeItem(self.config._saveMarker);
+        resolve(user);
+      }
+    });
+  });
+}

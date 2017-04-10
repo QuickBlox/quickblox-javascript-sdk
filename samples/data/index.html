@@ -51,13 +51,13 @@
   </script>
 
   <script id="places_preview-tpl" type="text/x-handlebars-template">
-    <div id="places">
+    <div class="places">
       {{#each items}}
-        <div class="places_item">
+        <a class="places_item" href="places/{{_id}}">
           <h5 class="places_item__title">{{title}}</h5>
           <p class="rate">{{rate}}</p>
           <p class="places_item__desc">{{description}}</p>
-        </div>
+        </a>
       {{else}}
         <p class="places_item warning">No places saved, tap on map</p>
       {{/each}}
@@ -92,12 +92,8 @@
     </section>-->
 
  
-  
-<!--   <a href="#!">Home</a>
-  <a href="#!/places/1">Place 1</a> -->
-
 <!-- Helper libraries -->
-<script src="https://unpkg.com/navigo@4.3.6"></script>
+<script src="https://cdn.rawgit.com/visionmedia/page.js/master/page.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
 <!-- Quickblox SDK -->
 <script src="../../quickblox.min.js"></script>

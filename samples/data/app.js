@@ -9,10 +9,13 @@ function App() {
     'map': 'j-map',
     'places': 'j-places'
   }
+
   this.$app = document.getElementById('j-app');
 
   this.user;
   this.map;
+
+  this.activePage; // 'main', 'new_location', 
 
   this.init();
 };
@@ -35,19 +38,58 @@ App.prototype.init = function() {
     self.places = new Places();
 
     Promise.all([self.user.auth(), self.places.sync()]).then(function() {
-      // render panel / header
+      // render panel / header and set listeners
       var $app = document.getElementById(self.ui.app);
       $app.innerHTML = self.renderView('dashboard-tpl', {'full_name': self.user.full_name});
-      // render list of places
+      self.setListeners('dashboard');
+      // render list of places and set listeners
       var $places =  document.getElementById(self.ui.places);
       $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
-      // render map
+      // render map and set listeners
       self.map = new Map({'el': document.getElementById(self.ui.map)});
+      self.setListeners('map');
+
+      self.activePage = 'main';
     }).catch(function(err) {
       throw new Error(err);
       alert('Something goes wrong, please try again later.');
     });
   });
+}
+
+App.prototype.setListeners = function(view) {
+  var self = this;
+
+  switch(view) {
+    case 'dashboard':
+      self._setListenersDashboard();
+      break;
+
+    case 'map': 
+      self._setListenersMap();
+      break;
+    
+    default:
+      console.warn('Cannot set listeners to ' + view);
+      break;
+  }
+}
+
+App.prototype._setListenersDashboard = function() {
+  var self = this;
+  // remove a user and reload a page
+  document.getElementById('j-logout').addEventListener('click', function() {
+    self.user.logout().then(function() {
+      document.location.reload(true);
+    }).catch(function(err) {
+      console.error(err);
+      alert('Cannot remove a user. Check console for more details.')
+    });
+  });
+}
+
+App.prototype._setListenersMap = function() {
+
 }
 
 App.prototype.renderView = function(idTpl, options) {
@@ -58,19 +100,3 @@ App.prototype.renderView = function(idTpl, options) {
 }
 
 new App();
-
-
-
-
-
-// var wl = window.location;
-// var router = new Navigo(wl.origin + wl.pathname, true, '#!');
-
-// router.on({
-//   '/places/:id': function (id) {
-//     console.log(id);
-//   },
-//   "*": function() {
-//     console.info('Home');
-//   }
-// }).resolve();
