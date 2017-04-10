@@ -176,7 +176,6 @@ describe('PushNotifications API', function() {
     afterAll(function(done) {
       
       QB.pushnotifications.subscriptions.list(function(err, result) {
-        console.log('TEST', err);
         if (err) {
           if(err.code === 404) {
             // Doesn't found any subscriptions for removing
