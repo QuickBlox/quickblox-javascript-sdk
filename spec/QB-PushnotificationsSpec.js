@@ -84,110 +84,121 @@ describe('PushNotifications API', function() {
     }, 10000);
   });
 
-  // describe('Events', function(){
-  //   var eventId = '';
 
-  //   beforeAll(function(done){
-  //     QB.pushnotifications.subscriptions.create(params, function(err, res){
-  //       if (err) {
-  //         done.fail('Create a subscription error: ' + JSON.stringify(err));
-  //       } else {
-  //         expect(res).not.toBeNull();
+  describe('Events', function(){
+    var eventId = '';
 
-  //         done();
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+    beforeAll(function(done){
+      QB.pushnotifications.subscriptions.create(params, function(err, res){
+        if (err) {
+          done.fail('Create a subscription error: ' + JSON.stringify(err));
+        } else {
+          expect(res).not.toBeNull();
 
-  //   it('can create event', function(done){
-  //     var params = {
-  //       notification_type: 'push',
-  //       push_type: 'gcm',
-  //       user: {ids: [QBUser1.id]},
-  //       environment: 'development',
-  //       message: QB.pushnotifications.base64Encode('hello QuickBlox!')
-  //     };
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //     QB.pushnotifications.events.create(params, function(err, response) {
-  //       if (err) {
-  //         done.fail('Create event error: ' + JSON.stringify(err));
-  //       } else {
-  //         expect(response).not.toBeNull();
-  //         expect(response.event.message).toBe('data.message=aGVsbG8rUXVpY2tCbG94JTIx');
+    it('can create event', function(done){
+      var params = {
+        notification_type: 'push',
+        push_type: 'gcm',
+        user: {ids: [QBUser1.id]},
+        environment: 'development',
+        message: QB.pushnotifications.base64Encode('hello QuickBlox!')
+      };
 
-  //         done();
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+      QB.pushnotifications.events.create(params, function(err, response) {
+        if (err) {
+          done.fail('Create event error: ' + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.message).toBe('data.message=aGVsbG8rUXVpY2tCbG94JTIx');
 
-  //   it('can list events', function(done){
-  //     QB.pushnotifications.events.list({page: '1', per_page: '25'}, function(err, response) {
-  //       if (err) {
-  //         done.fail('List events error: ' + JSON.stringify(err));
-  //       } else {
-  //         eventId = response.items[0].event.id;
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //         expect(response).not.toBeNull();
-  //         expect(response.items.length).toBeGreaterThan(0);
+    it('can list events', function(done){
+      QB.pushnotifications.events.list({page: '1', per_page: '25'}, function(err, response) {
+        if (err) {
+          done.fail('List events error: ' + JSON.stringify(err));
+        } else {
+          eventId = response.items[0].event.id;
 
-  //         done();
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+          expect(response).not.toBeNull();
+          expect(response.items.length).toBeGreaterThan(0);
 
-  //   it('can get event by id', function(done){
-  //     QB.pushnotifications.events.get(eventId, function(err, response) {
-  //       if (err) {
-  //         done.fail('Get event by id error: ' + JSON.stringify(err));
-  //       } else {
-  //         expect(response).not.toBeNull();
-  //         expect(response.event.id).toBe(eventId);
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //         done();
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+    
+    it('can get event by id', function(done){
+      QB.pushnotifications.events.get(eventId, function(err, response) {
+        if (err) {
+          done.fail('Get event by id error: ' + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.id).toBe(eventId);
 
-  //   it('can get event\'s status by id', function(done){
-  //     QB.pushnotifications.events.status(eventId, function(err, response) {
-  //       if (err) {
-  //         done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
-  //       } else {
-  //         expect(response).not.toBeNull();
-  //         expect(response.event.id).toBe(eventId);
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //         done();
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+    it('can get event\'s status by id', function(done){
+      pending('Server return a 500 error');
 
-  //   it("can delete event", function(done){
-  //     QB.pushnotifications.events.delete(eventId, function(err, response) {
-  //       expect(err).toBeNull();
+      QB.pushnotifications.events.status(eventId, function(err, response) {
+        if (err) {
+          done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
+        } else {
+          expect(response).not.toBeNull();
+          expect(response.event.id).toBe(eventId);
 
-  //       done();
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //   afterAll(function(done){
-  //     QB.pushnotifications.subscriptions.list(function(err, result){
-  //       if (err) {
-  //         done.fail("List a subscription error: " + JSON.stringify(err));
-  //       } else {
-  //         var subscriptionId = result[0].subscription.id;
+    it("can delete event", function(done){
+      QB.pushnotifications.events.delete(eventId, function(err, response) {
+        expect(err).toBeNull();
 
-  //         QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
-  //           if (err) {
-  //             done.fail('Delete subscription error: ' + JSON.stringify(err));
-  //           } else {
-  //             expect(res).not.toBeNull();
+        done();
+      });
+    }, REST_REQUESTS_TIMEOUT);
 
-  //             done();
-  //           }
-  //         });
-  //       }
-  //     });
-  //   }, REST_REQUESTS_TIMEOUT);
-  // });
+    afterAll(function(done) {
+      
+      QB.pushnotifications.subscriptions.list(function(err, result) {
+        console.log('TEST', err);
+        if (err) {
+          if(err.code === 404) {
+            // Doesn't found any subscriptions for removing
+            done();
+          } else {
+            done.fail("List a subscription error: " + JSON.stringify(err));
+          }
+        } else {
+          var subscriptionId = result[0].subscription.id;
+          
+          QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
+            if (err) {
+              done.fail('Delete subscription error: ' + JSON.stringify(err));
+            } else {
+              expect(res).not.toBeNull();
+
+              done();
+            }
+          });
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+  });
 
 });

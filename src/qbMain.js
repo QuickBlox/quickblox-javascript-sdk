@@ -50,7 +50,6 @@ QuickBlox.prototype = {
             Users = require('./modules/qbUsers'),
             Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
-            Location = require('./modules/qbLocation'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
             conn;
@@ -78,7 +77,6 @@ QuickBlox.prototype = {
         this.users = new Users(this.service);
         this.chat = new Chat(this.service, this.webrtc ? this.webrtc.signalingProcessor : null, conn || null);
         this.content = new Content(this.service);
-        this.location = new Location(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
 
