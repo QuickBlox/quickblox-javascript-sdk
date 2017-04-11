@@ -1,3 +1,7 @@
+'use strict';
+
+/* global google:true */
+
 function Map(params) {
   this.el = params.el;
 

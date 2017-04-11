@@ -1,6 +1,12 @@
+'use strict';
 
 /**
- * [User description]
+ * [User manage user
+ * 
+ * Flow:
+ * 1. Check in [session]storage for exist user
+ * 2. Get info from storage / Generate user's creds
+ * 3. Login / create a user and login
  */
 function User(params) {
   this.config = Object.assign({
@@ -22,24 +28,9 @@ User._getRandomName = function() {
   return User.userNames[getRandomInt(0, User.userNames.length)];
 }
 
-User._generateUui = function() {
-  var navigator_info = window.navigator;
-  var screen_info = window.screen;
-  var uid = navigator_info.mimeTypes.length;
-
-  uid += navigator_info.userAgent.replace(/\D+/g, '');
-  uid += navigator_info.plugins.length;
-  uid += screen_info.height || '';
-  uid += screen_info.width || '';
-  uid += screen_info.pixelDepth || '';
-
-  return uid;
-}
-
-User.prototype._write = function(objUser) {
-  this.id = objUser.id;
-  this.login = objUser.login;
-  this.full_name = objUser.full_name;
+// 8 characters
+User._generateLogin = function() {
+  return Math.random().toString(36).substring(4);
 }
 
 User.prototype._getLoginInStorage = function() {
@@ -48,74 +39,21 @@ User.prototype._getLoginInStorage = function() {
   return loginInStorage ? loginInStorage : null;
 }
 
-/*
- * Flow:
- * 1. Check in sessionstorage for exist user
- * 2. Get info from storage / Generate user's creds
- * 3. Login / create a user and login
- */
-User.prototype.auth = function() {
-  var self = this;
-  var loginInStorage = this._getLoginInStorage();
-
-  return new Promise(function(resolve, reject) {
-    if(loginInStorage) {
-      self.login(loginInStorage).then(function(user) {
-        console.info('[Data sample] Login as', user);
-
-        self._processSuccessAuth(user);
-        resolve();
-      });
-    } else {
-      self.signup().then(function(user) {
-        console.info('[Data sample] Signup as', user);
-
-        self._processSuccessAuth(user);
-        resolve();
-      }).catch(function(err) {
-        if(err.code === 422) {
-          self.login().then(function(user) {
-            console.info('[Data sample] Login as', user);
-
-            self._processSuccessAuth(user);
-            resolve();
-          });
-        } else {
-          reject(err);
-        }
-      });
-    }
-  });
-};
-
-User.prototype.signup = function() {
-  var self = this, 
-    usersCreds = {
-    'login': User._generateUui() + '_web_datasample',
-    'password': self.config._password,
-    'full_name': User._getRandomName()
-  };
-
-  return new Promise(function(resolve, reject) {
-    QB.users.create(usersCreds, function(err, user){
-      if (err) {
-        reject(err);
-      } else  {
-        resolve(user);
-      }
-    });
-  });
-}
-
 User.prototype._processSuccessAuth = function(user) {
   this._write(user);
-  sessionStorage.setItem(this.config._saveMarker, this.login);
+  sessionStorage.setItem(this.config._saveMarker, user.login);
 };
 
-User.prototype.login = function(login) {
+User.prototype._write = function(user) {
+  this.id = user.id;
+  this.login = user.login;
+  this.full_name = user.full_name;
+}
+
+User.prototype._login = function(login) {
   var self = this,
     userCreds = {
-    'login': login || User._generateUui() + '_web_datasample',
+    'login': login,
     'password': self.config._password
   };
 
@@ -130,19 +68,67 @@ User.prototype.login = function(login) {
   });
 }
 
-// remove user
-// cleanup session storage by marker
-User.prototype.logout = function() {
+User.prototype.login = function(login) {
   var self = this;
 
   return new Promise(function(resolve, reject) {
-    QB.users.delete(self.id, function(err, user){
+    self._login(login).then(function(user) {
+      self._processSuccessAuth(user);
+
+      resolve();
+    }).catch(function(err) {
+      self._signupAndLogin().then(function() {
+        resolve();
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  });
+}
+
+User.prototype.signup = function() {
+   var self = this;
+
+  var usersCreds = {
+    'login': User._generateLogin() + '_web_datasample',
+    'password': self.config._password,
+    'full_name': User._getRandomName()
+  };
+
+  return new Promise(function(resolve, reject) {
+    QB.users.create(usersCreds, function(err, user){
       if (err) {
         reject(err);
       } else  {
-        sessionStorage.removeItem(self.config._saveMarker);
         resolve(user);
       }
     });
   });
+};
+
+User.prototype._signupAndLogin = function() {
+  var self = this;
+
+  return new Promise(function(resolve , reject) {
+    self.signup().then(function(user) {
+      return self.login(user.login);
+    }).then(function() {
+      resolve();
+    }).catch(function(err) {
+      reject(err);
+    });
+  });
+};
+
+User.prototype.auth = function() {
+  var self = this;
+  var loginInStorage = self._getLoginInStorage();
+
+  return loginInStorage ? self.login(loginInStorage) : self._signupAndLogin();
+};
+
+// cleanup session storage by marker
+// and it's all, folks (
+User.prototype.logout = function() {
+  sessionStorage.removeItem(this.config._saveMarker);
 }

@@ -1,3 +1,5 @@
+'use strict';
+
 function Places() {
   this.className = 'Place';
 

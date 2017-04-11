@@ -1,8 +1,9 @@
 'use strict';
 
-/**
- * [App description]
- */
+/* eslint no-alert: "off" */
+/* eslint no-console: "off" */
+/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Map:true, Handlebars:true */
+
 function App() {
   this.ui = {
     'app': 'j-app',
@@ -18,7 +19,7 @@ function App() {
   this.activePage; // 'main', 'new_location', 
 
   this.init();
-};
+}
 
 /**
  * 1. Auth user
@@ -42,17 +43,19 @@ App.prototype.init = function() {
       var $app = document.getElementById(self.ui.app);
       $app.innerHTML = self.renderView('dashboard-tpl', {'full_name': self.user.full_name});
       self.setListeners('dashboard');
+
       // render list of places and set listeners
       var $places =  document.getElementById(self.ui.places);
       $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+
       // render map and set listeners
       self.map = new Map({'el': document.getElementById(self.ui.map)});
       self.setListeners('map');
 
       self.activePage = 'main';
     }).catch(function(err) {
-      throw new Error(err);
       alert('Something goes wrong, please try again later.');
+      throw new Error(err);
     });
   });
 }
@@ -79,12 +82,8 @@ App.prototype._setListenersDashboard = function() {
   var self = this;
   // remove a user and reload a page
   document.getElementById('j-logout').addEventListener('click', function() {
-    self.user.logout().then(function() {
-      document.location.reload(true);
-    }).catch(function(err) {
-      console.error(err);
-      alert('Cannot remove a user. Check console for more details.')
-    });
+    self.user.logout();
+    document.location.reload(true);
   });
 }
 
@@ -99,4 +98,6 @@ App.prototype.renderView = function(idTpl, options) {
   return tpl(options);
 }
 
-new App();
+// this rule only for this line
+/* eslint no-unused-vars:0*/
+var app = new App();
