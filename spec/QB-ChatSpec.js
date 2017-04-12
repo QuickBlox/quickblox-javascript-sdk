@@ -548,7 +548,7 @@ describe('Chat API', function() {
             QB.chat.dialog.delete([dialogId2, 'notExistentId'], {force: 1}, function(err, res) {
                 var answ = JSON.parse(res);
 
-                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId]);
+                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId2]);
                 expect(answ.NotFound.ids).toEqual(["notExistentId"]);
                 expect(answ.WrongPermissions.ids).toEqual([]);
 
