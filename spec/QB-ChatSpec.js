@@ -343,6 +343,7 @@ describe('Chat API', function() {
 
     describe('REST API', function() {
         var dialogId;
+        var dialogId2;
         var messageId;
 
         it('can create a dialog (group)', function(done) {
@@ -400,7 +401,7 @@ describe('Chat API', function() {
 
                 expect(res.occupants_ids).toEqual(ocuupantsArray);
 
-                dialogId = res._id;
+                dialogId2 = res._id;
 
                 done();
             });
@@ -418,12 +419,13 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-        it('can update a dialog (group)', function(done) {
+        it('can update a dialog (group) (also set is_joinable=0)', function(done) {
             var toUpdate = {
                 name: 'GroupDialogNewName',
                 pull_all: {
                   occupants_ids: [QBUser2.id]
-                }
+                },
+                is_joinable: 0
             };
 
             QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
@@ -432,6 +434,28 @@ describe('Chat API', function() {
                 expect(res).not.toBeNull();
                 expect(res.name).toEqual('GroupDialogNewName');
                 expect(res.occupants_ids).toEqual([QBUser1.id]);
+                expect(res.is_joinable).toEqual(0);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can update a dialog (group) (also set is_joinable=1)', function(done) {
+            var toUpdate = {
+                name: 'GroupDialogNewName',
+                pull_all: {
+                  occupants_ids: [QBUser2.id]
+                },
+                is_joinable: 1
+            };
+
+            QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res.name).toEqual('GroupDialogNewName');
+                expect(res.occupants_ids).toEqual([QBUser1.id]);
+                expect(res.is_joinable).toEqual(1);
 
                 done();
             });
@@ -510,6 +534,18 @@ describe('Chat API', function() {
 
         it('can delete a dialog (group)', function(done) {
             QB.chat.dialog.delete([dialogId, 'notExistentId'], {force: 1}, function(err, res) {
+                var answ = JSON.parse(res);
+
+                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId]);
+                expect(answ.NotFound.ids).toEqual(["notExistentId"]);
+                expect(answ.WrongPermissions.ids).toEqual([]);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can delete a dialog (group)', function(done) {
+            QB.chat.dialog.delete([dialogId2, 'notExistentId'], {force: 1}, function(err, res) {
                 var answ = JSON.parse(res);
 
                 expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId]);
