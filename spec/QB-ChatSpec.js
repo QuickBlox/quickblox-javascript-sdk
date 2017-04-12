@@ -360,6 +360,39 @@ describe('Chat API', function() {
                 expect(res.type).toEqual(2);
                 expect(res.name).toEqual('GroupDialogName');
                 expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(1);
+
+
+                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
+                    return a - b;
+                });
+
+                expect(res.occupants_ids).toEqual(ocuupantsArray);
+
+                dialogId = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a dialog (group) - not joinable', function(done) {
+            var params = {
+                occupants_ids: [QBUser2.id],
+                name: 'GroupDialogName',
+                type: 2,
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(2);
+                expect(res.name).toEqual('GroupDialogName');
+                expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(0);
+
 
                 var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
                     return a - b;

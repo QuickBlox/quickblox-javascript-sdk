@@ -41,7 +41,8 @@ describe('PushNotifications API', function() {
           environment: 'development',
           client_identification_sequence: 'APA91bH91emYD8BYyveyO0C9M--p8xW9yTr1k_Nzr8-SfjCfSIljzYqNIX9fK9JxPsWm3NQ6P-'+
                                           'zCDkdtktVLEYJI5CLfg_3_auErc_29piz2zLHp5OjK0RdFnod-j0Pclo-a57FaKWxvNSr_EBwbP'+
-                                          '_oFDuXo1x0ucQ'
+                                          '_oFDuXo1x0ucQ',
+          bundle_identifier: "com.quickblox.chatapp"
         }
       };
 
@@ -60,7 +61,7 @@ describe('PushNotifications API', function() {
     it('can list a subscription', function(done){
       QB.pushnotifications.subscriptions.list(function(err, result){
         if (err) {
-          done.fail('List a subscription error: ' + JSON.stringify(err));
+          done.fail('List subscriptions error: ' + JSON.stringify(err));
         } else {
           expect(result).not.toBeNull();
           expect(result[0].subscription.device.udid).toBe('jasmineUnique');
@@ -148,18 +149,18 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can get event\'s status by id', function(done){
-      QB.pushnotifications.events.status(eventId, function(err, response) {
-        if (err) {
-          done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
-        } else {
-          expect(response).not.toBeNull();
-          expect(response.event.id).toBe(eventId);
-
-          done();
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
+    // it('can get event\'s status by id', function(done){
+    //   QB.pushnotifications.events.status(eventId, function(err, response) {
+    //     if (err) {
+    //       done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
+    //     } else {
+    //       expect(response).not.toBeNull();
+    //       expect(response.event.id).toBe(eventId);
+    //
+    //       done();
+    //     }
+    //   });
+    // }, REST_REQUESTS_TIMEOUT);
 
     it("can delete event", function(done){
       QB.pushnotifications.events.delete(eventId, function(err, response) {

@@ -2,33 +2,33 @@
     'use strict';
 
     var CREDS =  {
-        'appId': 29650,
-        'authKey': 'WULOyezrmxpOgQ-',
-        'authSecret': 'TqQmBFbANJ6cfu4'
+        'appId': 10,
+        'authKey': 'XR-B4J64ad6SGvL',
+        'authSecret': 'Nw27vzzEVfNXw47'
     };
 
     var QBUser1 = {
-            'id': 23286054,
-            'login': "js_jasmine11",
-            'password': "js_jasmine11",
-            'email': "js_jasmine11@quickblox.com"
+            'id': 4275,
+            'login': "js_jasmine22",
+            'password': "js_jasmine22",
+            'email': "js_jasmine22@quickblox.com"
         },
         QBUser2 = {
-            'id': 6126741,
-            'login': "js_jasmine2",
-            'password': "js_jasmine2"
+            'id': 4276,
+            'login': "js_jasmine222",
+            'password': "js_jasmine222"
         };
 
     var CONFIG = {
       endpoints: {
-        api: "api.quickblox.com", // set custom API endpoint
-        chat: "chat.quickblox.com" // set custom Chat endpoint
+        api: "apikafkacluster.quickblox.com", // set custom API endpoint
+        chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
       },
       chatProtocol: {
         active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
       },
       'debug': {
-          'mode': 0,
+          'mode': 1,
           'file': null
       }
     };
