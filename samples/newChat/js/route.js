@@ -49,6 +49,7 @@ router.on({
     '/dialog/:dialogId': function(params){
         console.log('route /dialog/ID');
         var dialogId = params.dialogId;
+        dialogModule.prevDialogId = dialogModule.dialogId;
         dialogModule.dialogId = dialogId;
 
         if (!loginModule.isLogin){
@@ -57,7 +58,6 @@ router.on({
                     router.navigate('/login');
                     return;
                 }
-
                 if(!app.isDashboardLoaded) {
                     app.renderDashboard();
                 }
@@ -68,62 +68,101 @@ router.on({
             });
         } else {
             _renderSelectedDialog();
-            // var dialog = dialogModule._cache[dialogId];
-            //
-            // if(dialog){
-            //     dialogModule.renderMessages(dialog, true);
-            // } else {
-            //     dialogModule.getDialogById(dialog, function(dialog){
-            //         var type = dialog.type === 1 ? 'public' : 'chat';
-            //         app.loadChatList(type);
-            //
-            //     });
-            // }
         }
 
         function _renderSelectedDialog(){
             var currentDialog = dialogModule._cache[dialogId];
             if(!currentDialog){
-                dialogModule.dialogsListContainer.classList.add('loading');
                 dialogModule.getDialogById(dialogId).then(function(dialog){
-                    var dialogId = dialog._id,
-                        tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                    var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
                         tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
 
-                    dialogModule.dialogId = dialogId;
-
-                    if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
-                        console.log('from route');
-                        userModule.addToCache({
-                            full_name: dialog.name,
-                            id: dialog.occupants_ids.filter(function (id) {
-                                if (id !== app.user.id) return id;
-                            })[0],
-                            color: _.random(1,10)
-                        });
-                    }
-
-                    dialogModule._cache[dialogId] = helpers.compileDialogParams(dialog);
-                    currentDialog = dialogModule._cache[dialogId];
-
-                    dialogModule.checkCachedUsersInDialog(dialogId).then(function(){
+                    app.loadChatList(tab).then(function(){
                         dialogModule.renderMessages(dialogId);
                     }).catch(function(error){
                         console.error(error);
                     });
-                    app.loadChatList(tab);
+
                 }).catch(function(error){
-                    console.info('redirrect to dashboard');
                     router.navigate('#!/dashboard');
-                    alert('can\'t find dialog with id: ' + dialogId);
                 });
+            } else {
+                dialogModule.renderMessages(dialogId);
             }
         }
     },
     'dialog/:dialogId/edit': function(params){
-        console.log('route /dialog/edit');
+        console.log('route /dialog/ID/edit');
         var dialogId = params.dialogId;
-        alert('/dialog/'+ dialogId + '/edit');
+        var currentDialog = null;
+        if (!loginModule.isLogin){
+            loginModule.init().then(function(isLogedIn){
+                if(!isLogedIn){
+                    router.navigate('/login');
+                    return;
+                }
+                _renderEditDialogPage();
+            }).catch(function(error){
+                console.error(error);
+                router.navigate('/login');
+            });
+        } else {
+            _renderEditDialogPage();
+        }
+
+        function _renderEditDialogPage(){
+            if(!app.isDashboardLoaded) {
+                app.renderDashboard();
+            }
+            currentDialog = dialogModule._cache[dialogId];
+
+            if(!currentDialog){
+                dialogModule.dialogId = dialogId;
+                dialogModule.getDialogById(dialogId).then(function(dialog){
+                    var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                        tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
+                    // add to dialog template
+                    app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: dialog.name, _id: dialog._id});
+                    app.loadChatList(tab).then(function(){
+                    }).catch(function(error){
+                        console.error(error);
+                    });
+                    _renderUsers(dialog.occupants_ids);
+                }).catch(function(error){
+                    router.navigate('#!/dashboard');
+                });
+            } else {
+                app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: currentDialog.name, _id: currentDialog._id});
+                _renderUsers(currentDialog.users);
+            }
+        }
+
+        function _renderUsers(dialogOccupants){
+            var userList = document.querySelector('.j-update_chat__user_list');
+
+            userModule.getUsers().then(function(usersArray){
+                var users = usersArray.map(function(user){
+                    user.selected = dialogOccupants.indexOf(user.id) !== -1;
+                    return user;
+                });
+
+                _.each(users, function(user){
+                    var userTpl = helpers.fillTemplate('tpl_editChatUser', user),
+                        userElem = helpers.toHtml(userTpl)[0];
+
+                    userElem.addEventListener('click', function(e){
+                        var elem = e.currentTarget;
+                        if(elem.classList.contains('disabled')) return;
+                        elem.classList.toggle('selected');
+                    });
+
+                    userList.appendChild(userElem);
+                });
+
+            }).catch(function(error){
+                console.error(error);
+            });
+        }
     }
 
 }).resolve();

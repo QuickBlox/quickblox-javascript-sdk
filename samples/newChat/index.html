@@ -90,7 +90,7 @@
                                 <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
-                                <a href="#" class="sidebar__tab_link j-sidebar__create_dilalog m-sidebar__tab_link_new" data-type="create">
+                                <a href="#" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
                                     <i class="material-icons">add_circle_outline</i>
                                 </a>
                             </li>
@@ -149,6 +149,10 @@
         <div class="content__title j-content__title j-dialog">
             <button class="open_sidebar j-open_sidebar"></button>
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
+            <div class="action_links">
+                <a href="#!/dialog/<%- _id %>/edit" class="add_to_dialog j-add_to_dialog">add_to_dialog</a>
+                <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link">quit</a>
+            </div>
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
@@ -165,6 +169,44 @@
                     <button class="send_btn">send</button>
                 </div>
             </form>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_UpdateDialogContainer">
+        <div class="content__title j-content__title j-create_dialog">
+            <a href="#!/dialog/<%- _id %>" class="back_to_dialog j-back_to_dialog">
+                <i class="material-icons">arrow_back</i>
+            </a>
+            <form action="#" name="update_chat_name" class="update_update_chat_name_form">
+                <input type="text" class="update_chat__title_input j-update_chat__title_input" value="<%- title %>" disabled>
+                <button class="update_chat__title_button">
+                    <i class="material-icons m-user_icon">create</i>
+                </button>
+            </form>
+        </div>
+        <div class="notifications j-notifications hidden"></div>
+        <div class="content__inner j-content__inner">
+            <p class="update__chat__description"><span class="update__chat_counter">0</span>&nbsp;user selected:</p>
+            <div class="update_chat__user_list j-update_chat__user_list">
+            </div>
+            <form action="" name="update_dialog" class="update_dialog_form j-update_dialog_form">
+                <button class="update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel" disabled>cancel</button>
+                <button class="update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit" disabled>add member</button>
+            </form>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_editChatUser">
+        <div class="user__item <% selected ? print('disabled selected') : ''%>" id="<%= id %>">
+            <span class="user__avatar m-user__img_<%= color %>">
+                <i class="material-icons m-user_icon">account_circle</i>
+            </span>
+            <div class="user__details">
+                <p class="user__name"><%= name %></p>
+                <% if (last_request_at) { %>
+                <p class="user__last_seen"><%= last_request_at %></p>
+                <% } %>
+            </div>
         </div>
     </script>
 
@@ -217,7 +259,6 @@
         <div class="user__item" id="<%= user.id %>">
             <span class="user__avatar m-user__img_<%= user.color %>">
                 <i class="material-icons m-user_icon">account_circle</i>
-                <!--<i class="material-icons m-done">done</i>-->
             </span>
             <div class="user__details">
                 <p class="user__name"><%- user.name %></p>
@@ -225,7 +266,6 @@
                     <p class="user__last_seen"><%= user.last_request_at %></p>
                 <% } %>
             </div>
-
         </div>
     </script>
 

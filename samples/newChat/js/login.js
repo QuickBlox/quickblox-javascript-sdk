@@ -13,7 +13,7 @@ Login.prototype.init = function(){
         if(user && !app.user){
             var savedUser = JSON.parse(user);
             app.room = savedUser.tag_list;
-            var test = self.login(savedUser)
+            self.login(savedUser)
                 .then(function(){
                     resolve(true);
                 }).catch(function(error){
@@ -81,6 +81,7 @@ Login.prototype.login = function (user) {
 
         function loginSuccess(userData){
             app.user = userModule.addToCache(userData);
+            app.user.user_tags = userData.user_tags;
             QB.chat.connect({userId: app.user.id, password: user.password}, function(err, roster){
                 if (err) {
                     document.querySelector('.j-login__button').innerText = 'Login';

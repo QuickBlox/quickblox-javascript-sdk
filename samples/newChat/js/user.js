@@ -3,9 +3,6 @@
 function User() {
     this._cache = {};
 
-    this.limit = appConfig.usersPerRequest || 50;
-    this.page = 1;
-
     this.userListConteiner = null;
     this.content = null;
 }
@@ -15,31 +12,20 @@ User.prototype.initGettingUsers = function () {
     self.content = document.querySelector('.j-content');
     self.userListConteiner = document.querySelector('.j-group_chat__user_list');
 
-    self.userListConteiner.addEventListener('scroll', function loadMoreUsers(e) {
-
-        if (!navigator.onLine) return false;
-
-        var container = self.userListConteiner,
-            position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
-
-        if (container.classList.contains('full')) {
-            container.removeEventListener('scroll', loadMoreUsers);
-        }
-
-        if (position <= 50 && !container.classList.contains('loading')) {
-            self.getUsers();
-        }
+    self.userListConteiner.classList.add('loading');
+    self.getUsers().then(function(userList){
+        _.each(userList, function(user){
+            self.buildUserItem(self._cache[user.id]);
+        });
+        self.userListConteiner.classList.remove('loading');
+    }).catch(function(error){
+        self.userListConteiner.classList.remove('loading');
     });
-
-    self.page = 1;
-
-    self.getUsers();
 };
 
 User.prototype.addToCache = function(user) {
     var self = this,
         id = user.id;
-
     if (!self._cache[id]) {
         self._cache[id] = {
             name: user.full_name || user.login || 'Unknown user (' + id + ')',
@@ -86,39 +72,23 @@ User.prototype.getUsersByIds = function (userList) {
 User.prototype.getUsers = function () {
     var self = this,
         params = {
-            page: self.page,
-            per_page: self.limit,
             tags: app.user.user_tags
         };
 
-    self.userListConteiner.classList.add('loading');
-
-    QB.users.get(params, function (err, responce) {
-        if (err) {
-            console.error(err);
-            return false;
-        }
-        
-        var users = responce.items;
-        
-        self.page = ++responce.current_page;
-        
-        _.each(users, function (data) {
-            var user = data.user;
-
-            self.addToCache(user);
-
-            if (user.id !== app.user.id) {
-                self.buildUserItem(self._cache[user.id]);
+    return new Promise(function(resolve, reject){
+        QB.users.get(params, function (err, responce) {
+            if (err) {
+                console.error(err);
+                reject(err);
             }
+
+            var userList = responce.items.map(function(data){
+                return self.addToCache(data.user);
+            });
+
+            resolve(userList);
         });
-
-        if (users.length < self.limit) {
-            self.userListConteiner.classList.add('full');
-        }
-
-        self.userListConteiner.classList.remove('loading');
-    });
+    })
 };
 
 User.prototype.buildUserItem = function (user) {

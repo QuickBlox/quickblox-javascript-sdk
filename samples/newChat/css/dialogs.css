@@ -26,6 +26,7 @@
 }
 
 .dialog__item_link {
+    padding: 16px;
     display: flex;
     flex-wrap: nowrap;
     text-decoration: none;
@@ -52,7 +53,6 @@
 }
 
 .dialog__item {
-    padding: 16px;
     cursor: pointer;
 }
 

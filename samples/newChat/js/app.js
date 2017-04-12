@@ -19,6 +19,7 @@ function App(config) {
     this.content = null;
     this.userListConteiner = null;
     this.init(this._config);
+    this.loading = true;
 }
 
 // Before start working with JS SDK you nead to init it.
@@ -73,7 +74,7 @@ App.prototype.loadWelcomeTpl = function () {
 App.prototype.tabSelectInit = function () {
     var self = this,
         tabs = document.querySelectorAll('.j-sidebar__tab_link'),
-        createDialogTab = document.querySelector('.j-sidebar__create_dilalog');
+        createDialogTab = document.querySelector('.j-sidebar__create_dialog');
     
     createDialogTab.addEventListener('click', function (e) {
         e.preventDefault();
@@ -191,9 +192,8 @@ App.prototype.buildCreateDialogTpl = function () {
 
 App.prototype.backToDialog = function (e) {
     var self = this;
-    console.log(event.currentTarget)
     self.sidebar.classList.add('active');
-    document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
+    document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
     
     if (dialogModule.dialogId) {
         dialogModule.renderMessages(dialogModule.dialogId);

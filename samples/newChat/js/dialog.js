@@ -6,12 +6,14 @@ function Dialog() {
     this.dialogId = null;
     this.prevDialogId = null;
 
+    // elements
     this.sidebar = null;
     this.content = null;
     this.dialogTitle = null;
     this.dialogsListContainer = null;
     this.messagesContainer = null;
-
+    this.editLink = null;
+    this.quitLink = null;
     this.attachmentsPreviewContainer = null;
     this.limit = appConfig.dilogsPerRequers || 30;
 }
@@ -23,7 +25,7 @@ Dialog.prototype.init = function () {
     self.dialogsListContainer = document.querySelector('.j-sidebar__dilog_list');
     self.content = document.querySelector('.j-content');
 
-    self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs(e) {
+    self.dialogsListContainer.addEventListener('scroll', function loadMoreDialogs() {
         var container = self.dialogsListContainer,
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
 
@@ -39,7 +41,6 @@ Dialog.prototype.init = function () {
 };
 
 Dialog.prototype.loadDialogs = function (type) {
-
     var self = this,
         filter = {
             limit: self.limit,
@@ -76,7 +77,7 @@ Dialog.prototype.loadDialogs = function (type) {
                 }
             }).map(function (dialog) {
                 return {
-                    name: dialog.name,
+                    full_name: dialog.name,
                     id: dialog.occupants_ids.filter(function (id) {
                         if (id !== app.user.id) return id;
                     })[0],
@@ -129,11 +130,11 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
     elem = helpers.toHtml(template)[0];
 
     elem.addEventListener('click', function (e) {
+        self.sidebar.classList.remove('active');
+
         if (!app.checkInternetConnection()) {
             return false;
         }
-
-        self.sidebar.classList.remove('active');
 
         if (elem.classList.contains('selected') && document.forms.send_message) return false;
 
@@ -148,8 +149,6 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
 
         self.prevDialogId = self.dialogId;
         self.dialogId = dialogElem.id;
-        
-        self.renderMessages(dialogElem.id);
 
         self._cache[self.dialogId].unread_messages_count = 0;
 
@@ -172,10 +171,10 @@ Dialog.prototype.replaceDialogLink = function (elem) {
         elemsCollection = self.dialogsListContainer.children,
         elemPosition;
 
-    elemPosition: for (var i = 0; i < elemsCollection.length; i++) {
+    for (var i = 0; i < elemsCollection.length; i++) {
         if (elemsCollection[i] === elem) {
             elemPosition = i;
-            break elemPosition;
+            break;
         }
     }
 
@@ -204,20 +203,26 @@ Dialog.prototype.renderMessages = function (dialogId) {
     var self = this,
         dialog = self._cache[dialogId];
 
-    document.querySelector('.j-sidebar__create_dilalog').classList.remove('active');
+    document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
 
     if (!self.checkCachedUsersInDialog(dialogId)) return false;
 
     if (!document.forms.send_message) {
         helpers.clearView(this.content);
-        self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name});
+        self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name, _id: dialog._id});
         self.messagesContainer = document.querySelector('.j-messages');
         self.attachmentsPreviewContainer = self.content.querySelector('.j-attachments_preview');
         self.dialogTitle = document.querySelector('.j-dialog__title');
-
+        self.editLink = document.querySelector('.j-add_to_dialog');
+        self.quitLink = document.querySelector('.j-quit_fom_dialog_link');
         document.querySelector('.j-open_sidebar').addEventListener('click', function (e) {
             self.sidebar.classList.add('active');
         }.bind(self));
+
+        self.quitLink.addEventListener('click', function(e){
+           e.preventDefault();
+            alert('quit from dialog:', self.dialogId);
+        });
 
         messageModule.init();
     } else {
@@ -226,13 +231,17 @@ Dialog.prototype.renderMessages = function (dialogId) {
         }
 
         self.dialogTitle.innerText = dialog.name;
+        self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
+        console.log(self.editLink.attributes.href);
+        console.log(self.editLink);
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
     }
+
     messageModule.setLoadMoreMessagesListener();
 
-    document.forms.send_message.message_feald.value = dialog.draft.message;
+    document.forms.send_message.message_feald.value = dialog.draft.message || '';
 
     if (dialog && dialog.messages.length) {
         for (var i = 0; i < dialog.messages.length; i++) {
@@ -277,7 +286,6 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
 };
 
 Dialog.prototype.createDialog = function (params) {
-
     if (!app.checkInternetConnection()) {
         return false;
     }
@@ -340,7 +348,6 @@ Dialog.prototype.createDialog = function (params) {
 };
 
 Dialog.prototype.getDialogById = function (id) {
-    var self = this;
     return new Promise(function(resolve, reject){
         if (!app.checkInternetConnection()) {
             return false;
@@ -384,5 +391,10 @@ Dialog.prototype.checkCachedUsersInDialog = function (dialogId) {
     });
 };
 
+Dialog.prototype.updateDialog = function (params) {
+    var self = this;
+
+
+};
 
 var dialogModule = new Dialog();

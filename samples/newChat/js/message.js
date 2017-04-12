@@ -14,14 +14,12 @@ function Message() {
 
 Message.prototype.init = function () {
     var self = this;
-
     self.container = document.querySelector('.j-messages');
     self.attachmentPreviewContainer = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
 
     document.forms.send_message.addEventListener('submit', function (e) {
         e.preventDefault();
-
         self.sendMessage(dialogModule.dialogId);
         document.forms.send_message.message_feald.focus();
     });
@@ -155,7 +153,6 @@ Message.prototype.setLoadMoreMessagesListener = function () {
 
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
-
     var self = this,
         params = {
             chat_dialog_id: dialogId,
@@ -175,7 +172,6 @@ Message.prototype.getMessages = function (dialogId) {
             if (messages.items.length < self.limit) {
                 dialog.full = true;
             }
-
             if (dialogModule.dialogId !== dialogId) return false;
 
             if (dialogModule._cache[dialogId].type === 1) {
@@ -211,12 +207,7 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
     }
 
     if (!userList.length) return false;
-    userModule.getUsersByIds(userList, function (err) {
-        if (err) {
-            console.error(err);
-            return false;
-        }
-
+    userModule.getUsersByIds(userList).then(function(){
         for (var i = 0; i < messages.length; i++) {
             var message = helpers.fillMessagePrams(messages[i]);
             self.renderMessage(message, false);
@@ -225,6 +216,8 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
         if (!skip) {
             helpers.scrollTo(self.container, 'bottom');
         }
+    }).catch(function(error){
+        console.error(error);
     });
 };
 
@@ -334,7 +327,7 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
     }, function (err, response) {
         if (err) {
             preview.remove();
-            console.log(err);
+            console.error(err);
             alert('ERROR: ' + err.detail);
         } else {
             preview.remove();
