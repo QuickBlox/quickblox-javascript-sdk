@@ -173,13 +173,13 @@
     </script>
 
     <script type="text/template" id="tpl_UpdateDialogContainer">
-        <div class="content__title j-content__title j-create_dialog">
+        <div class="content__title j-content__title update_dialog__header j-update_dialog">
             <a href="#!/dialog/<%- _id %>" class="back_to_dialog j-back_to_dialog">
                 <i class="material-icons">arrow_back</i>
             </a>
             <form action="#" name="update_chat_name" class="update_update_chat_name_form">
-                <input type="text" class="update_chat__title_input j-update_chat__title_input" value="<%- title %>" disabled>
-                <button class="update_chat__title_button">
+                <input type="text" name="update_chat__title" class="update_chat__title_input j-update_chat__title_input" value="<%- title %>" disabled>
+                <button type="button" class="update_chat__title_button j-update_chat__title_button">
                     <i class="material-icons m-user_icon">create</i>
                 </button>
             </form>
@@ -190,8 +190,8 @@
             <div class="update_chat__user_list j-update_chat__user_list">
             </div>
             <form action="" name="update_dialog" class="update_dialog_form j-update_dialog_form">
-                <button class="update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel" disabled>cancel</button>
-                <button class="update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit" disabled>add member</button>
+                <button type="button" class="update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel">cancel</button>
+                <button class="update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit">add member</button>
             </form>
         </div>
     </script>

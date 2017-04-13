@@ -123,16 +123,18 @@ router.on({
                         tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
                     // add to dialog template
                     app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: dialog.name, _id: dialog._id});
-                    app.loadChatList(tab).then(function(){
-                    }).catch(function(error){
-                        console.error(error);
-                    });
+                    _setEditDiaogListeners();
                     _renderUsers(dialog.occupants_ids);
+                    app.loadChatList(tab).then(function(){})
+                        .catch(function(error){
+                            console.error(error);
+                        });
                 }).catch(function(error){
                     router.navigate('#!/dashboard');
                 });
             } else {
                 app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: currentDialog.name, _id: currentDialog._id});
+                _setEditDiaogListeners();
                 _renderUsers(currentDialog.users);
             }
         }
@@ -161,6 +163,62 @@ router.on({
 
             }).catch(function(error){
                 console.error(error);
+            });
+        }
+
+        function _setEditDiaogListeners(){
+            var editTitleBtn = document.querySelector('.j-update_chat__title_button'),
+                editTitleForm = document.forms.update_chat_name,
+                editTitleInput = editTitleForm.update_chat__title,
+                editUsersCountForm = document.forms.update_dialog,
+                canselBtn = editUsersCountForm.update_dialog_cancel;
+            console.log(canselBtn);
+            // change Title listener
+            editTitleBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                editTitleForm.classList.toggle('active');
+
+                if(!editTitleForm.classList.contains('active')){
+                    editTitleInput.setAttribute('disabled', true);
+                } else {
+                    editTitleInput.removeAttribute('disabled');
+                    editTitleInput.focus();
+                }
+            });
+
+            editTitleForm.addEventListener('submit', function(e){
+                e.preventDefault();
+
+                var params = {
+                    id: dialogId,
+                    title: editTitleInput.value
+                };
+                console.log(1);
+                dialogModule.updateDialog(params);
+            });
+
+            editUsersCountForm.addEventListener('submit', function(e){
+                e.preventDefault();
+
+                var userList = document.querySelectorAll('.user__item.selected'),
+                    params = {
+                        id: dialogId,
+                        userList: userList.map(function(userItem){
+                            return userItem.id;
+                        })
+                    };
+                
+                dialogModule.updateDialog(params);
+            });
+
+            canselBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+
+                router.navigate('/dialog/' + dialogId);
             });
         }
     }

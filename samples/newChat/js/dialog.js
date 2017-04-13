@@ -391,10 +391,25 @@ Dialog.prototype.checkCachedUsersInDialog = function (dialogId) {
     });
 };
 
-Dialog.prototype.updateDialog = function (params) {
-    var self = this;
+Dialog.prototype.updateDialog = function (updates) {
+    var self = this,
+        dialog = self._cache[updates.id];
 
+    console.log()
 
+    if(updates.title && dialog.type !== CONSTANTS.DIALOG_TYPES.CHAT){
+        console.log('update title in ');
+    } else if (updates.userList) {
+        console.log(dialog);
+        console.log('update users');
+    } else {
+        // can't change dialog name in a privat chat (type 3).
+        return false;
+    }
+
+    function _getNewUsers(){
+
+    }
 };
 
 var dialogModule = new Dialog();

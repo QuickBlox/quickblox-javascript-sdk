@@ -486,8 +486,20 @@
     border: none;
     background: #fff;
     margin: 0 20px 0 0;
-    padding: 15px 15px 15px 0;
+    padding: 10px 15px 10px 0;
+    box-shadow: inset 0 -2px 0 0 #18C942;
+    transition: .3s;
 }
+
+.update_dialog__header {
+    padding: 6px 16px;
+    align-items: center;
+}
+
+.update_chat__title_input:disabled {
+    box-shadow: none;
+}
+
 .update_chat__title_button i {
     color: #6C7A89;
 }
