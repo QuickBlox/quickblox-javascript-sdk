@@ -344,12 +344,13 @@ describe('Chat API', function() {
     describe('REST API', function() {
         var dialogId;
         var dialogId2;
+        var dialogId3;
         var messageId;
 
         it('can create a dialog (group)', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
-                name: 'GroupDialogName',
+                name: 'joinable=1',
                 type: 2
             };
 
@@ -359,7 +360,7 @@ describe('Chat API', function() {
                 expect(res).not.toBeNull();
                 expect(res._id).not.toBeNull();
                 expect(res.type).toEqual(2);
-                expect(res.name).toEqual('GroupDialogName');
+                expect(res.name).toEqual('joinable=1');
                 expect(res.xmpp_room_jid).toContain(chatEndpoint);
                 expect(res.is_joinable).toEqual(1);
 
@@ -379,7 +380,7 @@ describe('Chat API', function() {
         it('can create a dialog (group) - not joinable', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
-                name: 'GroupDialogName',
+                name: 'joinable=0',
                 type: 2,
                 is_joinable: 0
             };
@@ -390,7 +391,7 @@ describe('Chat API', function() {
                 expect(res).not.toBeNull();
                 expect(res._id).not.toBeNull();
                 expect(res.type).toEqual(2);
-                expect(res.name).toEqual('GroupDialogName');
+                expect(res.name).toEqual('joinable=0');
                 expect(res.xmpp_room_jid).toContain(chatEndpoint);
                 expect(res.is_joinable).toEqual(0);
 
@@ -402,6 +403,43 @@ describe('Chat API', function() {
                 expect(res.occupants_ids).toEqual(ocuupantsArray);
 
                 dialogId2 = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a dialog (public group)', function(done) {
+            var params = {
+                name: 'Public Awesome chat',
+                type: 1
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(1);
+                expect(res.name).toEqual('Public Awesome chat');
+                expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(1);
+
+                dialogId3 = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't create a dialog (public group) with is_joinable=0", function(done) {
+            var params = {
+                name: 'Public Awesome chat',
+                type: 1,
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
 
                 done();
             });
@@ -460,6 +498,20 @@ describe('Chat API', function() {
                 done();
             });
         }, REST_REQUESTS_TIMEOUT);
+
+        it("can't update a dialog (public group) (set is_joinable=0)", function(done) {
+            var toUpdate = {
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.update(dialogId3, toUpdate, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
 
         it('can create a message', function(done) {
             var params = {
@@ -544,17 +596,20 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-        it('can delete a dialog (group)', function(done) {
-            QB.chat.dialog.delete([dialogId2, 'notExistentId'], {force: 1}, function(err, res) {
-                var answ = JSON.parse(res);
+        afterAll(function(done) {
+          QB.chat.dialog.delete([dialogId2, dialogId3], {force: 1}, function(err, res) {
+              var answ = JSON.parse(res);
 
-                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId2]);
-                expect(answ.NotFound.ids).toEqual(["notExistentId"]);
-                expect(answ.WrongPermissions.ids).toEqual([]);
+              expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId2, dialogId3]);
+              expect(answ.NotFound.ids).toEqual([]);
+              expect(answ.WrongPermissions.ids).toEqual([]);
 
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
+              done();
+          });
+
+        });
+
+
     });
 
     /** Doesn't work on OS */
