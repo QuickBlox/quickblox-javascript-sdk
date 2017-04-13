@@ -496,12 +496,38 @@
     align-items: center;
 }
 
+.content__title .action_links {
+    display: flex;
+    flex: 1 1;
+}
+
+.content__title .action_links a {
+    color: #778594;
+}
+
+.content__title .action_links .hidden {
+    display: none;
+}
+
+.content__title .action_links .add_to_dialog {
+    margin: 0 17px 0 0 ;
+}
+
+.update_dialog__header .action_links  {
+}
+
+
 .update_chat__title_input:disabled {
     box-shadow: none;
 }
 
 .update_chat__title_button i {
     color: #6C7A89;
+    cursor: pointer;
+}
+
+.update_chat__title_button:hover i {
+    color: #18C942;
 }
 
 .update_chat__title_input.active i {

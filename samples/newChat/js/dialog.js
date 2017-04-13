@@ -205,11 +205,10 @@ Dialog.prototype.renderMessages = function (dialogId) {
 
     document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
 
-    if (!self.checkCachedUsersInDialog(dialogId)) return false;
 
     if (!document.forms.send_message) {
         helpers.clearView(this.content);
-        self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name, _id: dialog._id});
+        self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name, _id: dialog._id, type: dialog.type});
         self.messagesContainer = document.querySelector('.j-messages');
         self.attachmentsPreviewContainer = self.content.querySelector('.j-attachments_preview');
         self.dialogTitle = document.querySelector('.j-dialog__title');
@@ -221,7 +220,8 @@ Dialog.prototype.renderMessages = function (dialogId) {
 
         self.quitLink.addEventListener('click', function(e){
            e.preventDefault();
-            alert('quit from dialog:', self.dialogId);
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
+            self.quitFromTheDialog(dialogId)
         });
 
         messageModule.init();
@@ -231,9 +231,20 @@ Dialog.prototype.renderMessages = function (dialogId) {
         }
 
         self.dialogTitle.innerText = dialog.name;
-        self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
-        console.log(self.editLink.attributes.href);
-        console.log(self.editLink);
+
+        if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
+            self.editLink.classList.remove('hidden');
+            self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
+        } else {
+            self.editLink.classList.add('hidden');
+        }
+
+        if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT){
+            self.quitLink.classList.add('hidden');
+        } else {
+            self.quitLink.classList.remove('hidden');
+        }
+
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
@@ -243,19 +254,21 @@ Dialog.prototype.renderMessages = function (dialogId) {
 
     document.forms.send_message.message_feald.value = dialog.draft.message || '';
 
-    if (dialog && dialog.messages.length) {
-        for (var i = 0; i < dialog.messages.length; i++) {
-            messageModule.renderMessage(dialog.messages[i], false);
-        }
-        
-        helpers.scrollTo(self.messagesContainer, 'bottom');
-        
-        if (dialog.messages.length < messageModule.limit) {
+    self.checkCachedUsersInDialog(dialogId).then(function(){
+        if (dialog && dialog.messages.length) {
+            for (var i = 0; i < dialog.messages.length; i++) {
+                messageModule.renderMessage(dialog.messages[i], false);
+            }
+
+            helpers.scrollTo(self.messagesContainer, 'bottom');
+
+            if (dialog.messages.length < messageModule.limit) {
+                messageModule.getMessages(self.dialogId);
+            }
+        } else {
             messageModule.getMessages(self.dialogId);
         }
-    } else {
-        messageModule.getMessages(self.dialogId);
-    }
+    });
 };
 
 Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
@@ -393,21 +406,90 @@ Dialog.prototype.checkCachedUsersInDialog = function (dialogId) {
 
 Dialog.prototype.updateDialog = function (updates) {
     var self = this,
-        dialog = self._cache[updates.id];
-
-    console.log()
+        dialogId = updates.id,
+        dialog = self._cache[dialogId],
+        toUpdateParams = {};
 
     if(updates.title && dialog.type !== CONSTANTS.DIALOG_TYPES.CHAT){
-        console.log('update title in ');
+        if(updates.title !== dialog.name){
+            toUpdateParams.name = updates.title;
+            _sendUpdateStanza();
+        }
     } else if (updates.userList) {
-        console.log(dialog);
-        console.log('update users');
+        var userList =  _getNewUsers();
+        if(userList.length){
+            toUpdateParams.push_all = {
+                occupants_ids: userList
+            };
+            _sendUpdateStanza();
+        }
     } else {
         // can't change dialog name in a privat chat (type 3).
         return false;
     }
 
     function _getNewUsers(){
+        return updates.userList.filter(function(occupantId){
+            return dialog.users.indexOf(+occupantId) === -1;
+        });
+    }
+
+    function _sendUpdateStanza (){
+        console.log(dialogId, toUpdateParams);
+        QB.chat.dialog.update(dialogId, toUpdateParams, function(err, dialog) {
+            if (err) {
+                console.log(err);
+            } else {
+                self.updateDialogInCache(dialog);
+            }
+        });
+    }
+};
+
+Dialog.prototype.updateDialogInCache = function(newDialog){
+    var self = this,
+        cachedDialog = self._cache[newDialog._id];
+
+    cachedDialog.name = newDialog.name;
+    cachedDialog.users = newDialog.occupants_ids;
+};
+
+Dialog.prototype.quitFromTheDialog = function(dialogId){
+    var self = this,
+        dialog = self._cache[dialogId];
+
+    if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT){
+        alert('you can\'t remove this dialog');
+        return;
+    } else if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
+        // delete current privat dialog;
+        QB.chat.dialog.delete([dialogId], function(err) {
+            if (err) {
+                console.error(err);
+            } else {
+                delete self._cache[dialogId];
+                router.navigate('/dashboard');
+            }
+        });
+    } else if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+        // remove user from current  group dialog;
+        QB.chat.dialog.update(dialogId, {
+            pull_all: {
+                occupants_ids: [app.user.id]
+            }
+        }, function(err, res) {
+            if (err) {
+                console.log(err);
+            } else {
+                delete self._cache[dialogId];
+                router.navigate('/dashboard');
+            }
+        });
+    }
+
+
+    function _removeDialogElemFromUI(){
+        var dialogElem = document.getElementById(dialogId);
 
     }
 };

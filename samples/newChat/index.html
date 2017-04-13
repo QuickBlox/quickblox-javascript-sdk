@@ -150,8 +150,8 @@
             <button class="open_sidebar j-open_sidebar"></button>
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
             <div class="action_links">
-                <a href="#!/dialog/<%- _id %>/edit" class="add_to_dialog j-add_to_dialog">add_to_dialog</a>
-                <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link">quit</a>
+                <a href="#!/dialog/<%- _id %>/edit" class="add_to_dialog j-add_to_dialog <% type !== 2 ? print('hidden') : ''%>"><i class="material-icons">person_add</i></a>
+                <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link <% type === 1 ? print('hidden') : ''%>"><i class="material-icons">delete</i></a>
             </div>
         </div>
         <div class="notifications j-notifications hidden"></div>

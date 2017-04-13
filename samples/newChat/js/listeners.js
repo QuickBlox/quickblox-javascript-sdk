@@ -22,9 +22,10 @@ function Listeners() {
 }
 
 Listeners.prototype.onMessageListener = function (userId, message) {
+    console.log('onMessageListener');
     var msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
-
+    console.log(dialog);
     if (dialog) {
         dialog.messages.unshift(msg);
 
@@ -50,13 +51,17 @@ Listeners.prototype.onMessageListener = function (userId, message) {
         }
 
     } else {
-        dialogModule.getDialogById(msg.chat_dialog_id, function (dialog) {
+        dialogModule.getDialogById(msg.chat_dialog_id).then(function(dialog){
+            dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
             var type = dialog.type === 1 ? 'public' : 'chat',
-                activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
+                activeTab = document.querySelector('.j-sidebar__tab_link.active'),
+                cachedDialog = dialogModule._cache[dialog._id];
             if (activeTab && type === activeTab.dataset.type) {
-                dialogModule.renderDialog(dialog, true);
+                console.log('before render');
+                dialogModule.renderDialog(cachedDialog, true);
             }
+        }).catch(function(e){
+            console.error(e);
         });
     }
 

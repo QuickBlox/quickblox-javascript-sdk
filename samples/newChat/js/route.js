@@ -172,7 +172,7 @@ router.on({
                 editTitleInput = editTitleForm.update_chat__title,
                 editUsersCountForm = document.forms.update_dialog,
                 canselBtn = editUsersCountForm.update_dialog_cancel;
-            console.log(canselBtn);
+
             // change Title listener
             editTitleBtn.addEventListener('click', function(e){
                 e.preventDefault();
@@ -193,22 +193,27 @@ router.on({
 
                 var params = {
                     id: dialogId,
-                    title: editTitleInput.value
+                    title: editTitleInput.value.trim()
                 };
-                console.log(1);
                 dialogModule.updateDialog(params);
             });
 
             editUsersCountForm.addEventListener('submit', function(e){
                 e.preventDefault();
 
-                var userList = document.querySelectorAll('.user__item.selected'),
-                    params = {
-                        id: dialogId,
-                        userList: userList.map(function(userItem){
-                            return userItem.id;
-                        })
-                    };
+                var userItemsList = document.querySelectorAll('.user__item.selected'),
+                    userList = [];
+
+                _.each(userItemsList, function(userItem){
+                    userList.push(userItem.id);
+                    });
+
+                var params = {
+                    id: dialogId,
+                    userList: _.each(userList, function(userItem){
+                        return userItem.id;
+                    })
+                };
                 
                 dialogModule.updateDialog(params);
             });
@@ -216,8 +221,6 @@ router.on({
             canselBtn.addEventListener('click', function(e){
                 e.preventDefault();
                 e.stopPropagation();
-
-
                 router.navigate('/dialog/' + dialogId);
             });
         }

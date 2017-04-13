@@ -412,4 +412,15 @@ Message.prototype.renderTypingUsers = function (dialogId) {
     }
 };
 
+Message.prototype.sendUpdateDialogMessage = function(dialogId, updatedParams) {
+    var msg = {
+        type: 'chat',
+        extension: {
+            notification_type: 2,
+            _id: dialogId,
+        },
+    };
+};
+
+
 var messageModule = new Message();
