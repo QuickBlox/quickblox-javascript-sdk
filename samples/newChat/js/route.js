@@ -41,6 +41,8 @@ router.on({
             }).catch(function() {
                router.navigate('/login');
             });
+        } else if(app.isDashboardLoaded) {
+            app.loadWelcomeTpl();
         } else {
             app.renderDashboard('chat');
             dialogModule.loadDialogs('chat');

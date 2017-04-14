@@ -413,14 +413,36 @@ Message.prototype.renderTypingUsers = function (dialogId) {
 };
 
 Message.prototype.sendUpdateDialogMessage = function(dialogId, updatedParams) {
-    var msg = {
-        type: 'chat',
-        extension: {
-            notification_type: 2,
-            _id: dialogId,
-        },
-    };
+    console.log('dialogId');
+    console.log('updatedParams');
 };
 
+Message.prototype.renderNotyficationMessage = function(msg){
+
+};
+
+Message.prototype.sendNewDialogMessage = function(dialog, occupantsIds){
+    var msg = {
+        type: dialog.type === 3 ? 'chat' : 'groupchat',
+        body:  (app.user.name || app.user.login) + ' created new dialog with: ',
+        extension: {
+            save_to_history: 1,
+            dialog_id: dialog._id,
+            notification_type: 1
+        },
+        markable: 1
+    };
+
+    occupantsIds.forEach(function(id){
+        msg.body += userModule._cache[id];
+    });
+
+    console.info('msg');
+
+    occupantsIds.forEach(function(id){
+        QB.chat.send(id, msg);
+    });
+
+};
 
 var messageModule = new Message();
