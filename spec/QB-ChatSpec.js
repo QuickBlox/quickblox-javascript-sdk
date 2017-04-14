@@ -249,6 +249,40 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
+        it("can't update a dialog (group) (set is_joinable=0) (if you are not an owner)", function(done) {
+          // login with other user
+          var createSessionParams = {
+              'login': QBUser2.login,
+              'password': QBUser2.password
+          };
+          QB.createSession(createSessionParams, function (err, result) {
+              expect(err).toBeNull();
+              expect(result).toBeDefined();
+              expect(result.application_id).toEqual(CREDS.appId);
+
+              var toUpdate = {
+                  is_joinable: 0
+              };
+              QB.chat.dialog.update(dialogId1Group, toUpdate, function(err, res) {
+                  expect(res).toBeNull();
+                  expect(err).not.toBeNull();
+
+                  // back to origin user
+                  var createSessionParams = {
+                      'login': QBUser1.login,
+                      'password': QBUser1.password
+                  };
+                  QB.createSession(createSessionParams, function (err, result) {
+                      expect(err).toBeNull();
+                      expect(result).toBeDefined();
+                      expect(result.application_id).toEqual(CREDS.appId);
+
+                      done();
+                  });
+              });
+          });
+        }, 3*REST_REQUESTS_TIMEOUT);
+
         it("can't update a dialog (public group) (set is_joinable=0)", function(done) {
             var toUpdate = {
                 is_joinable: 0
