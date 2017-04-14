@@ -41,7 +41,9 @@ describe('Chat API', function() {
         var dialogId2GroupNotJoinable;
         var dialogId3PublicGroup;
         var dialogId4Private;
-        var messageId;
+        var messageIdPrivate;
+        var messageIdGroup;
+        var messageIdSystem;
 
         it('can create a dialog (private)', function(done) {
             var params = {
@@ -251,6 +253,7 @@ describe('Chat API', function() {
 
         it("can't update a dialog (group) (set is_joinable=0) (if you are not an owner)", function(done) {
           // login with other user
+          //
           var createSessionParams = {
               'login': QBUser2.login,
               'password': QBUser2.password
@@ -268,6 +271,7 @@ describe('Chat API', function() {
                   expect(err).not.toBeNull();
 
                   // back to origin user
+                  //
                   var createSessionParams = {
                       'login': QBUser1.login,
                       'password': QBUser1.password
@@ -298,7 +302,25 @@ describe('Chat API', function() {
 
 // =============================================================================
 
-        it('can create a message', function(done) {
+        it('can create a message (private dialog)', function(done) {
+            var params = {
+                chat_dialog_id: dialogId4Private,
+                message: 'hello world'
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(err).toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.message).toEqual("hello world");
+                expect(res.chat_dialog_id).toEqual(dialogId4Private);
+
+                messageIdPrivate = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a message (group dialog)', function(done) {
             var params = {
                 chat_dialog_id: dialogId1Group,
                 message: 'hello world'
@@ -306,28 +328,11 @@ describe('Chat API', function() {
 
             QB.chat.message.create(params, function(err, res) {
                 expect(err).toBeNull();
-
                 expect(res._id).not.toBeNull();
                 expect(res.message).toEqual("hello world");
                 expect(res.chat_dialog_id).toEqual(dialogId1Group);
 
-                messageId = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it("can't create a system message (group dialog)", function(done) {
-            var params = {
-                chat_dialog_id: dialogId1Group,
-                param1: "value1",
-                param2: "value2",
-                system: 1
-            };
-
-            QB.chat.message.create(params, function(err, res) {
-                expect(res).toBeNull();
-                expect(err).not.toBeNull();
+                messageIdGroup = res._id;
 
                 done();
             });
@@ -349,6 +354,24 @@ describe('Chat API', function() {
                 expect(res.param2).toEqual("value2");
                 expect(res.chat_dialog_id).toEqual(dialogId4Private);
 
+                messageIdSystem = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't create a system message (group dialog)", function(done) {
+            var params = {
+                chat_dialog_id: dialogId1Group,
+                param1: "value1",
+                param2: "value2",
+                system: 1
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
                 done();
             });
         }, REST_REQUESTS_TIMEOUT);
@@ -358,9 +381,8 @@ describe('Chat API', function() {
 
             QB.chat.message.list(filters, function(err, res) {
                 expect(err).toBeNull();
-
                 expect(res).not.toBeNull();
-                expect(res.items.length).toBeGreaterThan(0);
+                expect(res.items.length).toEqual(1);
 
                 done();
             });
@@ -371,7 +393,6 @@ describe('Chat API', function() {
 
             QB.chat.message.unreadCount(params, function(err, res) {
                 expect(err).toBeNull();
-
                 expect(res.total).toEqual(0);
                 expect(res[dialogId1Group]).toEqual(0);
 
@@ -386,18 +407,17 @@ describe('Chat API', function() {
             }, function(error, result) {
                 expect(error).toBeNull();
 
-            /** result will be equal to empty */
-            done();
+                done();
           });
         }, REST_REQUESTS_TIMEOUT);
 
         it('can delete a message with id', function(done) {
-            QB.chat.message.delete([messageId, 'notExistentId'], {force: 1}, function(err, res) {
+            QB.chat.message.delete([messageIdGroup, 'notExistentId'], {force: 1}, function(err, res) {
                 expect(err).toBeNull();
 
                 done();
 
-                messageId = null;
+                messageIdGroup = null;
             });
         }, REST_REQUESTS_TIMEOUT);
 
