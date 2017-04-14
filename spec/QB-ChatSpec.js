@@ -25,17 +25,373 @@ describe('Chat API', function() {
             'password': QBUser1.password
         };
 
-        function createSessionCb(err, result) {
+        QB.createSession(createSessionParams, function (err, result) {
             expect(err).toBeNull();
-
             expect(result).toBeDefined();
             expect(result.application_id).toEqual(CREDS.appId);
 
             done();
-        }
-
-        QB.createSession(createSessionParams, createSessionCb);
+        });
     }, REST_REQUESTS_TIMEOUT);
+
+// =========================== REST API ========================================
+
+    describe('REST API', function() {
+        var dialogId1Group;
+        var dialogId2GroupNotJoinable;
+        var dialogId3PublicGroup;
+        var dialogId4Private;
+        var messageId;
+
+        it('can create a dialog (private)', function(done) {
+            var params = {
+                occupants_ids: [QBUser2.id],
+                type: 3
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(3);
+                expect(res.is_joinable).toEqual(0);
+
+                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
+                    return a - b;
+                });
+                expect(res.occupants_ids).toEqual(ocuupantsArray);
+
+                dialogId4Private = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't create a dialog (private) (is_joinable=1)", function(done) {
+            var params = {
+                occupants_ids: [QBUser2.id],
+                type: 3,
+                is_joinable: 1
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).not.toBeNull();
+                expect(res).toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a dialog (group)', function(done) {
+            var params = {
+                occupants_ids: [QBUser2.id],
+                name: 'joinable=1',
+                type: 2
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(2);
+                expect(res.name).toEqual('joinable=1');
+                expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(1);
+
+
+                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
+                    return a - b;
+                });
+
+                expect(res.occupants_ids).toEqual(ocuupantsArray);
+
+                dialogId1Group = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a dialog (group) - not joinable', function(done) {
+            var params = {
+                occupants_ids: [QBUser2.id],
+                name: 'joinable=0',
+                type: 2,
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(2);
+                expect(res.name).toEqual('joinable=0');
+                expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(0);
+
+
+                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
+                    return a - b;
+                });
+
+                expect(res.occupants_ids).toEqual(ocuupantsArray);
+
+                dialogId2GroupNotJoinable = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can create a dialog (public group)', function(done) {
+            var params = {
+                name: 'Public Awesome chat',
+                type: 1
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.type).toEqual(1);
+                expect(res.name).toEqual('Public Awesome chat');
+                expect(res.xmpp_room_jid).toContain(chatEndpoint);
+                expect(res.is_joinable).toEqual(1);
+
+                dialogId3PublicGroup = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't create a dialog (public group) with is_joinable=0", function(done) {
+            var params = {
+                name: 'Public Awesome chat',
+                type: 1,
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.create(params, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+// =============================================================================
+
+        it('can list dialogs', function(done) {
+            var filters = {};
+            QB.chat.dialog.list(filters, function(err, res) {
+                expect(err).toBeNull();
+                expect(res).not.toBeNull();
+                expect(res.items.length).toEqual(4);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+// =============================================================================
+
+        it("can't update a dialog (private) (set is_joinable=1)", function(done) {
+            var toUpdate = {
+                is_joinable: 1
+            };
+
+            QB.chat.dialog.update(dialogId4Private, toUpdate, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can update a dialog (group) (also set is_joinable=0)', function(done) {
+            var toUpdate = {
+                name: 'GroupDialogNewName',
+                pull_all: {
+                  occupants_ids: [QBUser2.id]
+                },
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.update(dialogId1Group, toUpdate, function(err, res) {
+                expect(err).toBeNull();
+                expect(res).not.toBeNull();
+                expect(res.name).toEqual('GroupDialogNewName');
+                expect(res.occupants_ids).toEqual([QBUser1.id]);
+                expect(res.is_joinable).toEqual(0);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can update a dialog (group) (also set is_joinable=1)', function(done) {
+            var toUpdate = {
+                name: 'GroupDialogNewName',
+                pull_all: {
+                  occupants_ids: [QBUser2.id]
+                },
+                is_joinable: 1
+            };
+
+            QB.chat.dialog.update(dialogId1Group, toUpdate, function(err, res) {
+                expect(err).toBeNull();
+                expect(res).not.toBeNull();
+                expect(res.name).toEqual('GroupDialogNewName');
+                expect(res.occupants_ids).toEqual([QBUser1.id]);
+                expect(res.is_joinable).toEqual(1);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't update a dialog (public group) (set is_joinable=0)", function(done) {
+            var toUpdate = {
+                is_joinable: 0
+            };
+
+            QB.chat.dialog.update(dialogId3PublicGroup, toUpdate, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+// =============================================================================
+
+        it('can create a message', function(done) {
+            var params = {
+                chat_dialog_id: dialogId1Group,
+                message: 'hello world'
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res._id).not.toBeNull();
+                expect(res.message).toEqual("hello world");
+                expect(res.chat_dialog_id).toEqual(dialogId1Group);
+
+                messageId = res._id;
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can't create a system message (group dialog)", function(done) {
+            var params = {
+                chat_dialog_id: dialogId1Group,
+                param1: "value1",
+                param2: "value2",
+                system: 1
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(res).toBeNull();
+                expect(err).not.toBeNull();
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it("can create a system message (private dialog)", function(done) {
+            var params = {
+                chat_dialog_id: dialogId4Private,
+                param1: "value1",
+                param2: "value2",
+                system: 1
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res._id).not.toBeNull();
+                expect(res.param1).toEqual("value1");
+                expect(res.param2).toEqual("value2");
+                expect(res.chat_dialog_id).toEqual(dialogId4Private);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can list messages', function(done) {
+            var filters = { chat_dialog_id: dialogId1Group };
+
+            QB.chat.message.list(filters, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res).not.toBeNull();
+                expect(res.items.length).toBeGreaterThan(0);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can request unread messages count', function(done) {
+            var params = { chat_dialog_ids: [dialogId1Group] };
+
+            QB.chat.message.unreadCount(params, function(err, res) {
+                expect(err).toBeNull();
+
+                expect(res.total).toEqual(0);
+                expect(res[dialogId1Group]).toEqual(0);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can set \'read\' status for all messages in dialog', function(done) {
+            QB.chat.message.update('', {
+              'read': '1',
+              'chat_dialog_id': dialogId1Group
+            }, function(error, result) {
+                expect(error).toBeNull();
+
+            /** result will be equal to empty */
+            done();
+          });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can delete a message with id', function(done) {
+            QB.chat.message.delete([messageId, 'notExistentId'], {force: 1}, function(err, res) {
+                expect(err).toBeNull();
+
+                done();
+
+                messageId = null;
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('can delete a dialog (group)', function(done) {
+            QB.chat.dialog.delete([dialogId1Group, 'notExistentId'], {force: 1}, function(err, res) {
+                var answ = JSON.parse(res);
+
+                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId1Group]);
+                expect(answ.NotFound.ids).toEqual(["notExistentId"]);
+                expect(answ.WrongPermissions.ids).toEqual([]);
+
+                done();
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        afterAll(function(done) {
+          QB.chat.dialog.delete([dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private], {force: 1}, function(err, res) {
+              var answ = JSON.parse(res);
+
+              expect(answ.SuccessfullyDeleted.ids.sort()).toEqual([dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private].sort());
+              expect(answ.NotFound.ids).toEqual([]);
+              expect(answ.WrongPermissions.ids).toEqual([]);
+
+              done();
+          });
+
+        });
+    });
 
     describe('XMPP - real time messaging', function() {
         var statusCheckingParams = {
@@ -341,347 +697,4 @@ describe('Chat API', function() {
         });
     });
 
-    describe('REST API', function() {
-        var dialogId;
-        var dialogId2;
-        var dialogId3;
-        var dialogId4Private;
-        var messageId;
-
-        it('can create a dialog (private)', function(done) {
-            var params = {
-                occupants_ids: [QBUser2.id],
-                type: 3
-            };
-
-            QB.chat.dialog.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.type).toEqual(3);
-                expect(res.is_joinable).toEqual(0);
-
-                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
-                    return a - b;
-                });
-                expect(res.occupants_ids).toEqual(ocuupantsArray);
-
-                dialogId4Private = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can create a dialog (group)', function(done) {
-            var params = {
-                occupants_ids: [QBUser2.id],
-                name: 'joinable=1',
-                type: 2
-            };
-
-            QB.chat.dialog.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.type).toEqual(2);
-                expect(res.name).toEqual('joinable=1');
-                expect(res.xmpp_room_jid).toContain(chatEndpoint);
-                expect(res.is_joinable).toEqual(1);
-
-
-                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
-                    return a - b;
-                });
-
-                expect(res.occupants_ids).toEqual(ocuupantsArray);
-
-                dialogId = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can create a dialog (group) - not joinable', function(done) {
-            var params = {
-                occupants_ids: [QBUser2.id],
-                name: 'joinable=0',
-                type: 2,
-                is_joinable: 0
-            };
-
-            QB.chat.dialog.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.type).toEqual(2);
-                expect(res.name).toEqual('joinable=0');
-                expect(res.xmpp_room_jid).toContain(chatEndpoint);
-                expect(res.is_joinable).toEqual(0);
-
-
-                var ocuupantsArray = [QBUser2.id, QBUser1.id].sort(function(a,b){
-                    return a - b;
-                });
-
-                expect(res.occupants_ids).toEqual(ocuupantsArray);
-
-                dialogId2 = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can create a dialog (public group)', function(done) {
-            var params = {
-                name: 'Public Awesome chat',
-                type: 1
-            };
-
-            QB.chat.dialog.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.type).toEqual(1);
-                expect(res.name).toEqual('Public Awesome chat');
-                expect(res.xmpp_room_jid).toContain(chatEndpoint);
-                expect(res.is_joinable).toEqual(1);
-
-                dialogId3 = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it("can't create a dialog (public group) with is_joinable=0", function(done) {
-            var params = {
-                name: 'Public Awesome chat',
-                type: 1,
-                is_joinable: 0
-            };
-
-            QB.chat.dialog.create(params, function(err, res) {
-                expect(res).toBeNull();
-                expect(err).not.toBeNull();
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can list dialogs', function(done) {
-            var filters = null;
-            QB.chat.dialog.list(filters, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res.items.length).toBeGreaterThan(0);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can update a dialog (group) (also set is_joinable=0)', function(done) {
-            var toUpdate = {
-                name: 'GroupDialogNewName',
-                pull_all: {
-                  occupants_ids: [QBUser2.id]
-                },
-                is_joinable: 0
-            };
-
-            QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res.name).toEqual('GroupDialogNewName');
-                expect(res.occupants_ids).toEqual([QBUser1.id]);
-                expect(res.is_joinable).toEqual(0);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can update a dialog (group) (also set is_joinable=1)', function(done) {
-            var toUpdate = {
-                name: 'GroupDialogNewName',
-                pull_all: {
-                  occupants_ids: [QBUser2.id]
-                },
-                is_joinable: 1
-            };
-
-            QB.chat.dialog.update(dialogId, toUpdate, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res.name).toEqual('GroupDialogNewName');
-                expect(res.occupants_ids).toEqual([QBUser1.id]);
-                expect(res.is_joinable).toEqual(1);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it("can't update a dialog (public group) (set is_joinable=0)", function(done) {
-            var toUpdate = {
-                is_joinable: 0
-            };
-
-            QB.chat.dialog.update(dialogId3, toUpdate, function(err, res) {
-                expect(res).toBeNull();
-                expect(err).not.toBeNull();
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-
-        it('can create a message', function(done) {
-            var params = {
-                chat_dialog_id: dialogId,
-                message: 'hello world'
-            };
-
-            QB.chat.message.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res._id).not.toBeNull();
-                expect(res.message).toEqual("hello world");
-                expect(res.chat_dialog_id).toEqual(dialogId);
-
-                messageId = res._id;
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it("can't create a system message (group dialog)", function(done) {
-            var params = {
-                chat_dialog_id: dialogId,
-                param1: "value1",
-                param2: "value2",
-                system: 1
-            };
-
-            QB.chat.message.create(params, function(err, res) {
-                expect(res).toBeNull();
-                expect(err).not.toBeNull();
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it("can create a system message (private dialog)", function(done) {
-            var params = {
-                chat_dialog_id: dialogId4Private,
-                param1: "value1",
-                param2: "value2",
-                system: 1
-            };
-
-            QB.chat.message.create(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res._id).not.toBeNull();
-                expect(res.param1).toEqual("value1");
-                expect(res.param2).toEqual("value2");
-                expect(res.chat_dialog_id).toEqual(dialogId4Private);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can list messages', function(done) {
-            var filters = { chat_dialog_id: dialogId };
-
-            QB.chat.message.list(filters, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res).not.toBeNull();
-                expect(res.items.length).toBeGreaterThan(0);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can request unread messages count', function(done) {
-            var params = { chat_dialog_ids: [dialogId] };
-
-            QB.chat.message.unreadCount(params, function(err, res) {
-                expect(err).toBeNull();
-
-                expect(res.total).toEqual(0);
-                expect(res[dialogId]).toEqual(0);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can set \'read\' status for all messages in dialog', function(done) {
-            /**
-             * dialogId we get from previous test case 'can create a dialog'
-             */
-
-            QB.chat.message.update('', {
-              'read': '1',
-              'chat_dialog_id': dialogId
-            }, function(error, result) {
-                expect(error).toBeNull();
-
-            /** result will be equal to empty */
-            done();
-          });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can delete a message with id', function(done) {
-            QB.chat.message.delete([messageId, 'notExistentId'], {force: 1}, function(err, res) {
-                expect(err).toBeNull();
-
-                done();
-
-                messageId = null;
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        it('can delete a dialog (group)', function(done) {
-            QB.chat.dialog.delete([dialogId, 'notExistentId'], {force: 1}, function(err, res) {
-                var answ = JSON.parse(res);
-
-                expect(answ.SuccessfullyDeleted.ids).toEqual([dialogId]);
-                expect(answ.NotFound.ids).toEqual(["notExistentId"]);
-                expect(answ.WrongPermissions.ids).toEqual([]);
-
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
-
-        afterAll(function(done) {
-          QB.chat.dialog.delete([dialogId2, dialogId3, dialogId4Private], {force: 1}, function(err, res) {
-              var answ = JSON.parse(res);
-
-              expect(answ.SuccessfullyDeleted.ids.sort()).toEqual([dialogId2, dialogId3, dialogId4Private].sort());
-              expect(answ.NotFound.ids).toEqual([]);
-              expect(answ.WrongPermissions.ids).toEqual([]);
-
-              done();
-          });
-
-        });
-
-
-    });
-
-    /** Doesn't work on OS */
-    // it('can disconnect', function(done){
-    //     QB.chat.onDisconnectedListener = function(){
-    //         console.log("DISCONNECTED DONE");
-    //         expect(true).toEqual(true);
-    //         done();
-    //     };
-    //
-    //     QB.chat.disconnect();
-    // }, REST_REQUESTS_TIMEOUT);
 });
