@@ -92,7 +92,7 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-        it('can create a dialog (group)', function(done) {
+        it('can create a dialog (group) and then join and send/receive a message', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
                 name: 'joinable=1',
@@ -118,11 +118,47 @@ describe('Chat API', function() {
 
                 dialogId1Group = res._id;
 
-                done();
-            });
-        }, REST_REQUESTS_TIMEOUT);
+                // now try to join and send a message
+                //
+                QB.chat.muc.join(res.xmpp_room_jid, function(stanzaResponse) {
+                  expect(stanzaResponse).not.toBeNull();
 
-        it('can create a dialog (group) - not joinable', function(done) {
+                  var body = 'Warning! People are coming',
+                      msgExtension = {
+                          name: 'skynet',
+                          mission: 'take over the planet'
+                      },
+                      msg = {
+                          type: 'groupchat',
+                          body: body,
+                          extension: msgExtension,
+                          markable: 1
+                      };
+
+                  function onMsgCallback(userId, receivedMessage) {
+                      expect(userId).toEqual(QBUser2.id);
+                      expect(receivedMessage).toBeDefined();
+                      expect(receivedMessage.id).toEqual(msg.id);
+                      expect(receivedMessage.type).toEqual(msg.type);
+                      expect(receivedMessage.body).toEqual(body);
+                      expect(receivedMessage.extension.name).toEqual(msgExtension.name);
+                      expect(receivedMessage.extension.mission).toEqual(msgExtension.mission);
+                      expect(receivedMessage.extension.dialog_id).toEqual(res._id);
+                      expect(receivedMessage.markable).toEqual(1);
+
+                      QB.chat.onMessageListener = null;
+
+                      done();
+                  }
+
+                  QB.chat.onMessageListener = onMsgCallback;
+                  msg.id = QB.chat.send(res.xmpp_room_jid, msg);
+
+                });
+            });
+        }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+
+        it('can create a dialog (group)(not joinable) and then send/receive a message', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
                 name: 'joinable=0',
@@ -132,7 +168,6 @@ describe('Chat API', function() {
 
             QB.chat.dialog.create(params, function(err, res) {
                 expect(err).toBeNull();
-
                 expect(res).not.toBeNull();
                 expect(res._id).not.toBeNull();
                 expect(res.type).toEqual(2);
@@ -149,9 +184,42 @@ describe('Chat API', function() {
 
                 dialogId2GroupNotJoinable = res._id;
 
-                done();
+                // now try to send a message
+                //
+                var body = 'Warning2! People are coming',
+                    msgExtension = {
+                        name: 'skynet2',
+                        mission: 'take over the planet',
+                        save_to_history: 1
+                    },
+                    msg = {
+                        type: 'groupchat',
+                        body: body,
+                        extension: msgExtension,
+                        markable: 1
+                    };
+
+                function onMsgCallback(userId, receivedMessage) {
+                    expect(userId).toEqual(QBUser2.id);
+                    expect(receivedMessage).toBeDefined();
+                    expect(receivedMessage.id).toEqual(msg.id);
+                    expect(receivedMessage.type).toEqual(msg.type);
+                    expect(receivedMessage.body).toEqual(body);
+                    expect(receivedMessage.extension.name).toEqual(msgExtension.name);
+                    expect(receivedMessage.extension.mission).toEqual(msgExtension.mission);
+                    expect(receivedMessage.extension.dialog_id).toEqual(res._id);
+                    expect(receivedMessage.markable).toEqual(1);
+
+                    QB.chat.onMessageListener = null;
+
+                    done();
+                }
+
+                QB.chat.onMessageListener = onMsgCallback;
+                msg.id = QB.chat.send(res.xmpp_room_jid, msg);
+
             });
-        }, REST_REQUESTS_TIMEOUT);
+        }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
         it('can create a dialog (public group)', function(done) {
             var params = {
@@ -364,6 +432,7 @@ describe('Chat API', function() {
                 expect(userId).toEqual(QBUser1.id);
                 expect(receivedMessage).toBeDefined();
                 expect(receivedMessage.id).not.toBeNull();
+                // expect(receivedMessage.id).toEqual(messageIdPrivate);
                 expect(receivedMessage.type).toEqual("chat");
                 expect(receivedMessage.body).toEqual(params.message);
                 expect(receivedMessage.extension).toEqual(msgExtension);
@@ -406,9 +475,6 @@ describe('Chat API', function() {
 
             QB.chat.message.create(params, function(err, res) {
                 expect(err).toBeNull();
-
-                console.info(res);
-
                 expect(res._id).not.toBeNull();
                 expect(res.param1).toEqual("value1");
                 expect(res.param2).toEqual("value2");
@@ -418,7 +484,6 @@ describe('Chat API', function() {
             });
 
             QB.chat.onSystemMessageListener = function(receivedMessage) {
-              console.info(receivedMessage);
                 expect(receivedMessage.userId).toEqual(QBUser1.id);
                 expect(receivedMessage).toBeDefined();
                 expect(receivedMessage.id).not.toBeNull();
@@ -507,7 +572,7 @@ describe('Chat API', function() {
         }, REST_REQUESTS_TIMEOUT);
 
         afterAll(function(done) {
-          QB.chat.dialog.delete([dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private], {force: 1}, function(err, res) {
+          QB.chat.dialog.delete([dialogId3PublicGroup, dialogId4Private], {force: 1}, function(err, res) {
               var answ = JSON.parse(res);
 
               expect(answ.SuccessfullyDeleted.ids.sort()).toEqual([dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private].sort());
