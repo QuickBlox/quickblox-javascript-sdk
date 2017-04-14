@@ -30,9 +30,16 @@ describe('Chat API', function() {
             expect(result).toBeDefined();
             expect(result.application_id).toEqual(CREDS.appId);
 
-            done();
+            var connectToChatParams = {
+                'userId': QBUser2.id,
+                'password': QBUser2.password
+            };
+            QB.chat.connect(connectToChatParams, function(err) {
+                expect(err).toBeNull();
+                done();
+            });
         });
-    }, REST_REQUESTS_TIMEOUT);
+    }, REST_REQUESTS_TIMEOUT+LOGIN_TIMEOUT);
 
 // =========================== REST API ========================================
 
@@ -302,7 +309,7 @@ describe('Chat API', function() {
 
 // =============================================================================
 
-        it('can create a message (private dialog)', function(done) {
+        it('can create a message and then DO NOT receive it (private dialog)', function(done) {
             var params = {
                 chat_dialog_id: dialogId4Private,
                 message: 'hello world'
@@ -315,9 +322,56 @@ describe('Chat API', function() {
                 expect(res.chat_dialog_id).toEqual(dialogId4Private);
 
                 messageIdPrivate = res._id;
+            });
+
+            var messageReceived = false;
+            QB.chat.onMessageListener = function(userId, receivedMessage) {
+                messageReceived = true;
+            };
+
+            setTimeout(function(){
+              console.info("MSG receive timeout");
+              QB.chat.onMessageListener = null;
+              expect(messageReceived).toEqual(false);
+              done();
+            }, MESSAGING_TIMEOUT);
+
+        }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+
+        it('can create a message and then receive it (private dialog) (with send_to_chat=1)', function(done) {
+            var msgExtension = {
+              param1: "value1",
+              param2: "value2",
+            };
+            var params = {
+                chat_dialog_id: dialogId4Private,
+                message: 'hello world',
+                param1: msgExtension.param1,
+                param2: msgExtension.param2,
+                send_to_chat: 1
+            };
+
+            QB.chat.message.create(params, function(err, res) {
+                expect(err).toBeNull();
+                expect(res._id).not.toBeNull();
+                expect(res.message).toEqual("hello world");
+                expect(res.chat_dialog_id).toEqual(dialogId4Private);
+
+                messageIdPrivate = res._id;
+            });
+
+            QB.chat.onMessageListener = function(userId, receivedMessage) {
+                expect(userId).toEqual(QBUser1.id);
+                expect(receivedMessage).toBeDefined();
+                expect(receivedMessage.id).not.toBeNull();
+                expect(receivedMessage.type).toEqual("chat");
+                expect(receivedMessage.body).toEqual(params.message);
+                expect(receivedMessage.extension).toEqual(msgExtension);
+
+                QB.chat.onMessageListener = null;
 
                 done();
-            });
+            };
         }, REST_REQUESTS_TIMEOUT);
 
         it('can create a message (group dialog)', function(done) {
@@ -338,16 +392,22 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-        it("can create a system message (private dialog)", function(done) {
+        it("can create a system message and the receive it (private dialog)", function(done) {
+            var msgExtension = {
+              param1: "value1",
+              param2: "value2",
+            };
             var params = {
                 chat_dialog_id: dialogId4Private,
-                param1: "value1",
-                param2: "value2",
+                param1: msgExtension.param1,
+                param2: msgExtension.param2,
                 system: 1
             };
 
             QB.chat.message.create(params, function(err, res) {
                 expect(err).toBeNull();
+
+                console.info(res);
 
                 expect(res._id).not.toBeNull();
                 expect(res.param1).toEqual("value1");
@@ -355,9 +415,22 @@ describe('Chat API', function() {
                 expect(res.chat_dialog_id).toEqual(dialogId4Private);
 
                 messageIdSystem = res._id;
+            });
+
+            QB.chat.onSystemMessageListener = function(receivedMessage) {
+              console.info(receivedMessage);
+                expect(receivedMessage.userId).toEqual(QBUser1.id);
+                expect(receivedMessage).toBeDefined();
+                expect(receivedMessage.id).not.toBeNull();
+                expect(receivedMessage.type).toEqual("headline");
+                expect(receivedMessage.body).toBeNull();
+                expect(receivedMessage.extension).toEqual(msgExtension);
+
+                QB.chat.onSystemMessageListener = null;
 
                 done();
-            });
+            };
+
         }, REST_REQUESTS_TIMEOUT);
 
         it("can't create a system message (group dialog)", function(done) {
@@ -377,12 +450,12 @@ describe('Chat API', function() {
         }, REST_REQUESTS_TIMEOUT);
 
         it('can list messages', function(done) {
-            var filters = { chat_dialog_id: dialogId1Group };
+            var filters = { chat_dialog_id: dialogId4Private };
 
             QB.chat.message.list(filters, function(err, res) {
                 expect(err).toBeNull();
                 expect(res).not.toBeNull();
-                expect(res.items.length).toEqual(1);
+                expect(res.items.length).toEqual(2); // it should be 2 messages in this private chat, without system
 
                 done();
             });
@@ -443,311 +516,314 @@ describe('Chat API', function() {
 
               done();
           });
-
         });
+
     });
 
-    describe('XMPP - real time messaging', function() {
-        var statusCheckingParams = {
-            userId: QBUser1.id,
-            messageId: '507f1f77bcf86cd799439011',
-            dialogId: '507f191e810c19729de860ea'
-        };
-
-        it('can connect to chat', function(done) {
-            var connectParams = {
-                'userId': QBUser1.id,
-                'password': QBUser1.password
-            };
-
-            function connectCb(err) {
-                expect(err).toBeNull();
-                done();
-            }
-            QB.chat.connect(connectParams, connectCb);
-        }, LOGIN_TIMEOUT);
-
-        it('can send and receive private message', function(done) {
-            var body = 'Warning! People are coming',
-                msgExtension = {
-                    name: 'skynet',
-                    mission: 'take over the planet'
-                },
-                msg = {
-                    type: 'chat',
-                    body: body,
-                    extension: msgExtension,
-                    markable: 1
-                };
-
-            function onMsgCallback(userId, receivedMessage) {
-                expect(userId).toEqual(QBUser1.id);
-
-                expect(receivedMessage).toBeDefined();
-                expect(receivedMessage.id).toEqual(msg.id);
-                expect(receivedMessage.type).toEqual(msg.type);
-                expect(receivedMessage.body).toEqual(body);
-                expect(receivedMessage.extension).toEqual(msgExtension);
-                expect(receivedMessage.markable).toEqual(1);
-
-                done();
-            }
-
-            QB.chat.onMessageListener = onMsgCallback;
-            msg.id = QB.chat.send(QBUser1.id, msg);
-        }, MESSAGING_TIMEOUT);
-
-        it('can send and receive system message', function(done) {
-            var msg = {
-                    body: 'Notification',
-                    extension:{
-                        name: 'Walle',
-                        action: 'Found love'
-                    }
-                };
-
-            function onSystemMessageListenerCb(receivedMessage) {
-                expect(receivedMessage).toBeDefined();
-
-                expect(receivedMessage.userId).toEqual(QBUser1.id);
-                expect(receivedMessage.id).toEqual(msg.id);
-                expect(receivedMessage.body).toEqual(msg.body);
-                expect(receivedMessage.extension).toEqual(msg.extension);
-
-                done();
-            }
-
-            QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
-            msg.id = QB.chat.sendSystemMessage(QBUser1.id, msg);
-        }, MESSAGING_TIMEOUT);
-
-        it('can send and receive \'delivered\' status', function(done) {
-            function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
-                expect(messageId).toEqual(statusCheckingParams.messageId);
-                expect(dialogId).toEqual(statusCheckingParams.dialogId);
-                expect(userId).toEqual(statusCheckingParams.userId);
-
-                done();
-            }
-
-            QB.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
-
-            QB.chat.sendDeliveredStatus(statusCheckingParams);
-        }, MESSAGING_TIMEOUT);
-
-        it('can send and receive \'read\' status', function(done) {
-            function onReadStatusListenerCB(messageId, dialogId, userId) {
-                expect(messageId).toEqual(statusCheckingParams.messageId);
-                expect(dialogId).toEqual(statusCheckingParams.dialogId);
-                expect(userId).toEqual(statusCheckingParams.userId);
-
-                done();
-            }
-
-            QB.chat.onReadStatusListener = onReadStatusListenerCB;
-
-            QB.chat.sendReadStatus(statusCheckingParams);
-        }, MESSAGING_TIMEOUT);
-
-        it('can send and receive \'is typing\' status (private)', function(done) {
-            function onMessageTypingListenerCB(composing, userId, dialogId) {
-                expect(composing).toEqual(true);
-                expect(userId).toEqual(QBUser1.id);
-                expect(dialogId).toBeNull();
-
-                done();
-            }
-
-            QB.chat.onMessageTypingListener = onMessageTypingListenerCB;
-            QB.chat.sendIsTypingStatus(QBUser1.id);
-        }, MESSAGING_TIMEOUT);
-
-        describe('[MUC] Dialogs', function() {
-            var dialog;
-
-            beforeAll(function(done){
-                var dialogCreateParams = {
-                    type: 2,
-                    occupants_ids: [QBUser1.id, QBUser2.id],
-                    name: 'Jasmine Test Dialog'
-                };
-
-                function createDialogCb(err, createdDialog) {
-                    expect(err).toBeNull();
-
-                    expect(createdDialog).toBeDefined();
-                    expect(createdDialog.type).toEqual(dialogCreateParams.type);
-                    expect(createdDialog.name).toEqual(dialogCreateParams.name);
-
-                    dialog = createdDialog;
-
-                    done();
-                }
-
-                QB.chat.dialog.create(dialogCreateParams, createDialogCb);
-            });
-
-            afterAll(function(done) {
-                QB.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
-                    expect(err).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can join group chat', function(done) {
-                function dialogJoinCb(stanza) {
-                    expect(stanza).not.toBeNull();
-                    done();
-                }
-
-                QB.chat.muc.join(dialog.xmpp_room_jid, dialogJoinCb);
-            }, MESSAGING_TIMEOUT);
-
-            it('can get online users', function(done) {
-                function listOnlineUsersCb(users) {
-                    expect(users).toBeDefined();
-
-                    done();
-                }
-
-                QB.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, listOnlineUsersCb);
-            }, MESSAGING_TIMEOUT);
-
-            it('can leave group chat', function(done) {
-                function dialogLeaveCb() {
-                    done();
-                }
-
-                QB.chat.muc.leave(dialog.xmpp_room_jid, dialogLeaveCb);
-            }, MESSAGING_TIMEOUT);
-        });
-
-        describe('[Roster] Contact list: ', function() {
-            /** !!Don't give back any response */
-            it('can add user to contact list', function(done) {
-                QB.chat.roster.add(QBUser2.id, function() {
-                    done();
-                });
-            }, IQ_TIMEOUT);
-
-            it('can retrieve contact list', function(done) {
-                QB.chat.roster.get(function(roster) {
-                    expect(roster).toBeDefined();
-                    expect(QBUser2.id in roster).toEqual(true);
-
-                    done();
-                });
-            }, IQ_TIMEOUT);
-
-            it('can remove user from contact list', function(done) {
-                QB.chat.roster.remove(QBUser2.id, function() {
-                  done();
-                });
-            }, IQ_TIMEOUT);
-
-            it('can confirm subscription request', function(done) {
-                QB.chat.roster.confirm(QBUser2.id, function() {
-                    done();
-                });
-            }, IQ_TIMEOUT);
-
-            it('can reject subscription request', function(done) {
-                QB.chat.roster.reject(QBUser2.id, function() {
-                    done();
-                });
-            }, IQ_TIMEOUT);
-        });
-
-        describe('Privacy list: ', function() {
-            it('can create new list with items', function(done) {
-                var usersObj = [
-                    {user_id: 1010101, action: 'allow'},
-                    {user_id: 1111111, action: 'deny', mutualBlock: true}
-                ];
-
-                var list = {name: 'test', items: usersObj};
-
-                QB.chat.privacylist.create(list, function(error) {
-                    expect(error).toBeNull();
-                    done();
-                });
-            });
-
-            it('can update list by name', function(done) {
-                var usersArr = [
-                        {user_id: 1999991, action: 'allow'},
-                        {user_id: 1010101, action: 'deny'}
-                    ],
-                    list = {name: 'test', items: usersArr};
-
-                QB.chat.privacylist.update(list, function(error) {
-                    expect(error).toBeDefined();
-
-                    done();
-                });
-            });
-
-            it('can get list by name', function(done) {
-                QB.chat.privacylist.getList('test', function(error, response) {
-                    expect(error).toBeNull();
-
-                    expect(response.name).toBe('test');
-                    expect(response.items.length).toEqual(3);
-
-                    done();
-                });
-            });
-
-            it('can set active list', function(done) {
-                QB.chat.privacylist.setAsActive('test', function(error) {
-                    expect(error).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can declines the use of active lists', function(done) {
-                QB.chat.privacylist.setAsActive('', function(error) {
-                    expect(error).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can set default list', function(done) {
-                QB.chat.privacylist.setAsDefault('test', function(error) {
-                    expect(error).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can declines the use of default lists', function(done) {
-                QB.chat.privacylist.setAsDefault('', function(error) {
-                    expect(error).toBeNull();
-
-                    done();
-                });
-            });
-
-            it('can get names of privacy lists', function(done) {
-                QB.chat.privacylist.getNames(function(error, response) {
-                    expect(error).toBeNull();
-
-                    expect(response.names.length).toBeGreaterThan(0);
-
-                    done();
-                });
-            });
-
-            /** !! REVIEW */
-            // it('can delete list by name', function(done) {
-            //     QB.chat.privacylist.delete('test', function(error) {
-            //         expect(error).toBeNull();
-            //         done();
-            //     });
-            // });
+//     describe('XMPP - real time messaging', function() {
+//         var statusCheckingParams = {
+//             userId: QBUser1.id,
+//             messageId: '507f1f77bcf86cd799439011',
+//             dialogId: '507f191e810c19729de860ea'
+//         };
+//
+//         it('can send and receive private message', function(done) {
+//             var body = 'Warning! People are coming',
+//                 msgExtension = {
+//                     name: 'skynet',
+//                     mission: 'take over the planet'
+//                 },
+//                 msg = {
+//                     type: 'chat',
+//                     body: body,
+//                     extension: msgExtension,
+//                     markable: 1
+//                 };
+//
+//             function onMsgCallback(userId, receivedMessage) {
+//                 expect(userId).toEqual(QBUser1.id);
+//
+//                 expect(receivedMessage).toBeDefined();
+//                 expect(receivedMessage.id).toEqual(msg.id);
+//                 expect(receivedMessage.type).toEqual(msg.type);
+//                 expect(receivedMessage.body).toEqual(body);
+//                 expect(receivedMessage.extension).toEqual(msgExtension);
+//                 expect(receivedMessage.markable).toEqual(1);
+//
+//                 done();
+//             }
+//
+//             QB.chat.onMessageListener = onMsgCallback;
+//             msg.id = QB.chat.send(QBUser1.id, msg);
+//         }, MESSAGING_TIMEOUT);
+//
+//         it('can send and receive system message', function(done) {
+//             var msg = {
+//                     body: 'Notification',
+//                     extension:{
+//                         name: 'Walle',
+//                         action: 'Found love'
+//                     }
+//                 };
+//
+//             function onSystemMessageListenerCb(receivedMessage) {
+//                 expect(receivedMessage).toBeDefined();
+//
+//                 expect(receivedMessage.userId).toEqual(QBUser1.id);
+//                 expect(receivedMessage.id).toEqual(msg.id);
+//                 expect(receivedMessage.body).toEqual(msg.body);
+//                 expect(receivedMessage.extension).toEqual(msg.extension);
+//
+//                 done();
+//             }
+//
+//             QB.chat.onSystemMessageListener = onSystemMessageListenerCb;
+//             msg.id = QB.chat.sendSystemMessage(QBUser1.id, msg);
+//         }, MESSAGING_TIMEOUT);
+//
+//         it('can send and receive \'delivered\' status', function(done) {
+//             function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
+//                 expect(messageId).toEqual(statusCheckingParams.messageId);
+//                 expect(dialogId).toEqual(statusCheckingParams.dialogId);
+//                 expect(userId).toEqual(statusCheckingParams.userId);
+//
+//                 done();
+//             }
+//
+//             QB.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
+//
+//             QB.chat.sendDeliveredStatus(statusCheckingParams);
+//         }, MESSAGING_TIMEOUT);
+//
+//         it('can send and receive \'read\' status', function(done) {
+//             function onReadStatusListenerCB(messageId, dialogId, userId) {
+//                 expect(messageId).toEqual(statusCheckingParams.messageId);
+//                 expect(dialogId).toEqual(statusCheckingParams.dialogId);
+//                 expect(userId).toEqual(statusCheckingParams.userId);
+//
+//                 done();
+//             }
+//
+//             QB.chat.onReadStatusListener = onReadStatusListenerCB;
+//
+//             QB.chat.sendReadStatus(statusCheckingParams);
+//         }, MESSAGING_TIMEOUT);
+//
+//         it('can send and receive \'is typing\' status (private)', function(done) {
+//             function onMessageTypingListenerCB(composing, userId, dialogId) {
+//                 expect(composing).toEqual(true);
+//                 expect(userId).toEqual(QBUser1.id);
+//                 expect(dialogId).toBeNull();
+//
+//                 done();
+//             }
+//
+//             QB.chat.onMessageTypingListener = onMessageTypingListenerCB;
+//             QB.chat.sendIsTypingStatus(QBUser1.id);
+//         }, MESSAGING_TIMEOUT);
+//
+// // =============================================================================
+//
+//         describe('[MUC] Dialogs', function() {
+//             var dialog;
+//
+//             beforeAll(function(done){
+//                 var dialogCreateParams = {
+//                     type: 2,
+//                     occupants_ids: [QBUser1.id, QBUser2.id],
+//                     name: 'Jasmine Test Dialog'
+//                 };
+//
+//                 function createDialogCb(err, createdDialog) {
+//                     expect(err).toBeNull();
+//
+//                     expect(createdDialog).toBeDefined();
+//                     expect(createdDialog.type).toEqual(dialogCreateParams.type);
+//                     expect(createdDialog.name).toEqual(dialogCreateParams.name);
+//
+//                     dialog = createdDialog;
+//
+//                     done();
+//                 }
+//
+//                 QB.chat.dialog.create(dialogCreateParams, createDialogCb);
+//             });
+//
+//             afterAll(function(done) {
+//                 QB.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
+//                     expect(err).toBeNull();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can join group chat', function(done) {
+//                 function dialogJoinCb(stanza) {
+//                     expect(stanza).not.toBeNull();
+//                     done();
+//                 }
+//
+//                 QB.chat.muc.join(dialog.xmpp_room_jid, dialogJoinCb);
+//             }, MESSAGING_TIMEOUT);
+//
+//             it('can get online users', function(done) {
+//                 function listOnlineUsersCb(users) {
+//                     expect(users).toBeDefined();
+//
+//                     done();
+//                 }
+//
+//                 QB.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, listOnlineUsersCb);
+//             }, MESSAGING_TIMEOUT);
+//
+//             it('can leave group chat', function(done) {
+//                 function dialogLeaveCb() {
+//                     done();
+//                 }
+//
+//                 QB.chat.muc.leave(dialog.xmpp_room_jid, dialogLeaveCb);
+//             }, MESSAGING_TIMEOUT);
+//         });
+//
+// // =============================================================================
+//
+//         describe('[Roster] Contact list: ', function() {
+//             /** !!Don't give back any response */
+//             it('can add user to contact list', function(done) {
+//                 QB.chat.roster.add(QBUser2.id, function() {
+//                     done();
+//                 });
+//             }, IQ_TIMEOUT);
+//
+//             it('can retrieve contact list', function(done) {
+//                 QB.chat.roster.get(function(roster) {
+//                     expect(roster).toBeDefined();
+//                     expect(QBUser2.id in roster).toEqual(true);
+//
+//                     done();
+//                 });
+//             }, IQ_TIMEOUT);
+//
+//             it('can remove user from contact list', function(done) {
+//                 QB.chat.roster.remove(QBUser2.id, function() {
+//                   done();
+//                 });
+//             }, IQ_TIMEOUT);
+//
+//             it('can confirm subscription request', function(done) {
+//                 QB.chat.roster.confirm(QBUser2.id, function() {
+//                     done();
+//                 });
+//             }, IQ_TIMEOUT);
+//
+//             it('can reject subscription request', function(done) {
+//                 QB.chat.roster.reject(QBUser2.id, function() {
+//                     done();
+//                 });
+//             }, IQ_TIMEOUT);
+//         });
+//
+// // =============================================================================
+//
+//         describe('Privacy list: ', function() {
+//             it('can create new list with items', function(done) {
+//                 var usersObj = [
+//                     {user_id: 1010101, action: 'allow'},
+//                     {user_id: 1111111, action: 'deny', mutualBlock: true}
+//                 ];
+//
+//                 var list = {name: 'test', items: usersObj};
+//
+//                 QB.chat.privacylist.create(list, function(error) {
+//                     expect(error).toBeNull();
+//                     done();
+//                 });
+//             });
+//
+//             it('can update list by name', function(done) {
+//                 var usersArr = [
+//                         {user_id: 1999991, action: 'allow'},
+//                         {user_id: 1010101, action: 'deny'}
+//                     ],
+//                     list = {name: 'test', items: usersArr};
+//
+//                 QB.chat.privacylist.update(list, function(error) {
+//                     expect(error).toBeDefined();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can get list by name', function(done) {
+//                 QB.chat.privacylist.getList('test', function(error, response) {
+//                     expect(error).toBeNull();
+//
+//                     expect(response.name).toBe('test');
+//                     expect(response.items.length).toEqual(3);
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can set active list', function(done) {
+//                 QB.chat.privacylist.setAsActive('test', function(error) {
+//                     expect(error).toBeNull();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can declines the use of active lists', function(done) {
+//                 QB.chat.privacylist.setAsActive('', function(error) {
+//                     expect(error).toBeNull();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can set default list', function(done) {
+//                 QB.chat.privacylist.setAsDefault('test', function(error) {
+//                     expect(error).toBeNull();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can declines the use of default lists', function(done) {
+//                 QB.chat.privacylist.setAsDefault('', function(error) {
+//                     expect(error).toBeNull();
+//
+//                     done();
+//                 });
+//             });
+//
+//             it('can get names of privacy lists', function(done) {
+//                 QB.chat.privacylist.getNames(function(error, response) {
+//                     expect(error).toBeNull();
+//
+//                     expect(response.names.length).toBeGreaterThan(0);
+//
+//                     done();
+//                 });
+//             });
+//
+//             /** !! REVIEW */
+//             // it('can delete list by name', function(done) {
+//             //     QB.chat.privacylist.delete('test', function(error) {
+//             //         expect(error).toBeNull();
+//             //         done();
+//             //     });
+//             // });
+//         });
+//     });
+
+    afterAll(function(done) {
+        QB.destroySession(function (err, result){
+            expect(QB.service.qbInst.session).toBeNull();
+
+            QB.chat.disconnect();
+
+            done();
         });
     });
 
