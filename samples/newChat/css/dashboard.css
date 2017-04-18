@@ -302,6 +302,16 @@
     margin: 0 0 16px;
 }
 
+.message__wrap.m-notification_message {
+    display: block;
+    color: #778594;
+    font-family: Roboto;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 15px;
+    text-align: center;
+}
+
 .message__wrap.m-typing {
     align-items: center;
 }
@@ -526,11 +536,8 @@
     cursor: pointer;
 }
 
-.update_chat__title_button:hover i {
-    color: #18C942;
-}
-
-.update_chat__title_input.active i {
+.update_chat__title_button:hover i,
+.update_update_chat_name_form.active i{
     color: #18C942;
 }
 
@@ -538,6 +545,7 @@
     border: none;
     background: #fff;
 }
+
 
 .group_chat__user_list,
 .update_chat__user_list{

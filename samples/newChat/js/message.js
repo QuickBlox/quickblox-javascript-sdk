@@ -223,10 +223,17 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
 
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
-        sender = userModule._cache[message.sender_id];
+        sender = userModule._cache[message.sender_id],
+        messagesHtml;
 
-    var messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
-        elem = helpers.toHtml(messagesHtml)[0];
+    console.log(message);
+    if(message.notification_type || (message.extension && message.extension.notification_type)) {
+        messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
+    } else {
+        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender});
+    }
+
+    var elem = helpers.toHtml(messagesHtml)[0];
 
     if (!sender) {
         userModule.getUsersByIds([message.sender_id], function (err) {
@@ -412,15 +419,6 @@ Message.prototype.renderTypingUsers = function (dialogId) {
     }
 };
 
-Message.prototype.sendUpdateDialogMessage = function(dialogId, updatedParams) {
-    console.log('dialogId');
-    console.log('updatedParams');
-};
-
-Message.prototype.renderNotyficationMessage = function(msg){
-
-};
-
 Message.prototype.sendNewDialogMessage = function(dialog, occupantsIds){
     var msg = {
         type: dialog.type === 3 ? 'chat' : 'groupchat',
@@ -436,8 +434,6 @@ Message.prototype.sendNewDialogMessage = function(dialog, occupantsIds){
     occupantsIds.forEach(function(id){
         msg.body += userModule._cache[id];
     });
-
-    console.info('msg');
 
     occupantsIds.forEach(function(id){
         QB.chat.send(id, msg);

@@ -90,6 +90,7 @@ router.on({
                 });
             } else {
                 dialogModule.renderMessages(dialogId);
+                dialogModule.selectCurrentDialog(dialogId);
             }
         }
     },
@@ -180,7 +181,7 @@ router.on({
                 e.preventDefault();
                 e.stopPropagation();
 
-                editTitleForm.classList.toggle('active');
+                editTitleForm.classList.add('active');
 
                 if(!editTitleForm.classList.contains('active')){
                     editTitleInput.setAttribute('disabled', true);
@@ -190,15 +191,35 @@ router.on({
                 }
             });
 
-            editTitleForm.addEventListener('submit', function(e){
-                e.preventDefault();
-
+            editTitleInput.addEventListener('blur', function(e){
                 var params = {
                     id: dialogId,
                     title: editTitleInput.value.trim()
                 };
-                dialogModule.updateDialog(params);
+
+                if(dialogModule._cache[dialogId].name !== params.title) {
+                    dialogModule.updateDialog(params);
+                    editTitleForm.classList.remove('active');
+                    editTitleInput.setAttribute('disabled', true);
+                }
             });
+
+            editTitleForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                editTitleInput.blur();
+            });
+
+            // editTitleForm.addEventListener('submit', function(e){
+            //     e.preventDefault();
+            //
+            //     var params = {
+            //         id: dialogId,
+            //         title: editTitleInput.value.trim()
+            //     };
+            //     dialogModule.updateDialog(params);
+            // });
+
+
 
             editUsersCountForm.addEventListener('submit', function(e){
                 e.preventDefault();
@@ -216,7 +237,7 @@ router.on({
                         return userItem.id;
                     })
                 };
-                
+
                 dialogModule.updateDialog(params);
             });
 

@@ -22,11 +22,15 @@ function Listeners() {
 }
 
 Listeners.prototype.onMessageListener = function (userId, message) {
-    console.log('onMessageListener');
+    console.group('onMessageListener');
+        console.log('userId', userId);
+        console.log('message', message);
+    console.groupEnd();
     var msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
 
     if (dialog) {
+        console.log('dialog exist');
         dialog.messages.unshift(msg);
 
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
@@ -50,12 +54,13 @@ Listeners.prototype.onMessageListener = function (userId, message) {
             }
         }
     } else {
+        console.log('new dialog');
         dialogModule.getDialogById(msg.chat_dialog_id).then(function(dialog){
             dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
             var type = dialog.type === 1 ? 'public' : 'chat',
                 activeTab = document.querySelector('.j-sidebar__tab_link.active'),
                 cachedDialog = dialogModule._cache[dialog._id];
-            console.log('new dialog', dialog);
+
             if (activeTab && type === activeTab.dataset.type) {
                 console.log('before render');
                 dialogModule.renderDialog(cachedDialog, true);
@@ -90,15 +95,21 @@ Listeners.prototype.onReadStatusListener = function () {
 };
 
 Listeners.prototype.onSystemMessageListener = function (message) {
-    if (message.extension && (message.extension.notification_type === '1' || message.extension.notification_type === 'creating_dialog')) {
+    console.group('onSystemMessageListener');
+        console.log('message', message);
+    console.groupEnd();
+    if (message.extension && message.extension.notification_type === '1') {
         if (message.extension.dialog_id) {
-            dialogModule.getDialogById(message.extension.dialog_id, function (dialog) {
+            dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
+                console.log('getDialogById.then...');
                 var type = dialog.type === 1 ? 'public' : 'chat',
                     activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
                 if (activeTab && type === activeTab.dataset.type) {
                     dialogModule.renderDialog(dialog, true);
                 }
+            }).catch(function(error){
+                console.error(error);
             });
         }
         return false;

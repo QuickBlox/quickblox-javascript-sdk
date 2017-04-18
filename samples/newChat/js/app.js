@@ -29,11 +29,20 @@ App.prototype.init = function (config) {
     QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
 };
 
-App.prototype.renderDashboard = function () {
-    var self = this;
+App.prototype.renderDashboard = function (activeTabName) {
+    var self = this,
+        renderParams = {
+            user: self.user,
+            tabName: ''
+        };
+
+    if(activeTabName){
+        renderParams.tabName = activeTabName
+    }
 
     helpers.clearView(app.page);
-    self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', {user: self.user});
+
+    self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', renderParams);
 
     var logoutBtn = document.querySelector('.j-logout');
     loginModule.isLoginPageRendered = false;
@@ -104,6 +113,7 @@ App.prototype.tabSelectInit = function () {
 };
 
 App.prototype.loadChatList = function (tab) {
+    console.log('tab');
     return new Promise(function(resolve, reject){
         var tabs = document.querySelectorAll('.j-sidebar__tab_link');
 

@@ -132,6 +132,14 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
         message.message = '';
     }
 
+    if(msg.extension.notification_type) {
+        message.notification_type = msg.extension.notification_type;
+    }
+
+    if(msg.extension.occupants_ids_added){
+        message.occupants_ids_added = msg.extension.occupants_ids_added;
+    }
+
     return message;
 };
 

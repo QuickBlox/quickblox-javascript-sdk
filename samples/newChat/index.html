@@ -84,10 +84,10 @@
                     <div class="sidebar__content">
                         <ul class="sidebar__tabs">
                             <li class="sidebar__tab">
-                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="chat">chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link <% tabName === "chat" ? print('active') : '' %>" data-type="chat">chats</a>
                             </li>
                             <li class="sidebar__tab">
-                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link <% tabName === "public" ? print('active') : '' %>" data-type="public">public chats</a>
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
                                 <a href="#" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
@@ -232,6 +232,12 @@
             <div class="message__timestamp">
                 <%= message.date_sent %>
             </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_notificationMessage">
+        <div class="message__wrap m-notification_message" id="<%= _id %>">
+                <%= message || body %>
         </div>
     </script>
 

@@ -117,6 +117,12 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
         id = dialog._id,
         elem = document.getElementById(id);
 
+    if(!self._cache[id]){
+        console.info('not in cahe');
+        self._cache[id] = helpers.compileDialogParams(dialog);
+        dialog = self._cache[id];
+    }
+
     if (elem) {
         self.replaceDialogLink(elem);
         return elem;
@@ -129,41 +135,42 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
     var template = helpers.fillTemplate('tpl_userConversations', {dialog: dialog});
     elem = helpers.toHtml(template)[0];
 
-    elem.addEventListener('click', function (e) {
-        self.sidebar.classList.remove('active');
-
-        if (!app.checkInternetConnection()) {
-            return false;
-        }
-
-        if (elem.classList.contains('selected') && document.forms.send_message) return false;
-
-        var selectedDialog = document.querySelector('.dialog__item.selected'),
-            dialogElem = e.currentTarget;
-
-        if (selectedDialog) {
-            selectedDialog.classList.remove('selected');
-        }
-
-        elem.classList.add('selected');
-
-        self.prevDialogId = self.dialogId;
-        self.dialogId = dialogElem.id;
-
-        self._cache[self.dialogId].unread_messages_count = 0;
-
-        var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
-
-        unreadCounter.classList.add('hidden');
-        unreadCounter.innerText = '';
-    });
-
     if (!setAsFirst) {
         self.dialogsListContainer.appendChild(elem);
     } else {
         self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
     }
     return elem;
+};
+
+Dialog.prototype.selectCurrentDialog = function(dialogId){
+    var self = this,
+        dialogElem = document.getElementById(dialogId);
+
+    self.sidebar.classList.remove('active');
+
+    if (!app.checkInternetConnection()) {
+        return false;
+    }
+
+
+
+    if (dialogElem.classList.contains('selected') && document.forms.send_message) return false;
+
+    var selectedDialog = document.querySelector('.dialog__item.selected');
+
+    if (selectedDialog) {
+        selectedDialog.classList.remove('selected');
+    }
+
+    dialogElem.classList.add('selected');
+
+    self._cache[self.dialogId].unread_messages_count = 0;
+
+    var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+    unreadCounter.classList.add('hidden');
+    unreadCounter.innerText = '';
 };
 
 Dialog.prototype.replaceDialogLink = function (elem) {
@@ -348,11 +355,15 @@ Dialog.prototype.createDialog = function (params) {
 
             if (activeTab && type !== activeTab.dataset.type) {
                 var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
-                app.loadChatList(tab, function () {
-                    self.renderDialog(self._cache[id], true).click();
+                app.loadChatList(tab).then(function () {
+                    self.renderDialog(self._cache[id], true);
+                    router.navigate('/dialog/' + id);
+                }).catch(function(error){
+                    console.error(error);
                 });
             } else {
-                self.renderDialog(self._cache[id], true).click();
+                self.renderDialog(self._cache[id], true);
+                router.navigate('/dialog/' + id);
             }
         }
     });
@@ -368,6 +379,7 @@ Dialog.prototype.getDialogById = function (id) {
                 console.error(err);
                 reject(err);
             }
+
             var dialog = res.items[0];
 
             if(dialog) {
@@ -406,25 +418,49 @@ Dialog.prototype.updateDialog = function (updates) {
     var self = this,
         dialogId = updates.id,
         dialog = self._cache[dialogId],
-        toUpdateParams = {};
+        toUpdateParams = {},
+        updatedMsg = {
+            type: 'groupchat',
+            body: '',
+            extension: {
+                save_to_history: 1,
+                dialog_id: dialog._id,
+                notification_type: 2,
+                dialog_updated_at: Date.now() / 1000
+            },
+            markable: 1
+        };
 
-    if(updates.title && dialog.type !== CONSTANTS.DIALOG_TYPES.CHAT){
+
+    if(dialog.type !== CONSTANTS.DIALOG_TYPES.GROUPCHAT) return false;
+
+    if(updates.title){
         if(updates.title !== dialog.name){
             toUpdateParams.name = updates.title;
-            _sendUpdateStanza();
+            updatedMsg.name = updates.title;
+            updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".'
         }
     } else if (updates.userList) {
         var userList =  _getNewUsers();
         if(userList.length){
             toUpdateParams.push_all = {
                 occupants_ids: userList
-            };
-            _sendUpdateStanza();
+            }
+        } else {
+            return false;
         }
     } else {
         // can't change dialog name in a privat chat (type 3).
         return false;
     }
+
+    _sendUpdateStanza().then(function(dialog){
+        self.updateDialogInCacheAndUi(dialog);
+        QB.chat.send(dialog.xmpp_room_jid, updatedMsg);
+        router.navigate('/dialog/' + dialog._id);
+    }).catch(function(e){
+        console.log(e);
+    });
 
     function _getNewUsers(){
         return updates.userList.filter(function(occupantId){
@@ -433,23 +469,30 @@ Dialog.prototype.updateDialog = function (updates) {
     }
 
     function _sendUpdateStanza (){
-        console.log(dialogId, toUpdateParams);
-        QB.chat.dialog.update(dialogId, toUpdateParams, function(err, dialog) {
-            if (err) {
-                console.log(err);
-            } else {
-                self.updateDialogInCache(dialog);
-            }
+        return new Promise (function(resolve, reject){
+            QB.chat.dialog.update(dialogId, toUpdateParams, function(err, dialog) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(dialog);
+                }
+            });
         });
     }
 };
 
-Dialog.prototype.updateDialogInCache = function(newDialog){
+Dialog.prototype.updateDialogInCacheAndUi = function(newDialog){
     var self = this,
-        cachedDialog = self._cache[newDialog._id];
+        cachedDialog = self._cache[newDialog._id],
+        dialogElem = document.getElementById(newDialog._id);
 
     cachedDialog.name = newDialog.name;
+
     cachedDialog.users = newDialog.occupants_ids;
+
+    dialogElem.querySelector('.dialog__name').innerText = newDialog.name;
+    console.log(newDialog.name);
+    console.log(dialogElem.querySelector('.dialog__name').innerText);
 };
 
 Dialog.prototype.quitFromTheDialog = function(dialogId){
