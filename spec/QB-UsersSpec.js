@@ -4,7 +4,6 @@ describe('Users API', function() {
   var REST_REQUESTS_TIMEOUT = 5000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
-  var request = isNodeEnv ? require('request') : {};
 
   var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;

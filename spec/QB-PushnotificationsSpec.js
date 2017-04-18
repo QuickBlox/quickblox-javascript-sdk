@@ -148,7 +148,10 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can get event\'s status by id', function(done){
+    // Waiting fix from server
+    it('can get event\'s status by id', function(done) {
+      pending('Server return a 500 error');
+
       QB.pushnotifications.events.status(eventId, function(err, response) {
         if (err) {
           done.fail('Get event\'s status by id error: ' + JSON.stringify(err));
@@ -172,7 +175,12 @@ describe('PushNotifications API', function() {
     afterAll(function(done){
       QB.pushnotifications.subscriptions.list(function(err, result){
         if (err) {
-          done.fail("List a subscription error: " + JSON.stringify(err));
+          if(err.code === 404) {
+            // Doesn't found any subscriptions for removing
+            done();
+          } else {
+            done.fail("List a subscription error: " + JSON.stringify(err));
+          }
         } else {
           var subscriptionId = result[0].subscription.id;
 
