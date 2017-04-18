@@ -45,8 +45,8 @@ App.prototype.init = function() {
       self.setListeners('dashboard');
 
       // render list of places and set listeners
-      var $places =  document.getElementById(self.ui.places);
-      $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+      // var $places =  document.getElementById(self.ui.places);
+      // $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
 
       // render map and set listeners
       self.map = new Map({'el': document.getElementById(self.ui.map)});

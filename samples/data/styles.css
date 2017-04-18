@@ -24,17 +24,8 @@ body {
   width: 100%;
 }
 
-.warning {
-  color: #ff2d55;
-}
-
-#Icon {
-  stroke: #17D04B;
-}
-
 /* APP */
 .app {
-  display: flex;
   position: relative;
   width: 100%;
   height: 100%;
@@ -54,10 +45,10 @@ body {
   font-size: 2rem;
 }
 
-.app h2,
-.app h5 {
-  color: #4a4a4a;
-  font-weight: 500;
+.map {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* PANEL */
@@ -71,28 +62,40 @@ body {
   box-shadow: 2px 0 11px 0 rgba(0, 0, 0, .1);
 }
 
+/** HEADER */
 .header {
   display: flex;
-  margin: 20px;
-  padding: 0 0 10px 0;
+  justify-content: space-between;
+
+  padding: 20px;
+}
+
+.header_body {
+  position: relative;
+  padding: 0 0 0 56px;
 }
 
 .logo {
-  flex: 0 1 40px;
-}
-
-.logo_img {
-  width: 40px;
-}
-
-.header_data {
-  flex: 1 1 100%;
-  padding: 0 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .header_title {
   margin: 0 0 5px 0;
+  
   font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+  color: #4A4A4A;
+}
+
+/** HEADER END */
+/*
+
+.header_title {
+  
+  
 }
 
 .header_user {
@@ -110,9 +113,7 @@ body {
   fill: #17D04B
 }
 
-.map {
-  flex: 1 1 100%;
-}
+
 
 .places_item {
   display: block;
@@ -125,7 +126,7 @@ body {
 }
 .places_item:hover {
   background-color: #f2f4f5;
-}
+}*/
 
 
 
