@@ -45,8 +45,9 @@ App.prototype.init = function() {
       self.setListeners('dashboard');
 
       // render list of places and set listeners
-      // var $places =  document.getElementById(self.ui.places);
-      // $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+      var $places =  document.getElementById(self.ui.places);
+      $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+      self.setListeners('places');
 
       // render map and set listeners
       self.map = new Map({'el': document.getElementById(self.ui.map)});
@@ -71,6 +72,10 @@ App.prototype.setListeners = function(view) {
     case 'map': 
       self._setListenersMap();
       break;
+
+    case 'places': 
+      self._setListenersPlaces();
+      break;
     
     default:
       console.warn('Cannot set listeners to ' + view);
@@ -88,8 +93,30 @@ App.prototype._setListenersDashboard = function() {
 }
 
 App.prototype._setListenersMap = function() {
+  var self = this;
 
+  self.map.gmap.addListener('click', function() {
+    console.log('CLICK on map');
+  });
 }
+
+App.prototype._setListenersPlaces = function() {
+  var self = this;
+
+  var $places = document.querySelectorAll('.j-places');
+
+  function showPlace(e) {
+    var $item = e.target.closest('.j-places');
+    // TODO
+    console.log($item.dataset);
+  }
+
+  $places.forEach(function(place) {
+    place.addEventListener('click', showPlace);
+  });
+}
+
+
 
 App.prototype.renderView = function(idTpl, options) {
   var source = document.getElementById(idTpl).innerHTML;
@@ -99,5 +126,5 @@ App.prototype.renderView = function(idTpl, options) {
 }
 
 // this rule only for this line
-/* eslint no-unused-vars:0*/
+/* eslint no-unused-vars:0 */
 var app = new App();

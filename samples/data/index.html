@@ -5,7 +5,6 @@
   <title>Data Sample | Quickblox JS SDK</title>
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 
-  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
   
   <link rel="stylesheet" href="styles.css">
@@ -21,7 +20,7 @@
     <header class="header">
       <div class="header_body">
         <div class="logo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
             <g fill="none" fill-rule="evenodd">
               <path fill="#046AD0" d="M8.4765 6.728c0 .9158-.75 1.665-1.667 1.665H1.8094c-.9167 0-1.6667-.7492-1.6667-1.665V1.7336C.1426.818.8926.069 1.8093.069h5.0003c.917 0 1.667.749 1.667 1.6646V6.728M8.4765 18.3816c0 .9155-.75 1.6646-1.667 1.6646H1.8094c-.9167 0-1.6667-.749-1.6667-1.6646V13.387c0-.9154.75-1.6646 1.6667-1.6646h5.0003c.917 0 1.667.7492 1.667 1.6647v4.9946M8.4765 30.035c0 .9154-.75 1.6646-1.667 1.6646H1.8094c-.9167 0-1.6667-.7492-1.6667-1.6647v-4.9943c0-.9158.75-1.665 1.6667-1.665h5.0003c.917 0 1.667.7492 1.667 1.665v4.9942M20.1437 6.728c0 .9158-.75 1.665-1.667 1.665h-5c-.9167 0-1.6667-.7492-1.6667-1.665V1.7336c0-.9156.75-1.6647 1.6667-1.6647h5c.917 0 1.667.749 1.667 1.6646V6.728M20.1437 30.035c0 .9154-.75 1.6646-1.667 1.6646h-5c-.9167 0-1.6667-.7492-1.6667-1.6647v-4.9943c0-.9158.75-1.665 1.6667-1.665h5c.917 0 1.667.7492 1.667 1.665v4.9942M31.811 6.728c0 .9158-.75 1.665-1.6668 1.665h-5c-.9168 0-1.667-.7492-1.667-1.665V1.7336c0-.9156.7502-1.6647 1.667-1.6647h5c.9167 0 1.667.749 1.667 1.6646V6.728M31.811 18.3816c0 .9155-.75 1.6646-1.6668 1.6646h-5c-.9168 0-1.667-.749-1.667-1.6646V13.387c0-.9154.7502-1.6646 1.667-1.6646h5c.9167 0 1.667.7492 1.667 1.6647v4.9946"/>
               <path fill="#4AD24D" d="M35.9778 34.197c0 .9157-.75 1.6648-1.6666 1.6648h-9.167c-.9168 0-1.667-.749-1.667-1.665v-9.156c0-.916.7502-1.665 1.667-1.665h9.167c.9166 0 1.6666.749 1.6666 1.665v9.156"/>
@@ -42,25 +41,25 @@
         </svg>
       </button>
     </header>
+
+    <section class="map">
+      <div id="j-map" class="map_gmap"></div>
+    </section>
       
-    {{!-- Wrapper for places 
+    {{!-- Wrapper for places --}}
     <section class="panel">
       <div id="j-places"></div>
-    </section>
-    --}}
-    
-    <section class="map" id="j-map">
     </section>
   </script>
 
   <script id="places_preview-tpl" type="text/x-handlebars-template">
     <div class="places">
       {{#each items}}
-        <a class="places_item" href="places/{{_id}}">
+        <div class="places_item j-places" data-id="{{_id}}">
           <h5 class="places_item__title">{{title}}</h5>
           <p class="rate">{{rate}}</p>
           <p class="places_item__desc">{{description}}</p>
-        </a>
+        </div>
       {{else}}
         <p class="places_item warning">No places saved, tap on map</p>
       {{/each}}

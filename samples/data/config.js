@@ -11,3 +11,6 @@ var QB_CONFIG = {
       mode: 1 // the SDK will be printing logs to console.log
   }
 };
+
+window.QB_CREDS = QB_CREDS;
+window.QB_CONFIG = QB_CONFIG;
