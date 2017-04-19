@@ -226,7 +226,6 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
         sender = userModule._cache[message.sender_id],
         messagesHtml;
 
-    console.log(message);
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
     } else {
@@ -417,28 +416,6 @@ Message.prototype.renderTypingUsers = function (dialogId) {
             helpers.scrollTo(self.container, 'bottom');
         }
     }
-};
-
-Message.prototype.sendNewDialogMessage = function(dialog, occupantsIds){
-    var msg = {
-        type: dialog.type === 3 ? 'chat' : 'groupchat',
-        body:  (app.user.name || app.user.login) + ' created new dialog with: ',
-        extension: {
-            save_to_history: 1,
-            dialog_id: dialog._id,
-            notification_type: 1
-        },
-        markable: 1
-    };
-
-    occupantsIds.forEach(function(id){
-        msg.body += userModule._cache[id];
-    });
-
-    occupantsIds.forEach(function(id){
-        QB.chat.send(id, msg);
-    });
-
 };
 
 var messageModule = new Message();

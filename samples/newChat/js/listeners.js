@@ -26,11 +26,11 @@ Listeners.prototype.onMessageListener = function (userId, message) {
         console.log('userId', userId);
         console.log('message', message);
     console.groupEnd();
+
     var msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
 
     if (dialog) {
-        console.log('dialog exist');
         dialog.messages.unshift(msg);
 
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
@@ -54,7 +54,6 @@ Listeners.prototype.onMessageListener = function (userId, message) {
             }
         }
     } else {
-        console.log('new dialog');
         dialogModule.getDialogById(msg.chat_dialog_id).then(function(dialog){
             dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
             var type = dialog.type === 1 ? 'public' : 'chat',
@@ -98,21 +97,47 @@ Listeners.prototype.onSystemMessageListener = function (message) {
     console.group('onSystemMessageListener');
         console.log('message', message);
     console.groupEnd();
+
+    var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
+
+    console.log(dialog);
+
     if (message.extension && message.extension.notification_type === '1') {
         if (message.extension.dialog_id) {
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
-                console.log('getDialogById.then...');
+                dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
                 var type = dialog.type === 1 ? 'public' : 'chat',
                     activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
                 if (activeTab && type === activeTab.dataset.type) {
+                    console.log('active tab');
                     dialogModule.renderDialog(dialog, true);
+                    console.log('after render');
                 }
             }).catch(function(error){
                 console.error(error);
             });
         }
         return false;
+    } else if(message.extension && message.extension.notification_type === '2') {
+        console.log('dialog',dialog);
+        if(dialog){
+            dialogModule.updateDialogInCacheAndUi(dialog);
+        } else {
+            dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
+                dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
+                var type = dialog.type === 1 ? 'public' : 'chat',
+                    activeTab = document.querySelector('.j-sidebar__tab_link.active');
+
+                if (activeTab && type === activeTab.dataset.type) {
+                    console.log('active tab');
+                    dialogModule.renderDialog(dialog, true);
+                    console.log('after render');
+                }
+            }).catch(function(error){
+                console.error(error);
+            });
+        }
     }
 };
 

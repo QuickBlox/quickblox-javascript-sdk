@@ -56,7 +56,7 @@ Dialog.prototype.loadDialogs = function (type) {
         self.dialogsListContainer.classList.add('loading');
 
         if (type === 'chat') {
-            filter['type[in]'] = [CONSTANTS.DIALOG_TYPES.CHAT, CONSTANTS.DIALOG_TYPES.GROUPCHAT].toString();
+            filter['type[in]'] = [CONSTANTS.DIALOG_TYPES.CHAT, CONSTANTS.DIALOG_TYPES.GROUPCHAT].join(',');
         } else {
             filter.type = CONSTANTS.DIALOG_TYPES.PUBLICCHAT;
         }
@@ -66,28 +66,7 @@ Dialog.prototype.loadDialogs = function (type) {
                 reject(err);
             }
 
-            var dialogs = resDialogs.items.map(function (dialog) {
-                dialog.color = _.random(1, 10);
-                return dialog;
-            });
-
-            var peerToPearDialogs = dialogs.filter(function (dialog) {
-                if (dialog.type === CONSTANTS.DIALOG_TYPES.CHAT) {
-                    return true
-                }
-            }).map(function (dialog) {
-                return {
-                    full_name: dialog.name,
-                    id: dialog.occupants_ids.filter(function (id) {
-                        if (id !== app.user.id) return id;
-                    })[0],
-                    color: dialog.color
-                }
-            });
-
-            _.each(peerToPearDialogs, function (user) {
-                userModule.addToCache(user);
-            });
+            var dialogs = resDialogs.items;
 
             _.each(dialogs, function (dialog) {
                 if (!self._cache[dialog._id]) {
@@ -118,7 +97,6 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
         elem = document.getElementById(id);
 
     if(!self._cache[id]){
-        console.info('not in cahe');
         self._cache[id] = helpers.compileDialogParams(dialog);
         dialog = self._cache[id];
     }
@@ -194,15 +172,20 @@ Dialog.prototype.joinToDialog = function (id) {
     var self = this,
         jidOrUserId = self._cache[id].jidOrUserId;
 
-    QB.chat.muc.join(jidOrUserId, function (resultStanza) {
-        var joined = true;
-        for (var i = 0; i < resultStanza.childNodes.length; i++) {
-            var elItem = resultStanza.childNodes.item(i);
-            if (elItem.tagName === 'error') {
-                joined = false;
+    return new Promise(function (resolve, reject){
+        QB.chat.muc.join(jidOrUserId, function (resultStanza) {
+
+            for (var i = 0; i < resultStanza.childNodes.length; i++) {
+                var elItem = resultStanza.childNodes.item(i);
+                if (elItem.tagName === 'error') {
+                    self._cache[id].joined = false;
+                    return reject();
+                }
             }
-        }
-        self._cache[id].joined = joined;
+
+            self._cache[id].joined = true;
+            resolve();
+        });
     });
 };
 
@@ -321,33 +304,46 @@ Dialog.prototype.createDialog = function (params) {
                 message_body = (app.user.name || app.user.login) + ' created new dialog with: ';
 
             _.each(occupants, function (occupantId) {
-                message_body += (userModule._cache[occupantId].name || userModule._cache[occupantId].login);
+                message_body += (userModule._cache[occupantId].name || userModule._cache[occupantId].login) + " ";
             });
 
-            var msg = {
-                type: params.type === CONSTANTS.DIALOG_TYPES.CHAT ? 'chat' : 'groupchat',
-                body: message_body,
+            var systemMessage = {
                 extension: {
                     notification_type: 1,
                     dialog_id: createdDialog._id
                 }
             };
+
+            var notificationMessage = {
+                type: 'groupchat',
+                body: message_body,
+                extension: {
+                    save_to_history: 1,
+                    dialog_id: createdDialog._id,
+                    notification_type: 1,
+                    occupants_ids: occupants.toString()
+                }
+            };
+
             var newOccupantsIds = occupants.filter(function(item){
                 return item != app.user.id
             });
 
             for (var i = 0; i < newOccupantsIds.length; i++) {
-                QB.chat.sendSystemMessage(newOccupantsIds[i], msg);
-            }
-
-            if(params.type !== CONSTANTS.DIALOG_TYPES.CHAT) {
-                messageModule.sendNewDialogMessage(createdDialog, newOccupantsIds);
+                QB.chat.sendSystemMessage(newOccupantsIds[i], systemMessage);
             }
 
             /* Check dialog in cache */
             if (!self._cache[id]) {
                 self._cache[id] = helpers.compileDialogParams(createdDialog);
             }
+
+            self.joinToDialog(id).then(function(){
+                if(createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
+                    QB.chat.send(self._cache[id].jidOrUserId, notificationMessage);
+                }
+            });
+
 
             /* Check active tab [chat / public] */
             var type = params.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
@@ -357,7 +353,7 @@ Dialog.prototype.createDialog = function (params) {
                 var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
                 app.loadChatList(tab).then(function () {
                     self.renderDialog(self._cache[id], true);
-                    router.navigate('/dialog/' + id);
+
                 }).catch(function(error){
                     console.error(error);
                 });
@@ -419,6 +415,7 @@ Dialog.prototype.updateDialog = function (updates) {
         dialogId = updates.id,
         dialog = self._cache[dialogId],
         toUpdateParams = {},
+        newUsers,
         updatedMsg = {
             type: 'groupchat',
             body: '',
@@ -440,12 +437,21 @@ Dialog.prototype.updateDialog = function (updates) {
             updatedMsg.name = updates.title;
             updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".'
         }
-    } else if (updates.userList) {
-        var userList =  _getNewUsers();
-        if(userList.length){
+    }
+
+    if (updates.userList) {
+        newUsers =  _getNewUsers();
+        if(newUsers.length){
             toUpdateParams.push_all = {
-                occupants_ids: userList
-            }
+                occupants_ids: newUsers
+            };
+
+            var usernames = newUsers.map(function(userId){
+                return userModule._cache[userId].name || userId;
+            });
+
+            updatedMsg.body = app.user.name + ' add ' + usernames.join(',') + ' to the conversation.';
+            updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
             return false;
         }
@@ -455,8 +461,15 @@ Dialog.prototype.updateDialog = function (updates) {
     }
 
     _sendUpdateStanza().then(function(dialog){
+        if(newUsers){
+            _notifyNewUsers(newUsers);
+        }
+
+
         self.updateDialogInCacheAndUi(dialog);
+
         QB.chat.send(dialog.xmpp_room_jid, updatedMsg);
+
         router.navigate('/dialog/' + dialog._id);
     }).catch(function(e){
         console.log(e);
@@ -478,6 +491,19 @@ Dialog.prototype.updateDialog = function (updates) {
                 }
             });
         });
+    }
+
+    function _notifyNewUsers (users) {
+        var msg = {
+            extension: {
+                notification_type: 2,
+                dialog_id: dialog._id
+            }
+        };
+
+        _.each(users, function(user){
+            QB.chat.sendSystemMessage(user, msg);
+        })
     }
 };
 
@@ -502,6 +528,7 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
     if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT){
         alert('you can\'t remove this dialog');
         return;
+
     } else if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
         // delete current privat dialog;
         QB.chat.dialog.delete([dialogId], function(err) {

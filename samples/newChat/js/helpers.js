@@ -21,6 +21,19 @@ Helpers.prototype.clearView = function (view) {
 
 Helpers.prototype.compileDialogParams = function (dialog) {
     var self = this;
+
+    if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
+        var user = {
+            full_name: dialog.name,
+            id: dialog.occupants_ids.filter(function (id) {
+                if (id !== app.user.id) return id;
+            })[0],
+            color: dialog.color || _.random(1, 10)
+        };
+
+        userModule.addToCache(user);
+    }
+
     return {
         _id: dialog._id,
         name: dialog.name,
@@ -57,7 +70,7 @@ Helpers.prototype.compileDialogParams = function (dialog) {
             var occupants = dialog.occupants_ids;
             for(var i = 0; i < occupants.length; i++){
                 if(occupants[i] !== app.user.id){
-                    return userModule._cache[occupants[i]].color
+                    return userModule._cache[occupants[i]].color;
                 }
             }
         }

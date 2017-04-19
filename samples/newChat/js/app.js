@@ -40,6 +40,8 @@ App.prototype.renderDashboard = function (activeTabName) {
         renderParams.tabName = activeTabName
     }
 
+    console.log(renderParams);
+
     helpers.clearView(app.page);
 
     self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', renderParams);

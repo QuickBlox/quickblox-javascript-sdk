@@ -209,17 +209,6 @@ router.on({
                 editTitleInput.blur();
             });
 
-            // editTitleForm.addEventListener('submit', function(e){
-            //     e.preventDefault();
-            //
-            //     var params = {
-            //         id: dialogId,
-            //         title: editTitleInput.value.trim()
-            //     };
-            //     dialogModule.updateDialog(params);
-            // });
-
-
 
             editUsersCountForm.addEventListener('submit', function(e){
                 e.preventDefault();

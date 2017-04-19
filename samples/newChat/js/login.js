@@ -106,8 +106,7 @@ Login.prototype.login = function (user) {
 Login.prototype.renderLoginPage = function(){
     helpers.clearView(app.page);
 
-    app.page.innerHTML = helpers.fillTemplate('tpl_login',{
-        users: usersList,
+    app.page.innerHTML = helpers.fillTemplate('tpl_login', {
         version: QB.version
     });
     this.isLoginPageRendered = true;
