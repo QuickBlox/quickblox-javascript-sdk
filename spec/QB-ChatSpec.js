@@ -52,7 +52,7 @@ describe('Chat API', function() {
         var messageIdGroup;
         var messageIdSystem;
 
-        it('can create a dialog (private)', function(done) {
+        fit('can create a dialog (private)', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
                 type: 3
@@ -92,7 +92,7 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-        it('can create a dialog (group) and then join and send/receive a message', function(done) {
+        fit('can create a dialog (group) and then join and send/receive a message', function(done) {
             var params = {
                 occupants_ids: [QBUser2.id],
                 name: 'joinable=1',
@@ -375,38 +375,88 @@ describe('Chat API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
 
-// =============================================================================
+// =======================CREATE NORMAL MESSAGE=================================
 
-        it('can create a message and then DO NOT receive it (private dialog)', function(done) {
+        var createNormalMessageWithoutReceivingItTest = function(params, done){
+          QB.chat.message.create(params, function(err, res) {
+              expect(err).toBeNull();
+              expect(res._id).not.toBeNull();
+              expect(res.message).toEqual(params.message);
+              expect(res.chat_dialog_id).toEqual(dialogId4Private);
+
+              messageIdPrivate = res._id;
+          });
+
+          var messageReceived = false;
+          QB.chat.onMessageListener = function(userId, receivedMessage) {
+              messageReceived = true;
+          };
+
+          setTimeout(function(){
+            console.info("MSG receive timeout");
+            QB.chat.onMessageListener = null;
+            expect(messageReceived).toEqual(false);
+            done();
+          }, MESSAGING_TIMEOUT);
+        };
+
+        fit('can create a message and then DO NOT receive it (private dialog)(chat_dialog_id)', function(done) {
             var params = {
                 chat_dialog_id: dialogId4Private,
                 message: 'hello world'
             };
 
-            QB.chat.message.create(params, function(err, res) {
-                expect(err).toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.message).toEqual("hello world");
-                expect(res.chat_dialog_id).toEqual(dialogId4Private);
-
-                messageIdPrivate = res._id;
-            });
-
-            var messageReceived = false;
-            QB.chat.onMessageListener = function(userId, receivedMessage) {
-                messageReceived = true;
-            };
-
-            setTimeout(function(){
-              console.info("MSG receive timeout");
-              QB.chat.onMessageListener = null;
-              expect(messageReceived).toEqual(false);
-              done();
-            }, MESSAGING_TIMEOUT);
+            createNormalMessageWithoutReceivingItTest(params, done);
 
         }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
-        it('can create a message and then receive it (private dialog) (with send_to_chat=1)', function(done) {
+        fit('can create a message and then DO NOT receive it (private dialog)(recipient_id)', function(done) {
+            var params = {
+                recipient_id: QBUser2.id,
+                message: 'hello world'
+            };
+
+            createNormalMessageWithoutReceivingItTest(params, done);
+
+        }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+
+        fit('can create a message and then DO NOT receive it (group dialog)', function(done) {
+            var params = {
+                chat_dialog_id: dialogId1Group,
+                message: 'hello world'
+            };
+
+            createNormalMessageWithoutReceivingItTest(params, done);
+
+        }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+
+
+        var createNormalMessageAndReceiveItTest = function(params, dialogId, xmppMessageType, done){
+          QB.chat.message.create(params, function(err, res) {
+              expect(err).toBeNull();
+              expect(res._id).not.toBeNull();
+              expect(res.message).toEqual(params.message);
+              expect(res.chat_dialog_id).toEqual(dialogId);
+
+              messageIdPrivate = res._id;
+          });
+
+          QB.chat.onMessageListener = function(userId, receivedMessage) {
+              expect(userId).toEqual(QBUser1.id);
+              expect(receivedMessage).toBeDefined();
+              expect(receivedMessage.id).not.toBeNull();
+              // expect(receivedMessage.id).toEqual(messageIdPrivate);
+              expect(receivedMessage.type).toEqual(xmppMessageType);
+              expect(receivedMessage.body).toEqual(params.message);
+              expect(receivedMessage.extension).toEqual($.extend({save_to_history: '1'}, msgExtension));
+
+              QB.chat.onMessageListener = null;
+
+              done();
+          };
+        };
+
+        fit('can create a message and then receive it (private dialog) (send_to_chat=1) (chat_dialog_id)', function(done) {
             var msgExtension = {
               param1: "value1",
               param2: "value2"
@@ -419,47 +469,45 @@ describe('Chat API', function() {
                 send_to_chat: 1
             };
 
-            QB.chat.message.create(params, function(err, res) {
-                expect(err).toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.message).toEqual(params.message);
-                expect(res.chat_dialog_id).toEqual(dialogId4Private);
+            createNormalMessageAndReceiveItTest(params, dialogId4Private, "chat", done);
 
-                messageIdPrivate = res._id;
-            });
-
-            QB.chat.onMessageListener = function(userId, receivedMessage) {
-                expect(userId).toEqual(QBUser1.id);
-                expect(receivedMessage).toBeDefined();
-                expect(receivedMessage.id).not.toBeNull();
-                // expect(receivedMessage.id).toEqual(messageIdPrivate);
-                expect(receivedMessage.type).toEqual("chat");
-                expect(receivedMessage.body).toEqual(params.message);
-                expect(receivedMessage.extension).toEqual($.extend({save_to_history: '1'}, msgExtension));
-
-                QB.chat.onMessageListener = null;
-
-                done();
-            };
         }, REST_REQUESTS_TIMEOUT);
 
-        it('can create a message (group dialog)', function(done) {
+        fit('can create a message and then receive it (private dialog) (send_to_chat=1) (recipient_id)', function(done) {
+            var msgExtension = {
+              param1: "value1",
+              param2: "value2"
+            };
+            var params = {
+                recipient_id: QBUser2.id,
+                message: "hello world, it's me, a message with send_to_chat=1 in private dialog",
+                param1: msgExtension.param1,
+                param2: msgExtension.param2,
+                send_to_chat: 1
+            };
+
+            createNormalMessageAndReceiveItTest(params, dialogId4Private, "chat", done);
+
+        }, REST_REQUESTS_TIMEOUT);
+
+        fit('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
+            var msgExtension = {
+              param1: "value1",
+              param2: "value2"
+            };
             var params = {
                 chat_dialog_id: dialogId1Group,
-                message: 'hello world'
+                message: "hello world, it's me, a message with send_to_chat=1 in private dialog",
+                param1: msgExtension.param1,
+                param2: msgExtension.param2,
+                send_to_chat: 1
             };
 
-            QB.chat.message.create(params, function(err, res) {
-                expect(err).toBeNull();
-                expect(res._id).not.toBeNull();
-                expect(res.message).toEqual("hello world");
-                expect(res.chat_dialog_id).toEqual(dialogId1Group);
+            createNormalMessageAndReceiveItTest(params, dialogId1Group, "groupchat", done);
 
-                messageIdGroup = res._id;
-
-                done();
-            });
         }, REST_REQUESTS_TIMEOUT);
+
+// =======================CREATE SYSTEM MESSAGE=================================
 
         it("can create a system message and the receive it (private dialog)", function(done) {
             var msgExtension = {
@@ -513,6 +561,8 @@ describe('Chat API', function() {
                 done();
             });
         }, REST_REQUESTS_TIMEOUT);
+
+// ============================LIST MESSAGES====================================
 
         it('can list messages', function(done) {
             var filters = { chat_dialog_id: dialogId4Private };
