@@ -89,6 +89,7 @@ describe('Users API', function() {
           expect(res).not.toBeNull();
           expect(res.full_name).toBe('QuickBlox Test');
           userId = res.id;
+          console.info(userId);
 
           done();
         }
@@ -126,6 +127,13 @@ describe('Users API', function() {
         }
       });
     }, REST_REQUESTS_TIMEOUT);
+
+    afterAll(function(done) {
+      // return to origin user
+      QB.createSession(QBUser1, function(err, result) {
+        done();
+      });
+    });
 
   });
 
