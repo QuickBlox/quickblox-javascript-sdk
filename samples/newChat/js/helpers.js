@@ -3,10 +3,6 @@
 function Helpers() {
 }
 
-Helpers.prototype.redirectToPage = function (page) {
-    window.location.hash = '#' + page;
-};
-
 Helpers.prototype.fillTemplate = function (name, options) {
     var tpl = _.template(document.querySelector('#' + name).innerHTML);
     return tpl(options);

@@ -61,10 +61,11 @@ App.prototype.renderDashboard = function (activeTabName) {
             if (!user) {
                 console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
+            loginModule.isLogin = false;
             localStorage.removeItem('user');
             helpers.clearCache();
             QB.chat.disconnect();
-            helpers.redirectToPage('login');
+            router.navigate('#!/login');
         });
     });
 

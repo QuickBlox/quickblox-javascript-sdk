@@ -527,10 +527,6 @@
     margin: 0 17px 0 0 ;
 }
 
-.update_dialog__header .action_links  {
-}
-
-
 .update_chat__title_input:disabled {
     box-shadow: none;
 }
