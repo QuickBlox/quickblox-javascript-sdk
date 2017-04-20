@@ -5,16 +5,26 @@ function sortUsers(user1, user2){
   return ocuupantsArray;
 }
 
-function groupChat_joinAndSendAndReceiveMessage(done, roomJid, dialogId){
+function groupChat_joinAndSendAndReceiveMessageAndLeave(roomJid, dialogId, callback){
+  groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, function(){
+    QB.chat.muc.leave(roomJid, function() {
+      callback();
+    });
+  });
+}
+
+function groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, callback){
   QB.chat.muc.join(roomJid, function(stanzaResponse) {
     expect(stanzaResponse).not.toBeNull();
 
-    groupChat_sendAndReceiveMessage(done, roomJid, dialogId);
+    groupChat_sendAndReceiveMessage(roomJid, dialogId, function(){
+      callback();
+    });
 
   });
 }
 
-function groupChat_sendAndReceiveMessage(done, roomJid, dialogId){
+function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
   var body = 'Warning! People are coming';
   var msgExtension = {
       name: 'skynet',
@@ -40,7 +50,7 @@ function groupChat_sendAndReceiveMessage(done, roomJid, dialogId){
 
       QB.chat.onMessageListener = null;
 
-      done();
+      callback();
   }
 
   QB.chat.onMessageListener = onMsgCallback;
