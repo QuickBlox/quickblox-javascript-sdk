@@ -838,7 +838,7 @@ ChatProxy.prototype = {
 
             nClient.send(stanza);
         }
-        
+
         return paramsCreateMsg.id;
     },
 

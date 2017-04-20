@@ -1,12 +1,12 @@
 var messagesStats = {};
 
-function incrementMessagesSentPerDialog(dialogId){
+function incrementMessagesSentPerDialog(dialogId, isREST){
   var count = messagesStats[dialogId];
   if(!count){
     count = 0;
   }
   messagesStats[dialogId] = count+1;
-  console.info("SENT: " + messagesStats[dialogId] + ". Dialog: " + dialogId);
+  console.info("SENT: " + messagesStats[dialogId] + ", isREST:" + isREST + ". Dialog: " + dialogId);
 }
 
 function sortUsers(user1, user2){
@@ -36,20 +36,20 @@ function groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, callback){
 }
 
 function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
-  var body = 'Warning! People are coming';
+  var body = 'Warning! People are coming! XMPP message ' + Math.floor((Math.random() * 100) + 1);
   var msgExtension = {
       name: 'skynet',
-      mission: 'take over the planet'
+      mission: 'take over the planet',
+      save_to_history: 1
   };
   var msg = {
       type: 'groupchat',
       body: body,
       extension: msgExtension,
-      save_to_history: 1,
       markable: 1
   };
 
-  incrementMessagesSentPerDialog(dialogId);
+  incrementMessagesSentPerDialog(dialogId, false);
 
   function onMsgCallback(userId, receivedMessage) {
       expect(userId).toEqual(QBUser2.id);
@@ -81,7 +81,7 @@ function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, ca
 
     messageIdPrivate = res._id;
 
-    incrementMessagesSentPerDialog(dialogId);
+    incrementMessagesSentPerDialog(dialogId, true);
   });
 
   var messageReceived = false;
@@ -107,7 +107,7 @@ function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmp
 
     messageIdPrivate = res._id;
 
-    incrementMessagesSentPerDialog(dialogId);
+    incrementMessagesSentPerDialog(dialogId, true);
   });
 
   QB.chat.onMessageListener = function(userId, receivedMessage) {
