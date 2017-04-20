@@ -56,3 +56,53 @@ function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
   QB.chat.onMessageListener = onMsgCallback;
   msg.id = QB.chat.send(roomJid, msg);
 }
+
+function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, callback){
+  QB.chat.message.create(params, function(err, res) {
+    expect(err).toBeNull();
+    expect(res).toBeDefined()
+    expect(res._id).not.toBeNull();
+    expect(res.message).toEqual(params.message);
+    expect(res.chat_dialog_id).toEqual(dialogId);
+
+    messageIdPrivate = res._id;
+  });
+
+  var messageReceived = false;
+  QB.chat.onMessageListener = function(userId, receivedMessage) {
+    messageReceived = true;
+  };
+
+  setTimeout(function(){
+    console.info("MSG receive timeout");
+    QB.chat.onMessageListener = null;
+    expect(messageReceived).toEqual(false);
+    callback();
+  }, timeout);
+};
+
+function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmppMessageType, callback){
+  QB.chat.message.create(params, function(err, res) {
+    expect(err).toBeNull();
+    expect(res).toBeDefined()
+    expect(res._id).not.toBeNull();
+    expect(res.message).toEqual(params.message);
+    expect(res.chat_dialog_id).toEqual(dialogId);
+
+    messageIdPrivate = res._id;
+  });
+
+  QB.chat.onMessageListener = function(userId, receivedMessage) {
+    expect(userId).toEqual(QBUser1.id);
+    expect(receivedMessage).toBeDefined();
+    expect(receivedMessage.id).not.toBeNull();
+    expect(receivedMessage.id).toEqual(messageIdPrivate);
+    expect(receivedMessage.type).toEqual(xmppMessageType);
+    expect(receivedMessage.body).toEqual(params.message);
+    expect(receivedMessage.extension).toEqual($.extend({save_to_history: '1'}, msgExtension));
+
+    QB.chat.onMessageListener = null;
+
+    callback();
+  };
+};
