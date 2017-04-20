@@ -1,3 +1,14 @@
+var messagesStats = {};
+
+function incrementMessagesSentPerDialog(dialogId){
+  var count = messagesStats[dialogId];
+  if(!count){
+    count = 0;
+  }
+  messagesStats[dialogId] = count+1;
+  console.info("SENT: " + messagesStats[dialogId] + ". Dialog: " + dialogId);
+}
+
 function sortUsers(user1, user2){
   var ocuupantsArray = [user1, user2].sort(function(a,b){
       return a - b;
@@ -34,8 +45,11 @@ function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
       type: 'groupchat',
       body: body,
       extension: msgExtension,
+      save_to_history: 1,
       markable: 1
   };
+
+  incrementMessagesSentPerDialog(dialogId);
 
   function onMsgCallback(userId, receivedMessage) {
       expect(userId).toEqual(QBUser2.id);
@@ -66,6 +80,8 @@ function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, ca
     expect(res.chat_dialog_id).toEqual(dialogId);
 
     messageIdPrivate = res._id;
+
+    incrementMessagesSentPerDialog(dialogId);
   });
 
   var messageReceived = false;
@@ -90,16 +106,17 @@ function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmp
     expect(res.chat_dialog_id).toEqual(dialogId);
 
     messageIdPrivate = res._id;
+
+    incrementMessagesSentPerDialog(dialogId);
   });
 
   QB.chat.onMessageListener = function(userId, receivedMessage) {
     expect(userId).toEqual(QBUser1.id);
     expect(receivedMessage).toBeDefined();
-    expect(receivedMessage.id).not.toBeNull();
     expect(receivedMessage.id).toEqual(messageIdPrivate);
     expect(receivedMessage.type).toEqual(xmppMessageType);
     expect(receivedMessage.body).toEqual(params.message);
-    expect(receivedMessage.extension).toEqual($.extend({save_to_history: '1'}, msgExtension));
+    expect(receivedMessage.extension).toEqual($.extend($.extend({save_to_history: '1'}, msgExtension), {dialog_id: dialogId}));
 
     QB.chat.onMessageListener = null;
 
