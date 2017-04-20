@@ -131,8 +131,6 @@ Dialog.prototype.selectCurrentDialog = function(dialogId){
         return false;
     }
 
-
-
     if (dialogElem.classList.contains('selected') && document.forms.send_message) return false;
 
     var selectedDialog = document.querySelector('.dialog__item.selected');
@@ -143,7 +141,14 @@ Dialog.prototype.selectCurrentDialog = function(dialogId){
 
     dialogElem.classList.add('selected');
 
-    self._cache[self.dialogId].unread_messages_count = 0;
+    self.resetUnreadCounter(dialogId);
+};
+
+Dialog.prototype.resetUnreadCounter = function(dialogId){
+    var self = this,
+        dialogElem = document.getElementById(dialogId);
+
+    self._cache[dialogId].unread_messages_count = 0;
 
     var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
 
@@ -424,17 +429,15 @@ Dialog.prototype.updateDialog = function (updates) {
                 dialog_id: dialog._id,
                 notification_type: 2,
                 dialog_updated_at: Date.now() / 1000
-            },
-            markable: 1
+            }
         };
-
 
     if(dialog.type !== CONSTANTS.DIALOG_TYPES.GROUPCHAT) return false;
 
     if(updates.title){
         if(updates.title !== dialog.name){
             toUpdateParams.name = updates.title;
-            updatedMsg.name = updates.title;
+            updatedMsg.extension.dialog_name = updates.title;
             updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".'
         }
     }
@@ -455,9 +458,6 @@ Dialog.prototype.updateDialog = function (updates) {
         } else {
             return false;
         }
-    } else {
-        // can't change dialog name in a privat chat (type 3).
-        return false;
     }
 
     _sendUpdateStanza().then(function(dialog){
@@ -465,14 +465,11 @@ Dialog.prototype.updateDialog = function (updates) {
             _notifyNewUsers(newUsers);
         }
 
-
-        self.updateDialogInCacheAndUi(dialog);
-
         QB.chat.send(dialog.xmpp_room_jid, updatedMsg);
 
         router.navigate('/dialog/' + dialog._id);
-    }).catch(function(e){
-        console.log(e);
+    }).catch(function(error){
+        console.error(error);
     });
 
     function _getNewUsers(){
@@ -502,57 +499,59 @@ Dialog.prototype.updateDialog = function (updates) {
         };
 
         _.each(users, function(user){
-            QB.chat.sendSystemMessage(user, msg);
+            QB.chat.sendSystemMessage(+user, msg);
         })
     }
 };
 
-Dialog.prototype.updateDialogInCacheAndUi = function(newDialog){
+Dialog.prototype.updateDialogUi = function(dialogId, name){
     var self = this,
-        cachedDialog = self._cache[newDialog._id],
-        dialogElem = document.getElementById(newDialog._id);
+        cachedDialog = self._cache[dialogId],
+        dialogElem = document.getElementById(dialogId);
 
-    cachedDialog.name = newDialog.name;
+    cachedDialog.name = name;
+    dialogElem.querySelector('.dialog__name').innerText = name;
 
-    cachedDialog.users = newDialog.occupants_ids;
-
-    dialogElem.querySelector('.dialog__name').innerText = newDialog.name;
-    console.log(newDialog.name);
-    console.log(dialogElem.querySelector('.dialog__name').innerText);
+    if(self.dialogId === dialogId){
+        self.dialogTitle.innerText = name;
+    }
 };
 
 Dialog.prototype.quitFromTheDialog = function(dialogId){
     var self = this,
         dialog = self._cache[dialogId];
 
-    if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT){
-        alert('you can\'t remove this dialog');
-        return;
+    switch (dialog.type){
+        case CONSTANTS.DIALOG_TYPES.PUBLICCHAT:
+            alert('you can\'t remove this dialog');
+            break;
+        case CONSTANTS.DIALOG_TYPES.CHAT:
+            QB.chat.dialog.delete([dialogId], function(err) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    _removedilogFromCacheAndUi();
+                    router.navigate('/dashboard');
+                }
+            });
+            break;
+        case CONSTANTS.DIALOG_TYPES.GROUPCHAT:
+            // remove user from current  group dialog;
+            _notuyfyUsers();
 
-    } else if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
-        // delete current privat dialog;
-        QB.chat.dialog.delete([dialogId], function(err) {
-            if (err) {
-                console.error(err);
-            } else {
-                _removedilogFromCacheAndUi();
-                router.navigate('/dashboard');
-            }
-        });
-    } else if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
-        // remove user from current  group dialog;
-        QB.chat.dialog.update(dialogId, {
-            pull_all: {
-                occupants_ids: [app.user.id]
-            }
-        }, function(err, res) {
-            if (err) {
-                console.log(err);
-            } else {
-                _removedilogFromCacheAndUi();
-                router.navigate('/dashboard');
-            }
-        });
+            QB.chat.dialog.update(dialogId, {
+                pull_all: {
+                    occupants_ids: [app.user.id]
+                }
+            }, function(err, res) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    _removedilogFromCacheAndUi();
+                    router.navigate('/dashboard');
+                }
+            });
+            break;
     }
 
     function _removedilogFromCacheAndUi(){
@@ -560,6 +559,23 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
         var dialogElem = document.getElementById(dialogId);
         dialogElem.parentNode.removeChild(dialogElem);
     }
+
+    function _notuyfyUsers(){
+        var msg = {
+            type: 'groupchat',
+            body:  app.user.name + ' leave the chat.',
+            extension: {
+                save_to_history: 1,
+                dialog_id: dialog._id,
+                notification_type: 2,
+                dialog_updated_at: Date.now() / 1000,
+                occupants_ids_removed: app.user.id
+            }
+        };
+
+        QB.chat.send(self._cache[dialogId].jidOrUserId, msg)
+    }
+
 };
 
 var dialogModule = new Dialog();

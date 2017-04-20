@@ -4,7 +4,6 @@ var router = new Navigo(null, true, '#!');
 
 router.on({
     '': function(){
-        console.log('route /');
         if(!loginModule.isLogin) {
             router.navigate('/login');
         } else {
@@ -12,7 +11,6 @@ router.on({
         }
     },
     '/login': function(){
-        console.log('route /login');
         if(!loginModule.isLogin) {
             loginModule.init().then(function(isLogedIn){
                 if(isLogedIn){
@@ -29,7 +27,6 @@ router.on({
         }
     },
     '/dashboard': function(){
-        console.log('route /dashboard');
         if(!loginModule.isLogin) {
             loginModule.init().then(function(isLogedIn){
                 if(!isLogedIn){
@@ -49,7 +46,6 @@ router.on({
         }
     },
     '/dialog/:dialogId': function(params){
-        console.log('route /dialog/ID');
         var dialogId = params.dialogId;
         dialogModule.prevDialogId = dialogModule.dialogId;
         dialogModule.dialogId = dialogId;
@@ -81,6 +77,7 @@ router.on({
 
                     app.loadChatList(tab).then(function(){
                         dialogModule.renderMessages(dialogId);
+                        dialogModule.resetUnreadCounter(dialogId);
                     }).catch(function(error){
                         console.error(error);
                     });
@@ -95,7 +92,6 @@ router.on({
         }
     },
     'dialog/:dialogId/edit': function(params){
-        console.log('route /dialog/ID/edit');
         var dialogId = params.dialogId;
         var currentDialog = null;
         if (!loginModule.isLogin){

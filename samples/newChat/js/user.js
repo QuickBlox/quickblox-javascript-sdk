@@ -92,8 +92,13 @@ User.prototype.getUsers = function () {
 };
 
 User.prototype.buildUserItem = function (user) {
-    var self = this,
-        userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
+    var self = this;
+
+    if(user.id === app.user.id){
+        user.selected = true;
+    }
+
+    var userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
         elem = helpers.toHtml(userTpl)[0];
     
     elem.addEventListener('click', function () {

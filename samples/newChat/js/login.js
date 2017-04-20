@@ -34,7 +34,6 @@ Login.prototype.login = function (user) {
             self.renderLoadingPage();
         }
         QB.createSession(function(csErr, csRes) {
-            app.token = csRes.token;
             var userRequiredParams = {
                 'login':user.login,
                 'password': user.password
@@ -42,6 +41,7 @@ Login.prototype.login = function (user) {
             if (csErr) {
                 loginError(csErr);
             } else {
+                app.token = csRes.token;
                 QB.login(userRequiredParams, function(loginErr, loginUser){
                     if(loginErr) {
                         /** Login failed, trying to create account */
@@ -95,8 +95,8 @@ Login.prototype.login = function (user) {
         }
 
         function loginError(error){
-            console.log(error);
             self.renderLoginPage();
+            console.error(error);
             alert(error + "\n" + error.detail);
             reject(error);
         }

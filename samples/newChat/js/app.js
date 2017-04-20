@@ -40,8 +40,6 @@ App.prototype.renderDashboard = function (activeTabName) {
         renderParams.tabName = activeTabName
     }
 
-    console.log(renderParams);
-
     helpers.clearView(app.page);
 
     self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', renderParams);
@@ -115,7 +113,6 @@ App.prototype.tabSelectInit = function () {
 };
 
 App.prototype.loadChatList = function (tab) {
-    console.log('tab');
     return new Promise(function(resolve, reject){
         var tabs = document.querySelectorAll('.j-sidebar__tab_link');
 

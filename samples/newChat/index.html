@@ -262,7 +262,7 @@
     </script>
 
     <script type="text/template" id="tpl_newGroupChatUser">
-        <div class="user__item" id="<%= user.id %>">
+        <div class="user__item <% user.selected ? print('disabled selected') : ''%>" id="<%= user.id %>">
             <span class="user__avatar m-user__img_<%= user.color %>">
                 <i class="material-icons m-user_icon">account_circle</i>
             </span>

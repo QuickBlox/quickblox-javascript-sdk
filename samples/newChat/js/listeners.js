@@ -18,22 +18,20 @@
  */
 
 
-function Listeners() {
-}
+function Listeners() {};
 
 Listeners.prototype.onMessageListener = function (userId, message) {
-    console.group('onMessageListener');
-        console.log('userId', userId);
-        console.log('message', message);
-    console.groupEnd();
-
-    var msg = helpers.fillNewMessageParams(userId, message),
+    var self = this,
+        msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
 
     if (dialog) {
         dialog.messages.unshift(msg);
-
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
+
+        if(message.extension.notification_type){
+            return self.onNotificationMessage(userId, message);
+        }
 
         var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
             tabType = activeTab.dataset.type,
@@ -56,21 +54,58 @@ Listeners.prototype.onMessageListener = function (userId, message) {
     } else {
         dialogModule.getDialogById(msg.chat_dialog_id).then(function(dialog){
             dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
+
             var type = dialog.type === 1 ? 'public' : 'chat',
                 activeTab = document.querySelector('.j-sidebar__tab_link.active'),
                 cachedDialog = dialogModule._cache[dialog._id];
-
             if (activeTab && type === activeTab.dataset.type) {
-                console.log('before render');
                 dialogModule.renderDialog(cachedDialog, true);
             }
         }).catch(function(e){
             console.error(e);
         });
     }
-
 };
 
+Listeners.prototype.onNotificationMessage = function(userId, message){
+    var self = this,
+        msg = helpers.fillNewMessageParams(userId, message),
+        dialog = dialogModule._cache[message.dialog_id],
+        extension = message.extension,
+        dialogId = message.dialog_id;
+
+    if(+extension.notification_type === 2){
+        if (extension.occupants_ids_removed) {
+            dialogModule._cache[dialogId].users = dialogModule._cache[dialogId].users.filter(function(user){
+                return user !== userId;
+            });
+        } else if(extension.occupants_ids_added) {
+            dialog.users.push(userId);
+        } else if(extension.dialog_name){
+            dialog.name = extension.dialog_name;
+            dialogModule.updateDialogUi(dialogId, extension.dialog_name);
+        }
+    }
+
+    var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
+        tabType = activeTab.dataset.type,
+        dialogType = dialog.type === 1 ? "public" : "chat";
+
+    if(tabType === dialogType){
+        dialogModule.renderDialog(dialog, true);
+
+        if (dialogModule.dialogId === msg.chat_dialog_id) {
+            messageModule.renderMessage(msg, true);
+        } else {
+            dialog.unread_messages_count += 1;
+            var dialogElem = document.getElementById(msg.chat_dialog_id),
+                counter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+            counter.classList.remove('hidden');
+            counter.innerText = dialog.unread_messages_count;
+        }
+    }
+};
 
 Listeners.prototype.onReconnectFailedListener = function() {
     alert('onReconnectFailedListener');
@@ -94,13 +129,7 @@ Listeners.prototype.onReadStatusListener = function () {
 };
 
 Listeners.prototype.onSystemMessageListener = function (message) {
-    console.group('onSystemMessageListener');
-        console.log('message', message);
-    console.groupEnd();
-
     var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
-
-    console.log(dialog);
 
     if (message.extension && message.extension.notification_type === '1') {
         if (message.extension.dialog_id) {
@@ -110,9 +139,7 @@ Listeners.prototype.onSystemMessageListener = function (message) {
                     activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
                 if (activeTab && type === activeTab.dataset.type) {
-                    console.log('active tab');
-                    dialogModule.renderDialog(dialog, true);
-                    console.log('after render');
+                    dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
                 }
             }).catch(function(error){
                 console.error(error);
@@ -120,19 +147,14 @@ Listeners.prototype.onSystemMessageListener = function (message) {
         }
         return false;
     } else if(message.extension && message.extension.notification_type === '2') {
-        console.log('dialog',dialog);
-        if(dialog){
-            dialogModule.updateDialogInCacheAndUi(dialog);
-        } else {
+        if(!dialog){
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
                 var type = dialog.type === 1 ? 'public' : 'chat',
                     activeTab = document.querySelector('.j-sidebar__tab_link.active');
 
                 if (activeTab && type === activeTab.dataset.type) {
-                    console.log('active tab');
-                    dialogModule.renderDialog(dialog, true);
-                    console.log('after render');
+                    dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
                 }
             }).catch(function(error){
                 console.error(error);
@@ -154,7 +176,7 @@ Listeners.prototype.updateOnlineStatus = function (e) {
 };
 
 Listeners.prototype.setListeners = function () {
-    QB.chat.onMessageListener = this.onMessageListener;
+    QB.chat.onMessageListener = this.onMessageListener.bind(this);
     QB.chat.onSystemMessageListener = this.onSystemMessageListener;
     QB.chat.onMessageTypingListener = this.onMessageTypingListener;
 
