@@ -515,6 +515,10 @@
     color: #778594;
 }
 
+.content__title .action_links a:hover {
+    color: #18C942;
+}
+
 .content__title .action_links .hidden {
     display: none;
 }
