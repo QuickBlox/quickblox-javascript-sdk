@@ -57,8 +57,9 @@ describe('Chat API', function() {
     var dialogId2GroupNotJoinable;
     var dialogId3PublicGroup;
     var dialogId4Private;
-    var messageIdPrivate;
     var messageIdGroup;
+    //
+    var messageIdToDelete;
 
     // =======================CREATE PRIVATE DIALOG=============================
 
@@ -269,7 +270,7 @@ describe('Chat API', function() {
           });
 
         });
-      }, REST_REQUESTS_TIMEOUT);
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it('can update a dialog (group) (also set is_joinable=1)', function(done) {
         var toUpdate = {
@@ -289,7 +290,7 @@ describe('Chat API', function() {
             done();
           });
         });
-      }, REST_REQUESTS_TIMEOUT);
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't update a dialog (group) (set is_joinable=0) (if you are not an owner)", function(done) {
         // login with other user
@@ -358,7 +359,10 @@ describe('Chat API', function() {
           message: 'Warning! People are coming! REST message ' + Math.floor((Math.random() * 100) + 1)
         };
 
-        createNormalMessageWithoutReceivingItTest(params, dialogId4Private, MESSAGING_TIMEOUT, function(){
+        var self = this;
+
+        createNormalMessageWithoutReceivingItTest(params, dialogId4Private, MESSAGING_TIMEOUT, function(messageId){
+          messageIdToDelete = messageId;
           done();
         });
 
@@ -370,7 +374,7 @@ describe('Chat API', function() {
           message: 'Warning! People are coming! REST message ' + Math.floor((Math.random() * 100) + 1)
         };
 
-        createNormalMessageWithoutReceivingItTest(params, dialogId4Private, MESSAGING_TIMEOUT, function(){
+        createNormalMessageWithoutReceivingItTest(params, dialogId4Private, MESSAGING_TIMEOUT, function(messageId){
           done();
         });
 
@@ -389,11 +393,11 @@ describe('Chat API', function() {
           send_to_chat: 1
         };
 
-        createNormalMessageAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(){
+        createNormalMessageAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
           done();
         });
 
-      }, REST_REQUESTS_TIMEOUT);
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it('can create a message and then receive it (private dialog) (send_to_chat=1) (recipient_id)', function(done) {
         var msgExtension = {
@@ -408,11 +412,11 @@ describe('Chat API', function() {
           send_to_chat: 1
         };
 
-        createNormalMessageAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(){
+        createNormalMessageAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
           done();
         });
 
-      }, REST_REQUESTS_TIMEOUT);
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't create a message for none existent dialog (send_to_chat= 1)", function(done) {
         var params = {
@@ -455,7 +459,7 @@ describe('Chat API', function() {
           message: "hello world, it's me, group chat message " + Math.floor((Math.random() * 100) + 1)
         };
 
-        createNormalMessageWithoutReceivingItTest(params, dialogId1Group, MESSAGING_TIMEOUT, function(){
+        createNormalMessageWithoutReceivingItTest(params, dialogId1Group, MESSAGING_TIMEOUT, function(messageId){
           done();
         });
 
@@ -479,7 +483,7 @@ describe('Chat API', function() {
         QB.chat.muc.join(dialogJid, function(stanzaResponse) {
           expect(stanzaResponse).not.toBeNull();
 
-          createNormalMessageAndReceiveItTest(params, msgExtension, dialogId1Group, "groupchat", function(){
+          createNormalMessageAndReceiveItTest(params, msgExtension, dialogId1Group, "groupchat", function(messageId){
 
             QB.chat.muc.leave(dialogJid, function() {
               done();
@@ -623,17 +627,20 @@ describe('Chat API', function() {
 
     // ============================DELETE MESSAGES==============================
 
-    // describe('Delete Messages:', function() {
-    //   it('can delete a message with id', function(done) {
-    //     QB.chat.message.delete([messageIdGroup, 'notExistentId'], {force: 1}, function(err, res) {
-    //       expect(err).toBeNull();
-    //
-    //       done();
-    //
-    //       messageIdGroup = null;
-    //     });
-    //   }, REST_REQUESTS_TIMEOUT);
-    // });
+    describe('Delete Messages:', function() {
+
+      it('can delete a message with id', function(done) {
+        console.info([messageIdToDelete, 'notExistentId']);
+        QB.chat.message.delete([messageIdToDelete, 'notExistentId'], {force: 1}, function(err, res) {
+          expect(err).toBeNull();
+
+          messageIdToDelete = null;
+
+          done();
+        });
+      }, REST_REQUESTS_TIMEOUT);
+
+    });
 
     // ============================DELETE DIALOG==============================
 
@@ -654,8 +661,6 @@ describe('Chat API', function() {
     });
 
     afterAll(function(done) {
-      console.info(dialogId1Group);
-
       if(!dialogId2GroupNotJoinable && !dialogId3PublicGroup && !dialogId4Private){
         done();
         return;

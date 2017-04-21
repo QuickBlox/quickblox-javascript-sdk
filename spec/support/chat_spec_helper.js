@@ -72,6 +72,8 @@ function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
 }
 
 function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, callback){
+  var mesageId;
+
   QB.chat.message.create(params, function(err, res) {
     expect(err).toBeNull();
     expect(res).toBeDefined()
@@ -79,7 +81,7 @@ function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, ca
     expect(res.message).toEqual(params.message);
     expect(res.chat_dialog_id).toEqual(dialogId);
 
-    messageIdPrivate = res._id;
+    mesageId = res._id;
 
     incrementMessagesSentPerDialog(dialogId, true);
   });
@@ -93,11 +95,13 @@ function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, ca
     console.info("MSG receive timeout");
     QB.chat.onMessageListener = null;
     expect(messageReceived).toEqual(false);
-    callback();
+    callback(mesageId);
   }, timeout);
 };
 
 function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmppMessageType, callback){
+  var mesageId;
+
   QB.chat.message.create(params, function(err, res) {
     expect(err).toBeNull();
     expect(res).toBeDefined()
@@ -105,7 +109,7 @@ function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmp
     expect(res.message).toEqual(params.message);
     expect(res.chat_dialog_id).toEqual(dialogId);
 
-    messageIdPrivate = res._id;
+    mesageId = res._id;
 
     incrementMessagesSentPerDialog(dialogId, true);
   });
@@ -113,13 +117,13 @@ function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmp
   QB.chat.onMessageListener = function(userId, receivedMessage) {
     expect(userId).toEqual(QBUser1.id);
     expect(receivedMessage).toBeDefined();
-    expect(receivedMessage.id).toEqual(messageIdPrivate);
+    expect(receivedMessage.id).toEqual(mesageId);
     expect(receivedMessage.type).toEqual(xmppMessageType);
     expect(receivedMessage.body).toEqual(params.message);
     expect(receivedMessage.extension).toEqual($.extend($.extend({save_to_history: '1'}, msgExtension), {dialog_id: dialogId}));
 
     QB.chat.onMessageListener = null;
 
-    callback();
+    callback(mesageId);
   };
 };
