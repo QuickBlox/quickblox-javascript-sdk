@@ -77,9 +77,14 @@ describe('Helpers', function() {
       if (err) {
         done.fail('Connection to chat error: ' + JSON.stringify(err));
       } else {
-        var roomJid = QB.chat.helpers.getRoomJid(appId + '_5640ada2a28f9a76540006b6@muc.' + chatEndpoint);
+        var roomJid = QB.chat.helpers.getRoomJid(appId + '_5640ada2a28f9a76540006b6@muc.' + chatEndpoint,
+                  QB.chat.helpers.getUserJid(QBUser1.id, appId));
 
         expect(roomJid).toEqual(appId + '_5640ada2a28f9a76540006b6@muc.' + chatEndpoint + '/' + QBUser1.id);
+
+        console.info("disco");
+        QB.chat.disconnect();
+
         done();
       }
     });

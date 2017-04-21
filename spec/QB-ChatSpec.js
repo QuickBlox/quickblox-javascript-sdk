@@ -1,30 +1,38 @@
+'use strict';
+
+var LOGIN_TIMEOUT = 10000;
+var MESSAGING_TIMEOUT = 3500;
+var IQ_TIMEOUT = 3000;
+var REST_REQUESTS_TIMEOUT = 3000;
+
+var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
+
+var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
+var QB_USER1;
+var QB_USER2;
+if(isNodeEnv){
+  QB_USER1 = new QB.QuickBlox();
+  QB_USER2 = new QB.QuickBlox();
+}else{
+  QB_USER1 = new window.QB.QuickBlox();
+  QB_USER2 = new window.QB.QuickBlox();
+}
+
+var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+
+var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
+
+var chatEndpoint = CONFIG.endpoints.chat;
+
+
+QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+QB_USER1.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+QB_USER2.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+
+
 describe('Chat API', function() {
-  'use strict';
-
-  var LOGIN_TIMEOUT = 10000;
-  var MESSAGING_TIMEOUT = 3500;
-  var IQ_TIMEOUT = 3000;
-  var REST_REQUESTS_TIMEOUT = 3000;
-
-  var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
-
-  var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
-  // var QB_USER1 = new window.QB.QuickBlox();
-  // var QB_USER2 = new window.QB.QuickBlox();
-
-  var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-  var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
-
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
-
-  var chatEndpoint = CONFIG.endpoints.chat;
-
-
-  QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
-  // QB_USER1.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
-  // QB_USER2.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
-
 
   // =========================== REST API ======================================
 
@@ -102,7 +110,7 @@ describe('Chat API', function() {
 
     // =========================CREATE GROUP DIALOG=============================
 
-    describe('Create Group Dialog:', function() {
+    fdescribe('Create Group Dialog:', function() {
 
       it('can create a dialog (group) and then join and send/receive a message', function(done) {
         var params = {
@@ -676,12 +684,22 @@ describe('Chat API', function() {
         return;
       }
 
-      var dialogs = [dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private];
-      QB.chat.dialog.delete(dialogs, {force: 1}, function(err, res) {
+      var dialogs = [];
+      if(dialogId2GroupNotJoinable){
+        dialogs.push(dialogId2GroupNotJoinable);
+      }
+      if(dialogId3PublicGroup){
+        dialogs.push(dialogId3PublicGroup);
+      }
+      if(dialogId4Private){
+        dialogs.push(dialogId4Private);
+      }
+
+      QB.chat.dialog.delete(dialogs.concat(["notExistentId"]), {force: 1}, function(err, res) {
         var answ = JSON.parse(res);
 
-        expect(answ.SuccessfullyDeleted.ids.sort()).toEqual([dialogId2GroupNotJoinable, dialogId3PublicGroup, dialogId4Private].sort());
-        expect(answ.NotFound.ids).toEqual([]);
+        expect(answ.SuccessfullyDeleted.ids.sort()).toEqual(dialogs.sort());
+        expect(answ.NotFound.ids).toEqual(["notExistentId"]);
         expect(answ.WrongPermissions.ids).toEqual([]);
 
         QB.destroySession(function (err, result){
@@ -1018,3 +1036,138 @@ describe('Chat API', function() {
   });
 
 });
+
+
+//////////////// HELPERS
+
+var messagesStats = {};
+
+function incrementMessagesSentPerDialog(dialogId, isREST){
+  var count = messagesStats[dialogId];
+  if(!count){
+    count = 0;
+  }
+  messagesStats[dialogId] = count+1;
+  console.info("SENT: " + messagesStats[dialogId] + ", isREST:" + isREST + ". Dialog: " + dialogId);
+}
+
+function sortUsers(user1, user2){
+  var ocuupantsArray = [user1, user2].sort(function(a,b){
+      return a - b;
+  });
+  return ocuupantsArray;
+}
+
+function groupChat_joinAndSendAndReceiveMessageAndLeave(roomJid, dialogId, callback){
+  groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, function(){
+    QB.chat.muc.leave(roomJid, function() {
+      callback();
+    });
+  });
+}
+
+function groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, callback){
+  QB.chat.muc.join(roomJid, function(stanzaResponse) {
+    console.log("joined");
+    console.log(stanzaResponse);
+    expect(stanzaResponse).not.toBeNull();
+
+    groupChat_sendAndReceiveMessage(roomJid, dialogId, function(){
+      callback();
+    });
+
+  });
+}
+
+function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
+  var body = 'Warning! People are coming! XMPP message ' + Math.floor((Math.random() * 100) + 1);
+  var msgExtension = {
+      name: 'skynet',
+      mission: 'take over the planet',
+      save_to_history: 1
+  };
+  var msg = {
+      type: 'groupchat',
+      body: body,
+      extension: msgExtension,
+      markable: 1
+  };
+
+  incrementMessagesSentPerDialog(dialogId, false);
+
+  function onMsgCallback(userId, receivedMessage) {
+      expect(userId).toEqual(QBUser2.id);
+      expect(receivedMessage).toBeDefined();
+      expect(receivedMessage.id).toEqual(msg.id);
+      expect(receivedMessage.type).toEqual(msg.type);
+      expect(receivedMessage.body).toEqual(body);
+      expect(receivedMessage.extension.name).toEqual(msgExtension.name);
+      expect(receivedMessage.extension.mission).toEqual(msgExtension.mission);
+      expect(receivedMessage.extension.dialog_id).toEqual(dialogId);
+      expect(receivedMessage.markable).toEqual(msg.markable);
+
+      QB.chat.onMessageListener = null;
+
+      callback();
+  }
+
+  QB.chat.onMessageListener = onMsgCallback;
+  msg.id = QB.chat.send(roomJid, msg);
+}
+
+function createNormalMessageWithoutReceivingItTest(params, dialogId, timeout, callback){
+  var mesageId;
+
+  QB.chat.message.create(params, function(err, res) {
+    expect(err).toBeNull();
+    expect(res).toBeDefined()
+    expect(res._id).not.toBeNull();
+    expect(res.message).toEqual(params.message);
+    expect(res.chat_dialog_id).toEqual(dialogId);
+
+    mesageId = res._id;
+
+    incrementMessagesSentPerDialog(dialogId, true);
+  });
+
+  var messageReceived = false;
+  QB.chat.onMessageListener = function(userId, receivedMessage) {
+    messageReceived = true;
+  };
+
+  setTimeout(function(){
+    console.info("MSG receive timeout");
+    QB.chat.onMessageListener = null;
+    expect(messageReceived).toEqual(false);
+    callback(mesageId);
+  }, timeout);
+};
+
+function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmppMessageType, callback){
+  var mesageId;
+
+  QB.chat.message.create(params, function(err, res) {
+    expect(err).toBeNull();
+    expect(res).toBeDefined()
+    expect(res._id).not.toBeNull();
+    expect(res.message).toEqual(params.message);
+    expect(res.chat_dialog_id).toEqual(dialogId);
+
+    mesageId = res._id;
+
+    incrementMessagesSentPerDialog(dialogId, true);
+  });
+
+  QB.chat.onMessageListener = function(userId, receivedMessage) {
+    expect(userId).toEqual(QBUser1.id);
+    expect(receivedMessage).toBeDefined();
+    expect(receivedMessage.id).toEqual(mesageId);
+    expect(receivedMessage.type).toEqual(xmppMessageType);
+    expect(receivedMessage.body).toEqual(params.message);
+    expect(receivedMessage.extension).toEqual($.extend($.extend({save_to_history: '1'}, msgExtension), {dialog_id: dialogId}));
+
+    QB.chat.onMessageListener = null;
+
+    callback(mesageId);
+  };
+};

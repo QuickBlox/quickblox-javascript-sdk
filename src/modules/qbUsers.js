@@ -21,9 +21,7 @@ function UsersProxy(service) {
 }
 
 UsersProxy.prototype = {
-
   listUsers: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'listUsers', arguments.length > 1 ? params : "");
 
     var message = {}, filters = [], item;
 
@@ -59,8 +57,6 @@ UsersProxy.prototype = {
 
   // params is required object!!! If you want to get users without any parameters, set empty object as the parameter.
   get: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'get', params);
-
     var url;
 
     if (typeof params === 'number') {
@@ -93,8 +89,6 @@ UsersProxy.prototype = {
   },
 
   create: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'create', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.users), type: 'POST', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -103,8 +97,6 @@ UsersProxy.prototype = {
   },
 
   update: function(id, params, callback) {
-    Utils.QBLog('[UsersProxy]', 'update', id, params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.users, id), type: 'PUT', data: {user: params}},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -113,8 +105,6 @@ UsersProxy.prototype = {
   },
 
   delete: function(params, callback) {
-    Utils.QBLog('[UsersProxy]', 'delete', params);
-
     var url;
 
     if (typeof params === 'number') {
@@ -129,8 +119,6 @@ UsersProxy.prototype = {
   },
 
   resetPassword: function(email, callback) {
-    Utils.QBLog('[UsersProxy]', 'resetPassword', email);
-
     this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}}, callback);
   }
 

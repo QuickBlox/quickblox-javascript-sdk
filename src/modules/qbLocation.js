@@ -22,7 +22,6 @@ function GeoProxy(service){
 
 GeoProxy.prototype = {
   create: function(params, callback){
-    Utils.QBLog('[GeoProxy]', 'create', params);
     Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {geo_data: params}, type: 'POST'}, function(err,result){
@@ -43,8 +42,6 @@ GeoProxy.prototype = {
       }
     }
 
-    Utils.QBLog('[GeoProxy]', 'update', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, params.id), data: {geo_data:msg}, type: 'PUT'},
                      function(err,res){
                       if (err) { callback(err,null);}
@@ -53,7 +50,6 @@ GeoProxy.prototype = {
   },
 
   get: function(id, callback){
-    Utils.QBLog('[GeoProxy]', 'get', id);
     Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id)}, function(err,result){
@@ -70,13 +66,10 @@ GeoProxy.prototype = {
       params = undefined;
     }
 
-    Utils.QBLog('[GeoProxy]', 'find', params);
-
     this.service.ajax({url: Utils.getUrl(geoFindUrl), data: params}, callback);
   },
 
   delete: function(id, callback){
-    Utils.QBLog('[GeoProxy]', 'delete', id);
     Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata, id), type: 'DELETE', dataType: 'text'},
@@ -87,7 +80,6 @@ GeoProxy.prototype = {
   },
 
   purge: function(days, callback){
-    Utils.QBLog('[GeoProxy]', 'purge', days);
     Utils.QBLog('Deprecated!', deprecatedMsg);
 
     this.service.ajax({url: Utils.getUrl(config.urls.geodata), data: {days: days}, type: 'DELETE', dataType: 'text'},

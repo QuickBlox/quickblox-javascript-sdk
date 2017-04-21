@@ -20,8 +20,6 @@ function DataProxy(service){
 DataProxy.prototype = {
 
   create: function(className, data, callback) {
-    Utils.QBLog('[DataProxy]', 'create', className, data);
-
     this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: data, type: 'POST'}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -34,8 +32,6 @@ DataProxy.prototype = {
       callback = filters;
       filters = null;
     }
-    Utils.QBLog('[DataProxy]', 'list', className, filters);
-
     this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: filters}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -43,8 +39,6 @@ DataProxy.prototype = {
   },
 
   update: function(className, data, callback) {
-    Utils.QBLog('[DataProxy]', 'update', className, data);
-
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -52,8 +46,6 @@ DataProxy.prototype = {
   },
 
   delete: function(className, id, callback) {
-    Utils.QBLog('[DataProxy]', 'delete', className, id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + id), type: 'DELETE', dataType: 'text'},
                       function(err,result){
                         if (err){ callback(err, null); }
@@ -62,8 +54,6 @@ DataProxy.prototype = {
   },
 
   uploadFile: function(className, params, callback) {
-    Utils.QBLog('[DataProxy]', 'uploadFile', className, params);
-
     var formData;
 
     if(isBrowser){
@@ -92,8 +82,6 @@ DataProxy.prototype = {
   },
 
   downloadFile: function(className, params, callback) {
-    Utils.QBLog('[DataProxy]', 'downloadFile', className, params);
-
     var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
     result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
     callback(null, result);
@@ -106,8 +94,6 @@ DataProxy.prototype = {
   },
 
   deleteFile: function(className, params, callback) {
-    Utils.QBLog('[DataProxy]', 'deleteFile', className, params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
                       dataType: 'text', type: 'DELETE'}, function(err, result) {
                         if (err) { callback (err, null); }
