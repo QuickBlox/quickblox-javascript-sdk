@@ -590,6 +590,31 @@ describe('Chat API', function() {
 
     });
 
+    // ============================UPDATE MESSAGES==============================
+
+    describe('Update Messages:', function() {
+
+      it("can set 'read' status for all messages in dialog", function(done) {
+        QB.chat.message.update('', {
+          'read': '1',
+          'chat_dialog_id': dialogId1Group
+        }, function(error, result) {
+          expect(error).toBeNull();
+
+          var params = { chat_dialog_ids: [dialogId1Group] };
+          QB.chat.message.unreadCount(params, function(err, res) {
+            expect(err).toBeNull();
+            expect(res.total).toEqual(1);
+            expect(res[dialogId1Group]).toEqual(0);
+
+            done();
+          });
+
+        });
+      }, REST_REQUESTS_TIMEOUT*2);
+
+    });
+
     // ============================LIST MESSAGES================================
 
     describe('List Messages:', function() {
@@ -609,21 +634,6 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT);
 
     });
-
-    // ============================UPDATE MESSAGES==============================
-
-    // describe('Update Messages:', function() {
-    // it('can set \'read\' status for all messages in dialog', function(done) {
-    //   QB.chat.message.update('', {
-    //     'read': '1',
-    //     'chat_dialog_id': dialogId1Group
-    //   }, function(error, result) {
-    //     expect(error).toBeNull();
-    //
-    //     done();
-    //   });
-    // }, REST_REQUESTS_TIMEOUT);
-    // });
 
     // ============================DELETE MESSAGES==============================
 
