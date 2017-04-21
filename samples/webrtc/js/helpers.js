@@ -140,7 +140,8 @@
         uid += screen_info.height || '';
         uid += screen_info.width || '';
         uid += screen_info.pixelDepth || '';
-
+        uid += app.helpers.getQueryVar('creds') === 'test' ? 'WebrtcTest' : 'WebrtcProd';
+        
         return uid;
     }
 
