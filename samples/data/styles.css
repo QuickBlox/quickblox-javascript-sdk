@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
 
 html {
   box-sizing: border-box; 
@@ -90,7 +90,7 @@ body {
     border-bottom: none;
     border-right: 1px solid #dadfe1;
 
-    box-shadow: 2px 0 11px 0 rgba(0, 0, 0, .2);
+    box-shadow: 11px 0 11px -13px rgba(0, 0, 0, .4)
   }
 }
 
@@ -146,6 +146,12 @@ body {
 
   overflow: auto;
 }
+  /* Use .app* cause to understand where we have this modifier */
+  .app.new_place .panel {
+    top: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
 
 .panel::-webkit-scrollbar {
     width: 6px;
@@ -178,7 +184,7 @@ body {
 
     border-right: 1px solid #dadfe1;
 
-    box-shadow: 11px 0 11px -8px rgba(0, 0, 0, .2);
+    box-shadow: 11px 0 11px -13px rgba(0, 0, 0, .4);
   }
 }
 
@@ -213,79 +219,60 @@ body {
   text-overflow: ellipsis;
 }
 
-/*
-
-.panel {
-  flex: 0 0 320px;
-
-  position: relative;
-  z-index: 9;
-  
-  border-right: 1px solid #dadfe1;
-  box-shadow: 2px 0 11px 0 rgba(0, 0, 0, .1);
-}
-
-.header_title {
-  
-  
-}
-
-.header_user {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-
-
-
-
-.places_item {
+.back {
   display: block;
-  padding: 12px 20px;
 
-  color: #778594;
+  margin: 0 0 10px 0;
+  padding: 0 60px;
+
+  background: url(https://samples.quickblox.com/web/resources/arrow_back.svg) no-repeat top left 20px;
+
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 21px;
+  color: #4a4a4a;
+}
+
+.form-create {
+  padding: 0 20px;
+}
+
+.form_item {
+  margin: 20px 0 0 0;
+}
+
+.form_item:last-child {
+  margin-top: 40px;
+}
+
+.inp {
+  width: 100%;
+
+  font-size: 16px;
+  line-height: 24px;
+
+  border: none;
+  border-bottom: 1px solid #c5cace;
+
+  outline: none;
+}
+  .inp::placeholder {
+    font-size: 16px;
+    line-height: 24px;
+    color: #c5cace;
+  }
+
+.btn {
+  background: #28C849;
+  display: block;
+  width: 100%;
+  height: 40px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 16px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+
   cursor: pointer;
-
-  transition: background-color .4s ease;
 }
-.places_item:hover {
-  background-color: #f2f4f5;
-}*/
-
-
-
-
-
-/*
-.places {
-
-}
-
-.places__not_found {
-
-}
-
-.place_preview {
-  padding: 16px 20px;
-}
-
-.place_preview__desc {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}*/
-
-/* RATING */
-/*.rating {}
-
-.rating__star {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  background: url('./imgs/rating.svg');
-}
-
-.rating__star_complete {
-  background: url('./imgs/rating-complete.svg');
-}*/

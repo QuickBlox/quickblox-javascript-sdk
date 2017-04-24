@@ -27,3 +27,17 @@ Places.prototype.sync = function() {
     });
   })
 }
+
+Places.prototype.create = function(params) {
+  var self = this;
+
+  return new Promise(function(resolve, reject) {
+    QB.data.create(self.className, params, function(err, res){
+      if (err) {
+          reject(err);
+      } else {
+          resolve(res);
+      }
+    });
+  });
+}
