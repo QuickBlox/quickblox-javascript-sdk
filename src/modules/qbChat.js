@@ -98,6 +98,7 @@ function ChatProxy(service, webrtcModule) {
  * - onDeliveredStatusListener (messageId, dialogId, userId);
  * - onReadStatusListener (messageId, dialogId, userId);
  * - onSystemMessageListener (message)
+ * - onKickOccupant(dialogId, initiatorUserId)
  * - onContactListListener (userId, type)
  * - onSubscribeListener (userId)
  * - onConfirmSubscribeListener (userId)
@@ -329,11 +330,24 @@ function ChatProxy(service, webrtcModule) {
                  */
                 type = stanza.attrs.type;
 
-                /** LEAVE from dialog */
-                if(type && type === 'unavailable' && self.nodeStanzasCallbacks['muc:leave']) {
+                if(type && type === 'unavailable'){
+                    /** LEAVE from dialog */
                     if(status && status.attrs.code == "110"){
-                        Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
+                        if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
+                          Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
+                          return;
+                        }
+
+                    /** KICK from dialog */
+                    }else if(status && status.attrs.code == "301"){
+                      if (typeof self.onKickOccupant === 'function'){
+                        var actor = x.getChild('item').getChild('actor');
+                        var initiatorUserJid = actor.attrs.jid;
+                        Utils.safeCallbackCall(self.onKickOccupant,
+                            this.helpers.getDialogIdFromNode(from),
+                            this.helpers.getIdFromNode(initiatorUserJid));
                         return;
+                      }
                     }
                 }
 

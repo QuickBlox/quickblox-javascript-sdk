@@ -111,7 +111,7 @@ describe('Chat API', function() {
 
     describe('Create Group Dialog:', function() {
 
-      it('can create a dialog (group) and then join and send/receive a message', function(done) {
+      fit('can create a dialog (group) and then join and send/receive a message', function(done) {
         var params = {
           occupants_ids: [QBUser2.id],
           name: 'joinable=1',
@@ -335,6 +335,39 @@ describe('Chat API', function() {
           });
         });
       }, 3*REST_REQUESTS_TIMEOUT);
+
+      fit("can update a dialog (group) (remove user and he received a 'kick' message)", function(done) {
+
+        // User2 to join dialog
+        //
+        var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
+        QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
+          expect(stanzaResponse).not.toBeNull();
+
+          // User1 to remove User2 from occupants
+          //
+          var toUpdateParams = {
+            pull_all: {occupants_ids: [QBUser2.id]},
+          };
+          QB_SENDER.chat.dialog.update(dialogId1Group, toUpdateParams, function(err, res) {
+            expect(err).toBeNull();
+            expect(res).toBeDefined();
+            expect(res.occupants_ids).toEqual([QBUser1.id]);
+          });
+
+          // User2 should receive a 'kick' message
+          //
+          QB_RECEIVER.chat.onKickOccupant = function(dialogId, initiatorUserId){
+            expect(dialogId).toEqual(dialogId1Group);
+            expect(initiatorUserId).toEqual(QBUser1.id);
+
+            QB_RECEIVER.chat.onKickOccupant = null;
+
+            done();
+          };
+
+        });
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
 
     });
 
