@@ -140,7 +140,8 @@
         uid += screen_info.height || '';
         uid += screen_info.width || '';
         uid += screen_info.pixelDepth || '';
-
+        uid += app.helpers.getQueryVar('creds') === 'test' ? 'WebrtcTest' : 'WebrtcProd';
+        
         return uid;
     }
 
@@ -180,7 +181,7 @@
                             });
                         } else {
                             /** Update info */
-                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username ) {
+                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username) {
                                 QB.users.update(loginUser.id, {
                                     'full_name': data.username,
                                     'tag_list': data.room

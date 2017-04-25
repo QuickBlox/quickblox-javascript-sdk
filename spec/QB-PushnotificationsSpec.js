@@ -85,6 +85,7 @@ describe('PushNotifications API', function() {
     }, 10000);
   });
 
+
   describe('Events', function(){
     var eventId = '';
 
@@ -136,6 +137,7 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
+
     it('can get event by id', function(done){
       QB.pushnotifications.events.get(eventId, function(err, response) {
         if (err) {
@@ -170,10 +172,17 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    afterAll(function(done){
-      QB.pushnotifications.subscriptions.list(function(err, result){
+    afterAll(function(done) {
+
+      QB.pushnotifications.subscriptions.list(function(err, result) {
+        console.log('TEST', err);
         if (err) {
-          done.fail("List a subscription error: " + JSON.stringify(err));
+          if(err.code === 404) {
+            // Doesn't found any subscriptions for removing
+            done();
+          } else {
+            done.fail("List a subscription error: " + JSON.stringify(err));
+          }
         } else {
           var subscriptionId = result[0].subscription.id;
 

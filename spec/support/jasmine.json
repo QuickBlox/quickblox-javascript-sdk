@@ -4,6 +4,6 @@
     "QB-ChatSpec.js",
     "QB-HelpersSpec.js"
   ],
-  "stopSpecOnExpectationFailure": true,
+  "stopSpecOnExpectationFailure": false,
   "random": false
 }
