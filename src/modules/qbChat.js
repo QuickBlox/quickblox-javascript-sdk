@@ -46,6 +46,14 @@ function ChatProxy(service, webrtcModule) {
           'autostart': false,
           'reconnect': true
       });
+
+      // override 'send' function to add some logs
+      var originSendFunction = self.nClient.send;
+      self.nClient.send = function(stanza) {
+        Utils.QBLog('[QBChat]', 'SENT:', stanza.toString());
+        originSendFunction.call(self.nClient, stanza);
+      };
+
       self.nodeStanzasCallbacks = {};
     }
 
@@ -681,7 +689,7 @@ ChatProxy.prototype = {
             });
 
             self.nClient.on('stanza', function (stanza) {
-                Utils.QBLog('[QBChat] RECV', stanza.toString());
+                Utils.QBLog('[QBChat] RECV:', stanza.toString());
 
                 /**
                  * Detect typeof incoming stanza
