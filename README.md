@@ -65,11 +65,11 @@ var QB2 = new QuickBlox();
 
 # Documentation
 
-You can look at it here http://quickblox.com/developers/Javascript
+You can look at it here https://quickblox.com/developers/Javascript
 
 # Questions and feedback
 
-Please raise questions, requests for help etc. via http://stackoverflow.com/questions/tagged/quickbloxjs
+Please raise questions, requests for help etc. via https://stackoverflow.com/questions/tagged/quickblox
 
 Feedback and suggestions for improvement always welcome :)
 
