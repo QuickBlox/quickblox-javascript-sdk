@@ -35,7 +35,7 @@ Listeners.prototype.onMessageListener = function (userId, message) {
 
         var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
             tabType = activeTab.dataset.type,
-            dialogType = dialog.type === 1 ? "public" : "chat";
+            dialogType = dialog.type === 1 ? 'public' : 'chat';
 
         if(tabType === dialogType){
             dialogModule.renderDialog(dialog, true);
@@ -74,7 +74,7 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
         extension = message.extension,
         dialogId = message.dialog_id;
 
-    if(+extension.notification_type === 2){
+    if(extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.UPDATE_DIALOG){
         if (extension.occupants_ids_removed) {
             dialogModule._cache[dialogId].users = dialogModule._cache[dialogId].users.filter(function(user){
                 return user !== userId;
@@ -89,7 +89,7 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
 
     var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
         tabType = activeTab.dataset.type,
-        dialogType = dialog.type === 1 ? "public" : "chat";
+        dialogType = dialog.type === 1 ? 'public' : 'chat';
 
     if(tabType === dialogType){
         dialogModule.renderDialog(dialog, true);
@@ -131,7 +131,7 @@ Listeners.prototype.onReadStatusListener = function () {
 Listeners.prototype.onSystemMessageListener = function (message) {
     var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
 
-    if (message.extension && message.extension.notification_type === '1') {
+    if (message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.NEW_DIALOG) {
         if (message.extension.dialog_id) {
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
@@ -146,7 +146,7 @@ Listeners.prototype.onSystemMessageListener = function (message) {
             });
         }
         return false;
-    } else if(message.extension && message.extension.notification_type === '2') {
+    } else if(message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.UPDATE_DIALOG) {
         if(!dialog){
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);

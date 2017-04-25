@@ -22,7 +22,7 @@ var appConfig = {
     dilogsPerRequers: 15,
     messagesPerRequest: 50,
     usersPerRequest: 15,
-    typingTymeout: 3 // 3 seconds
+    typingTimeout: 3 // 3 seconds
 };
 
 var CONSTANTS = {
@@ -36,5 +36,9 @@ var CONSTANTS = {
         BODY: '[attachment]',
         MAXSIZE: 2 * 1000000, // set 2 megabytes,
         MAXSIZEMESSAGE: 'Image is too large. Max size is 2 mb.'
+    },
+    NOTIFICATION_TYPES: {
+        NEW_DIALOG: '1',
+        UPDATE_DIALOG: '2'
     }
 };

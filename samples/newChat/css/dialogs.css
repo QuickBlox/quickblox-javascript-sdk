@@ -180,7 +180,7 @@
 }
 
 .message__avatar.m-user__img_not_loaded,
-.message__avatar.m-typing_uncnown {
+.message__avatar.m-typing_unknown {
     opacity: .1;
 }
 

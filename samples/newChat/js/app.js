@@ -37,7 +37,7 @@ App.prototype.renderDashboard = function (activeTabName) {
         };
 
     if(activeTabName){
-        renderParams.tabName = activeTabName
+        renderParams.tabName = activeTabName;
     }
 
     helpers.clearView(app.page);
@@ -164,14 +164,14 @@ App.prototype.buildCreateDialogTpl = function () {
         document.forms.create_dialog.create_dialog_submit.disabled = true;
         
         var users = self.userListConteiner.querySelectorAll('.selected'),
-            type = users.length > 1 ? 2 : 3,
+            type = users.length > 2 ? 2 : 3,
             name = document.forms.create_dialog.dialog_name.value,
-            occupants_ids = type === 3 ? [] : [self.user.id];
-        
+            occupants_ids = [];
+
         _.each(users, function (user) {
             occupants_ids.push(+user.id);
         });
-        
+
         if (!name && type === 2) {
             var userNames = [];
             
@@ -184,7 +184,7 @@ App.prototype.buildCreateDialogTpl = function () {
             });
             name = userNames.join(', ');
         }
-        
+
         var params = {
             type: type,
             occupants_ids: occupants_ids
@@ -193,7 +193,7 @@ App.prototype.buildCreateDialogTpl = function () {
         if (type !== 3 && name) {
             params.name = name;
         }
-        
+
         dialogModule.createDialog(params);
     });
     

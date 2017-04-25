@@ -156,8 +156,6 @@
                     reject(csErr);
                 } else {
                     /** In first trying to login */
-
-                    console.log(userRequiredParams);
                     QB.login(userRequiredParams, function(loginErr, loginUser){
                         if(loginErr) {
                             /** Login failed, trying to create account */

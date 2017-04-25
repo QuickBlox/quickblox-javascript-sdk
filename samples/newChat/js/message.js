@@ -3,7 +3,7 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-    this.typingTymeout = appConfig.typingTymeout || 3;
+    this.typingTimeout = appConfig.typingTimeout || 3;
     this.limit = appConfig.messagesPerRequest || 50;
 
     this.dialogTitle = null;
@@ -48,7 +48,7 @@ Message.prototype.typingMessage = function (e) {
         self.sendIsTypingStatus(dialogId);
 
         self._typingTimer = setInterval(function () {
-            if ((Date.now() - self._typingTime) / 1000 >= self.typingTymeout) {
+            if ((Date.now() - self._typingTime) / 1000 >= self.typingTimeout) {
                 self.sendStopTypingStatus(dialogId);
             }
         }, 500);

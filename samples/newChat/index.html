@@ -44,7 +44,7 @@
                             <input type="text" id="userGroup" name="userGroup"/>
                             </div>
                         <div class="login__button_wrap">
-                            <button type="submit" name="login_submit" class="login__button j-login__button" disabled>
+                            <button type="submit" name="login_submit" class="btn m-login__button j-login__button" disabled>
                                 login
                             </button>
                         </div>
@@ -177,7 +177,7 @@
             <a href="#!/dialog/<%- _id %>" class="back_to_dialog j-back_to_dialog">
                 <i class="material-icons">arrow_back</i>
             </a>
-            <form action="#" name="update_chat_name" class="update_update_chat_name_form">
+            <form action="#" name="update_chat_name" class="update_chat_name_form">
                 <input type="text" name="update_chat__title" class="update_chat__title_input j-update_chat__title_input" value="<%- title %>" disabled>
                 <button type="button" class="update_chat__title_button j-update_chat__title_button">
                     <i class="material-icons m-user_icon">create</i>
@@ -189,9 +189,9 @@
             <p class="update__chat__description"><span class="update__chat_counter">0</span>&nbsp;user selected:</p>
             <div class="update_chat__user_list j-update_chat__user_list">
             </div>
-            <form action="" name="update_dialog" class="update_dialog_form j-update_dialog_form">
-                <button type="button" class="update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel">cancel</button>
-                <button class="update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit">add member</button>
+            <form action="" name="update_dialog" class="dialog_form m_dialog_form_update j-update_dialog_form">
+                <button type="button" class="btn m-update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel">cancel</button>
+                <button class="btn m-update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit">add member</button>
             </form>
         </div>
     </script>
@@ -253,10 +253,10 @@
             <p class="group__chat__description">Select participants:</p>
             <div class="group_chat__user_list j-group_chat__user_list">
             </div>
-            <form action="" name="create_dialog" class="create_dialog_form j-create_dialog_form">
+            <form action="" name="create_dialog" class="dialog_form m-dialog_form_create j-create_dialog_form">
                 <input class="dialog_name" name="dialog_name" type="text"  autocomplete="off"
                        autocorrect="off" autocapitalize="off" placeholder="Add conversation name" disabled>
-                <button class="create_dialog_btn j-create_dialog_btn"  type="submit" name="create_dialog_submit" disabled>create</button>
+                <button class="btn m-create_dialog_btn j-create_dialog_btn"  type="submit" name="create_dialog_submit" disabled>create</button>
             </form>
         </div>
     </script>
@@ -278,7 +278,7 @@
     <script type="text/template" id="tpl_message__typing">
         <div class="message__wrap m-typing j-istyping" id="is__typing">
             <% _.each(users, function(user){  %>
-                <span class="message__avatar <%- typeof user === 'number' ? 'm-typing_uncnown m-typing_' + user : 'm-user__img_' + user.color %>">
+                <span class="message__avatar <%- typeof user === 'number' ? 'm-typing_unknown m-typing_' + user : 'm-user__img_' + user.color %>">
                     <i class="material-icons">account_circle</i>
                 </span>
             <% }); %>

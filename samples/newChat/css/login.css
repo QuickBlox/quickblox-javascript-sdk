@@ -62,7 +62,7 @@
     font-size: 16px;
     line-height: 19px;
     color: #C5CACE;
-    transition: 0.15s;
+    transition: top 0.15s, color 0.15s;
 }
 
 .login_form__row input{
@@ -87,18 +87,8 @@
     color: #17D04B;
 }
 
-.login__button {
-    color: white;
-    background-color: #17D04B;
-    text-transform: uppercase;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 12px;
+.m-login__button {
     width: 100%;
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
 }
 
 .login__button:active {

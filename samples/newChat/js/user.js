@@ -102,15 +102,17 @@ User.prototype.buildUserItem = function (user) {
         elem = helpers.toHtml(userTpl)[0];
     
     elem.addEventListener('click', function () {
+        if (elem.classList.contains('disabled')) return;
+
         elem.classList.toggle('selected');
         
-        if (self.userListConteiner.querySelectorAll('.selected').length > 0) {
+        if (self.userListConteiner.querySelectorAll('.selected').length > 1) {
             document.forms.create_dialog.create_dialog_submit.disabled = false;
         } else {
             document.forms.create_dialog.create_dialog_submit.disabled = true;
         }
 
-        if (self.userListConteiner.querySelectorAll('.selected').length >= 2) {
+        if (self.userListConteiner.querySelectorAll('.selected').length >= 3) {
             document.forms.create_dialog.dialog_name.disabled = false;
         } else {
             document.forms.create_dialog.dialog_name.disabled = true;
