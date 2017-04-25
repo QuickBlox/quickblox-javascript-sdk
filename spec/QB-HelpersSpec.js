@@ -81,8 +81,7 @@ describe('Helpers', function() {
                   QB.chat.helpers.getUserJid(QBUser1.id, appId));
 
         expect(roomJid).toEqual(appId + '_5640ada2a28f9a76540006b6@muc.' + chatEndpoint + '/' + QBUser1.id);
-
-        console.info("disco");
+        
         QB.chat.disconnect();
 
         done();

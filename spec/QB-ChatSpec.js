@@ -720,8 +720,8 @@ describe('Chat API', function() {
 
   });
 
-
-  xdescribe('XMPP:', function() {
+/*
+  describe('XMPP:', function() {
 
     var statusCheckingParams = {
       userId: QBUser1.id,
@@ -911,7 +911,6 @@ describe('Chat API', function() {
     // =============================================================================
 
     describe('[Roster] Contact list: ', function() {
-      /** !!Don't give back any response */
       it('can add user to contact list', function(done) {
         QB.chat.roster.add(QBUser2.id, function() {
           done();
@@ -1030,7 +1029,7 @@ describe('Chat API', function() {
         });
       });
 
-      /** !! REVIEW */
+      // !! REVIEW
       // it('can delete list by name', function(done) {
       //     QB.chat.privacylist.delete('test', function(error) {
       //         expect(error).toBeNull();
@@ -1039,6 +1038,7 @@ describe('Chat API', function() {
       // });
     });
   });
+  */
 
 });
 
