@@ -370,59 +370,60 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
 
       it("can't join dialog where user is not in occupants", function(done) {
-        var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
-        QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
 
-          var joined = true;
-          var errorCode;
-          var errorName;
-          var errorDescription;
+        setTimeout(function(){
+          var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
+          QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
+            var joined = true;
+            var errorCode;
+            var errorName;
+            var errorDescription;
 
-          for (var i = 0; i < stanzaResponse.childNodes.length; i++) {
-            var elItem = stanzaResponse.childNodes.item(i);
-            if (elItem.tagName === 'error'){
-              errorCode = elItem.getAttribute("code");
-              errorName = elItem.childNodes.item(0).tagName;
-              errorDescription = elItem.childNodes.item(1).textContent;
+            var errElement = xmlGetElement(stanzaResponse, 'error');
+            if(errElement){
+              errorCode = xmlGetAttr(errElement, "code");
+              errorName = xmlGetElement(errElement, 'forbidden');
+              errorDescription = xmlGetElementText(errElement, 'text');
               joined = false;
-              break;
             }
-          }
 
-          expect(joined).toEqual(false);
-          expect(errorCode).toEqual("403");
-          expect(errorName).toEqual("forbidden");
-          expect(errorDescription).toEqual("Your user is not in occupant list or you call wrong application.");
-          // Your user is not in occupants list of the dialog
+            expect(joined).toEqual(false);
+            expect(errorCode).toEqual("403");
+            expect(errorName).not.toBeNull();
+            expect(errorDescription).toEqual("Your user is not in occupant list or you call wrong application.");
+            // Your user is not in occupants list of the dialog
 
-          done();
-        });
-      }, MESSAGING_TIMEOUT);
+            done();
+          });
+        }, 1000);
 
-      fit("can't join not existent dialog", function(done) {
-        QB_RECEIVER.chat.muc.join("888_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
+      }, MESSAGING_TIMEOUT+1000);
 
-          var joined = true;
-          var errorCode;
-          var errorName;
+      it("can't join not existent dialog", function(done) {
 
-          for (var i = 0; i < stanzaResponse.childNodes.length; i++) {
-            var elItem = stanzaResponse.childNodes.item(i);
-            if (elItem.tagName === 'error'){
-              errorCode = elItem.getAttribute("code");
-              errorName = elItem.childNodes.item(0).tagName;
+        setTimeout(function(){
+          QB_RECEIVER.chat.muc.join("888_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
+
+            var joined = true;
+            var errorCode;
+            var errorName;
+
+            var errElement = xmlGetElement(stanzaResponse, 'error');
+            if(errElement){
+              errorCode = xmlGetAttr(errElement, "code");
+              errorName = xmlGetElement(errElement, 'item-not-found');
               joined = false;
-              break;
             }
-          }
 
-          expect(joined).toEqual(false);
-          expect(errorCode).toEqual("404");
-          expect(errorName).toEqual("item-not-found");
+            expect(joined).toEqual(false);
+            expect(errorCode).toEqual("404");
+            expect(errorName).not.toBeNull();
 
-          done();
-        });
-      }, MESSAGING_TIMEOUT);
+            done();
+          });
+        }, 1000);
+
+      }, MESSAGING_TIMEOUT+1000);
 
       it("can update a dialog (group) (add user)", function(done) {
 
@@ -815,7 +816,7 @@ describe('Chat API', function() {
       QB_SENDER.destroySession(function (err, result){
         expect(QB_SENDER.service.qbInst.session).toBeNull();
 
-        QB_SENDER.chat.disconnect();
+        QB_RECEIVER.chat.disconnect();
 
         done();
       });
@@ -1294,4 +1295,48 @@ function createNormalMessageAndReceiveItTest(params, msgExtension, dialogId, xmp
       normalMessageIdXMPP = receivedMessage.id;
     }
   };
+};
+
+function xmlGetAttr(el, attrName) {
+    var attr;
+
+    if(typeof el.getAttribute === 'function') {
+        attr = el.getAttribute(attrName);
+    } else if(el.attrs) {
+        attr = el.attrs[attrName];
+    } else {
+        throw ERR_UNKNOWN_INTERFACE;
+    }
+
+    return attr ? attr : null;
+};
+
+function xmlGetElement(stanza, elName) {
+    var el;
+
+    if(typeof stanza.querySelector === 'function') {
+        el = stanza.querySelector(elName);
+    } else if(typeof stanza.getChild === 'function'){
+        el = stanza.getChild(elName);
+    } else {
+        throw ERR_UNKNOWN_INTERFACE;
+    }
+
+    return el ? el : null;
+};
+
+function xmlGetElementText(stanza, elName) {
+    var el,
+        txt;
+
+    if(typeof stanza.querySelector === 'function') {
+        el = stanza.querySelector(elName);
+        txt = el ? el.textContent : null;
+    } else if(typeof stanza.getChildText === 'function') {
+        txt = stanza.getChildText(elName);
+    } else {
+        throw ERR_UNKNOWN_INTERFACE;
+    }
+
+    return txt ? txt : null;
 };

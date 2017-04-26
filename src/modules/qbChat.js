@@ -369,9 +369,9 @@ function ChatProxy(service, webrtcModule) {
                       }
                       return;
                   }
-                  
-                // probably an error
-                }else if(xXMLNS == "http://jabber.org/protocol/muc"){
+
+              // an error
+              }else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
                   /** JOIN to dialog error */
                   if(id.endsWith(":join")){
                       if(typeof self.nodeStanzasCallbacks[id] === 'function') {
