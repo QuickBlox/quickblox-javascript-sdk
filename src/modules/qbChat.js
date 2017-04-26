@@ -314,54 +314,59 @@ function ChatProxy(service, webrtcModule) {
     this._onPresence = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
+            id = chatUtils.getAttr(stanza, 'id'),
             type = chatUtils.getAttr(stanza, 'type'),
             userId = self.helpers.getIdFromNode(from),
-            currentUserId = self.helpers.getIdFromNode(self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient));
+            currentUserId = self.helpers.getIdFromNode(self.helpers.userCurrentJid(Utils.getEnv().browser ? self.connection : self.nClient)),
+            x = chatUtils.getElement(stanza, 'x'),
+            xXMLNS, status, statusCode;
+
+        if(x){
+          xXMLNS = chatUtils.getAttr(x, 'xmlns');
+          status = chatUtils.getElement(x, 'status');
+          if(status){
+            statusCode = chatUtils.getAttr(status, 'code');
+          }
+        }
+
+        // KICK from dialog event
+        if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user" && status && statusCode == "301"){
+          if (typeof self.onKickOccupant === 'function'){
+            var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
+            var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
+            Utils.safeCallbackCall(self.onKickOccupant,
+                self.helpers.getDialogIdFromNode(from),
+                self.helpers.getIdFromNode(initiatorUserJid));
+          }
+
+          delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
+
+          return;
+        }
 
         if(Utils.getEnv().node) {
-            var x = stanza.getChild('x');
-
             /** MUC */
-            if(x && x.attrs.xmlns == "http://jabber.org/protocol/muc#user"){
-                var status = x.getChild('status');
+            if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
                 /**
                  * if you make 'leave' from dialog
                  * stanza will be contains type="unavailable"
                  */
-                type = stanza.attrs.type;
-
                 if(type && type === 'unavailable'){
                     /** LEAVE from dialog */
-                    if(status && status.attrs.code == "110"){
+                    if(status && statusCode == "110"){
                         if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
                           Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
-                          return;
                         }
-
-                    /** KICK from dialog */
-                    }else if(status && status.attrs.code == "301"){
-                      if (typeof self.onKickOccupant === 'function'){
-                        var actor = x.getChild('item').getChild('actor');
-                        var initiatorUserJid = actor.attrs.jid;
-                        Utils.safeCallbackCall(self.onKickOccupant,
-                            this.helpers.getDialogIdFromNode(from),
-                            this.helpers.getIdFromNode(initiatorUserJid));
                         return;
-                      }
                     }
                 }
 
                 /** JOIN to dialog */
-                if(stanza.attrs.id) {
-                    if(status && status.attrs.code == "110"){
-                        if(typeof self.nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
-                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[stanza.attrs.id], stanza);
-                        }
-                    } else {
-                        if(typeof self.nodeStanzasCallbacks[stanza.attrs.id] === 'function') {
-                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[stanza.attrs.id], null);
-                        }
+                if(id && status && statusCode == "110"){
+                    if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                        Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
                     }
+                    return;
                 }
             }
         }
@@ -2390,20 +2395,21 @@ Helpers.prototype = {
     },
 
     /**
-     * Get the room jid from dialog id.
+     * Get the full room jid from room bare jid & user jid.
      * @memberof QB.chat.helpers
-     * @param {String} jid - The dialog jid.
-     * @returns {String} jid - The room jid.
+     * @param {String} jid - dialog's bare jid.
+     * @param {String} userJid - user's jid.
+     * @returns {String} jid - dialog's full jid.
      * */
     getRoomJid: function(jid, userJid) {
         return jid + '/' + this.getIdFromNode(userJid);
     },
 
     /**
-     * Get the room jid from the dialog id.
+     * Get user id from dialog's full jid.
      * @memberof QB.chat.helpers
-     * @param {String} jid - resourse jid.
-     * @returns {String} jid - The room jid.
+     * @param {String} jid - dialog's full jid.
+     * @returns {String} user_id - User Id.
      * */
     getIdFromResource: function(jid) {
         var s = jid.split('/');
@@ -2413,7 +2419,19 @@ Helpers.prototype = {
     },
 
     /**
-     * Get the room jid from dialog id.
+     * Get bare dialog's jid from dialog's full jid.
+     * @memberof QB.chat.helpers
+     * @param {String} jid - dialog's full jid.
+     * @returns {String} room_jid - dialog's bare jid.
+     * */
+    getRoomJidFromRoomFullJid: function(jid) {
+      var s = jid.split('/');
+      if (s.length < 2) return null;
+      return s[0];
+    },
+
+    /**
+     * Generate BSON ObjectId.
      * @memberof QB.chat.helpers
      * @returns {String} BsonObjectId - The bson object id.
      **/

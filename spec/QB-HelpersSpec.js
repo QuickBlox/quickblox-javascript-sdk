@@ -81,7 +81,7 @@ describe('Helpers', function() {
                   QB.chat.helpers.getUserJid(QBUser1.id, appId));
 
         expect(roomJid).toEqual(appId + '_5640ada2a28f9a76540006b6@muc.' + chatEndpoint + '/' + QBUser1.id);
-        
+
         QB.chat.disconnect();
 
         done();
@@ -112,4 +112,13 @@ describe('Helpers', function() {
 
     expect(parseInt(userId)).toEqual(QBUser1.id);
   });
+
+  it("can get room's bare jid from room's full jid", function() {
+    var originRoomsBareJid = '28287_5640ada2a28f9a76540006b6@muc.' + chatEndpoint;
+    var roomsBareJid = QB.chat.helpers.getRoomJidFromRoomFullJid(originRoomsBareJid + '/' + QBUser1.id);
+
+    expect(roomsBareJid).toEqual(originRoomsBareJid);
+  });
+
+
 });

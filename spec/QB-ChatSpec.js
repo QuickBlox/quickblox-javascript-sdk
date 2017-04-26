@@ -111,7 +111,7 @@ describe('Chat API', function() {
 
     describe('Create Group Dialog:', function() {
 
-      fit('can create a dialog (group) and then join and send/receive a message', function(done) {
+      it('can create a dialog (group) and then join and send/receive a message', function(done) {
         var params = {
           occupants_ids: [QBUser2.id],
           name: 'joinable=1',
@@ -336,7 +336,7 @@ describe('Chat API', function() {
         });
       }, 3*REST_REQUESTS_TIMEOUT);
 
-      fit("can update a dialog (group) (remove user and he received a 'kick' message)", function(done) {
+      it("can update a dialog (group) (remove user and he received a 'kick' message)", function(done) {
 
         // User2 to join dialog
         //
@@ -368,6 +368,18 @@ describe('Chat API', function() {
 
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
+
+      it("can't not join dialog where user is not in occupants", function(done) {
+        done();
+      }, MESSAGING_TIMEOUT);
+
+      it("can't not join not existent dialog", function(done) {
+        done();
+      }, MESSAGING_TIMEOUT);
+
+      it("can update a dialog (group) (add user)", function(done) {
+        done();
+      }, REST_REQUESTS_TIMEOUT);
 
     });
 
