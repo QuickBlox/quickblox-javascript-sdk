@@ -3,7 +3,7 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-    this.typingTymeout = appConfig.typingTymeout || 3
+    this.typingTimeout = appConfig.typingTimeout || 3;
     this.limit = appConfig.messagesPerRequest || 50;
 
     this.dialogTitle = null;
@@ -14,14 +14,12 @@ function Message() {
 
 Message.prototype.init = function () {
     var self = this;
-
     self.container = document.querySelector('.j-messages');
     self.attachmentPreviewContainer = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
 
     document.forms.send_message.addEventListener('submit', function (e) {
         e.preventDefault();
-
         self.sendMessage(dialogModule.dialogId);
         document.forms.send_message.message_feald.focus();
     });
@@ -50,7 +48,7 @@ Message.prototype.typingMessage = function (e) {
         self.sendIsTypingStatus(dialogId);
 
         self._typingTimer = setInterval(function () {
-            if ((Date.now() - self._typingTime) / 1000 >= self.typingTymeout) {
+            if ((Date.now() - self._typingTime) / 1000 >= self.typingTimeout) {
                 self.sendStopTypingStatus(dialogId);
             }
         }, 500);
@@ -155,7 +153,6 @@ Message.prototype.setLoadMoreMessagesListener = function () {
 
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
-
     var self = this,
         params = {
             chat_dialog_id: dialogId,
@@ -175,7 +172,6 @@ Message.prototype.getMessages = function (dialogId) {
             if (messages.items.length < self.limit) {
                 dialog.full = true;
             }
-
             if (dialogModule.dialogId !== dialogId) return false;
 
             if (dialogModule._cache[dialogId].type === 1) {
@@ -211,12 +207,7 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
     }
 
     if (!userList.length) return false;
-    userModule.getUsersByIds(userList, function (err) {
-        if (err) {
-            console.error(err);
-            return false;
-        }
-
+    userModule.getUsersByIds(userList).then(function(){
         for (var i = 0; i < messages.length; i++) {
             var message = helpers.fillMessagePrams(messages[i]);
             self.renderMessage(message, false);
@@ -225,14 +216,23 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
         if (!skip) {
             helpers.scrollTo(self.container, 'bottom');
         }
+    }).catch(function(error){
+        console.error(error);
     });
 };
 
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
-        elem = helpers.toHtml(messagesHtml)[0];
+        messagesHtml;
+
+    if(message.notification_type || (message.extension && message.extension.notification_type)) {
+        messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
+    } else {
+        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender});
+    }
+
+    var elem = helpers.toHtml(messagesHtml)[0];
 
     if (!sender) {
         userModule.getUsersByIds([message.sender_id], function (err) {
@@ -312,8 +312,6 @@ Message.prototype.prepareToUpload = function (e) {
         var file = files[i];
         self.uploadFilesAndGetIds(file, dialogId);
     }
-    ;
-
     e.currentTarget.value = null;
 };
 
@@ -334,8 +332,9 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
         size: file.size
     }, function (err, response) {
         if (err) {
-            preview.classList.remove('m-loading');
-            preview.classList.add('m-error');
+            preview.remove();
+            console.error(err);
+            alert('ERROR: ' + err.detail);
         } else {
             preview.remove();
 

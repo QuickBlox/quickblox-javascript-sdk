@@ -20,73 +20,10 @@ var QBconfig = {
 
 var appConfig = {
     dilogsPerRequers: 15,
-    messagesPerRequest: 30,
+    messagesPerRequest: 50,
     usersPerRequest: 15,
-    typingTymeout: 3 // 3 seconds
+    typingTimeout: 3 // 3 seconds
 };
-
-var usersList = [
-    {
-        id: 25431016,
-        name: 'Chat Demo User1',
-        login: 'chatdemouser1',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431021,
-        name: 'Chat Demo User2',
-        login: 'chatdemouser2',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431022,
-        name: 'Chat Demo User3',
-        login: 'chatdemouser3',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431024,
-        name: 'Chat Demo User4',
-        login: 'chatdemouser4',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431026,
-        name: 'Chat Demo User5',
-        login: 'chatdemouser5',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431028,
-        name: 'Chat Demo User6',
-        login: 'chatdemouser6',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431032,
-        name: 'Chat Demo User7',
-        login: 'chatdemouser7',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431037,
-        name: 'Chat Demo User8',
-        login: 'chatdemouser8',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431038,
-        name: 'Chat Demo User9',
-        login: 'chatdemouser9',
-        pass: 'awesomechatpwd'
-    },
-    {
-        id: 25431041,
-        name: 'Chat Demo User10',
-        login: 'chatdemouser10',
-        pass: 'awesomechatpwd'
-    }
-];
 
 var CONSTANTS = {
     DIALOG_TYPES: {
@@ -99,5 +36,9 @@ var CONSTANTS = {
         BODY: '[attachment]',
         MAXSIZE: 2 * 1000000, // set 2 megabytes,
         MAXSIZEMESSAGE: 'Image is too large. Max size is 2 mb.'
+    },
+    NOTIFICATION_TYPES: {
+        NEW_DIALOG: '1',
+        UPDATE_DIALOG: '2'
     }
 };

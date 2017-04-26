@@ -3,10 +3,6 @@
 function Helpers() {
 }
 
-Helpers.prototype.redirectToPage = function (page) {
-    window.location.hash = '#' + page;
-};
-
 Helpers.prototype.fillTemplate = function (name, options) {
     var tpl = _.template(document.querySelector('#' + name).innerHTML);
     return tpl(options);
@@ -21,6 +17,19 @@ Helpers.prototype.clearView = function (view) {
 
 Helpers.prototype.compileDialogParams = function (dialog) {
     var self = this;
+
+    if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
+        var user = {
+            full_name: dialog.name,
+            id: dialog.occupants_ids.filter(function (id) {
+                if (id !== app.user.id) return id;
+            })[0],
+            color: dialog.color || _.random(1, 10)
+        };
+
+        userModule.addToCache(user);
+    }
+
     return {
         _id: dialog._id,
         name: dialog.name,
@@ -57,7 +66,7 @@ Helpers.prototype.compileDialogParams = function (dialog) {
             var occupants = dialog.occupants_ids;
             for(var i = 0; i < occupants.length; i++){
                 if(occupants[i] !== app.user.id){
-                    return userModule._cache[occupants[i]].color
+                    return userModule._cache[occupants[i]].color;
                 }
             }
         }
@@ -132,6 +141,14 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
         message.message = '';
     }
 
+    if(msg.extension.notification_type) {
+        message.notification_type = msg.extension.notification_type;
+    }
+
+    if(msg.extension.occupants_ids_added){
+        message.occupants_ids_added = msg.extension.occupants_ids_added;
+    }
+
     return message;
 };
 
@@ -180,6 +197,20 @@ Helpers.prototype.clearCache = function () {
 
     userModule._cache = {};
     app.user = null;
+};
+
+Helpers.prototype.getUui = function(){
+    var navigator_info = window.navigator;
+    var screen_info = window.screen;
+    var uid = 'chat' + navigator_info.mimeTypes.length;
+
+    uid += navigator_info.userAgent.replace(/\D+/g, '');
+    uid += navigator_info.plugins.length;
+    uid += screen_info.height || '';
+    uid += screen_info.width || '';
+    uid += screen_info.pixelDepth || '';
+
+    return uid;
 };
 
 var helpers = new Helpers();

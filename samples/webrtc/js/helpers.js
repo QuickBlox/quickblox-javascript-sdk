@@ -181,7 +181,7 @@
                             });
                         } else {
                             /** Update info */
-                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username ) {
+                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username) {
                                 QB.users.update(loginUser.id, {
                                     'full_name': data.username,
                                     'tag_list': data.room
