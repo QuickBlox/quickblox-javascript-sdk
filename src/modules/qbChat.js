@@ -584,7 +584,6 @@ ChatProxy.prototype = {
                             if (params.connectWithoutGettingRoster) {
                                 // connected and return nothing as result
                                 callback(null, undefined);
-
                                 // get the roster and save
                                 self.roster.get(function(contacts) {
                                     roster = contacts;
