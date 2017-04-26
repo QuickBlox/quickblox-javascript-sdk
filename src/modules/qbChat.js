@@ -1849,7 +1849,7 @@ PrivacyListProxy.prototype = {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
-                xmlns: 'jabber:iq:privacy'
+                xmlns: chatUtils.MARKERS.PRIVACY
             });
 
             self.nodeStanzasCallbacks[iq.attrs.id] = function(stanza){
@@ -1899,26 +1899,51 @@ PrivacyListProxy.prototype = {
          * @callback deletePrivacylistCallback
          * */
 
-        var iq = $iq({
-            from: this.connection.jid,
-            type: 'set',
-            id: chatUtils.getUniqueId('remove')
-        }).c('query', {
-            xmlns: Strophe.NS.PRIVACY_LIST
-        }).c('list', {
-            name: name ? name : ''
-        });
+         var iq,
+          stanzaParams = {
+           'from': this.connection ? this.connection.jid : this.nClient.jid.user,
+           'type': 'set',
+           'id': chatUtils.getUniqueId('remove')
+         };
 
-        this.connection.sendIQ(iq, function(stanzaResult) {
-            callback(null);
-        }, function(stanzaError){
-            if(stanzaError){
-                var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
-                callback(errorObject);
-            }else{
-                callback(Utils.getError(408));
-            }
-        });
+        if(Utils.getEnv().browser){
+          iq = $iq(stanzaParams).c('query', {
+              xmlns: Strophe.NS.PRIVACY_LIST
+          }).c('list', {
+              name: name ? name : ''
+          });
+
+          this.connection.sendIQ(iq, function(stanzaResult) {
+              callback(null);
+          }, function(stanzaError){
+              if(stanzaError){
+                  var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
+                  callback(errorObject);
+              }else{
+                  callback(Utils.getError(408));
+              }
+          });
+
+        } else if(Utils.getEnv().node){
+          iq = new NodeClient.Stanza('iq', stanzaParams);
+
+          iq.c('query', {
+              xmlns: chatUtils.MARKERS.PRIVACY
+          }).c('list', {
+              name: name ? name : ''
+          });
+
+          this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+              if(!stanza.getChildElements('error').length){
+                  callback(null);
+              } else {
+                  callback(Utils.getError(408));
+              }
+          };
+
+          this.nClient.send(iq);
+        }
+
     },
 
     /**
@@ -1962,7 +1987,7 @@ PrivacyListProxy.prototype = {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
-                xmlns: 'jabber:iq:privacy'
+                xmlns: chatUtils.MARKERS.PRIVACY
             }).c('default', {
                 name: name ? name : ''
             });
@@ -2019,7 +2044,7 @@ PrivacyListProxy.prototype = {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
-                xmlns: 'jabber:iq:privacy'
+                xmlns: chatUtils.MARKERS.PRIVACY
             }).c('active', {
                 name: name ? name : ''
             });
