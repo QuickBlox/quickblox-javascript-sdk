@@ -346,27 +346,39 @@ function ChatProxy(service, webrtcModule) {
 
         if(Utils.getEnv().node) {
             /** MUC */
-            if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
-                /**
-                 * if you make 'leave' from dialog
-                 * stanza will be contains type="unavailable"
-                 */
-                if(type && type === 'unavailable'){
-                    /** LEAVE from dialog */
-                    if(status && statusCode == "110"){
-                        if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
-                          Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
-                        }
-                        return;
-                    }
-                }
+            if(xXMLNS){
+                if(xXMLNS == "http://jabber.org/protocol/muc#user"){
+                  /**
+                   * if you make 'leave' from dialog
+                   * stanza will be contains type="unavailable"
+                   */
+                  if(type && type === 'unavailable'){
+                      /** LEAVE from dialog */
+                      if(status && statusCode == "110"){
+                          if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
+                            Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
+                          }
+                          return;
+                      }
+                  }
 
-                /** JOIN to dialog */
-                if(id && status && statusCode == "110"){
-                    if(typeof self.nodeStanzasCallbacks[id] === 'function') {
-                        Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
-                    }
-                    return;
+                  /** JOIN to dialog success */
+                  if(id.endsWith(":join") && status && statusCode == "110"){
+                      if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                          Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                      }
+                      return;
+                  }
+                  
+                // probably an error
+                }else if(xXMLNS == "http://jabber.org/protocol/muc"){
+                  /** JOIN to dialog error */
+                  if(id.endsWith(":join")){
+                      if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                          Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                      }
+                      return;
+                  }
                 }
             }
         }

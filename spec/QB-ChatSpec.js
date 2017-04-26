@@ -369,16 +369,76 @@ describe('Chat API', function() {
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
 
-      it("can't not join dialog where user is not in occupants", function(done) {
-        done();
+      it("can't join dialog where user is not in occupants", function(done) {
+        var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
+        QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
+
+          var joined = true;
+          var errorCode;
+          var errorName;
+          var errorDescription;
+
+          for (var i = 0; i < stanzaResponse.childNodes.length; i++) {
+            var elItem = stanzaResponse.childNodes.item(i);
+            if (elItem.tagName === 'error'){
+              errorCode = elItem.getAttribute("code");
+              errorName = elItem.childNodes.item(0).tagName;
+              errorDescription = elItem.childNodes.item(1).textContent;
+              joined = false;
+              break;
+            }
+          }
+
+          expect(joined).toEqual(false);
+          expect(errorCode).toEqual("403");
+          expect(errorName).toEqual("forbidden");
+          expect(errorDescription).toEqual("Your user is not in occupant list or you call wrong application.");
+          // Your user is not in occupants list of the dialog
+
+          done();
+        });
       }, MESSAGING_TIMEOUT);
 
-      it("can't not join not existent dialog", function(done) {
-        done();
+      fit("can't join not existent dialog", function(done) {
+        QB_RECEIVER.chat.muc.join("888_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
+
+          var joined = true;
+          var errorCode;
+          var errorName;
+
+          for (var i = 0; i < stanzaResponse.childNodes.length; i++) {
+            var elItem = stanzaResponse.childNodes.item(i);
+            if (elItem.tagName === 'error'){
+              errorCode = elItem.getAttribute("code");
+              errorName = elItem.childNodes.item(0).tagName;
+              joined = false;
+              break;
+            }
+          }
+
+          expect(joined).toEqual(false);
+          expect(errorCode).toEqual("404");
+          expect(errorName).toEqual("item-not-found");
+
+          done();
+        });
       }, MESSAGING_TIMEOUT);
 
       it("can update a dialog (group) (add user)", function(done) {
-        done();
+
+        // User1 to add User2 from occupants
+        //
+        var toUpdateParams = {
+          push_all: {occupants_ids: [QBUser2.id]},
+        };
+        QB_SENDER.chat.dialog.update(dialogId1Group, toUpdateParams, function(err, res) {
+          expect(err).toBeNull();
+          expect(res).toBeDefined();
+          expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+
+          done();
+        });
+
       }, REST_REQUESTS_TIMEOUT);
 
     });
