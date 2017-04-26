@@ -1822,9 +1822,10 @@ PrivacyListProxy.prototype = {
                 var allNames = [], namesList = {},
                     defaultList = stanzaResult.getElementsByTagName('default'),
                     activeList = stanzaResult.getElementsByTagName('active'),
-                    allLists = stanzaResult.getElementsByTagName('list'),
-                    defaultName = defaultList[0].getAttribute('name'),
-                    activeName = activeList[0].getAttribute('name');
+                    allLists = stanzaResult.getElementsByTagName('list');
+
+                var defaultName = defaultList && defaultList.length > 0 ? defaultList[0].getAttribute('name') : null;
+                var activeName = activeList && activeList.length > 0 ? activeList[0].getAttribute('name') : null;
 
                 for (var i = 0, len = allLists.length; i < len; i++) {
                     allNames.push(allLists[i].getAttribute('name'));
@@ -1861,13 +1862,11 @@ PrivacyListProxy.prototype = {
                         activeList = query.getChild('active'),
                         allLists = query.getChildElements('list');
 
-                    var defaultName = defaultList ? defaultList.attrs.name : '',
-                        activeName = activeList ? activeList.attrs.name : '';
+                    var defaultName = defaultList ? defaultList.attrs.name : null,
+                        activeName = activeList ? activeList.attrs.name : null;
 
                     for (var i = 0, len = allLists.length; i < len; i++) {
-                        if(allLists[i].name !== 'default' && allLists[i].name !== 'active'){
-                            allNames.push(allLists[i].attrs.name);
-                        }
+                      allNames.push(allLists[i].attrs.name);
                     }
 
                     namesList = {
@@ -1969,9 +1968,7 @@ PrivacyListProxy.prototype = {
         if(Utils.getEnv().browser){
             iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
-            }).c('default', {
-                name: name ? name : ''
-            });
+            }).c('default', name && name.length > 0 ? {name: name} : {});
 
             this.connection.sendIQ(iq, function(stanzaResult) {
                 callback(null);
@@ -1988,9 +1985,7 @@ PrivacyListProxy.prototype = {
 
             iq.c('query', {
                 xmlns: chatUtils.MARKERS.PRIVACY
-            }).c('default', {
-                name: name ? name : ''
-            });
+            }).c('default', name && name.length > 0 ? {name: name} : {});
 
             this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
                 if(!stanza.getChildElements('error').length){
@@ -2026,9 +2021,7 @@ PrivacyListProxy.prototype = {
         if(Utils.getEnv().browser){
             iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
-            }).c('active', {
-                name: name ? name : ''
-            });
+            }).c('active', name && name.length > 0 ? {name: name} : {});
 
             this.connection.sendIQ(iq, function(stanzaResult) {
                 callback(null);
@@ -2045,9 +2038,7 @@ PrivacyListProxy.prototype = {
 
             iq.c('query', {
                 xmlns: chatUtils.MARKERS.PRIVACY
-            }).c('active', {
-                name: name ? name : ''
-            });
+            }).c('active', name && name.length > 0 ? {name: name} : {});
 
             this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
                 if(!stanza.getChildElements('error').length){

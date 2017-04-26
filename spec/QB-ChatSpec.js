@@ -1110,7 +1110,7 @@ describe('Chat API', function() {
     // ==========================Privacy Lists==================================
 
     fdescribe('Privacy list: ', function() {
-      fit('can create new list with items', function(done) {
+      it('can create new list with items', function(done) {
         var usersObj = [
           {user_id: 1010101, action: 'allow'},
           {user_id: 1111111, action: 'deny', mutualBlock: true}
@@ -1149,7 +1149,7 @@ describe('Chat API', function() {
         });
       });
 
-      fit('can set active list', function(done) {
+      it('can set active list', function(done) {
         QB_SENDER.chat.privacylist.setAsActive('test', function(error) {
           expect(error).toBeNull();
 
@@ -1157,7 +1157,7 @@ describe('Chat API', function() {
         });
       });
 
-      fit('can declines the use of active lists', function(done) {
+      it('can declines the use of active lists', function(done) {
         QB_SENDER.chat.privacylist.setAsActive('', function(error) {
           expect(error).toBeNull();
 
@@ -1174,7 +1174,7 @@ describe('Chat API', function() {
       });
 
       it('can declines the use of default lists', function(done) {
-        QB_SENDER.chat.privacylist.setAsDefault('', function(error) {
+        QB_SENDER.chat.privacylist.setAsDefault(null, function(error) {
           expect(error).toBeNull();
 
           done();
@@ -1183,16 +1183,19 @@ describe('Chat API', function() {
 
       it('can get names of privacy lists', function(done) {
         QB_SENDER.chat.privacylist.getNames(function(error, response) {
+          console.log(response);
           expect(error).toBeNull();
-
+          expect(response.active).toBeNull();
+          expect(response.default).toBeNull();
           expect(response.names.length).toBeGreaterThan(0);
+          expect(response.names[0]).toEqual("test");
 
           done();
         });
       });
 
       // !! REVIEW
-      fit('can delete list by name', function(done) {
+      it('can delete list by name', function(done) {
           QB_SENDER.chat.privacylist.delete('test', function(error) {
               expect(error).toBeNull();
               done();
