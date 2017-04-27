@@ -1109,7 +1109,7 @@ describe('Chat API', function() {
 
     // ==========================Privacy Lists==================================
 
-    fdescribe('Privacy list: ', function() {
+    describe('Privacy list: ', function() {
       it('can create new list with items', function(done) {
         var usersObj = [
           {user_id: 1010101, action: 'allow'},
@@ -1194,7 +1194,6 @@ describe('Chat API', function() {
         });
       });
 
-      // !! REVIEW
       it('can delete list by name', function(done) {
           QB_SENDER.chat.privacylist.delete('test', function(error) {
               expect(error).toBeNull();
