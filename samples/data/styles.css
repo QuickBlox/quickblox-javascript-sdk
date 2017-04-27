@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
-
 html {
   box-sizing: border-box; 
 }
@@ -20,10 +18,43 @@ a {
   text-decoration: none;
 }
 
+.txt-warn {
+  color: #ff9600;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  height: 40px;
+
+  font: 500 14px/16px 'Roboto', sans-serif;
+
+  cursor: pointer;
+
+  transition: background-color .4s ease;
+}
+  .btn-action {
+    background: #17d04b;
+
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .btn-action:hover {
+    background-color: #14ba43;
+  }
+  .btn-action:active {
+    background-color: #74e393;
+  }
+
+/* HELPERS */
+#preload { display: none; }
+/* HELPERS ENDS */
+
 html,
 body {
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 /* APP */
@@ -35,38 +66,37 @@ body {
 
   background: #fff;
 
-  font: 400 13px 'Roboto', sans-serif;
+  font: 400 13px/1.25 'Roboto', sans-serif;
   color: #778594;
 }
+
 
 .auth {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+
   font-size: 2rem;
 }
 
+/* MAP */
 .map,
 .map_gmap {
   display: block;
   width: 100%;
   height: 100%;
-
-  padding: 80px 0 0 0;
 }
-
-@media all and (min-width: 720px) {
-  .map {
-    padding: 0 0 0 320px;
-  }
-}
+    @media all and (min-width: 720px) {
+      .map {
+        padding: 0 0 0 320px;
+      }
+    }
+/* MAP ENDS */
 
 /** HEADER */
 .header {
-  display: flex;
-  justify-content: space-between;
+  background: #fff;
 
   position: absolute;
   top: 0;
@@ -74,13 +104,31 @@ body {
 
   width: 100%;
   height: 80px;
-
-  padding: 20px;
-
+  
   z-index: 9;
-
+  
   border-bottom: 1px solid #dadfe1;
   box-shadow: 0 2px 11px 0 rgba(0, 0, 0, .1);
+}
+
+.header__inner {
+  padding: 20px;
+
+  display: flex;
+  justify-content: space-between;
+}
+
+.header__body {
+  position: relative;
+  padding: 0 0 0 56px;
+
+  overflow: hidden;
+}
+
+.logo {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 @media all and (min-width: 720px) {
@@ -94,28 +142,16 @@ body {
   }
 }
 
-.header_body {
-  position: relative;
-  padding: 0 0 0 56px;
-  overflow: hidden;
-}
-
-.logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 .logout {
+  min-height: 20px;
   cursor: pointer;
-  
 }
-.logout .icon {
-  transition: fill .4s ease;
-}
-.logout:hover .icon {
-  fill: #17D04B
-}
+  .logout .icon {
+    transition: fill .4s ease;
+  }
+  .logout:hover .icon {
+    fill: #17D04B
+  }
 
 .header_title {
   margin: 0 0 6px 0;
@@ -131,74 +167,140 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-/** HEADER END */
+/** HEADER ENDS */
+
+/* PANEL */
 .panel {
   position: absolute;
   bottom: 0;
   left: 0;
 
   width: 100%;
-  height: 220px;
-  padding: 10px 0 20px 0;
-  
-  background: #fff;
-  box-shadow: 0 -2px 11px 0 rgba(0, 0, 0, .1);
+  height: auto;
+  max-height: 45vh;
 
+  z-index: 9;
   overflow: auto;
-}
-  /* Use .app* cause to understand where we have this modifier */
-  .app.new_place .panel {
-    top: 0;
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
 
-.panel::-webkit-scrollbar {
+  background: #fff;
+}
+  .panel::-webkit-scrollbar {
     width: 6px;
+  }
+  .panel::-webkit-scrollbar-thumb {
+    width: 4px;
+    margin: 0 5px 0 0;
+    border-radius: 2px;
+    background-color: #DDE0E2;
+
+    cursor: pointer;
+  }
+  @media all and (min-width: 720px) {
+    .panel {
+      width: 320px;
+      height: 100%;
+      max-height: inherit;
+
+      border-bottom: none;
+      border-right: 1px solid #dadfe1;
+      box-shadow: 11px 0 11px -13px rgba(0, 0, 0, .4);
+    }
+  }
+
+.panel__top {
+  position: relative;
+  margin: 12px 0 0 0;
 }
- 
-.panel::-webkit-scrollbar-track {
-    /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
+
+.panel__title {
+  padding: 0 20px 0 55px;
+
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 21px;
+  color: #4a4a4a;
 }
- 
-.panel::-webkit-scrollbar-thumb {
-  width: 4px;
-  margin: 0 5px 0 0;
-  border-radius: 2px;
-  background-color: #DDE0E2;
+
+.panel__body {
+  margin: 20px;
+}
+
+.place__section {
+  margin: 0 0 20px;
+
+  font-size: 14px;
+  line-height: 21px;
+  color: #4A4A4A;
+}
+
+.h4 {
+  padding: 9px 0 7px 0;
+  font-size: 16px;
+  line-height: 20px;
+  color: #778594;
+}
+
+.back {
+  display: block;
+  width: 20px;
+  height: 100%;
+  
+  position: absolute;
+  top: 0;
+  left: 20px;
+
+  background: url(https://samples.quickblox.com/web/resources/arrow_back.svg) no-repeat center;
 
   cursor: pointer;
 }
+  .back:hover {
+    animation-duration: .4s;
+    animation-name: back;
+    animation-direction: alternate;
+  }
+  @keyframes back {
+    from {
+      left: 20px;
+    }
 
+    to {
+      left: 18px;
+    }
+  }
+
+/* PLACES */
 @media all and (min-width: 720px) {
-  .panel {
+  .places {
     top: 80px;
-    left: 0;
-
-    width: 320px;
+    bottom: auto;
     height: 100%;
-    padding-top: 0;
-    padding-bottom: 100px;
-
-    z-index: 10;
-
-    border-right: 1px solid #dadfe1;
-
-    box-shadow: 11px 0 11px -13px rgba(0, 0, 0, .4);
+    padding: 0 0 100px 0;
   }
 }
+/* PLACES ENDS */
 
-.places_item {
+/* PLACES_ITEM */
+.place_preview {
+  display: block;
+  width: 100%;
   padding: 12px 20px;
-  cursor: pointer;
+
+  background: #fff;
 
   transition: background-color .4s ease;
+  cursor: pointer;
 }
-.places_item:hover {
-  background-color: #f2f4f5;
-}
+  .place_preview:hover {
+    background-color: #f2f4f5;
+  }
+  .place_preview-inactive {
+    cursor: default;
+  }
+  .place_preview-inactive:hover {
+    background-color: #fff;
+  }
 
-.places_item__title {
+.place_preview__title {
   margin: 0 0 4px 0;
 
   font-size: 15px;
@@ -207,35 +309,17 @@ body {
   color: #4A4A4A;
 }
 
-.rate {
-  margin: 0 0 4px 0;
-
-  color: #ff9100;
-}
-
-.places_item__desc {
+.place_preview__description {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.back {
-  display: block;
-
-  margin: 0 0 10px 0;
-  padding: 0 60px;
-
-  background: url(https://samples.quickblox.com/web/resources/arrow_back.svg) no-repeat top left 20px;
-
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 21px;
-  color: #4a4a4a;
+.rate {
+  margin: 0 0 4px 0;
+  color: #ff9100;
 }
-
-.form-create {
-  padding: 0 20px;
-}
+/* PLACES_ITEM ENDS */
 
 .form_item {
   margin: 20px 0 0 0;
@@ -261,18 +345,3 @@ body {
     line-height: 24px;
     color: #c5cace;
   }
-
-.btn {
-  background: #28C849;
-  display: block;
-  width: 100%;
-  height: 40px;
-  color: #fff;
-  font-size: 14px;
-  line-height: 16px;
-  text-transform: uppercase;
-  font-weight: 500;
-  font-family: 'Roboto', sans-serif;
-
-  cursor: pointer;
-}

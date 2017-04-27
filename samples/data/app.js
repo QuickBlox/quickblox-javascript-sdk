@@ -7,41 +7,41 @@
 function App() {
   this.ui = {
     'map': 'j-map',
-    'places': 'j-places',
+    'panel': 'j-panel',
     'header': 'j-header'
   }
-  // Root el
+
+  // root el
   this.$app = document.getElementById('j-app');
+
+  this.map;
+  this.user = new User();
+  this.places = new Places();
 
   /* Write to root element a class name of page by set activePage */
   this._activePages = ['dashboard', 'new_place', 'place_detailed'];
 
   Object.defineProperty(this, 'activePage', {
-    set: function(pageName) {
+    set: function(params) {
       var self = this;
 
       // Set a class (pageName) to root el of app
-      self._activePages.forEach(function(pageName) {
-        self.$app.classList.remove(pageName);
+      // Remove all previously options 
+      self._activePages.forEach(function(pName) {
+        self.$app.classList.remove(pName);
       });
-      this.$app.classList.add(pageName);
+      // set a name of current page
+      self.$app.classList.add(params.pageName);
+      
+      // render the page
+      self.renderPage(params.pageName, params.detailed);
     }
   });
 
-  this.user;
-  this.map;
-  this.places;
-
-  this.init();
+  this._init();
 }
 
-/**
- * 1. Auth user
- * 2. Create a map
- * 3. Sync a places (get from server)
- * 4. Set listeners
- */
-App.prototype.init = function() {
+App.prototype._init = function() {
   var self = this;
 
   // init the SDK, be careful the SDK must init one time
@@ -49,137 +49,38 @@ App.prototype.init = function() {
 
   // create a session
   QB.createSession(function() {
-    self.user = new User();
-    self.places = new Places();
-
     // sync user and places from server
     Promise.all([self.user.auth(), self.places.sync()]).then(function() {
-      // render panel / header and set listeners
-      self.$app.innerHTML = self.renderView('dashboard-tpl', {'full_name': self.user.full_name});
-      self.setListeners('dashboard');
-
-      // render list of places and set listeners
-      var $places =  document.getElementById(self.ui.places);
-      $places.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
-      self.setListeners('places');
-
-      // render map and set listeners
+      // render skeleton of app
+      self.$app.innerHTML = document.getElementById('app-tpl').innerHTML;
+      // render the map and set listener
       self.map = new Map({'el': document.getElementById(self.ui.map)});
-      self.setListeners('map');
-
-      self.activePage = 'dashboard';
-    }).catch(function(err) {
-      alert('Something goes wrong, please try again later.');
-      throw new Error(err);
-    });
-  });
-}
-
-App.prototype.setListeners = function(view) {
-  var self = this;
-
-  switch(view) {
-    case 'dashboard':
-      self._setListenersDashboard();
-      break;
-
-    case 'map': 
       self._setListenersMap();
-      break;
 
-    case 'places': 
-      self._setListenersPlaces();
-      break;
-    
-    default:
-      console.warn('Cannot set listeners to ' + view);
-      break;
-  }
-}
-
-App.prototype._setListenersDashboard = function() {
-  var self = this;
-  // remove a user and reload a page
-  document.getElementById('j-logout').addEventListener('click', function() {
-    self.user.logout();
-    document.location.reload(true);
-  });
-}
-
-App.prototype._setListenersMap = function() {
-  var self = this;
-
-  var l = self.map.gmap.addListener('click', function(e) {
-    var latLng = e.latLng;
-
-    self.map.createAndSetPlace(latLng);
-    // It's horrible, will replace in next release
-    google.maps.event.removeListener(l);
-
-    self.activePage = 'new_place';
-
-    self._renderCreatePlacePage(latLng.toJSON());
-  });
-}
-
-App.prototype._setListenersPlacesNew = function() {
-  var self = this;
-
-  var ui = {
-    back: 'j-to_dashboard',
-    form: 'j-create'
-  };
-
-  document.getElementById(ui.form).addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    var ltln = JSON.parse(document.getElementById('latlng').value);
-
-    var dataInfo = {
-      location:  [ltln.lng, ltln.lat],
-      title: document.getElementById('title').value,
-      description: document.getElementById('description').value,
-      rate: document.getElementById('rate').value,
-    };
-
-    console.log(dataInfo);
-
-    self.places.create(dataInfo).then(function(res) {
-      console.log(res);
+      self.activePage = {
+        pageName: 'dashboard'
+      };
     }).catch(function(err) {
       console.error(err);
+      alert('Something goes wrong, checkout late.')
     });
-
-    return false;
   });
 }
 
-App.prototype._setListenersPlaces = function() {
+App.prototype.renderPage = function(pageName, detailed) {
   var self = this;
 
-  var $places = document.querySelectorAll('.j-places');
-
-  function showPlace(e) {
-    var $item = e.target.closest('.j-places');
-    // TODO
-    console.log($item.dataset);
+  switch(pageName) {
+    case 'dashboard':
+      self.renderDashboard()
+      break;
+    case 'new_place':
+      self.renderCreatePlace();
+      break;
+    case 'place_detailed':
+      self.renderPlaceDetailed(detailed);
+      break;
   }
-
-  $places.forEach(function(place) {
-    place.addEventListener('click', showPlace);
-  });
-}
-
-App.prototype._renderCreatePlacePage = function(latLng) {
-  var self = this;
-
-  var $header = document.getElementById(self.ui.header);
-  $header.remove();
-
-  var $places = document.getElementById(self.ui.places);
-  $places.innerHTML = self.renderView('new_place-tpl', {'latLng': JSON.stringify(latLng)});
-
-  this._setListenersPlacesNew();
 }
 
 App.prototype.renderView = function(idTpl, options) {
@@ -187,6 +88,149 @@ App.prototype.renderView = function(idTpl, options) {
   var tpl = Handlebars.compile(source);
 
   return tpl(options);
+}
+
+App.prototype.renderDashboard = function() {
+  var self = this;
+
+  // render header and set listener
+  var $header = document.getElementById(self.ui.header);
+  $header.innerHTML = self.renderView('header-tpl', self.user);
+  self._setListenersHeader();
+
+  // render list of places and set listeners
+  var $panel = document.getElementById(self.ui.panel);
+  $panel.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+  self._setListenersPlacesPreview();
+}
+
+App.prototype._setListenersHeader = function() {
+  var self = this;
+
+  // remove a user and reload a page
+  document.getElementById('j-logout').addEventListener('click', function() {
+    self.user.logout();
+    document.location.reload(true);
+  });
+}
+
+App.prototype._setListenersPlacesPreview = function() {
+  var self = this;
+
+  var $places = document.querySelectorAll('.j-place'),
+    placesAmount = $places.length;
+
+  function showPlace(e) {
+    var $item = e.target.closest('.j-place');
+
+    self.activePage = {
+      pageName: 'place_detailed',
+      detailed: $item.dataset.id
+    }
+  }
+
+  if(placesAmount) {
+    for(var i = 0, l = (placesAmount - 1); i <= l; i++) {
+      $places[i].addEventListener('click', showPlace);
+    }
+  }
+}
+
+App.prototype._setListenersMap = function() {
+  var self = this;
+
+  self.map.setClickListener(function() {
+    self.activePage = {
+      pageName: 'new_place'
+    };
+  });
+}
+
+App.prototype.renderCreatePlace = function() {
+  var self = this;
+
+  var $header = document.getElementById(self.ui.header);
+  // Remove innerHTML of header
+  while ($header.hasChildNodes()) {
+    $header.removeChild($header.lastChild);
+  }
+
+  var latLng = self.map.getPositionSketchedPlace();
+
+  var $panel = document.getElementById(self.ui.panel);
+  $panel.innerHTML = self.renderView('new_place-tpl', {'latLng': JSON.stringify(latLng)});
+  self._setListenersPlacesNew();
+}
+
+App.prototype._setListenersPlacesNew = function() {
+  var self = this;
+
+  var ui = {
+    backBtn: 'j-to_dashboard',
+    createPlaceForm: 'j-create'
+  };
+
+  document.getElementById(ui.backBtn).addEventListener('click', function(e) {
+    e.preventDefault();
+
+    self.map.removeSketchedPlace();
+
+    self.activePage = {
+      pageName: 'dashboard'
+    };
+  });
+
+  document.getElementById(ui.createPlaceForm).addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var ltln = JSON.parse(document.getElementById('latlng').value),
+      title = document.getElementById('title').value,
+      description = document.getElementById('description').value,
+      rate = document.getElementById('rate').value;
+
+    var dataInfo = {
+      location:  [ltln.lng, ltln.lat],
+      title: title.trim(),
+      description: description.trim(),
+      rate: +rate,
+    };
+
+    self.places.create(dataInfo).then(function(res) {
+      self.map.setPlaces(res);
+
+      self.activePage = {
+        pageName: 'place_detailed',
+        detailed: res._id
+      };
+
+    }).catch(function(err) {
+      // TODO: handle error
+      console.error(err);
+    });
+  });
+}
+
+App.prototype.renderPlaceDetailed = function(placeId) {
+  var self = this;
+  
+  var placeInfo = self.places.getPlace(placeId);
+
+  var $header = document.getElementById(self.ui.header);
+  // Remove innerHTML of header
+  while ($header.hasChildNodes()) {
+    $header.removeChild($header.lastChild);
+  }
+
+  var $panel = document.getElementById(self.ui.panel);
+  $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
+
+  document.getElementById('j-to_dashboard').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    self.activePage = {
+      pageName: 'dashboard'
+    };
+  });
 }
 
 // this rule only for this line

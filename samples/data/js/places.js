@@ -32,12 +32,19 @@ Places.prototype.create = function(params) {
   var self = this;
 
   return new Promise(function(resolve, reject) {
-    QB.data.create(self.className, params, function(err, res){
+    QB.data.create(self.className, params, function(err, place){
       if (err) {
           reject(err);
       } else {
-          resolve(res);
+        self.items.push(place);
+        resolve(place);
       }
     });
   });
+}
+
+Places.prototype.getPlace = function(id) {
+  return this.items.find(function(place) {
+    return place._id === id;
+  })
 }
