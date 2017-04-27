@@ -167,6 +167,14 @@ function ChatProxy(service) {
  * @param {Object} receivedMessage - Recieved Message. Always have type: 'headline'
  **/
 
+/**
+ * You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
+ * @function onKickOccupant
+ * @memberOf QB.chat
+ * @param {String} dialogId - An Id of chat dialog where you was kicked from.
+ * @param {Number} initiatorUserId - An Id of user who has kicked you.
+ **/
+
 
 /**
  * Receive user status (online / offline). {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
