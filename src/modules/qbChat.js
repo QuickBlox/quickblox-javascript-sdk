@@ -28,10 +28,10 @@ if (Utils.getEnv().browser) {
 }
 
 
-function ChatProxy(service, webrtcModule) {
+function ChatProxy(service) {
     var self = this;
 
-    self.webrtc = webrtcModule;
+    self.webrtcSignalingProcessor = null;
 
     /**
      * Browser env.
@@ -497,8 +497,8 @@ function ChatProxy(service, webrtcModule) {
             };
 
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
-        } else if(self.webrtc && !delay && moduleIdentifier === 'self.webrtcVideoChat'){
-            self.webrtc._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
+        } else if(self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'self.webrtcVideoChat'){
+            self.webrtcSignalingProcessor._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
         }
 
         /**
