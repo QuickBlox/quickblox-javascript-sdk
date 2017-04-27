@@ -270,11 +270,13 @@ describe('Chat API', function() {
           expect(res.name).toEqual(toUpdate.name);
           expect(res.is_joinable).toEqual(toUpdate.is_joinable);
 
-          // now try to send a message without join
-          //
-          groupChat_sendAndReceiveMessage(res.xmpp_room_jid, res._id, function(){
-            done();
-          });
+          // wait until Chat receive the packet through Kafka.
+          setTimeout(function(){
+            // now try to send a message without join
+            groupChat_sendAndReceiveMessage(res.xmpp_room_jid, res._id, function(){
+              done();
+            });
+          }, 1000);
 
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
@@ -291,11 +293,14 @@ describe('Chat API', function() {
           expect(res.name).toEqual(toUpdate.name);
           expect(res.is_joinable).toEqual(toUpdate.is_joinable);
 
-          // now try to send a message
-          //
-          groupChat_joinAndSendAndReceiveMessageAndLeave(res.xmpp_room_jid, res._id, function(){
-            done();
-          });
+          // wait until Chat receive the packet through Kafka.
+          setTimeout(function(){
+            // now try to send a message
+            groupChat_joinAndSendAndReceiveMessageAndLeave(res.xmpp_room_jid, res._id, function(){
+              done();
+            });
+          }, 1000);
+
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
