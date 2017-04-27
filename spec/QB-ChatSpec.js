@@ -368,7 +368,7 @@ describe('Chat API', function() {
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
 
-      it("can't join dialog where user is not in occupants", function(done) {
+      xit("can't join dialog where user is not in occupants", function(done) {
 
         setTimeout(function(){
           var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
@@ -389,8 +389,7 @@ describe('Chat API', function() {
             expect(joined).toEqual(false);
             expect(errorCode).toEqual("403");
             expect(errorName).not.toBeNull();
-            expect(errorDescription).toEqual("Your user is not in occupant list or you call wrong application.");
-            // Your user is not in occupants list of the dialog
+            expect(errorDescription).toEqual("Your user is not in occupants list of the dialog");
 
             done();
           });
@@ -398,7 +397,7 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT+1000);
 
-      it("can't join not existent dialog", function(done) {
+      xit("can't join not existent dialog", function(done) {
 
         setTimeout(function(){
           QB_RECEIVER.chat.muc.join("888_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
@@ -826,7 +825,7 @@ describe('Chat API', function() {
 
   // ================================Real-time==================================
 
-  fdescribe('Real-time: ', function() {
+  describe('Real-time: ', function() {
 
     beforeAll(function(done) {
       QB_SENDER.chat.connect({
@@ -916,6 +915,58 @@ describe('Chat API', function() {
         dialogId: '507f191e810c19729de860ea'
       };
 
+      var dialog;
+      var message;
+
+      beforeAll(function(done){
+
+        var createSessionParams = {
+          'login': QBUser1.login,
+          'password': QBUser1.password
+        };
+
+        QB_SENDER.createSession(createSessionParams, function (err, result) {
+          expect(err).toBeNull();
+          expect(result).toBeDefined();
+          expect(result.application_id).toEqual(CREDS.appId);
+
+          var dialogCreateParams = {
+            type: 2,
+            occupants_ids: [QBUser2.id],
+            name: 'Jasmine Test Dialog'
+          };
+
+          QB_SENDER.chat.dialog.create(dialogCreateParams, function (err, res) {
+            expect(err).toBeNull();
+            expect(res).toBeDefined();
+            expect(res.type).toEqual(dialogCreateParams.type);
+            expect(res.name).toEqual(dialogCreateParams.name);
+            expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+
+            dialog = res;
+
+            var params = {
+              chat_dialog_id: res._id,
+              message: "checking how delivered_ids & read_ids work"
+            };
+
+            QB_SENDER.chat.message.create(params, function(err, res) {
+              expect(err).toBeNull();
+              expect(res).not.toBeNull();
+              expect(res.delivered_ids).toEqual([QBUser1.id]);
+              expect(res.read_ids).toEqual([QBUser1.id]);
+
+              message = res;
+
+              done();
+            });
+
+          });
+
+        });
+
+      });
+
       it('can send and receive \'delivered\' status', function(done) {
         function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
           expect(messageId).toEqual(statusParams.messageId);
@@ -959,6 +1010,73 @@ describe('Chat API', function() {
         QB_SENDER.chat.sendIsTypingStatus(QBUser2.id);
 
       }, MESSAGING_TIMEOUT);
+
+      xit('delivered_ids is updated properly', function(done) {
+
+        var deliveredParams = {
+          userId: QBUser1.id,
+          messageId: message._id,
+          dialogId: dialog._id
+        };
+
+        function onDeliveredStatusListenerCb(messageId, dialogId, userId) {
+          expect(messageId).toEqual(deliveredParams.messageId);
+          expect(dialogId).toEqual(deliveredParams.dialogId);
+          expect(userId).toEqual(QBUser2.id);
+
+          QB_SENDER.chat.message.list({_id: message._id, chat_dialog_id: dialog._id}, function(err, res){
+            expect(err).toBeNull();
+            expect(res).not.toBeNull();
+            expect(res.items[0].delivered_ids).toEqual(sortUsers(QBUser1.id, QBUser2.id));
+
+            done();
+          });
+        }
+
+        QB_SENDER.chat.onDeliveredStatusListener = onDeliveredStatusListenerCb;
+        QB_RECEIVER.chat.sendDeliveredStatus(deliveredParams);
+
+      }, MESSAGING_TIMEOUT+REST_REQUESTS_TIMEOUT);
+
+      xit('read_ids is updated properly', function(done) {
+
+        var readParams = {
+          userId: QBUser1.id,
+          messageId: message._id,
+          dialogId: dialog._id
+        };
+
+        function onReadStatusListenerCb(messageId, dialogId, userId) {
+          expect(messageId).toEqual(readParams.messageId);
+          expect(dialogId).toEqual(readParams.dialogId);
+          expect(userId).toEqual(QBUser2.id);
+
+          QB_SENDER.chat.message.list({_id: message._id, chat_dialog_id: dialog._id}, function(err, res){
+            expect(err).toBeNull();
+            expect(res).not.toBeNull();
+            expect(res.items[0].read_ids).toEqual(sortUsers(QBUser1.id, QBUser2.id));
+
+            done();
+          });
+        }
+
+        QB_SENDER.chat.onReadStatusListener = onReadStatusListenerCb;
+        QB_RECEIVER.chat.sendReadStatus(readParams);
+
+      }, MESSAGING_TIMEOUT+REST_REQUESTS_TIMEOUT);
+
+      afterAll(function(done) {
+        QB_SENDER.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
+          expect(err).toBeNull();
+
+          QB_SENDER.destroySession(function (err, result){
+            expect(err).toBeNull();
+
+            done();
+          });
+
+        });
+      });
 
     });
 
@@ -1008,7 +1126,7 @@ describe('Chat API', function() {
         });
       }, MESSAGING_TIMEOUT);
 
-      it('can get online users', function(done) {
+      xit('can get online users', function(done) {
         QB_SENDER.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, function(users) {
           expect(users).toEqual([QBUser1.id]);
 
@@ -1022,7 +1140,7 @@ describe('Chat API', function() {
         });
       }, MESSAGING_TIMEOUT);
 
-      it("can't send messages to not joined room", function(done) {
+      xit("can't send messages to not joined room", function(done) {
 
         var msg = {
             type: 'groupchat',
@@ -1038,7 +1156,7 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT);
 
-      it("can't send messages to not existent room", function(done) {
+      xit("can't send messages to not existent room", function(done) {
         var msg = {
             type: 'groupchat',
             body: 'Warning! People are coming! XMPP message ' + Math.floor((Math.random() * 100) + 1)
