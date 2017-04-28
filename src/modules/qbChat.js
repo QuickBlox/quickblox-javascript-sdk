@@ -99,6 +99,8 @@ function ChatProxy(service) {
  * - onReadStatusListener (messageId, dialogId, userId);
  * - onSystemMessageListener (message)
  * - onKickOccupant(dialogId, initiatorUserId)
+ * - onJoinOccupant(dialogId, userId)
+ * - onLeaveOccupant(dialogId, userId)
  * - onContactListListener (userId, type)
  * - onSubscribeListener (userId)
  * - onConfirmSubscribeListener (userId)
@@ -167,12 +169,29 @@ function ChatProxy(service) {
  * @param {Object} receivedMessage - Recieved Message. Always have type: 'headline'
  **/
 
+
 /**
  * You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
  * @function onKickOccupant
  * @memberOf QB.chat
  * @param {String} dialogId - An Id of chat dialog where you was kicked from.
  * @param {Number} initiatorUserId - An Id of user who has kicked you.
+ **/
+
+/**
+ * You will receive this callback when some user joined group chat dialog you are in.
+ * @function onJoinOccupant
+ * @memberOf QB.chat
+ * @param {String} dialogId - An Id of chat dialog that user joined.
+ * @param {Number} userId - An Id of user who joined chat dialog.
+ **/
+
+/**
+ * You will receive this callback when some user left group chat dialog you are in.
+ * @function onLeaveOccupant
+ * @memberOf QB.chat
+ * @param {String} dialogId - An Id of chat dialog that user left.
+ * @param {Number} userId - An Id of user who left chat dialog.
  **/
 
 
@@ -324,10 +343,9 @@ function ChatProxy(service) {
             to = chatUtils.getAttr(stanza, 'to'),
             id = chatUtils.getAttr(stanza, 'id'),
             type = chatUtils.getAttr(stanza, 'type'),
-            userId = self.helpers.getIdFromNode(from),
             currentUserId = self.helpers.getIdFromNode(self.helpers.userCurrentJid(Utils.getEnv().browser ? self.connection : self.nClient)),
             x = chatUtils.getElement(stanza, 'x'),
-            xXMLNS, status, statusCode;
+            xXMLNS, status, statusCode, dialogId, userId;
 
         if(x){
           xXMLNS = chatUtils.getAttr(x, 'xmlns');
@@ -337,19 +355,47 @@ function ChatProxy(service) {
           }
         }
 
-        // KICK from dialog event
-        if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user" && status && statusCode == "301"){
-          if (typeof self.onKickOccupant === 'function'){
-            var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
-            var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
-            Utils.safeCallbackCall(self.onKickOccupant,
-                self.helpers.getDialogIdFromNode(from),
-                self.helpers.getIdFromNode(initiatorUserJid));
+
+        // MUC presences go here
+
+        if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
+
+          dialogId = self.helpers.getDialogIdFromNode(from);
+          userId = self.helpers.getUserIdFromRoomJid(from);
+
+          // KICK from dialog event
+          if(status && statusCode == "301"){
+            if (typeof self.onKickOccupant === 'function'){
+              var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
+              var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
+              Utils.safeCallbackCall(self.onKickOccupant,
+                  dialogId,
+                  self.helpers.getIdFromNode(initiatorUserJid));
+            }
+
+            delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
+
+            return;
+
+          // Occupants JOIN/LEAVE events
+          }else if(!status){
+            if(userId != currentUserId){
+              // Leave
+              if(type && type === 'unavailable'){
+                if (typeof self.onLeaveOccupant === 'function'){
+                  Utils.safeCallbackCall(self.onLeaveOccupant, dialogId, parseInt(userId));
+                }
+                return;
+              // Join
+              }else{
+                if (typeof self.onJoinOccupant === 'function'){
+                  Utils.safeCallbackCall(self.onJoinOccupant, dialogId, parseInt(userId));
+                }
+                return;
+              }
+
+            }
           }
-
-          delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
-
-          return;
         }
 
         if(Utils.getEnv().node) {
@@ -390,6 +436,11 @@ function ChatProxy(service) {
                 }
             }
         }
+
+
+        // ROSTER presences go here
+
+        userId = self.helpers.getIdFromNode(from);
 
         if (!type) {
             if (typeof self.onContactListListener === 'function' && self.roster.contacts[userId] && self.roster.contacts[userId].subscription !== 'none')

@@ -25,6 +25,9 @@ var chatEndpoint = CONFIG.endpoints.chat;
 var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
+
+var isJoinablePresent = true;
+
 describe('Chat API', function() {
 
   beforeAll(function() {
@@ -81,7 +84,9 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res._id).not.toBeNull();
           expect(res.type).toEqual(3);
-          expect(res.is_joinable).toEqual(0);
+          if(isJoinablePresent){
+            expect(res.is_joinable).toEqual(0);
+          }
           expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
 
           dialogId4Private = res._id;
@@ -91,6 +96,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT);
 
       it("can't create a dialog (private) (is_joinable=1)", function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var params = {
           occupants_ids: [QBUser2.id],
           type: 3,
@@ -113,7 +123,7 @@ describe('Chat API', function() {
       it('can create a dialog (group) and then join and send/receive a message', function(done) {
         var params = {
           occupants_ids: [QBUser2.id],
-          name: 'joinable=1',
+          name: 'joinable',
           type: 2
         };
 
@@ -124,7 +134,9 @@ describe('Chat API', function() {
           expect(res.type).toEqual(params.type);
           expect(res.name).toEqual(params.name);
           expect(res.xmpp_room_jid).toContain(chatEndpoint);
-          expect(res.is_joinable).toEqual(1);
+          if(isJoinablePresent){
+            expect(res.is_joinable).toEqual(1);
+          }
           expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
 
           dialogId1Group = res._id;
@@ -139,6 +151,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT+5000);
 
       it('can create a dialog (group)(not joinable) and then send/receive a message', function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var params = {
           occupants_ids: [QBUser2.id],
           name: 'joinable=0',
@@ -186,7 +203,9 @@ describe('Chat API', function() {
           expect(res.type).toEqual(params.type);
           expect(res.name).toEqual(params.name);
           expect(res.xmpp_room_jid).toContain(chatEndpoint);
-          expect(res.is_joinable).toEqual(1);
+          if(isJoinablePresent){
+            expect(res.is_joinable).toEqual(1);
+          }
 
           dialogId3PublicGroup = res._id;
 
@@ -199,6 +218,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't create a dialog (public group) with is_joinable=0", function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var params = {
           name: 'Public Awesome chat',
           type: 1,
@@ -240,6 +264,11 @@ describe('Chat API', function() {
     describe('Update Private Dialog:', function() {
 
       it("can't update a dialog (private) (set is_joinable=1)", function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var toUpdate = {
           is_joinable: 1
         };
@@ -259,6 +288,11 @@ describe('Chat API', function() {
     describe('Update Group Dialog:', function() {
 
       it('can update a dialog (group) (also set is_joinable=0) and then send/receive a message', function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var toUpdate = {
           name: 'is_joinable=0_NewName',
           is_joinable: 0
@@ -282,6 +316,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it('can update a dialog (group) (also set is_joinable=1)', function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         var toUpdate = {
           name: 'is_joinable=1_NewName',
           is_joinable: 1
@@ -305,6 +344,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't update a dialog (group) (set is_joinable=0) (if you are not an owner)", function(done) {
+        if(!isJoinablePresent){
+          done();
+          return;
+        }
+
         // login with other user
         //
         var createSessionParams = {
@@ -838,17 +882,20 @@ describe('Chat API', function() {
         'password': QBUser1.password
       }, function(err) {
         expect(err).toBeNull();
+        console.info("CONNECTED with User1");
 
         QB_RECEIVER.chat.connect({
           'userId': QBUser2.id,
           'password': QBUser2.password
         }, function(err) {
           expect(err).toBeNull();
+          console.info("CONNECTED with User2");
+
           done();
         });
 
       });
-    });
+    }, LOGIN_TIMEOUT);
 
     // =============================1-1 MESSAGING===============================
 
@@ -1087,7 +1134,7 @@ describe('Chat API', function() {
 
     // =============================GROUP MESSAGING=============================
 
-    describe('Group Messaging: ', function() {
+    fdescribe('Group Messaging: ', function() {
       var dialog;
 
       beforeAll(function(done){
@@ -1131,7 +1178,7 @@ describe('Chat API', function() {
         });
       }, MESSAGING_TIMEOUT);
 
-      xit('can get online users', function(done) {
+      it('can get online users', function(done) {
         QB_SENDER.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, function(users) {
           expect(users).toEqual([QBUser1.id]);
 
@@ -1144,6 +1191,68 @@ describe('Chat API', function() {
           done();
         });
       }, MESSAGING_TIMEOUT);
+
+      fit("can receive statuses related to join", function(done){
+
+        var statusesReceivedCount = 0;
+
+        console.info("JOIN USER1");
+        QB_SENDER.chat.muc.join(dialog.xmpp_room_jid, function(stanza) {
+          console.info("JOINED USER1");
+          expect(stanza).not.toBeNull();
+
+          console.info("JOIN USER2");
+          QB_RECEIVER.chat.muc.join(dialog.xmpp_room_jid, function(stanza) {
+            console.info("JOINED USER2");
+            expect(stanza).not.toBeNull();
+          });
+
+          QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
+            expect(userId).toEqual(QBUser1.id);
+            expect(dialogId).toEqual(dialog._id);
+
+            ++statusesReceivedCount;
+            if(statusesReceivedCount == 2){
+              done();
+            }
+
+            QB_RECEIVER.chat.onJoinOccupant = null;
+
+          };
+
+        });
+
+        QB_SENDER.chat.onJoinOccupant = function(dialogId, userId){
+          expect(userId).toEqual(QBUser2.id);
+          expect(dialogId).toEqual(dialog._id);
+
+          ++statusesReceivedCount;
+          if(statusesReceivedCount == 2){
+            done();
+          }
+
+          QB_SENDER.chat.onJoinOccupant = null;
+
+        };
+
+      }, 5000);
+
+      fit("can receive statuses related to leave", function(done){
+        QB_SENDER.chat.onLeaveOccupant = function(dialogId, userId){
+          expect(userId).toEqual(QBUser2.id);
+          expect(dialogId).toEqual(dialog._id);
+
+          done();
+
+          QB_SENDER.chat.onLeaveOccupant = null;
+        };
+
+        console.info("LEAVE");
+        QB_RECEIVER.chat.muc.leave(dialog.xmpp_room_jid, function() {
+          console.info("LEAVED");
+        });
+
+      }, 5000);
 
       xit("can't send messages to not joined room", function(done) {
 

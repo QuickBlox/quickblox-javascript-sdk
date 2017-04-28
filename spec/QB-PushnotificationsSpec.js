@@ -22,9 +22,8 @@ describe('PushNotifications API', function() {
     },
     push_token: {
       environment: 'development',
-      client_identification_sequence: 'APA91bH91emYD8BYyveyO0C9M--p8xW9yTr1k_Nzr8-SfjCfSIljzYqNIX9fK9JxPsWm3NQ6P-'+
-                                      'zCDkdtktVLEYJI5CLfg_3_auErc_29piz2zLHp5OjK0RdFnod-j0Pclo-a57FaKWxvNSr_EBwbP'+
-                                      '_oFDuXo1x0ucQ',
+      // 'client_identification_sequence' should be valid. Otherwise, the 'delete suscription' test will fail.
+      client_identification_sequence: "fDmkp3zhYgo:APA91bH-XBzYbDiifSaFhJvB4eSqbZnOXkw5eG4jJTc9L4vKZWHs6Zc4oNho3MMlvIJygdyHwEtQKAJRLTnrskej11_qo03vEejGuCTRvrXxC4cUY6QjgUWNaQgYHV5IwweHNmdhmpZS",
       bundle_identifier: "com.quickblox.chatapp"
     }
   };
@@ -142,7 +141,7 @@ describe('PushNotifications API', function() {
     });
   }, REST_REQUESTS_TIMEOUT);
 
-  xit('can delete subscription', function(done){
+  it('can delete subscription', function(done){
       function deleteSubscriptionCb(err, res) {
           expect(err).toBeNull();
           expect(res).toBeDefined();

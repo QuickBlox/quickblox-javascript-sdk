@@ -1,6 +1,38 @@
 (function() {
     'use strict';
 
+    // var CREDS =  {
+    //     'appId': 27,
+    //     'authKey': 'X4TJkdPGFmQNY8D',
+    //     'authSecret': '4vEdqCKpyhZppYc'
+    // };
+    //
+    // var QBUser1 = {
+    //         'id': 193,
+    //         'login': "js_jasmine22",
+    //         'password': "js_jasmine22",
+    //         'email': "js_jasmine22@quickblox.com"
+    //     },
+    //     QBUser2 = {
+    //         'id': 194,
+    //         'login': "js_jasmine222",
+    //         'password': "js_jasmine222"
+    //     };
+    //
+    // var CONFIG = {
+    //   endpoints: {
+    //     api: "apistage1.quickblox.com", // set custom API endpoint
+    //     chat: "chatstage1.quickblox.com" // set custom Chat endpoint
+    //   },
+    //   chatProtocol: {
+    //     active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+    //   },
+    //   'debug': {
+    //       'mode': 1,
+    //       'file': null
+    //   }
+    // };
+
     var CREDS =  {
         'appId': 10,
         'authKey': 'XR-B4J64ad6SGvL',
