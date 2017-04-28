@@ -102,6 +102,9 @@ App.prototype.renderDashboard = function() {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
   self._setListenersPlacesPreview();
+
+  self.map.removeAllMarkers();
+  self.map.setPlaces(self.places.items);
 }
 
 App.prototype._setListenersHeader = function() {
@@ -224,7 +227,20 @@ App.prototype.renderPlaceDetailed = function(placeId) {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
 
+  // REWRITE!!
+  var marker = self.map.markers[placeId];
+  self.map.gmap.setCenter(marker.getPosition());
+  marker.setIcon('https://samples.quickblox.com/web/resources/marker_create.png');
+
   document.getElementById('j-to_dashboard').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    self.activePage = {
+      pageName: 'dashboard'
+    };
+  });
+
+  document.getElementById('j-checkin').addEventListener('click', function(e) {
     e.preventDefault();
 
     self.activePage = {

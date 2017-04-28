@@ -13,7 +13,9 @@ function Map(params) {
 
   this.gmap;
   this._sketchedPlace = null; 
-  this._listener = null;
+  this._activePlace = null;
+
+  this.markers = {};
 
   this._markersUrl = 'https://samples.quickblox.com/web/resources/';
 
@@ -31,6 +33,14 @@ Map.prototype.init = function() {
   };
 
   this.gmap = new google.maps.Map(this.el, mapsOptions);
+}
+
+Map.prototype.removeAllMarkers = function() {
+  var self = this;
+
+  for(var k in self.markers) {
+    self.markers[k].setMap(null);
+  }
 }
 
 Map.prototype.setClickListener = function(cb) {
@@ -56,7 +66,7 @@ Map.transfromLocationOnGmapSyntax = function(location) {
 Map.prototype.createMarker = function(position) {
   var self = this;
 
-  new google.maps.Marker({
+  return new google.maps.Marker({
     position: position,
     map: self.gmap,
     icon: self._markersUrl + 'marker.png'
@@ -66,7 +76,8 @@ Map.prototype.createMarker = function(position) {
 Map.prototype.setPlace = function(place) {
   var position = Map.transfromLocationOnGmapSyntax(place.location);
 
-  this.createMarker(position);
+  var marker = this.createMarker(position);
+  this.markers[place._id] = marker;
 }
 
 Map.prototype.setPlaces = function(places) {

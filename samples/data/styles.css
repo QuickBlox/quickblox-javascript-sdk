@@ -225,6 +225,10 @@ body {
   margin: 20px;
 }
 
+.place__action {
+  margin: 0 0 20px 0;
+}
+
 .place__section {
   margin: 0 0 20px;
 

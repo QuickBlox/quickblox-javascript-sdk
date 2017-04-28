@@ -88,12 +88,12 @@
           </div>
 
           <div class="form_item">
-            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="250">
+            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="150">
           </div>
 
           <div class="form_item">
             <label for="rate">Rate</label>
-            <input id="rate"  class="inp" type="number" min="0" max="5" step="1" value="0" required>
+            <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
           </div>
 
           <div class="form_item">
@@ -112,6 +112,9 @@
       </div>
 
       <div class="panel__body">
+        <div class="place__action">
+          <button class="btn btn-action" id="j-checkin">Check in</button>
+        </div>
         <div class="place__section">
           <h4 class="h4">Description</h4>
           <p>{{description}}</p>
@@ -138,7 +141,6 @@
   <!-- Helper libraries -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOlglXqBHw1T0G5x1UoVD3sP7FB3wWc6I"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
-  <script src="https://unpkg.com/wolfy87-eventemitter@5.1.0/EventEmitter.min.js"></script>
   <!-- Quickblox SDK -->
   <script src="../../quickblox.min.js"></script>
   <!-- APP -->
@@ -146,6 +148,6 @@
   <script src="./js/user.js"></script>
   <script src="./js/map.js"></script>
   <script src="./js/places.js"></script>
-  <script src="app.js"></script>
+  <script src="./js/app.js"></script>
 </body>
 </html>
