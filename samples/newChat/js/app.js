@@ -11,13 +11,15 @@ function App(config) {
     this._config = config;
     this.user = null;
     this.token = null;
-    
+    this.isDashboardLoaded = false;
+    this.room = null;
     // Elements
     this.page = document.querySelector('#page');
     this.sidebar = null;
     this.content = null;
     this.userListConteiner = null;
     this.init(this._config);
+    this.loading = true;
 }
 
 // Before start working with JS SDK you nead to init it.
@@ -27,93 +29,46 @@ App.prototype.init = function (config) {
     QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
 };
 
-App.prototype.setLoginListeners = function () {
+App.prototype.renderDashboard = function (activeTabName) {
     var self = this,
-        select = document.querySelector('.j-login__select'),
-        loginBtn = document.querySelector('.j-login__button');
-    
-    select.addEventListener('change', function () {
-        if (!isNaN(this.value)) {
-            loginBtn.removeAttribute('disabled');
-        }
-    });
-    
-    loginBtn.addEventListener('click', function () {
-        if (!self.checkInternetConnection()) {
-            return false;
-        }
-        
-        var userId = +select.value;
-        
-        if (loginBtn.classList.contains('loading')) return false;
-        
-        self.user = _.findWhere(usersList, {id: userId});
-        loginBtn.classList.add('loading');
-        
-        self.login();
-        
-        loginBtn.innerText = 'loading...'
-    });
-};
-
-App.prototype.login = function () {
-    var self = this,
-        userData = {
-            login: self.user.login,
-            password: self.user.pass
+        renderParams = {
+            user: self.user,
+            tabName: ''
         };
-    
-    // Step 2. Create session with user credentials.
-    QB.createSession(userData, function (err, res) {
-        if (res) {
-            self.token = res.token;
-            // Step 3. Conect to chat.
-            QB.chat.connect({userId: self.user.id, password: self.user.pass}, function (err, roster) {
-                if (err) {
-                    document.querySelector('.j-login__button').innerText = 'Login';
-                    console.error(err);
-                    alert('Connect to chat Error');
-                } else {
-                    helpers.redirectToPage('dashboard');
-                }
-            });
-        } else {
-            var loginBdt = document.querySelector('.j-login__button');
-            loginBdt.innerText = 'Login';
-            loginBdt.classList.remove('loading');
-            console.error('create session Error', err);
-            alert('Create session Error');
-        }
-    });
-};
 
-App.prototype.loadDashboard = function () {
-    var self = this,
-        logoutBtn = document.querySelector('.j-logout');
-    
+    if(activeTabName){
+        renderParams.tabName = activeTabName;
+    }
+
+    helpers.clearView(app.page);
+
+    self.page.innerHTML = helpers.fillTemplate('tpl_dashboardContainer', renderParams);
+
+    var logoutBtn = document.querySelector('.j-logout');
+    loginModule.isLoginPageRendered = false;
+    self.isDashboardLoaded = true;
     self.content = document.querySelector('.j-content');
     self.sidebar = document.querySelector('.j-sidebar');
-    
+
     dialogModule.init();
-    
+
     self.loadWelcomeTpl();
-    
+
     listeners.setListeners();
-    
+
     logoutBtn.addEventListener('click', function () {
-        helpers.clearCache();
-        
-        QB.chat.disconnect();
-        QB.logout(function (err) {
-            helpers.redirectToPage('login');
-            if (err) {
-                console.error(err);
+        QB.users.delete(app.user.id, function(err, user){
+            if (!user) {
+                console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
+            loginModule.isLogin = false;
+            localStorage.removeItem('user');
+            helpers.clearCache();
+            QB.chat.disconnect();
+            router.navigate('#!/login');
         });
     });
-    
-    dialogModule.loadDialogs('chat');
-    
+
     this.tabSelectInit();
 };
 
@@ -129,9 +84,10 @@ App.prototype.loadWelcomeTpl = function () {
 App.prototype.tabSelectInit = function () {
     var self = this,
         tabs = document.querySelectorAll('.j-sidebar__tab_link'),
-        createDialogTab = document.querySelector('.j-sidebar__create_dilalog');
+        createDialogTab = document.querySelector('.j-sidebar__create_dialog');
     
     createDialogTab.addEventListener('click', function (e) {
+        e.preventDefault();
         if (!self.checkInternetConnection()) {
             return false;
         }
@@ -146,6 +102,7 @@ App.prototype.tabSelectInit = function () {
     
     _.each(tabs, function (item) {
         item.addEventListener('click', function (e) {
+            e.preventDefault();
             if (!self.checkInternetConnection()) {
                 return false;
             }
@@ -156,22 +113,29 @@ App.prototype.tabSelectInit = function () {
     });
 };
 
-App.prototype.loadChatList = function (tab, callback) {
-    var tabs = document.querySelectorAll('.j-sidebar__tab_link');
-    
-    if (tab.classList.contains('active')) {
-        return false;
-    }
-    
-    _.each(tabs, function (elem) {
-        elem.classList.remove('active');
+App.prototype.loadChatList = function (tab) {
+    return new Promise(function(resolve, reject){
+        var tabs = document.querySelectorAll('.j-sidebar__tab_link');
+
+        if (tab.classList.contains('active')) {
+            return false;
+        }
+
+        _.each(tabs, function (elem) {
+            elem.classList.remove('active');
+        });
+
+        tab.classList.add('active');
+
+        helpers.clearView(dialogModule.dialogsListContainer);
+        dialogModule.dialogsListContainer.classList.remove('full');
+
+        dialogModule.loadDialogs(tab.dataset.type).then(function(dialogs) {
+            resolve(dialogs);
+        }).catch(function(error){
+            reject(error);
+        });
     });
-    
-    tab.classList.add('active');
-    
-    helpers.clearView(dialogModule.dialogsListContainer);
-    dialogModule.dialogsListContainer.classList.remove('full');
-    dialogModule.loadDialogs(tab.dataset.type, callback);
 };
 
 App.prototype.buildCreateDialogTpl = function () {
@@ -200,14 +164,14 @@ App.prototype.buildCreateDialogTpl = function () {
         document.forms.create_dialog.create_dialog_submit.disabled = true;
         
         var users = self.userListConteiner.querySelectorAll('.selected'),
-            type = users.length > 1 ? 2 : 3,
+            type = users.length > 2 ? 2 : 3,
             name = document.forms.create_dialog.dialog_name.value,
-            occupants_ids = type === 3 ? [] : [self.user.id];
-        
+            occupants_ids = [];
+
         _.each(users, function (user) {
             occupants_ids.push(+user.id);
         });
-        
+
         if (!name && type === 2) {
             var userNames = [];
             
@@ -220,7 +184,7 @@ App.prototype.buildCreateDialogTpl = function () {
             });
             name = userNames.join(', ');
         }
-        
+
         var params = {
             type: type,
             occupants_ids: occupants_ids
@@ -229,7 +193,7 @@ App.prototype.buildCreateDialogTpl = function () {
         if (type !== 3 && name) {
             params.name = name;
         }
-        
+
         dialogModule.createDialog(params);
     });
     
@@ -239,7 +203,8 @@ App.prototype.buildCreateDialogTpl = function () {
 App.prototype.backToDialog = function (e) {
     var self = this;
     self.sidebar.classList.add('active');
-    event.currentTarget.classList.remove('active');
+    document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
+    
     if (dialogModule.dialogId) {
         dialogModule.renderMessages(dialogModule.dialogId);
     } else {

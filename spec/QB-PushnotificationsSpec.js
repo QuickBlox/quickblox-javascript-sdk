@@ -84,7 +84,6 @@ describe('PushNotifications API', function() {
     }, 10000);
   });
 
-
   describe('Events', function(){
     var eventId = '';
 
@@ -136,7 +135,6 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    
     it('can get event by id', function(done){
       QB.pushnotifications.events.get(eventId, function(err, response) {
         if (err) {
@@ -150,7 +148,8 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    it('can get event\'s status by id', function(done){
+    // Waiting fix from server
+    it('can get event\'s status by id', function(done) {
       pending('Server return a 500 error');
 
       QB.pushnotifications.events.status(eventId, function(err, response) {
@@ -173,9 +172,8 @@ describe('PushNotifications API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
-    afterAll(function(done) {
-      
-      QB.pushnotifications.subscriptions.list(function(err, result) {
+    afterAll(function(done){
+      QB.pushnotifications.subscriptions.list(function(err, result){
         if (err) {
           if(err.code === 404) {
             // Doesn't found any subscriptions for removing
@@ -185,7 +183,7 @@ describe('PushNotifications API', function() {
           }
         } else {
           var subscriptionId = result[0].subscription.id;
-          
+
           QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){
             if (err) {
               done.fail('Delete subscription error: ' + JSON.stringify(err));
