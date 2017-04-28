@@ -417,7 +417,7 @@ describe('Chat API', function() {
         });
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
 
-      xit("can't join dialog where user is not in occupants", function(done) {
+      it("can't join dialog where user is not in occupants", function(done) {
 
         setTimeout(function(){
           var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
@@ -446,10 +446,10 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT+1000);
 
-      xit("can't join not existent dialog", function(done) {
+      it("can't join not existent dialog", function(done) {
 
         setTimeout(function(){
-          QB_RECEIVER.chat.muc.join("888_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
+          QB_RECEIVER.chat.muc.join(CREDS.appId+"_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
 
             var joined = true;
             var errorCode;
@@ -1134,7 +1134,7 @@ describe('Chat API', function() {
 
     // =============================GROUP MESSAGING=============================
 
-    fdescribe('Group Messaging: ', function() {
+    describe('Group Messaging: ', function() {
       var dialog;
 
       beforeAll(function(done){
@@ -1192,7 +1192,7 @@ describe('Chat API', function() {
         });
       }, MESSAGING_TIMEOUT);
 
-      fit("can receive statuses related to join", function(done){
+      xit("can receive statuses related to join", function(done){
 
         var statusesReceivedCount = 0;
 
@@ -1237,7 +1237,7 @@ describe('Chat API', function() {
 
       }, 5000);
 
-      fit("can receive statuses related to leave", function(done){
+      xit("can receive statuses related to leave", function(done){
         QB_SENDER.chat.onLeaveOccupant = function(dialogId, userId){
           expect(userId).toEqual(QBUser2.id);
           expect(dialogId).toEqual(dialog._id);
@@ -1254,7 +1254,7 @@ describe('Chat API', function() {
 
       }, 5000);
 
-      xit("can't send messages to not joined room", function(done) {
+      it("can't send messages to not joined room", function(done) {
 
         var msg = {
             type: 'groupchat',
@@ -1265,12 +1265,14 @@ describe('Chat API', function() {
           console.info(messageId);
           console.info(error);
           QB_SENDER.chat.onMessageErrorListener = null;
+
+          done();
         };
         msg.id = QB_SENDER.chat.send(dialog.xmpp_room_jid, msg);
 
       }, MESSAGING_TIMEOUT);
 
-      xit("can't send messages to not existent room", function(done) {
+      it("can't send messages to not existent room", function(done) {
         var msg = {
             type: 'groupchat',
             body: 'Warning! People are coming! XMPP message ' + Math.floor((Math.random() * 100) + 1)
@@ -1280,8 +1282,10 @@ describe('Chat API', function() {
           console.info(messageId);
           console.info(error);
           QB_SENDER.chat.onMessageErrorListener = null;
+
+          done();
         };
-        msg.id = QB_SENDER.chat.send("888_53fc460b515c128132016675@muc."+chatEndpoint, msg);
+        msg.id = QB_SENDER.chat.send(CREDS.appId+"_53fc460b515c128132016675@muc."+chatEndpoint, msg);
 
       }, MESSAGING_TIMEOUT);
 

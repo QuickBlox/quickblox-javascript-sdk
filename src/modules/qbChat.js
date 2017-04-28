@@ -1524,7 +1524,7 @@ MucProxy.prototype = {
                     items = stanza.getChild('query').getChildElements('item');
 
                 for(var i = 0, len = items.length; i < len; i++) {
-                    users.push(items[i].attrs.name);
+                    users.push(parseInt(items[i].attrs.name));
                 }
 
                 callback(users);
@@ -1538,7 +1538,7 @@ MucProxy.prototype = {
 
                 for (var i = 0, len = items.length; i < len; i++) {
                     userId = self.helpers.getUserIdFromRoomJid(items[i].getAttribute('jid'));
-                    onlineUsers.push(userId);
+                    onlineUsers.push(parseInt(userId));
                 }
 
                 callback(onlineUsers);
