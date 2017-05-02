@@ -375,7 +375,7 @@ function ChatProxy(service) {
 
             delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
 
-            return;
+            return true;
 
           // Occupants JOIN/LEAVE events
           }else if(!status){
@@ -385,13 +385,13 @@ function ChatProxy(service) {
                 if (typeof self.onLeaveOccupant === 'function'){
                   Utils.safeCallbackCall(self.onLeaveOccupant, dialogId, parseInt(userId));
                 }
-                return;
+                return true;
               // Join
               }else{
                 if (typeof self.onJoinOccupant === 'function'){
                   Utils.safeCallbackCall(self.onJoinOccupant, dialogId, parseInt(userId));
                 }
-                return;
+                return true;
               }
 
             }
@@ -412,7 +412,7 @@ function ChatProxy(service) {
                           if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
                             Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
                           }
-                          return;
+                          return true;
                       }
                   }
 
@@ -421,7 +421,7 @@ function ChatProxy(service) {
                       if(typeof self.nodeStanzasCallbacks[id] === 'function') {
                           Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
                       }
-                      return;
+                      return true;
                   }
 
               // an error
@@ -431,7 +431,7 @@ function ChatProxy(service) {
                       if(typeof self.nodeStanzasCallbacks[id] === 'function') {
                           Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
                       }
-                      return;
+                      return true;
                   }
                 }
             }

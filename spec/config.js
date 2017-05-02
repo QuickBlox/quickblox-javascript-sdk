@@ -2,6 +2,39 @@
     'use strict';
 
     // var CREDS =  {
+    //     'appId': 19,
+    //     'authKey': 'U2x2sM2jwj8Wpsk',
+    //     'authSecret': 'QhTBy27H4AxxZNg'
+    // };
+    //
+    // var QBUser1 = {
+    //         'id': 97093,
+    //         'login': "js_jasmine22",
+    //         'password': "js_jasmine22",
+    //         'email': "js_jasmine22@quickblox.com"
+    //     },
+    //     QBUser2 = {
+    //         'id': 97101,
+    //         'login': "js_jasmine222",
+    //         'password': "js_jasmine222"
+    //     };
+    //
+    // var CONFIG = {
+    //   endpoints: {
+    //     api: "apigdar.quickblox.com", // set custom API endpoint
+    //     chat: "chatgdar.quickblox.com" // set custom Chat endpoint
+    //   },
+    //   chatProtocol: {
+    //     active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+    //   },
+    //   'debug': {
+    //       'mode': 1,
+    //       'file': null
+    //   }
+    // };
+
+
+    // var CREDS =  {
     //     'appId': 27,
     //     'authKey': 'X4TJkdPGFmQNY8D',
     //     'authSecret': '4vEdqCKpyhZppYc'
@@ -33,61 +66,28 @@
     //   }
     // };
 
-    var CREDS =  {
-        'appId': 10,
-        'authKey': 'XR-B4J64ad6SGvL',
-        'authSecret': 'Nw27vzzEVfNXw47'
-    };
-
-    var QBUser1 = {
-            'id': 4275,
-            'login': "js_jasmine22",
-            'password': "js_jasmine22",
-            'email': "js_jasmine22@quickblox.com"
-        },
-        QBUser2 = {
-            'id': 4276,
-            'login': "js_jasmine222",
-            'password': "js_jasmine222"
-        };
-
-    var CONFIG = {
-      endpoints: {
-        api: "apikafkacluster.quickblox.com", // set custom API endpoint
-        chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
-      },
-      chatProtocol: {
-        active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
-      },
-      'debug': {
-          'mode': 1,
-          'file': null
-      }
-    };
-
-
     // var CREDS =  {
-    //     'appId': 29650,
-    //     'authKey': 'WULOyezrmxpOgQ-',
-    //     'authSecret': 'TqQmBFbANJ6cfu4'
+    //     'appId': 10,
+    //     'authKey': 'XR-B4J64ad6SGvL',
+    //     'authSecret': 'Nw27vzzEVfNXw47'
     // };
     //
     // var QBUser1 = {
-    //         'id': 26904575,
+    //         'id': 4275,
     //         'login': "js_jasmine22",
     //         'password': "js_jasmine22",
     //         'email': "js_jasmine22@quickblox.com"
     //     },
     //     QBUser2 = {
-    //         'id': 26904594,
+    //         'id': 4276,
     //         'login': "js_jasmine222",
     //         'password': "js_jasmine222"
     //     };
     //
     // var CONFIG = {
     //   endpoints: {
-    //     api: "api.quickblox.com", // set custom API endpoint
-    //     chat: "chat.quickblox.com" // set custom Chat endpoint
+    //     api: "apikafkacluster.quickblox.com", // set custom API endpoint
+    //     chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
     //   },
     //   chatProtocol: {
     //     active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
@@ -97,6 +97,39 @@
     //       'file': null
     //   }
     // };
+
+
+    var CREDS =  {
+        'appId': 29650,
+        'authKey': 'WULOyezrmxpOgQ-',
+        'authSecret': 'TqQmBFbANJ6cfu4'
+    };
+
+    var QBUser1 = {
+            'id': 26904575,
+            'login': "js_jasmine22",
+            'password': "js_jasmine22",
+            'email': "js_jasmine22@quickblox.com"
+        },
+        QBUser2 = {
+            'id': 26904594,
+            'login': "js_jasmine222",
+            'password': "js_jasmine222"
+        };
+
+    var CONFIG = {
+      endpoints: {
+        api: "api.quickblox.com", // set custom API endpoint
+        chat: "chat.quickblox.com" // set custom Chat endpoint
+      },
+      chatProtocol: {
+        active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+      },
+      'debug': {
+          'mode': 1,
+          'file': null
+      }
+    };
 
 
     /**

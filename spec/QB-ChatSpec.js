@@ -874,7 +874,7 @@ describe('Chat API', function() {
 
   // ================================Real-time==================================
 
-  describe('Real-time: ', function() {
+  fdescribe('Real-time: ', function() {
 
     beforeAll(function(done) {
       QB_SENDER.chat.connect({
@@ -1135,7 +1135,7 @@ describe('Chat API', function() {
     // =============================GROUP MESSAGING=============================
 
     describe('Group Messaging: ', function() {
-      var dialog;
+      var dialogJoinable;
 
       beforeAll(function(done){
 
@@ -1162,7 +1162,7 @@ describe('Chat API', function() {
             expect(res.name).toEqual(dialogCreateParams.name);
             expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
 
-            dialog = res;
+            dialogJoinable = res;
 
             done();
           });
@@ -1172,14 +1172,14 @@ describe('Chat API', function() {
       });
 
       it('can join group chat', function(done) {
-        QB_SENDER.chat.muc.join(dialog.xmpp_room_jid, function(stanza) {
+        QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
           expect(stanza).not.toBeNull();
           done();
         });
       }, MESSAGING_TIMEOUT);
 
       it('can get online users', function(done) {
-        QB_SENDER.chat.muc.listOnlineUsers(dialog.xmpp_room_jid, function(users) {
+        QB_SENDER.chat.muc.listOnlineUsers(dialogJoinable.xmpp_room_jid, function(users) {
           expect(users).toEqual([QBUser1.id]);
 
           done();
@@ -1187,60 +1187,61 @@ describe('Chat API', function() {
       }, MESSAGING_TIMEOUT);
 
       it('can leave group chat', function(done) {
-        QB_SENDER.chat.muc.leave(dialog.xmpp_room_jid, function() {
+        QB_SENDER.chat.muc.leave(dialogJoinable.xmpp_room_jid, function() {
           done();
         });
       }, MESSAGING_TIMEOUT);
 
-      xit("can receive statuses related to join", function(done){
+      fit("can receive statuses related to join", function(done){
 
         var statusesReceivedCount = 0;
 
+        var maybeDone = function(){
+          ++statusesReceivedCount;
+          if(statusesReceivedCount == 3){
+            done();
+          }
+        };
+
         console.info("JOIN USER1");
-        QB_SENDER.chat.muc.join(dialog.xmpp_room_jid, function(stanza) {
+        QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
           console.info("JOINED USER1");
           expect(stanza).not.toBeNull();
 
           console.info("JOIN USER2");
-          QB_RECEIVER.chat.muc.join(dialog.xmpp_room_jid, function(stanza) {
+          QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
             console.info("JOINED USER2");
             expect(stanza).not.toBeNull();
+
+            maybeDone();
           });
 
           QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
             expect(userId).toEqual(QBUser1.id);
-            expect(dialogId).toEqual(dialog._id);
-
-            ++statusesReceivedCount;
-            if(statusesReceivedCount == 2){
-              done();
-            }
+            expect(dialogId).toEqual(dialogJoinable._id);
 
             QB_RECEIVER.chat.onJoinOccupant = null;
 
+            maybeDone();
           };
 
         });
 
         QB_SENDER.chat.onJoinOccupant = function(dialogId, userId){
           expect(userId).toEqual(QBUser2.id);
-          expect(dialogId).toEqual(dialog._id);
-
-          ++statusesReceivedCount;
-          if(statusesReceivedCount == 2){
-            done();
-          }
+          expect(dialogId).toEqual(dialogJoinable._id);
 
           QB_SENDER.chat.onJoinOccupant = null;
 
+          maybeDone();
         };
 
-      }, 5000);
+      }, 10000);
 
-      xit("can receive statuses related to leave", function(done){
+      fit("can receive statuses related to leave", function(done){
         QB_SENDER.chat.onLeaveOccupant = function(dialogId, userId){
           expect(userId).toEqual(QBUser2.id);
-          expect(dialogId).toEqual(dialog._id);
+          expect(dialogId).toEqual(dialogJoinable._id);
 
           done();
 
@@ -1248,7 +1249,7 @@ describe('Chat API', function() {
         };
 
         console.info("LEAVE");
-        QB_RECEIVER.chat.muc.leave(dialog.xmpp_room_jid, function() {
+        QB_RECEIVER.chat.muc.leave(dialogJoinable.xmpp_room_jid, function() {
           console.info("LEAVED");
         });
 
@@ -1268,7 +1269,7 @@ describe('Chat API', function() {
 
           done();
         };
-        msg.id = QB_SENDER.chat.send(dialog.xmpp_room_jid, msg);
+        msg.id = QB_SENDER.chat.send(dialogJoinable.xmpp_room_jid, msg);
 
       }, MESSAGING_TIMEOUT);
 
@@ -1290,7 +1291,7 @@ describe('Chat API', function() {
       }, MESSAGING_TIMEOUT);
 
       afterAll(function(done) {
-        QB_SENDER.chat.dialog.delete([dialog._id], {force: 1}, function(err, res) {
+        QB_SENDER.chat.dialog.delete([dialogJoinable._id], {force: 1}, function(err, res) {
           expect(err).toBeNull();
 
           QB_SENDER.destroySession(function (err, result){
