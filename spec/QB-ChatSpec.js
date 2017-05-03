@@ -26,7 +26,7 @@ var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
 
-var isJoinablePresent = true;
+var isOldVersion = chatEndpoint != "chatkafkacluster.quickblox.com";
 
 describe('Chat API', function() {
 
@@ -84,7 +84,7 @@ describe('Chat API', function() {
           expect(res).not.toBeNull();
           expect(res._id).not.toBeNull();
           expect(res.type).toEqual(3);
-          if(isJoinablePresent){
+          if(!isOldVersion){
             expect(res.is_joinable).toEqual(0);
           }
           expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
@@ -96,7 +96,7 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT);
 
       it("can't create a dialog (private) (is_joinable=1)", function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -134,12 +134,13 @@ describe('Chat API', function() {
           expect(res.type).toEqual(params.type);
           expect(res.name).toEqual(params.name);
           expect(res.xmpp_room_jid).toContain(chatEndpoint);
-          if(isJoinablePresent){
+          if(!isOldVersion){
             expect(res.is_joinable).toEqual(1);
           }
           expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
 
           dialogId1Group = res._id;
+          console.info("dialogId1Group: " + dialogId1Group);
 
           // now try to join and send a message
           //
@@ -151,7 +152,7 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT+5000);
 
       it('can create a dialog (group)(not joinable) and then send/receive a message', function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -203,7 +204,7 @@ describe('Chat API', function() {
           expect(res.type).toEqual(params.type);
           expect(res.name).toEqual(params.name);
           expect(res.xmpp_room_jid).toContain(chatEndpoint);
-          if(isJoinablePresent){
+          if(!isOldVersion){
             expect(res.is_joinable).toEqual(1);
           }
 
@@ -218,7 +219,7 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't create a dialog (public group) with is_joinable=0", function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -246,12 +247,13 @@ describe('Chat API', function() {
       it('can list dialogs', function(done) {
         var filters = {};
         QB_SENDER.chat.dialog.list(filters, function(err, res) {
+          var dialogsCount = isOldVersion ? 3 : 4;
           expect(err).toBeNull();
           expect(res).not.toBeNull();
-          expect(res.total_entries).toEqual(4);
+          expect(res.total_entries).toEqual(dialogsCount);
+          expect(res.items.length).toEqual(dialogsCount);
           expect(res.skip).toEqual(0);
           expect(res.limit).toEqual(100);
-          expect(res.items.length).toEqual(4);
 
           done();
         });
@@ -264,7 +266,7 @@ describe('Chat API', function() {
     describe('Update Private Dialog:', function() {
 
       it("can't update a dialog (private) (set is_joinable=1)", function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -288,7 +290,7 @@ describe('Chat API', function() {
     describe('Update Group Dialog:', function() {
 
       it('can update a dialog (group) (also set is_joinable=0) and then send/receive a message', function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -316,7 +318,7 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it('can update a dialog (group) (also set is_joinable=1)', function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -344,7 +346,7 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't update a dialog (group) (set is_joinable=0) (if you are not an owner)", function(done) {
-        if(!isJoinablePresent){
+        if(isOldVersion){
           done();
           return;
         }
@@ -407,7 +409,10 @@ describe('Chat API', function() {
           //
           QB_RECEIVER.chat.onKickOccupant = function(dialogId, initiatorUserId){
             expect(dialogId).toEqual(dialogId1Group);
-            expect(initiatorUserId).toEqual(QBUser1.id);
+            if(!isOldVersion){
+              // we have different logic of 'actor' formation. In current version it's the account owner.
+              expect(initiatorUserId).toEqual(QBUser1.id);
+            }
 
             QB_RECEIVER.chat.onKickOccupant = null;
 
@@ -436,9 +441,13 @@ describe('Chat API', function() {
             }
 
             expect(joined).toEqual(false);
-            expect(errorCode).toEqual("403");
-            expect(errorName).not.toBeNull();
-            expect(errorDescription).toEqual("Your user is not in occupants list of the dialog");
+            if(isOldVersion){
+              expect(errorCode).toEqual("500");
+            }else{
+              expect(errorCode).toEqual("403");
+              expect(errorName).not.toBeNull();
+              expect(errorDescription).toEqual("Your user is not in occupants list of the dialog");
+            }
 
             done();
           });
@@ -463,8 +472,12 @@ describe('Chat API', function() {
             }
 
             expect(joined).toEqual(false);
-            expect(errorCode).toEqual("404");
-            expect(errorName).not.toBeNull();
+            if(isOldVersion){
+              expect(errorCode).toEqual("500");
+            }else{
+              expect(errorCode).toEqual("404");
+              expect(errorName).not.toBeNull();
+            }
 
             done();
           });
@@ -496,6 +509,11 @@ describe('Chat API', function() {
     describe('Update Public Group Dialog:', function() {
 
       it("can't update a dialog (public group) (set is_joinable=0)", function(done) {
+        if(isOldVersion){
+          done();
+          return;
+        }
+
         var toUpdate = {
           is_joinable: 0
         };
@@ -663,6 +681,11 @@ describe('Chat API', function() {
     describe('Create System Message:', function() {
 
       it("can create a system message and then receive it (private dialog)", function(done) {
+        if(isOldVersion){
+          done();
+          return;
+        }
+
         var msgExtension = {
           param1: "value1",
           param2: "value2",
@@ -714,6 +737,11 @@ describe('Chat API', function() {
       }, REST_REQUESTS_TIMEOUT);
 
       it("can't create a system message (group dialog)", function(done) {
+        if(isOldVersion){
+          done();
+          return;
+        }
+
         var params = {
           chat_dialog_id: dialogId1Group,
           param1: "value1",
@@ -742,8 +770,8 @@ describe('Chat API', function() {
 
         QB_SENDER.chat.message.unreadCount(params, function(err, res) {
           expect(err).toBeNull();
-          expect(res.total).toEqual(4);
-          expect(res[dialogId1Group]).toEqual(3);
+          expect(res[dialogId1Group]).toEqual(messagesUnreadStats[dialogId1Group][QBUser1.id]);
+          expect(res.total).toEqual(messagesUnreadStats[dialogId1Group][QBUser1.id]);
 
           done();
         });
@@ -765,7 +793,7 @@ describe('Chat API', function() {
           var params = { chat_dialog_ids: [dialogId1Group] };
           QB_SENDER.chat.message.unreadCount(params, function(err, res) {
             expect(err).toBeNull();
-            expect(res.total).toEqual(1);
+            expect(res.total).toEqual(0);
             expect(res[dialogId1Group]).toEqual(0);
 
             done();
@@ -787,8 +815,7 @@ describe('Chat API', function() {
         QB_SENDER.chat.message.list(filters, function(err, res) {
           expect(err).toBeNull();
           expect(res).not.toBeNull();
-          console.info(dialogId1Group);
-          expect(res.items.length).toEqual(messagesStats[dialogId1Group]);
+          expect(res.items.length).toEqual(messagesSentStats[dialogId1Group]);
 
           done();
         });
@@ -801,7 +828,6 @@ describe('Chat API', function() {
     describe('Delete Messages:', function() {
 
       it('can delete a message with id', function(done) {
-        console.info([messageIdToDelete, 'notExistentId']);
         QB_SENDER.chat.message.delete([messageIdToDelete, 'notExistentId'], {force: 1}, function(err, res) {
           expect(err).toBeNull();
 
@@ -874,7 +900,7 @@ describe('Chat API', function() {
 
   // ================================Real-time==================================
 
-  fdescribe('Real-time: ', function() {
+  describe('Real-time: ', function() {
 
     beforeAll(function(done) {
       QB_SENDER.chat.connect({
@@ -1063,7 +1089,7 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT);
 
-      xit('delivered_ids is updated properly', function(done) {
+      it('delivered_ids is updated properly', function(done) {
 
         var deliveredParams = {
           userId: QBUser1.id,
@@ -1090,7 +1116,7 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT+REST_REQUESTS_TIMEOUT);
 
-      xit('read_ids is updated properly', function(done) {
+      it('read_ids is updated properly', function(done) {
 
         var readParams = {
           userId: QBUser1.id,
@@ -1263,8 +1289,7 @@ describe('Chat API', function() {
         };
 
         QB_SENDER.chat.onMessageErrorListener = function (messageId, error) {
-          console.info(messageId);
-          console.info(error);
+          console.info(error, messageId);
           QB_SENDER.chat.onMessageErrorListener = null;
 
           done();
@@ -1462,15 +1487,33 @@ describe('Chat API', function() {
 
 //////////////// HELPERS
 
-var messagesStats = {};
+var messagesSentStats = {};
+var messagesUnreadStats = {};
 
-function incrementMessagesSentPerDialog(dialogId, isREST){
-  var count = messagesStats[dialogId];
+function incrementMessagesSentPerDialog(dialogId, isREST, userId){
+  // SENT
+  var count = messagesSentStats[dialogId];
   if(!count){
     count = 0;
   }
-  messagesStats[dialogId] = count+1;
-  console.info("SENT: " + messagesStats[dialogId] + ", isREST:" + isREST + ". Dialog: " + dialogId);
+  ++count;
+  messagesSentStats[dialogId] = count;
+  console.info("SENT: " + count + ". userId: " + userId + ", isREST:" + isREST + ". Dialog: " + dialogId);
+
+  // UNREAD
+  var uid = userId == QBUser1.id ? QBUser2.id : QBUser1.id;
+  var dlg = messagesUnreadStats[dialogId];
+  if(!dlg){
+    messagesUnreadStats[dialogId] = {};
+    messagesUnreadStats[dialogId][uid] = 0;
+  }
+  count = messagesUnreadStats[dialogId][uid];
+  if(!count){
+    count = 0;
+  }
+  ++count;
+  messagesUnreadStats[dialogId][uid] = count;
+  console.info("UNREAD: " + count+ ". userId: " + uid + ". Dialog: " + dialogId);
 }
 
 function sortUsers(user1, user2){
@@ -1516,7 +1559,7 @@ function groupChat_sendAndReceiveMessage(roomJid, dialogId, callback){
       markable: 1
   };
 
-  incrementMessagesSentPerDialog(dialogId, false);
+  incrementMessagesSentPerDialog(dialogId, false, QBUser2.id);
 
   function onMsgCallback(userId, receivedMessage) {
       expect(userId).toEqual(QBUser2.id);
@@ -1550,7 +1593,7 @@ function createNormalMessageViaRESTWithoutReceivingItTest(params, dialogId, time
 
     mesageId = res._id;
 
-    incrementMessagesSentPerDialog(dialogId, true);
+    incrementMessagesSentPerDialog(dialogId, true, QBUser1.id);
   });
 
   var messageReceived = false;
@@ -1581,8 +1624,9 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
     expect(res._id).not.toBeNull();
     expect(res.message).toEqual(params.message);
     expect(res.chat_dialog_id).toEqual(dialogId);
+    expect(res.date_sent).not.toBeNull();
 
-    incrementMessagesSentPerDialog(dialogId, true);
+    incrementMessagesSentPerDialog(dialogId, true, QBUser1.id);
 
     if(normalMessageIdXMPP){
       finalize(res._id, normalMessageIdXMPP);
@@ -1597,7 +1641,11 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
     expect(receivedMessage.id).not.toBeNull();
     expect(receivedMessage.type).toEqual(xmppMessageType);
     expect(receivedMessage.body).toEqual(params.message);
-    expect(receivedMessage.extension).toEqual(Object.assign(Object.assign({save_to_history: '1'}, msgExtension), {dialog_id: dialogId}));
+
+    expect(receivedMessage.extension.save_to_history).toEqual("1");
+    expect(receivedMessage.extension).toEqual(jasmine.objectContaining(msgExtension));
+    expect(receivedMessage.extension.dialog_id).toEqual(dialogId);
+    expect(receivedMessage.extension.date_sent).toBeDefined();
 
     QB_RECEIVER.chat.onMessageListener = null;
 
