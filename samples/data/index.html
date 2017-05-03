@@ -17,6 +17,8 @@
     <p class="auth">Initialize the application...</p>
   </main>
 
+  <div class="overlay" id="j-overlay"></div>
+
   <!-- TEMPLATES -->
   <script id="app-tpl" type="text/x-handlebars-template">
     <section id="j-header"></section>
@@ -127,7 +129,46 @@
 
         <div class="place__section">
           <h4 class="h4">Check-ins</h4>
+          <div id="j-checkins"></div>
         </div>
+      </div>
+    </div>
+  </script>
+
+  <script id="checkins-tpl" type="text/x-handlebars-template">
+    {{#each items}}
+      <div class="checkin">
+        <p>{{author_fullname}}</p>
+        <p>{{comment}}</p>
+      </div>
+    {{else}}
+      <p>No checkins, click on button 'Check in' and leave your feedback.</p>
+    {{/each}}
+  </script>
+
+  <script id="checkin-tpl" type="text/x-handlebars-template">
+    <div class="popup">
+      <div class="form">
+        <form id="checkout">
+          <div class="form_item">
+            <h4 class="form__title">Check in</h4>
+          </div>
+          <input id="checkin_id" type="hidden" value={{id}}>
+
+          <div class="form_item">
+            <input id="checkin_comment" class="inp" type="text" required placeholder="Enter your comment" maxlength="40">
+          </div>
+
+          <div class="form_item">
+            <label for="rate">Rate the place</label>
+            <input id="checkin_rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
+          </div>
+
+          <div class="form_item">
+            <button id="checkin-submit" class="btn btn-action">Check in</button>
+            <button id="checkin-cancel" class="btn">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   </script>
@@ -148,6 +189,7 @@
   <script src="./js/user.js"></script>
   <script src="./js/map.js"></script>
   <script src="./js/places.js"></script>
+  <script src="./js/checkin.js"></script>
   <script src="./js/app.js"></script>
 </body>
 </html>

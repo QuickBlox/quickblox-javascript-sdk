@@ -8,7 +8,8 @@ function App() {
   this.ui = {
     'map': 'j-map',
     'panel': 'j-panel',
-    'header': 'j-header'
+    'header': 'j-header',
+    'overlay': 'j-overlay'
   }
 
   // root el
@@ -17,16 +18,17 @@ function App() {
   this.map;
   this.user = new User();
   this.places = new Places();
+  this.checkin = new Checkin();
 
   /* Write to root element a class name of page by set activePage */
-  this._activePages = ['dashboard', 'new_place', 'place_detailed'];
+  this._activePages = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
 
   Object.defineProperty(this, 'activePage', {
     set: function(params) {
       var self = this;
 
       // Set a class (pageName) to root el of app
-      // Remove all previously options 
+      // Remove all previously options
       self._activePages.forEach(function(pName) {
         self.$app.classList.remove(pName);
       });
@@ -54,15 +56,20 @@ App.prototype._init = function() {
       // render skeleton of app
       self.$app.innerHTML = document.getElementById('app-tpl').innerHTML;
       // render the map and set listener
-      self.map = new Map({'el': document.getElementById(self.ui.map)});
-      self._setListenersMap();
+      self.map = new Map({
+        'el': document.getElementById(self.ui.map),
+        'draftNewPlace': function() {
+          self.activePage = { pageName: 'new_place' };
+        }
+      });
+      self.map.getAndSetUserLocation();
 
       self.activePage = {
         pageName: 'dashboard'
       };
     }).catch(function(err) {
       console.error(err);
-      alert('Something goes wrong, checkout late.')
+      alert('Something goes wrong, checkout late.');
     });
   });
 }
@@ -79,6 +86,9 @@ App.prototype.renderPage = function(pageName, detailed) {
       break;
     case 'place_detailed':
       self.renderPlaceDetailed(detailed);
+      break;
+    case 'checkin':
+      self.renderCheckin(detailed);
       break;
   }
 }
@@ -103,7 +113,8 @@ App.prototype.renderDashboard = function() {
   $panel.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
   self._setListenersPlacesPreview();
 
-  self.map.removeAllMarkers();
+  self.map.removeAllPlaces();
+  self.map.activePlace = null;
   self.map.setPlaces(self.places.items);
 }
 
@@ -137,16 +148,6 @@ App.prototype._setListenersPlacesPreview = function() {
       $places[i].addEventListener('click', showPlace);
     }
   }
-}
-
-App.prototype._setListenersMap = function() {
-  var self = this;
-
-  self.map.setClickListener(function() {
-    self.activePage = {
-      pageName: 'new_place'
-    };
-  });
 }
 
 App.prototype.renderCreatePlace = function() {
@@ -200,15 +201,17 @@ App.prototype._setListenersPlacesNew = function() {
 
     self.places.create(dataInfo).then(function(res) {
       self.map.setPlaces(res);
+      self.map.removeSketchedPlace();
 
       self.activePage = {
         pageName: 'place_detailed',
         detailed: res._id
       };
-
     }).catch(function(err) {
-      // TODO: handle error
-      console.error(err);
+      // User is unauthorized
+      if(err.code === 401) {
+        document.location.reload(true);
+      }
     });
   });
 }
@@ -227,10 +230,12 @@ App.prototype.renderPlaceDetailed = function(placeId) {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
 
-  // REWRITE!!
-  var marker = self.map.markers[placeId];
-  self.map.gmap.setCenter(marker.getPosition());
-  marker.setIcon('https://samples.quickblox.com/web/resources/marker_create.png');
+  self.map.activePlace = placeId;
+
+  this.checkin.get({'_parent_id': placeId}).then(function(checkins) {
+    var $panel = document.getElementById('j-checkins');
+    $panel.innerHTML = self.renderView('checkins-tpl', {'items': checkins});
+  });
 
   document.getElementById('j-to_dashboard').addEventListener('click', function(e) {
     e.preventDefault();
@@ -244,10 +249,42 @@ App.prototype.renderPlaceDetailed = function(placeId) {
     e.preventDefault();
 
     self.activePage = {
-      pageName: 'dashboard'
-    };
+      pageName: 'checkin',
+      detailed: placeId
+    }
   });
 }
+
+App.prototype.renderCheckin = function(placeId) {
+  var self = this;
+
+  var $overlay = document.getElementById(self.ui.overlay);
+  $overlay.innerHTML = self.renderView('checkin-tpl', {
+    id: placeId
+  });
+
+  document.getElementById('checkin-submit').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var comment = document.getElementById('checkin_comment').value,
+      rate = document.getElementById('checkin_rate').value
+
+    var checkinData = {
+      '_parent_id': document.getElementById('checkin_id').value,
+      'comment': comment.trim(),
+      'rate': +rate,
+      'author_id': self.user.id,
+      'author_fullname': self.user.full_name
+    }
+
+    self.checkin.create(checkinData).then(function(checkin) {
+      console.log(checkin);
+    }).catch(function(err) {
+      console.error(err);
+    });
+  })
+}
+
 
 // this rule only for this line
 /* eslint no-unused-vars:0 */

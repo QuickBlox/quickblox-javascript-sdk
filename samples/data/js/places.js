@@ -10,7 +10,7 @@ Places.prototype.sync = function() {
   var self = this;
 
   var filter = { 
-    'sort_asc': 'created_at'
+    'sort_asc': 'updated_at'
   };
 
   return new Promise(function(resolve, reject) {
