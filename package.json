@@ -70,7 +70,12 @@
       "quickblox.min.js"
     ]
   },
-
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "jasmine"
+    }
+  },
   "scripts": {
     "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
