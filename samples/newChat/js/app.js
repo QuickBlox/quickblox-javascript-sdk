@@ -62,6 +62,8 @@ App.prototype.renderDashboard = function (activeTabName) {
                 console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
             loginModule.isLogin = false;
+            app.isDashboardLoaded = false;
+
             localStorage.removeItem('user');
             helpers.clearCache();
             QB.chat.disconnect();
