@@ -230,7 +230,7 @@ var qbChatHelpers = {
                     }
 
                     attachments.push(attach);
-                    
+
                 } else if (extraParams.children[c].name === 'dialog_id') {
                     dialogId = extraParams.getChildText('dialog_id');
                     extension.dialog_id = dialogId;
@@ -270,9 +270,9 @@ var qbChatHelpers = {
         }
     },
     getErrorFromXMLNode: function(stanzaError) {
-        var errorElement = stanzaError.getElementsByTagName('error')[0];
-        var errorCode = parseInt(errorElement.getAttribute('code'));
-        var errorText = errorElement.getElementsByTagName('text')[0].textContent;
+        var errorElement = this.getElement(stanzaError, 'error');
+        var errorCode = parseInt(this.getAttr(errorElement, 'code'));
+        var errorText = this.getElementText(errorElement, 'text');
 
         return utils.getError(errorCode, errorText);
     },

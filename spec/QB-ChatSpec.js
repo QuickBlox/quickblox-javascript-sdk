@@ -722,7 +722,7 @@ describe('Chat API', function() {
           expect(receivedMessage.userId).toEqual(QBUser1.id);
           expect(receivedMessage).toBeDefined();
           expect(receivedMessage.body).toBeNull();
-          expect(receivedMessage.extension).toEqual(msgExtension);
+          expect(receivedMessage.extension).toEqual(jasmine.objectContaining(msgExtension));
 
           QB_RECEIVER.chat.onSystemMessageListener = null;
 
@@ -1218,7 +1218,7 @@ describe('Chat API', function() {
         });
       }, MESSAGING_TIMEOUT);
 
-      fit("can receive statuses related to join", function(done){
+      it("can receive statuses related to join", function(done){
 
         var statusesReceivedCount = 0;
 
@@ -1264,14 +1264,18 @@ describe('Chat API', function() {
 
       }, 10000);
 
-      fit("can receive statuses related to leave", function(done){
+      it("can receive statuses related to leave", function(done){
         QB_SENDER.chat.onLeaveOccupant = function(dialogId, userId){
           expect(userId).toEqual(QBUser2.id);
           expect(dialogId).toEqual(dialogJoinable._id);
 
-          done();
-
           QB_SENDER.chat.onLeaveOccupant = null;
+
+          // cleanup
+          QB_SENDER.chat.muc.leave(dialogJoinable.xmpp_room_jid, function() {
+              done();
+          });
+
         };
 
         console.info("LEAVE");

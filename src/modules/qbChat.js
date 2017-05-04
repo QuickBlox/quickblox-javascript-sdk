@@ -575,8 +575,11 @@ function ChatProxy(service) {
         //   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
         // </error>
 
-        var messageId = stanza.getAttribute('id');
+        var messageId = chatUtils.getAttr(stanza, 'id');
         var error = chatUtils.getErrorFromXMLNode(stanza);
+
+        console.log(messageId);
+        console.log(error);
 
         // fire 'onMessageErrorListener'
         //
@@ -792,6 +795,8 @@ ChatProxy.prototype = {
                 } else if(stanza.is('message')){
                     if(stanza.attrs.type === 'headline') {
                         self._onSystemMessageListener(stanza);
+                    }else if(stanza.attrs.type === 'error') {
+                        self._onMessageErrorListener(stanza);
                     } else {
                         self._onMessage(stanza);
                     }
