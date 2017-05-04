@@ -10,7 +10,7 @@ Places.prototype.sync = function() {
   var self = this;
 
   var filter = { 
-    'sort_asc': 'updated_at'
+    'sort_desc': 'updated_at'
   };
 
   return new Promise(function(resolve, reject) {
@@ -47,4 +47,29 @@ Places.prototype.getPlace = function(id) {
   return this.items.find(function(place) {
     return place._id === id;
   })
+}
+
+Places.prototype.setAmountExistedCheckins = function(id, amount) {
+  var place = this.getPlace(id);
+  place.checkinsAmount = amount;
+}
+
+Places.prototype.update = function(params) {
+  var self = this;
+
+  return new Promise(function(resolve, reject) {
+    QB.data.update(self.className, params, function(err, place){
+      if (err) {
+          reject(err);
+      } else {
+        resolve(place);
+      }
+    });
+  });
+}
+
+Places.prototype.updateLocal = function(newPlace) {
+  var place = this.getPlace(newPlace._id);
+
+  Object.assign(place, newPlace);
 }

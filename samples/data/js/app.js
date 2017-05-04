@@ -235,6 +235,8 @@ App.prototype.renderPlaceDetailed = function(placeId) {
   this.checkin.get({'_parent_id': placeId}).then(function(checkins) {
     var $panel = document.getElementById('j-checkins');
     $panel.innerHTML = self.renderView('checkins-tpl', {'items': checkins});
+    
+    self.places.setAmountExistedCheckins(placeId, checkins.length);
   });
 
   document.getElementById('j-to_dashboard').addEventListener('click', function(e) {
@@ -263,29 +265,52 @@ App.prototype.renderCheckin = function(placeId) {
     id: placeId
   });
 
-  document.getElementById('checkin-submit').addEventListener('click', function(e) {
+  var place = self.places.getPlace(placeId);
+
+  document.getElementById('checkin-submit').addEventListener('submit', function(e) {
     e.preventDefault();
 
     var comment = document.getElementById('checkin_comment').value,
-      rate = document.getElementById('checkin_rate').value
+      rate = +(document.getElementById('checkin_rate').value);
 
     var checkinData = {
       '_parent_id': document.getElementById('checkin_id').value,
       'comment': comment.trim(),
-      'rate': +rate,
+      'rate': rate,
       'author_id': self.user.id,
       'author_fullname': self.user.full_name
-    }
+    };
+
+    // 2 Because 1 is author, 2 is current user 
+    var newRate = (place.rate + rate) / (place.checkinsAmount + 2);
 
     self.checkin.create(checkinData).then(function(checkin) {
-      console.log(checkin);
+      self.places.update({
+        _id: placeId,
+        rate: newRate
+      }).then(function(res) {
+        self.places.updateLocal(res);
+        self.activePage = {
+          pageName: 'place_detailed',
+          detailed: res._id
+        };
+      })
     }).catch(function(err) {
       console.error(err);
     });
+  });
+
+  document.getElementById('checkin-cancel').addEventListener('click', function(e) {
+     e.preventDefault();
+
+     self.activePage = {
+        pageName: 'place_detailed',
+        detailed: placeId
+     };
   })
 }
 
 
 // this rule only for this line
 /* eslint no-unused-vars:0 */
-var app = new App();
+var app = new App(); 

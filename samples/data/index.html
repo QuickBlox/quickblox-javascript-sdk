@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500" >
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" >
   
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -142,7 +142,7 @@
         <p>{{comment}}</p>
       </div>
     {{else}}
-      <p>No checkins, click on button 'Check in' and leave your feedback.</p>
+      <p class="txt-warn">No checkins, click on button th 'CHECK IN' and leave your feedback.</p>
     {{/each}}
   </script>
 
@@ -156,7 +156,7 @@
           <input id="checkin_id" type="hidden" value={{id}}>
 
           <div class="form_item">
-            <input id="checkin_comment" class="inp" type="text" required placeholder="Enter your comment" maxlength="40">
+            <input id="checkin_comment" class="inp" type="text" required placeholder="Enter your comment" maxlength="40" required>
           </div>
 
           <div class="form_item">
@@ -165,7 +165,7 @@
           </div>
 
           <div class="form_item">
-            <button id="checkin-submit" class="btn btn-action">Check in</button>
+            <button type="submit" id="checkin-submit" class="btn btn-action">Check in</button>
             <button id="checkin-cancel" class="btn">Cancel</button>
           </div>
         </form>

@@ -26,7 +26,15 @@ html,
 body {
   height: 100%;
   width: 100%;
+}
+
+body {
+  position: relative;
   overflow: hidden;
+
+  font: 400 14px/1.25 'Roboto', sans-serif;
+  color: #778594;
+  background: #fff;
 }
 
 .app {
@@ -34,12 +42,36 @@ body {
   width: 100%;
   height: 100%;
 
-  font: 500 14px/16px 'Roboto', sans-serif;
-  color: #778594;
-  
-  background: #fff;
-
   overflow: hidden;
+}
+
+.auth {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.app.checkin ~ .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(74, 74, 74, .7);
+  z-index: 98;
+}
+
+.popup {
+  width: 90%;
+  max-width: 320px;
+  margin: 10% auto 0;
+
+  background: #fff;
 }
 
 /* FRAMEWORK */
@@ -72,15 +104,6 @@ body {
   }
 
 /* HAVE A FUN */
-.auth {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  font-size: 2rem;
-}
-
 /* MAP */
 .map,
 .map_gmap {
@@ -222,16 +245,16 @@ body {
   color: #4a4a4a;
 }
 
-.panel__body {
+/*.panel__body {
+  margin: 20px;
+}*/
+
+.place__action {
   margin: 20px;
 }
 
-.place__action {
-  margin: 0 0 20px 0;
-}
-
 .place__section {
-  margin: 0 0 20px;
+  margin: 0 20px 20px 20px;
 
   font-size: 14px;
   line-height: 21px;
@@ -352,25 +375,8 @@ body {
   }
 
 /* CHEKIN */
-.checkin ~ .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
 
-  background: rgba(74, 74, 74, .7);
-  z-index: 98;
-}
 
-.popup {
-  max-width: 320px;
-  margin: 10% auto 0;
-  background: #fff;
-
-  font: 500 14px/16px 'Roboto', sans-serif;
-  color: #778594;
-}
 
 .form {
   width: 100%;
