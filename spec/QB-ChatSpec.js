@@ -1470,34 +1470,13 @@ describe('Chat API', function() {
         QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
           expect(error).toBeNull();
 
-          expect(response.name).toBe(PRIVACY_LIST_NAME);
+          expect(response.name).toEqual(PRIVACY_LIST_NAME);
           expect(response.items.length).toEqual(1);
           expect(response.items[0]).toEqual({user_id: QBUser2.id, action: 'deny'});
 
           done();
         });
       }, IQ_TIMEOUT);
-
-      it('can update list by name', function(done) {
-        var usersArr = [
-          {user_id: QBUser2.id, action: 'allow'}
-        ];
-        var list = {name: PRIVACY_LIST_NAME, items: usersArr};
-
-        QB_SENDER.chat.privacylist.update(list, function(error) {
-          expect(error).toBeDefined();
-
-          QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
-            expect(error).toBeNull();
-
-            expect(response.name).toEqual(PRIVACY_LIST_NAME);
-            expect(response.items.length).toEqual(1);
-
-            done();
-          });
-
-        });
-      }, IQ_TIMEOUT*2);
 
       it('can set active list', function(done) {
         QB_SENDER.chat.privacylist.setAsActive(PRIVACY_LIST_NAME, function(error) {
@@ -1508,9 +1487,44 @@ describe('Chat API', function() {
             expect(response.active).toEqual(PRIVACY_LIST_NAME);
 
             done();
+
           });
 
         });
+      });
+
+      it('can not send a message when blocked (sender)', function(done) {
+        // Try to send a message
+        //
+        var msg = {
+          type: 'chat',
+          body: 'Warning! Privacy is coming'
+        };
+
+        msg.id = QB_SENDER.chat.send(QBUser2.id, msg);
+
+        QB_SENDER.chat.onMessageErrorListener = function(messageId, error){
+          expect(msg.id).toEqual(messageId);
+
+          done();
+        };
+      });
+
+      it('can not send a message when blocked (receiver)', function(done) {
+        // Try to send a message
+        //
+        var msg = {
+          type: 'chat',
+          body: 'Warning! Privacy is coming'
+        };
+
+        msg.id = QB_RECEIVER.chat.send(QBUser1.id, msg);
+
+        QB_RECEIVER.chat.onMessageErrorListener = function(messageId, error){
+          expect(msg.id).toEqual(messageId);
+
+          done();
+        };
       });
 
       it('can declines the use of active lists', function(done) {
@@ -1565,6 +1579,27 @@ describe('Chat API', function() {
           done();
         });
       });
+
+      it('can update list by name', function(done) {
+        var usersArr = [
+          {user_id: QBUser2.id, action: 'allow'}
+        ];
+        var list = {name: PRIVACY_LIST_NAME, items: usersArr};
+
+        QB_SENDER.chat.privacylist.update(list, function(error) {
+          expect(error).toBeDefined();
+
+          QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
+            expect(error).toBeNull();
+
+            expect(response.name).toEqual(PRIVACY_LIST_NAME);
+            expect(response.items.length).toEqual(1);
+
+            done();
+          });
+
+        });
+      }, IQ_TIMEOUT*2);
 
       it('can delete list by name', function(done) {
           QB_SENDER.chat.privacylist.delete(PRIVACY_LIST_NAME, function(error) {
