@@ -240,9 +240,8 @@ var Utils = {
             var newItem = arrayFrom[i];
 
             for(var j = 0; j < merged.length; j++){
-                var oldItem = merged[j];
-                if(newItem.user_id === oldItem.user_id){
-                    oldItem = newItem;
+                if(newItem.user_id === merged[j].user_id){
+                    merged[j] = newItem;
                     continue firstLevel;
                 }
             }

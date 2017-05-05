@@ -1449,51 +1449,67 @@ describe('Chat API', function() {
 
     // ==========================Privacy Lists==================================
 
-    describe('Privacy list: ', function() {
+    fdescribe('Privacy list: ', function() {
+      var PRIVACY_LIST_NAME = "blockedusers";
+
       it('can create new list with items', function(done) {
         var usersObj = [
-          {user_id: 1010101, action: 'allow'},
-          {user_id: 1111111, action: 'deny', mutualBlock: true}
+          {user_id: QBUser2.id, action: 'deny', mutualBlock: true}
         ];
 
-        var list = {name: 'test', items: usersObj};
+        var list = {name: PRIVACY_LIST_NAME, items: usersObj};
 
         QB_SENDER.chat.privacylist.create(list, function(error) {
           expect(error).toBeNull();
+
           done();
         });
-      });
+      }, IQ_TIMEOUT);
+
+      it('can get list by name', function(done) {
+        QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
+          expect(error).toBeNull();
+
+          expect(response.name).toBe(PRIVACY_LIST_NAME);
+          expect(response.items.length).toEqual(1);
+          expect(response.items[0]).toEqual({user_id: QBUser2.id, action: 'deny'});
+
+          done();
+        });
+      }, IQ_TIMEOUT);
 
       it('can update list by name', function(done) {
         var usersArr = [
-          {user_id: 1999991, action: 'allow'},
-          {user_id: 1010101, action: 'deny'}
-        ],
-        list = {name: 'test', items: usersArr};
+          {user_id: QBUser2.id, action: 'allow'}
+        ];
+        var list = {name: PRIVACY_LIST_NAME, items: usersArr};
 
         QB_SENDER.chat.privacylist.update(list, function(error) {
           expect(error).toBeDefined();
 
-          done();
+          QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
+            expect(error).toBeNull();
+
+            expect(response.name).toEqual(PRIVACY_LIST_NAME);
+            expect(response.items.length).toEqual(1);
+
+            done();
+          });
+
         });
-      });
-
-      it('can get list by name', function(done) {
-        QB_SENDER.chat.privacylist.getList('test', function(error, response) {
-          expect(error).toBeNull();
-
-          expect(response.name).toBe('test');
-          expect(response.items.length).toEqual(3);
-
-          done();
-        });
-      });
+      }, IQ_TIMEOUT*2);
 
       it('can set active list', function(done) {
-        QB_SENDER.chat.privacylist.setAsActive('test', function(error) {
+        QB_SENDER.chat.privacylist.setAsActive(PRIVACY_LIST_NAME, function(error) {
           expect(error).toBeNull();
 
-          done();
+          QB_SENDER.chat.privacylist.getNames(function(error, response) {
+            expect(error).toBeNull();
+            expect(response.active).toEqual(PRIVACY_LIST_NAME);
+
+            done();
+          });
+
         });
       });
 
@@ -1501,15 +1517,26 @@ describe('Chat API', function() {
         QB_SENDER.chat.privacylist.setAsActive('', function(error) {
           expect(error).toBeNull();
 
-          done();
+          QB_SENDER.chat.privacylist.getNames(function(error, response) {
+            expect(error).toBeNull();
+            expect(response.active).toBeNull();
+
+            done();
+          });
         });
       });
 
       it('can set default list', function(done) {
-        QB_SENDER.chat.privacylist.setAsDefault('test', function(error) {
+        QB_SENDER.chat.privacylist.setAsDefault(PRIVACY_LIST_NAME, function(error) {
           expect(error).toBeNull();
 
-          done();
+          QB_SENDER.chat.privacylist.getNames(function(error, response) {
+            expect(error).toBeNull();
+            expect(response.default).toEqual(PRIVACY_LIST_NAME);
+
+            done();
+          });
+
         });
       });
 
@@ -1517,27 +1544,39 @@ describe('Chat API', function() {
         QB_SENDER.chat.privacylist.setAsDefault(null, function(error) {
           expect(error).toBeNull();
 
-          done();
+          QB_SENDER.chat.privacylist.getNames(function(error, response) {
+            expect(error).toBeNull();
+            expect(response.default).toBeNull();
+
+            done();
+          });
+
         });
       });
 
       it('can get names of privacy lists', function(done) {
         QB_SENDER.chat.privacylist.getNames(function(error, response) {
-          console.log(response);
           expect(error).toBeNull();
           expect(response.active).toBeNull();
           expect(response.default).toBeNull();
-          expect(response.names.length).toBeGreaterThan(0);
-          expect(response.names[0]).toEqual("test");
+          expect(response.names.length).toEqual(1);
+          expect(response.names[0]).toEqual(PRIVACY_LIST_NAME);
 
           done();
         });
       });
 
       it('can delete list by name', function(done) {
-          QB_SENDER.chat.privacylist.delete('test', function(error) {
+          QB_SENDER.chat.privacylist.delete(PRIVACY_LIST_NAME, function(error) {
+            expect(error).toBeNull();
+
+            QB_SENDER.chat.privacylist.getNames(function(error, response) {
               expect(error).toBeNull();
+              expect(response.names.length).toEqual(0);
+
               done();
+            });
+
           });
       });
 

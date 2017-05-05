@@ -1821,7 +1821,7 @@ PrivacyListProxy.prototype = {
      * @param {String} name - The name of the list.
      * @param {updatePrivacylistCallback} callback - The callback function.
      * */
-    update: function(list, callback) {
+    update: function(listWithUpdates, callback) {
         /**
          * Callback for QB.chat.privacylist.update().
          * @param {Object} error - The error object
@@ -1831,19 +1831,15 @@ PrivacyListProxy.prototype = {
 
         var self = this;
 
-        self.getList(list.name, function(error, response) {
+        self.getList(listWithUpdates.name, function(error, existentList) {
             if (error) {
                 callback(error, null);
             } else {
-                var copyList = (JSON.parse(JSON.stringify(list))),
-                    oldArray = response.items,
-                    newArray = copyList.items,
-                    createdList = {};
+                var updatedList = {};
+                updatedList.items = Utils.MergeArrayOfObjects(existentList.items, listWithUpdates.items);
+                updatedList.name = listWithUpdates.name;
 
-                copyList.items = Utils.MergeArrayOfObjects(oldArray, newArray);
-                createdList = copyList;
-
-                self.create(createdList, function(err, result) {
+                self.create(updatedList, function(err, result) {
                     if (error) {
                         callback(err, null);
                     }else{
