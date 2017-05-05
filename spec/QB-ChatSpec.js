@@ -1358,37 +1358,92 @@ describe('Chat API', function() {
 
     describe('[Roster] Contact list: ', function() {
 
-      it('can add user to contact list', function(done) {
-        QB_SENDER.chat.roster.add(QBUser2.id, function() {
+      it('can add a user to contact list and confirm the subscription request', function(done) {
+        QB_RECEIVER.chat.onSubscribeListener = function(userId) {
+          QB_SENDER.chat.onSubscribeListener = null;
+
+          expect(userId).toEqual(QBUser1.id);
+
+          QB_RECEIVER.chat.roster.confirm(userId, function() {
+
+          });
+        };
+        QB_RECEIVER.chat.onContactListListener = function(userId, type) {
+          QB_RECEIVER.chat.onContactListListener = null;
+
+          expect(userId).toEqual(QBUser1.id);
+          expect(type).not.toBeDefined();
+
           done();
+        };
+
+        QB_SENDER.chat.onConfirmSubscribeListener = function(userId) {
+          QB_SENDER.chat.onConfirmSubscribeListener = null;
+
+          expect(userId).toEqual(QBUser2.id);
+        };
+        QB_SENDER.chat.onContactListListener = function(userId, type) {
+          QB_SENDER.chat.onContactListListener = null;
+
+          expect(userId).toEqual(QBUser2.id);
+          expect(type).not.toBeDefined();
+        };
+
+        QB_SENDER.chat.roster.add(QBUser2.id, function() {
+
         });
-      }, IQ_TIMEOUT);
+
+      }, IQ_TIMEOUT*2);
 
       it('can retrieve contact list', function(done) {
         QB_SENDER.chat.roster.get(function(roster) {
           expect(roster).toBeDefined();
           expect(QBUser2.id in roster).toEqual(true);
+          expect(roster[QBUser2.id].ask).toBeNull();
+          expect(roster[QBUser2.id].subscription).toEqual("both");
 
-          done();
+          QB_RECEIVER.chat.roster.get(function(roster) {
+            expect(roster).toBeDefined();
+            expect(QBUser1.id in roster).toEqual(true);
+            expect(roster[QBUser1.id].ask).toBeNull();
+            expect(roster[QBUser1.id].subscription).toEqual("both");
+
+            done();
+          });
         });
-      }, IQ_TIMEOUT);
+
+      }, IQ_TIMEOUT*2);
 
       it('can remove user from contact list', function(done) {
         QB_SENDER.chat.roster.remove(QBUser2.id, function() {
-          done();
-        });
-      }, IQ_TIMEOUT);
-
-      it('can confirm subscription request', function(done) {
-        QB_SENDER.chat.roster.confirm(QBUser2.id, function() {
-          done();
+          QB_RECEIVER.chat.roster.remove(QBUser1.id, function() {
+            done();
+          });
         });
       }, IQ_TIMEOUT);
 
       it('can reject subscription request', function(done) {
-        QB_SENDER.chat.roster.reject(QBUser2.id, function() {
-          done();
+        QB_RECEIVER.chat.onSubscribeListener = function(userId) {
+          QB_RECEIVER.chat.onSubscribeListener = null;
+
+          expect(userId).toEqual(QBUser1.id);
+
+          QB_RECEIVER.chat.roster.reject(userId, function() {
+
+          });
+        };
+
+        QB_SENDER.chat.onRejectSubscribeListener = function(userId) {
+            expect(userId).toEqual(QBUser2.id);
+
+            done();
+        };
+
+        QB_SENDER.chat.roster.add(QBUser2.id, function() {
+
         });
+
+
       }, IQ_TIMEOUT);
 
     });

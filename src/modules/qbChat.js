@@ -1367,8 +1367,6 @@ RosterProxy.prototype = {
 
         var pres = chatUtils.createStanza(builder, presParams, 'presence');
 
-        Utils.QBLog('[_sendSubscriptionPresence]', params);
-
         if(Utils.getEnv().browser){
             this.connection.send(pres);
         } else if (Utils.getEnv().node) {
