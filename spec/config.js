@@ -2,7 +2,7 @@
     'use strict';
 
 
-    var NEW_SERVER = false;
+    var NEW_SERVER = true;
 
     if(NEW_SERVER){
 

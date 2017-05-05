@@ -28,6 +28,14 @@ var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
 var isOldVersion = chatEndpoint != "chatkafkacluster.quickblox.com";
 
+
+var dialogId1Group;
+var dialogId2GroupNotJoinable;
+var dialogId3PublicGroup;
+var dialogId4Private;
+var messageIdGroup;
+var messageIdToDelete;
+
 describe('Chat API', function() {
 
   beforeAll(function() {
@@ -61,14 +69,6 @@ describe('Chat API', function() {
         });
       });
     }, REST_REQUESTS_TIMEOUT+LOGIN_TIMEOUT);
-
-    var dialogId1Group;
-    var dialogId2GroupNotJoinable;
-    var dialogId3PublicGroup;
-    var dialogId4Private;
-    var messageIdGroup;
-    //
-    var messageIdToDelete;
 
     // =======================CREATE PRIVATE DIALOG=============================
 
@@ -766,12 +766,22 @@ describe('Chat API', function() {
       it('can request unread messages count', function(done) {
         var params = { chat_dialog_ids: [dialogId1Group] };
 
+        console.info(messagesUnreadStats);
+
         console.info("List unread messages for " + dialogId1Group);
 
         QB_SENDER.chat.message.unreadCount(params, function(err, res) {
           expect(err).toBeNull();
           expect(res[dialogId1Group]).toEqual(messagesUnreadStats[dialogId1Group][QBUser1.id]);
-          expect(res.total).toEqual(messagesUnreadStats[dialogId1Group][QBUser1.id]);
+
+          var totalUnread = 0;
+          Object.keys(messagesUnreadStats).forEach(function(element){
+            var dialog = messagesUnreadStats[element];
+            if(dialog[QBUser1.id]){
+              totalUnread += dialog[QBUser1.id];
+            }
+          });
+          expect(res.total).toEqual(totalUnread);
 
           done();
         });
@@ -793,8 +803,18 @@ describe('Chat API', function() {
           var params = { chat_dialog_ids: [dialogId1Group] };
           QB_SENDER.chat.message.unreadCount(params, function(err, res) {
             expect(err).toBeNull();
-            expect(res.total).toEqual(0);
             expect(res[dialogId1Group]).toEqual(0);
+
+            var totalUnread = 0;
+            Object.keys(messagesUnreadStats).forEach(function(element){
+              if(element != dialogId1Group){
+                var dialog = messagesUnreadStats[element];
+                if(dialog[QBUser1.id]){
+                  totalUnread += dialog[QBUser1.id];
+                }
+              }
+            });
+            expect(res.total).toEqual(totalUnread);
 
             done();
           });
@@ -1505,6 +1525,12 @@ function incrementMessagesSentPerDialog(dialogId, isREST, userId){
   console.info("SENT: " + count + ". userId: " + userId + ", isREST:" + isREST + ". Dialog: " + dialogId);
 
   // UNREAD
+  //
+  // ignoring 'UNREAD' statuses for public dialogs
+  if(dialogId == dialogId3PublicGroup){
+    return;
+  }
+  //
   var uid = userId == QBUser1.id ? QBUser2.id : QBUser1.id;
   var dlg = messagesUnreadStats[dialogId];
   if(!dlg){

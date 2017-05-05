@@ -1514,9 +1514,7 @@ MucProxy.prototype = {
                 id: chatUtils.getUniqueId('muc_disco_items'),
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
-
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
-
         iq.c('query', {
             xmlns: 'http://jabber.org/protocol/disco#items'
         });
@@ -1526,10 +1524,12 @@ MucProxy.prototype = {
 
             if(self.nodeStanzasCallbacks[stanzaId]) {
                 var users = [],
-                    items = stanza.getChild('query').getChildElements('item');
+                    items = stanza.getChild('query').getChildElements('item'),
+                    userId;
 
                 for(var i = 0, len = items.length; i < len; i++) {
-                    users.push(parseInt(items[i].attrs.name));
+                    userId = self.helpers.getUserIdFromRoomJid(items[i].attrs.jid);
+                    users.push(parseInt(userId));
                 }
 
                 callback(users);
@@ -1550,6 +1550,7 @@ MucProxy.prototype = {
             });
         } else if(Utils.getEnv().node) {
             self.nClient.send(iq);
+
             self.nodeStanzasCallbacks[iqParams.id] = _getUsers;
         }
     }
