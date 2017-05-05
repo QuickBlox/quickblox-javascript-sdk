@@ -50,7 +50,7 @@ function ChatProxy(service) {
       // override 'send' function to add some logs
       var originSendFunction = self.nClient.send;
       self.nClient.send = function(stanza) {
-        Utils.QBLog('[QBChat]', 'SENT:', stanza.toString());
+        Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
         originSendFunction.call(self.nClient, stanza);
       };
 
@@ -85,7 +85,7 @@ function ChatProxy(service) {
                 }
             };
         } else {
-            Utils.QBLog('[QBchat] StreamManagement:', 'BOSH protocol doesn\'t support stream management. Set WebSocket as the "chatProtocol" parameter to use this functionality. http://quickblox.com/developers/Javascript#Configuration');
+            Utils.QBLog('[Chat] StreamManagement:', 'BOSH protocol doesn\'t support stream management. Set WebSocket as the "chatProtocol" parameter to use this functionality. https://quickblox.com/developers/Javascript#Configuration');
         }
     }
 
@@ -610,7 +610,7 @@ ChatProxy.prototype = {
          * @param {Object} error - The error object
          * @param {Object} roster - Object of subscribed users.
          * */
-        Utils.QBLog('[ChatProxy]', 'connect', params);
+        Utils.QBLog('[Chat]', 'connect', params);
 
         var self = this,
             err, rooms;
@@ -626,15 +626,15 @@ ChatProxy.prototype = {
                         if (typeof callback === 'function') callback(err, null);
                         break;
                     case Strophe.Status.CONNECTING:
-                        Utils.QBLog('[ChatProxy]', 'Status.CONNECTING');
-                        Utils.QBLog('[ChatProxy]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
+                        Utils.QBLog('[Chat]', 'Status.CONNECTING');
+                        Utils.QBLog('[Chat]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
                         break;
                     case Strophe.Status.CONNFAIL:
                         err = Utils.getError(422, 'Status.CONNFAIL - The self.connection attempt failed');
                         if (typeof callback === 'function') callback(err, null);
                         break;
                     case Strophe.Status.AUTHENTICATING:
-                        Utils.QBLog('[ChatProxy]', 'Status.AUTHENTICATING');
+                        Utils.QBLog('[Chat]', 'Status.AUTHENTICATING');
                         break;
                     case Strophe.Status.AUTHFAIL:
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
@@ -649,7 +649,7 @@ ChatProxy.prototype = {
 
                         break;
                     case Strophe.Status.CONNECTED:
-                        Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
                         if(config.streamManagement.enable && config.chatProtocol.active === 2){
                             self.streamManagement.enable(self.connection, null);
@@ -702,10 +702,10 @@ ChatProxy.prototype = {
 
                         break;
                     case Strophe.Status.DISCONNECTING:
-                        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTING');
+                        Utils.QBLog('[Chat]', 'Status.DISCONNECTING');
                         break;
                     case Strophe.Status.DISCONNECTED:
-                        Utils.QBLog('[ChatProxy]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[Chat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
 
                         self.connection.reset();
 
@@ -720,7 +720,7 @@ ChatProxy.prototype = {
                         if (!self._isLogout) self.connect(params);
                         break;
                     case Strophe.Status.ATTACHED:
-                        Utils.QBLog('[ChatProxy]', 'Status.ATTACHED');
+                        Utils.QBLog('[Chat]', 'Status.ATTACHED');
                         break;
                 }
             });
@@ -733,11 +733,11 @@ ChatProxy.prototype = {
 
             /** HANDLERS */
             self.nClient.on('auth', function () {
-                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
             });
 
             self.nClient.on('online', function () {
-                Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
                 if(config.streamManagement.enable){
                     self.streamManagement.enable(self.nClient, NodeClient);
@@ -757,19 +757,19 @@ ChatProxy.prototype = {
             });
 
             self.nClient.on('connect', function () {
-                Utils.QBLog('[QBChat] client is connected');
+                Utils.QBLog('[Chat] client is connected');
                 self._enableCarbons();
             });
 
             self.nClient.on('reconnect', function () {
-                Utils.QBLog('[QBChat] client is reconnected');
+                Utils.QBLog('[Chat] client is reconnected');
 
                 self._isDisconnected = true;
                 self._isLogout = true;
             });
 
             self.nClient.on('disconnect', function () {
-                Utils.QBLog('[QBChat] client is disconnected');
+                Utils.QBLog('[Chat] client is disconnected');
 
 
                 // fire 'onDisconnectedListener' only once

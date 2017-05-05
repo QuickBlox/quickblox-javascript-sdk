@@ -1443,7 +1443,6 @@ describe('Chat API', function() {
 
         });
 
-
       }, IQ_TIMEOUT);
 
     });
