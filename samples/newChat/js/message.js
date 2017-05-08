@@ -225,11 +225,21 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
         messagesHtml;
-
+    
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
     } else {
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender});
+        var messageText = message.message ?
+            helpers.fillMessageBody(message.message || '') :
+            helpers.fillMessageBody(message.body || '');
+
+        messagesHtml = helpers.fillTemplate('tpl_message', {
+            message: {
+                message: messageText,
+                attachments: message.attachments,
+                date_sent: message.date_sent
+            },
+            sender: sender});
     }
 
     var elem = helpers.toHtml(messagesHtml)[0];

@@ -270,7 +270,7 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
     var self = this,
         dialog = document.getElementById(dialogId),
         message = msg.message;
-
+    
     if (message.indexOf('\n') !== -1) {
         message = message.slice(0, message.indexOf('\n'));
     }

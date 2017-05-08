@@ -84,7 +84,6 @@ Helpers.prototype.getTime = function (time) {
 Helpers.prototype.fillMessagePrams = function (message) {
     var self = this;
     
-    message.message = self.fillMessageBody(message.message || '');
     // date_sent comes in UNIX time.
     message.date_sent = self.getTime(message.date_sent * 1000);
 
@@ -121,7 +120,7 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
             created_at: +msg.extension.date_sent || Date.now(),
             date_sent: self.getTime(+msg.extension.date_sent * 1000 || Date.now()),
             delivered_ids: [],
-            message: self.fillMessageBody(msg.body),
+            message: msg.body,
             read_ids: [],
             sender_id: userId,
             chat_dialog_id: msg.extension.dialog_id
