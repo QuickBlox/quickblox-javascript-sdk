@@ -26,6 +26,7 @@ Message.prototype.init = function () {
 
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingMessage.bind(self));
+    document.forms.send_message.message_feald.addEventListener('input', self.checkMessageSymbolsCount.bind(self));
     document.forms.send_message.message_feald.addEventListener('keydown', function (e) {
         var key = e.keyCode;
 
@@ -55,6 +56,14 @@ Message.prototype.typingMessage = function (e) {
     }
 
     dialogModule._cache[dialogId].draft.message = e.currentTarget.value
+};
+
+Message.prototype.checkMessageSymbolsCount = function() {
+    var messageText = document.forms.send_message.message_feald.value,
+        sylmbolsCount = messageText.length;
+    if(sylmbolsCount > 1000) {
+        document.forms.send_message.message_feald.value = messageText.slice(0, 1000);
+    }
 };
 
 Message.prototype.sendIsTypingStatus = function (dialogId) {
