@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Sample | Quickblox JS SDK</title>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+
+  <link rel="shortcut icon" href="https://quickblox.com/favicon.ico">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" >
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app" id="j-app">
+    <p class="auth">Initialize the application...</p>
+  </main>
+
+  <div class="overlay" id="j-overlay"></div>
+
+  <!-- TEMPLATES -->
+  <script id="app-tpl" type="text/x-handlebars-template">
+    <section id="j-header"></section>
+
+    <section class="map">
+      <div id="j-map" class="map_gmap"></div>
+    </section>
+
+    <section id="j-panel"></section>
+  </script>
+
+  <script id="header-tpl" type="text/x-handlebars-template">
+    <header class="header">
+      <div class="header__inner">
+        <div class="header__body">
+          <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+              <g fill="none" fill-rule="evenodd">
+                <path fill="#046AD0" d="M8.4765 6.728c0 .9158-.75 1.665-1.667 1.665H1.8094c-.9167 0-1.6667-.7492-1.6667-1.665V1.7336C.1426.818.8926.069 1.8093.069h5.0003c.917 0 1.667.749 1.667 1.6646V6.728M8.4765 18.3816c0 .9155-.75 1.6646-1.667 1.6646H1.8094c-.9167 0-1.6667-.749-1.6667-1.6646V13.387c0-.9154.75-1.6646 1.6667-1.6646h5.0003c.917 0 1.667.7492 1.667 1.6647v4.9946M8.4765 30.035c0 .9154-.75 1.6646-1.667 1.6646H1.8094c-.9167 0-1.6667-.7492-1.6667-1.6647v-4.9943c0-.9158.75-1.665 1.6667-1.665h5.0003c.917 0 1.667.7492 1.667 1.665v4.9942M20.1437 6.728c0 .9158-.75 1.665-1.667 1.665h-5c-.9167 0-1.6667-.7492-1.6667-1.665V1.7336c0-.9156.75-1.6647 1.6667-1.6647h5c.917 0 1.667.749 1.667 1.6646V6.728M20.1437 30.035c0 .9154-.75 1.6646-1.667 1.6646h-5c-.9167 0-1.6667-.7492-1.6667-1.6647v-4.9943c0-.9158.75-1.665 1.6667-1.665h5c.917 0 1.667.7492 1.667 1.665v4.9942M31.811 6.728c0 .9158-.75 1.665-1.6668 1.665h-5c-.9168 0-1.667-.7492-1.667-1.665V1.7336c0-.9156.7502-1.6647 1.667-1.6647h5c.9167 0 1.667.749 1.667 1.6646V6.728M31.811 18.3816c0 .9155-.75 1.6646-1.6668 1.6646h-5c-.9168 0-1.667-.749-1.667-1.6646V13.387c0-.9154.7502-1.6646 1.667-1.6646h5c.9167 0 1.667.7492 1.667 1.6647v4.9946"/>
+                <path fill="#4AD24D" d="M35.9778 34.197c0 .9157-.75 1.6648-1.6666 1.6648h-9.167c-.9168 0-1.667-.749-1.667-1.665v-9.156c0-.916.7502-1.665 1.667-1.665h9.167c.9166 0 1.6666.749 1.6666 1.665v9.156"/>
+              </g>
+            </svg>
+          </div>
+
+          <h2 class="header_title">Data Sample</h2>
+          <p class="header_user">Logged in as {{full_name}}</p>
+        </div>
+
+        <button class="logout" id="j-logout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+            <g fill="none" fill-rule="evenodd">
+              <path d="M-3-3h24v24H-3"/>
+              <path fill="#778594" d="M7.09 12.59L8.5 14l5-5-5-5-1.41 1.41L9.67 8H0v2h9.67l-2.58 2.59zM16 0H2C.89 0 0 .9 0 2v4h2V2h14v14H2v-4H0v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2z" class="icon" opacity=".8"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+    </header>
+  </script>
+
+  <script id="places_preview-tpl" type="text/x-handlebars-template">
+    <div class="panel places">
+      {{#each items}}
+        <section class="place_preview j-place" data-id="{{_id}}">
+          <h5 class="place_preview__title">{{title}}</h5>
+          <p class="rate">{{rate}}</p>
+          <p class="place_preview__description">{{description}}</p>
+        </section>
+      {{else}}
+        <p class="place_preview place_preview-inactive txt-warn">No places saved, tap somewhere on the map for creating a new place.</p>
+      {{/each}}
+    </div>
+  </script>
+
+  <script id="new_place-tpl" type="text/x-handlebars-template">
+    <div class="panel place_create">
+      <div class="panel__top">
+        <button class="back" id="j-to_dashboard"></button>
+
+        <h2 class="panel__title">Create a new place</h2>
+      </div>
+
+      <div class="form panel__body">
+        <form id="j-create" autocomplete="off">
+          <input id="latlng" type="hidden" value={{latLng}}>
+
+          <div class="form_item">
+            <input id="title" class="inp" type="text" required placeholder="Place name" maxlength="40">
+          </div>
+
+          <div class="form_item">
+            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="150">
+          </div>
+
+          <div class="form_item">
+            <label for="rate">Rate</label>
+            <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
+          </div>
+
+          <div class="form_item">
+            <button class="btn btn-action">Create Place</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </script>
+
+  <script id="place_detailed-tpl" type="text/x-handlebars-template">
+    <div class="panel place">
+      <div class="panel__top">
+        <button class="back" id="j-to_dashboard"></button>
+        <h2 class="panel__title">{{title}}</h2>
+      </div>
+
+      <div class="panel__body">
+        <div class="place__action">
+          <button class="btn btn-action" id="j-checkin">Check in</button>
+        </div>
+        <div class="place__section">
+          <h4 class="h4">Description</h4>
+          <p>{{description}}</p>
+        </div>
+
+        <div class="place__section">
+          <h4 class="h4">Rate Place</h4>
+          <p>{{rate}}</p>
+        </div>
+
+        <div class="place__section">
+          <h4 class="h4">Check-ins</h4>
+          <div id="j-checkins"></div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script id="checkins-tpl" type="text/x-handlebars-template">
+    {{#each items}}
+      <div class="checkin">
+        <p>{{author_fullname}}</p>
+        <p>{{comment}}</p>
+      </div>
+    {{else}}
+      <p class="txt-warn">No checkins, click on button th 'CHECK IN' and leave your feedback.</p>
+    {{/each}}
+  </script>
+
+  <script id="checkin-tpl" type="text/x-handlebars-template">
+    <div class="popup">
+      <div class="form">
+        <form id="checkout">
+          <div class="form_item">
+            <h4 class="form__title">Check in</h4>
+          </div>
+          <input id="checkin_id" type="hidden" value={{id}}>
+
+          <div class="form_item">
+            <input id="checkin_comment" class="inp" type="text" required placeholder="Enter your comment" maxlength="40" required>
+          </div>
+
+          <div class="form_item">
+            <label for="rate">Rate the place</label>
+            <input id="checkin_rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
+          </div>
+
+          <div class="form_item">
+            <button type="submit" id="checkin-submit" class="btn btn-action">Check in</button>
+            <button id="checkin-cancel" class="btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </script>
+
+  <!-- Images for preload -->
+  <div id="preload">
+    <img src="https://samples.quickblox.com/web/resources/marker.png" width="1" height="1" alt="Preload image" />
+    <img src="https://samples.quickblox.com/web/resources/marker_create.png" width="1" height="1" alt="Preload image" />
+  </div>
+
+  <!-- Helper libraries -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOlglXqBHw1T0G5x1UoVD3sP7FB3wWc6I"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+  <!-- Quickblox SDK -->
+  <script src="../../quickblox.min.js"></script>
+  <!-- APP -->
+  <script src="config.js"></script>
+  <script src="./js/user.js"></script>
+  <script src="./js/map.js"></script>
+  <script src="./js/places.js"></script>
+  <script src="./js/checkin.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
