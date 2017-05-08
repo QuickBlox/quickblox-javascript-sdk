@@ -171,7 +171,9 @@ App.prototype.buildCreateDialogTpl = function () {
             occupants_ids = [];
 
         _.each(users, function (user) {
-            occupants_ids.push(+user.id);
+            if (+user.id !== self.user.id) {
+                occupants_ids.push(user.id);
+            }
         });
 
         if (!name && type === 2) {
@@ -189,7 +191,7 @@ App.prototype.buildCreateDialogTpl = function () {
 
         var params = {
             type: type,
-            occupants_ids: occupants_ids
+            occupants_ids: occupants_ids.join(',')
         };
         
         if (type !== 3 && name) {

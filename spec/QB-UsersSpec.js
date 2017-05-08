@@ -13,7 +13,7 @@ describe('Users API', function() {
   beforeAll(function(done){
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
 
-    QB.createSession(QBUser1, function(err, result) {
+    QB.createSession(function(err, result) {
       if (err) {
         done.fail("Create session error: " + JSON.stringify(err));
       } else {
@@ -75,6 +75,53 @@ describe('Users API', function() {
     });
   }, REST_REQUESTS_TIMEOUT);
 
+  describe('Get Users', function(){
+    it('can get users by login', function(done) {
+      var params = { 'login': QBUser1.login };
+
+      QB.users.get(params, function(err, res){
+        if (err) {
+          done.fail("Get user by login error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.id).toBe(QBUser1.id);
+
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('can get users by email', function(done) {
+      var params = { 'email': QBUser1.email };
+
+      QB.users.get(params, function(err, res){
+        if (err) {
+          done.fail("Get user by email error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.id).toBe(QBUser1.id);
+
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('can get users by id', function(done) {
+      var params = QBUser1.id;
+
+      QB.users.get(params, function(err, res){
+        if (err) {
+          done.fail("Get user by id error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.login).toBe(QBUser1.login);
+
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+  });
+
   describe('CUD operations: ', function(){
     var userId, login = 'New_QB_User_' + Math.floor(Math.random()*9999999);
 
@@ -120,55 +167,6 @@ describe('Users API', function() {
         }else{
           expect(res).not.toBeNull();
           expect(res).toBe(' ');
-
-          done();
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
-
-  });
-
-  describe('Get Users', function(){
-
-    it('can get users by login', function(done) {
-      var params = { 'login': QBUser1.login };
-
-      QB.users.get(params, function(err, res){
-        if (err) {
-          done.fail("Get user by login error: " + JSON.stringify(err));
-        }else{
-          expect(res).not.toBeNull();
-          expect(res.id).toBe(QBUser1.id);
-
-          done();
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
-
-    it('can get users by email', function(done) {
-      var params = { 'email': QBUser1.email };
-
-      QB.users.get(params, function(err, res){
-        if (err) {
-          done.fail("Get user by email error: " + JSON.stringify(err));
-        }else{
-          expect(res).not.toBeNull();
-          expect(res.id).toBe(QBUser1.id);
-
-          done();
-        }
-      });
-    }, REST_REQUESTS_TIMEOUT);
-
-    it('can get users by id', function(done) {
-      var params = QBUser1.id;
-
-      QB.users.get(params, function(err, res){
-        if (err) {
-          done.fail("Get user by id error: " + JSON.stringify(err));
-        }else{
-          expect(res).not.toBeNull();
-          expect(res.login).toBe(QBUser1.login);
 
           done();
         }
