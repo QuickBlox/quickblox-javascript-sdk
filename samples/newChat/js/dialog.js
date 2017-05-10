@@ -200,7 +200,6 @@ Dialog.prototype.renderMessages = function (dialogId) {
 
     document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
 
-
     if (!document.forms.send_message) {
         helpers.clearView(this.content);
         self.content.innerHTML = helpers.fillTemplate('tpl_conversationContainer', {title: dialog.name, _id: dialog._id, type: dialog.type});
@@ -209,6 +208,7 @@ Dialog.prototype.renderMessages = function (dialogId) {
         self.dialogTitle = document.querySelector('.j-dialog__title');
         self.editLink = document.querySelector('.j-add_to_dialog');
         self.quitLink = document.querySelector('.j-quit_fom_dialog_link');
+        
         document.querySelector('.j-open_sidebar').addEventListener('click', function (e) {
             self.sidebar.classList.add('active');
         }.bind(self));
@@ -349,7 +349,6 @@ Dialog.prototype.createDialog = function (params) {
                 }
             });
 
-
             /* Check active tab [chat / public] */
             var type = params.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
                 activeTab = document.querySelector('.j-sidebar__tab_link.active');
@@ -444,6 +443,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
     if (updates.userList) {
         newUsers =  _getNewUsers();
+
         if(newUsers.length){
             toUpdateParams.push_all = {
                 occupants_ids: newUsers
@@ -458,6 +458,7 @@ Dialog.prototype.updateDialog = function (updates) {
             updatedMsg.body = app.user.name + ' add ' + usernames.join(',') + ' to the conversation.';
             updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
+            router.navigate('/dialog/' + dialogId);
             return false;
         }
     }

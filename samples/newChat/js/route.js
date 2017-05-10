@@ -45,6 +45,35 @@ router.on({
             dialogModule.loadDialogs('chat');
         }
     },
+    '/dialog/create': function(){
+        if (!loginModule.isLogin){
+            loginModule.init().then(function(isLogedIn){
+                if(!isLogedIn){
+                    router.navigate('/login');
+                    return;
+                }
+                if(!app.isDashboardLoaded) {
+                    app.renderDashboard('chat');
+                    dialogModule.loadDialogs('chat');
+                }
+                _renderNewDialogTmp();
+            }).catch(function(error){
+                console.error(error);
+                router.navigate('/login');
+            });
+        } else {
+            _renderNewDialogTmp();
+        }
+
+        function _renderNewDialogTmp(){
+            var createDialogTab = document.querySelector('.j-sidebar__create_dialog');
+
+            createDialogTab.classList.add('active');
+            app.sidebar.classList.remove('active');
+
+            app.buildCreateDialogTpl();
+        }
+    },
     '/dialog/:dialogId': function(params){
         var dialogId = params.dialogId;
 
@@ -85,7 +114,7 @@ router.on({
                     });
 
                 }).catch(function(error){
-                    router.navigate('#!/dashboard');
+                    router.navigate('/dashboard');
                 });
             } else {
                 dialogModule.renderMessages(dialogId);
@@ -93,9 +122,10 @@ router.on({
             }
         }
     },
-    'dialog/:dialogId/edit': function(params){
+    '/dialog/:dialogId/edit': function(params){
         var dialogId = params.dialogId;
         var currentDialog = null;
+
         if (!loginModule.isLogin){
             loginModule.init().then(function(isLogedIn){
                 if(!isLogedIn){
@@ -141,12 +171,17 @@ router.on({
         }
 
         function _renderUsers(dialogOccupants){
-            var userList = document.querySelector('.j-update_chat__user_list');
+            var userList = document.querySelector('.j-update_chat__user_list'),
+                counterElem = document.querySelector('.j-update__chat_counter'),
+                newUsersCount = +counterElem.innerText.trim();
 
             userModule.getUsers().then(function(usersArray){
+
                 var users = usersArray.map(function(user){
-                    user.selected = dialogOccupants.indexOf(user.id) !== -1;
-                    return user;
+                    var userItem = JSON.parse(JSON.stringify(user));
+
+                    userItem.selected = dialogOccupants.indexOf(userItem.id) !== -1;
+                    return userItem;
                 });
 
                 _.each(users, function(user){
@@ -156,7 +191,15 @@ router.on({
                     userElem.addEventListener('click', function(e){
                         var elem = e.currentTarget;
                         if(elem.classList.contains('disabled')) return;
-                        elem.classList.toggle('selected');
+                        if(elem.classList.contains('selected')){
+                            elem.classList.remove('selected');
+                            newUsersCount--
+                        } else {
+                            elem.classList.add('selected');
+                            newUsersCount++
+                        }
+
+                        counterElem.innerText = newUsersCount;
                     });
 
                     userList.appendChild(userElem);
@@ -219,7 +262,7 @@ router.on({
             editUsersCountForm.addEventListener('submit', function(e){
                 e.preventDefault();
 
-                var userItemsList = document.querySelectorAll('.user__item.selected'),
+                var userItemsList = document.querySelectorAll('.user__item.selected:not(.disabled)'),
                     userList = [];
 
                 _.each(userItemsList, function(userItem){
@@ -241,7 +284,6 @@ router.on({
             });
         }
     }
-
 }).resolve();
 
 router.notFound(function(){
