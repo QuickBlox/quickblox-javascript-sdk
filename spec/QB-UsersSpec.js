@@ -121,7 +121,6 @@ describe('Users API', function() {
           done.fail("Delete user error: " + JSON.stringify(err));
         }else{
           expect(res).not.toBeNull();
-          expect(res).toBe(' ');
 
           done();
         }

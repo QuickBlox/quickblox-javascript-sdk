@@ -1212,10 +1212,9 @@ describe('Chat API', function() {
 
             done();
           });
-
         });
 
-      });
+      }, REST_REQUESTS_TIMEOUT*2);
 
       it('can join group chat', function(done) {
         QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
@@ -1339,6 +1338,49 @@ describe('Chat API', function() {
 
       }, MESSAGING_TIMEOUT);
 
+      it("can join joinable=0 room and do not receive room statuses", function(done) {
+        if(isOldVersion){
+          done();
+          return;
+        }
+
+        QB_SENDER.chat.dialog.update(dialogJoinable._id, {is_joinable: 0}, function(err, res) {
+          expect(res).not.toBeNull();
+          expect(err).toBeNull();
+
+          var statusesReceivedCount = 0;
+
+          QB_SENDER.chat.onJoinOccupant = function(dialogId, userId){
+            ++statusesReceivedCount;
+          };
+
+          QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
+            expect(stanza).not.toBeNull();
+
+            QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
+              ++statusesReceivedCount;
+            };
+
+            QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
+              expect(stanza).not.toBeNull();
+            });
+          });
+
+          console.info("Waiting for ROOM statuses timeout");
+          setTimeout(function(){
+            console.info("ROOM statuses timeout");
+            QB_RECEIVER.chat.onJoinOccupant = null;
+            QB_SENDER.chat.onJoinOccupant = null;
+
+            expect(statusesReceivedCount).toEqual(0);
+            done();
+
+          }, 5000);
+
+        });
+
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+
       afterAll(function(done) {
         QB_SENDER.chat.dialog.delete([dialogJoinable._id], {force: 1}, function(err, res) {
           expect(err).toBeNull();
@@ -1350,7 +1392,7 @@ describe('Chat API', function() {
           });
 
         });
-      });
+      }, REST_REQUESTS_TIMEOUT*2);
 
     });
 
@@ -1449,7 +1491,7 @@ describe('Chat API', function() {
 
     // ==========================Privacy Lists==================================
 
-    fdescribe('Privacy list: ', function() {
+    describe('Privacy list: ', function() {
       var PRIVACY_LIST_NAME = "blockedusers";
 
       it('can create new list with items', function(done) {
