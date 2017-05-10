@@ -453,6 +453,8 @@ Dialog.prototype.updateDialog = function (updates) {
                 return userModule._cache[userId].name || userId;
             });
 
+            self._cache[dialogId].users = self._cache[dialogId].users.concat(newUsers);
+
             updatedMsg.body = app.user.name + ' add ' + usernames.join(',') + ' to the conversation.';
             updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
@@ -474,7 +476,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
     function _getNewUsers(){
         return updates.userList.filter(function(occupantId){
-            return dialog.users.indexOf(+occupantId) === -1;
+            return dialog.users.indexOf(occupantId) === -1;
         });
     }
 

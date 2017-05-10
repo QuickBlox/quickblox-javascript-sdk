@@ -124,8 +124,6 @@ Login.prototype.setListeners = function(){
         formInputs = [form.userName, form.userGroup],
         loginBtn = form.login_submit;
 
-    console.log(loginBtn);
-
     form.addEventListener('submit', function(e){
         e.preventDefault();
 

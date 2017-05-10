@@ -200,7 +200,14 @@ App.prototype.buildCreateDialogTpl = function () {
 
         dialogModule.createDialog(params);
     });
-    
+
+    document.forms.create_dialog.dialog_name.addEventListener('input', function(e){
+        var titleText = document.forms.create_dialog.dialog_name.value,
+            sylmbolsCount = titleText.length;
+        if(sylmbolsCount > 40) {
+            document.forms.create_dialog.dialog_name.value = titleText.slice(0, 40);
+        }
+    });
     userModule.initGettingUsers();
 };
 

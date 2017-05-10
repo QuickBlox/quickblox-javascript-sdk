@@ -47,6 +47,7 @@ router.on({
     },
     '/dialog/:dialogId': function(params){
         var dialogId = params.dialogId;
+
         dialogModule.prevDialogId = dialogModule.dialogId;
         dialogModule.dialogId = dialogId;
 
@@ -70,6 +71,7 @@ router.on({
 
         function _renderSelectedDialog(){
             var currentDialog = dialogModule._cache[dialogId];
+
             if(!currentDialog){
                 dialogModule.getDialogById(dialogId).then(function(dialog){
                     var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
@@ -187,6 +189,14 @@ router.on({
                 }
             });
 
+            editTitleInput.addEventListener('input', function(e){
+                var titleText = editTitleInput.value,
+                    sylmbolsCount = titleText.length;
+                if(sylmbolsCount > 40) {
+                    editTitleInput.value = titleText.slice(0, 40);
+                }
+            });
+
             editTitleInput.addEventListener('blur', function(e){
                 var params = {
                     id: dialogId,
@@ -213,14 +223,12 @@ router.on({
                     userList = [];
 
                 _.each(userItemsList, function(userItem){
-                    userList.push(userItem.id);
-                    });
+                    userList.push(+userItem.id);
+                });
 
                 var params = {
                     id: dialogId,
-                    userList: _.each(userList, function(userItem){
-                        return userItem.id;
-                    })
+                    userList: userList
                 };
 
                 dialogModule.updateDialog(params);
