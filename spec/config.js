@@ -2,7 +2,7 @@
     'use strict';
 
 
-    var NEW_SERVER = false;
+    var NEW_SERVER = true;
 
     if(NEW_SERVER){
 
@@ -49,7 +49,7 @@
               'id': 22039265,
               'login': "js_jasmine22",
               'password': "js_jasmine22",
-              'email': "js_jasmine22@quickblox.com"
+              'email': "igor+3@quickblox.com"
           },
           QBUser2 = {
               'id': 22039266,

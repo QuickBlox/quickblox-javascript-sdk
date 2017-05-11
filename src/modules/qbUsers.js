@@ -119,7 +119,7 @@ UsersProxy.prototype = {
   },
 
   resetPassword: function(email, callback) {
-    this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}}, callback);
+    this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}, type: 'GET', dataType: 'text'}, callback);
   }
 
 };
