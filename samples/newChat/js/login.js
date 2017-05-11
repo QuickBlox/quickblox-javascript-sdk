@@ -17,8 +17,8 @@ Login.prototype.init = function(){
                 .then(function(){
                     resolve(true);
                 }).catch(function(error){
-                    reject(error);
-                });
+                reject(error);
+            });
         } else {
             resolve(false);
         }
@@ -121,13 +121,14 @@ Login.prototype.renderLoadingPage = function(){
 Login.prototype.setListeners = function(){
     var self = this,
         form = document.forms.loginForm,
-        formInputs = [form.userName, form.userGroup];
+        formInputs = [form.userName, form.userGroup],
+        loginBtn = form.login_submit;
 
     form.addEventListener('submit', function(e){
         e.preventDefault();
 
-        var userName = form.userName.value,
-            userGroup = form.userGroup.value;
+        var userName = form.userName.value.trim(),
+            userGroup = form.userGroup.value.trim();
 
         var user = {
             login: helpers.getUui(),
@@ -168,10 +169,12 @@ Login.prototype.setListeners = function(){
         });
 
         i.addEventListener('input', function(){
-            var userName = form.userName.value,
-                userGroup = form.userGroup.value;
+            var userName = form.userName.value.trim(),
+                userGroup = form.userGroup.value.trim();
             if(userName.length >=3 && userGroup.length >= 3){
-                document.querySelector('.j-login__button').removeAttribute('disabled');
+                loginBtn.removeAttribute('disabled');
+            } else {
+                loginBtn.setAttribute('disabled', true);
             }
         })
     });

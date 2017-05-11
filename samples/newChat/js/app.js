@@ -62,6 +62,8 @@ App.prototype.renderDashboard = function (activeTabName) {
                 console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
             }
             loginModule.isLogin = false;
+            app.isDashboardLoaded = false;
+
             localStorage.removeItem('user');
             helpers.clearCache();
             QB.chat.disconnect();
@@ -169,7 +171,9 @@ App.prototype.buildCreateDialogTpl = function () {
             occupants_ids = [];
 
         _.each(users, function (user) {
-            occupants_ids.push(+user.id);
+            if (+user.id !== self.user.id) {
+                occupants_ids.push(user.id);
+            }
         });
 
         if (!name && type === 2) {
@@ -187,7 +191,7 @@ App.prototype.buildCreateDialogTpl = function () {
 
         var params = {
             type: type,
-            occupants_ids: occupants_ids
+            occupants_ids: occupants_ids.join(',')
         };
         
         if (type !== 3 && name) {
@@ -196,7 +200,14 @@ App.prototype.buildCreateDialogTpl = function () {
 
         dialogModule.createDialog(params);
     });
-    
+
+    document.forms.create_dialog.dialog_name.addEventListener('input', function(e){
+        var titleText = document.forms.create_dialog.dialog_name.value,
+            sylmbolsCount = titleText.length;
+        if(sylmbolsCount > 40) {
+            document.forms.create_dialog.dialog_name.value = titleText.slice(0, 40);
+        }
+    });
     userModule.initGettingUsers();
 };
 

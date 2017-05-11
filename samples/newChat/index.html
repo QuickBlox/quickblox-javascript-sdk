@@ -217,8 +217,8 @@
             </span>
             <div class="message__content_wrap">
                 <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
-                <% if (message.message || message.body) { %>
-                    <p class="message__text"><%= message.message || message.body %></p>
+                <% if (message.message) { %>
+                    <p class="message__text"><%= message.message %></p>
                 <% } %>
 
                 <% if (message.attachments.length) { %>

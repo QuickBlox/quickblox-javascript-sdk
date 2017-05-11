@@ -89,154 +89,148 @@ function ChatProxy(service) {
         }
     }
 
-/**
- * User's callbacks (listener-functions):
- * - onMessageListener
- * - onMessageErrorListener (messageId, error)
- * - onSentMessageCallback(messageLost, messageSent)
- * - onMessageTypingListener
- * - onDeliveredStatusListener (messageId, dialogId, userId);
- * - onReadStatusListener (messageId, dialogId, userId);
- * - onSystemMessageListener (message)
- * - onKickOccupant(dialogId, initiatorUserId)
- * - onJoinOccupant(dialogId, userId)
- * - onLeaveOccupant(dialogId, userId)
- * - onContactListListener (userId, type)
- * - onSubscribeListener (userId)
- * - onConfirmSubscribeListener (userId)
- * - onRejectSubscribeListener (userId)
- * - onDisconnectedListener
- * - onReconnectListener
- */
+    /**
+     * User's callbacks (listener-functions):
+     * - onMessageListener
+     * - onMessageErrorListener (messageId, error)
+     * - onSentMessageCallback(messageLost, messageSent)
+     * - onMessageTypingListener
+     * - onDeliveredStatusListener (messageId, dialogId, userId);
+     * - onReadStatusListener (messageId, dialogId, userId);
+     * - onSystemMessageListener (message)
+     * - onKickOccupant(dialogId, initiatorUserId)
+     * - onJoinOccupant(dialogId, userId)
+     * - onLeaveOccupant(dialogId, userId)
+     * - onContactListListener (userId, type)
+     * - onSubscribeListener (userId)
+     * - onConfirmSubscribeListener (userId)
+     * - onRejectSubscribeListener (userId)
+     * - onDisconnectedListener
+     * - onReconnectListener
+     */
 
+    /**
+     * You need to set onMessageListener function, to get messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
+     * @function onMessageListener
+     * @memberOf QB.chat
+     * @param {Number} error - The error object
+     * @param {Object} message - Object of subscribed users.
+     **/
 
-/**
- * You need to set onMessageListener function, to get messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
- * @function onMessageListener
- * @memberOf QB.chat
- * @param {Number} error - The error object
- * @param {Object} message - Object of subscribed users.
- **/
+    /**
+     * Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
+     * @function onMessageErrorListener
+     * @memberOf QB.chat
+     * @param {Number} error - The error object
+     * @param {Object} message - Object of subscribed users.
+     **/
 
-/**
- * Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
- * @function onMessageErrorListener
- * @memberOf QB.chat
- * @param {Number} error - The error object
- * @param {Object} message - Object of subscribed users.
- **/
+    /**
+     * This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
+     * @function onSentMessageCallback
+     * @memberOf QB.chat
+     * @param {Number} error - The error object
+     * @param {Object} message - Object of subscribed users.
+     **/
 
-/**
- * This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
- * @function onSentMessageCallback
- * @memberOf QB.chat
- * @param {Number} error - The error object
- * @param {Object} message - Object of subscribed users.
- **/
+    /**
+     * Show typing status in chat or groupchat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
+     * @function onMessageTypingListener
+     * @memberOf QB.chat
+     * @param {Boolean} isTyping - Typing Status
+     * @param {Number} userId - Object of subscribed users.
+     * @param {String} dialogId -The dialog id
+     **/
 
-/**
- * Show typing status in chat or groupchat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
- * @function onMessageTypingListener
- * @memberOf QB.chat
- * @param {Boolean} isTyping - Typing Status
- * @param {Number} userId - Object of subscribed users.
- * @param {String} dialogId -The dialog id
- **/
+    /**
+     * Receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
+     * @function onDeliveredStatusListener
+     * @memberOf QB.chat
+     * @param {String} messageId - Typing Status
+     * @param {String} dialogId -The dialog id
+     * @param {Number} userId - User Id.
+     **/
 
-/**
- * Receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
- * @function onDeliveredStatusListener
- * @memberOf QB.chat
- * @param {String} messageId - Typing Status
- * @param {String} dialogId -The dialog id
- * @param {Number} userId - User Id.
- **/
+    /**
+     * You can manage 'read' notifications in chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
+     * @function onReadStatusListener
+     * @memberOf QB.chat
+     * @param {String} messageId - Typing Status
+     * @param {String} dialogId -The dialog id
+     * @param {Number} userId - User Id.
+     **/
 
-/**
- * You can manage 'read' notifications in chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
- * @function onReadStatusListener
- * @memberOf QB.chat
- * @param {String} messageId - Typing Status
- * @param {String} dialogId -The dialog id
- * @param {Number} userId - User Id.
- **/
+    /**
+     * These messages work over separated channel and won't be mixed with the regular chat messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
+     * @function onSystemMessageListener
+     * @memberOf QB.chat
+     * @param {Object} receivedMessage - Recieved Message. Always have type: 'headline'
+     **/
 
+    /**
+     * You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
+     * @function onKickOccupant
+     * @memberOf QB.chat
+     * @param {String} dialogId - An Id of chat dialog where you was kicked from.
+     * @param {Number} initiatorUserId - An Id of user who has kicked you.
+     **/
 
-/**
- * These messages work over separated channel and won't be mixed with the regular chat messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
- * @function onSystemMessageListener
- * @memberOf QB.chat
- * @param {Object} receivedMessage - Recieved Message. Always have type: 'headline'
- **/
+    /**
+     * You will receive this callback when some user joined group chat dialog you are in.
+     * @function onJoinOccupant
+     * @memberOf QB.chat
+     * @param {String} dialogId - An Id of chat dialog that user joined.
+     * @param {Number} userId - An Id of user who joined chat dialog.
+     **/
 
+    /**
+     * You will receive this callback when some user left group chat dialog you are in.
+     * @function onLeaveOccupant
+     * @memberOf QB.chat
+     * @param {String} dialogId - An Id of chat dialog that user left.
+     * @param {Number} userId - An Id of user who left chat dialog.
+     **/
 
-/**
- * You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
- * @function onKickOccupant
- * @memberOf QB.chat
- * @param {String} dialogId - An Id of chat dialog where you was kicked from.
- * @param {Number} initiatorUserId - An Id of user who has kicked you.
- **/
+    /**
+     * Receive user status (online / offline). {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+     * @function onContactListListener
+     * @memberOf QB.chat
+     * @param {Number} userId - The sender ID
+     * @param {String} type - If user leave the chat, type will be 'unavailable'
+     **/
 
-/**
- * You will receive this callback when some user joined group chat dialog you are in.
- * @function onJoinOccupant
- * @memberOf QB.chat
- * @param {String} dialogId - An Id of chat dialog that user joined.
- * @param {Number} userId - An Id of user who joined chat dialog.
- **/
+    /**
+     * Receive subscription request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+     * @function onSubscribeListener
+     * @memberOf QB.chat
+     * @param {Number} userId - The sender ID
+     **/
 
-/**
- * You will receive this callback when some user left group chat dialog you are in.
- * @function onLeaveOccupant
- * @memberOf QB.chat
- * @param {String} dialogId - An Id of chat dialog that user left.
- * @param {Number} userId - An Id of user who left chat dialog.
- **/
+    /**
+     * Receive confirm request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+     * @function onConfirmSubscribeListener
+     * @memberOf QB.chat
+     * @param {Number} userId - The sender ID
+     **/
 
+    /**
+     * Receive reject request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
+     * @function onRejectSubscribeListener
+     * @memberOf QB.chat
+     * @param {Number} userId - The sender ID
+     **/
 
-/**
- * Receive user status (online / offline). {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
- * @function onContactListListener
- * @memberOf QB.chat
- * @param {Number} userId - The sender ID
- * @param {String} type - If user leave the chat, type will be 'unavailable'
- **/
+    /**
+     * Run after disconnect from chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
+     * @function onDisconnectedListener
+     * @memberOf QB.chat
+     **/
 
-/**
- * Receive subscription request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
- * @function onSubscribeListener
- * @memberOf QB.chat
- * @param {Number} userId - The sender ID
- **/
-
-/**
- * Receive confirm request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
- * @function onConfirmSubscribeListener
- * @memberOf QB.chat
- * @param {Number} userId - The sender ID
- **/
-
-
-/**
- * Receive reject request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
- * @function onRejectSubscribeListener
- * @memberOf QB.chat
- * @param {Number} userId - The sender ID
- **/
-
-
-/**
- * Run after disconnect from chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
- * @function onDisconnectedListener
- * @memberOf QB.chat
- **/
-
-/**
- * By default Javascript SDK reconnects automatically when self.connection to server is lost. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reself.connection More info.}
- * @function onReconnectListener
- * @memberOf QB.chat
- **/
+    /**
+     * By default Javascript SDK reconnects automatically when connection to server is lost. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection More info.}
+     * @function onReconnectListener
+     * @memberOf QB.chat
+     **/
 
 
     this._onMessage = function(stanza) {
@@ -443,8 +437,9 @@ function ChatProxy(service) {
         userId = self.helpers.getIdFromNode(from);
 
         if (!type) {
-            if (typeof self.onContactListListener === 'function' && self.roster.contacts[userId] && self.roster.contacts[userId].subscription !== 'none')
+            if (typeof self.onContactListListener === 'function' && self.roster.contacts[userId] && self.roster.contacts[userId].subscription !== 'none'){
                 Utils.safeCallbackCall(self.onContactListListener, userId);
+            }
         } else {
             switch (type) {
                 case 'subscribe':
@@ -567,8 +562,6 @@ function ChatProxy(service) {
         return true;
     };
 
-    /** TODO! */
-
     this._onMessageErrorListener = function(stanza) {
         // <error code="503" type="cancel">
         //   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
@@ -577,9 +570,6 @@ function ChatProxy(service) {
 
         var messageId = chatUtils.getAttr(stanza, 'id');
         var error = chatUtils.getErrorFromXMLNode(stanza);
-
-        console.log(messageId);
-        console.log(error);
 
         // fire 'onMessageErrorListener'
         //
@@ -590,11 +580,11 @@ function ChatProxy(service) {
         // we must return true to keep the handler alive
         // returning false would remove it after it finishes
         return true;
-     };
+    };
 }
 
 /* Chat module: Core
------------------------------------------------------------------------------ */
+ ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
 
     /**
@@ -623,20 +613,28 @@ ChatProxy.prototype = {
                 switch (status) {
                     case Strophe.Status.ERROR:
                         err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-                        if (typeof callback === 'function') callback(err, null);
+                        if (typeof callback === 'function') {
+                            callback(err, null);
+                        }
                         break;
                     case Strophe.Status.CONNECTING:
                         Utils.QBLog('[Chat]', 'Status.CONNECTING');
                         Utils.QBLog('[Chat]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
                         break;
                     case Strophe.Status.CONNFAIL:
-                        err = Utils.getError(422, 'Status.CONNFAIL - The self.connection attempt failed');
-                        if (typeof callback === 'function') callback(err, null);
+                        Utils.QBLog('[Chat]', 'Status.CONNFAIL');
+
+                        err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed');
+                        if (typeof callback === 'function') {
+                            callback(err, null);
+                        }
                         break;
                     case Strophe.Status.AUTHENTICATING:
                         Utils.QBLog('[Chat]', 'Status.AUTHENTICATING');
                         break;
                     case Strophe.Status.AUTHFAIL:
+                        Utils.QBLog('[Chat]', 'Status.AUTHFAIL');
+
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed');
 
                         if (typeof callback === 'function') {
@@ -656,6 +654,7 @@ ChatProxy.prototype = {
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                         }
 
+                        self._isLogout = false;
                         self._isDisconnected = false;
 
                         self.connection.addHandler(self._onMessage, null, 'message', 'chat');
@@ -676,8 +675,12 @@ ChatProxy.prototype = {
                             if (params.connectWithoutGettingRoster) {
                                 // connected and return nothing as result
                                 callback(null, undefined);
+                                // get the roster and save
+                                self.roster.get(function(contacts) {
+                                    self.roster.contacts = contacts;
+                                });
                             } else {
-                                // get the roster
+                                // get the roster and save
                                 self.roster.get(function(contacts) {
                                     self.roster.contacts = contacts;
                                     // connected and return roster as result
@@ -685,8 +688,6 @@ ChatProxy.prototype = {
                                 });
                             }
                         } else {
-                            self._isLogout = false;
-
                             // recover the joined rooms
                             rooms = Object.keys(self.muc.joinedRooms);
 
@@ -717,7 +718,10 @@ ChatProxy.prototype = {
                         self._isDisconnected = true;
 
                         // reconnect to chat
-                        if (!self._isLogout) self.connect(params);
+                        if (!self._isLogout) {
+                            self.connect(params);
+                        }
+
                         break;
                     case Strophe.Status.ATTACHED:
                         Utils.QBLog('[Chat]', 'Status.ATTACHED');
@@ -819,7 +823,6 @@ ChatProxy.prototype = {
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred');
 
                 if(typeof callback === 'function') {
-                    console.log('error callback');
                     callback(err, null);
                 }
             });
@@ -917,11 +920,11 @@ ChatProxy.prototype = {
         if(Utils.getEnv().browser) {
             // custom parameters
             if (message.extension) {
-              stanza.c('extraParams', {
-                xmlns: chatUtils.MARKERS.CLIENT
-              }).c('moduleIdentifier').t('SystemNotifications').up();
+                stanza.c('extraParams', {
+                    xmlns: chatUtils.MARKERS.CLIENT
+                }).c('moduleIdentifier').t('SystemNotifications').up();
 
-              stanza = chatUtils.filledExtraParams(stanza, message.extension);
+                stanza = chatUtils.filledExtraParams(stanza, message.extension);
             }
 
             self.connection.send(stanza);
@@ -1019,7 +1022,7 @@ ChatProxy.prototype = {
         }).up();
 
         stanza.c('extraParams', {
-          xmlns: chatUtils.MARKERS.CLIENT
+            xmlns: chatUtils.MARKERS.CLIENT
         }).c('dialog_id').t(params.dialogId);
 
         if(Utils.getEnv().browser) {
@@ -1134,7 +1137,7 @@ ChatProxy.prototype = {
  * http://xmpp.org/rfcs/rfc3921.html#int
  * default - Mutual Subscription
  *
------------------------------------------------------------------------------ */
+ ----------------------------------------------------------------------------- */
 /**
  * @namespace QB.chat.roster
  **/
@@ -1380,7 +1383,7 @@ RosterProxy.prototype = {
  * Multi-User Chat
  * http://xmpp.org/extensions/xep-0045.html
  *
------------------------------------------------------------------------------ */
+ ----------------------------------------------------------------------------- */
 
 /**
  * @namespace QB.chat.muc
@@ -1616,7 +1619,7 @@ PrivacyListProxy.prototype = {
         iq.c('query', {
             xmlns: chatUtils.MARKERS.PRIVACY
         }).c('list', {
-          name: list.name
+            name: list.name
         });
 
         function createPrivacyItem(iq, params){
@@ -1627,10 +1630,10 @@ PrivacyListProxy.prototype = {
                     action: params.userAction,
                     order: params.order
                 }).c('message', {})
-                .up().c('presence-in', {})
-                .up().c('presence-out', {})
-                .up().c('iq', {})
-                .up().up();
+                    .up().c('presence-in', {})
+                    .up().c('presence-out', {})
+                    .up().c('iq', {})
+                    .up().up();
             } else if(Utils.getEnv().node) {
                 var list = iq.getChild('query').getChild('list');
 
@@ -1640,10 +1643,10 @@ PrivacyListProxy.prototype = {
                     action: params.userAction,
                     order: params.order
                 }).c('message', {})
-                .up().c('presence-in', {})
-                .up().c('presence-out', {})
-                .up().c('iq', {})
-                .up().up();
+                    .up().c('presence-in', {})
+                    .up().c('presence-out', {})
+                    .up().c('iq', {})
+                    .up().up();
             }
 
             return iq;
@@ -1652,19 +1655,19 @@ PrivacyListProxy.prototype = {
         function createPrivacyItemMutal(iq, params) {
             if(Utils.getEnv().browser) {
                 iq.c('item', {
-                  type: 'jid',
-                  value: params.jidOrMuc,
-                  action: params.userAction,
-                  order: params.order
+                    type: 'jid',
+                    value: params.jidOrMuc,
+                    action: params.userAction,
+                    order: params.order
                 }).up();
             } else if(Utils.getEnv().node) {
                 var list = iq.getChild('query').getChild('list');
 
                 list.c('item', {
-                  type: 'jid',
-                  value: params.jidOrMuc,
-                  action: params.userAction,
-                  order: params.order
+                    type: 'jid',
+                    value: params.jidOrMuc,
+                    action: params.userAction,
+                    order: params.order
                 }).up();
             }
 
@@ -1777,15 +1780,15 @@ PrivacyListProxy.prototype = {
                     name: name,
                     items: usersList
                 };
-                    callback(null, list);
-                }, function(stanzaError){
-                    if(stanzaError){
-                        var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
-                        callback(errorObject, null);
-                    }else{
-                        callback(Utils.getError(408), null);
-                    }
-                });
+                callback(null, list);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
+                    callback(errorObject, null);
+                }else{
+                    callback(Utils.getError(408), null);
+                }
+            });
         } else if(Utils.getEnv().node){
             self.nodeStanzasCallbacks[iqParams.id] = function(stanza){
                 var stanzaQuery = stanza.getChild('query'),
@@ -2072,10 +2075,10 @@ PrivacyListProxy.prototype = {
 
         var iq,
             stanzaParams = {
-            'from': this.connection ? this.connection.jid : this.nClient.jid.user,
-            'type': 'set',
-            'id': chatUtils.getUniqueId('active')
-        };
+              'from': this.connection ? this.connection.jid : this.nClient.jid.user,
+              'type': 'set',
+              'id': chatUtils.getUniqueId('active')
+            };
 
         if(Utils.getEnv().browser){
             iq = $iq(stanzaParams).c('query', {
@@ -2320,10 +2323,10 @@ MessageProxy.prototype = {
          * */
 
         var ajaxParams = {
-                url: Utils.getUrl(MESSAGES_API_URL, id),
-                type: 'DELETE',
-                dataType: 'text'
-            };
+            url: Utils.getUrl(MESSAGES_API_URL, id),
+            type: 'DELETE',
+            dataType: 'text'
+        };
 
         if (arguments.length == 2) {
             this.service.ajax(ajaxParams, params_or_callback);
@@ -2357,7 +2360,7 @@ MessageProxy.prototype = {
 
 
 /* Helpers
------------------------------------------------------------------------------ */
+ ----------------------------------------------------------------------------- */
 function Helpers() {}
 /**
  * @namespace QB.chat.helpers

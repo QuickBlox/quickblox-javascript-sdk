@@ -383,6 +383,7 @@
     font-size: 14px;
     line-height: 16px;
     box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
 }
 
 .message_feald::-webkit-input-placeholder {color:#C5CACE;}

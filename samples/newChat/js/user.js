@@ -50,6 +50,7 @@ User.prototype.getUsersByIds = function (userList) {
             },
             per_page: 100
         };
+
     return new Promise(function(resolve, reject) {
         QB.users.listUsers(params, function (err, responce) {
             if (err) {
@@ -61,6 +62,7 @@ User.prototype.getUsersByIds = function (userList) {
                     var user = users.find(function (item) {
                         return item.user.id === id;
                     });
+
                     self.addToCache(user.user);
                 });
                 resolve();

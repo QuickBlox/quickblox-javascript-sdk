@@ -26,6 +26,7 @@ Message.prototype.init = function () {
 
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingMessage.bind(self));
+    document.forms.send_message.message_feald.addEventListener('input', self.checkMessageSymbolsCount.bind(self));
     document.forms.send_message.message_feald.addEventListener('keydown', function (e) {
         var key = e.keyCode;
 
@@ -55,6 +56,14 @@ Message.prototype.typingMessage = function (e) {
     }
 
     dialogModule._cache[dialogId].draft.message = e.currentTarget.value
+};
+
+Message.prototype.checkMessageSymbolsCount = function() {
+    var messageText = document.forms.send_message.message_feald.value,
+        sylmbolsCount = messageText.length;
+    if(sylmbolsCount > 1000) {
+        document.forms.send_message.message_feald.value = messageText.slice(0, 1000);
+    }
 };
 
 Message.prototype.sendIsTypingStatus = function (dialogId) {
@@ -225,11 +234,21 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
         messagesHtml;
-
+    
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
     } else {
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender});
+        var messageText = message.message ?
+            helpers.fillMessageBody(message.message || '') :
+            helpers.fillMessageBody(message.body || '');
+
+        messagesHtml = helpers.fillTemplate('tpl_message', {
+            message: {
+                message: messageText,
+                attachments: message.attachments,
+                date_sent: message.date_sent
+            },
+            sender: sender});
     }
 
     var elem = helpers.toHtml(messagesHtml)[0];

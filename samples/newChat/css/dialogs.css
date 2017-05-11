@@ -50,6 +50,10 @@
     line-height: 18px;
     color: #4A4A4A;
     flex: 1 1 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+
 }
 
 .dialog__item {
