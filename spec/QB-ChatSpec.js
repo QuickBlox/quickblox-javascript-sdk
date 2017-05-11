@@ -1180,7 +1180,7 @@ describe('Chat API', function() {
 
     // =============================GROUP MESSAGING=============================
 
-    fdescribe('Group Messaging: ', function() {
+    describe('Group Messaging: ', function() {
       var dialogJoinable;
 
       beforeAll(function(done){
@@ -1344,10 +1344,11 @@ describe('Chat API', function() {
           return;
         }
 
-        setTimeout(function(){
-          QB_SENDER.chat.dialog.update(dialogJoinable._id, {is_joinable: 0}, function(err, res) {
-            expect(res).not.toBeNull();
-            expect(err).toBeNull();
+        QB_SENDER.chat.dialog.update(dialogJoinable._id, {is_joinable: 0}, function(err, res) {
+          expect(res).not.toBeNull();
+          expect(err).toBeNull();
+
+          setTimeout(function(){
 
             var statusesReceivedCount = 0;
 
@@ -1373,12 +1374,16 @@ describe('Chat API', function() {
               QB_RECEIVER.chat.onJoinOccupant = null;
               QB_SENDER.chat.onJoinOccupant = null;
 
+              console.info(statusesReceivedCount);
               expect(statusesReceivedCount).toEqual(0);
               done();
 
             }, 5000);
-          });
-        }, 3000);
+
+          }, 3000);
+
+        });
+
 
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT+3000);
 
