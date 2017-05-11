@@ -556,7 +556,7 @@ function ChatProxy(service) {
             };
 
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
-        } else if(self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'self.webrtcVideoChat'){
+        } else if(self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'WebRTCVideoChat'){
             self.webrtcSignalingProcessor._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
         }
 

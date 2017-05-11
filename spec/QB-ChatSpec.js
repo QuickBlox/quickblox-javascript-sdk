@@ -1180,7 +1180,7 @@ describe('Chat API', function() {
 
     // =============================GROUP MESSAGING=============================
 
-    describe('Group Messaging: ', function() {
+    fdescribe('Group Messaging: ', function() {
       var dialogJoinable;
 
       beforeAll(function(done){
@@ -1344,42 +1344,43 @@ describe('Chat API', function() {
           return;
         }
 
-        QB_SENDER.chat.dialog.update(dialogJoinable._id, {is_joinable: 0}, function(err, res) {
-          expect(res).not.toBeNull();
-          expect(err).toBeNull();
+        setTimeout(function(){
+          QB_SENDER.chat.dialog.update(dialogJoinable._id, {is_joinable: 0}, function(err, res) {
+            expect(res).not.toBeNull();
+            expect(err).toBeNull();
 
-          var statusesReceivedCount = 0;
+            var statusesReceivedCount = 0;
 
-          QB_SENDER.chat.onJoinOccupant = function(dialogId, userId){
-            ++statusesReceivedCount;
-          };
-
-          QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-            expect(stanza).not.toBeNull();
-
-            QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
+            QB_SENDER.chat.onJoinOccupant = function(dialogId, userId){
               ++statusesReceivedCount;
             };
 
-            QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
+            QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
               expect(stanza).not.toBeNull();
+
+              QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
+                ++statusesReceivedCount;
+              };
+
+              QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
+                expect(stanza).not.toBeNull();
+              });
             });
+
+            console.info("Waiting for ROOM statuses timeout");
+            setTimeout(function(){
+              console.info("ROOM statuses timeout");
+              QB_RECEIVER.chat.onJoinOccupant = null;
+              QB_SENDER.chat.onJoinOccupant = null;
+
+              expect(statusesReceivedCount).toEqual(0);
+              done();
+
+            }, 5000);
           });
+        }, 3000);
 
-          console.info("Waiting for ROOM statuses timeout");
-          setTimeout(function(){
-            console.info("ROOM statuses timeout");
-            QB_RECEIVER.chat.onJoinOccupant = null;
-            QB_SENDER.chat.onJoinOccupant = null;
-
-            expect(statusesReceivedCount).toEqual(0);
-            done();
-
-          }, 5000);
-
-        });
-
-      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT+3000);
 
       afterAll(function(done) {
         QB_SENDER.chat.dialog.delete([dialogJoinable._id], {force: 1}, function(err, res) {
