@@ -59,6 +59,19 @@ QuickBlox.prototype = {
             var Connection = require('./qbStrophe');
             conn = new Connection();
 
+            /** Add extension methods to track handlers for removal on reconnect */
+            if (conn) {
+                conn.XHandlerReferences = [];
+                conn.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
+                    this.XHandlerReferences.push(conn.addHandler(handler, ns, name, type, id, from, options));
+                };
+                conn.XDeleteHandlers = function () {
+                    while (conn.XHandlerReferences.length) {
+                        this.deleteHandler(conn.XHandlerReferences.pop());
+                    }
+                };
+            }
+
             /** add atapter.js*/
             require('webrtc-adapter');
 

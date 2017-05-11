@@ -557,6 +557,11 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[ChatProxy]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
+                        // Remove any handlers that might exist from a previous connection via
+                        // extension method added to the connection on initialization in qbMain.
+                        // NOTE: streamManagement also adds handlers, so do this first.
+                        connection.XDeleteHandlers();
+
                         if(config.streamManagement.enable && config.chatProtocol.active === 2){
                             self.streamManagement.enable(connection, null);
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
@@ -566,12 +571,13 @@ ChatProxy.prototype = {
                         self._isDisconnected = false;
                         userCurrentJid = connection.jid;
 
-                        connection.addHandler(self._onMessage, null, 'message', 'chat');
-                        connection.addHandler(self._onMessage, null, 'message', 'groupchat');
-                        connection.addHandler(self._onPresence, null, 'presence');
-                        connection.addHandler(self._onIQ, null, 'iq');
-                        connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
-                        connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
+                        // Now add or re-add handler wrappers.
+                        connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
+                        connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
+                        connection.XAddTrackedHandler(self._onPresence, null, 'presence');
+                        connection.XAddTrackedHandler(self._onIQ, null, 'iq');
+                        connection.XAddTrackedHandler(self._onSystemMessageListener, null, 'message', 'headline');
+                        connection.XAddTrackedHandler(self._onMessageErrorListener, null, 'message', 'error');
 
                         // enable carbons
                         self._enableCarbons();
@@ -996,7 +1002,7 @@ ChatProxy.prototype = {
             throw new Error(unsupportedError);
         }
 
-        return connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
+        return connection.XAddTrackedHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
         function handler() {
             callback();
@@ -1333,7 +1339,7 @@ MucProxy.prototype = {
 
         if (Utils.getEnv().browser) {
             if (typeof callback === 'function') {
-                connection.addHandler(callback, null, 'presence', null, id);
+                connection.XAddTrackedHandler(callback, null, 'presence', null, id);
             }
 
             connection.send(pres);
@@ -1375,7 +1381,7 @@ MucProxy.prototype = {
             var roomJid = self.helpers.getRoomJid(jid);
 
             if (typeof callback === 'function') {
-                connection.addHandler(callback, null, 'presence', presParams.type, null, roomJid);
+                connection.XAddTrackedHandler(callback, null, 'presence', presParams.type, null, roomJid);
             }
 
             connection.send(pres);
