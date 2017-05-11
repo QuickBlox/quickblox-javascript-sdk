@@ -2,7 +2,7 @@
     'use strict';
 
 
-    var NEW_SERVER = true;
+    var NEW_SERVER = false;
 
     if(NEW_SERVER){
 
@@ -40,27 +40,27 @@
 
     }else{
       var CREDS =  {
-          'appId': 51091,
-          'authKey': 'AmkHVqRhR682J8n',
-          'authSecret': 'XdHCXDV8DchVY3S'
+          'appId': 29650,
+          'authKey': 'WULOyezrmxpOgQ-',
+          'authSecret': 'TqQmBFbANJ6cfu4'
       };
 
       var QBUser1 = {
-              'id': 22039265,
+              'id': 26904575,
               'login': "js_jasmine22",
               'password': "js_jasmine22",
-              'email': "igor+3@quickblox.com"
+              'email': "js_jasmine22@quickblox.com"
           },
           QBUser2 = {
-              'id': 22039266,
+              'id': 26904594,
               'login': "js_jasmine222",
               'password': "js_jasmine222"
           };
 
       var CONFIG = {
         endpoints: {
-          api: "apistage3.quickblox.com", // set custom API endpoint
-          chat: "chatstage3.quickblox.com" // set custom Chat endpoint
+          api: "api.quickblox.com", // set custom API endpoint
+          chat: "chat.quickblox.com" // set custom Chat endpoint
         },
         chatProtocol: {
           active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
@@ -69,37 +69,6 @@
             'mode': 1,
             'file': null
         }
-
-      // var CREDS =  {
-      //     'appId': 29650,
-      //     'authKey': 'WULOyezrmxpOgQ-',
-      //     'authSecret': 'TqQmBFbANJ6cfu4'
-      // };
-      //
-      // var QBUser1 = {
-      //         'id': 26904575,
-      //         'login': "js_jasmine22",
-      //         'password': "js_jasmine22",
-      //         'email': "js_jasmine22@quickblox.com"
-      //     },
-      //     QBUser2 = {
-      //         'id': 26904594,
-      //         'login': "js_jasmine222",
-      //         'password': "js_jasmine222"
-      //     };
-      //
-      // var CONFIG = {
-      //   endpoints: {
-      //     api: "api.quickblox.com", // set custom API endpoint
-      //     chat: "chat.quickblox.com" // set custom Chat endpoint
-      //   },
-      //   chatProtocol: {
-      //     active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
-      //   },
-      //   'debug': {
-      //       'mode': 1,
-      //       'file': null
-      //   }
       };
 
     }
