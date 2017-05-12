@@ -90,7 +90,7 @@
                                 <a href="#" class="sidebar__tab_link j-sidebar__tab_link <% tabName === "public" ? print('active') : '' %>" data-type="public">public chats</a>
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
-                                <a href="#" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
+                                <a href="#!/dialog/create" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
                                     <i class="material-icons">add_circle_outline</i>
                                 </a>
                             </li>
@@ -186,7 +186,7 @@
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
-            <p class="update__chat__description"><span class="update__chat_counter">0</span>&nbsp;user selected:</p>
+            <p class="update__chat__description"><span class="update__chat_counter j-update__chat_counter">0</span>&nbsp;user selected:</p>
             <div class="update_chat__user_list j-update_chat__user_list">
             </div>
             <form action="" name="update_dialog" class="dialog_form m_dialog_form_update j-update_dialog_form">
