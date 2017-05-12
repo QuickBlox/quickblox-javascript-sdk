@@ -118,6 +118,13 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
     } else {
         self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
     }
+
+    elem.addEventListener('click', function(e){
+        if(e.currentTarget.classList.contains('selected') && app.sidebar.classList.contains('active')){
+            app.sidebar.classList.remove('active');
+        }
+    });
+
     return elem;
 };
 
