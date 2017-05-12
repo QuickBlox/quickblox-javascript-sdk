@@ -1,10 +1,14 @@
 var QBApp = {
-    appId: 28783,
-    authKey: 'b5bVGCHHv6rcAmD',
-    authSecret: 'ySwEpardeE7ZXHB'
+    appId: 10,
+    authKey: 'XR-B4J64ad6SGvL',
+    authSecret: 'Nw27vzzEVfNXw47'
 };
 
 var config = {
+    endpoints: {
+      api: "apikafkacluster.quickblox.com", // set custom API endpoint
+      chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
+    },
     chatProtocol: {
         active: 2
     },
@@ -30,16 +34,16 @@ var config = {
 };
 
 var QBUser1 = {
-        id: 23285724,
-        name: 'DemoChatUser1',
-        login: 'DemoChatUser1',
-        pass: 'DemoChatUser1'
+        id: 4275,
+        name: 'js_jasmine22',
+        login: 'js_jasmine22',
+        pass: 'js_jasmine22'
     },
     QBUser2 = {
-        id: 23285731,
-        name: 'DemoChatUser2',
-        login: 'DemoChatUser2',
-        pass: 'DemoChatUser2'
+        id: 4276,
+        name: 'js_jasmine222',
+        login: 'js_jasmine222',
+        pass: 'js_jasmine222'
     };
 
 QB.init(QBApp.appId, QBApp.authKey, QBApp.authSecret, config);

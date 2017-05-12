@@ -135,7 +135,6 @@ describe('Users API', function() {
           expect(res).not.toBeNull();
           expect(res.full_name).toBe('QuickBlox Test');
           userId = res.id;
-          console.info(userId);
 
           done();
         }
@@ -187,8 +186,6 @@ describe('Users API', function() {
     it('can reset password', function(done) {
 
       QB.users.resetPassword(QBUser1.email, function(err, res){
-        console.log(err);
-        console.log(res);
         expect(err).toBeNull();
 
         done();
@@ -200,6 +197,8 @@ describe('Users API', function() {
 
   afterAll(function(done){
     QB.destroySession(function (err, result){
+      expect(err).toBeNull();
+      expect(result).not.toBeNull();
       expect(QB.service.qbInst.session).toBeNull();
       done();
     });

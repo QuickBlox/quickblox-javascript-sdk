@@ -690,7 +690,7 @@ ChatProxy.prototype = {
                         } else {
                             // recover the joined rooms
                             rooms = Object.keys(self.muc.joinedRooms);
-
+                            Utils.QBLog('[Chat]', 'Re-joining ' + rooms.length + " rooms..");
                             for (var i = 0, len = rooms.length; i < len; i++) {
                                 self.muc.join(rooms[i]);
                             }
