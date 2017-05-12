@@ -59,7 +59,7 @@ App.prototype.renderDashboard = function (activeTabName) {
     logoutBtn.addEventListener('click', function () {
         QB.users.delete(app.user.id, function(err, user){
             if (!user) {
-                console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
+                console.error('Can\'t delete user by id: '+app.user.id+' ', err);
             }
             loginModule.isLogin = false;
             app.isDashboardLoaded = false;
@@ -85,22 +85,7 @@ App.prototype.loadWelcomeTpl = function () {
 
 App.prototype.tabSelectInit = function () {
     var self = this,
-        tabs = document.querySelectorAll('.j-sidebar__tab_link'),
-        createDialogTab = document.querySelector('.j-sidebar__create_dialog');
-    
-    createDialogTab.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (!self.checkInternetConnection()) {
-            return false;
-        }
-        
-        self.sidebar.classList.remove('active');
-        
-        if (e.currentTarget.classList.contains('active')) return false;
-        
-        createDialogTab.classList.add('active');
-        self.buildCreateDialogTpl();
-    });
+        tabs = document.querySelectorAll('.j-sidebar__tab_link');
     
     _.each(tabs, function (item) {
         item.addEventListener('click', function (e) {
@@ -217,9 +202,9 @@ App.prototype.backToDialog = function (e) {
     document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
     
     if (dialogModule.dialogId) {
-        dialogModule.renderMessages(dialogModule.dialogId);
+        router.navigate('/dialog/' + dialogModule.dialogId);
     } else {
-        self.loadWelcomeTpl();
+        router.navigate('/dashboard');
     }
 };
 

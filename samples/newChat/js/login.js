@@ -120,15 +120,21 @@ Login.prototype.renderLoadingPage = function(){
 
 Login.prototype.setListeners = function(){
     var self = this,
-        form = document.forms.loginForm,
-        formInputs = [form.userName, form.userGroup],
-        loginBtn = form.login_submit;
+        loginForm = document.forms.loginForm,
+        formInputs = [loginForm.userName, loginForm.userGroup],
+        loginBtn = loginForm.login_submit;
 
-    form.addEventListener('submit', function(e){
+    loginForm.addEventListener('submit', function(e){
         e.preventDefault();
 
-        var userName = form.userName.value.trim(),
-            userGroup = form.userGroup.value.trim();
+        if(loginForm.hasAttribute('disabled')){
+            return false;
+        } else {
+            loginForm.setAttribute('disabled', true);
+        }
+
+        var userName = loginForm.userName.value.trim(),
+            userGroup = loginForm.userGroup.value.trim();
 
         var user = {
             login: helpers.getUui(),
@@ -143,8 +149,9 @@ Login.prototype.setListeners = function(){
             router.navigate('/dashboard');
         }).catch(function(error){
             alert('lOGIN ERROR\n open console to get more info');
+            loginBtn.removeAttribute('disabled');
             console.error(error);
-            document.forms.loginForm.login_submit.innerText = 'LOGIN...';
+            loginForm.login_submit.innerText = 'LOGIN';
         });
     });
 
@@ -169,8 +176,8 @@ Login.prototype.setListeners = function(){
         });
 
         i.addEventListener('input', function(){
-            var userName = form.userName.value.trim(),
-                userGroup = form.userGroup.value.trim();
+            var userName = loginForm.userName.value.trim(),
+                userGroup = loginForm.userGroup.value.trim();
             if(userName.length >=3 && userGroup.length >= 3){
                 loginBtn.removeAttribute('disabled');
             } else {

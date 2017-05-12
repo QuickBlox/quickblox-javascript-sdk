@@ -13,6 +13,7 @@ User.prototype.initGettingUsers = function () {
     self.userListConteiner = document.querySelector('.j-group_chat__user_list');
 
     self.userListConteiner.classList.add('loading');
+
     self.getUsers().then(function(userList){
         _.each(userList, function(user){
             self.buildUserItem(self._cache[user.id]);
@@ -94,13 +95,14 @@ User.prototype.getUsers = function () {
 };
 
 User.prototype.buildUserItem = function (user) {
-    var self = this;
+    var self = this,
+        userItem = JSON.parse(JSON.stringify(user));
 
-    if(user.id === app.user.id){
-        user.selected = true;
+    if(userItem.id === app.user.id){
+        userItem.selected = true;
     }
 
-    var userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: user}),
+    var userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: userItem}),
         elem = helpers.toHtml(userTpl)[0];
     
     elem.addEventListener('click', function () {
