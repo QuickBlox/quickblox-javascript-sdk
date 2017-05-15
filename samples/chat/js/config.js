@@ -26,6 +26,13 @@ var config = {
 
         priceB: '0.99 $',
         priceC: '1.99 $'
+    },
+    sessionManagement: {
+        enable: true,
+        onerror: function(err) {
+            console.error(err);
+        },
+        expiredTime: 1
     }
 };
 

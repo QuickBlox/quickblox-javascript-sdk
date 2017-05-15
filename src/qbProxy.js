@@ -28,8 +28,8 @@ function ServiceProxy() {
 }
 
 ServiceProxy.prototype = {
-    _enableSessionManagment: function(params) {
-        this.sessionManager = new SessionManager(params);
+    _enableSessionManagment: function(appCreds, params) {
+        this.sessionManager = new SessionManager(appCreds, params);
     },
     setSession: function(session) {
         this.qbInst.session = session;

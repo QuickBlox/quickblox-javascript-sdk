@@ -19,22 +19,6 @@ var UTILS = require('./qbUtils');
  * SessionManager управляет сессией, обновляет и сохраняет (document.cookie - qb*) предыдущее состояние,
  * а так же данные для повторного создания сессии.
  *
- *
- * Чтобы активировать SessionManagement необходимо в конфиг добавить:
- * ```javascript
- *  const config = {
- *      sessionManagement: { // It's a section for SessionManagement
- *          enable: true,
- *          onerror: function() {
- *              console.error(`SDK can\'t reestablish a session. Check out the Internet connection.`);
- *          }
- *      }
- *  }
- *  
- *  QB.init(creds.appId, creds.authKey, creds.authSecret, config);
- * ```
- * 
- * 
  * Cases:
  * 1.Перед создание сессии проверяется хранилище на наличие токена.
  *   Если в хранилище есть токен, тогда проверяется соответствие appId и количество пройденного времени с config.expiredTime.
@@ -54,18 +38,19 @@ var UTILS = require('./qbUtils');
  *   ```
  *
  */
-
-function SessionManager(params) {
-    this.appParams = params;
+function SessionManager(appCreds, params) {
+    this.appParams = appCreds;
     this.userParams = null;
 
-    this.isSessionCreated = false;
+    this._session = null;
+    this._lastRequest = {};
 
-    this.session = null;
-    this.lastRequest = {};
-
-    this.onerror = null; // client handle of error
+    this.liveTime = params.expiredTime;
+    this.onerror = params.onerror; // client handle of error
 }
+/** TODO
+ * 1. isSessionValid by liveTime
+ */
 
 /* STATIC METHODS */
 SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
@@ -82,7 +67,6 @@ SessionManager.prototype._createASRequestParams = function(params) {
     function serialize(obj) {
         var serializedRequest = Object.keys(obj).reduce(function(accumulator, currentVal, currentIndex, array) {
             accumulator.push(currentVal + '=' + obj[currentVal]);
-
             return accumulator;
         }, []).sort().join('&');
 

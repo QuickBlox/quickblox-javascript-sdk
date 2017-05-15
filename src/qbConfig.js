@@ -100,10 +100,12 @@ var config = {
     file: null
   },
   addISOTime: false,
+  // all options are require,
+  // SM is feature ONLY for QB session (3rd party services doesn't handle by it)
   sessionManagement: {
     enable: false, // * set to true to switch on the session Management
-    onerror: null, // handler
-    expiredTime: 2 // in hours
+    onerror: null, // * handler
+    expiredTime: 2 // * in min
   }
 };
 
