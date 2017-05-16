@@ -74,7 +74,7 @@
                         </a>
 
                         <div class="dashboard__status_wrap">
-                            <h2 class="dashboard__title">Text Chat Sample</h2>
+                            <h2 class="dashboard__title"><%- user.user_tags %></h2>
                             <p class="dashboard__status j-dashboard_status">
                                 Logged in as <%- user.name %>
                             </p>
@@ -191,7 +191,7 @@
             </div>
             <form action="" name="update_dialog" class="dialog_form m_dialog_form_update j-update_dialog_form">
                 <button type="button" class="btn m-update_dialog_btn_cancel j-update_dialog_btn_cancel" name="update_dialog_cancel">cancel</button>
-                <button class="btn m-update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit">add member</button>
+                <button class="btn m-update_dialog_btn j-update_dialog_btn"  type="submit" name="update_dialog_submit" disabled>add member</button>
             </form>
         </div>
     </script>

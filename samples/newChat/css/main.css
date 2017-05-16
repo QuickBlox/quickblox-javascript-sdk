@@ -110,7 +110,7 @@ body, html {
 
 .loading__logo {
     width: 150px;
-    margin: 0 auto 15px;
+    margin: 0 auto 15px auto;
 }
 
 .loading__description {
@@ -128,7 +128,6 @@ body, html {
     color: #FFFFFF;
     border: none;
     text-transform: uppercase;
-    padding: 0;
     cursor: pointer;
     padding: 12px 16px;
 }

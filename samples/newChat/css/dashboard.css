@@ -44,6 +44,11 @@
     flex: 1 0 56px;
 }
 
+.dashboard__logo img{
+    width: 41px;
+    height: 41px;
+}
+
 .dashboard__status_wrap {
     flex: 1 1 100%
 }
@@ -52,6 +57,7 @@
     font-weight: 500;
     line-height: 20px;
     color: #4A4A4A;
+    margin: 0 0 6px 0;
 }
 
 .dashboard__status {
@@ -274,7 +280,7 @@
     border: none;
     border-radius: 2px;
     cursor: pointer;
-    margin: 0 auto 20px
+    margin: 0 auto 20px auto;
 }
 
 .messages {
@@ -299,7 +305,7 @@
 .message__wrap {
     display: flex;
     flex-wrap: nowrap;
-    margin: 0 0 16px;
+    margin: 0 0 16px 0;
 }
 
 .message__wrap.m-notification_message {
@@ -326,11 +332,11 @@
     font-weight: 500;
     line-height: 20px;
     color: #778594;
-    margin: 0 0 4px;
+    margin: 0 0 4px 0;
 }
 
 .message__text {
-    margin: 0 0 10px;
+    margin: 0 0 10px 0;
     font-size: 14px;
     line-height: 20px;
     color: #4A4A4A;
@@ -358,7 +364,7 @@
     position: absolute;
     visibility: hidden;
     display: block;
-    margin: 0 0 5px;
+    margin: 0 0 5px 0;
 }
 
 .message_attachment.loaded {
@@ -604,7 +610,7 @@
     font-weight: 500;
     line-height: 18px;
     color: #4A4A4A;
-    margin: 0 0 3px;
+    margin: 0 0 3px 0;
 }
 .user__last_seen {
     font-size: 13px;
