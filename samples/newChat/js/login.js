@@ -159,7 +159,7 @@ Login.prototype.setListeners = function(){
     _.each(formInputs, function(i){
         i.addEventListener('focus', function(e){
             var elem = e.currentTarget,
-                container = elem.closest('.login_form__row');
+                container = elem.parentElement;
 
             if (!container.classList.contains('filled')) {
                 container.classList.add('filled');
@@ -168,7 +168,7 @@ Login.prototype.setListeners = function(){
 
         i.addEventListener('focusout', function(e){
             var elem = e.currentTarget,
-                container = elem.closest('.login_form__row');
+                container = elem.parentElement;
 
             if (!elem.value.length && container.classList.contains('filled')) {
                 container.classList.remove('filled');

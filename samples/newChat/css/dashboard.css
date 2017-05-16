@@ -44,6 +44,11 @@
     flex: 1 0 56px;
 }
 
+.dashboard__logo img{
+    width: 41px;
+    height: 41px;
+}
+
 .dashboard__status_wrap {
     flex: 1 1 100%
 }
@@ -52,6 +57,7 @@
     font-weight: 500;
     line-height: 20px;
     color: #4A4A4A;
+    margin: 0 0 6px;
 }
 
 .dashboard__status {
