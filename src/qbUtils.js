@@ -1,4 +1,4 @@
-/* eslint no-console: 2 */
+/* eslint no-console: 0 */
 
 'use strict';
 

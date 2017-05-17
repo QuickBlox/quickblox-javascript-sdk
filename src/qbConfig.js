@@ -102,9 +102,10 @@ var config = {
   addISOTime: false,
   // all options are require,
   // SM is feature ONLY for QB session (3rd party services doesn't handle by it)
+  // SM is feature ONLY for browser enviroment
   sessionManagement: {
     enable: false, // * set to true to switch on the session Management
-    onerror: null, // * handler
+    onerror: null, // * handler(err)
     expiredTime: 2 // * in min
   }
 };

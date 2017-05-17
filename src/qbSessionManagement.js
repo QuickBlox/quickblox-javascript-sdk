@@ -6,116 +6,114 @@ var Promise = require('bluebird');
 var CONFIG = require('./qbConfig');
 var UTILS = require('./qbUtils');
 
-/**
- * SessionManager - Session AutoManagment
- * SessionManager является частью qbProxy
- *
- * There are 3 types of session (http://quickblox.com/developers/Authentication_and_Authorization#Access_Rights):
- * 1. API Application (AS). 
- * 2. User session (US).
- * 3. Account owner (AO).
- * 
- * 1. How is SessionManager works?
- * SessionManager управляет сессией, обновляет и сохраняет (document.cookie - qb*) предыдущее состояние,
- * а так же данные для повторного создания сессии.
- *
- * Cases:
- * 1.Перед создание сессии проверяется хранилище на наличие токена.
- *   Если в хранилище есть токен, тогда проверяется соответствие appId и количество пройденного времени с config.expiredTime.
- *   
- *   1.1 Создание API Application (AS).
- *   After this action you have a read rules.
- *   ```javascript
- *     
- *   ```
- *
- *   1.2 Update AS to User session.
- *   After create a AS session by QB.init with apps parameters you can login by user.
- *   ```javascript
- *     QB.login(userParams, function(err, result) {
- *       console.log('LOGIN Callback', result, err);
- *     });
- *   ```
- *
- */
 function SessionManager(appCreds, params) {
-    this.appParams = appCreds;
-    this.userParams = null;
+    this._appParams = appCreds;
+    this._userParams = null;
 
     this._session = null;
+    this._lastValidRequestTime = null;
     this._lastRequest = {};
 
     this.liveTime = params.expiredTime;
     this.onerror = params.onerror; // client handle of error
+
+    UTILS.QBLog('[SessionManager] switched on');
 }
-/** TODO
- * 1. isSessionValid by liveTime
- */
-
 /* STATIC METHODS */
-SessionManager._ajax = typeof window !== 'undefined' ? require('./plugins/jquery.ajax').ajax : require('request');
+SessionManager._ajax = require('./plugins/jquery.ajax').ajax;
 
-SessionManager.prototype._createASRequestParams = function(params) {
-    function randomNonce() {
-        return Math.floor(Math.random() * 10000);
-    }
+SessionManager.prototype.isSessionValid = function() {
+    return this._session !== null && this._isSessionExpiredByLivetime();
+};
 
-    function unixTime() {
-        return Math.floor(Date.now() / 1000);
-    }
+SessionManager.prototype._isSessionExpiredByLivetime = function() {
+    var liveTimeInMillisec = this.liveTime * 60 * 1000;
+    var timeFromLastRequestInMillisec = Date.now() - this._lastValidRequestTime;
 
-    function serialize(obj) {
-        var serializedRequest = Object.keys(obj).reduce(function(accumulator, currentVal, currentIndex, array) {
-            accumulator.push(currentVal + '=' + obj[currentVal]);
-            return accumulator;
-        }, []).sort().join('&');
-
-        return serializedRequest;
-    }
-
-    function signRequest(reqParams, salt) {
-        var serializedRequest = serialize(reqParams);
-
-        return new CryptoSHA1(serializedRequest, salt).toString();
-    }
-
-    var reqParams = {
-        'application_id': params.appId,
-        'auth_key': params.authKey,
-        'nonce': randomNonce(),
-        'timestamp': unixTime()
-    };
-
-    reqParams.signature = signRequest(reqParams, params.authSecret);
-
-    return reqParams;
+    return this._lastValidRequestTime !== null && (liveTimeInMillisec > timeFromLastRequestInMillisec);
 };
 
 SessionManager.prototype.createSession = function() {
-    var self = this;
+  UTILS.QBLog('[SessionManager] createSession starting...');
 
-    var requestData = {
-            'type': 'POST',
-            'url': UTILS.getUrl(CONFIG.urls.session)
-        };
+  var self = this;
+  var requestData = {
+      'type': 'POST',
+      'url': UTILS.getUrl(CONFIG.urls.session),
+      'data': this._getAuthMsg()
+  };
 
-    return new Promise(function(resolve, reject) {
-        self.session = {};
+  return new Promise(function(resolve, reject) {
+    SessionManager._ajax(requestData)
+      .done(function(res) {
+        self._lastValidRequestTime = new Date(res.session.created_at).getTime();
+        self._session = res.session.token;
 
-        reqData.data = self._createASRequestParams(self.appCreds);
+        resolve();
+      }).fail(function(jqXHR, textStatus) {
+        this._session = null;
+        self._lastValidRequestTime = null;
 
-        SessionManager._ajax(reqData).done(function(response) {
-            self.session = response.session;
-            self.isSessionCreated = true;
-
-            resolve(self.session.token);
-        }).fail(function(jqXHR, textStatus) {
-            this.session = null;
-
-            reject(textStatus);
-        });
+        reject(textStatus);
     });
+  });
 };
+
+SessionManager.prototype._getAuthMsg = function() {
+  function randomNonce() {
+    return Math.floor(Math.random() * 10000);
+  }
+
+  function unixTime() {
+    return Math.floor(Date.now() / 1000);
+  }
+
+  function serialize(obj) {
+    var serializedRequest = Object.keys(obj).reduce(function(accumulator, currentVal, currentIndex, array) {
+      accumulator.push(currentVal + '=' + obj[currentVal]);
+
+      return accumulator;
+    }, []).sort().join('&');
+
+    return serializedRequest;
+  }
+
+  function signRequest(reqParams, salt) {
+    var serializedRequest = serialize(reqParams);
+
+    return new CryptoSHA1(serializedRequest, salt).toString();
+  }
+
+  var self = this;
+
+  var reqParams = {
+    'application_id': self._appParams.appId,
+    'auth_key': self._appParams.authKey,
+    'nonce': randomNonce(),
+    'timestamp': unixTime()
+  };
+
+  if(self._userParams) {
+    reqParams.user = {};
+
+    for(var i in self._userParams) {
+      reqParams.user[i] = self._userParams[i];
+    }
+  }
+
+  reqParams.signature = signRequest(reqParams, self._appParams.authSecret);
+
+  return reqParams;
+};
+
+    // 
+    // return new Promise(function(resolve, reject) {
+    //     self.session = {};
+
+    //     reqData.data = self._createASRequestParams(self.appCreds);
+
+
+    // });
 
 // SessionManager._b64EncodeUnicode = function(str) {
 //     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {

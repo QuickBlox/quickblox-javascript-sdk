@@ -28,7 +28,7 @@ QuickBlox.prototype = {
         if (configMap && typeof configMap === 'object') {
             config.set(configMap);
         }
-        console.info(configMap);
+
         /**
          * Return current version of QuickBlox JavaScript SDK
          * @memberof QB
@@ -87,11 +87,15 @@ QuickBlox.prototype = {
   
             this.service.setSession({ token: appIdOrToken });
         } else {
-            if(config.sessionManagement.enable) {
+            config.creds.appId = appIdOrToken;
+            config.creds.authKey = authKeyOrAppId;
+            config.creds.authSecret = authSecret;
+
+            if(config.sessionManagement.enable && isBrowser) {
                 var appCreds = {
-                    appId: config.creds.appId,
-                    authKey: config.creds.authKey,
-                    authSecret: config.creds.authSecret
+                    appId: appIdOrToken,
+                    authKey: authKeyOrAppId,
+                    authSecret: authSecret
                 };
 
                 this.service._enableSessionManagment(appCreds, config.sessionManagement);

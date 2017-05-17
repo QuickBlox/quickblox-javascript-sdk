@@ -16,118 +16,109 @@
   <button id="send_request" >Send a request without user logged</button>
 </p>
 
+<p>
+  Авторизация пользотелем
+  <button id="login" >Login</button>
+</p>
+
+<p>
+  Послать запрос юзером
+  <button id="send_request_logged" >Send a request as user</button>
+</p>
+
+
 
 <!-- 
-<button id="initWithParams" >Init the SDK with params</button>
-<button id="login" >Login</button>
+
 <button id="logout" >Logout</button>
-<button id="send_request_logged" >Send a request as user</button>
+
 <button id="destroy_session" type="button">Destroy the session</button>
  -->
 <script src="../quickblox.min.js"></script>
 
 <script>
-var config = {
-    sessionManagement: {
-        enable: true,
-        onerror: function() {
-            console.error('SDK can\'t reestablish a session. Check out the Internet connection.');
-        }
-    }
+'use strict';
+
+// https://adminstage3.quickblox.com/apps/51091/
+var creds = {
+  appId: 51092,
+  authKey: 'f9pjsfBgXFtGw9D',
+  authSecret: '54djY7yK8DeNHJA',
 };
 
-var creds = {
-  appId: 53036,
-  authKey: 'ZdJacVeNw3B3FBF',
-  authSecret: 'AQadYv32xN54Oad'
-}
+var config = {
+  sessionManagement: {
+    enable: true,
+    onerror: function() {
+      console.error('SDK can\'t reestablish a session. Check out the Internet connection.');
+    },
+    expiredTime: 3 // im min.
+  },
+  debug: {
+    mode: 1
+  },
+  endpoints: {
+    api: 'apistage3.quickblox.com',
+    chat: 'chatstage3.quickblox.com',
+    muc: 'muc.chatstage3.quickblox.com'
+  },
+};
 
-// https://adminstage1.quickblox.com/apps
-// email sessionmanagment@test.com
+
 // login sessionmanagment
-// pass 49249sessionmanagment
-// id 247
-// var userParams = {
-//     email: 'sessionmanagment@test.com',
-//     password: '49249sessionmanagment'
-// };
-
+// id 22039293
 var userParams = {
-  login: 'chatuser-1',
-  password: 'x6Bt0VDy5'
+    email: 'sessionmanagment@test.com',
+    password: '49249sessionmanagment'
 };
 
 var init = document.getElementById('init');
+
+/* INIT */
+init.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  QB.init(creds.appId, creds.authKey, creds.authSecret, config);
+});
+
 var sendRequest = document.getElementById('send_request');
 
-/** INIT */
-init.addEventListener('click', function() {
-  QB.init(creds.appId, creds.authKey, creds.authSecret, config);
-
-  console.info('Init the SDK');
-  return false;
-});
-
 /* SEND REQUEST without user logged */
-sendRequest.addEventListener('click', function() {
-  QB.users.listUsers(function(err, res){
-    console.info('SENT REQUEST without user logged', err, res);
-  });
+sendRequest.addEventListener('click', function(e) {
+  e.preventDefault();
 
-  return false;
+  QB.users.listUsers(function(err, res){
+    console.info('Get list of user', err, res);
+  });
 });
 
 
-// var initByParams = document.getElementById('initWithParams');
+var login = document.getElementById('login');
+login.addEventListener('click', function() {
+  QB.login(userParams, function(err, res) {
+    console.info('LOGIN Callback', err, res);
+  });
+});
 
-// var login = document.getElementById('login');
-// var logout = document.getElementById('logout');
+var sendRequestLogged = document.getElementById('send_request_logged');
+sendRequestLogged.addEventListener('click', function() {
+    QB.chat.dialog.list(null, function(err, resDialogs) {
+        err ? console.error(err) : console.info(resDialogs);
+    });
 
+    return false;
+});
 
-// var sendRequestLogged = document.getElementById('send_request_logged');
+var logout = document.getElementById('logout');
 
-// var destroySession = document.getElementById('destroy_session');
+// LOGOUT
+logout.addEventListener('click', function() {
+    QB.logout(function(err, result) {
+        console.log('LOGIN Callback', result, err);
+    });
 
-// /* START FUN! */
-
-
-// /* LOGIN */
-// login.addEventListener('click', function() {
-//   QB.login(userParams, function(err, result) {
-//      // console.log( 'LOGIN Callback', result, err);
-//   });
-
-//   return false;
-// });
-
-
-
-// /* SEND REQUEST with user logged*/
-// sendRequestLogged.addEventListener('click', function() {
-//     QB.chat.dialog.list(null, function(err, resDialogs) {
-//         err ? console.error(err) : console.info(resDialogs);
-//     });
-
-//     return false;
-// });
-
-// /* DESTRIYED the session */
-// destroySession.addEventListener('click', function() {
-//     QB.destroySession(function() {
-//         console.info('Destroyed the session');
-//     });
-    
-//     return false;
-// });
-
-// /* LOGOUT */
-// logout.addEventListener('click', function() {
-//     QB.logout(function(err, result) {
-//         console.log('LOGIN Callback', result, err);
-//     });
-
-//     return false;
-// });
+    return false;
+});
 
 </script>
 </body>
