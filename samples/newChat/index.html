@@ -216,7 +216,7 @@
                 <i class="material-icons">account_circle</i>
             </span>
             <div class="message__content_wrap">
-                <p class="message__sender_name"><%- sender ? sender.name : message.sender_id %></p>
+                <p class="message__sender_name"><%- sender ? sender.name : 'unknown user (' + message.sender_id + ')' %></p>
                 <% if (message.message) { %>
                     <p class="message__text"><%= message.message %></p>
                 <% } %>

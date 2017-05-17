@@ -251,6 +251,7 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
 
         messagesHtml = helpers.fillTemplate('tpl_message', {
             message: {
+                sender_id: message.sender_id,
                 message: messageText,
                 attachments: message.attachments,
                 date_sent: message.date_sent

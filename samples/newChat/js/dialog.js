@@ -30,7 +30,7 @@ Dialog.prototype.init = function () {
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
 
         if (container.classList.contains('full')) {
-            container.removeEventListener('scroll', loadMoreDialogs);
+            return false;
         }
 
         if (position <= 50 && !container.classList.contains('loading')) {
@@ -475,6 +475,10 @@ Dialog.prototype.updateDialog = function (updates) {
         }
 
         messageModule.sendMessage(dialogId, updatedMsg);
+
+        if(updates.title){
+            self.updateDialogUi(dialogId, updates.title);
+        }
 
         router.navigate('/dialog/' + dialog._id);
     }).catch(function(error){
