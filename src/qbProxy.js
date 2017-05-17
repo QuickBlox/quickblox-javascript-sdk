@@ -113,6 +113,8 @@ ServiceProxy.prototype = {
             },
             success: function(data, status, jqHXR) {
               if(config.sessionManagement.enable) {
+                _this.sessionManager.updateLiveTime(Date.now());
+
                 if(params.url.indexOf(config.urls.login) !== -1) {
                   if(params.type === 'POST') {
                     _this.sessionManager._userParams = params.data;

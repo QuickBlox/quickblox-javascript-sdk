@@ -10,14 +10,21 @@ function SessionManager(appCreds, params) {
     this._appParams = appCreds;
     this._userParams = null;
 
-    this._session = null;
+    this._session = null; // session token
     this._lastValidRequestTime = null;
     this._lastRequest = {};
 
     this.liveTime = params.expiredTime;
     this.onerror = params.onerror; // client handle of error
 
+    this._QB_APP_CREDS = 'QBAC';
+    this._QB_USER_PARAMS = 'QBUP';
+    this._QB_SESSION = 'QBS';
+    this._QB_SESSION_LIVETIME = 'QBSLT';
+
     UTILS.QBLog('[SessionManager] switched on');
+
+    this._init();
 }
 /* STATIC METHODS */
 SessionManager._ajax = require('./plugins/jquery.ajax').ajax;
@@ -49,6 +56,9 @@ SessionManager.prototype.createSession = function() {
         self._lastValidRequestTime = new Date(res.session.created_at).getTime();
         self._session = res.session.token;
 
+        window.localStorage.setItem(self._QB_SESSION_LIVETIME,  self._lastValidRequestTime);
+        window.localStorage.setItem(self._QB_SESSION, self._session);
+
         resolve();
       }).fail(function(jqXHR, textStatus) {
         this._session = null;
@@ -57,6 +67,11 @@ SessionManager.prototype.createSession = function() {
         reject(textStatus);
     });
   });
+};
+
+SessionManager.prototype.updateLiveTime = function(time) {
+  this._lastValidRequestTime = time;
+  window.localStorage.setItem(this._QB_SESSION_LIVETIME, this._lastValidRequestTime);
 };
 
 SessionManager.prototype._getAuthMsg = function() {
@@ -106,26 +121,65 @@ SessionManager.prototype._getAuthMsg = function() {
   return reqParams;
 };
 
-    // 
-    // return new Promise(function(resolve, reject) {
-    //     self.session = {};
+SessionManager.prototype._init = function() {
+  var self = this;
 
-    //     reqData.data = self._createASRequestParams(self.appCreds);
+  var savedAndEncodedAppCreds = sessionStorage.getItem(self._QB_APP_CREDS);
+  var savedAppCreds = savedAndEncodedAppCreds ? SessionManager._b64DecodeUnicode(savedAndEncodedAppCreds) : null;
 
+  if(savedAppCreds && SessionManager.isEqualObj(savedAppCreds, self._appParams)) {
+    var savedAndEncodedUserParams = sessionStorage.getItem(self._QB_USER_PARAMS);
+    var savedUserParams = savedAndEncodedUserParams ? SessionManager._b64DecodeUnicode(savedAndEncodedUserParams) : null;
 
-    // });
+    var savedAndEncodedSession = sessionStorage.getItem(self._QB_SESSION);
+    var savedSession = savedAndEncodedSession ? SessionManager._b64DecodeUnicode(savedAndEncodedSession) : null;
 
-// SessionManager._b64EncodeUnicode = function(str) {
-//     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-//         return String.fromCharCode('0x' + p1);
-//     }));
-// };
+    var savedAndEncodedSessionLivetime = sessionStorage.getItem(self._QB_SESSION_LIVETIME);
+    var savedSessionLivetime = savedAndEncodedSessionLivetime ? SessionManager._b64DecodeUnicode(savedAndEncodedSessionLivetime) : null;
 
-// SessionManager._b64DecodeUnicode = function(str) {
-//     return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
-//         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-//     }).join(''));
-// };
+    if(savedUserParams) {
+      self._userParams = savedUserParams;
+    }
+
+    if(savedSession) {
+      self._session = savedSession;
+      self._lastValidRequestTime = savedSessionLivetime;
+    }
+  } else {
+    var EncodedAppCreds = SessionManager._b64EncodeUnicode(self._appParams);
+    window.localStorage.setItem(self._QB_APP_CREDS, EncodedAppCreds);
+  }
+};
+
+SessionManager.isEqualObj = function(f, s) {
+  var keysF = Object.keys(f);
+  var keysS = Object.keys(s);
+
+  if ( keysF.length != keysS.length ) {
+    return false;
+  }
+
+  return !keysF.filter(function( key ){
+    if ( typeof f[key] == 'object' ||  Array.isArray( f[key] ) ) {
+      return !Object.equal(f[key], s[key]);
+    } else {
+      return f[key] !== s[key];
+    }
+  }).length;
+};
+
+SessionManager._b64EncodeUnicode = function(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+    function toSolidBytes(match, p1) {
+      return String.fromCharCode('0x' + p1);
+  }));
+};
+
+SessionManager._b64DecodeUnicode = function(str) {
+  return decodeURIComponent(atob(str).split('').map(function(c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+};
 
 // SessionManager._getSavedInitialInfo = function(value) {
 //     var regExp = new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)');

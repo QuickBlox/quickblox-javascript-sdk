@@ -33,13 +33,13 @@ QuickBlox.prototype = {
          * Return current version of QuickBlox JavaScript SDK
          * @memberof QB
          * */
-        this.version = config.version;
+        self.version = config.version;
 
         /**
          * Return current build number of QuickBlox JavaScript SDK
          * @memberof QB
          * */
-        this.buildNumber = config.buildNumber;
+        self.buildNumber = config.buildNumber;
 
         var Proxy = require('./qbProxy');
         this.service = new Proxy();

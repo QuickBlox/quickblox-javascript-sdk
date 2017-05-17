@@ -38,7 +38,6 @@
     "email": "web@quickblox.com"
   },
   "dependencies": {
-    "bluebird": "^3.4.7",
     "crypto-js": "3.1.2-2",
     "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",
@@ -70,6 +69,12 @@
     "files": [
       "quickblox.min.js"
     ]
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "jasmine"
+    }
   },
   "scripts": {
     "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
