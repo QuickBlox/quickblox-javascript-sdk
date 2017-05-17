@@ -475,6 +475,7 @@ Dialog.prototype.updateDialog = function (updates) {
         }
 
         messageModule.sendMessage(dialogId, updatedMsg);
+
         if(updates.title){
             self.updateDialogUi(dialogId, updates.title);
         }
