@@ -64,7 +64,9 @@ User.prototype.getUsersByIds = function (userList) {
                         return item.user.id === id;
                     });
 
-                    self.addToCache(user.user);
+                    if(user !== undefined) {
+                        self.addToCache(user.user);
+                    }
                 });
                 resolve();
             }
