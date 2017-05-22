@@ -182,6 +182,7 @@ describe('PushNotifications API', function() {
             done.fail("List a subscription error: " + JSON.stringify(err));
           }
         } else {
+          
           var subscriptionId = result[0].subscription.id;
 
           QB.pushnotifications.subscriptions.delete(subscriptionId, function(err, res){

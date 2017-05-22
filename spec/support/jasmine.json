@@ -11,6 +11,6 @@
     "QB-PushnotificationsSpec.js",
     "QB-WebRTCSpec.js"
   ],
-  "stopSpecOnExpectationFailure": false,
+  "stopSpecOnExpectationFailure": true,
   "random": false
 }
