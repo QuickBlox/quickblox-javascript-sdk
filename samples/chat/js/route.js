@@ -100,7 +100,6 @@ router.on({
 
         function _renderSelectedDialog(){
             var currentDialog = dialogModule._cache[dialogId];
-
             if(!currentDialog){
                 dialogModule.getDialogById(dialogId).then(function(dialog){
                     var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
@@ -115,6 +114,9 @@ router.on({
                     });
 
                 }).catch(function(error){
+                    console.error(error);
+                    var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
+                    app.loadChatList(tab)
                     router.navigate('/dashboard');
                 });
             } else {
@@ -174,6 +176,8 @@ router.on({
         function _renderUsers(dialogOccupants){
             var userList = document.querySelector('.j-update_chat__user_list'),
                 counterElem = document.querySelector('.j-update__chat_counter'),
+                addUsersBtn = document.querySelector('.j-update_dialog_btn'),
+
                 newUsersCount = +counterElem.innerText.trim();
 
             userModule.getUsers().then(function(usersArray){
@@ -201,6 +205,12 @@ router.on({
                         }
 
                         counterElem.innerText = newUsersCount;
+
+                        if(newUsersCount) {
+                            addUsersBtn.disabled = false;
+                        } else {
+                            addUsersBtn.disabled = true;
+                        }
                     });
 
                     userList.appendChild(userElem);
@@ -223,13 +233,15 @@ router.on({
                 e.preventDefault();
                 e.stopPropagation();
 
-                editTitleForm.classList.add('active');
 
-                if(!editTitleForm.classList.contains('active')){
-                    editTitleInput.setAttribute('disabled', true);
-                } else {
+                editTitleForm.classList.toggle('active');
+
+                if(editTitleForm.classList.contains('active')){
                     editTitleInput.removeAttribute('disabled');
                     editTitleInput.focus();
+                } else {
+                    editTitleInput.setAttribute('disabled', true);
+                    _updateDialogTitleRequest();
                 }
             });
 
@@ -241,24 +253,11 @@ router.on({
                 }
             });
 
-            editTitleInput.addEventListener('blur', function(e){
-                var params = {
-                    id: dialogId,
-                    title: editTitleInput.value.trim()
-                };
-
-                if(dialogModule._cache[dialogId].name !== params.title) {
-                    dialogModule.updateDialog(params);
-                    editTitleForm.classList.remove('active');
-                    editTitleInput.setAttribute('disabled', true);
-                }
-            });
-
             editTitleForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                editTitleInput.blur();
-            });
 
+                _updateDialogTitleRequest();
+            });
 
             editUsersCountForm.addEventListener('submit', function(e){
                 e.preventDefault();
@@ -283,6 +282,19 @@ router.on({
                 e.stopPropagation();
                 router.navigate('/dialog/' + dialogId);
             });
+
+            function _updateDialogTitleRequest(){
+                var params = {
+                    id: dialogId,
+                    title: editTitleInput.value.trim()
+                };
+
+                if(dialogModule._cache[dialogId].name !== params.title) {
+                    dialogModule.updateDialog(params);
+                    editTitleForm.classList.remove('active');
+                    editTitleInput.setAttribute('disabled', true);
+                }
+            }
         }
     }
 }).resolve();

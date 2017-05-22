@@ -5,6 +5,7 @@ function Dialog() {
     
     this.dialogId = null;
     this.prevDialogId = null;
+    this.limit = appConfig.dilogsPerRequers || 30;
 
     // elements
     this.sidebar = null;
@@ -15,7 +16,6 @@ function Dialog() {
     this.editLink = null;
     this.quitLink = null;
     this.attachmentsPreviewContainer = null;
-    this.limit = appConfig.dilogsPerRequers || 30;
 }
 
 Dialog.prototype.init = function () {
@@ -30,7 +30,7 @@ Dialog.prototype.init = function () {
             position = container.scrollHeight - (container.scrollTop + container.offsetHeight);
 
         if (container.classList.contains('full')) {
-            container.removeEventListener('scroll', loadMoreDialogs);
+            return false;
         }
 
         if (position <= 50 && !container.classList.contains('loading')) {
@@ -352,7 +352,7 @@ Dialog.prototype.createDialog = function (params) {
 
             self.joinToDialog(id).then(function(){
                 if(createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
-                    QB.chat.send(self._cache[id].jidOrUserId, notificationMessage);
+                    messageModule.sendMessage(id, notificationMessage);
                 }
             });
 
@@ -364,7 +364,6 @@ Dialog.prototype.createDialog = function (params) {
                 var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
                 app.loadChatList(tab).then(function () {
                     self.renderDialog(self._cache[id], true);
-
                 }).catch(function(error){
                     console.error(error);
                 });
@@ -462,7 +461,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
             self._cache[dialogId].users = self._cache[dialogId].users.concat(newUsers);
 
-            updatedMsg.body = app.user.name + ' add ' + usernames.join(',') + ' to the conversation.';
+            updatedMsg.body = app.user.name + ' adds ' + usernames.join(',') + ' to the conversation.';
             updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
             router.navigate('/dialog/' + dialogId);
@@ -475,7 +474,11 @@ Dialog.prototype.updateDialog = function (updates) {
             _notifyNewUsers(newUsers);
         }
 
-        QB.chat.send(dialog.xmpp_room_jid, updatedMsg);
+        messageModule.sendMessage(dialogId, updatedMsg);
+
+        if(updates.title){
+            self.updateDialogUi(dialogId, updates.title);
+        }
 
         router.navigate('/dialog/' + dialog._id);
     }).catch(function(error){
@@ -573,7 +576,7 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
     function _notuyfyUsers(){
         var msg = {
             type: 'groupchat',
-            body:  app.user.name + ' leave the chat.',
+            body:  app.user.name + ' left the chat.',
             extension: {
                 save_to_history: 1,
                 dialog_id: dialog._id,
@@ -583,7 +586,7 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
             }
         };
 
-        QB.chat.send(self._cache[dialogId].jidOrUserId, msg)
+        messageModule.sendMessage(dialogId, msg);
     }
 
 };
