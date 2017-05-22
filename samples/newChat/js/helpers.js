@@ -3,10 +3,6 @@
 function Helpers() {
 }
 
-Helpers.prototype.redirectToPage = function (page) {
-    window.location.hash = '#' + page;
-};
-
 Helpers.prototype.fillTemplate = function (name, options) {
     var tpl = _.template(document.querySelector('#' + name).innerHTML);
     return tpl(options);
@@ -21,6 +17,19 @@ Helpers.prototype.clearView = function (view) {
 
 Helpers.prototype.compileDialogParams = function (dialog) {
     var self = this;
+
+    if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT){
+        var user = {
+            full_name: dialog.name,
+            id: dialog.occupants_ids.filter(function (id) {
+                if (id !== app.user.id) return id;
+            })[0],
+            color: dialog.color || _.random(1, 10)
+        };
+
+        userModule.addToCache(user);
+    }
+
     return {
         _id: dialog._id,
         name: dialog.name,
@@ -57,7 +66,7 @@ Helpers.prototype.compileDialogParams = function (dialog) {
             var occupants = dialog.occupants_ids;
             for(var i = 0; i < occupants.length; i++){
                 if(occupants[i] !== app.user.id){
-                    return userModule._cache[occupants[i]].color
+                    return userModule._cache[occupants[i]].color;
                 }
             }
         }
@@ -75,7 +84,6 @@ Helpers.prototype.getTime = function (time) {
 Helpers.prototype.fillMessagePrams = function (message) {
     var self = this;
     
-    message.message = self.fillMessageBody(message.message || '');
     // date_sent comes in UNIX time.
     message.date_sent = self.getTime(message.date_sent * 1000);
 
@@ -94,10 +102,26 @@ Helpers.prototype.fillMessagePrams = function (message) {
 };
 
 Helpers.prototype.fillMessageBody = function (str) {
-    // replace links
-    return str.replace(/(https?:\/\/[^\s]+)/g, function (url) {
-        return '<a href="' + url + '" target="_blank">' + url + '</a>';
+    var url, url_text;
+    var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+
+    str = escapeHTML(str);
+
+    // parser of paragraphs
+    str = str.replace(/\n/g, '<br>');
+
+    // parser of links
+    str = str.replace(URL_REGEXP, function(match) {
+        url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
+        url_text = match;
+        return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
     });
+
+    return str;
+
+    function escapeHTML(s) {
+        return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 };
 
 Helpers.prototype.getSrcFromAttachmentId = function (id) {
@@ -112,7 +136,7 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
             created_at: +msg.extension.date_sent || Date.now(),
             date_sent: self.getTime(+msg.extension.date_sent * 1000 || Date.now()),
             delivered_ids: [],
-            message: self.fillMessageBody(msg.body),
+            message: msg.body,
             read_ids: [],
             sender_id: userId,
             chat_dialog_id: msg.extension.dialog_id
@@ -130,6 +154,14 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
 
     if (message.message === CONSTANTS.ATTACHMENT.BODY) {
         message.message = '';
+    }
+
+    if(msg.extension.notification_type) {
+        message.notification_type = msg.extension.notification_type;
+    }
+
+    if(msg.extension.occupants_ids_added){
+        message.occupants_ids_added = msg.extension.occupants_ids_added;
     }
 
     return message;
@@ -180,6 +212,20 @@ Helpers.prototype.clearCache = function () {
 
     userModule._cache = {};
     app.user = null;
+};
+
+Helpers.prototype.getUui = function(){
+    var navigator_info = window.navigator;
+    var screen_info = window.screen;
+    var uid = 'chat' + navigator_info.mimeTypes.length;
+
+    uid += navigator_info.userAgent.replace(/\D+/g, '');
+    uid += navigator_info.plugins.length;
+    uid += screen_info.height || '';
+    uid += screen_info.width || '';
+    uid += screen_info.pixelDepth || '';
+
+    return uid;
 };
 
 var helpers = new Helpers();

@@ -3,7 +3,7 @@
 function Message() {
     this.container = null;
     this.attachmentPreviewContainer = null;
-    this.typingTymeout = appConfig.typingTymeout || 3
+    this.typingTimeout = appConfig.typingTimeout || 3;
     this.limit = appConfig.messagesPerRequest || 50;
 
     this.dialogTitle = null;
@@ -14,27 +14,26 @@ function Message() {
 
 Message.prototype.init = function () {
     var self = this;
-
     self.container = document.querySelector('.j-messages');
     self.attachmentPreviewContainer = document.querySelector('.j-attachments_preview');
     self.dialogTitle = document.querySelector('.j-content__title');
 
     document.forms.send_message.addEventListener('submit', function (e) {
         e.preventDefault();
-
-        self.sendMessage(dialogModule.dialogId);
+        self.submitSendMessage(dialogModule.dialogId);
         document.forms.send_message.message_feald.focus();
     });
 
     document.forms.send_message.attach_file.addEventListener('change', self.prepareToUpload.bind(self));
     document.forms.send_message.message_feald.addEventListener('input', self.typingMessage.bind(self));
+    document.forms.send_message.message_feald.addEventListener('input', self.checkMessageSymbolsCount.bind(self));
     document.forms.send_message.message_feald.addEventListener('keydown', function (e) {
         var key = e.keyCode;
 
         if (key === 13) {
             if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
                 e.preventDefault();
-                self.sendMessage(dialogModule.dialogId);
+                self.submitSendMessage(dialogModule.dialogId);
             }
         }
     });
@@ -50,13 +49,21 @@ Message.prototype.typingMessage = function (e) {
         self.sendIsTypingStatus(dialogId);
 
         self._typingTimer = setInterval(function () {
-            if ((Date.now() - self._typingTime) / 1000 >= self.typingTymeout) {
+            if ((Date.now() - self._typingTime) / 1000 >= self.typingTimeout) {
                 self.sendStopTypingStatus(dialogId);
             }
         }, 500);
     }
 
     dialogModule._cache[dialogId].draft.message = e.currentTarget.value
+};
+
+Message.prototype.checkMessageSymbolsCount = function() {
+    var messageText = document.forms.send_message.message_feald.value,
+        sylmbolsCount = messageText.length;
+    if(sylmbolsCount > 1000) {
+        document.forms.send_message.message_feald.value = messageText.slice(0, 1000);
+    }
 };
 
 Message.prototype.sendIsTypingStatus = function (dialogId) {
@@ -77,7 +84,7 @@ Message.prototype.sendStopTypingStatus = function (dialogId) {
     self._typingTime = null;
 };
 
-Message.prototype.sendMessage = function (dialogId) {
+Message.prototype.submitSendMessage = function (dialogId) {
     if (!app.checkInternetConnection()) {
         return false;
     }
@@ -115,19 +122,8 @@ Message.prototype.sendMessage = function (dialogId) {
 
     // Don't send empty message
     if (!msg.body) return false;
-    msg.id = QB.chat.send(dialog.jidOrUserId, msg);
-    msg.extension.dialog_id = dialogId;
-    
-    var message = helpers.fillNewMessageParams(app.user.id, msg);
 
-    if (dialog.type === 3) {
-        dialogModule._cache[dialogId].messages.unshift(message);
-        if (dialogModule.dialogId === dialogId) {
-            self.renderMessage(message, true);
-        }
-    }
-
-    dialogModule.changeLastMessagePreview(dialogId, message);
+    self.sendMessage(dialogId, msg);
 };
 
 Message.prototype.setLoadMoreMessagesListener = function () {
@@ -153,9 +149,27 @@ Message.prototype.setLoadMoreMessagesListener = function () {
     }
 };
 
+Message.prototype.sendMessage = function(dialogId, msg){
+    var self = this,
+        message = JSON.parse(JSON.stringify(msg)),
+        dialog = dialogModule._cache[dialogId],
+        jidOrUserId = dialog.jidOrUserId;
+
+    message.id = QB.chat.send(jidOrUserId, msg);
+    message.extension.dialog_id = dialogId;
+
+    var newMessage = helpers.fillNewMessageParams(app.user.id, msg);
+
+    dialogModule._cache[dialogId].messages.unshift(newMessage);
+    if (dialogModule.dialogId === dialogId) {
+        self.renderMessage(newMessage, true);
+    }
+
+    dialogModule.changeLastMessagePreview(dialogId, newMessage);
+};
+
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
-
     var self = this,
         params = {
             chat_dialog_id: dialogId,
@@ -169,13 +183,11 @@ Message.prototype.getMessages = function (dialogId) {
     QB.chat.message.list(params, function (err, messages) {
         if (!err) {
             var dialog = dialogModule._cache[dialogId];
-
             dialog.messages = dialog.messages.concat(messages.items);
 
             if (messages.items.length < self.limit) {
                 dialog.full = true;
             }
-
             if (dialogModule.dialogId !== dialogId) return false;
 
             if (dialogModule._cache[dialogId].type === 1) {
@@ -211,12 +223,7 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
     }
 
     if (!userList.length) return false;
-    userModule.getUsersByIds(userList, function (err) {
-        if (err) {
-            console.error(err);
-            return false;
-        }
-
+    userModule.getUsersByIds(userList).then(function(){
         for (var i = 0; i < messages.length; i++) {
             var message = helpers.fillMessagePrams(messages[i]);
             self.renderMessage(message, false);
@@ -225,14 +232,34 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
         if (!skip) {
             helpers.scrollTo(self.container, 'bottom');
         }
+    }).catch(function(error){
+        console.error(error);
     });
 };
 
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
-        messagesHtml = helpers.fillTemplate('tpl_message', {message: message, sender: sender}),
-        elem = helpers.toHtml(messagesHtml)[0];
+        messagesHtml;
+    
+    if(message.notification_type || (message.extension && message.extension.notification_type)) {
+        messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
+    } else {
+        var messageText = message.message ?
+            helpers.fillMessageBody(message.message || '') :
+            helpers.fillMessageBody(message.body || '');
+
+        messagesHtml = helpers.fillTemplate('tpl_message', {
+            message: {
+                sender_id: message.sender_id,
+                message: messageText,
+                attachments: message.attachments,
+                date_sent: message.date_sent
+            },
+            sender: sender});
+    }
+
+    var elem = helpers.toHtml(messagesHtml)[0];
 
     if (!sender) {
         userModule.getUsersByIds([message.sender_id], function (err) {
@@ -312,13 +339,10 @@ Message.prototype.prepareToUpload = function (e) {
         var file = files[i];
         self.uploadFilesAndGetIds(file, dialogId);
     }
-    ;
-
     e.currentTarget.value = null;
 };
 
 Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
-
     if (file.size >= CONSTANTS.ATTACHMENT.MAXSIZE) {
         return alert(CONSTANTS.ATTACHMENT.MAXSIZEMESSAGE);
     }
@@ -334,14 +358,15 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
         size: file.size
     }, function (err, response) {
         if (err) {
-            preview.classList.remove('m-loading');
-            preview.classList.add('m-error');
+            preview.remove();
+            console.error(err);
+            alert('ERROR: ' + err.detail);
         } else {
             preview.remove();
 
             dialogModule._cache[dialogId].draft.attachments[response.uid] = helpers.getSrcFromAttachmentId(response.uid);
 
-            self.sendMessage(dialogId);
+            self.submitSendMessage(dialogId);
         }
     });
 };
