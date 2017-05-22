@@ -63,4 +63,10 @@ describe('WebRTC API', function() {
       done();
     });
   });
+
+  afterAll(function(done) {
+    QB.chat.disconnect();
+    done();
+  });
+
 });

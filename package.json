@@ -54,11 +54,16 @@
     "gulp-notify": "^2.2.0",
     "gulp-uglify": "^2.0.0",
     "jaguarjs-jsdoc": "^1.0.1",
-    "jasmine": "^2.4.1",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.6.0",
     "jquery-custom": "^1.1.1",
     "jsdoc": "^3.4.3",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
+    "karma": "^1.6.0",
+    "karma-coverage": "^1.1.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
     "pump": "^1.0.1",
     "vinyl-source-stream": "^1.1.0"
   },
@@ -81,8 +86,10 @@
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "develop": "cross-env NODE_ENV=develop gulp",
     "build": "npm run lint && gulp build && gulp minify",
+    "buildNotMinified": "npm run lint && gulp build",
     "generateBuildVersion": "gulp generate-build_version",
     "docs": "rimraf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
-    "start": "gulp connect"
+    "start": "gulp connect",
+    "test": "jasmine"
   }
 }

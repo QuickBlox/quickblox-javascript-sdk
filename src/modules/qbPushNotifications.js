@@ -37,26 +37,20 @@ function SubscriptionsProxy(service){
 SubscriptionsProxy.prototype = {
 
   create: function(params, callback) {
-    Utils.QBLog('[SubscriptionsProxy]', 'create', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions), type: 'POST', data: params}, callback);
   },
 
   list: function(callback) {
-    Utils.QBLog('[SubscriptionsProxy]', 'list');
-
     this.service.ajax({url: Utils.getUrl(config.urls.subscriptions)}, callback);
   },
 
   delete: function(id, callback) {
-      Utils.QBLog('[SubscriptionsProxy]', 'delete', id);
-
       var attrAjax = {
           'type': 'DELETE',
           'dataType': 'text',
           'url': Utils.getUrl(config.urls.subscriptions, id)
       };
-    
+
       this.service.ajax(attrAjax, function(err, res){
         if (err) { callback(err, null);}
         else { callback(null, true);}
@@ -72,8 +66,6 @@ function EventsProxy(service){
 EventsProxy.prototype = {
 
   create: function(params, callback) {
-    Utils.QBLog('[EventsProxy]', 'create', params);
-
     var message = {event: params};
     this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
   },
@@ -84,26 +76,18 @@ EventsProxy.prototype = {
       params = null;
     }
 
-    Utils.QBLog('[EventsProxy]', 'list', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.events), data: params}, callback);
   },
 
   get: function(id, callback) {
-    Utils.QBLog('[EventsProxy]', 'get', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.events, id)}, callback);
   },
 
   status: function(id, callback) {
-    Utils.QBLog('[EventsProxy]', 'status', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.events, id + '/status')}, callback);
   },
 
   delete: function(id, callback) {
-    Utils.QBLog('[EventsProxy]', 'delete', id);
-    
     this.service.ajax({url: Utils.getUrl(config.urls.events, id), dataType: 'text', type: 'DELETE'}, callback);
   }
 };
