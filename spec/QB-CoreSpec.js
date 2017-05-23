@@ -40,13 +40,13 @@ describe('Session API', function() {
     }, REST_REQUESTS_TIMEOUT);
 
   it('can create a User session', function(done){
-    QB.createSession(QBUser2, function (err, session){
+    QB.createSession(QBUser1, function (err, session){
       if(err){
         done.fail("Create a User session error: " + JSON.stringify(err));
       }else{
         expect(session).not.toBeNull();
         expect(session.application_id).toEqual(CREDS.appId);
-        expect(session.user_id).toEqual(QBUser2.id);
+        expect(session.user_id).toEqual(QBUser1.id);
 
         done();
       }

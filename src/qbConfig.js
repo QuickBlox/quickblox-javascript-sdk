@@ -12,7 +12,7 @@
  */
 
 var config = {
-  version: '2.5.3',
+  version: '2.5.4',
   buildNumber: '1011',
   creds: {
     appId: '',
