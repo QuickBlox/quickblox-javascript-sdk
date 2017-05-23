@@ -69,6 +69,21 @@ var userParams = {
     password: '49249sessionmanagment'
 };
 
+var timerId;
+var timeSec;
+
+function startTimer() {
+  timerId = setInterval(function() {
+    ++timeSec;
+    console.log('Log every second, now is', timeSec);
+  }, 1000);
+}
+
+function finishTimer() {
+  clearInterval(timerId);
+  timeSec = 0;
+};
+
 var init = document.getElementById('init');
 
 /* INIT */
@@ -79,26 +94,36 @@ init.addEventListener('click', function(e) {
 });
 
 var sendRequest = document.getElementById('send_request');
-
-/* SEND REQUEST without user logged */
 sendRequest.addEventListener('click', function(e) {
   e.preventDefault();
+
+  finishTimer();
+  startTimer();
 
   QB.users.listUsers(function(err, res){
     console.info('Get list of user', err, res);
   });
 });
 
-
 var login = document.getElementById('login');
-login.addEventListener('click', function() {
+login.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  finishTimer();
+  startTimer();
+
   QB.login(userParams, function(err, res) {
     console.info('LOGIN Callback', err, res);
   });
 });
 
 var sendRequestLogged = document.getElementById('send_request_logged');
-sendRequestLogged.addEventListener('click', function() {
+sendRequestLogged.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    finishTimer();
+    startTimer();
+
     QB.chat.dialog.list(null, function(err, resDialogs) {
         err ? console.error(err) : console.info(resDialogs);
     });
@@ -109,14 +134,18 @@ sendRequestLogged.addEventListener('click', function() {
 var logout = document.getElementById('logout');
 
 // LOGOUT
-logout.addEventListener('click', function() {
+logout.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    finishTimer();
+    startTimer();
+
     QB.logout(function(err, result) {
         console.log('LOGIN Callback', result, err);
     });
 
     return false;
 });
-
 </script>
 </body>
 </html>

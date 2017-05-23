@@ -123,17 +123,17 @@ ServiceProxy.prototype = {
                 Utils.QBLog('[Response][' + _this.reqCount + ']', (data && data !== ' ') ? data : 'empty body');
 
                 if(config.sessionManagement.enable) {
-                    _this.sessionManager.updateLiveTime(Date.now());
+                    _this.sessionManager.updateLiveTime();
 
                     if(params.url.indexOf(config.urls.login) !== -1) {
                         if(params.type === 'POST') {
-                            _this.sessionManager._userParams = params.data;
+                            _this.sessionManager.saveUserParams(params.data);
                         } else if(params.type === 'DELETE') {
-                            _this.sessionManager._userParams = null;
+                            _this.sessionManager.saveUserParams(null);
                         }
                     }
                 }
-                
+
                 if (params.url.indexOf(config.urls.session) === -1) {
                     _this.handleResponse(null, data, callback, retry);
                 } else {
