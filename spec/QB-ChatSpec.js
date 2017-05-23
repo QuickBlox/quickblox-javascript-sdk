@@ -10,6 +10,7 @@ var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
 var QB_SENDER;
 var QB_RECEIVER;
+
 if(isNodeEnv){
   QB_SENDER = new QB.QuickBlox();
   QB_RECEIVER = new QB.QuickBlox();
@@ -33,7 +34,6 @@ var dialogId1Group;
 var dialogId2GroupNotJoinable;
 var dialogId3PublicGroup;
 var dialogId4Private;
-var messageIdGroup;
 var messageIdToDelete;
 
 describe('Chat API', function() {
