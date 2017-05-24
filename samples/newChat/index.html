@@ -25,7 +25,7 @@
                 <div class="login__inner">
                     <div class="login__top">
                         <a href="https://quickblox.com/" class="login__logo">
-                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">]
                         </a>
                         <h1>Quickblox Chat Sample</h1>
                         <h3>Please enter your username and user group.
@@ -211,26 +211,36 @@
     </script>
 
     <script type="text/template" id="tpl_message">
-        <div class="message__wrap" id="<%= message._id %>">
+        <div class="message__wrap" id="<%= message.id %>" data-status="<%= message.status %>">
             <span class="message__avatar m-user__img_<%= sender ? sender.color : 'not_loaded' %>">
                 <i class="material-icons">account_circle</i>
             </span>
-            <div class="message__content_wrap">
-                <p class="message__sender_name"><%- sender ? sender.name : 'unknown user (' + message.sender_id + ')' %></p>
-                <% if (message.message) { %>
-                    <p class="message__text"><%= message.message %></p>
-                <% } %>
+            <div class="message__content">
+                <div class="message__sender_and_status">
+                    <p class="message__sender_name"><%- sender ? sender.name : 'unknown user (' + message.sender_id + ')' %></p>
+                    <p class="message__status j-message__status"><%= message.status %></p>
+                </div>
+                <div class="message__text_and_date">
+                    <div class="message__text_wrap">
+                        <% if (message.message) { %>
+                            <p class="message__text"><%= message.message %></p>
+                        <% } %>
 
-                <% if (message.attachments.length) { %>
-                    <div class="message__attachments_wtap">
-                        <% _.each(message.attachments, function(attachment){ %>
-                            <img src="<%= attachment.src %>" alt="attachment" class="message_attachment">
-                        <% }); %>
+                        <% if (message.attachments.length) { %>
+                            <div class="message__attachments_wtap">
+                                <% _.each(message.attachments, function(attachment){ %>
+                                    <img src="<%= attachment.src %>" alt="attachment" class="message_attachment">
+                                <% }); %>
+                            </div>
+                        <% } %>
                     </div>
-                <% } %>
+                    <div class="message__timestamp">
+                        <%= message.date_sent %>
+                    </div>
+                </div>
             </div>
-            <div class="message__timestamp">
-                <%= message.date_sent %>
+            <div class="message__details">
+
             </div>
         </div>
     </script>

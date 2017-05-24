@@ -175,7 +175,8 @@ Message.prototype.getMessages = function (dialogId) {
             chat_dialog_id: dialogId,
             sort_desc: 'date_sent',
             limit: self.limit,
-            skip: dialogModule._cache[dialogId].messages.length
+            skip: dialogModule._cache[dialogId].messages.length,
+            mark_as_read: 0
         };
 
     self.container.classList.add('loading');
@@ -195,6 +196,7 @@ Message.prototype.getMessages = function (dialogId) {
             } else {
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
+
                     self.renderMessage(message, false);
                 }
 
@@ -237,11 +239,38 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
     });
 };
 
+Message.prototype.sendDeliveredStatus = function(messageId, userId, dialogId){
+    var params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+    };
+
+    QB.chat.sendDeliveredStatus(params);
+
+};
+
+Message.prototype.sendReadStatus = function(messageId, userId, dialogId){
+    var params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+    };
+
+    QB.chat.sendReadStatus(params);
+};
+
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
-        messagesHtml;
-    
+        messagesHtml,
+        dialogId = message.chat_dialog_id;
+
+    if(!message.selfReaded){
+        self.sendReadStatus(message._id, message.sender_id, dialogId);
+        message.selfReaded = true;
+    }
+
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
     } else {
@@ -251,6 +280,8 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
 
         messagesHtml = helpers.fillTemplate('tpl_message', {
             message: {
+                status: message.status,
+                id: message._id,
                 sender_id: message.sender_id,
                 message: messageText,
                 attachments: message.attachments,
@@ -440,6 +471,33 @@ Message.prototype.renderTypingUsers = function (dialogId) {
         self.container.appendChild(elem);
         if (scrollPosition < 50) {
             helpers.scrollTo(self.container, 'bottom');
+        }
+    }
+};
+
+Message.prototype.setMessageStatus = function(data) {
+    var dialogId = data.dialogId,
+        status = data.status,
+        messageId = data._id,
+        dialog = dialogModule._cache[dialogId];
+
+    if(!dialog){
+        return undefined;
+    }
+
+    var message = dialog.messages.find(function(message){
+        if(message._id === messageId) return true;
+    });
+
+    message.status = status;
+
+    if(dialogId === dialogModule.dialogId){
+        var messageElem = document.getElementById(messageId);
+
+        if(messageElem !== undefined){
+            var statusElem = messageElem.querySelector('.j-message__status');
+
+            statusElem.innerText = status;
         }
     }
 };

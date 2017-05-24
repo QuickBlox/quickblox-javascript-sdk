@@ -84,7 +84,6 @@ User.prototype.getUsers = function () {
     return new Promise(function(resolve, reject){
         QB.users.get(params, function (err, responce) {
             if (err) {
-                console.error(err);
                 reject(err);
             }
 
