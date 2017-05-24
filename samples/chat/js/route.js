@@ -108,7 +108,6 @@ router.on({
 
                     app.loadChatList(tab).then(function(){
                         dialogModule.renderMessages(dialogId);
-                        dialogModule.resetUnreadCounter(dialogId);
                         app.sidebar.classList.remove('active');
                     }).catch(function(error){
                         console.error(error);

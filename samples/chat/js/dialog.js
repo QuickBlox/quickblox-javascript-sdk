@@ -147,20 +147,25 @@ Dialog.prototype.selectCurrentDialog = function(dialogId){
     }
 
     dialogElem.classList.add('selected');
-
-    self.resetUnreadCounter(dialogId);
 };
 
-Dialog.prototype.resetUnreadCounter = function(dialogId){
+Dialog.prototype.decreaseUnreadCounter = function(dialogId){
     var self = this,
-        dialogElem = document.getElementById(dialogId);
+        dialog = self._cache[dialogId];
 
-    self._cache[dialogId].unread_messages_count = 0;
+    if(dialog === undefined) return;
 
-    var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+    dialog.unread_messages_count--;
 
-    unreadCounter.classList.add('hidden');
-    unreadCounter.innerText = '';
+    var dialogElem = document.getElementById(dialogId),
+        unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+    unreadCounter.innerText = dialog.unread_messages_count;
+
+    if(dialog.unread_messages_count === 0) {
+        unreadCounter.classList.add('hidden');
+        unreadCounter.innerText = '';
+    }
 };
 
 Dialog.prototype.replaceDialogLink = function (elem) {
