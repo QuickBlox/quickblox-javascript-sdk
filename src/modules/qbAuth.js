@@ -11,8 +11,6 @@ function AuthProxy(service) {
 AuthProxy.prototype = {
 
   getSession: function(callback) {
-    Utils.QBLog('[AuthProxy]', 'getSession');
-
     this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
       if (err){ callback(err, null); }
       else { callback (err, res); }
@@ -20,7 +18,6 @@ AuthProxy.prototype = {
   },
 
   createSession: function(params, callback) {
-
     if (config.creds.appId === '' ||
         config.creds.authKey === '' ||
         config.creds.authSecret === '') {
@@ -38,8 +35,6 @@ AuthProxy.prototype = {
     message = generateAuthMsg(params);
     message.signature = signMessage(message, config.creds.authSecret);
 
-    Utils.QBLog('[AuthProxy]', 'createSession', message);
-
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'POST', data: message},
                       function(err, res) {
                         if (err) {
@@ -53,7 +48,6 @@ AuthProxy.prototype = {
 
   destroySession: function(callback) {
     var _this = this;
-    Utils.QBLog('[AuthProxy]', 'destroySession');
 
     this.service.ajax({url: Utils.getUrl(config.urls.session), type: 'DELETE', dataType: 'text'},
                       function(err, res) {
@@ -67,8 +61,6 @@ AuthProxy.prototype = {
   },
 
   login: function(params, callback) {
-    Utils.QBLog('[AuthProxy]', 'login', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
                       function(err, res) {
                         if (err) { callback(err, null); }
@@ -77,8 +69,6 @@ AuthProxy.prototype = {
   },
 
   logout: function(callback) {
-    Utils.QBLog('[AuthProxy]', 'logout');
-
     this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'DELETE', dataType:'text'}, callback);
   }
 

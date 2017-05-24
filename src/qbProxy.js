@@ -22,6 +22,8 @@ function ServiceProxy() {
     config: config,
     session: null
   };
+
+  this.reqCount = 0;
 }
 
 ServiceProxy.prototype = {
@@ -46,25 +48,31 @@ ServiceProxy.prototype = {
         }
     },
     ajax: function(params, callback) {
-        Utils.QBLog('[ServiceProxy]', 'Request: ', params.type || 'GET', {data: JSON.stringify(clonedParams)});
 
         var _this = this,
-            clonedParams,
             qbRequest,
             requestCallback,
             isJSONRequest;
 
+        ++this.reqCount;
+
+        // Logger
+        //
+        var clonedData;
         if(params.data && params.data.file){
-            clonedParams = JSON.parse(JSON.stringify(params));
-            clonedParams.data.file = "...";
-        } else {
-            clonedParams = params;
+          clonedData = JSON.parse(JSON.stringify(params.data));
+          clonedData.file = "...";
+        }else{
+          clonedData = params.data;
         }
+        Utils.QBLog('[Request][' + this.reqCount + ']', (params.type || 'GET') + ' ' + params.url, clonedData ? clonedData : "");
+        //
+        //
 
         var retry = function(session) {
             if(!!session) {
                 _this.setSession(session);
-                _this.ajax(params, callback); 
+                _this.ajax(params, callback);
             }
         };
 
@@ -83,7 +91,7 @@ ServiceProxy.prototype = {
                 }
             },
             success: function(data, status, jqHXR) {
-                Utils.QBLog('[ServiceProxy]', 'Response: ', {data: JSON.stringify(data)});
+                Utils.QBLog('[Response][' + _this.reqCount + ']', (data && data !== " ") ? data : 'empty body');
 
                 if (params.url.indexOf(config.urls.session) === -1) {
                     _this.handleResponse(null, data, callback, retry);
@@ -92,7 +100,7 @@ ServiceProxy.prototype = {
                 }
             },
             error: function(jqHXR, status, error) {
-                Utils.QBLog('[ServiceProxy]', 'ajax error', jqHXR.status, error, jqHXR);
+                Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', jqHXR.status, error, jqHXR.responseText);
 
                 var errorMsg = {
                     code: jqHXR.status,
@@ -110,7 +118,7 @@ ServiceProxy.prototype = {
 
         if(!isBrowser) {
             isJSONRequest = ajaxCall.dataType === 'json';
-                
+
             var makingQBRequest = params.url.indexOf('s3.amazonaws.com') === -1 && _this.qbInst && _this.qbInst.session && _this.qbInst.session.token || false;
 
             qbRequest = {
@@ -135,28 +143,32 @@ ServiceProxy.prototype = {
                         errorMsg = error;
                     }
 
+                    Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', response.statusCode, body || error || body.errors);
+
                     if (qbRequest.url.indexOf(config.urls.session) === -1) {
                         _this.handleResponse(errorMsg, null, callback, retry);
                     } else {
                         callback(errorMsg, null);
                     }
                 } else {
-                    if (qbRequest.url.indexOf(config.urls.session) === -1) {
-                        _this.handleResponse(null, body, callback, retry);
-                    } else { 
-                        callback(null, body);
-                    }
+                  Utils.QBLog('[Response][' + _this.reqCount + ']', (body && body !== " ") ? body : 'empty body');
+
+                  if (qbRequest.url.indexOf(config.urls.session) === -1) {
+                      _this.handleResponse(null, body, callback, retry);
+                  } else {
+                      callback(null, body);
+                  }
                 }
             };
         }
 
         // Optional - for example 'multipart/form-data' when sending a file.
         // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
-        if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') { 
+        if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') {
             ajaxCall.contentType = params.contentType;
         }
-        
-        if (typeof params.processData === 'boolean') { 
+
+        if (typeof params.processData === 'boolean') {
             ajaxCall.processData = params.processData;
         }
 
@@ -166,16 +178,16 @@ ServiceProxy.prototype = {
         } else {
             var r = request(qbRequest, requestCallback),
                 form;
-            
+
             if(!isJSONRequest){
                 form = r.form();
-                
+
                 Object.keys(ajaxCall.data).forEach(function(item,i,arr){
                     form.append(item, ajaxCall.data[item]);
                 });
             } else if(params.isFileUpload) {
                 form = r.form();
-                
+
                 Object.keys(ajaxCall.data).forEach(function(item,i,arr){
                     if(item === "file"){
                         form.append(item, ajaxCall.data[item].data, {filename: ajaxCall.data[item].name});
