@@ -153,7 +153,8 @@ Dialog.prototype.decreaseUnreadCounter = function(dialogId){
     var self = this,
         dialog = self._cache[dialogId];
 
-    if(dialog === undefined) return;
+    // Can't decrease unexist dialog or dialog without unread messages.
+    if(dialog === undefined || dialog.unread_messages_count <= 0) return;
 
     dialog.unread_messages_count--;
 
@@ -576,6 +577,7 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
         delete self._cache[dialogId];
         var dialogElem = document.getElementById(dialogId);
         dialogElem.parentNode.removeChild(dialogElem);
+        self.dialogId = null;
     }
 
     function _notuyfyUsers(){
