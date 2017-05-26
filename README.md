@@ -17,7 +17,7 @@ For the library to work, you need to include either [jQuery](http://jquery.com/)
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.5.3/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.5.4/quickblox.min.js"></script>
 ```
 
 Beginning with version 2.5.0, no dependencies are need for the QuickBlox SDK to work correctly.

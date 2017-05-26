@@ -64,7 +64,9 @@ User.prototype.getUsersByIds = function (userList) {
                         return item.user.id === id;
                     });
 
-                    self.addToCache(user.user);
+                    if(user !== undefined) {
+                        self.addToCache(user.user);
+                    }
                 });
                 resolve();
             }
@@ -75,7 +77,8 @@ User.prototype.getUsersByIds = function (userList) {
 User.prototype.getUsers = function () {
     var self = this,
         params = {
-            tags: app.user.user_tags
+            tags: app.user.user_tags,
+            per_page: 100
         };
 
     return new Promise(function(resolve, reject){

@@ -51,47 +51,30 @@ QuickBlox.prototype = {
             Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
-            Data = require('./modules/qbData'),
-            conn;
+            Data = require('./modules/qbData');
+
+        this.auth = new Auth(this.service);
+        this.users = new Users(this.service);
+        this.chat = new Chat(this.service);
+        this.content = new Content(this.service);
+        this.pushnotifications = new PushNotifications(this.service);
+        this.data = new Data(this.service);
 
         if (isBrowser) {
-            /** create Strophe Connection object */
-            var Connection = require('./qbStrophe');
-            conn = new Connection();
-
-            /** Add extension methods to track handlers for removal on reconnect */
-            if (conn) {
-                conn.XHandlerReferences = [];
-                conn.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
-                    this.XHandlerReferences.push(conn.addHandler(handler, ns, name, type, id, from, options));
-                };
-                conn.XDeleteHandlers = function () {
-                    while (conn.XHandlerReferences.length) {
-                        this.deleteHandler(conn.XHandlerReferences.pop());
-                    }
-                };
-            }
-
             /** add atapter.js*/
             require('webrtc-adapter');
 
             /** add WebRTC API if API is avaible */
             if( Utils.isWebRTCAvailble() ) {
                 var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
-                this.webrtc = new WebRTCClient(this.service, conn || null);
+                this.webrtc = new WebRTCClient(this.service, this.chat.connection);
+                this.chat.webrtcSignalingProcessor = this.webrtc.signalingProcessor;
             } else {
                 this.webrtc = false;
             }
         } else {
             this.webrtc = false;
         }
-
-        this.auth = new Auth(this.service);
-        this.users = new Users(this.service);
-        this.chat = new Chat(this.service, this.webrtc ? this.webrtc.signalingProcessor : null, conn || null);
-        this.content = new Content(this.service);
-        this.pushnotifications = new PushNotifications(this.service);
-        this.data = new Data(this.service);
 
         // Initialization by outside token
         if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {

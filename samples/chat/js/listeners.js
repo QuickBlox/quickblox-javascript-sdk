@@ -21,6 +21,8 @@
 function Listeners() {};
 
 Listeners.prototype.onMessageListener = function (userId, message) {
+    if(userId === app.user.id) return false;
+
     var self = this,
         msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
