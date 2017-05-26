@@ -38,34 +38,34 @@ function ChatProxy(service) {
      * Uses by Strophe
      */
     if (Utils.getEnv().browser) {
-      // strophe js
-      self.connection = new Connection();
+        // strophe js
+        self.connection = new Connection();
 
       /** Add extension methods to track handlers for removal on reconnect */
-      self.connection.XHandlerReferences = [];
-      self.connection.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
-        this.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
-      };
-      self.connection.XDeleteHandlers = function () {
-        while (self.connection.XHandlerReferences.length) {
-          this.deleteHandler(self.connection.XHandlerReferences.pop());
-        }
-      };
-    }else{
-      // node-xmpp-client
-      self.nClient = new NodeClient({
-          'autostart': false,
-          'reconnect': true
-      });
+        self.connection.XHandlerReferences = [];
+        self.connection.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
+            this.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
+        };
+        self.connection.XDeleteHandlers = function () {
+            while (self.connection.XHandlerReferences.length) {
+                this.deleteHandler(self.connection.XHandlerReferences.pop());
+            }
+        };
+    } else {
+        // node-xmpp-client
+        self.nClient = new NodeClient({
+            'autostart': false,
+            'reconnect': true
+        });
 
-      // override 'send' function to add some logs
-      var originSendFunction = self.nClient.send;
-      self.nClient.send = function(stanza) {
-        Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
-        originSendFunction.call(self.nClient, stanza);
-      };
+        // override 'send' function to add some logs
+        var originSendFunction = self.nClient.send;
+        self.nClient.send = function(stanza) {
+            Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
+            originSendFunction.call(self.nClient, stanza);
+        };
 
-      self.nodeStanzasCallbacks = {};
+        self.nodeStanzasCallbacks = {};
     }
 
     this.service = service;
