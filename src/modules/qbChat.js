@@ -44,11 +44,11 @@ function ChatProxy(service) {
       /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
         self.connection.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
-            this.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
+            self.connection.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
         };
         self.connection.XDeleteHandlers = function () {
             while (self.connection.XHandlerReferences.length) {
-                this.deleteHandler(self.connection.XHandlerReferences.pop());
+                self.connection.deleteHandler(self.connection.XHandlerReferences.pop());
             }
         };
     } else {
