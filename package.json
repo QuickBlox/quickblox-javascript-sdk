@@ -38,6 +38,7 @@
     "email": "web@quickblox.com"
   },
   "dependencies": {
+    "bluebird": "^3.5.0",
     "crypto-js": "3.1.2-2",
     "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",

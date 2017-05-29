@@ -203,4 +203,9 @@ SessionManager.prototype.saveUserParams = function(obj) {
   }
 };
 
+SessionManager.prototype.resetSession = function() {
+  this._session = null;
+  this._lastValidRequestTime = null;
+};
+
 module.exports = SessionManager;

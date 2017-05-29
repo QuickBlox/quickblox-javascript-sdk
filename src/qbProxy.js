@@ -57,15 +57,25 @@ ServiceProxy.prototype = {
       var self = this;
 
       if(config.sessionManagement.enable && isBrowser) {
+          self.sessionManager._lastRequest = {
+            params: params,
+            callback: callback
+          };
+
           if(self.sessionManager.isSessionValid()) {
-              self._ajax(params, callback);
+            self._ajax(params, callback);
           } else {
-            self.sessionManager.createSession()
-              .then(function() {
-                self._ajax(params, callback);
-            }).catch(function(err) {
-                self.sessionManager.onerror(err);
-            });
+            
+            if(params.url.indexOf(config.urls.login) !== -1 && params.type === 'DELETE') {
+              callback();
+            } else {
+              self.sessionManager.createSession()
+                .then(function() {
+                  self._ajax(params, callback);
+              }).catch(function(err) {
+                  self.sessionManager.onerror(err);
+              });
+            }
           }
       } else {
           self._ajax(params, callback);
@@ -132,6 +142,8 @@ ServiceProxy.prototype = {
                             _this.sessionManager.saveUserParams(null);
                         }
                     }
+
+                    _this.sessionManager._lastRequest = null;
                 }
 
                 if (params.url.indexOf(config.urls.session) === -1) {
@@ -149,6 +161,13 @@ ServiceProxy.prototype = {
                     message: error,
                     detail: jqHXR.responseText
                 };
+
+                if(config.sessionManagement.enable) {
+                    if(errorMsg.code === 401) {
+                        _this.sessionManager.resetSession();
+                        _this.ajax(_this.sessionManager._lastRequest.params, _this.sessionManager._lastRequest.callback);
+                    }
+                }
 
                 if ( (params.url.indexOf(config.urls.session) === -1) || (params.url.indexOf(config.urls.session) !== -1 && params.type == 'DELETE') ) {
                     _this.handleResponse(errorMsg, null, callback, retry);
