@@ -38,23 +38,34 @@ function ChatProxy(service) {
      * Uses by Strophe
      */
     if (Utils.getEnv().browser) {
-      // strophe js
-      self.connection = new Connection();
-    }else{
-      // node-xmpp-client
-      self.nClient = new NodeClient({
-          'autostart': false,
-          'reconnect': true
-      });
+        // strophe js
+        self.connection = new Connection();
 
-      // override 'send' function to add some logs
-      var originSendFunction = self.nClient.send;
-      self.nClient.send = function(stanza) {
-        Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
-        originSendFunction.call(self.nClient, stanza);
-      };
+      /** Add extension methods to track handlers for removal on reconnect */
+        self.connection.XHandlerReferences = [];
+        self.connection.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
+            self.connection.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
+        };
+        self.connection.XDeleteHandlers = function () {
+            while (self.connection.XHandlerReferences.length) {
+                self.connection.deleteHandler(self.connection.XHandlerReferences.pop());
+            }
+        };
+    } else {
+        // node-xmpp-client
+        self.nClient = new NodeClient({
+            'autostart': false,
+            'reconnect': true
+        });
 
-      self.nodeStanzasCallbacks = {};
+        // override 'send' function to add some logs
+        var originSendFunction = self.nClient.send;
+        self.nClient.send = function(stanza) {
+            Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
+            originSendFunction.call(self.nClient, stanza);
+        };
+
+        self.nodeStanzasCallbacks = {};
     }
 
     this.service = service;
@@ -649,6 +660,11 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNECTED:
                         Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
+                        // Remove any handlers that might exist from a previous connection via
+                        // extension method added to the connection on initialization in qbMain.
+                        // NOTE: streamManagement also adds handlers, so do this first.
+                        self.connection.XDeleteHandlers();
+
                         if(config.streamManagement.enable && config.chatProtocol.active === 2){
                             self.streamManagement.enable(self.connection, null);
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
@@ -657,17 +673,17 @@ ChatProxy.prototype = {
                         self._isLogout = false;
                         self._isDisconnected = false;
 
-                        self.connection.addHandler(self._onMessage, null, 'message', 'chat');
-                        self.connection.addHandler(self._onMessage, null, 'message', 'groupchat');
-                        self.connection.addHandler(self._onPresence, null, 'presence');
-                        self.connection.addHandler(self._onIQ, null, 'iq');
-                        self.connection.addHandler(self._onSystemMessageListener, null, 'message', 'headline');
-                        self.connection.addHandler(self._onMessageErrorListener, null, 'message', 'error');
+                        self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
+                        self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
+                        self.connection.XAddTrackedHandler(self._onPresence, null, 'presence');
+                        self.connection.XAddTrackedHandler(self._onIQ, null, 'iq');
+                        self.connection.XAddTrackedHandler(self._onSystemMessageListener, null, 'message', 'headline');
+                        self.connection.XAddTrackedHandler(self._onMessageErrorListener, null, 'message', 'error');
 
                         // enable carbons
                         self._enableCarbons();
 
-                        // chat server will close your self.connection if you are not active in chat during one minute
+                        // chat server will close your connection if you are not active in chat during one minute
                         // initial presence and an automatic reminder of it each 55 seconds
                         self.connection.send($pres());
 
@@ -1088,7 +1104,7 @@ ChatProxy.prototype = {
             throw new Error(unsupportedError);
         }
 
-        return this.connection.addHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
+        return this.connection.XAddTrackedHandler(handler, null, params.name || null, params.type || null, params.id || null, params.from || null);
 
         function handler() {
             callback();
@@ -1435,7 +1451,7 @@ MucProxy.prototype = {
 
         if (Utils.getEnv().browser) {
             if (typeof callback === 'function') {
-                self.connection.addHandler(callback, null, 'presence', null, id);
+                self.connection.XAddTrackedHandler(callback, null, 'presence', null, id);
             }
 
             self.connection.send(pres);
@@ -1478,7 +1494,7 @@ MucProxy.prototype = {
             var roomJid = self.helpers.getRoomJid(jid, userCurrentJid);
 
             if (typeof callback === 'function') {
-                self.connection.addHandler(callback, null, 'presence', presParams.type, null, roomJid);
+                self.connection.XAddTrackedHandler(callback, null, 'presence', presParams.type, null, roomJid);
             }
 
             self.connection.send(pres);
