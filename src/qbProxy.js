@@ -164,7 +164,12 @@ ServiceProxy.prototype = {
                 };
 
                 if(config.sessionManagement.enable) {
-                    if(errorMsg.code === 401) {
+                    var ERRORS = {
+                        tokenReqired: '{"errors":["Token is required"]}',
+                        unExistedToken: '{"errors":{"base":["Required session does not exist"]}}'
+                    };
+
+                    if(errorMsg.detail === ERRORS.tokenReqired || errorMsg.detail === ERRORS.unExistedToken) {
                         _this.sessionManager.resetSession();
                         _this.ajax(_this.sessionManager._lastRequest.params, _this.sessionManager._lastRequest.callback);
                     }
