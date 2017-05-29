@@ -65,9 +65,10 @@ ServiceProxy.prototype = {
           if(self.sessionManager.isSessionValid()) {
             self._ajax(params, callback);
           } else {
-            
             if(params.url.indexOf(config.urls.login) !== -1 && params.type === 'DELETE') {
               callback();
+            } else if(params.url.indexOf(config.urls.login) !== -1 && params.type === 'POST') {
+              self.sessionManager.saveUserParams(params);
             } else {
               self.sessionManager.createSession()
                 .then(function() {
