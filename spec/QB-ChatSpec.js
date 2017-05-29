@@ -559,43 +559,43 @@ describe('Chat API', function() {
 
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
-      it('can create a message and then receive it (private dialog) (send_to_chat=1) (chat_dialog_id)', function(done) {
-        var msgExtension = {
-          param1: "value1",
-          param2: "value2"
-        };
-        var params = {
-          chat_dialog_id: dialogId4Private,
-          message: "hello world, it's me, a message with send_to_chat=1 in private dialog " + Math.floor((Math.random() * 100) + 1),
-          param1: msgExtension.param1,
-          param2: msgExtension.param2,
-          send_to_chat: 1
-        };
+      // it('can create a message and then receive it (private dialog) (send_to_chat=1) (chat_dialog_id)', function(done) {
+      //   var msgExtension = {
+      //     param1: "value1",
+      //     param2: "value2"
+      //   };
+      //   var params = {
+      //     chat_dialog_id: dialogId4Private,
+      //     message: "hello world, it's me, a message with send_to_chat=1 in private dialog " + Math.floor((Math.random() * 100) + 1),
+      //     param1: msgExtension.param1,
+      //     param2: msgExtension.param2,
+      //     send_to_chat: 1
+      //   };
 
-        createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
-          done();
-        });
+      //   createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
+      //     done();
+      //   });
 
-      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+      // }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
-      it('can create a message and then receive it (private dialog) (send_to_chat=1) (recipient_id)', function(done) {
-        var msgExtension = {
-          param1: "value1",
-          param2: "value2"
-        };
-        var params = {
-          recipient_id: QBUser2.id,
-          message: "hello world, it's me, a message with send_to_chat=1 in private dialog " + Math.floor((Math.random() * 100) + 1),
-          param1: msgExtension.param1,
-          param2: msgExtension.param2,
-          send_to_chat: 1
-        };
+      // it('can create a message and then receive it (private dialog) (send_to_chat=1) (recipient_id)', function(done) {
+      //   var msgExtension = {
+      //     param1: "value1",
+      //     param2: "value2"
+      //   };
+      //   var params = {
+      //     recipient_id: QBUser2.id,
+      //     message: "hello world, it's me, a message with send_to_chat=1 in private dialog " + Math.floor((Math.random() * 100) + 1),
+      //     param1: msgExtension.param1,
+      //     param2: msgExtension.param2,
+      //     send_to_chat: 1
+      //   };
 
-        createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
-          done();
-        });
+      //   createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId4Private, "chat", function(messageId){
+      //     done();
+      //   });
 
-      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+      // }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
       it("can't create a message for none existent dialog (send_to_chat= 1)", function(done) {
         var params = {
@@ -644,35 +644,35 @@ describe('Chat API', function() {
 
       }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
-      it('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
-        var msgExtension = {
-          param1: "value1",
-          param2: "value2"
-        };
-        var params = {
-          chat_dialog_id: dialogId1Group,
-          message: "hello world, it's me, a message with send_to_chat=1 in group dialog " + Math.floor((Math.random() * 100) + 1),
-          param1: msgExtension.param1,
-          param2: msgExtension.param2,
-          send_to_chat: 1
-        };
+      // it('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
+      //   var msgExtension = {
+      //     param1: "value1",
+      //     param2: "value2"
+      //   };
+      //   var params = {
+      //     chat_dialog_id: dialogId1Group,
+      //     message: "hello world, it's me, a message with send_to_chat=1 in group dialog " + Math.floor((Math.random() * 100) + 1),
+      //     param1: msgExtension.param1,
+      //     param2: msgExtension.param2,
+      //     send_to_chat: 1
+      //   };
 
-        var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
-        //
-        QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
-          expect(stanzaResponse).not.toBeNull();
+      //   var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
+      //   //
+      //   QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
+      //     expect(stanzaResponse).not.toBeNull();
 
-          createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId1Group, "groupchat", function(messageId){
+      //     createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId1Group, "groupchat", function(messageId){
 
-            QB_RECEIVER.chat.muc.leave(dialogJid, function() {
-              done();
-            });
+      //       QB_RECEIVER.chat.muc.leave(dialogJid, function() {
+      //         done();
+      //       });
 
-          });
+      //     });
 
-        });
+      //   });
 
-      }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
+      // }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
     });
 
