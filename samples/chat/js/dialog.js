@@ -240,6 +240,18 @@ Dialog.prototype.renderMessages = function (dialogId) {
 
         self.dialogTitle.innerText = dialog.name;
 
+        if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT || dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+            if (dialog && dialog.messages.length) {
+                for (var i = 0; i < dialog.messages.length; i++) {
+                    if(!dialog.messages[i].selfReaded) {
+                        messageModule.sendReadStatus(dialog.messages[i]._id, dialog.messages[i].sender_id, dialogId);
+                        dialog.messages[i].selfReaded = true;
+                        dialogModule.decreaseUnreadCounter(dialogId);
+                    }
+                }
+            }
+        }
+
         if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
             self.editLink.classList.remove('hidden');
             self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
