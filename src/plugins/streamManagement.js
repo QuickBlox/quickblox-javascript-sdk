@@ -5,13 +5,13 @@
  * Chat Stream Management plugin
  * doc: http://xmpp.org/extensions/xep-0198.html
  *
- * To enable this features add to config 
+ * To enable this features add to config
  * ```javascript
  * streamManagement: {
  -    enable: true
  - }
  * ```
- * 
+ *
  * Uses listener by QB.chat.onSentMessageCallback
  *
  * ```javascript
@@ -112,7 +112,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
     var self = this;
 
     if (Utils.getEnv().browser) {
-        self._c.addHandler(_incomingStanzaHandler.bind(self));
+        self._c.XAddTrackedHandler(_incomingStanzaHandler.bind(self));
     } else if (Utils.getEnv().node){
         self._c.on('stanza', _incomingStanzaHandler.bind(self));
     }
