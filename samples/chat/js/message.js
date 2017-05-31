@@ -158,9 +158,10 @@ Message.prototype.sendMessage = function(dialogId, msg){
     message.id = QB.chat.send(jidOrUserId, msg);
     message.extension.dialog_id = dialogId;
 
-    var newMessage = helpers.fillNewMessageParams(app.user.id, msg);
+    var newMessage = helpers.fillNewMessageParams(app.user.id, message);
 
     dialogModule._cache[dialogId].messages.unshift(newMessage);
+
     if (dialogModule.dialogId === dialogId) {
         self.renderMessage(newMessage, true);
     }
@@ -170,12 +171,14 @@ Message.prototype.sendMessage = function(dialogId, msg){
 
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
+
     var self = this,
         params = {
             chat_dialog_id: dialogId,
             sort_desc: 'date_sent',
             limit: self.limit,
-            skip: dialogModule._cache[dialogId].messages.length
+            skip: dialogModule._cache[dialogId].messages.length,
+            mark_as_read: 0
         };
 
     self.container.classList.add('loading');
@@ -195,6 +198,7 @@ Message.prototype.getMessages = function (dialogId) {
             } else {
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
+
                     self.renderMessage(message, false);
                 }
 
@@ -205,6 +209,7 @@ Message.prototype.getMessages = function (dialogId) {
         } else {
             console.error(err);
         }
+
         self.container.classList.remove('loading');
     });
 };
@@ -237,11 +242,39 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
     });
 };
 
+Message.prototype.sendDeliveredStatus = function(messageId, userId, dialogId){
+    var params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+    };
+
+    QB.chat.sendDeliveredStatus(params);
+
+};
+
+Message.prototype.sendReadStatus = function(messageId, userId, dialogId){
+    var params = {
+        messageId: messageId,
+        userId: userId,
+        dialogId: dialogId
+    };
+
+    QB.chat.sendReadStatus(params);
+};
+
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
-        messagesHtml;
-    
+        messagesHtml,
+        dialogId = message.chat_dialog_id;
+
+    if(!message.selfReaded){
+        self.sendReadStatus(message._id, message.sender_id, dialogId);
+        message.selfReaded = true;
+        dialogModule.decreaseUnreadCounter(dialogId);
+    }
+
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
     } else {
@@ -251,6 +284,8 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
 
         messagesHtml = helpers.fillTemplate('tpl_message', {
             message: {
+                status: message.status,
+                id: message._id,
                 sender_id: message.sender_id,
                 message: messageText,
                 attachments: message.attachments,
@@ -278,6 +313,7 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
 
     if (message.attachments.length) {
         var images = elem.querySelectorAll('.message_attachment');
+
         for (var i = 0; i < images.length; i++) {
             images[i].addEventListener('load', function (e) {
                 var img = e.target,
@@ -339,6 +375,7 @@ Message.prototype.prepareToUpload = function (e) {
         var file = files[i];
         self.uploadFilesAndGetIds(file, dialogId);
     }
+
     e.currentTarget.value = null;
 };
 
@@ -381,6 +418,7 @@ Message.prototype.addImagePreview = function (file) {
         wrapper = helpers.toHtml(template)[0];
 
     self.attachmentPreviewContainer.appendChild(wrapper);
+
     return wrapper;
 };
 
@@ -390,7 +428,6 @@ Message.prototype.setTypingStatuses = function (isTyping, userId, dialogId) {
     if (!self.typingUsers[dialogId]) {
         self.typingUsers[dialogId] = [];
     }
-
 
     if (isTyping) {
         self.typingUsers[dialogId].push(userId);
@@ -434,12 +471,45 @@ Message.prototype.renderTypingUsers = function (dialogId) {
 
     if (users.length) {
         var tpl = helpers.fillTemplate('tpl_message__typing', {users: users}),
-            elem = helpers.toHtml(tpl)[0];
+            elem = helpers.toHtml(tpl)[0],
+            scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
 
-        var scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
         self.container.appendChild(elem);
+
         if (scrollPosition < 50) {
             helpers.scrollTo(self.container, 'bottom');
+        }
+    }
+};
+
+Message.prototype.setMessageStatus = function(data) {
+    var dialogId = data.dialogId,
+        status = data.status,
+        messageId = data._id,
+        dialog = dialogModule._cache[dialogId];
+
+    // Dialog with this ID was not founded in the cache
+    if(dialog === undefined) return;
+
+    var message = dialog.messages.find(function(message){
+        if(message._id === messageId) return true;
+    });
+
+    // if the message was not fined in cache or it was notification message, DO NOTHING
+    if(message === undefined || message.notification_type !== undefined) return;
+
+    // if the same status is coming DO NOTHING
+    if (message.status === status) return;
+
+    message.status = status;
+
+    if(dialogId === dialogModule.dialogId){
+        var messageElem = document.getElementById(messageId);
+
+        if(messageElem !== undefined){
+            var statusElem = messageElem.querySelector('.j-message__status');
+
+            statusElem.innerText = status;
         }
     }
 };

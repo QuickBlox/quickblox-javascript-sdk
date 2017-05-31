@@ -25,7 +25,7 @@
                 <div class="login__inner">
                     <div class="login__top">
                         <a href="https://quickblox.com/" class="login__logo">
-                            <img src="./img/qb-logo.svg" alt="QuickBlox">
+                            <img src="./img/qb-logo.svg" alt="QuickBlox">]
                         </a>
                         <h1>Quickblox Chat Sample</h1>
                         <h3>Please enter your username and user group.
@@ -33,7 +33,7 @@
                             to communicate, create chats with each other
                         </h3>
                     </div>
-                    
+
                     <form name="loginForm" class="login__form">
                         <div class="login_form__row">
                             <label for="userName">User name</label>
@@ -42,14 +42,13 @@
                         <div class="login_form__row">
                             <label for="userGroup">User group</label>
                             <input type="text" id="userGroup" name="userGroup"/>
-                            </div>
+                        </div>
                         <div class="login__button_wrap">
                             <button type="submit" name="login_submit" class="btn m-login__button j-login__button" disabled>
                                 login
                             </button>
                         </div>
                     </form>
-
                 </div>
                 <div class="login__footer">
                     <div class="footer__logo_wrap">
@@ -72,7 +71,6 @@
                         <a href="https://quickblox.com/" class="dashboard__logo">
                             <img src="./img/qb-logo.svg" alt="QuickBlox">
                         </a>
-
                         <div class="dashboard__status_wrap">
                             <h2 class="dashboard__title"><%- user.user_tags %></h2>
                             <p class="dashboard__status j-dashboard_status">
@@ -96,20 +94,18 @@
                             </li>
                         </ul>
                         <ul class="sidebar__dilog_list j-sidebar__dilog_list">
-
                         </ul>
                     </div>
                 </div>
             </div>
             <div class="content j-content">
-
             </div>
         </div>
     </script>
 
     <script  type="text/template" id="tpl_welcome">
         <div class="content__title j-content__title j-welcome">
-                Welcome to QuickBlox chat sample!
+            Welcome to QuickBlox chat sample!
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
@@ -120,29 +116,29 @@
     </script>
 
     <script type="text/template" id="tpl_userConversations">
-            <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
-                <a class="dialog__item_link" href="#!/dialog/<%= dialog._id %>">
-                    <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
-                        <% if(dialog.type === 2) { %>
-                            <i class="material-icons">supervisor_account</i>
-                        <% } else { %>
-                            <i class="material-icons">account_circle</i>
-                        <% } %>
+        <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+            <a class="dialog__item_link" href="#!/dialog/<%= dialog._id %>">
+                <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                    <% if(dialog.type === 2) { %>
+                        <i class="material-icons">supervisor_account</i>
+                    <% } else { %>
+                        <i class="material-icons">account_circle</i>
+                    <% } %>
+                </span>
+                <span class="dialog__info">
+                    <span class="dialog__name"><%- dialog.name %></span>
+                    <span class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></span>
+                </span>
+                <span class="dialog_additional_info">
+                    <span class="dialog__last_message_date j-dialog__last_message_date">
+                        <%= dialog.last_message_date_sent %>
                     </span>
-                    <span class="dialog__info">
-                        <span class="dialog__name"><%- dialog.name %></span>
-                        <span class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"><%- dialog.last_message%></span>
+                    <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
+                        <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
                     </span>
-                    <span class="dialog_additional_info">
-                        <span class="dialog__last_message_date j-dialog__last_message_date">
-                            <%= dialog.last_message_date_sent %>
-                        </span>
-                        <span class="dialog_unread_counter j-dialog_unread_counter <% !dialog.unread_messages_count ? print('hidden') : '' %>">
-                            <% dialog.unread_messages_count ? print(dialog.unread_messages_count) : '' %>
-                        </span>
-                    </span>
-                </a>
-            </li>
+                </span>
+            </a>
+        </li>
     </script>
 
     <script type="text/template" id="tpl_conversationContainer">
@@ -158,8 +154,8 @@
         <div class="content__inner j-content__inner">
             <div class=" messages j-messages"></div>
             <form name="send_message" class="send_message" autocomplete="off">
-                <textarea name="message_feald" class="message_feald" id="message_feald" autocomplete="off"
-                          autocorrect="off" autocapitalize="off" placeholder="Type a message" autofocus></textarea>
+                    <textarea name="message_feald" class="message_feald" id="message_feald" autocomplete="off"
+                              autocorrect="off" autocapitalize="off" placeholder="Type a message" autofocus></textarea>
                 <div class="message__actions">
                     <div class="attachments_preview j-attachments_preview"></div>
                     <label for="attach_btn" class="attach_btn">
@@ -211,33 +207,39 @@
     </script>
 
     <script type="text/template" id="tpl_message">
-        <div class="message__wrap" id="<%= message._id %>">
+        <div class="message__wrap" id="<%= message.id %>" data-status="<%= message.status %>">
             <span class="message__avatar m-user__img_<%= sender ? sender.color : 'not_loaded' %>">
                 <i class="material-icons">account_circle</i>
             </span>
-            <div class="message__content_wrap">
-                <p class="message__sender_name"><%- sender ? sender.name : 'unknown user (' + message.sender_id + ')' %></p>
-                <% if (message.message) { %>
-                    <p class="message__text"><%= message.message %></p>
-                <% } %>
-
-                <% if (message.attachments.length) { %>
-                    <div class="message__attachments_wtap">
-                        <% _.each(message.attachments, function(attachment){ %>
+            <div class="message__content">
+                <div class="message__sender_and_status">
+                    <p class="message__sender_name"><%- sender ? sender.name : 'unknown user (' + message.sender_id + ')' %></p>
+                    <p class="message__status j-message__status"><%= message.status %></p>
+                </div>
+                <div class="message__text_and_date">
+                    <div class="message__text_wrap">
+                        <% if (message.message) { %>
+                        <p class="message__text"><%= message.message %></p>
+                        <% } %>
+                        <% if (message.attachments.length) { %>
+                        <div class="message__attachments_wtap">
+                            <% _.each(message.attachments, function(attachment){ %>
                             <img src="<%= attachment.src %>" alt="attachment" class="message_attachment">
-                        <% }); %>
+                            <% }); %>
+                        </div>
+                        <% } %>
                     </div>
-                <% } %>
-            </div>
-            <div class="message__timestamp">
-                <%= message.date_sent %>
+                    <div class="message__timestamp">
+                        <%= message.date_sent %>
+                    </div>
+                </div>
             </div>
         </div>
     </script>
 
     <script type="text/template" id="tpl_notificationMessage">
         <div class="message__wrap m-notification_message" id="<%= _id %>">
-                <%= message || body %>
+            <%= message || body %>
         </div>
     </script>
 
@@ -269,7 +271,7 @@
             <div class="user__details">
                 <p class="user__name"><%- user.name %></p>
                 <% if (user.last_request_at) { %>
-                    <p class="user__last_seen"><%= user.last_request_at %></p>
+                <p class="user__last_seen"><%= user.last_request_at %></p>
                 <% } %>
             </div>
         </div>
@@ -283,11 +285,11 @@
                 </span>
             <% }); %>
             <% if (users.length){ %>
-                <div id="fountainG">
-                    <div id="fountainG_1" class="fountainG"></div>
-                    <div id="fountainG_2" class="fountainG"></div>
-                    <div id="fountainG_3" class="fountainG"></div>
-                </div>
+            <div id="fountainG">
+                <div id="fountainG_1" class="fountainG"></div>
+                <div id="fountainG_2" class="fountainG"></div>
+                <div id="fountainG_3" class="fountainG"></div>
+            </div>
             <% } %>
         </div>
     </script>

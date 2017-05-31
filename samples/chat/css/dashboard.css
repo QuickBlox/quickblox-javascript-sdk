@@ -321,10 +321,19 @@
     align-items: center;
 }
 
-.message__content_wrap {
+.message__content {
     flex: 1 0;
     flex-wrap: nowrap;
     overflow: hidden;
+}
+
+.message__sender_and_status {
+    display: flex;
+    margin: 0 0 4px 0;
+}
+
+.message__text_and_date {
+    display: flex;
 }
 
 .message__sender_name {
@@ -332,7 +341,11 @@
     font-weight: 500;
     line-height: 20px;
     color: #778594;
-    margin: 0 0 4px 0;
+    flex: 1 0;
+}
+
+.message__text_wrap {
+    flex: 1 0;
 }
 
 .message__text {
@@ -342,20 +355,24 @@
     color: #4A4A4A;
     overflow: hidden;
     white-space: pre-line;
-    word-break: break-all
+    word-break: break-all;
 }
 
 .message__text a {
     color: #366BA9;
 }
 
-.message__timestamp {
-    width: 30px;
+.message__timestamp,
+.message__status {
     opacity: 0.6;
     font-size: 12px;
     line-height: 14px;
     text-align: right;
     color: #4A4A4A;
+}
+
+.message__timestamp {
+    width: 30px;
 }
 
 .message_attachment {

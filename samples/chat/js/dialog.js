@@ -147,20 +147,26 @@ Dialog.prototype.selectCurrentDialog = function(dialogId){
     }
 
     dialogElem.classList.add('selected');
-
-    self.resetUnreadCounter(dialogId);
 };
 
-Dialog.prototype.resetUnreadCounter = function(dialogId){
+Dialog.prototype.decreaseUnreadCounter = function(dialogId){
     var self = this,
-        dialogElem = document.getElementById(dialogId);
+        dialog = self._cache[dialogId];
 
-    self._cache[dialogId].unread_messages_count = 0;
+    // Can't decrease unexist dialog or dialog without unread messages.
+    if(dialog === undefined || dialog.unread_messages_count <= 0) return;
 
-    var unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+    dialog.unread_messages_count--;
 
-    unreadCounter.classList.add('hidden');
-    unreadCounter.innerText = '';
+    var dialogElem = document.getElementById(dialogId),
+        unreadCounter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+    unreadCounter.innerText = dialog.unread_messages_count;
+
+    if(dialog.unread_messages_count === 0) {
+        unreadCounter.classList.add('hidden');
+        unreadCounter.innerText = '';
+    }
 };
 
 Dialog.prototype.replaceDialogLink = function (elem) {
@@ -233,6 +239,18 @@ Dialog.prototype.renderMessages = function (dialogId) {
         }
 
         self.dialogTitle.innerText = dialog.name;
+
+        if(dialog.type === CONSTANTS.DIALOG_TYPES.CHAT || dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+            if (dialog && dialog.messages.length) {
+                for (var i = 0; i < dialog.messages.length; i++) {
+                    if(!dialog.messages[i].selfReaded) {
+                        messageModule.sendReadStatus(dialog.messages[i]._id, dialog.messages[i].sender_id, dialogId);
+                        dialog.messages[i].selfReaded = true;
+                        dialogModule.decreaseUnreadCounter(dialogId);
+                    }
+                }
+            }
+        }
 
         if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
             self.editLink.classList.remove('hidden');
@@ -571,6 +589,7 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
         delete self._cache[dialogId];
         var dialogElem = document.getElementById(dialogId);
         dialogElem.parentNode.removeChild(dialogElem);
+        self.dialogId = null;
     }
 
     function _notuyfyUsers(){
