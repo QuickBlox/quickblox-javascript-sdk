@@ -104,6 +104,12 @@
             
                 <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
+                <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
+            
+                <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
+            
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
                 <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
@@ -203,6 +209,8 @@
                 <li data-name="QB.chat.helpers.getRoomJid"><a href="QB.chat.helpers.html#.getRoomJid">getRoomJid</a></li>
             
                 <li data-name="QB.chat.helpers.getRoomJidFromDialogId"><a href="QB.chat.helpers.html#.getRoomJidFromDialogId">getRoomJidFromDialogId</a></li>
+            
+                <li data-name="QB.chat.helpers.getRoomJidFromRoomFullJid"><a href="QB.chat.helpers.html#.getRoomJidFromRoomFullJid">getRoomJidFromRoomFullJid</a></li>
             
                 <li data-name="QB.chat.helpers.getUserIdFromRoomJid"><a href="QB.chat.helpers.html#.getUserIdFromRoomJid">getUserIdFromRoomJid</a></li>
             
@@ -384,12 +392,11 @@
 <p>The QuickBlox JavaScript SDK provides a JavaScript library making it even easier to access the QuickBlox cloud communication backend platform.</p>
 <p><a target="_blank" href="https://quickblox.com">QuickBlox</a> is a suite of communication features &amp; data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.</p>
 <h1>Install</h1><h2>Dependencies for browser</h2><p>For the library to work, you need to include either <a target="_blank" href="http://jquery.com/">jQuery</a> or <a target="_blank" href="http://zeptojs.com/">Zepto</a> in your html before <code>quickblox.min.js</code>, like so:</p>
-<p>For correct work of JS SDK you must include the library in your html before <code>quickblox.min.js</code>, like so:</p>
 <pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js&quot;>&lt;/script>
-&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.5.0/quickblox.min.js&quot;>&lt;/script></code></pre><p>Begin with version 2.5.0 no dependencies for work correctly is not needed.</p>
-<h2>Bower and RequireJS</h2><p>If you use bower package manager for your project, you can install JS SDK through bower:</p>
-<pre class="prettyprint source"><code>bower install quickblox --save</code></pre><p>When you use <strong>RequireJS</strong>, you are able to use quickblox as AMD module. SDK supports <a target="_blank" href="https://github.com/umdjs/umd">UMD (Universal Module Definition)</a> pattern for JavaScript modules. So it is possible to use SDK everywhere (as browser global variable, with AMD module loader like RequireJS or as CommonJS module for Node.js environment).</p>
-<h2>Node.js and NPM integration</h2><p>Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like that:</p>
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.6.0/quickblox.min.js&quot;>&lt;/script></code></pre><p>Beginning with version 2.5.0, no dependencies are need for the QuickBlox SDK to work correctly.</p>
+<h2>Bower and RequireJS</h2><p>If you use the bower package manager for your project, you can install the JS SDK through bower:</p>
+<pre class="prettyprint source"><code>bower install quickblox --save</code></pre><p>When you use <strong>RequireJS</strong>, you are able to use QuickBlox as an AMD compliant module. The SDK supports the <a target="_blank" href="https://github.com/umdjs/umd">UMD (Universal Module Definition)</a> pattern for JavaScript modules, so it is possible to use the SDK everywhere (as a global variable in the browser via an AMD module loader like RequireJS or as a CommonJS module in a Node.js environment).</p>
+<h2>Node.js and NPM integration</h2><p>Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like this:</p>
 <pre class="prettyprint source"><code>npm install quickblox --save</code></pre><p>And you're ready to go:</p>
 <pre class="prettyprint source lang-javascript"><code>var QB = require('quickblox');
 
@@ -419,8 +426,8 @@ var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target
 </tr>
 </tbody>
 </table>
-<h1>Documentation</h1><p>You can look at it here http://quickblox.com/developers/Javascript</p>
-<h1>Questions and feedback</h1><p>Please raise questions, requests for help etc. via http://stackoverflow.com/questions/tagged/quickbloxjs</p>
+<h1>Documentation</h1><p>You can look at it here https://quickblox.com/developers/Javascript</p>
+<h1>Questions and feedback</h1><p>Please raise questions, requests for help etc. via https://stackoverflow.com/questions/tagged/quickblox</p>
 <p>Feedback and suggestions for improvement always welcome :)</p>
 <h1>How to contribute</h1><p>See more information at <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md">contributing.md</a></p>
 <h1>License</h1><p>Apache 2.0</p></article>
@@ -434,7 +441,7 @@ var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jan 05 2017 11:14:19 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 08 2017 12:26:10 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>

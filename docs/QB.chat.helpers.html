@@ -104,6 +104,12 @@
             
                 <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
+                <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
+            
+                <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
+            
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
                 <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
@@ -203,6 +209,8 @@
                 <li data-name="QB.chat.helpers.getRoomJid"><a href="QB.chat.helpers.html#.getRoomJid">getRoomJid</a></li>
             
                 <li data-name="QB.chat.helpers.getRoomJidFromDialogId"><a href="QB.chat.helpers.html#.getRoomJidFromDialogId">getRoomJidFromDialogId</a></li>
+            
+                <li data-name="QB.chat.helpers.getRoomJidFromRoomFullJid"><a href="QB.chat.helpers.html#.getRoomJidFromRoomFullJid">getRoomJidFromRoomFullJid</a></li>
             
                 <li data-name="QB.chat.helpers.getUserIdFromRoomJid"><a href="QB.chat.helpers.html#.getUserIdFromRoomJid">getUserIdFromRoomJid</a></li>
             
@@ -483,7 +491,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2399
+            modules/qbChat.js, line 2544
         </div>
         
     </div>
@@ -494,7 +502,7 @@
     
     
     <div class="description">
-        Get the room jid from dialog id.
+        Generate BSON ObjectId.
     </div>
     
 
@@ -583,7 +591,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2356
+            modules/qbChat.js, line 2488
         </div>
         
     </div>
@@ -728,7 +736,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2345
+            modules/qbChat.js, line 2477
         </div>
         
     </div>
@@ -873,7 +881,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2387
+            modules/qbChat.js, line 2520
         </div>
         
     </div>
@@ -884,7 +892,7 @@
     
     
     <div class="description">
-        Get the room jid from the dialog id.
+        Get user id from dialog's full jid.
     </div>
     
 
@@ -931,7 +939,7 @@
             
             <td class="description last">
                 
-                resourse jid.</td>
+                dialog's full jid.</td>
         </tr>
 	
 	
@@ -996,7 +1004,7 @@
                         
                     
             </td>
-            <td class="description last">jid - The room jid.</td>
+            <td class="description last">user_id - User Id.</td>
         </tr>
     
     </tbody>
@@ -1018,7 +1026,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2305
+            modules/qbChat.js, line 2437
         </div>
         
     </div>
@@ -1181,12 +1189,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".getRoomJid">
             
-            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJid<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJid<span class="signature">(jid, userJid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2377
+            modules/qbChat.js, line 2510
         </div>
         
     </div>
@@ -1197,7 +1205,7 @@
     
     
     <div class="description">
-        Get the room jid from dialog id.
+        Get the full room jid from room bare jid & user jid.
     </div>
     
 
@@ -1244,7 +1252,30 @@
             
             <td class="description last">
                 
-                The dialog jid.</td>
+                dialog's bare jid.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>userJid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                user's jid.</td>
         </tr>
 	
 	
@@ -1309,7 +1340,7 @@
                         
                     
             </td>
-            <td class="description last">jid - The room jid.</td>
+            <td class="description last">jid - dialog's full jid.</td>
         </tr>
     
     </tbody>
@@ -1331,7 +1362,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2367
+            modules/qbChat.js, line 2499
         </div>
         
     </div>
@@ -1469,6 +1500,151 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".getRoomJidFromRoomFullJid">
+            
+            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJidFromRoomFullJid<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 2533
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get bare dialog's jid from dialog's full jid.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                dialog's full jid.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        String
+                        
+                    
+            </td>
+            <td class="description last">room_jid - dialog's bare jid.</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id=".getUserIdFromRoomJid">
             
             <span class="type-signature static">static</span>QB.chat.helpers.getUserIdFromRoomJid<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
@@ -1476,7 +1652,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2409
+            modules/qbChat.js, line 2554
         </div>
         
     </div>
@@ -1621,7 +1797,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2322
+            modules/qbChat.js, line 2454
         </div>
         
     </div>
@@ -1789,7 +1965,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2335
+            modules/qbChat.js, line 2467
         </div>
         
     </div>
@@ -1934,7 +2110,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2268
+            modules/qbChat.js, line 2400
         </div>
         
     </div>
@@ -2082,7 +2258,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2286
+            modules/qbChat.js, line 2418
         </div>
         
     </div>
@@ -2236,7 +2412,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jan 05 2017 11:14:19 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 08 2017 12:26:10 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>

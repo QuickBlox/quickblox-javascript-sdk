@@ -104,6 +104,12 @@
             
                 <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
+                <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
+            
+                <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
+            
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
                 <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
@@ -203,6 +209,8 @@
                 <li data-name="QB.chat.helpers.getRoomJid"><a href="QB.chat.helpers.html#.getRoomJid">getRoomJid</a></li>
             
                 <li data-name="QB.chat.helpers.getRoomJidFromDialogId"><a href="QB.chat.helpers.html#.getRoomJidFromDialogId">getRoomJidFromDialogId</a></li>
+            
+                <li data-name="QB.chat.helpers.getRoomJidFromRoomFullJid"><a href="QB.chat.helpers.html#.getRoomJidFromRoomFullJid">getRoomJidFromRoomFullJid</a></li>
             
                 <li data-name="QB.chat.helpers.getUserIdFromRoomJid"><a href="QB.chat.helpers.html#.getUserIdFromRoomJid">getUserIdFromRoomJid</a></li>
             
@@ -431,9 +439,7 @@
 <dd>
     
     <div class="description">
-        We use this timeout to fix next issue:
-"From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
-We need a way to hide it if sach situation happened."
+        We use this timeout to fix next issue:"From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.We need a way to hide it if sach situation happened."
     </div>
     
     
@@ -523,101 +529,6 @@ We need a way to hide it if sach situation happened."
 <dd>
     
     <div class="description">
-        QuickBlox JavaScript SDKWebRTC Module (WebRTC helpers)
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="config">config</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        User's callbacks (listener-functions):
-- onUserNotAnswerListener(session, userID)
-- onRemoteStreamListener(session, userID, stream)
-- onSessionConnectionStateChangedListener(session, userID, connectionState)
-- onSessionCloseListener(session)
-- onCallStatsReport(session, userId, stats, error)
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="config">config</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
         Modules
     </div>
     
@@ -655,7 +566,7 @@ We need a way to hide it if sach situation happened."
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="connection">connection</h4>
+        <h4 class="name" id="config">config</h4>
     </div>
     
     
@@ -663,7 +574,52 @@ We need a way to hide it if sach situation happened."
 <dd>
     
     <div class="description">
-        Browser env.Uses by Strophe
+        User's callbacks (listener-functions):- onUserNotAnswerListener(session, userID)- onRemoteStreamListener(session, userID, stream)- onSessionConnectionStateChangedListener(session, userID, connectionState)- onSessionCloseListener(session)- onCallStatsReport(session, userId, stats, error)
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="config">config</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        QuickBlox JavaScript SDKWebRTC Module (WebRTC helpers)
     </div>
     
     
@@ -709,51 +665,6 @@ We need a way to hide it if sach situation happened."
     
     <div class="description">
         For server-side applications through using npm package 'quickblox'you should include the following lines
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="NodeClient">NodeClient</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Node env.NodeClient - constructor from node-xmpp-clientnClient - connection
     </div>
     
     
@@ -893,7 +804,7 @@ We need a way to hide it if sach situation happened."
     
         
         <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 346
+            modules/webrtc/qbRTCPeerConnection.js, line 344
         </div>
         
     </div>
@@ -957,77 +868,6 @@ We need a way to hide it if sach situation happened."
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="_onMessageErrorListener">
-            
-            _onMessageErrorListener<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 476
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        TODO!
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id="_prepareExtension">
             
             _prepareExtension<span class="signature">()</span>
@@ -1035,7 +875,7 @@ We need a way to hide it if sach situation happened."
     
         
         <div class="tag-source">
-            modules/webrtc/qbWebRTCSession.js, line 829
+            modules/webrtc/qbWebRTCSession.js, line 825
         </div>
         
     </div>
@@ -1046,8 +886,7 @@ We need a way to hide it if sach situation happened."
     
     
     <div class="description">
-        private _prepareExtension - replace property null to empty string
-return object with property or empty if extension didn't set
+        private _prepareExtension - replace property null to empty stringreturn object with property or empty if extension didn't set
     </div>
     
 
@@ -1178,7 +1017,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2109
+            modules/qbChat.js, line 2251
         </div>
         
     </div>
@@ -1488,7 +1327,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1112
+            modules/qbChat.js, line 1240
         </div>
         
     </div>
@@ -1559,7 +1398,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 508
+            modules/qbChat.js, line 608
         </div>
         
     </div>
@@ -1698,7 +1537,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1143
+            modules/qbChat.js, line 1271
         </div>
         
     </div>
@@ -1769,7 +1608,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2030
+            modules/qbChat.js, line 2178
         </div>
         
     </div>
@@ -1908,7 +1747,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2147
+            modules/qbChat.js, line 2287
         </div>
         
     </div>
@@ -2047,7 +1886,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1463
+            modules/qbChat.js, line 1601
         </div>
         
     </div>
@@ -2163,7 +2002,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            qbMain.js, line 118
+            qbMain.js, line 116
         </div>
         
     </div>
@@ -2302,7 +2141,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2082
+            modules/qbChat.js, line 2226
         </div>
         
     </div>
@@ -2418,7 +2257,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2198
+            modules/qbChat.js, line 2334
         </div>
         
     </div>
@@ -2557,7 +2396,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1840
+            modules/qbChat.js, line 1973
         </div>
         
     </div>
@@ -2673,7 +2512,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            qbMain.js, line 133
+            qbMain.js, line 131
         </div>
         
     </div>
@@ -2818,7 +2657,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1619
+            modules/qbChat.js, line 1757
         </div>
         
     </div>
@@ -2957,7 +2796,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1745
+            modules/qbChat.js, line 1879
         </div>
         
     </div>
@@ -3096,7 +2935,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1050
+            modules/qbChat.js, line 1178
         </div>
         
     </div>
@@ -3212,7 +3051,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            qbMain.js, line 102
+            qbMain.js, line 100
         </div>
         
     </div>
@@ -3351,7 +3190,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1295
+            modules/qbChat.js, line 1426
         </div>
         
     </div>
@@ -3467,7 +3306,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1341
+            modules/qbChat.js, line 1474
         </div>
         
     </div>
@@ -3538,7 +3377,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2003
+            modules/qbChat.js, line 2153
         </div>
         
     </div>
@@ -3677,7 +3516,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2125
+            modules/qbChat.js, line 2267
         </div>
         
     </div>
@@ -3816,7 +3655,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1384
+            modules/qbChat.js, line 1518
         </div>
         
     </div>
@@ -3932,7 +3771,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            qbMain.js, line 149
+            qbMain.js, line 147
         </div>
         
     </div>
@@ -4077,7 +3916,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            qbMain.js, line 164
+            qbMain.js, line 162
         </div>
         
     </div>
@@ -4222,7 +4061,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1180
+            modules/qbChat.js, line 1308
         </div>
         
     </div>
@@ -4293,7 +4132,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1212
+            modules/qbChat.js, line 1340
         </div>
         
     </div>
@@ -4364,7 +4203,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1932
+            modules/qbChat.js, line 2086
         </div>
         
     </div>
@@ -4480,7 +4319,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1875
+            modules/qbChat.js, line 2033
         </div>
         
     </div>
@@ -4596,7 +4435,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2229
+            modules/qbChat.js, line 2363
         </div>
         
     </div>
@@ -4735,7 +4574,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2058
+            modules/qbChat.js, line 2204
         </div>
         
     </div>
@@ -4874,7 +4713,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2171
+            modules/qbChat.js, line 2309
         </div>
         
     </div>
@@ -5013,7 +4852,7 @@ return object with property or empty if extension didn't set
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1706
+            modules/qbChat.js, line 1844
         </div>
         
     </div>
@@ -5156,7 +4995,7 @@ return object with property or empty if extension didn't set
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jan 05 2017 11:14:19 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 08 2017 12:26:10 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>
