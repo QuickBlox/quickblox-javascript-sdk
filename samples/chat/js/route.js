@@ -40,6 +40,7 @@ router.on({
             });
         } else if(app.isDashboardLoaded) {
             app.loadWelcomeTpl();
+            app.sidebar.classList.add('active');
         } else {
             app.renderDashboard('chat');
             dialogModule.loadDialogs('chat');
@@ -107,7 +108,6 @@ router.on({
 
                     app.loadChatList(tab).then(function(){
                         dialogModule.renderMessages(dialogId);
-                        dialogModule.resetUnreadCounter(dialogId);
                         app.sidebar.classList.remove('active');
                     }).catch(function(error){
                         console.error(error);
@@ -181,7 +181,6 @@ router.on({
                 newUsersCount = +counterElem.innerText.trim();
 
             userModule.getUsers().then(function(usersArray){
-
                 var users = usersArray.map(function(user){
                     var userItem = JSON.parse(JSON.stringify(user));
 
@@ -206,11 +205,7 @@ router.on({
 
                         counterElem.innerText = newUsersCount;
 
-                        if(newUsersCount) {
-                            addUsersBtn.disabled = false;
-                        } else {
-                            addUsersBtn.disabled = true;
-                        }
+                        addUsersBtn.disabled = !newUsersCount
                     });
 
                     userList.appendChild(userElem);

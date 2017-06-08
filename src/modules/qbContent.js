@@ -31,8 +31,6 @@ function ContentProxy(service) {
 
 ContentProxy.prototype = {
     create: function(params, callback){
-        Utils.QBLog('[ContentProxy]', 'create', params);
-
         this.service.ajax({
             type: 'POST',
             data: {blob: params},
@@ -49,8 +47,6 @@ ContentProxy.prototype = {
       params = null;
     }
 
-    Utils.QBLog('[ContentProxy]', 'list', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
       if (err){ callback(err, null); }
       else { callback (err, result); }
@@ -58,8 +54,6 @@ ContentProxy.prototype = {
   },
 
   delete: function(id, callback){
-    Utils.QBLog('[ContentProxy]', 'delete');
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
       if (err) { callback(err,null); }
       else { callback(null, true); }
@@ -73,8 +67,6 @@ ContentProxy.prototype = {
 
         var clonedParams = JSON.parse(JSON.stringify(params));
         clonedParams.file.data = "...";
-    
-        Utils.QBLog('[ContentProxy]', 'createAndUpload', clonedParams);
 
         file = params.file;
         name = params.name || file.name;
@@ -138,8 +130,6 @@ ContentProxy.prototype = {
         });
     },
     upload: function(params, callback){
-        Utils.QBLog('[ContentProxy]', 'upload');
-
         var uploadParams = {
             type: 'POST',
             dataType: 'text',
@@ -159,8 +149,6 @@ ContentProxy.prototype = {
     },
 
   taggedForCurrentUser: function(callback) {
-    Utils.QBLog('[ContentProxy]', 'taggedForCurrentUser');
-
     this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
       if (err) { callback(err, null); }
       else { callback(null, result); }
@@ -168,8 +156,6 @@ ContentProxy.prototype = {
   },
 
   markUploaded: function (params, callback) {
-    Utils.QBLog('[ContentProxy]', 'markUploaded', params);
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -177,8 +163,6 @@ ContentProxy.prototype = {
   },
 
   getInfo: function (id, callback) {
-    Utils.QBLog('[ContentProxy]', 'getInfo', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -186,8 +170,6 @@ ContentProxy.prototype = {
   },
 
   getFile: function (uid, callback) {
-    Utils.QBLog('[ContentProxy]', 'getFile', uid);
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res); }
@@ -195,8 +177,6 @@ ContentProxy.prototype = {
   },
 
   getFileUrl: function (id, callback) {
-    Utils.QBLog('[ContentProxy]', 'getFileUrl', id);
-
     this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
       if (err) { callback (err, null); }
       else { callback (null, res.blob_object_access.params); }
@@ -204,8 +184,6 @@ ContentProxy.prototype = {
   },
 
   update: function (params, callback) {
-    Utils.QBLog('[ContentProxy]', 'update', params);
-
     var data = {};
     data.blob = {};
     if (typeof params.name !== 'undefined') { data.blob.name = params.name; }

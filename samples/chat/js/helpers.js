@@ -15,6 +15,43 @@ Helpers.prototype.clearView = function (view) {
     }
 };
 
+
+Helpers.prototype.checkIsMessageReadedByMe = function(message){
+    var readIds = message.read_ids,
+        isReaded = readIds.some(function(id){
+            return id === app.user.id;
+        });
+
+    return isReaded;
+};
+
+Helpers.prototype.checkIsMessageReadedByOccupants = function(message){
+    var readIds = message.read_ids,
+        isReaded = readIds.some(function(id){
+            return id !== app.user.id;
+        });
+
+    return isReaded;
+};
+
+Helpers.prototype.checkIsMessageDeliveredToMe = function(message){
+    var deliveredIds = message.delivered_ids,
+        isDelivered = deliveredIds.some(function(id){
+            return id === app.user.id;
+        });
+
+    return isDelivered;
+};
+
+Helpers.prototype.checkIsMessageDeliveredToOccupants = function(message){
+    var deliveredIds = message.delivered_ids,
+        isDelivered = deliveredIds.some(function(id){
+            return id !== app.user.id;
+        });
+
+    return isDelivered;
+};
+
 Helpers.prototype.compileDialogParams = function (dialog) {
     var self = this;
 
@@ -82,8 +119,10 @@ Helpers.prototype.getTime = function (time) {
 };
 
 Helpers.prototype.fillMessagePrams = function (message) {
-    var self = this;
-    
+    var self = this,
+        selfDelevered = self.checkIsMessageDeliveredToMe(message),
+        selfReaded = self.checkIsMessageReadedByMe(message);
+
     // date_sent comes in UNIX time.
     message.date_sent = self.getTime(message.date_sent * 1000);
 
@@ -97,19 +136,40 @@ Helpers.prototype.fillMessagePrams = function (message) {
     if (message.message === CONSTANTS.ATTACHMENT.BODY) {
         message.message = '';
     }
+    if(!selfDelevered){
+        messageModule.sendDeliveredStatus(message._id, message.sender_id, message.chat_dialog_id);
+    };
+
+    message.selfReaded = selfReaded;
+
+    message.status = self.getMessageStatus(message);
 
     return message;
 };
 
+Helpers.prototype.getMessageStatus = function(message){
+    if(message.sender_id !== app.user.id){
+        return undefined;
+    }
+
+    var self = this,
+        deleveredToOcuupants = self.checkIsMessageDeliveredToOccupants(message),
+        readedByOcuupants = self.checkIsMessageReadedByOccupants(message),
+        status = !deleveredToOcuupants ? 'not delivered yet' :
+            readedByOcuupants ? 'seen' : 'delivered';
+
+
+    return status;
+};
+
 Helpers.prototype.fillMessageBody = function (str) {
-    var url, url_text;
-    var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+    var url, url_text,
+        URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
 
     str = escapeHTML(str);
 
     // parser of paragraphs
     str = str.replace(/\n/g, '<br>');
-
     // parser of links
     str = str.replace(URL_REGEXP, function(match) {
         url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
@@ -135,11 +195,13 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
             attachments: [],
             created_at: +msg.extension.date_sent || Date.now(),
             date_sent: self.getTime(+msg.extension.date_sent * 1000 || Date.now()),
-            delivered_ids: [],
+            delivered_ids: [userId],
             message: msg.body,
-            read_ids: [],
+            read_ids: [userId],
             sender_id: userId,
-            chat_dialog_id: msg.extension.dialog_id
+            chat_dialog_id: msg.extension.dialog_id,
+            selfReaded: userId === app.user.id,
+            read: 0
         };
 
     if (msg.extension.attachments) {
@@ -163,6 +225,8 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
     if(msg.extension.occupants_ids_added){
         message.occupants_ids_added = msg.extension.occupants_ids_added;
     }
+
+    message.status = (userId !== app.user.id) ? self.getMessageStatus(message) : undefined;
 
     return message;
 };

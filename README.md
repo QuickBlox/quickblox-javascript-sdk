@@ -15,28 +15,26 @@ The QuickBlox JavaScript SDK provides a JavaScript library making it even easier
 
 For the library to work, you need to include either [jQuery](http://jquery.com/) or [Zepto](http://zeptojs.com/) in your html before `quickblox.min.js`, like so:
 
-For correct work of JS SDK you must include the library in your html before `quickblox.min.js`, like so:
-
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.5.4/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.6.0/quickblox.min.js"></script>
 ```
 
-Begin with version 2.5.0 no dependencies for work correctly is not needed.
+Beginning with version 2.5.0, no dependencies are need for the QuickBlox SDK to work correctly.
 
 ## Bower and RequireJS
 
-If you use bower package manager for your project, you can install JS SDK through bower:
+If you use the bower package manager for your project, you can install the JS SDK through bower:
 
 ```
 bower install quickblox --save
 ```
 
-When you use **RequireJS**, you are able to use quickblox as AMD module. SDK supports [UMD (Universal Module Definition)](https://github.com/umdjs/umd) pattern for JavaScript modules. So it is possible to use SDK everywhere (as browser global variable, with AMD module loader like RequireJS or as CommonJS module for Node.js environment).
+When you use **RequireJS**, you are able to use QuickBlox as an AMD compliant module. The SDK supports the [UMD (Universal Module Definition)](https://github.com/umdjs/umd) pattern for JavaScript modules, so it is possible to use the SDK everywhere (as a global variable in the browser via an AMD module loader like RequireJS or as a CommonJS module in a Node.js environment).
 
 ## Node.js and NPM integration
 
-Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like that:
+Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like this:
 
 ```
 npm install quickblox --save

@@ -27,6 +27,10 @@ Listeners.prototype.onMessageListener = function (userId, message) {
         msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
 
+    if(message.markable){
+        messageModule.sendDeliveredStatus(msg._id, userId, msg.chat_dialog_id);
+    }
+
     if (dialog) {
         dialog.messages.unshift(msg);
         dialogModule.changeLastMessagePreview(msg.chat_dialog_id, msg);
@@ -113,10 +117,6 @@ Listeners.prototype.onReconnectFailedListener = function() {
     alert('onReconnectFailedListener');
 };
 
-Listeners.prototype.onSentMessageCallback = function () {
-
-};
-
 Listeners.prototype.onMessageTypingListener = function (isTyping, userId, dialogId) {
     var currentDialogId = dialogModule.dialogId,
         dialog = dialogModule._cache[currentDialogId];
@@ -124,10 +124,6 @@ Listeners.prototype.onMessageTypingListener = function (isTyping, userId, dialog
     if (((dialogId && currentDialogId === dialogId) || (!dialogId && dialog && dialog.jidOrUserId === userId)) && userId !== app.user.id) {
         messageModule.setTypingStatuses(isTyping, userId, dialogId || dialog._id);
     }
-};
-
-Listeners.prototype.onReadStatusListener = function () {
-
 };
 
 Listeners.prototype.onSystemMessageListener = function (message) {
@@ -177,12 +173,58 @@ Listeners.prototype.updateOnlineStatus = function (e) {
 
 };
 
+Listeners.prototype.onSentMessageCallback = function (messageLost, messageSent) {
+    var message = messageSent || messageLost,
+        data = {
+            _id: message.id,
+            dialogId: message.extension.dialog_id
+        };
+
+    if (messageLost) {
+        // message was not sent to the chat.
+        data.status = 'not sent';
+    } else {
+        // message was sent to the chat but not delivered to che opponent.
+        data.status = 'not delivered yet';
+    }
+
+    messageModule.setMessageStatus(data);
+};
+
+
+Listeners.prototype.onReadStatusListener = function (messageId, dialogId, userId) {
+    var data = {
+        _id: messageId,
+        dialogId: dialogId,
+        userId: userId,
+        status: 'seen'
+    };
+
+    messageModule.setMessageStatus(data);
+};
+
+Listeners.prototype.onDeliveredStatusListener = function (messageId, dialogId, userId) {
+    var data = {
+        _id: messageId,
+        dialogId: dialogId,
+        userId: userId,
+        status: 'delivered'
+    };
+
+    messageModule.setMessageStatus(data);
+};
+
 Listeners.prototype.setListeners = function () {
     QB.chat.onMessageListener = this.onMessageListener.bind(this);
     QB.chat.onSystemMessageListener = this.onSystemMessageListener;
     QB.chat.onMessageTypingListener = this.onMessageTypingListener;
-
     QB.chat.onReconnectFailedListener = this.onReconnectFailedListener;
+
+    // messaage status listeners
+    QB.chat.onSentMessageCallback = this.onSentMessageCallback.bind(this);
+    QB.chat.onDeliveredStatusListener = this.onDeliveredStatusListener.bind(this);
+    QB.chat.onReadStatusListener = this.onReadStatusListener.bind(this);
+
     // lost enternet connection.
     window.addEventListener('online', this.updateOnlineStatus);
     window.addEventListener('offline', this.updateOnlineStatus);

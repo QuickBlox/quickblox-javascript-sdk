@@ -22,7 +22,7 @@ var ObjectId = {
 var Utils = {
     /**
      * [getEnv get a name of an execution environment]
-     * @return {object} return names of env. (node/browser) 
+     * @return {object} return names of env. (node/browser)
      */
     getEnv: function() {
         var isNode = typeof window === 'undefined' && typeof exports === 'object',
@@ -112,7 +112,7 @@ var Utils = {
             var logger = function(args){
                 console.log.apply(console, Array.prototype.slice.call(args));
             };
-      
+
             return logger;
         };
 
@@ -122,15 +122,15 @@ var Utils = {
                     throw unsupported;
                 } else {
                     var data = [];
-                
+
                     for (var i = 0; i < args.length; i++) {
                         data.push(JSON.stringify(args[i]));
                     }
-          
+
                     data = data.join(' ');
 
                     var toLog = '\n' + new Date() + '. ' + data;
-            
+
                     fs.appendFile(config.debug.file, toLog, function(err) {
                         if(err) {
                             return console.error('Error while writing log to file. Error: ' + err);
@@ -138,7 +138,7 @@ var Utils = {
                     });
                 }
             };
-      
+
             return logger;
         };
 
@@ -156,7 +156,7 @@ var Utils = {
                 }
             } else if(typeof config.debug.mode === 'object'){
                 var self = this;
-                
+
                 config.debug.mode.forEach(function(mode) {
                     if(mode === 1){
                         logger = consoleLoggerFunction();
@@ -240,9 +240,8 @@ var Utils = {
             var newItem = arrayFrom[i];
 
             for(var j = 0; j < merged.length; j++){
-                var oldItem = merged[j];
-                if(newItem.user_id === oldItem.user_id){
-                    oldItem = newItem;
+                if(newItem.user_id === merged[j].user_id){
+                    merged[j] = newItem;
                     continue firstLevel;
                 }
             }

@@ -22,3 +22,6 @@ npm-debug.log
 # Android
 .gradle
 .idea
+
+# karma
+coverage
