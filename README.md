@@ -13,14 +13,9 @@ The QuickBlox JavaScript SDK provides a JavaScript library making it even easier
 
 ## Dependencies for browser
 
-For the library to work, you need to include either [jQuery](http://jquery.com/) or [Zepto](http://zeptojs.com/) in your html before `quickblox.min.js`, like so:
-
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.6.0/quickblox.min.js"></script>
 ```
-
-Beginning with version 2.5.0, no dependencies are need for the QuickBlox SDK to work correctly.
 
 ## Bower and RequireJS
 
