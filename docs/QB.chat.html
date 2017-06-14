@@ -104,6 +104,12 @@
             
                 <li data-name="QB.chat.onDisconnectedListener"><a href="QB.chat.html#.onDisconnectedListener">onDisconnectedListener</a></li>
             
+                <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
+            
+                <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
+            
                 <li data-name="QB.chat.onMessageErrorListener"><a href="QB.chat.html#.onMessageErrorListener">onMessageErrorListener</a></li>
             
                 <li data-name="QB.chat.onMessageListener"><a href="QB.chat.html#.onMessageListener">onMessageListener</a></li>
@@ -203,6 +209,8 @@
                 <li data-name="QB.chat.helpers.getRoomJid"><a href="QB.chat.helpers.html#.getRoomJid">getRoomJid</a></li>
             
                 <li data-name="QB.chat.helpers.getRoomJidFromDialogId"><a href="QB.chat.helpers.html#.getRoomJidFromDialogId">getRoomJidFromDialogId</a></li>
+            
+                <li data-name="QB.chat.helpers.getRoomJidFromRoomFullJid"><a href="QB.chat.helpers.html#.getRoomJidFromRoomFullJid">getRoomJidFromRoomFullJid</a></li>
             
                 <li data-name="QB.chat.helpers.getUserIdFromRoomJid"><a href="QB.chat.helpers.html#.getUserIdFromRoomJid">getUserIdFromRoomJid</a></li>
             
@@ -456,7 +464,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 507
+            modules/qbChat.js, line 607
         </div>
         
     </div>
@@ -467,7 +475,7 @@
     
     
     <div class="description">
-        Connection to the chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat">More info.</a>
+        self.connection to the chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat">More info.</a>
     </div>
     
 
@@ -595,7 +603,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 964
+            modules/qbChat.js, line 1088
         </div>
         
     </div>
@@ -666,7 +674,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 179
+            modules/qbChat.js, line 220
         </div>
         
     </div>
@@ -782,7 +790,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 164
+            modules/qbChat.js, line 205
         </div>
         
     </div>
@@ -921,7 +929,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 137
+            modules/qbChat.js, line 156
         </div>
         
     </div>
@@ -1083,7 +1091,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 195
+            modules/qbChat.js, line 234
         </div>
         
     </div>
@@ -1147,6 +1155,423 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".onJoinOccupant">
+            
+            <span class="type-signature static">static</span>QB.chat.onJoinOccupant<span class="signature">(dialogId, userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 189
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        You will receive this callback when some user joined group chat dialog you are in.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of chat dialog that user joined.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of user who joined chat dialog.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onKickOccupant">
+            
+            <span class="type-signature static">static</span>QB.chat.onKickOccupant<span class="signature">(dialogId, initiatorUserId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 181
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of chat dialog where you was kicked from.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>initiatorUserId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of user who has kicked you.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onLeaveOccupant">
+            
+            <span class="type-signature static">static</span>QB.chat.onLeaveOccupant<span class="signature">(dialogId, userId)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 197
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        You will receive this callback when some user left group chat dialog you are in.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of chat dialog that user left.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An Id of user who left chat dialog.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id=".onMessageErrorListener">
             
             <span class="type-signature static">static</span>QB.chat.onMessageErrorListener<span class="signature">(error, message)</span>
@@ -1154,7 +1579,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 112
+            modules/qbChat.js, line 131
         </div>
         
     </div>
@@ -1293,7 +1718,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 104
+            modules/qbChat.js, line 123
         </div>
         
     </div>
@@ -1432,7 +1857,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 128
+            modules/qbChat.js, line 147
         </div>
         
     </div>
@@ -1594,7 +2019,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 146
+            modules/qbChat.js, line 165
         </div>
         
     </div>
@@ -1756,7 +2181,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 201
+            modules/qbChat.js, line 240
         </div>
         
     </div>
@@ -1827,7 +2252,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 187
+            modules/qbChat.js, line 227
         </div>
         
     </div>
@@ -1943,7 +2368,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 120
+            modules/qbChat.js, line 139
         </div>
         
     </div>
@@ -2082,7 +2507,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 172
+            modules/qbChat.js, line 213
         </div>
         
     </div>
@@ -2198,7 +2623,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 156
+            modules/qbChat.js, line 174
         </div>
         
     </div>
@@ -2314,7 +2739,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 733
+            modules/qbChat.js, line 857
         </div>
         
     </div>
@@ -2485,7 +2910,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 872
+            modules/qbChat.js, line 996
         </div>
         
     </div>
@@ -2604,7 +3029,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 845
+            modules/qbChat.js, line 969
         </div>
         
     </div>
@@ -2723,7 +3148,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 932
+            modules/qbChat.js, line 1056
         </div>
         
     </div>
@@ -2839,7 +3264,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 795
+            modules/qbChat.js, line 919
         </div>
         
     </div>
@@ -3016,7 +3441,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jan 05 2017 11:14:19 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 08 2017 12:26:10 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>
