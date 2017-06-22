@@ -1,9 +1,9 @@
 'use strict';
 
-/* global google:true, navigator:true */
+/* global google:true */
 
 function Map(params) {
-  // el is require for Gmap
+  // el is required for Gmap
   this.el = params.el;
   // Gmap 
   this.gmap;
@@ -16,7 +16,7 @@ function Map(params) {
   this._MARKER_ACTIVE = 'marker_create.png';
   this._MARKER = 'marker.png';
 
-  this._DEFAULT_MAP_OPTIONS =  {
+  this._DEFAULT_MAP_OPTIONS = {
     'zoom': 14,
     'center': {
       'lat': 51.5028056,
@@ -88,7 +88,7 @@ Map.prototype.getAndSetUserLocation = function() {
   var self = this;
 
   // check is geolocation avalable in this browser
-  if (navigator.geolocation) {
+  if (window.navigator.geolocation) {
     // get current location
     window.navigator.geolocation.getCurrentPosition(function(pos) {
       var position = {

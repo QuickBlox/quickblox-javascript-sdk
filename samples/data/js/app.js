@@ -2,7 +2,11 @@
 
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
-/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Map:true, Handlebars:true */
+/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, Map:true, Handlebars:true */
+
+Handlebars.registerHelper('getImageUrl', function(uid) {
+  return QB.content.privateUrl(uid);
+});
 
 function App() {
   this.ui = {
@@ -166,12 +170,33 @@ App.prototype.renderCreatePlace = function() {
   self._setListenersPlacesNew();
 }
 
+function Content(file) {
+  return new Promise(function(resolve, reject) {
+    var params = {
+      file: file,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      public: false
+    };
+    
+    QB.content.createAndUpload(params, function(err, response) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response.uid);
+        }
+    });
+  });
+}
+
 App.prototype._setListenersPlacesNew = function() {
   var self = this;
 
   var ui = {
     backBtn: 'j-to_dashboard',
-    createPlaceForm: 'j-create'
+    createPlaceForm: 'j-create',
+    uploadImage: 'j-media'
   };
 
   document.getElementById(ui.backBtn).addEventListener('click', function(e) {
@@ -182,6 +207,27 @@ App.prototype._setListenersPlacesNew = function() {
     self.activePage = {
       pageName: 'dashboard'
     };
+  });
+
+  var uploadImageInp = document.querySelector('.' + ui.uploadImage);
+  var mediaWrap = document.getElementById('media_wrap');
+
+  uploadImageInp.addEventListener('change', function(e) {
+    e.preventDefault();
+
+    for (var i = 0; i < uploadImageInp.files.length; i++) {
+      var file = uploadImageInp.files[i];
+
+      var img = document.createElement('img');
+      img.classList.add('img_obj');
+      img.file = file;
+
+      mediaWrap.appendChild(img);
+
+      var reader = new FileReader();
+      reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
+      reader.readAsDataURL(file);
+    }
   });
 
   document.getElementById(ui.createPlaceForm).addEventListener('submit', function(e) {
@@ -199,20 +245,38 @@ App.prototype._setListenersPlacesNew = function() {
       rate: +rate,
     };
 
-    self.places.create(dataInfo).then(function(res) {
-      self.map.setPlaces(res);
-      self.map.removeSketchedPlace();
+    var listPromises = [];
 
-      self.activePage = {
-        pageName: 'place_detailed',
-        detailed: res._id
-      };
-    }).catch(function(err) {
-      // User is unauthorized
-      if(err.code === 401) {
-        document.location.reload(true);
+    function _createPlace(data) {
+      self.places.create(dataInfo).then(function(res) {
+        self.map.setPlaces(res);
+        self.map.removeSketchedPlace();
+
+        self.activePage = {
+          pageName: 'place_detailed',
+          detailed: res._id
+        };
+      }).catch(function(err) {
+        // User is unauthorized
+        if(err.code === 401) {
+          document.location.reload(true);
+        }
+      });
+    }
+
+    if(uploadImageInp.files.length) {
+      for (var i = 0; i < uploadImageInp.files.length; i++) {
+        var file = uploadImageInp.files[i];
+        listPromises.push(new Content(file));
       }
-    });
+
+      Promise.all(listPromises).then(function(uids) {
+        dataInfo.media = uids;
+        _createPlace(dataInfo);
+      });
+    } else {
+      _createPlace(dataInfo);
+    }
   });
 }
 
@@ -309,7 +373,6 @@ App.prototype.renderCheckin = function(placeId) {
      };
   })
 }
-
 
 // this rule only for this line
 /* eslint no-unused-vars:0 */

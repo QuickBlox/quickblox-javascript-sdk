@@ -68,7 +68,11 @@
           <p class="place_preview__description">{{description}}</p>
         </section>
       {{else}}
-        <p class="place_preview place_preview-inactive txt-warn">No places saved, tap somewhere on the map for creating a new place.</p>
+        <section class="empty_state">
+          <img class="empty_state__img" src="https://samples.quickblox.com/web/resources/empty_state.gif" alt="empty state of list places">
+          <h5 class="empty_state__title">No places saved.</h5>
+          <p class="empty_state__desc">Tap somewhere on the map for creating a new place.</p>
+        </section>
       {{/each}}
     </div>
   </script>
@@ -98,6 +102,11 @@
             <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
           </div>
 
+          <div class="form_item" id="media_wrap">
+            <label for="media">Add Media</label>
+            <input id="media" class="j-media" multiple type="file" accept="image/*">
+          </div>
+
           <div class="form_item">
             <button class="btn btn-action">Create Place</button>
           </div>
@@ -117,6 +126,15 @@
         <div class="place__action">
           <button class="btn btn-action" id="j-checkin">Check in</button>
         </div>
+        
+        <ul>
+        {{#each media}}
+          <li>
+            <img class="img_obj" src={{getImageUrl this}} />
+          </li>
+        {{/each}}
+        </ul>
+
         <div class="place__section">
           <h4 class="h4">Description</h4>
           <p>{{description}}</p>
