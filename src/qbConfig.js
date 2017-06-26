@@ -55,26 +55,6 @@ var config = {
         'url': 'turn:turn.quickblox.com:3478?transport=tcp',
         'username': 'quickblox',
         'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turnsingapor.quickblox.com:3478?transport=udp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turnsingapore.quickblox.com:3478?transport=tcp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turnireland.quickblox.com:3478?transport=udp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turnireland.quickblox.com:3478?transport=tcp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
       }
     ]
   },
