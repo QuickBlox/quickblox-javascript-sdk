@@ -117,20 +117,18 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
   }
 
   function successCallback(desc) {
+    /**
+     * It's to fixed issue
+     * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
+     * callType === 2 is audio only
+     */
+    var ffVersion = getVersionFirefox();
+
+    if(ffVersion !== null && ffVersion < 55 && callType === 2) {
+      desc.sdp = _modifySDPforFixIssue(desc.sdp);
+    }
+
     self.setLocalDescription(desc, function() {
-      /**
-       * It's to fixed issue
-       * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
-       * callType === 2 is audio only
-       */
-      var ffVersion = getVersionFirefox();
-
-      if(ffVersion !== null && ffVersion < 55 && callType === 2) {
-        var modifiedSDP = _modifySDPforFixIssue(desc.sdp);
-        console.log('modifiedSDP');
-        console.log(modifiedSDP);
-      }
-
       callback(null);
     }, errorCallback);
   }
@@ -391,11 +389,11 @@ function _modifySDPforFixIssue(sdp) {
 
   parsedSDP.groups = parsedSDP.groups ? parsedSDP.groups : [];
   parsedSDP.groups.push({
-    mids: 'audio',
+    mids: 'sdparta_0',
     type: 'BUNDLE'
   });
 
-  return transform.write(parsedSDP).split('\r\n');
+  return transform.write(parsedSDP);
 }
 
 module.exports = RTCPeerConnection;
