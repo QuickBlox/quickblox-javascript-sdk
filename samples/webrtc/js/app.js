@@ -1039,5 +1039,3 @@
         };
     });
 }(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
-
-
