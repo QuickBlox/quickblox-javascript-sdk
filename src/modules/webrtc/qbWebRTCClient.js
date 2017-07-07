@@ -289,6 +289,10 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
 };
 
 WebRTCClient.prototype._cleanupExtension = function(extension) {
+    if (extension.hasOwnProperty('userInfo')) {
+        extension = extension.userInfo;
+    }
+
     delete extension.platform;
     delete extension.sdp;
     delete extension.opponentsIDs;

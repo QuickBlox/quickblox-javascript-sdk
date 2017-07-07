@@ -823,11 +823,20 @@ function generateUUID(){
  * return object with property or empty if extension didn't set
  */
 function _prepareExtension(extension) {
-  try {
-    return JSON.parse( JSON.stringify(extension).replace(/null/g, "\"\"") );
-  } catch (err) {
-    return {};
-  }
+    var ext = {};
+
+    try {
+        if ( ({}).toString.call(extension) === '[object Object]' ) {
+            ext.userInfo = extension;
+            ext = JSON.parse( JSON.stringify(ext).replace(/null/g, "\"\"") );
+        } else {
+            throw new Error('Invalid type of "extension" object.');
+        }
+    } catch (err) {
+        Helpers.traceWarning(err.message);
+    }
+
+    return ext;
 }
 
 function _prepareIceServers(iceServers) {

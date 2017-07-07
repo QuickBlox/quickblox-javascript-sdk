@@ -498,7 +498,7 @@
                 if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                     var errorMsg = '';
 
-                    app.currentSession.stop({});
+                    app.currentSession.stop({k: 1});
 
                     app.helpers.stateBoard.update({
                         'title': 'tpl_device_not_found',
