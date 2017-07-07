@@ -63,6 +63,11 @@
     <div class="panel places">
       {{#each items}}
         <section class="place_preview j-place" data-id="{{_id}}">
+          
+            <div class="place_preview__preview">
+              <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}">
+            </div>
+          
           <h5 class="place_preview__title">{{title}}</h5>
           <p class="rate">{{rate}}</p>
           <p class="place_preview__description">{{description}}</p>
@@ -102,9 +107,10 @@
             <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
           </div>
 
-          <div class="form_item" id="media_wrap">
-            <label for="media">Add Media</label>
-            <input id="media" class="j-media" multiple type="file" accept="image/*">
+          <div class="form_item" id="media_wrap" class="form_item form_item-media">
+            <p class="form_label">Add Media</p>
+            <label for="media" class="form_label--media"></label>
+            <input id="media" class="form_media j-media" multiple type="file" accept="image/*">
           </div>
 
           <div class="form_item">

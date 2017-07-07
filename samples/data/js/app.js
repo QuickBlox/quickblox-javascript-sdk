@@ -8,6 +8,11 @@ Handlebars.registerHelper('getImageUrl', function(uid) {
   return QB.content.privateUrl(uid);
 });
 
+
+Handlebars.registerHelper('getPreviewUrl', function(media) {
+  return QB.content.privateUrl(media[0]);
+});
+
 function App() {
   this.ui = {
     'map': 'j-map',
@@ -20,12 +25,13 @@ function App() {
   this.$app = document.getElementById('j-app');
 
   this.map;
+
   this.user = new User();
   this.places = new Places();
   this.checkin = new Checkin();
 
   /* Write to root element a class name of page by set activePage */
-  this._activePages = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+  this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
 
   Object.defineProperty(this, 'activePage', {
     set: function(params) {
@@ -33,7 +39,7 @@ function App() {
 
       // Set a class (pageName) to root el of app
       // Remove all previously options
-      self._activePages.forEach(function(pName) {
+      self._PAGES.forEach(function(pName) {
         self.$app.classList.remove(pName);
       });
       // set a name of current page
@@ -68,9 +74,7 @@ App.prototype._init = function() {
       });
       self.map.getAndSetUserLocation();
 
-      self.activePage = {
-        pageName: 'dashboard'
-      };
+      self.activePage = { pageName: 'dashboard' };
     }).catch(function(err) {
       console.error(err);
       alert('Something goes wrong, checkout late.');

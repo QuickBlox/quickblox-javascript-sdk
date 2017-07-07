@@ -18,9 +18,14 @@ a {
   text-decoration: none;
 }
 
+.img {
+  max-height: 100%;
+}
+
 #preload { 
   display: none;
 }
+
 
 .txt-warn {
   color: #ff9600;
@@ -314,6 +319,8 @@ body {
 
   transition: background-color .4s ease;
   cursor: pointer;
+
+  overflow: hidden;
 }
   .place_preview:hover {
     background-color: #f2f4f5;
@@ -324,6 +331,16 @@ body {
   .place_preview-inactive:hover {
     background-color: #fff;
   }
+
+.place_preview__preview {
+  width: 56px;
+  height: 56px;
+
+  float: left;
+  margin: 0 16px 0 0;
+
+  overflow: hidden;
+}
 
 .place_preview__title {
   margin: 0 0 4px 0;
@@ -384,6 +401,28 @@ body {
   font-size: 18px;
   line-height: 21px;
   color: #4a4a4a;
+}
+
+.form_label {
+  display: block;
+  margin: 0 0 10px 0;
+}
+
+.form_media {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.form_label--media {
+  display: inline-block;
+  width: 108px;
+  height: 108px;
+
+  background: #F2F4F5 url('https://samples.quickblox.com/web/resources/add_media.svg') center no-repeat;
 }
 
 .img_obj {
