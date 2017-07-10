@@ -222,11 +222,15 @@ App.prototype._setListenersPlacesNew = function() {
     for (var i = 0; i < uploadImageInp.files.length; i++) {
       var file = uploadImageInp.files[i];
 
+      var imgWrap = document.createElement('div');
+      imgWrap.classList.add('form__img_preview');
+
       var img = document.createElement('img');
-      img.classList.add('img_obj');
+      img.classList.add('form__img');
       img.file = file;
 
-      mediaWrap.appendChild(img);
+      imgWrap.appendChild(img);
+      mediaWrap.appendChild(imgWrap);
 
       var reader = new FileReader();
       reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
@@ -297,6 +301,12 @@ App.prototype.renderPlaceDetailed = function(placeId) {
 
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
+
+  if(placeInfo.media !== null && placeInfo.media.length) {
+    var mySiema = new Siema({
+      perPage: 3
+    });
+  }  
 
   self.map.activePlace = placeId;
 

@@ -36,7 +36,7 @@ Places.prototype.create = function(params) {
       if (err) {
           reject(err);
       } else {
-        self.items.push(place);
+        self.items.unshift(place);
         resolve(place);
       }
     });
