@@ -175,7 +175,7 @@ WebRTCSession.prototype.call = function(extension, callback) {
       isOnlineline = window.navigator.onLine,
       error = null;
 
-  Helpers.trace('Call, extension: ' + JSON.stringify(ext));
+  Helpers.trace('Call, extension: ' + JSON.stringify(ext.userInfo));
 
   if(isOnlineline) {
     self.state = WebRTCSession.State.ACTIVE;
@@ -219,7 +219,7 @@ WebRTCSession.prototype.accept = function(extension) {
   var self = this,
       ext = _prepareExtension(extension);
 
-  Helpers.trace('Accept, extension: ' + JSON.stringify(ext));
+  Helpers.trace('Accept, extension: ' + JSON.stringify(ext.userInfo));
 
   if(self.state === WebRTCSession.State.ACTIVE) {
     Helpers.traceError("Can't accept, the session is already active, return.");
@@ -307,7 +307,7 @@ WebRTCSession.prototype.reject = function(extension) {
       ext = _prepareExtension(extension);
   var peersLen = Object.keys(self.peerConnections).length;
 
-  Helpers.trace('Reject, extension: ' + JSON.stringify(ext));
+  Helpers.trace('Reject, extension: ' + JSON.stringify(ext.userInfo));
 
   self.state = WebRTCSession.State.REJECTED;
 
@@ -337,7 +337,7 @@ WebRTCSession.prototype.stop = function(extension) {
         ext = _prepareExtension(extension),
         peersLen = Object.keys(self.peerConnections).length;
 
-    Helpers.trace('Stop, extension: ' + JSON.stringify(ext));
+    Helpers.trace('Stop, extension: ' + JSON.stringify(ext.userInfo));
 
     self.state = WebRTCSession.State.HUNGUP;
 
