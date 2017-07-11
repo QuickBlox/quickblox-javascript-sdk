@@ -4,14 +4,6 @@
 /* eslint no-console: "off" */
 /* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, Map:true, Handlebars:true */
 
-Handlebars.registerHelper('getImageUrl', function(uid) {
-  return QB.content.privateUrl(uid);
-});
-
-
-Handlebars.registerHelper('getPreviewUrl', function(media) {
-  return QB.content.privateUrl(media[0]);
-});
 
 function App() {
   this.ui = {
@@ -172,26 +164,6 @@ App.prototype.renderCreatePlace = function() {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('new_place-tpl', {'latLng': JSON.stringify(latLng)});
   self._setListenersPlacesNew();
-}
-
-function Content(file) {
-  return new Promise(function(resolve, reject) {
-    var params = {
-      file: file,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      public: false
-    };
-    
-    QB.content.createAndUpload(params, function(err, response) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(response.uid);
-        }
-    });
-  });
 }
 
 App.prototype._setListenersPlacesNew = function() {
