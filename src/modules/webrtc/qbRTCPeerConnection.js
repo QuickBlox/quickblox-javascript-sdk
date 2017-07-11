@@ -124,7 +124,7 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
      */
     var ffVersion = getVersionFirefox();
 
-    if(ffVersion !== null && ffVersion < 55 && callType === 2) {
+    if(ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
       desc.sdp = _modifySDPforFixIssue(desc.sdp);
     }
 
