@@ -63,11 +63,10 @@
     <div class="panel places">
       {{#each items}}
         <section class="place_preview j-place" data-id="{{_id}}">
-          
             {{#if media}}
-            <div class="place_preview__preview">
-              <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}">
-            </div>
+              <div class="place_preview__preview">
+                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}">
+              </div>
             {{/if}}
           
           <h5 class="place_preview__title">{{title}}</h5>

@@ -2,7 +2,7 @@
 
 /* global google:true */
 
-function Map(params) {
+function WMap(params) {
   // el is required for Gmap
   this.el = params.el;
   // Gmap 
@@ -48,14 +48,14 @@ function Map(params) {
   this._init();
 }
 
-Map.transfromLocationOnGmapSyntax = function(location) {
+WMap.transfromLocationOnGmapSyntax = function(location) {
   return {
       'lat': location[1],
       'lng': location[0]
     };
 }
 
-Map.prototype.sketchPlace = function(latLng) {
+WMap.prototype.sketchPlace = function(latLng) {
   var self = this;
 
   self._sketchedPlace = new google.maps.Marker({
@@ -68,7 +68,7 @@ Map.prototype.sketchPlace = function(latLng) {
   self.gmap.panTo(latLng);
 }
 
-Map.prototype._init = function() {
+WMap.prototype._init = function() {
   var self = this;
 
   self.gmap = new google.maps.Map(self.el, self._DEFAULT_MAP_OPTIONS);
@@ -84,7 +84,7 @@ Map.prototype._init = function() {
   });
 }
 
-Map.prototype.getAndSetUserLocation = function() {
+WMap.prototype.getAndSetUserLocation = function() {
   var self = this;
 
   // check is geolocation avalable in this browser
@@ -101,7 +101,7 @@ Map.prototype.getAndSetUserLocation = function() {
   }
 }
 
-Map.prototype.removeAllPlaces = function() {
+WMap.prototype.removeAllPlaces = function() {
   var self = this;
 
   for(var k in self.places) {
@@ -109,7 +109,7 @@ Map.prototype.removeAllPlaces = function() {
   }
 }
 
-Map.prototype._createMarker = function(position) {
+WMap.prototype._createMarker = function(position) {
   var self = this;
 
   return new google.maps.Marker({
@@ -119,14 +119,14 @@ Map.prototype._createMarker = function(position) {
   });
 }
 
-Map.prototype.setPlace = function(place) {
-  var position = Map.transfromLocationOnGmapSyntax(place.location);
+WMap.prototype.setPlace = function(place) {
+  var position = WMap.transfromLocationOnGmapSyntax(place.location);
 
   var marker = this._createMarker(position);
   this.places[place._id] = marker;
 }
 
-Map.prototype.setPlaces = function(places) {
+WMap.prototype.setPlaces = function(places) {
   var self = this;
 
   if(self._sketchedPlace) {
@@ -140,11 +140,11 @@ Map.prototype.setPlaces = function(places) {
   }
 }
 
-Map.prototype.getPositionSketchedPlace = function() {
+WMap.prototype.getPositionSketchedPlace = function() {
   return this._sketchedPlace.getPosition().toJSON(); 
 }
 
-Map.prototype.removeSketchedPlace = function() {
+WMap.prototype.removeSketchedPlace = function() {
   var self = this;
 
   self._sketchedPlace.setMap(null);

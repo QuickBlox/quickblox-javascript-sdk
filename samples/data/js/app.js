@@ -2,7 +2,7 @@
 
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
-/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, Map:true, Handlebars:true */
+/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, WMap:true, Handlebars:true */
 
 
 function App() {
@@ -50,15 +50,15 @@ App.prototype._init = function() {
 
   // init the SDK, be careful the SDK must init one time
   QB.init(QB_CREDS.appId, QB_CREDS.authKey, QB_CREDS.authSecret, QB_CONFIG);
-
   // create a session
   QB.createSession(function() {
     // sync user and places from server
     Promise.all([self.user.auth(), self.places.sync()]).then(function() {
       // render skeleton of app
       self.$app.innerHTML = document.getElementById('app-tpl').innerHTML;
+      
       // render the map and set listener
-      self.map = new Map({
+      self.map = new WMap({
         'el': document.getElementById(self.ui.map),
         'draftNewPlace': function() {
           self.activePage = { pageName: 'new_place' };
