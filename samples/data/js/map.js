@@ -140,8 +140,6 @@ Map.prototype.setPlaces = function(places) {
   }
 }
 
-
-
 Map.prototype.getPositionSketchedPlace = function() {
   return this._sketchedPlace.getPosition().toJSON(); 
 }
