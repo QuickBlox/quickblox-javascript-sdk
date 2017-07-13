@@ -2077,6 +2077,7 @@ PrivacyListProxy.prototype = {
     },
 
     /**
+     * @deprecated Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
      * Set as active privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
      * @param {String} name - The name of privacy list.
      * @memberof QB.chat.privacylist
@@ -2091,10 +2092,12 @@ PrivacyListProxy.prototype = {
 
         var iq,
             stanzaParams = {
-              'from': this.connection ? this.connection.jid : this.nClient.jid.user,
-              'type': 'set',
-              'id': chatUtils.getUniqueId('active')
+                'from': this.connection ? this.connection.jid : this.nClient.jid.user,
+                'type': 'set',
+                'id': chatUtils.getUniqueId('active')
             };
+
+        Utils.QBLog('Deprecated!', 'QB.chat.privacylist.setAsActive() will be deprecated since version 2.8.0');
 
         if(Utils.getEnv().browser){
             iq = $iq(stanzaParams).c('query', {
