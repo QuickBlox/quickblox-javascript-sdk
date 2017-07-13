@@ -790,7 +790,6 @@ describe('Chat API', function() {
     // ============================UPDATE MESSAGES==============================
 
     describe('Update Messages:', function() {
-
       it("can set 'read' status for all messages in dialog", function(done) {
         QB_SENDER.chat.message.update('', {
           'read': '1',
@@ -800,13 +799,12 @@ describe('Chat API', function() {
 
           var params = { chat_dialog_ids: [dialogId1Group] };
           QB_SENDER.chat.message.unreadCount(params, function(err, res) {
-            console.log('TEST', res);
             expect(err).toBeNull();
             expect(res[dialogId1Group]).toEqual(0);
             
 
             var totalUnread = 0;
-            expect(res.total).toBeGreaterThan(totalUnread);
+            expect(res.total).toEqual(totalUnread);
 
             done();
           });
