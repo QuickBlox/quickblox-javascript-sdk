@@ -2,7 +2,7 @@
 
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
-/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Map:true, Handlebars:true */
+/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, WMap:true, Handlebars:true, Content:true, Siema:true */
 
 function App() {
   this.ui = {
@@ -10,18 +10,19 @@ function App() {
     'panel': 'j-panel',
     'header': 'j-header',
     'overlay': 'j-overlay'
-  }
+  };
 
   // root el
   this.$app = document.getElementById('j-app');
 
   this.map;
+
   this.user = new User();
   this.places = new Places();
   this.checkin = new Checkin();
 
   /* Write to root element a class name of page by set activePage */
-  this._activePages = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+  this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
 
   Object.defineProperty(this, 'activePage', {
     set: function(params) {
@@ -29,7 +30,7 @@ function App() {
 
       // Set a class (pageName) to root el of app
       // Remove all previously options
-      self._activePages.forEach(function(pName) {
+      self._PAGES.forEach(function(pName) {
         self.$app.classList.remove(pName);
       });
       // set a name of current page
@@ -48,15 +49,15 @@ App.prototype._init = function() {
 
   // init the SDK, be careful the SDK must init one time
   QB.init(QB_CREDS.appId, QB_CREDS.authKey, QB_CREDS.authSecret, QB_CONFIG);
-
   // create a session
   QB.createSession(function() {
     // sync user and places from server
     Promise.all([self.user.auth(), self.places.sync()]).then(function() {
       // render skeleton of app
       self.$app.innerHTML = document.getElementById('app-tpl').innerHTML;
+      
       // render the map and set listener
-      self.map = new Map({
+      self.map = new WMap({
         'el': document.getElementById(self.ui.map),
         'draftNewPlace': function() {
           self.activePage = { pageName: 'new_place' };
@@ -64,22 +65,20 @@ App.prototype._init = function() {
       });
       self.map.getAndSetUserLocation();
 
-      self.activePage = {
-        pageName: 'dashboard'
-      };
+      self.activePage = { pageName: 'dashboard' };
     }).catch(function(err) {
       console.error(err);
       alert('Something goes wrong, checkout late.');
     });
   });
-}
+};
 
 App.prototype.renderPage = function(pageName, detailed) {
   var self = this;
 
   switch(pageName) {
     case 'dashboard':
-      self.renderDashboard()
+      self.renderDashboard();
       break;
     case 'new_place':
       self.renderCreatePlace();
@@ -91,14 +90,14 @@ App.prototype.renderPage = function(pageName, detailed) {
       self.renderCheckin(detailed);
       break;
   }
-}
+};
 
 App.prototype.renderView = function(idTpl, options) {
   var source = document.getElementById(idTpl).innerHTML;
   var tpl = Handlebars.compile(source);
 
   return tpl(options);
-}
+};
 
 App.prototype.renderDashboard = function() {
   var self = this;
@@ -116,7 +115,7 @@ App.prototype.renderDashboard = function() {
   self.map.removeAllPlaces();
   self.map.activePlace = null;
   self.map.setPlaces(self.places.items);
-}
+};
 
 App.prototype._setListenersHeader = function() {
   var self = this;
@@ -126,7 +125,7 @@ App.prototype._setListenersHeader = function() {
     self.user.logout();
     document.location.reload(true);
   });
-}
+};
 
 App.prototype._setListenersPlacesPreview = function() {
   var self = this;
@@ -140,7 +139,7 @@ App.prototype._setListenersPlacesPreview = function() {
     self.activePage = {
       pageName: 'place_detailed',
       detailed: $item.dataset.id
-    }
+    };
   }
 
   if(placesAmount) {
@@ -148,7 +147,7 @@ App.prototype._setListenersPlacesPreview = function() {
       $places[i].addEventListener('click', showPlace);
     }
   }
-}
+};
 
 App.prototype.renderCreatePlace = function() {
   var self = this;
@@ -164,14 +163,15 @@ App.prototype.renderCreatePlace = function() {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('new_place-tpl', {'latLng': JSON.stringify(latLng)});
   self._setListenersPlacesNew();
-}
+};
 
 App.prototype._setListenersPlacesNew = function() {
   var self = this;
 
   var ui = {
     backBtn: 'j-to_dashboard',
-    createPlaceForm: 'j-create'
+    createPlaceForm: 'j-create',
+    uploadImage: 'j-media'
   };
 
   document.getElementById(ui.backBtn).addEventListener('click', function(e) {
@@ -182,6 +182,31 @@ App.prototype._setListenersPlacesNew = function() {
     self.activePage = {
       pageName: 'dashboard'
     };
+  });
+
+  var uploadImageInp = document.querySelector('.' + ui.uploadImage);
+  var mediaWrap = document.getElementById('media_wrap');
+
+  uploadImageInp.addEventListener('change', function(e) {
+    e.preventDefault();
+
+    for (var i = 0; i < uploadImageInp.files.length; i++) {
+      var file = uploadImageInp.files[i];
+
+      var imgWrap = document.createElement('div');
+      imgWrap.classList.add('form__img_preview');
+
+      var img = document.createElement('img');
+      img.classList.add('form__img');
+      img.file = file;
+
+      imgWrap.appendChild(img);
+      mediaWrap.appendChild(imgWrap);
+
+      var reader = new FileReader();
+      reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
+      reader.readAsDataURL(file);
+    }
   });
 
   document.getElementById(ui.createPlaceForm).addEventListener('submit', function(e) {
@@ -199,22 +224,40 @@ App.prototype._setListenersPlacesNew = function() {
       rate: +rate,
     };
 
-    self.places.create(dataInfo).then(function(res) {
-      self.map.setPlaces(res);
-      self.map.removeSketchedPlace();
+    var listPromises = [];
 
-      self.activePage = {
-        pageName: 'place_detailed',
-        detailed: res._id
-      };
-    }).catch(function(err) {
-      // User is unauthorized
-      if(err.code === 401) {
-        document.location.reload(true);
+    function _createPlace(data) {
+      self.places.create(dataInfo).then(function(res) {
+        self.map.setPlaces(res);
+        self.map.removeSketchedPlace();
+
+        self.activePage = {
+          pageName: 'place_detailed',
+          detailed: res._id
+        };
+      }).catch(function(err) {
+        // User is unauthorized
+        if(err.code === 401) {
+          document.location.reload(true);
+        }
+      });
+    }
+
+    if(uploadImageInp.files.length) {
+      for (var i = 0; i < uploadImageInp.files.length; i++) {
+        var file = uploadImageInp.files[i];
+        listPromises.push(new Content(file));
       }
-    });
+
+      Promise.all(listPromises).then(function(uids) {
+        dataInfo.media = uids;
+        _createPlace(dataInfo);
+      });
+    } else {
+      _createPlace(dataInfo);
+    }
   });
-}
+};
 
 App.prototype.renderPlaceDetailed = function(placeId) {
   var self = this;
@@ -229,6 +272,12 @@ App.prototype.renderPlaceDetailed = function(placeId) {
 
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
+
+  if(placeInfo.media !== null && placeInfo.media.length) {
+    var mySiema = new Siema({
+      perPage: 3
+    });
+  }  
 
   self.map.activePlace = placeId;
 
@@ -253,9 +302,9 @@ App.prototype.renderPlaceDetailed = function(placeId) {
     self.activePage = {
       pageName: 'checkin',
       detailed: placeId
-    }
+    };
   });
-}
+};
 
 App.prototype.renderCheckin = function(placeId) {
   var self = this;
@@ -294,7 +343,7 @@ App.prototype.renderCheckin = function(placeId) {
           pageName: 'place_detailed',
           detailed: res._id
         };
-      })
+      });
     }).catch(function(err) {
       console.error(err);
     });
@@ -307,9 +356,8 @@ App.prototype.renderCheckin = function(placeId) {
         pageName: 'place_detailed',
         detailed: placeId
      };
-  })
-}
-
+  });
+};
 
 // this rule only for this line
 /* eslint no-unused-vars:0 */

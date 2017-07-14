@@ -391,7 +391,7 @@
                         var callParameters = {};
 
                         if(isAudio){
-                            callParameters.callType = 2
+                            callParameters.callType = 2;
                         }
 
                         // Call to users

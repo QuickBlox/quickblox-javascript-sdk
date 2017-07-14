@@ -202,9 +202,9 @@ WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAns
 
   peer.getAndSetLocalSessionDescription(function(err) {
     if (err) {
-      Helpers.trace("getAndSetLocalSessionDescription error: " + err);
+      Helpers.trace("getAndSessionDescription error: " + err);
     } else {
-      Helpers.trace("getAndSetLocalSessionDescription success");
+      Helpers.trace("getAndSessionDescription success");
       /** let's send call requests to user */
       peer._startDialingTimer(extension, withOnNotAnswerCallback);
     }
