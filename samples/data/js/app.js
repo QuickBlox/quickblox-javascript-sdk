@@ -2,8 +2,7 @@
 
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
-/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, WMap:true, Handlebars:true */
-
+/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, WMap:true, Handlebars:true, Content:true, Siema:true */
 
 function App() {
   this.ui = {
@@ -11,7 +10,7 @@ function App() {
     'panel': 'j-panel',
     'header': 'j-header',
     'overlay': 'j-overlay'
-  }
+  };
 
   // root el
   this.$app = document.getElementById('j-app');
@@ -72,14 +71,14 @@ App.prototype._init = function() {
       alert('Something goes wrong, checkout late.');
     });
   });
-}
+};
 
 App.prototype.renderPage = function(pageName, detailed) {
   var self = this;
 
   switch(pageName) {
     case 'dashboard':
-      self.renderDashboard()
+      self.renderDashboard();
       break;
     case 'new_place':
       self.renderCreatePlace();
@@ -91,14 +90,14 @@ App.prototype.renderPage = function(pageName, detailed) {
       self.renderCheckin(detailed);
       break;
   }
-}
+};
 
 App.prototype.renderView = function(idTpl, options) {
   var source = document.getElementById(idTpl).innerHTML;
   var tpl = Handlebars.compile(source);
 
   return tpl(options);
-}
+};
 
 App.prototype.renderDashboard = function() {
   var self = this;
@@ -116,7 +115,7 @@ App.prototype.renderDashboard = function() {
   self.map.removeAllPlaces();
   self.map.activePlace = null;
   self.map.setPlaces(self.places.items);
-}
+};
 
 App.prototype._setListenersHeader = function() {
   var self = this;
@@ -126,7 +125,7 @@ App.prototype._setListenersHeader = function() {
     self.user.logout();
     document.location.reload(true);
   });
-}
+};
 
 App.prototype._setListenersPlacesPreview = function() {
   var self = this;
@@ -140,7 +139,7 @@ App.prototype._setListenersPlacesPreview = function() {
     self.activePage = {
       pageName: 'place_detailed',
       detailed: $item.dataset.id
-    }
+    };
   }
 
   if(placesAmount) {
@@ -148,7 +147,7 @@ App.prototype._setListenersPlacesPreview = function() {
       $places[i].addEventListener('click', showPlace);
     }
   }
-}
+};
 
 App.prototype.renderCreatePlace = function() {
   var self = this;
@@ -164,7 +163,7 @@ App.prototype.renderCreatePlace = function() {
   var $panel = document.getElementById(self.ui.panel);
   $panel.innerHTML = self.renderView('new_place-tpl', {'latLng': JSON.stringify(latLng)});
   self._setListenersPlacesNew();
-}
+};
 
 App.prototype._setListenersPlacesNew = function() {
   var self = this;
@@ -258,7 +257,7 @@ App.prototype._setListenersPlacesNew = function() {
       _createPlace(dataInfo);
     }
   });
-}
+};
 
 App.prototype.renderPlaceDetailed = function(placeId) {
   var self = this;
@@ -303,9 +302,9 @@ App.prototype.renderPlaceDetailed = function(placeId) {
     self.activePage = {
       pageName: 'checkin',
       detailed: placeId
-    }
+    };
   });
-}
+};
 
 App.prototype.renderCheckin = function(placeId) {
   var self = this;
@@ -344,7 +343,7 @@ App.prototype.renderCheckin = function(placeId) {
           pageName: 'place_detailed',
           detailed: res._id
         };
-      })
+      });
     }).catch(function(err) {
       console.error(err);
     });
@@ -357,8 +356,8 @@ App.prototype.renderCheckin = function(placeId) {
         pageName: 'place_detailed',
         detailed: placeId
      };
-  })
-}
+  });
+};
 
 // this rule only for this line
 /* eslint no-unused-vars:0 */

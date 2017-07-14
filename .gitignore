@@ -11,6 +11,9 @@ npm-debug.log
 # *Sublime
 *.sublime-*
 
+#vscode
+.vscode
+
 #jasmine-npm generate
 .grunt
 

@@ -53,7 +53,7 @@ WMap.transfromLocationOnGmapSyntax = function(location) {
       'lat': location[1],
       'lng': location[0]
     };
-}
+};
 
 WMap.prototype.sketchPlace = function(latLng) {
   var self = this;
@@ -66,7 +66,7 @@ WMap.prototype.sketchPlace = function(latLng) {
   });
 
   self.gmap.panTo(latLng);
-}
+};
 
 WMap.prototype._init = function() {
   var self = this;
@@ -82,7 +82,7 @@ WMap.prototype._init = function() {
         self.draftNewPlace();
       }
   });
-}
+};
 
 WMap.prototype.getAndSetUserLocation = function() {
   var self = this;
@@ -99,7 +99,7 @@ WMap.prototype.getAndSetUserLocation = function() {
       self.gmap.setCenter(position);
     });
   }
-}
+};
 
 WMap.prototype.removeAllPlaces = function() {
   var self = this;
@@ -107,7 +107,7 @@ WMap.prototype.removeAllPlaces = function() {
   for(var k in self.places) {
     self.places[k].setMap(null);
   }
-}
+};
 
 WMap.prototype._createMarker = function(position) {
   var self = this;
@@ -117,14 +117,14 @@ WMap.prototype._createMarker = function(position) {
     map: self.gmap,
     icon: self._MARKERS_BASE_URL + self._MARKER
   });
-}
+};
 
 WMap.prototype.setPlace = function(place) {
   var position = WMap.transfromLocationOnGmapSyntax(place.location);
 
   var marker = this._createMarker(position);
   this.places[place._id] = marker;
-}
+};
 
 WMap.prototype.setPlaces = function(places) {
   var self = this;
@@ -138,15 +138,15 @@ WMap.prototype.setPlaces = function(places) {
   } else {
     self.setPlace(places);
   }
-}
+};
 
 WMap.prototype.getPositionSketchedPlace = function() {
   return this._sketchedPlace.getPosition().toJSON(); 
-}
+};
 
 WMap.prototype.removeSketchedPlace = function() {
   var self = this;
 
   self._sketchedPlace.setMap(null);
   self._sketchedPlace = null;
-}
+};

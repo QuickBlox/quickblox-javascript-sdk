@@ -18,7 +18,7 @@ Checkin.prototype.create = function(params) {
       }
     });
   });
-}
+};
 
 /** TODO: change to static function */
 Checkin.prototype.get = function(params) {
@@ -33,4 +33,4 @@ Checkin.prototype.get = function(params) {
       }
     });
   });
-}
+};

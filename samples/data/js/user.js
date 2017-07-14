@@ -26,18 +26,18 @@ User._getRandomName = function() {
   }
 
   return User.userNames[getRandomInt(0, User.userNames.length)];
-}
+};
 
 // 8 characters
 User._generateLogin = function() {
   return Math.random().toString(36).substring(4);
-}
+};
 
 User.prototype._getLoginInStorage = function() {
   var loginInStorage = sessionStorage.getItem(this.config._saveMarker);
 
   return loginInStorage ? loginInStorage : null;
-}
+};
 
 User.prototype._processSuccessAuth = function(user) {
   this._write(user);
@@ -48,7 +48,7 @@ User.prototype._write = function(user) {
   this.id = user.id;
   this.login = user.login;
   this.full_name = user.full_name;
-}
+};
 
 User.prototype._login = function(login) {
   var self = this,
@@ -66,7 +66,7 @@ User.prototype._login = function(login) {
       }
     });
   });
-}
+};
 
 User.prototype.login = function(login) {
   var self = this;
@@ -84,7 +84,7 @@ User.prototype.login = function(login) {
       });
     });
   });
-}
+};
 
 User.prototype.signup = function() {
    var self = this;
@@ -131,4 +131,4 @@ User.prototype.auth = function() {
 // and it's all, folks (
 User.prototype.logout = function() {
   sessionStorage.removeItem(this.config._saveMarker);
-}
+};
