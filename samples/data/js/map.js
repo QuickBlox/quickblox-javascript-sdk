@@ -1,9 +1,9 @@
 'use strict';
 
-/* global google:true, navigator:true */
+/* global google:true */
 
-function Map(params) {
-  // el is require for Gmap
+function WMap(params) {
+  // el is required for Gmap
   this.el = params.el;
   // Gmap 
   this.gmap;
@@ -16,7 +16,7 @@ function Map(params) {
   this._MARKER_ACTIVE = 'marker_create.png';
   this._MARKER = 'marker.png';
 
-  this._DEFAULT_MAP_OPTIONS =  {
+  this._DEFAULT_MAP_OPTIONS = {
     'zoom': 14,
     'center': {
       'lat': 51.5028056,
@@ -48,14 +48,14 @@ function Map(params) {
   this._init();
 }
 
-Map.transfromLocationOnGmapSyntax = function(location) {
+WMap.transfromLocationOnGmapSyntax = function(location) {
   return {
       'lat': location[1],
       'lng': location[0]
     };
-}
+};
 
-Map.prototype.sketchPlace = function(latLng) {
+WMap.prototype.sketchPlace = function(latLng) {
   var self = this;
 
   self._sketchedPlace = new google.maps.Marker({
@@ -66,9 +66,9 @@ Map.prototype.sketchPlace = function(latLng) {
   });
 
   self.gmap.panTo(latLng);
-}
+};
 
-Map.prototype._init = function() {
+WMap.prototype._init = function() {
   var self = this;
 
   self.gmap = new google.maps.Map(self.el, self._DEFAULT_MAP_OPTIONS);
@@ -82,13 +82,13 @@ Map.prototype._init = function() {
         self.draftNewPlace();
       }
   });
-}
+};
 
-Map.prototype.getAndSetUserLocation = function() {
+WMap.prototype.getAndSetUserLocation = function() {
   var self = this;
 
   // check is geolocation avalable in this browser
-  if (navigator.geolocation) {
+  if (window.navigator.geolocation) {
     // get current location
     window.navigator.geolocation.getCurrentPosition(function(pos) {
       var position = {
@@ -99,17 +99,17 @@ Map.prototype.getAndSetUserLocation = function() {
       self.gmap.setCenter(position);
     });
   }
-}
+};
 
-Map.prototype.removeAllPlaces = function() {
+WMap.prototype.removeAllPlaces = function() {
   var self = this;
 
   for(var k in self.places) {
     self.places[k].setMap(null);
   }
-}
+};
 
-Map.prototype._createMarker = function(position) {
+WMap.prototype._createMarker = function(position) {
   var self = this;
 
   return new google.maps.Marker({
@@ -117,16 +117,16 @@ Map.prototype._createMarker = function(position) {
     map: self.gmap,
     icon: self._MARKERS_BASE_URL + self._MARKER
   });
-}
+};
 
-Map.prototype.setPlace = function(place) {
-  var position = Map.transfromLocationOnGmapSyntax(place.location);
+WMap.prototype.setPlace = function(place) {
+  var position = WMap.transfromLocationOnGmapSyntax(place.location);
 
   var marker = this._createMarker(position);
   this.places[place._id] = marker;
-}
+};
 
-Map.prototype.setPlaces = function(places) {
+WMap.prototype.setPlaces = function(places) {
   var self = this;
 
   if(self._sketchedPlace) {
@@ -138,17 +138,15 @@ Map.prototype.setPlaces = function(places) {
   } else {
     self.setPlace(places);
   }
-}
+};
 
-
-
-Map.prototype.getPositionSketchedPlace = function() {
+WMap.prototype.getPositionSketchedPlace = function() {
   return this._sketchedPlace.getPosition().toJSON(); 
-}
+};
 
-Map.prototype.removeSketchedPlace = function() {
+WMap.prototype.removeSketchedPlace = function() {
   var self = this;
 
   self._sketchedPlace.setMap(null);
   self._sketchedPlace = null;
-}
+};
