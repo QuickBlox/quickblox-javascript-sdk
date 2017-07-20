@@ -685,10 +685,10 @@ ChatProxy.prototype = {
                             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                         }
 
+                        self.helpers._setUserCurrentJid(self.connection);
+
                         self._isLogout = false;
                         self._isDisconnected = false;
-
-                        self.helpers._userCurrentJid = self.helpers.userCurrentJid(self.connection);
 
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
@@ -781,10 +781,10 @@ ChatProxy.prototype = {
                     self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                 }
 
+                self.helpers._setUserCurrentJid(self.nClient);
+                
                 self._isDisconnected = false;
                 self._isLogout = false;
-
-                self.helpers._userCurrentJid = self.helpers.userCurrentJid(self.nClient);
 
                 /** Send first presence if user is online */
                 var presence = chatUtils.createStanza(NodeClient.Stanza, null,'presence');
@@ -878,7 +878,7 @@ ChatProxy.prototype = {
             builder = Utils.getEnv().browser ? $msg : NodeClient.Stanza;
 
         var paramsCreateMsg = {
-            from: self.helpers._userCurrentJid,
+            from: self.helpers._getUserCurrentJid(),
             to: this.helpers.jidOrUserId(jid_or_user_id),
             type: message.type ? message.type : 'chat',
             id: message.id ? message.id : Utils.getBsonObjectId()
@@ -988,7 +988,7 @@ ChatProxy.prototype = {
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -1015,7 +1015,7 @@ ChatProxy.prototype = {
     sendIsStopTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -1043,7 +1043,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 id: Utils.getBsonObjectId(),
                 to: this.helpers.jidOrUserId(params.userId)
             },
@@ -1076,7 +1076,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(params.userId),
                 id: Utils.getBsonObjectId()
             },
@@ -1107,7 +1107,8 @@ ChatProxy.prototype = {
     disconnect: function() {
         this.muc.joinedRooms = {};
         this._isLogout = true;
-        this.helpers._userCurrentJid = '';
+
+        this.helpers._setUserCurrentJid('');
 
         if(Utils.getEnv().browser) {
             this.connection.flush();
@@ -1148,7 +1149,7 @@ ChatProxy.prototype = {
         var self = this,
             carbonParams = {
                 type: 'set',
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 id: chatUtils.getUniqueId('enableCarbons')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1205,7 +1206,7 @@ RosterProxy.prototype = {
             items, userId, contacts = {},
             iqParams = {
                 'type': 'get',
-                'from': self.helpers._userCurrentJid,
+                'from': self.helpers._getUserCurrentJid(),
                 'id': chatUtils.getUniqueId('getRoster')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1454,7 +1455,7 @@ MucProxy.prototype = {
 
         var presParams = {
                 id: id,
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 to: self.helpers.getRoomJid(dialogJid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
@@ -1498,7 +1499,7 @@ MucProxy.prototype = {
         var self = this,
             presParams = {
                 type: 'unavailable',
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 to: self.helpers.getRoomJid(jid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
@@ -1544,8 +1545,8 @@ MucProxy.prototype = {
         var iqParams = {
                 type: 'get',
                 to: dialogJID,
-                from: self.helpers._userCurrentJid,
-                id: chatUtils.getUniqueId('muc_disco_items'),
+                from: self.helpers._getUserCurrentJid(),
+                id: chatUtils.getUniqueId('muc_disco_items')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
@@ -1642,7 +1643,7 @@ PrivacyListProxy.prototype = {
 
         var iqParams = {
             type: 'set',
-            from: self.helpers._userCurrentJid,
+            from: self.helpers._getUserCurrentJid(),
             id: chatUtils.getUniqueId('edit')
         },
         builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1784,7 +1785,7 @@ PrivacyListProxy.prototype = {
 
         var iqParams = {
                 type: 'get',
-                from: self.helpers._userCurrentJid,
+                from: self.helpers._getUserCurrentJid(),
                 id: chatUtils.getUniqueId('getlist')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1904,7 +1905,7 @@ PrivacyListProxy.prototype = {
             iq,
             stanzaParams = {
                 'type': 'get',
-                'from': self.helpers._userCurrentJid,
+                'from': self.helpers._getUserCurrentJid(),
                 'id': chatUtils.getUniqueId('getNames')
             };
 
@@ -2398,13 +2399,12 @@ MessageProxy.prototype = {
 /* Helpers
  ----------------------------------------------------------------------------- */
 function Helpers() {
-    this._userCurrentJid = '';
+    this.userCurrentJid = '';
 }
 /**
  * @namespace QB.chat.helpers
  * */
 Helpers.prototype = {
-
     /**
      * Get unique id.
      * @memberof QB.chat.helpers
@@ -2529,7 +2529,7 @@ Helpers.prototype = {
      * @returns {String} jid - dialog's full jid.
      * */
     getRoomJid: function(jid) {
-        return jid + '/' + this.getIdFromNode(this._userCurrentJid);
+        return jid + '/' + this.getIdFromNode(this._getUserCurrentJid());
     },
 
     /**
@@ -2580,16 +2580,30 @@ Helpers.prototype = {
         return arrayElements[arrayElements.length-1];
     },
 
-    userCurrentJid: function(client){
-      try {
-        if(client instanceof Strophe.Connection){
-          return client.jid;
-        }else{
-          return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
+    _getUserCurrentJid: function() {
+        return this.userCurrentJid;
+    },
+
+    _setUserCurrentJid: function(jidOrClient) {
+        var userCurrentJid = '';
+
+        if (typeof jidOrClient === 'string') {
+            userCurrentJid = jidOrClient;
+        } else {
+            try {
+                if (jidOrClient instanceof Strophe.Connection){
+                    userCurrentJid = jidOrClient.jid;
+                } else {
+                    userCurrentJid = jidOrClient.jid.user + '@' +
+                        jidOrClient.jid._domain + '/' + jidOrClient.jid._resource;
+                }
+            } catch (e) { // ReferenceError: Strophe is not defined
+                userCurrentJid = jidOrClient.jid.user +'@' +
+                    jidOrClient.jid._domain + '/' + jidOrClient.jid._resource;
+            }
         }
-      } catch (e) { // ReferenceError: Strophe is not defined
-        return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
-      }
+
+        this.userCurrentJid = userCurrentJid;
     }
 };
 /**
