@@ -803,7 +803,7 @@ describe('Chat API', function() {
             expect(res[dialogId1Group]).toEqual(0);
 
             var totalUnread = 0;
-            expect(res.[dialogId1Group]).toEqual(totalUnread);
+            expect(res[dialogId1Group]).toEqual(totalUnread);
 
             done();
           });
