@@ -801,10 +801,9 @@ describe('Chat API', function() {
           QB_SENDER.chat.message.unreadCount(params, function(err, res) {
             expect(err).toBeNull();
             expect(res[dialogId1Group]).toEqual(0);
-            
 
             var totalUnread = 0;
-            expect(res.total).toEqual(totalUnread);
+            expect(res.[dialogId1Group]).toEqual(totalUnread);
 
             done();
           });
