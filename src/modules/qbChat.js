@@ -72,15 +72,30 @@ function ChatProxy(service) {
 
     this._isLogout = false;
     this._isDisconnected = false;
-    //
-    this.roster = new RosterProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    this.privacylist = new PrivacyListProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    this.muc = new MucProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    //
-    this.dialog = new DialogProxy(service);
-    this.message = new MessageProxy(service);
+
     //
     this.helpers = new Helpers();
+    //
+    var chatOptions = {
+        service: service,
+        helpers: self.helpers,
+        stropheClient: self.connection,
+        nodeClient: self.nClient,
+        nodeStanzasCallbacks: self.nodeStanzasCallbacks
+    };
+
+    var restOptions = {
+        service: service,
+        helpers: self.helpers
+    };
+
+    this.roster = new RosterProxy(chatOptions);
+    this.privacylist = new PrivacyListProxy(chatOptions);
+    this.muc = new MucProxy(chatOptions);
+    //
+    this.dialog = new DialogProxy(restOptions);
+    this.message = new MessageProxy(restOptions);
+
     this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
@@ -673,6 +688,8 @@ ChatProxy.prototype = {
                         self._isLogout = false;
                         self._isDisconnected = false;
 
+                        self.helpers._userCurrentJid = self.helpers.userCurrentJid(self.connection);
+
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
                         self.connection.XAddTrackedHandler(self._onPresence, null, 'presence');
@@ -767,6 +784,8 @@ ChatProxy.prototype = {
                 self._isDisconnected = false;
                 self._isLogout = false;
 
+                self.helpers._userCurrentJid = self.helpers.userCurrentJid(self.nClient);
+
                 /** Send first presence if user is online */
                 var presence = chatUtils.createStanza(NodeClient.Stanza, null,'presence');
                 self.nClient.send(presence);
@@ -859,7 +878,7 @@ ChatProxy.prototype = {
             builder = Utils.getEnv().browser ? $msg : NodeClient.Stanza;
 
         var paramsCreateMsg = {
-            from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+            from: self.helpers._userCurrentJid,
             to: this.helpers.jidOrUserId(jid_or_user_id),
             type: message.type ? message.type : 'chat',
             id: message.id ? message.id : Utils.getBsonObjectId()
@@ -969,7 +988,7 @@ ChatProxy.prototype = {
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -996,7 +1015,7 @@ ChatProxy.prototype = {
     sendIsStopTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -1024,7 +1043,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 id: Utils.getBsonObjectId(),
                 to: this.helpers.jidOrUserId(params.userId)
             },
@@ -1057,7 +1076,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 to: this.helpers.jidOrUserId(params.userId),
                 id: Utils.getBsonObjectId()
             },
@@ -1088,6 +1107,7 @@ ChatProxy.prototype = {
     disconnect: function() {
         this.muc.joinedRooms = {};
         this._isLogout = true;
+        this.helpers._userCurrentJid = '';
 
         if(Utils.getEnv().browser) {
             this.connection.flush();
@@ -1128,7 +1148,7 @@ ChatProxy.prototype = {
         var self = this,
             carbonParams = {
                 type: 'set',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 id: chatUtils.getUniqueId('enableCarbons')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1157,12 +1177,12 @@ ChatProxy.prototype = {
 /**
  * @namespace QB.chat.roster
  **/
-function RosterProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function RosterProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
     //
     this.contacts = {};
 }
@@ -1185,7 +1205,7 @@ RosterProxy.prototype = {
             items, userId, contacts = {},
             iqParams = {
                 'type': 'get',
-                'from': self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                'from': self.helpers._userCurrentJid,
                 'id': chatUtils.getUniqueId('getRoster')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1404,12 +1424,12 @@ RosterProxy.prototype = {
 /**
  * @namespace QB.chat.muc
  * */
-function MucProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function MucProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
     //
     this.joinedRooms = {};
 }
@@ -1432,12 +1452,10 @@ MucProxy.prototype = {
         var self = this,
             id = chatUtils.getUniqueId('join');
 
-        var userCurrentJid = self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient);
-
         var presParams = {
                 id: id,
-                from: userCurrentJid,
-                to: self.helpers.getRoomJid(dialogJid, userCurrentJid)
+                from: self.helpers._userCurrentJid,
+                to: self.helpers.getRoomJid(dialogJid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1478,11 +1496,10 @@ MucProxy.prototype = {
          * */
 
         var self = this,
-            userCurrentJid = self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
             presParams = {
                 type: 'unavailable',
-                from: userCurrentJid,
-                to: self.helpers.getRoomJid(jid, userCurrentJid)
+                from: self.helpers._userCurrentJid,
+                to: self.helpers.getRoomJid(jid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1491,7 +1508,7 @@ MucProxy.prototype = {
         delete this.joinedRooms[jid];
 
         if (Utils.getEnv().browser) {
-            var roomJid = self.helpers.getRoomJid(jid, userCurrentJid);
+            var roomJid = self.helpers.getRoomJid(jid);
 
             if (typeof callback === 'function') {
                 self.connection.XAddTrackedHandler(callback, null, 'presence', presParams.type, null, roomJid);
@@ -1527,7 +1544,7 @@ MucProxy.prototype = {
         var iqParams = {
                 type: 'get',
                 to: dialogJID,
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 id: chatUtils.getUniqueId('muc_disco_items'),
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1579,12 +1596,12 @@ MucProxy.prototype = {
  * http://xmpp.org/extensions/xep-0016.html
  * by default 'mutualBlock' is work in one side
 ----------------------------------------------------------------------------- */
-function PrivacyListProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function PrivacyListProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
 }
 
 /**
@@ -1625,7 +1642,7 @@ PrivacyListProxy.prototype = {
 
         var iqParams = {
             type: 'set',
-            from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+            from: self.helpers._userCurrentJid,
             id: chatUtils.getUniqueId('edit')
         },
         builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1767,7 +1784,7 @@ PrivacyListProxy.prototype = {
 
         var iqParams = {
                 type: 'get',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers._userCurrentJid,
                 id: chatUtils.getUniqueId('getlist')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1887,7 +1904,7 @@ PrivacyListProxy.prototype = {
             iq,
             stanzaParams = {
                 'type': 'get',
-                'from': self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                'from': self.helpers._userCurrentJid,
                 'id': chatUtils.getUniqueId('getNames')
             };
 
@@ -2137,9 +2154,9 @@ PrivacyListProxy.prototype = {
 /*
  * DialogProxy
  */
-function DialogProxy(service) {
-    this.service = service;
-    this.helpers = new Helpers();
+function DialogProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
 }
 
 /**
@@ -2251,9 +2268,9 @@ DialogProxy.prototype = {
 /**
  * MessageProxy
  */
-function MessageProxy(service) {
-    this.service = service;
-    this.helpers = new Helpers();
+function MessageProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
 }
 
 /**
@@ -2380,7 +2397,9 @@ MessageProxy.prototype = {
 
 /* Helpers
  ----------------------------------------------------------------------------- */
-function Helpers() {}
+function Helpers() {
+    this._userCurrentJid = '';
+}
 /**
  * @namespace QB.chat.helpers
  * */
@@ -2478,8 +2497,7 @@ Helpers.prototype = {
      * @returns {Number} id - The user id.
      * */
     getIdFromNode: function(jid) {
-        if (jid.indexOf('@') < 0) return null;
-        return parseInt(jid.split('@')[0].split('-')[0]);
+        return (jid.indexOf('@') < 0) ? null : parseInt(jid.split('@')[0].split('-')[0]);
     },
 
     /**
@@ -2510,8 +2528,8 @@ Helpers.prototype = {
      * @param {String} userJid - user's jid.
      * @returns {String} jid - dialog's full jid.
      * */
-    getRoomJid: function(jid, userJid) {
-        return jid + '/' + this.getIdFromNode(userJid);
+    getRoomJid: function(jid) {
+        return jid + '/' + this.getIdFromNode(this._userCurrentJid);
     },
 
     /**

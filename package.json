@@ -42,7 +42,7 @@
     "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",
     "strophe.js": "1.2.12",
-    "webrtc-adapter": "^2.1.0",
+    "webrtc-adapter": "^4.2.0",
     "xml2js": "^0.4.13"
   },
   "devDependencies": {
