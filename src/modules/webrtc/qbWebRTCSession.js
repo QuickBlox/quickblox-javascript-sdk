@@ -200,7 +200,7 @@ WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAns
   peer.addLocalStream(this.localStream);
   this.peerConnections[userID] = peer;
 
-  peer.getAndSetLocalSessionDescription(function(err) {
+  peer.getAndSetLocalSessionDescription(this.callType, function(err) {
     if (err) {
       Helpers.trace("getAndSessionDescription error: " + err);
     } else {
@@ -277,7 +277,7 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
       }else{
         Helpers.trace("'setRemoteSessionDescription' success");
 
-        peerConnection.getAndSetLocalSessionDescription(function(err) {
+        peerConnection.getAndSetLocalSessionDescription(self.callType, function(err) {
           if (err) {
             Helpers.trace("getAndSetLocalSessionDescription error: " + err);
           } else {
