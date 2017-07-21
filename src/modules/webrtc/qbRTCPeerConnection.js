@@ -33,31 +33,32 @@ RTCPeerConnection.State = {
   COMPLETED: 8
 };
 
-RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
-  Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
+RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) {
+    Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
 
-  this.delegate = delegate;
-  this.sessionID = sessionID;
-  this.userID = userID;
-  this.type = type;
-  this.remoteSDP = null;
+    this.delegate = delegate;
 
-  this.state = RTCPeerConnection.State.NEW;
+    this.sessionID = sessionID;
+    this.userID = userID;
+    this.type = type;
+    this.remoteSDP = null;
 
-  this.onicecandidate = this.onIceCandidateCallback;
-  this.onaddstream = this.onAddRemoteStreamCallback;
-  this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
+    this.state = RTCPeerConnection.State.NEW;
 
-  /** We use this timer interval to dial a user - produce the call requests each N seconds. */
-  this.dialingTimer = null;
-  this.answerTimeInterval = 0;
-  this.statsReportTimer = null;
+    this.onicecandidate = this.onIceCandidateCallback;
+    this.onaddstream = this.onAddRemoteStreamCallback;
+    this.onsignalingstatechange = this.onSignalingStateCallback;
+    this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  /** timer to detect network blips */
-  this.reconnectTimer = 0;
+    /** We use this timer interval to dial a user - produce the call requests each N seconds. */
+    this.dialingTimer = null;
+    this.answerTimeInterval = 0;
+    this.statsReportTimer = null;
 
-  this.iceCandidates = [];
+    /** timer to detect network blips */
+    this.reconnectTimer = 0;
+
+    this.iceCandidates = [];
 };
 
 RTCPeerConnection.prototype.release = function(){
