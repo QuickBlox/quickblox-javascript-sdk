@@ -622,7 +622,7 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
   Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
 
   var peer = new RTCPeerConnection(pcConfig);
-  peer.init(this, userID, this.ID, peerConnectionType);
+  peer._init(this, userID, this.ID, peerConnectionType);
 
   return peer;
 };
