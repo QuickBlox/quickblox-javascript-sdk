@@ -44,7 +44,7 @@ gulp.task('minify', function () {
 
 gulp.task('connect', function() {
     connect.server({
-        port: 8080,
+        port: 3000,
         https: true
     });
 });

@@ -119,9 +119,7 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
 
     if (elem) {
-        var URL = window.URL.createObjectURL(stream);
-
-        elem.src = URL;
+        elem.srcObject = stream;
 
         if (options && options.muted) elem.muted = true;
 
@@ -197,7 +195,9 @@ WebRTCSession.prototype.call = function(extension, callback) {
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
   var peer = this._createPeer(userID, 'offer');
 
-  peer.addLocalStream(this.localStream);
+  // peer.addLocalStream(this.localStream);
+  // addLocalStream uses addStream which is depricated
+  this.localStream.getTracks().forEach(track => peer.addTrack(track, this.localStream));
   this.peerConnections[userID] = peer;
 
   peer.getAndSetLocalSessionDescription(this.callType, function(err) {

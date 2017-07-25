@@ -375,6 +375,7 @@
                 }
 
                 app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                    console.log(err);
                     if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                         var errorMsg = '';
 
@@ -404,8 +405,6 @@
                                 var compiled = _.template( $('#callee_video').html() );
 
                                 app.helpers.stateBoard.update({'title': 'calling'});
-
-                                document.getElementById(sounds.call).play();
 
                                 Object.keys(app.callees).forEach(function(id, i, arr) {
                                     videoElems += compiled({

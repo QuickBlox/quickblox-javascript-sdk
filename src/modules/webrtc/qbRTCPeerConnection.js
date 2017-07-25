@@ -45,10 +45,12 @@ RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) 
 
     this.state = RTCPeerConnection.State.NEW;
 
-    this.onicecandidate = this.onIceCandidateCallback;
-    this.onaddstream = this.onAddRemoteStreamCallback;
-    this.onsignalingstatechange = this.onSignalingStateCallback;
-    this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
+    this.onicecandidate = this.onIceCandidateCallback.bind(this);
+    this.onsignalingstatechange = this.onSignalingStateCallback.bind(this);
+    this.oniceconnectionstatechange = this.onIceConnectionStateCallback.bind(this);
+
+    // this.onaddstream = this.onAddRemoteStreamCallback.bind(this);
+    this.ontrack = this.ontrackCallback.bind(this);
 
     /** We use this timer interval to dial a user - produce the call requests each N seconds. */
     this.dialingTimer = null;
@@ -201,6 +203,10 @@ RTCPeerConnection.prototype.onAddRemoteStreamCallback = function(event) {
         this.delegate._onRemoteStreamListener(this.userID, event.stream);
     }
     self._getStatsWrap();
+};
+
+RTCPeerConnection.prototype.ontrackCallback = function(event) {
+  console.log(event);
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
