@@ -15,16 +15,16 @@ var MESSAGES_API_URL = config.urls.chat + '/Message';
 
 /** create StropheJS or NodeXMPP connection object */
 if (Utils.getEnv().browser) {
-  var Connection = require('../qbStrophe');
+    var Connection = require('../qbStrophe');
 
-  require('strophe.js');
+    require('strophe.js');
 
-  Strophe.addNamespace('CARBONS', chatUtils.MARKERS.CARBONS);
-  Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
-  Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
-  Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
+    Strophe.addNamespace('CARBONS', chatUtils.MARKERS.CARBONS);
+    Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
+    Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
+    Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
 }else{
-  var NodeClient = require('node-xmpp-client');
+    var NodeClient = require('node-xmpp-client');
 }
 
 
@@ -41,7 +41,7 @@ function ChatProxy(service) {
         // strophe js
         self.connection = new Connection();
 
-      /** Add extension methods to track handlers for removal on reconnect */
+        /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
         self.connection.XAddTrackedHandler = function (handler, ns, name, type, id, from, options) {
             self.connection.XHandlerReferences.push(self.connection.addHandler(handler, ns, name, type, id, from, options));
@@ -72,15 +72,30 @@ function ChatProxy(service) {
 
     this._isLogout = false;
     this._isDisconnected = false;
-    //
-    this.roster = new RosterProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    this.privacylist = new PrivacyListProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    this.muc = new MucProxy(service, self.connection, self.nClient, self.nodeStanzasCallbacks);
-    //
-    this.dialog = new DialogProxy(service);
-    this.message = new MessageProxy(service);
+
     //
     this.helpers = new Helpers();
+    //
+    var chatOptions = {
+        service: service,
+        helpers: self.helpers,
+        stropheClient: self.connection,
+        nodeClient: self.nClient,
+        nodeStanzasCallbacks: self.nodeStanzasCallbacks
+    };
+
+    var restOptions = {
+        service: service,
+        helpers: self.helpers
+    };
+
+    this.roster = new RosterProxy(chatOptions);
+    this.privacylist = new PrivacyListProxy(chatOptions);
+    this.muc = new MucProxy(chatOptions);
+    //
+    this.dialog = new DialogProxy(restOptions);
+    this.message = new MessageProxy(restOptions);
+
     this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
@@ -353,11 +368,11 @@ function ChatProxy(service) {
             xXMLNS, status, statusCode, dialogId, userId;
 
         if(x){
-          xXMLNS = chatUtils.getAttr(x, 'xmlns');
-          status = chatUtils.getElement(x, 'status');
-          if(status){
-            statusCode = chatUtils.getAttr(status, 'code');
-          }
+            xXMLNS = chatUtils.getAttr(x, 'xmlns');
+            status = chatUtils.getElement(x, 'status');
+            if(status){
+                statusCode = chatUtils.getAttr(status, 'code');
+            }
         }
 
 
@@ -365,79 +380,79 @@ function ChatProxy(service) {
 
         if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
 
-          dialogId = self.helpers.getDialogIdFromNode(from);
-          userId = self.helpers.getUserIdFromRoomJid(from);
+            dialogId = self.helpers.getDialogIdFromNode(from);
+            userId = self.helpers.getUserIdFromRoomJid(from);
 
-          // KICK from dialog event
-          if(status && statusCode == "301"){
-            if (typeof self.onKickOccupant === 'function'){
-              var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
-              var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
-              Utils.safeCallbackCall(self.onKickOccupant,
-                  dialogId,
-                  self.helpers.getIdFromNode(initiatorUserJid));
-            }
-
-            delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
-
-            return true;
-
-          // Occupants JOIN/LEAVE events
-          }else if(!status){
-            if(userId != currentUserId){
-              // Leave
-              if(type && type === 'unavailable'){
-                if (typeof self.onLeaveOccupant === 'function'){
-                  Utils.safeCallbackCall(self.onLeaveOccupant, dialogId, parseInt(userId));
+            // KICK from dialog event
+            if(status && statusCode == "301"){
+                if (typeof self.onKickOccupant === 'function'){
+                    var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
+                    var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
+                    Utils.safeCallbackCall(self.onKickOccupant,
+                        dialogId,
+                        self.helpers.getIdFromNode(initiatorUserJid));
                 }
-                return true;
-              // Join
-              }else{
-                if (typeof self.onJoinOccupant === 'function'){
-                  Utils.safeCallbackCall(self.onJoinOccupant, dialogId, parseInt(userId));
-                }
-                return true;
-              }
 
+                delete self.muc.joinedRooms[self.helpers.getRoomJidFromRoomFullJid(from)];
+
+                return true;
+
+                // Occupants JOIN/LEAVE events
+            }else if(!status){
+                if(userId != currentUserId){
+                    // Leave
+                    if(type && type === 'unavailable'){
+                        if (typeof self.onLeaveOccupant === 'function'){
+                            Utils.safeCallbackCall(self.onLeaveOccupant, dialogId, parseInt(userId));
+                        }
+                        return true;
+                        // Join
+                    }else{
+                        if (typeof self.onJoinOccupant === 'function'){
+                            Utils.safeCallbackCall(self.onJoinOccupant, dialogId, parseInt(userId));
+                        }
+                        return true;
+                    }
+
+                }
             }
-          }
         }
 
         if(Utils.getEnv().node) {
             /** MUC */
             if(xXMLNS){
                 if(xXMLNS == "http://jabber.org/protocol/muc#user"){
-                  /**
-                   * if you make 'leave' from dialog
-                   * stanza will be contains type="unavailable"
-                   */
-                  if(type && type === 'unavailable'){
-                      /** LEAVE from dialog */
-                      if(status && statusCode == "110"){
-                          if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
-                            Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
-                          }
-                          return true;
-                      }
-                  }
+                    /**
+                     * if you make 'leave' from dialog
+                     * stanza will be contains type="unavailable"
+                     */
+                    if(type && type === 'unavailable'){
+                        /** LEAVE from dialog */
+                        if(status && statusCode == "110"){
+                            if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
+                                Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
+                            }
+                            return true;
+                        }
+                    }
 
-                  /** JOIN to dialog success */
-                  if(id.endsWith(":join") && status && statusCode == "110"){
-                      if(typeof self.nodeStanzasCallbacks[id] === 'function') {
-                          Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
-                      }
-                      return true;
-                  }
+                    /** JOIN to dialog success */
+                    if(id.endsWith(":join") && status && statusCode == "110"){
+                        if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                        }
+                        return true;
+                    }
 
-              // an error
-              }else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
-                  /** JOIN to dialog error */
-                  if(id.endsWith(":join")){
-                      if(typeof self.nodeStanzasCallbacks[id] === 'function') {
-                          Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
-                      }
-                      return true;
-                  }
+                    // an error
+                }else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
+                    /** JOIN to dialog error */
+                    if(id.endsWith(":join")){
+                        if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                        }
+                        return true;
+                    }
                 }
             }
         }
@@ -673,6 +688,8 @@ ChatProxy.prototype = {
                         self._isLogout = false;
                         self._isDisconnected = false;
 
+                        self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.connection));
+
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
                         self.connection.XAddTrackedHandler(self._onPresence, null, 'presence');
@@ -767,6 +784,8 @@ ChatProxy.prototype = {
                 self._isDisconnected = false;
                 self._isLogout = false;
 
+                self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.nClient));
+
                 /** Send first presence if user is online */
                 var presence = chatUtils.createStanza(NodeClient.Stanza, null,'presence');
                 self.nClient.send(presence);
@@ -859,7 +878,7 @@ ChatProxy.prototype = {
             builder = Utils.getEnv().browser ? $msg : NodeClient.Stanza;
 
         var paramsCreateMsg = {
-            from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+            from: self.helpers.getUserCurrentJid(),
             to: this.helpers.jidOrUserId(jid_or_user_id),
             type: message.type ? message.type : 'chat',
             id: message.id ? message.id : Utils.getBsonObjectId()
@@ -969,7 +988,7 @@ ChatProxy.prototype = {
     sendIsTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -996,7 +1015,7 @@ ChatProxy.prototype = {
     sendIsStopTypingStatus: function(jid_or_user_id) {
         var self = this,
             stanzaParams = {
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(jid_or_user_id),
                 type: this.helpers.typeChat(jid_or_user_id)
             },
@@ -1010,7 +1029,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser){
             self.connection.send(stanza);
-         } else if(Utils.getEnv().node) {
+        } else if(Utils.getEnv().node) {
             self.nClient.send(stanza);
         }
     },
@@ -1024,7 +1043,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 id: Utils.getBsonObjectId(),
                 to: this.helpers.jidOrUserId(params.userId)
             },
@@ -1057,7 +1076,7 @@ ChatProxy.prototype = {
         var self = this,
             stanzaParams = {
                 type: 'chat',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 to: this.helpers.jidOrUserId(params.userId),
                 id: Utils.getBsonObjectId()
             },
@@ -1088,6 +1107,7 @@ ChatProxy.prototype = {
     disconnect: function() {
         this.muc.joinedRooms = {};
         this._isLogout = true;
+        this.helpers.setUserCurrentJid('');
 
         if(Utils.getEnv().browser) {
             this.connection.flush();
@@ -1128,7 +1148,7 @@ ChatProxy.prototype = {
         var self = this,
             carbonParams = {
                 type: 'set',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 id: chatUtils.getUniqueId('enableCarbons')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1157,12 +1177,12 @@ ChatProxy.prototype = {
 /**
  * @namespace QB.chat.roster
  **/
-function RosterProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function RosterProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
     //
     this.contacts = {};
 }
@@ -1185,7 +1205,7 @@ RosterProxy.prototype = {
             items, userId, contacts = {},
             iqParams = {
                 'type': 'get',
-                'from': self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                'from': self.helpers.getUserCurrentJid(),
                 'id': chatUtils.getUniqueId('getRoster')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1404,12 +1424,12 @@ RosterProxy.prototype = {
 /**
  * @namespace QB.chat.muc
  * */
-function MucProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function MucProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
     //
     this.joinedRooms = {};
 }
@@ -1432,12 +1452,10 @@ MucProxy.prototype = {
         var self = this,
             id = chatUtils.getUniqueId('join');
 
-        var userCurrentJid = self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient);
-
         var presParams = {
                 id: id,
-                from: userCurrentJid,
-                to: self.helpers.getRoomJid(dialogJid, userCurrentJid)
+                from: self.helpers.getUserCurrentJid(),
+                to: self.helpers.getRoomJid(dialogJid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1478,11 +1496,10 @@ MucProxy.prototype = {
          * */
 
         var self = this,
-            userCurrentJid = self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
             presParams = {
                 type: 'unavailable',
-                from: userCurrentJid,
-                to: self.helpers.getRoomJid(jid, userCurrentJid)
+                from: self.helpers.getUserCurrentJid(),
+                to: self.helpers.getRoomJid(jid)
             },
             builder = Utils.getEnv().browser ? $pres : NodeClient.Stanza;
 
@@ -1491,7 +1508,7 @@ MucProxy.prototype = {
         delete this.joinedRooms[jid];
 
         if (Utils.getEnv().browser) {
-            var roomJid = self.helpers.getRoomJid(jid, userCurrentJid);
+            var roomJid = self.helpers.getRoomJid(jid);
 
             if (typeof callback === 'function') {
                 self.connection.XAddTrackedHandler(callback, null, 'presence', presParams.type, null, roomJid);
@@ -1527,7 +1544,7 @@ MucProxy.prototype = {
         var iqParams = {
                 type: 'get',
                 to: dialogJID,
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 id: chatUtils.getUniqueId('muc_disco_items'),
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1579,12 +1596,12 @@ MucProxy.prototype = {
  * http://xmpp.org/extensions/xep-0016.html
  * by default 'mutualBlock' is work in one side
 ----------------------------------------------------------------------------- */
-function PrivacyListProxy(service, connection, nClient, nodeStanzasCallbacks) {
-    this.service = service;
-    this.helpers = new Helpers();
-    this.connection = connection;
-    this.nClient = nClient;
-    this.nodeStanzasCallbacks = nodeStanzasCallbacks;
+function PrivacyListProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
+    this.connection = options.stropheClient;
+    this.nClient = options.nodeClient;
+    this.nodeStanzasCallbacks = options.nodeStanzasCallbacks;
 }
 
 /**
@@ -1624,11 +1641,11 @@ PrivacyListProxy.prototype = {
         listUserId = Object.keys(listPrivacy);
 
         var iqParams = {
-            type: 'set',
-            from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
-            id: chatUtils.getUniqueId('edit')
-        },
-        builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
+                type: 'set',
+                from: self.helpers.getUserCurrentJid(),
+                id: chatUtils.getUniqueId('edit')
+            },
+            builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
 
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
 
@@ -1767,7 +1784,7 @@ PrivacyListProxy.prototype = {
 
         var iqParams = {
                 type: 'get',
-                from: self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                from: self.helpers.getUserCurrentJid(),
                 id: chatUtils.getUniqueId('getlist')
             },
             builder = Utils.getEnv().browser ? $iq : NodeClient.Stanza;
@@ -1887,7 +1904,7 @@ PrivacyListProxy.prototype = {
             iq,
             stanzaParams = {
                 'type': 'get',
-                'from': self.helpers.userCurrentJid(Utils.getEnv().browser ? this.connection : this.nClient),
+                'from': self.helpers.getUserCurrentJid(),
                 'id': chatUtils.getUniqueId('getNames')
             };
 
@@ -1944,7 +1961,7 @@ PrivacyListProxy.prototype = {
                         activeName = activeList ? activeList.attrs.name : null;
 
                     for (var i = 0, len = allLists.length; i < len; i++) {
-                      allNames.push(allLists[i].attrs.name);
+                        allNames.push(allLists[i].attrs.name);
                     }
 
                     namesList = {
@@ -1976,49 +1993,49 @@ PrivacyListProxy.prototype = {
          * @callback deletePrivacylistCallback
          * */
 
-         var iq,
-          stanzaParams = {
-           'from': this.connection ? this.connection.jid : this.nClient.jid.user,
-           'type': 'set',
-           'id': chatUtils.getUniqueId('remove')
-         };
+        var iq,
+            stanzaParams = {
+                'from': this.connection ? this.connection.jid : this.nClient.jid.user,
+                'type': 'set',
+                'id': chatUtils.getUniqueId('remove')
+            };
 
         if(Utils.getEnv().browser){
-          iq = $iq(stanzaParams).c('query', {
-              xmlns: Strophe.NS.PRIVACY_LIST
-          }).c('list', {
-              name: name ? name : ''
-          });
+            iq = $iq(stanzaParams).c('query', {
+                xmlns: Strophe.NS.PRIVACY_LIST
+            }).c('list', {
+                name: name ? name : ''
+            });
 
-          this.connection.sendIQ(iq, function(stanzaResult) {
-              callback(null);
-          }, function(stanzaError){
-              if(stanzaError){
-                  var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
-                  callback(errorObject);
-              }else{
-                  callback(Utils.getError(408));
-              }
-          });
+            this.connection.sendIQ(iq, function(stanzaResult) {
+                callback(null);
+            }, function(stanzaError){
+                if(stanzaError){
+                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
+                    callback(errorObject);
+                }else{
+                    callback(Utils.getError(408));
+                }
+            });
 
         } else if(Utils.getEnv().node){
-          iq = new NodeClient.Stanza('iq', stanzaParams);
+            iq = new NodeClient.Stanza('iq', stanzaParams);
 
-          iq.c('query', {
-              xmlns: chatUtils.MARKERS.PRIVACY
-          }).c('list', {
-              name: name ? name : ''
-          });
+            iq.c('query', {
+                xmlns: chatUtils.MARKERS.PRIVACY
+            }).c('list', {
+                name: name ? name : ''
+            });
 
-          this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
-              if(!stanza.getChildElements('error').length){
-                  callback(null);
-              } else {
-                  callback(Utils.getError(408));
-              }
-          };
+            this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
+                if(!stanza.getChildElements('error').length){
+                    callback(null);
+                } else {
+                    callback(Utils.getError(408));
+                }
+            };
 
-          this.nClient.send(iq);
+            this.nClient.send(iq);
         }
 
     },
@@ -2077,6 +2094,7 @@ PrivacyListProxy.prototype = {
     },
 
     /**
+     * @deprecated Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
      * Set as active privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
      * @param {String} name - The name of privacy list.
      * @memberof QB.chat.privacylist
@@ -2091,10 +2109,12 @@ PrivacyListProxy.prototype = {
 
         var iq,
             stanzaParams = {
-              'from': this.connection ? this.connection.jid : this.nClient.jid.user,
-              'type': 'set',
-              'id': chatUtils.getUniqueId('active')
+                'from': this.connection ? this.connection.jid : this.nClient.jid.user,
+                'type': 'set',
+                'id': chatUtils.getUniqueId('active')
             };
+
+        Utils.QBLog('Deprecated!', 'QB.chat.privacylist.setAsActive() will be deprecated since version 2.8.0');
 
         if(Utils.getEnv().browser){
             iq = $iq(stanzaParams).c('query', {
@@ -2134,9 +2154,9 @@ PrivacyListProxy.prototype = {
 /*
  * DialogProxy
  */
-function DialogProxy(service) {
-    this.service = service;
-    this.helpers = new Helpers();
+function DialogProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
 }
 
 /**
@@ -2248,9 +2268,9 @@ DialogProxy.prototype = {
 /**
  * MessageProxy
  */
-function MessageProxy(service) {
-    this.service = service;
-    this.helpers = new Helpers();
+function MessageProxy(options) {
+    this.service = options.service;
+    this.helpers = options.helpers;
 }
 
 /**
@@ -2377,7 +2397,9 @@ MessageProxy.prototype = {
 
 /* Helpers
  ----------------------------------------------------------------------------- */
-function Helpers() {}
+function Helpers() {
+    this._userCurrentJid = '';
+}
 /**
  * @namespace QB.chat.helpers
  * */
@@ -2475,8 +2497,7 @@ Helpers.prototype = {
      * @returns {Number} id - The user id.
      * */
     getIdFromNode: function(jid) {
-        if (jid.indexOf('@') < 0) return null;
-        return parseInt(jid.split('@')[0].split('-')[0]);
+        return (jid.indexOf('@') < 0) ? null : parseInt(jid.split('@')[0].split('-')[0]);
     },
 
     /**
@@ -2507,8 +2528,8 @@ Helpers.prototype = {
      * @param {String} userJid - user's jid.
      * @returns {String} jid - dialog's full jid.
      * */
-    getRoomJid: function(jid, userJid) {
-        return jid + '/' + this.getIdFromNode(userJid);
+    getRoomJid: function(jid) {
+        return jid + '/' + this.getIdFromNode(this._userCurrentJid);
     },
 
     /**
@@ -2531,9 +2552,9 @@ Helpers.prototype = {
      * @returns {String} room_jid - dialog's bare jid.
      * */
     getRoomJidFromRoomFullJid: function(jid) {
-      var s = jid.split('/');
-      if (s.length < 2) return null;
-      return s[0];
+        var s = jid.split('/');
+        if (s.length < 2) return null;
+        return s[0];
     },
 
     /**
@@ -2560,15 +2581,23 @@ Helpers.prototype = {
     },
 
     userCurrentJid: function(client){
-      try {
-        if(client instanceof Strophe.Connection){
-          return client.jid;
-        }else{
-          return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
+        try {
+            if (client instanceof Strophe.Connection){
+                return client.jid;
+            } else {
+                return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
+            }
+        } catch (e) { // ReferenceError: Strophe is not defined
+            return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
         }
-      } catch (e) { // ReferenceError: Strophe is not defined
-        return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
-      }
+    },
+
+    getUserCurrentJid: function() {
+        return this._userCurrentJid;
+    },
+
+    setUserCurrentJid: function(jid) {
+        this._userCurrentJid = jid;
     }
 };
 /**

@@ -12,6 +12,8 @@
 var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
+var transform = require('sdp-transform');
+
 var RTCPeerConnection = window.RTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate;
@@ -31,31 +33,32 @@ RTCPeerConnection.State = {
   COMPLETED: 8
 };
 
-RTCPeerConnection.prototype.init = function(delegate, userID, sessionID, type) {
-  Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
+RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) {
+    Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
 
-  this.delegate = delegate;
-  this.sessionID = sessionID;
-  this.userID = userID;
-  this.type = type;
-  this.remoteSDP = null;
+    this.delegate = delegate;
 
-  this.state = RTCPeerConnection.State.NEW;
+    this.sessionID = sessionID;
+    this.userID = userID;
+    this.type = type;
+    this.remoteSDP = null;
 
-  this.onicecandidate = this.onIceCandidateCallback;
-  this.onaddstream = this.onAddRemoteStreamCallback;
-  this.onsignalingstatechange = this.onSignalingStateCallback;
-  this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
+    this.state = RTCPeerConnection.State.NEW;
 
-  /** We use this timer interval to dial a user - produce the call requests each N seconds. */
-  this.dialingTimer = null;
-  this.answerTimeInterval = 0;
-  this.statsReportTimer = null;
+    this.onicecandidate = this.onIceCandidateCallback;
+    this.onaddstream = this.onAddRemoteStreamCallback;
+    this.onsignalingstatechange = this.onSignalingStateCallback;
+    this.oniceconnectionstatechange = this.onIceConnectionStateCallback;
 
-  /** timer to detect network blips */
-  this.reconnectTimer = 0;
+    /** We use this timer interval to dial a user - produce the call requests each N seconds. */
+    this.dialingTimer = null;
+    this.answerTimeInterval = 0;
+    this.statsReportTimer = null;
 
-  this.iceCandidates = [];
+    /** timer to detect network blips */
+    this.reconnectTimer = 0;
+
+    this.iceCandidates = [];
 };
 
 RTCPeerConnection.prototype.release = function(){
@@ -100,7 +103,7 @@ RTCPeerConnection.prototype.addLocalStream = function(localStream){
   }
 };
 
-RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback) {
+RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType, callback) {
   var self = this;
 
   self.state = RTCPeerConnection.State.CONNECTING;
@@ -115,6 +118,17 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callback
   }
 
   function successCallback(desc) {
+    /**
+     * It's to fixed issue
+     * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
+     * callType === 2 is audio only
+     */
+    var ffVersion = getVersionFirefox();
+
+    if(ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
+      desc.sdp = _modifySDPforFixIssue(desc.sdp);
+    }
+
     self.setLocalDescription(desc, function() {
       callback(null);
     }, errorCallback);
@@ -353,6 +367,34 @@ function _getStats(peer, selector, successCallback, errorCallback) {
         });
         successCallback(items);
     }, errorCallback);
+}
+
+/**
+ * It's functions to fixed issue
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
+ */
+function getVersionFirefox() {
+    var ua = navigator ? navigator.userAgent : false;
+    var version;
+
+    if(ua) {
+        var ffInfo = ua.match(/(?:firefox)[ \/](\d+)/i) || [];
+        version = ffInfo[1] ? +ffInfo[1] : null;
+    }
+
+    return version;
+}
+
+function _modifySDPforFixIssue(sdp) {
+  var parsedSDP = transform.parse(sdp);
+
+  parsedSDP.groups = parsedSDP.groups ? parsedSDP.groups : [];
+  parsedSDP.groups.push({
+    mids: 'sdparta_0',
+    type: 'BUNDLE'
+  });
+
+  return transform.write(parsedSDP);
 }
 
 module.exports = RTCPeerConnection;
