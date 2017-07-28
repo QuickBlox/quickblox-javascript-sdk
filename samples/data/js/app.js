@@ -100,21 +100,28 @@ App.prototype.renderView = function(idTpl, options) {
 };
 
 App.prototype.renderDashboard = function() {
-  var self = this;
+    var self = this;
 
-  // render header and set listener
-  var $header = document.getElementById(self.ui.header);
-  $header.innerHTML = self.renderView('header-tpl', self.user);
-  self._setListenersHeader();
+    // render header and set listener
+    var $header = document.getElementById(self.ui.header),
+        options = {
+            full_name: self.user.full_name,
+            version: self.version
 
-  // render list of places and set listeners
-  var $panel = document.getElementById(self.ui.panel);
-  $panel.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
-  self._setListenersPlacesPreview();
 
-  self.map.removeAllPlaces();
-  self.map.activePlace = null;
-  self.map.setPlaces(self.places.items);
+        };
+
+    $header.innerHTML = self.renderView('header-tpl', options);
+    self._setListenersHeader();
+
+    // render list of places and set listeners
+    var $panel = document.getElementById(self.ui.panel);
+    $panel.innerHTML = self.renderView('places_preview-tpl', {'items': self.places.items});
+    self._setListenersPlacesPreview();
+
+    self.map.removeAllPlaces();
+    self.map.activePlace = null;
+    self.map.setPlaces(self.places.items);
 };
 
 App.prototype._setListenersHeader = function() {
