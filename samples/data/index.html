@@ -28,6 +28,8 @@
     </section>
 
     <section id="j-panel"></section>
+
+    <div class="version">v.{{version}}</div>
   </script>
 
   <script id="header-tpl" type="text/x-handlebars-template">
@@ -43,9 +45,7 @@
             </svg>
           </div>
 
-          <h2 class="header_title">
-            Data Sample <span class="version">v.{{version}}</span>
-          </h2>
+          <h2 class="header_title">Data Sample</h2>
           <p class="header_user">Logged in as {{full_name}}</p>
         </div>
 
@@ -67,10 +67,12 @@
         <section class="place_preview j-place" data-id="{{_id}}">
             {{#if media}}
               <div class="place_preview__preview">
-                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}">
+                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}" onerror="this.src='imgs/place-placeholder.svg'">
               </div>
+            {{else}}
+              <div class="place_preview__preview place_preview__default"></div>
             {{/if}}
-          
+
           <h5 class="place_preview__title">{{title}}</h5>
           <p class="rate">{{rate}}</p>
           <p class="place_preview__description">{{description}}</p>
@@ -143,7 +145,7 @@
           <div class="carousel siema">
             {{#each media}}
               <div class="place__img_wrap">
-                <img class="place__img" src="{{getImageUrl this}}">
+                <img class="place__img" src="{{getImageUrl this}}" onerror="this.src='imgs/place-placeholder.svg'">
               </div>
             {{/each}}
           </div>
