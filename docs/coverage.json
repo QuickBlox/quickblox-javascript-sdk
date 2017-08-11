@@ -1,0 +1,68 @@
+{
+  "coverage": "13.04%",
+  "expectCount": 23,
+  "actualCount": 3,
+  "files": {
+    "src/config.js": {
+      "expectCount": 3,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        6,
+        19
+      ]
+    },
+    "src/Error.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        1
+      ]
+    },
+    "src/EventEmitter/EventEmitter.js": {
+      "expectCount": 5,
+      "actualCount": 1,
+      "undocumentLines": [
+        8,
+        9,
+        12,
+        24
+      ]
+    },
+    "src/index.js": {
+      "expectCount": 8,
+      "actualCount": 1,
+      "undocumentLines": [
+        14,
+        21,
+        22,
+        23,
+        25,
+        26,
+        37
+      ]
+    },
+    "src/Logger.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/QBRESTController.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        3,
+        4
+      ]
+    },
+    "src/User.js": {
+      "expectCount": 3,
+      "actualCount": 0,
+      "undocumentLines": [
+        3,
+        4,
+        10
+      ]
+    }
+  }
+}

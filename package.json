@@ -1,9 +1,10 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.6.1",
-  "homepage": "https://quickblox.com/developers/Javascript",
-  "main": "src/qbMain.js",
+  "version": "3.0.0",
+  "homepage": "https://docsdev.quickblox.com/javascript/Introduction.html",
+  "main": "quickblox.min.js",
+  "module": "src/index.js",
   "license": "(Apache-2.0)",
   "keywords": [
     "quickblox",
@@ -20,14 +21,12 @@
   "maintainers": [
     "Igor Khomenko <igor@quickblox.com>",
     "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
-    "Dima Lobanov <dmytro.lobanov@injoit.com>",
-    "Iegor Kozakov <iegor.kozakov@injoit.com>"
+    "Dima Lobanov <dmytro.lobanov@injoit.com>"
   ],
   "contributors": [
     "Igor Khomenko <igor@quickblox.com>",
     "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
-    "Dima Lobanov <dmytro.lobanov@injoit.com>",
-    "Iegor Kozakov <iegor.kozakov@injoit.com>"
+    "Dima Lobanov <dmytro.lobanov@injoit.com>"
   ],
   "repository": {
     "type": "git",
@@ -37,37 +36,7 @@
     "url": "https://github.com/QuickBlox/quickblox-javascript-sdk/issues",
     "email": "web@quickblox.com"
   },
-  "dependencies": {
-    "crypto-js": "3.1.2-2",
-    "node-xmpp-client": "^3.0.0",
-    "request": "^2.48.0",
-    "sdp-transform": "^2.3.0",
-    "strophe.js": "1.2.12",
-    "webrtc-adapter": "^2.1.0",
-    "xml2js": "^0.4.13"
-  },
-  "devDependencies": {
-    "browserify": "^13.1.0",
-    "cross-env": "^3.1.2",
-    "ghooks": "^1.3.2",
-    "gulp": "^3.9.1",
-    "gulp-connect": "^5.0.0",
-    "gulp-notify": "^2.2.0",
-    "gulp-uglify": "^2.0.0",
-    "jaguarjs-jsdoc": "^1.0.1",
-    "jasmine": "^2.5.2",
-    "jasmine-core": "^2.6.0",
-    "jquery-custom": "^1.1.1",
-    "jsdoc": "^3.4.3",
-    "jshint": "^2.9.3",
-    "jshint-stylish": "^2.2.1",
-    "karma": "^1.6.0",
-    "karma-coverage": "^1.1.1",
-    "karma-jasmine": "^1.1.0",
-    "karma-phantomjs-launcher": "^1.0.4",
-    "pump": "^1.0.1",
-    "vinyl-source-stream": "^1.1.0"
-  },
+  "eslintIgnore": "**/*{.,-}min.js",
   "autoupdate": {
     "source": "git",
     "target": "git://github.com/QuickBlox/quickblox-javascript-sdk.git",
@@ -76,21 +45,44 @@
       "quickblox.min.js"
     ]
   },
-  "config": {
-    "ghooks": {
-      "pre-commit": "npm run lint",
-      "pre-push": "jasmine"
-    }
-  },
   "scripts": {
-    "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
-    "lint": "jshint src --reporter=node_modules/jshint-stylish",
-    "develop": "cross-env NODE_ENV=develop gulp",
-    "build": "npm run lint && gulp build && gulp minify",
-    "buildNotMinified": "npm run lint && gulp build",
-    "generateBuildVersion": "gulp generate-build_version",
-    "docs": "rimraf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
-    "start": "gulp connect",
-    "test": "jasmine"
+    "start": "cross-env NODE_ENV=development webpack  --config webpack.config.js --watch",
+    "build": "webpack --config webpack.config.js",
+    "test": " ./node_modules/.bin/mocha --require babel-register ./src/**/*.test.js",
+    "test:watch": "./node_modules/.bin/mocha --require babel-register --watch ./src/**/*.test.js",
+    "cover": "cross-env NODE_ENV=test nyc ./node_modules/.bin/mocha ./src/**/*.test.js",
+    "doc": "./node_modules/.bin/esdoc"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-plugin-istanbul": "^4.1.4",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.24.1",
+    "chai": "^4.1.1",
+    "cross-env": "^5.0.1",
+    "esdoc": "^1.0.1",
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^4.3.0",
+    "eslint-loader": "^1.9.0",
+    "mocha": "^3.5.0",
+    "nyc": "^11.1.0",
+    "webpack": "^3.4.1"
+  },
+  "dependencies": {
+    "axios": "^0.16.2",
+    "crypto-js": "^3.1.9-1"
+  },
+  "nyc": {
+    "require": [
+      "babel-register"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "sourceMap": false,
+    "instrument": false
   }
 }

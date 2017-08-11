@@ -1,0 +1,29 @@
+{
+  "source": "./src",
+  "destination": "./docs",
+  "plugins": [
+  {
+    "name": "esdoc-standard-plugin",
+    "option": {
+      "lint": {
+        "enable": true
+      },
+      "coverage": {
+        "enable": true
+      },
+      "accessor": {
+        "access": ["public", "protected", "private"],
+        "autoPrivate": true
+      },
+      "undocumentIdentifier": {"enable": true},
+      "brand": {
+        "title": "JavaScript SDK of QuickBlox",
+        "description": "The QuickBlox JavaScript SDK provides a JavaScript library making it even easier to access the QuickBlox cloud communication backend platform",
+        "repository": "https://github.com/QuickBlox/quickblox-javascript-sdk",
+        "site": "https://docsdev.quickblox.com/javascript/Introduction.html",
+        "author": "https://github.com/QuickBlox/quickblox-javascript-sdk/graphs/contributors",
+        "image": "https://quickblox.com/qb_144x144.png"
+      }
+    }
+  }]
+}

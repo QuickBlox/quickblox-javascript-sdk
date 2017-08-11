@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Sample JS SDK uses</title>
+</head>
+<body>
+
+  <script src="./../quickblox.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const creds = {
+        appId: 28783,
+        authKey: 'b5bVGCHHv6rcAmD',
+        authSecret: 'ySwEpardeE7ZXHB'
+      };
+
+      const client = new window.Quickblox(creds);
+      console.log(client);
+      console.log(Quickblox.ERRORS)
+      // client.addListener('error', (err) => {
+      //   console.error(err);
+      // });
+
+      // client.auth();
+    });
+  </script>
+</body>
+</html>
