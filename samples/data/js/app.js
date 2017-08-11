@@ -228,8 +228,13 @@ App.prototype._setListenersPlacesNew = function() {
     uploadImageInp.addEventListener('change', function(e) {
         e.preventDefault();
 
-        for (var i = 0; i < uploadImageInp.files.length; i++) {
-            var file = uploadImageInp.files[i];
+        renderPhotos: for (var i = 0; i < this.files.length; i++) {
+            if (i === 5) {
+                console.warn('Max limit of upload files is 20');
+                break renderPhotos;
+            }
+
+            var file = this.files[i];
 
             var imgWrap = document.createElement('div');
 
@@ -240,8 +245,8 @@ App.prototype._setListenersPlacesNew = function() {
             img.classList.add('form__img');
             img.file = file;
 
-            imgWrap.appendChild(img);
             mediaWrap.appendChild(imgWrap);
+            imgWrap.appendChild(img);
 
             var reader = new FileReader();
 
@@ -286,7 +291,9 @@ App.prototype._setListenersPlacesNew = function() {
         }
 
         if (uploadImageInp.files.length) {
-            for (var i = 0; i < uploadImageInp.files.length; i++) {
+            uploadProcess: for (var i = 0; i < uploadImageInp.files.length; i++) {
+                if (i === 20) break uploadProcess;
+
                 var file = uploadImageInp.files[i];
 
                 listPromises.push(new Content(file));
@@ -315,18 +322,23 @@ App.prototype.renderPlaceDetailed = function(placeId) {
         $header.removeChild($header.lastChild);
     }
 
+    placeInfo = Object.assign(placeInfo, {
+        'isCanUploadMedia': (placeInfo.media.length < 20)
+    });
+
     var $panel = document.getElementById(self.ui.panel);
     $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
 
-    if(placeInfo.media !== null && placeInfo.media.length) {
-        var mySiema = new Siema({
-            perPage: 3
-        });
+    if (placeInfo.media !== null && placeInfo.media.length) {
+        App.initCarousel();
     }
 
     self.map.activePlace = placeId;
 
-    this.checkin.get({'_parent_id': placeId}).then(function(checkins) {
+    this.checkin.get({
+        '_parent_id': placeId,
+        'sort_desc': 'created_at' // the newest check-ins will be at the top
+    }).then(function(checkins) {
         var $panel = document.getElementById('j-checkins');
         $panel.innerHTML = self.renderView('checkins-tpl', {'items': checkins});
 
@@ -349,6 +361,40 @@ App.prototype.renderPlaceDetailed = function(placeId) {
             detailed: placeId
         };
     });
+
+    var addNewMediaInp = document.querySelector('.j-add_media');
+
+    addNewMediaInp.addEventListener('change', function(e) {
+        e.preventDefault();
+        
+        var photosCount = document.querySelectorAll('.j-photo').length,
+            uploadLimit = 20 - photosCount,
+            listPromises = [];
+
+        uploadProcess: for (var i = 0; i < addNewMediaInp.files.length; i++) {
+            if (i === uploadLimit) {
+                console.warn('Max limit of upload files is 20 (' + uploadLimit + ' were uploaded)');
+                break uploadProcess;
+            }
+
+            var file = addNewMediaInp.files[i];
+
+            listPromises.push(new Content(file));
+        }
+
+        Promise.all(listPromises).then(function(uids) {
+            self.places.update({
+                _id: placeId,
+                add_to_set: {
+                    media: uids
+                }
+            }).then(function(res) {
+                self.places.updateLocal(res);
+
+                self.renderPlaceDetailed(placeId);
+            });
+        });
+    });
 };
 
 App.prototype.renderCheckin = function(placeId) {
@@ -359,7 +405,7 @@ App.prototype.renderCheckin = function(placeId) {
     $overlay.innerHTML = self.renderView('checkin-tpl', {
         id: placeId
     });
-
+    
     var place = self.places.getPlace(placeId);
 
     document.getElementById('checkin-submit').addEventListener('submit', function(e) {
@@ -376,13 +422,13 @@ App.prototype.renderCheckin = function(placeId) {
             'author_fullname': self.user.full_name
         };
 
-        // 2 Because 1 is author, 2 is current user
-        var newRate = (place.rate + rate) / (place.checkinsAmount + 2);
+        // Check-Ins amount equal to 2 Because 1 is author, 2 is current user
+        var newRate = ((place.rate * (place.checkinsAmount + 1)) + rate) / (place.checkinsAmount + 2);
 
         self.checkin.create(checkinData).then(function(checkin) {
             self.places.update({
                 _id: placeId,
-                rate: newRate
+                rate: newRate.toFixed(2)
             }).then(function(res) {
                 self.places.updateLocal(res);
                 self.activePage = {
@@ -405,6 +451,21 @@ App.prototype.renderCheckin = function(placeId) {
             pageName: 'place_detailed',
             detailed: placeId
         };
+    });
+};
+
+// static method for init carousel
+App.initCarousel = function() {
+    var mySiema = new Siema({
+        perPage: 3
+    });
+
+    document.querySelector('.j-prev').addEventListener('click', function() {
+        mySiema.prev(1);
+    });
+
+    document.querySelector('.j-next').addEventListener('click', function() {
+        mySiema.next(1);
     });
 };
 

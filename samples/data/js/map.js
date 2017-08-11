@@ -7,7 +7,7 @@ function WMap(params) {
     this.el = params.el;
     // Gmap
     this.gmap;
-    // Default marker
+    // Current location
     this.marker;
     // set cb to handle a click on map
     this.draftNewPlace = params.draftNewPlace;
@@ -122,13 +122,7 @@ WMap.prototype.getAndSetUserLocation = function() {
             };
 
             self.gmap.setCenter(position);
-
-            self.marker = new google.maps.Marker({
-                'position': position,
-                'map': self.gmap,
-                'icon': self._MARKERS_BASE_URL + self._CENTER,
-                'zIndex': 3
-            });
+            self.marker.setPosition(position);
         });
     }
 };
