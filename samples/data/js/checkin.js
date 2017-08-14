@@ -1,36 +1,34 @@
 'use strict';
 
-function Checkin() {
-  this.className = 'Checkin';
+var Checkin = {
+    className: 'Checkin',
 
-  this.items = [];
-}
+    create: function(params) {
+        var self = this;
 
-Checkin.prototype.create = function(params) {
-  var self = this;
+        return new Promise(function(resolve, reject) {
+            QB.data.create(self.className, params, function(err, checkin) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(checkin);
+                }
+            });
+        });
+    },
+    
+    get: function(params) {
+        var self = this;
 
-  return new Promise(function(resolve, reject) {
-    QB.data.create(self.className, params, function(err, checkin) {
-      if (err) {
-          reject(err);
-      } else {
-        resolve(checkin);
-      }
-    });
-  });
+        return new Promise(function(resolve, reject) {
+            QB.data.list(self.className, params, function(err, checkins) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(checkins.items);
+                }
+            });
+        });
+    }
 };
 
-/** TODO: change to static function */
-Checkin.prototype.get = function(params) {
-  var self = this;
-
-  return new Promise(function(resolve, reject) {
-    QB.data.list(self.className, params, function(err, checkins) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(checkins.items);
-      }
-    });
-  });
-};
