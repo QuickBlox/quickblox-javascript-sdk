@@ -67,7 +67,7 @@
         <section class="place_preview j-place" data-id="{{_id}}">
             {{#if media}}
               <div class="place_preview__preview">
-                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}" onerror="this.src='imgs/place-placeholder.svg'">
+                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}" onerror="this.src='https://samples.quickblox.com/web/resources/place-placeholder.svg'">
               </div>
             {{else}}
               <div class="place_preview__preview place_preview__default"></div>
@@ -164,7 +164,7 @@
           <div class="carousel siema">
             {{#each media}}
               <div class="place__img_wrap j-photo">
-                <img class="place__img" src="{{getImageUrl this}}" onerror="this.src='imgs/place-placeholder.svg'">
+                <img class="place__img" src="{{getImageUrl this}}" onerror="this.src='https://samples.quickblox.com/web/resources/place-placeholder.svg'">
               </div>
             {{/each}}
           </div>

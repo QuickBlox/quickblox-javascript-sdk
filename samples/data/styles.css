@@ -466,7 +466,7 @@ body {
   overflow: hidden;
 }
   .place_preview__preview.place_preview__default {
-    background: url('imgs/place-placeholder.svg') no-repeat center;
+    background: url('https://samples.quickblox.com/web/resources/place-placeholder.svg') no-repeat center;
     background-size: contain;
   }
 
@@ -480,7 +480,6 @@ body {
     .place_preview__info>.place_preview__title {
       margin: 0 0 3px 0;
 
-      /*word-wrap: break-word;*/
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -490,7 +489,6 @@ body {
       color: #4A4A4A;
     }
     .place_preview__info>.place_preview__description {
-      /*word-wrap: break-word;*/
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
