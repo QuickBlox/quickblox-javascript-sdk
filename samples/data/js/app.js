@@ -19,7 +19,7 @@ function App() {
 
     this.user = new User();
     this.places = new Places();
-    this.checkin = new Checkin();
+    this.checkin = Checkin;
 
     /* Write to root element a class name of page by set activePage */
     this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
@@ -314,7 +314,8 @@ App.prototype._setListenersPlacesNew = function() {
 App.prototype.renderPlaceDetailed = function(placeId) {
     var self = this;
 
-    var placeInfo = self.places.getPlace(placeId);
+    var placeInfo = self.places.getPlace(placeId),
+        mediaCount = placeInfo.media && placeInfo.media.length || [];
 
     var $header = document.getElementById(self.ui.header);
     // Remove innerHTML of header
@@ -323,13 +324,13 @@ App.prototype.renderPlaceDetailed = function(placeId) {
     }
 
     placeInfo = Object.assign(placeInfo, {
-        'isCanUploadMedia': (placeInfo.media.length < 20)
+        'isCanUploadMedia': (mediaCount < 20)
     });
 
     var $panel = document.getElementById(self.ui.panel);
     $panel.innerHTML = self.renderView('place_detailed-tpl', placeInfo);
 
-    if (placeInfo.media !== null && placeInfo.media.length) {
+    if (placeInfo.media !== null && mediaCount) {
         App.initCarousel();
     }
 
