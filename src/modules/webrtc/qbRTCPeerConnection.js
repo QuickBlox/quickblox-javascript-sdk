@@ -114,7 +114,19 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
     // Additional parameters for SDP Constraints
     // http://www.w3.org/TR/webrtc/#h-offer-answer-options
     // self.createOffer(successCallback, errorCallback, constraints)
-    self.createOffer(successCallback, errorCallback);
+
+    var safariVersion = getVersionSafari();
+
+    if(safariVersion && safariVersion >= 11) {
+        self.createOffer().then(function(offer) {
+            successCallback(offer);
+          }).catch(function(reason) {
+            errorCallback(reason);
+          });
+      // TODO for safari
+    } else {
+      self.createOffer(successCallback, errorCallback);
+    }
   } else {
     self.createAnswer(successCallback, errorCallback);
   }
@@ -131,10 +143,21 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
       desc.sdp = _modifySDPforFixIssue(desc.sdp);
     }
 
-    self.setLocalDescription(desc, function() {
-      callback(null);
-    }, errorCallback);
+    var safariVersion = getVersionSafari();
+
+    if(safariVersion && safariVersion >= 11) {
+      self.setLocalDescription(desc).thne(function() {
+        callback(null);
+      }).catch(function(error) {
+        errorCallback(error);
+      });
+    } else {
+      self.setLocalDescription(desc, function() {
+        callback(null);
+      }, errorCallback);
+    }
   }
+
   function errorCallback(error) {
     callback(error);
   }
@@ -385,7 +408,30 @@ function getVersionFirefox() {
 
     if(ua) {
         var ffInfo = ua.match(/(?:firefox)[ \/](\d+)/i) || [];
-        version = ffInfo[1] ? +ffInfo[1] : null;
+        version = ffInfo[1] ? + ffInfo[1] : null;
+    }
+
+    return version;
+}
+
+function getVersionSafari() {
+    var ua = navigator ? navigator.userAgent : false;
+    var version;
+
+    if(ua) {
+        var sInfo = ua.match(/(?:safari)[ \/](\d+)/i) || [];
+
+        if(sInfo.length) {
+            var sVer = ua.match(/(?:version)[ \/](\d+)/i) || [];
+
+            if(sVer) {
+                version = sVer[1] ? + sVer[1] : null;
+            } else {
+                version = null;
+            }
+        } else {
+            version = null;
+        }
     }
 
     return version;

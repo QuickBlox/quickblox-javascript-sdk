@@ -193,11 +193,18 @@ WebRTCSession.prototype.call = function(extension, callback) {
 };
 
 WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAnswerCallback) {
-  var peer = this._createPeer(userID, 'offer');
+  var self = this;
+  var peer = self._createPeer(userID, 'offer');
 
-  // peer.addLocalStream(this.localStream);
-  // addLocalStream uses addStream which is depricated
-  this.localStream.getTracks().forEach(track => peer.addTrack(track, this.localStream));
+
+  var safariVersion = getVersionSafari();
+
+  if(safariVersion && safariVersion >= 11) {
+    self.localStream.getTracks().forEach(track => peer.addTrack(track, self.localStream));
+  } else {
+    peer.addLocalStream(self.localStream);
+  }
+
   this.peerConnections[userID] = peer;
 
   peer.getAndSetLocalSessionDescription(this.callType, function(err) {
@@ -210,6 +217,29 @@ WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAns
     }
   });
 };
+
+function getVersionSafari() {
+    var ua = navigator ? navigator.userAgent : false;
+    var version;
+
+    if(ua) {
+        var sInfo = ua.match(/(?:safari)[ \/](\d+)/i) || [];
+
+        if(sInfo.length) {
+            var sVer = ua.match(/(?:version)[ \/](\d+)/i) || [];
+
+            if(sVer) {
+                version = sVer[1] ? + sVer[1] : null;
+            } else {
+                version = null;
+            }
+        } else {
+            version = null;
+        }
+    }
+
+    return version;
+}
 
 /**
  * Accept a call
@@ -267,9 +297,14 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
   /** create a peer connection */
   var peerConnection = this.peerConnections[userID];
 
-  if(peerConnection){
+  if(peerConnection) {
+    var safariVersion = getVersionSafari();
 
-    peerConnection.addLocalStream(this.localStream);
+    if(safariVersion && safariVersion >= 11) {
+      self.localStream.getTracks().forEach(track => peerConnection.addTrack(track, self.localStream));
+    } else {
+      peerConnection.addLocalStream(this.localStream);
+    }
 
     peerConnection.setRemoteSessionDescription('offer', peerConnection.getRemoteSDP(), function(error){
       if(error){

@@ -494,6 +494,8 @@
             document.getElementById(sounds.rington).pause();
 
             app.currentSession.getUserMedia(mediaParams, function(err, stream) {
+                console.log('ERE');
+                console.log(err);
                 if (err || !stream.getAudioTracks().length || (isAudio ? false : !stream.getVideoTracks().length)) {
                     var errorMsg = '';
 
@@ -520,9 +522,9 @@
                         }
                     });
                     opponents.forEach(function(userID, i, arr) {
-
                         var peerState = app.currentSession.connectionStateForUser(userID),
                             userInfo = _.findWhere(app.users, {'id': +userID});
+
                         if( (document.getElementById('remote_video_' + userID) === null) ) {
                             videoElems += compiled({
                                 'userID': userID,
@@ -535,13 +537,16 @@
                             }
                         }
                     });
+                    
                     $('.j-callees').append(videoElems);
+
                     app.helpers.stateBoard.update({
                         'title': 'tpl_during_call',
                         'property': {
                             'name': app.caller.full_name
                         }
                     });
+
                     app.helpers.setFooterPosition();
                     app.currentSession.accept({});
                 }
@@ -828,8 +833,7 @@
                 // check the current session state
                 if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
-                    document.getElementById(sounds.rington).play();
-
+                    // document.getElementById(sounds.rington).play();
                 }
             });
         };
