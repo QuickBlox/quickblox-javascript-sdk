@@ -131,22 +131,27 @@ var qbChatHelpers = {
         }
         return extension;
     },
-    filledExtraParams: function(stanza, extension, isSystemMsg) {
+    filledExtraParams: function(stanza, extension) {
         var helper = this;
 
         Object.keys(extension).forEach(function(field) {
             if (field === 'attachments') {
                 extension[field].forEach(function(attach) {
-                    stanza.c('attachment', attach).up();
+                    if (utils.getEnv().browser) {
+                        stanza.c('attachment', attach).up();
+                    } else if (utils.getEnv().node) {
+                        stanza.getChild('extraParams')
+                            .c('attachment', attach).up();
+                    }
                 });
             } else if (typeof extension[field] === 'object') {
                 helper._JStoXML(field, extension[field], stanza);
             } else {
-                if(utils.getEnv().browser) {
+                if (utils.getEnv().browser) {
                     stanza.c(field).t(extension[field]).up();
-                } else if(utils.getEnv().node) {
-                stanza.getChild('extraParams')
-                    .c(field).t(extension[field]).up();
+                } else if (utils.getEnv().node) {
+                    stanza.getChild('extraParams')
+                        .c(field).t(extension[field]).up();
                 }
             }
         });
