@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-class QBRESTController extends axios() {
-  constructor() {
-    super();
-
+class QBRESTController {
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
   }
 }
 

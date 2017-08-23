@@ -18,13 +18,17 @@
       };
 
       const client = new window.Quickblox(creds);
-      console.log(client);
-      console.log(Quickblox.ERRORS)
-      // client.addListener('error', (err) => {
-      //   console.error(err);
-      // });
 
-      // client.auth();
+      client.addListener('error', (error) => {
+        console.log(error);
+      });
+      console.log(client);
+      client.auth()
+        .then((token) => {
+          console.log('askmaksldm', token);
+        }).catch((error) => {
+          console.error(error);
+        })
     });
   </script>
 </body>

@@ -12,12 +12,12 @@
      "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": [2, { "args": "none" }],
+    "no-unused-vars": [1, { "args": "none" }],
     "no-labels": 0,
     "semi": 2,
     "no-empty-label": 0,
     "no-alert": 2,
-    "no-console": 2,
+    "no-console": 1,
     "no-mixed-spaces-and-tabs": 1,
     "no-extra-boolean-cast": 1
     }
