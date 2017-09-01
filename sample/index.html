@@ -18,10 +18,6 @@
       };
 
       const client = new window.Quickblox(creds);
-
-      client.addListener('error', (error) => {
-        console.log(error);
-      });
       console.log(client);
       client.auth()
         .then((token) => {

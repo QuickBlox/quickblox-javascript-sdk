@@ -1,8 +1,13 @@
-import EE from '../EventEmitter/EventEmitter.js';
+// import EE from '../EventEmitter/EventEmitter.js';
 
-class User extends EE{
+/**
+ * 
+ * 
+ * @class User
+ * @extends {EE}
+ */
+class User {
     constructor() {
-        super();
     }
 }
 

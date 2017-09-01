@@ -1,0 +1,29 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc"]
+  },
+  "source": {
+    "include": ["./src", "package.json", "README.md"],
+    "exclude": ["./samples"],
+    "includePattern": ".js$",
+    "excludePattern": "/(node_modules/|doc|.test.js$)/"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "opts": {
+    "private": true,
+    "recurse": true,
+    "encoding": "utf8",
+    "destination": "./docs/",
+    "template": "./node_modules/ink-docstrap/template"
+  },
+  "templates": {
+    "systemName": "Quickblox JS SDK",
+    "includeDate": false,
+    "copyright": "quickblox.com",
+    "linenums": false,
+    "syntaxTheme": "dark"
+  }
+}

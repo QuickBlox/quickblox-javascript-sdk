@@ -7,11 +7,22 @@ import {urls as defaultUrls, endpoints as defaultEndpoints } from '../defaults.j
 
 import User from '../User/User.js';
 
-// import QBRESTController from '../QBRESTController.js';
-
-// import {QBRESTController as restController} from '../QBRESTController.js';
-
+/**
+ * Contains all JS SDK API classes and functions.
+ * This is the top level component for any Quickblox based application.
+ * 
+ * @extends {User}
+ */
 class Client extends User {
+  /**
+   * Creates an instance of Client.
+   * @param {Object} creds - all of this parameters you could found in admin panel.
+   * @param {number} creds.appId - The Id of uses app.
+   * @param {string} [creds.authKey] - The authKey of uses app for authorization/ 
+   * @param {string} [creds.authSecret] - Uses as salt.
+   * @param {any} [opts={}]
+   * @memberof Client
+   */
   constructor(creds, opts = {}) {
     super();
 
@@ -32,12 +43,16 @@ class Client extends User {
     Object.assign(this._endpoints, defaultEndpoints, opts.endpoints);
 
     this.version = '3.0.0';
+
+    this.service = axios.create({
+      baseURL: `https://${this._endpoints.api}/`,
+    });
   }
 
   auth() {
     return new Promise((resolve, reject) => {
       this._createApplicationSession().then((responce) => {
-        console.log(responce.data.session.token);
+        
         resolve(responce.data.session.token);
       }).catch(error => {
         reject(error);
@@ -48,13 +63,17 @@ class Client extends User {
   _createApplicationSession() {
     const self = this;
 
+    // TODO - check authKey, authSecret
+
     return new Promise((resolve, reject) => {
       let authMessage = this._generateAuthMessage(this._appId, this._authKey);
       authMessage.signature = this._signAuthMessage(authMessage, this._authSecret);
-      // console.log(authMessage);
-      axios({
+
+      // this.service()
+
+      this.service({
         method: 'POST',
-        url: `https://${self._endpoints.api}/${self._urls.session}.json`,
+        url: `${self._urls.session}.json`,
         data: authMessage
       }).then(function(data) {
         resolve(data);
