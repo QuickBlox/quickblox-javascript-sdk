@@ -255,7 +255,18 @@ App.prototype._setListenersPlacesNew = function() {
         }
     });
 
-    document.getElementById(ui.createPlaceForm).addEventListener('submit', function(e) {
+    var placeForm = document.getElementById(ui.createPlaceForm);
+
+    // this fix deletes empty symbols from start and end of form's values (https://quickblox.atlassian.net/browse/QBWEBSDK-559)
+    placeForm.addEventListener('change', function() {
+        var title = document.getElementById('title').value.trim(),
+            description = document.getElementById('description').value.trim();
+
+        document.getElementById('title').value = title;
+        document.getElementById('description').value = description;
+    });
+
+    placeForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
         var ltln = JSON.parse(document.getElementById('latlng').value),
@@ -265,8 +276,8 @@ App.prototype._setListenersPlacesNew = function() {
 
         var dataInfo = {
             location:  [ltln.lng, ltln.lat],
-            title: title.trim(),
-            description: description.trim(),
+            title: title,
+            description: description,
             rate: +rate,
         };
 
@@ -407,9 +418,17 @@ App.prototype.renderCheckin = function(placeId) {
         id: placeId
     });
     
-    var place = self.places.getPlace(placeId);
+    var place = self.places.getPlace(placeId),
+        checkinForm = document.getElementById('checkin-submit');
 
-    document.getElementById('checkin-submit').addEventListener('submit', function(e) {
+    // this fix deletes empty symbols from start and end of form's values (https://quickblox.atlassian.net/browse/QBWEBSDK-559)
+    checkinForm.addEventListener('change', function() {
+        var comment = document.getElementById('checkin_comment').value.trim();
+
+        document.getElementById('checkin_comment').value = comment;
+    });
+
+    checkinForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
         var comment = document.getElementById('checkin_comment').value,
@@ -417,7 +436,7 @@ App.prototype.renderCheckin = function(placeId) {
 
         var checkinData = {
             '_parent_id': document.getElementById('checkin_id').value,
-            'comment': comment.trim(),
+            'comment': comment,
             'rate': rate,
             'author_id': self.user.id,
             'author_fullname': self.user.full_name
