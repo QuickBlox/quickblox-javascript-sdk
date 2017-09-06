@@ -269,7 +269,8 @@ App.prototype._setListenersPlacesNew = function() {
     placeForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        var ltln = JSON.parse(document.getElementById('latlng').value),
+        var target = e.target,
+            ltln = JSON.parse(document.getElementById('latlng').value),
             title = document.getElementById('title').value,
             description = document.getElementById('description').value,
             rate = document.getElementById('rate').value;
@@ -318,7 +319,10 @@ App.prototype._setListenersPlacesNew = function() {
             _createPlace(dataInfo);
         }
 
-        e.target.reset();
+        // clear form
+        target.parentNode.removeChild(target);
+
+        return false;
     });
 };
 
@@ -431,7 +435,8 @@ App.prototype.renderCheckin = function(placeId) {
     checkinForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        var comment = document.getElementById('checkin_comment').value,
+        var target = e.target,
+            comment = document.getElementById('checkin_comment').value,
             rate = +(document.getElementById('checkin_rate').value);
 
         var checkinData = {
@@ -460,8 +465,10 @@ App.prototype.renderCheckin = function(placeId) {
             console.error(err);
         });
 
-        document.getElementById('checkin-cancel').click();
-        e.target.reset();
+        // clear form
+        target.parentNode.removeChild(target);
+
+        return false;
     });
 
     document.getElementById('checkin-cancel').addEventListener('click', function(e) {
