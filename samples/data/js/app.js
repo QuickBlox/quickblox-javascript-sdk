@@ -204,7 +204,8 @@ App.prototype.renderCreatePlace = function() {
 };
 
 App.prototype._setListenersPlacesNew = function() {
-    var self = this;
+    var self = this,
+        filesBuffer = [];
 
     var ui = {
         backBtn: 'j-to_dashboard',
@@ -228,31 +229,69 @@ App.prototype._setListenersPlacesNew = function() {
     uploadImageInp.addEventListener('change', function(e) {
         e.preventDefault();
 
-        renderPhotos: for (var i = 0; i < this.files.length; i++) {
-            if (i === 5) {
-                console.warn('Max limit of upload files is 20');
-                break renderPhotos;
+        var images = document.querySelectorAll('.form__img_preview');
+
+        if (images.length) {
+            images.forEach(function(image) {
+                image.remove();
+            });
+        }
+
+        var listPromises = [];
+
+        for (var i = 0; i < this.files.length; i++) {
+            listPromises.push(qbContent.validateImage(this.files[i]));
+        }
+
+        var limit = 20,
+            warnMessage;
+
+        Promise.all(listPromises).then(function(files) {
+            renderImages: for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+
+                if (!file) {
+                    warnMessage = 'Some files will not be uploaded (incorrect image type)';
+                    console.warn(warnMessage);
+
+                    continue renderImages;
+                } else {
+                    limit--;
+                }
+
+                if (limit < 0) {
+                    var warnInfo = 'Max limit of upload images is 20, some images will not be uploaded';
+
+                    console.warn(warnInfo);
+                    alert(warnInfo);
+
+                    break renderImages;
+                }
+
+                var imgWrap = document.createElement('div'),
+                    img = document.createElement('img'),
+                    reader = new FileReader();
+
+                filesBuffer.push(file);
+
+                img.file = file;
+                img.classList.add('form__img');
+                imgWrap.classList.add('form__img_preview');
+                mediaWrap.appendChild(imgWrap);
+                imgWrap.appendChild(img);
+                reader.readAsDataURL(file);
+
+                reader.onload = (function(aImg) {
+                    return function(e) {
+                        aImg.src = e.target.result;
+                    };
+                })(img);
             }
 
-            var file = this.files[i];
-
-            var imgWrap = document.createElement('div');
-
-            imgWrap.classList.add('form__img_preview');
-
-            var img = document.createElement('img');
-
-            img.classList.add('form__img');
-            img.file = file;
-
-            mediaWrap.appendChild(imgWrap);
-            imgWrap.appendChild(img);
-
-            var reader = new FileReader();
-
-            reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
-            reader.readAsDataURL(file);
-        }
+            if (warnMessage) {
+                alert(warnMessage);
+            }
+        });
     });
 
     var placeForm = document.getElementById(ui.createPlaceForm);
@@ -302,18 +341,17 @@ App.prototype._setListenersPlacesNew = function() {
             });
         }
 
-        if (uploadImageInp.files.length) {
-            uploadProcess: for (var i = 0; i < uploadImageInp.files.length; i++) {
-                if (i === 20) break uploadProcess;
-
-                var file = uploadImageInp.files[i];
-
-                listPromises.push(new Content(file));
-            }
+        if (filesBuffer.length) {
+            filesBuffer.forEach(function(file) {
+                listPromises.push(qbContent.upload(file));
+            });
 
             Promise.all(listPromises).then(function(uids) {
                 dataInfo.media = uids;
                 _createPlace(dataInfo);
+            }).catch(function(error) {
+                alert(JSON.stringify(error));
+                self.renderCreatePlace();
             });
         } else {
             _createPlace(dataInfo);
@@ -384,30 +422,55 @@ App.prototype.renderPlaceDetailed = function(placeId) {
         e.preventDefault();
         
         var photosCount = document.querySelectorAll('.j-photo').length,
-            uploadLimit = 20 - photosCount,
-            listPromises = [];
+            limit = 20 - photosCount,
+            validationPromises = [],
+            listPromises = [],
+            warnMessage;
 
-        uploadProcess: for (var i = 0; i < addNewMediaInp.files.length; i++) {
-            if (i === uploadLimit) {
-                console.warn('Max limit of upload files is 20 (' + uploadLimit + ' were uploaded)');
-                break uploadProcess;
+        for (var i = 0; i < this.files.length; i++) {
+            validationPromises.push(qbContent.validateImage(this.files[i]));
+        }
+        
+        Promise.all(validationPromises).then(function(files) {
+            collectPromises: for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+
+                if (!file) {
+                    warnMessage = 'Some files will not be uploaded (incorrect image type)';
+                    console.warn(warnMessage);
+
+                    continue collectPromises;
+                } else {
+                    limit--;
+                }
+
+                if (limit < 0) {
+                    var warnInfo = 'Max limit of upload images is 20, some images will not be uploaded';
+
+                    console.warn(warnInfo);
+                    alert(warnInfo);
+
+                    break collectPromises;
+                }
+
+                listPromises.push(qbContent.upload(file));
             }
 
-            var file = addNewMediaInp.files[i];
+            if (warnMessage) {
+                alert(warnMessage);
+            }
 
-            listPromises.push(new Content(file));
-        }
+            Promise.all(listPromises).then(function(uids) {
+                self.places.update({
+                    _id: placeId,
+                    add_to_set: {
+                        media: uids
+                    }
+                }).then(function(res) {
+                    self.places.updateLocal(res);
 
-        Promise.all(listPromises).then(function(uids) {
-            self.places.update({
-                _id: placeId,
-                add_to_set: {
-                    media: uids
-                }
-            }).then(function(res) {
-                self.places.updateLocal(res);
-
-                self.renderPlaceDetailed(placeId);
+                    self.renderPlaceDetailed(placeId);
+                });
             });
         });
     });
@@ -467,6 +530,7 @@ App.prototype.renderCheckin = function(placeId) {
 
         // clear form
         target.parentNode.removeChild(target);
+
 
         return false;
     });
