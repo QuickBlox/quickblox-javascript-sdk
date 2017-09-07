@@ -240,6 +240,7 @@ App.prototype._setListenersPlacesNew = function() {
         var listPromises = [];
 
         for (var i = 0; i < this.files.length; i++) {
+            filesBuffer = [];
             listPromises.push(qbContent.validateImage(this.files[i]));
         }
 
