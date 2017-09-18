@@ -1,5 +1,3 @@
-// import EE from '../EventEmitter/EventEmitter.js';
-
 /**
  * 
  * 

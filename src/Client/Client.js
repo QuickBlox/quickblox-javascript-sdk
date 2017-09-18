@@ -5,7 +5,10 @@ import ERRORS from '../Error.js';
 import config from '../config.js';
 import {urls as defaultUrls, endpoints as defaultEndpoints } from '../defaults.js';
 
+import eventEmitterMixin from '../eventEmitter/eventEmitterMixin.js';
+
 import User from '../User/User.js';
+import Data from '../Data/Data.js';
 
 /**
  * Contains all JS SDK API classes and functions.
@@ -49,17 +52,49 @@ class Client extends User {
     });
   }
 
-  auth() {
+  auth(userCreds) {
+    const self = this;
+
     return new Promise((resolve, reject) => {
-      this._createApplicationSession().then((responce) => {
-        
-        resolve(responce.data.session.token);
-      }).catch(error => {
-        reject(error);
-      });
+      // auth without user parameters
+      // will create an application session 
+
+      // responce always return session and user info
+      // user info schema:
+      // - 
+
+      // Error schema:
+      // 
+      if(!userCreds) {
+        this._createApplicationSession().then((responce) => {
+          // TODO: session management switch on
+          // write user info
+          let data = responce.data.session;
+          
+          self.session_token = data.token;
+          self.user_id = data.user_id !== 0 ? data.user_id : null;
+
+          resolve();
+        }).catch(error => {
+          reject(error);
+        });
+      } 
+      else if(userCreds.session) {
+        // need to get info about session
+        // need to get info about user 
+
+        this._authByExistSession(userCreds.session);
+        // .then(function(responce) {
+
+        // }).catch(error => {
+        //   reject(error);
+        // });
+      } 
     });
   }
 
+  // Auth MODULE
+  // TODO: make pure function
   _createApplicationSession() {
     const self = this;
 
@@ -80,6 +115,37 @@ class Client extends User {
       }).catch(function(error) {
         reject(error);
       });
+    });
+  }
+
+  _authByExistSession(sessionToken) {
+    const self = this;
+
+    // return new Promise 
+
+    this.service({
+      method: 'GET',
+      url: `${self._urls.session}.json`,
+      headers: {
+        'QB-Token': sessionToken
+      }
+    }).then( (responce) => {
+      const userId = responce.data.session.user_id;
+
+      // if(userId && userId !== 0) {
+        
+      // } 
+
+      // Get user info / if session with user id
+
+      console.log('AA');
+      console.log(responce.data.session.user_id);
+
+      // resolve(data);
+    }).catch(function(error) {
+      console.log('BB');
+      console.log(error);
+      // reject(error);
     });
   }
 
@@ -117,7 +183,34 @@ class Client extends User {
 
     return Crypto(stingify, salt).toString();
   }
+
+  createData(className) {
+    
+    const token = this.session_token;
+    const SDK_version = this.version;
+
+    if(!token) {
+      throw new Error(ERRORS['AuthorizationRequired'].message);
+    }
+
+    let service = axios.create({
+      baseURL: `https://${this._endpoints.api}/${this._urls.data}/`,
+      headers: {
+        'QB-SDK': `Quickblox JS SDK ${SDK_version}`,
+        'QB-Token': token
+      }
+    });
+
+    return new Data(className, service);
+  }
+
+  createDataCollection() {
+
+  }
+
 }
+
+Object.assign(Client.prototype, eventEmitterMixin);
 
 Client.ERRORS = ERRORS;
 
