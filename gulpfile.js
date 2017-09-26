@@ -45,7 +45,8 @@ gulp.task('minify', function () {
 gulp.task('connect', function() {
     connect.server({
         port: 3000,
-        https: true
+        https: true,
+        host: '192.168.1.179'
     });
 });
 

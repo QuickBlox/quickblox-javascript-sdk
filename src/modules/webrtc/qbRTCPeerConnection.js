@@ -243,7 +243,7 @@ RTCPeerConnection.prototype.onAddRemoteMediaCallback = function(event) {
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
     Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
-
+    var self = this;
     /**
      * read more about all states:
      * http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
@@ -282,7 +282,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
                 connectionState = Helpers.SessionConnectionState.DISCONNECTED;
                 break;
 
-            // TODO: this state doesn't fire on Safari 11
+            // TODO: this state doesn't fires on Safari 11
             case 'closed':
                 this._clearWaitingReconnectTimer();
                 this.state = RTCPeerConnection.State.CLOSED;
@@ -294,7 +294,7 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
         }
 
         if (connectionState) {
-            this.delegate._onSessionConnectionStateChangedListener(this.userID, connectionState);
+            self.delegate._onSessionConnectionStateChangedListener(this.userID, connectionState);
         }
     }
 };

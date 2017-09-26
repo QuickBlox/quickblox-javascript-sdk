@@ -515,7 +515,7 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 
     /** drop the call if the initiator did it */
     if (userID === self.initiatorID) {
-        if( Object.keys(self.peerConnections).length ) {
+        if (Object.keys(self.peerConnections).length) {
             Object.keys(self.peerConnections).forEach(function(key) {
                 self.peerConnections[key].release();
             });
@@ -524,9 +524,9 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
         }
     } else {
         var pc = self.peerConnections[userID];
-        if(pc){
+        if (pc) {
             pc.release();
-        }else{
+        } else {
             Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
         }
     }
@@ -670,7 +670,12 @@ WebRTCSession.prototype._closeSessionIfAllConnectionsClosed = function() {
             peerState;
 
         try {
-            peerState = peerCon.connectionState;
+            /*
+            TODO:
+            Uses RTCPeerConnection.signalingState instead RTCPeerConnection.iceConnectionState,
+            because state 'closed' comes after few time from Safari, but signaling state comes instantly
+            */
+            peerState = peerCon.iceConnectionState === 'closed' ? 'closed' : peerCon.signalingState;
         } catch(err) {
             Helpers.traceError(err);
             // need to set peerState to 'closed' on error. FF will crashed without this part.
