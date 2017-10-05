@@ -1,15 +1,21 @@
 'use strict';
 
 var QB_CREDS = {
-    appId: 53851,
-    authKey: 'XeTM6Acx9Jsyb4D',
-    authSecret: 'SA-h4W-sZgzhO-u'
+  appId: 53851,
+  authKey: 'XeTM6Acx9Jsyb4D',
+  authSecret: 'SA-h4W-sZgzhO-u'
 };
 
 var QB_CONFIG = {
-   debug: {
-      mode: 1 // the SDK will be printing logs to console.log
-   }
+  debug: {
+    mode: 1 // the SDK will be printing logs to console.log
+  },
+  on: {
+    sessionExpired: function() {
+      alert('Session is expired, the page will be reload.');
+      window.location.reload();
+    }
+  }
 };
 
 window.QB_CREDS = QB_CREDS;

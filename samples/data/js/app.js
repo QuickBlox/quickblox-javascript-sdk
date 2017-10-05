@@ -1,46 +1,62 @@
 'use strict';
 
+/**
+ * DATA SAMPLE
+ * Using User Authorization,
+ * Custom Objects
+ * 
+ * Browser supports:
+ * IE 11, Edge 12, Safari 8,
+ * last 2 version of modern browsers
+ */
+
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
-/* global QB_CREDS:true, QB_CONFIG:true, User:true, Places:true, Checkin:true, WMap:true, Handlebars:true, Content:true, Siema:true */
+/*  global QB_CREDS:true, QB_CONFIG:true,
+    Handlebars:true, Siema:true, WMap:true,
+    User:true, Places:true, Checkin:true, qbContent:true */
 
 function App() {
-    this.ui = {
-        'map': 'j-map',
-        'panel': 'j-panel',
-        'header': 'j-header',
-        'overlay': 'j-overlay'
-    };
+  this.ui = {
+    'map': 'j-map',
+    'panel': 'j-panel',
+    'header': 'j-header',
+    'overlay': 'j-overlay'
+  };
 
-    // root el
-    this.$app = document.getElementById('j-app');
+  /** This is root element of app */
+  this.$app = document.getElementById('j-app');
 
-    this.map;
+  this.map;
 
-    this.user = new User();
-    this.places = new Places();
-    this.checkin = Checkin;
+  this.user = new User();
+  this.places = new Places();
+  this.checkin = Checkin;
 
-    /* Write to root element a class name of page by set activePage */
-    this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+  /* A list of possible name of pages */
+  this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+    
+  /**
+   * Write to root element a class name of a page
+   * by set activePage property 
+   */
+  Object.defineProperty(this, 'activePage', {
+    set: function(params) {
+      var self = this;
 
-    Object.defineProperty(this, 'activePage', {
-        set: function(params) {
-            var self = this;
+      // Set a class (pageName) to root el of app
+      // Remove all previously options
+      self._PAGES.forEach(function(pName) {
+          self.$app.classList.remove(pName);
+      });
 
-            // Set a class (pageName) to root el of app
-            // Remove all previously options
-            self._PAGES.forEach(function(pName) {
-                self.$app.classList.remove(pName);
-            });
+      // set a name of current page
+      self.$app.classList.add(params.pageName);
 
-            // set a name of current page
-            self.$app.classList.add(params.pageName);
-
-            // render the page
-            self.renderPage(params.pageName, params.detailed);
-        }
-    });
+      // render the page
+      self.renderPage(params.pageName, params.detailed);
+    }
+  });
 
     this._init();
 }
@@ -52,7 +68,7 @@ App.prototype._init = function() {
     QB.init(QB_CREDS.appId, QB_CREDS.authKey, QB_CREDS.authSecret, QB_CONFIG);
     // create a session
     QB.createSession(function() {
-        // sync user and places from server
+        // fetch user and places from server
         Promise.all([self.user.auth(), self.places.sync()]).then(function() {
             // render skeleton of app
             self.$app.innerHTML = self.renderView('app-tpl', {
