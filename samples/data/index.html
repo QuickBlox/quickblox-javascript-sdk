@@ -251,7 +251,17 @@
   </div>
 
   <!-- Polyfills -->
-  <script src="polyfills.js"></script>
+  <script>
+      (function(ELEMENT) {
+          ELEMENT.matches = ELEMENT.matches || ELEMENT.mozMatchesSelector || ELEMENT.msMatchesSelector || ELEMENT.oMatchesSelector || ELEMENT.webkitMatchesSelector;
+          ELEMENT.closest = ELEMENT.closest || function closest(selector) {
+              if (!this) return null;
+              if (this.matches(selector)) return this;
+              if (!this.parentElement) {return null}
+              else return this.parentElement.closest(selector)
+          };
+      }(Element.prototype));
+  </script>
 
   <!-- Helper libraries -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxg7dFxOIQWCUEBCrUAnU3qf5Xm-ejb0E"></script>
