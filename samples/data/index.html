@@ -9,7 +9,7 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" >
-  
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -28,6 +28,8 @@
     </section>
 
     <section id="j-panel"></section>
+
+    <div class="version">v.{{version}}</div>
   </script>
 
   <script id="header-tpl" type="text/x-handlebars-template">
@@ -65,13 +67,16 @@
         <section class="place_preview j-place" data-id="{{_id}}">
             {{#if media}}
               <div class="place_preview__preview">
-                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}">
+                <img class="img" src="{{getPreviewUrl media}}" alt="{{title}}" onerror="this.src='https://samples.quickblox.com/web/resources/place-placeholder.svg'">
               </div>
+            {{else}}
+              <div class="place_preview__preview place_preview__default"></div>
             {{/if}}
-          
-          <h5 class="place_preview__title">{{title}}</h5>
-          <p class="rate">{{rate}}</p>
-          <p class="place_preview__description">{{description}}</p>
+          <div class="place_preview__info">
+            <h5 class="place_preview__title">{{title}}</h5>
+            <p class="rate">{{rate}}</p>
+            <p class="place_preview__description">{{description}}</p>
+          </div>
         </section>
       {{else}}
         <section class="empty_state">
@@ -100,7 +105,7 @@
           </div>
 
           <div class="form_item">
-            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="150">
+            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="80">
           </div>
 
           <div class="form_item">
@@ -132,29 +137,65 @@
         <h2 class="panel__title">{{title}}</h2>
       </div>
 
+      <div class="panel__rate">
+          <h4 class="h4">Rate Place: <span>{{rate}}</span></h4>
+      </div>
+
       <div class="panel__body">
+
         <div class="place__action">
           <button class="btn btn-action" id="j-checkin">Check in</button>
+          {{#if isCanUploadMedia}}
+            <label for="add_media" class="btn-add_media">
+              <svg xmlns="http://www.w3.org/2000/svg" width="23" height="21" viewBox="0 0 23 21">
+                <g fill="none">
+                  <g transform="translate(-287 -84)translate(287 83)">
+                    <polygon points="24 24 0 24 0 0 24 0"/>
+                    <path d="M3 4L3 1 5 1 5 4 8 4 8 6 5 6 5 9 3 9 3 6 0 6 0 4 3 4 3 4ZM6 10L6 7 9 7 9 4 16 4 17.8 6 21 6C22.1 6 23 6.9 23 8L23 20C23 21.1 22.1 22 21 22L5 22C3.9 22 3 21.1 3 20L3 10 6 10 6 10ZM13 19C15.8 19 18 16.8 18 14 18 11.2 15.8 9 13 9 10.2 9 8 11.2 8 14 8 16.8 10.2 19 13 19L13 19ZM9.8 14C9.8 15.8 11.2 17.2 13 17.2 14.8 17.2 16.2 15.8 16.2 14 16.2 12.2 14.8 10.8 13 10.8 11.2 10.8 9.8 12.2 9.8 14L9.8 14Z" fill="#778594" opacity=".8" class="icon"/>
+                  </g>
+                </g>
+              </svg>
+            </label>
+          {{/if}}
+          <input id="add_media" class="form_media j-add_media" multiple type="file" accept="image/*">
         </div>
 
         {{#if media}}
           <div class="carousel siema">
             {{#each media}}
-              <div class="place__img_wrap">
-                <img class="place__img" src="{{getImageUrl this}}">
+              <div class="place__img_wrap j-photo">
+                <img class="place__img" src="{{getImageUrl this}}" onerror="this.src='https://samples.quickblox.com/web/resources/place-placeholder.svg'">
               </div>
             {{/each}}
           </div>
+          <button class="carousel_nav carousel_nav_prev j-prev">
+            <svg width="18px" height="29px" viewBox="0 0 18 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <g id="Screens" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Location" transform="translate(0.000000, -174.000000)" fill="#DDE0E2">
+                  <g id="arrow-left" transform="translate(0.000000, 174.000000)">
+                    <path d="M0,4.00187852 C0,1.79170204 1.79171562,0 3.9947834,0 L18,0 L18,29 L3.9947834,29 C1.78852545,29 0,27.2078053 0,24.9981215 L0,4.00187852 Z M6,19.59 L7.41,21 L13.41,15 L7.41,9 L6,10.41 L10.58,15 L6,19.59 Z" transform="translate(9.000000, 14.500000) scale(-1, 1) translate(-9.000000, -14.500000)" class="icon"></path>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </button>
+          <button class="carousel_nav carousel_nav_next j-next">
+            <svg width="18px" height="29px" viewBox="0 0 18 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <defs></defs>
+              <g id="Screens" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Location" transform="translate(-309.000000, -174.000000)" fill="#DDE0E2">
+                  <g id="arrow-right" transform="translate(309.000000, 174.000000)">
+                    <path d="M0,4.00187852 C0,1.79170204 1.79171562,0 3.9947834,0 L18,0 L18,29 L3.9947834,29 C1.78852545,29 0,27.2078053 0,24.9981215 L0,4.00187852 Z M6,19.59 L7.41,21 L13.41,15 L7.41,9 L6,10.41 L10.58,15 L6,19.59 Z" class="icon"></path>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </button>
         {{/if}}
 
         <div class="place__section">
           <h4 class="h4">Description</h4>
           <p>{{description}}</p>
-        </div>
-
-        <div class="place__section">
-          <h4 class="h4">Rate Place</h4>
-          <p>{{rate}}</p>
         </div>
 
         <div class="place__section">
@@ -172,7 +213,7 @@
         <p>{{comment}}</p>
       </div>
     {{else}}
-      <p class="txt-warn">No checkins, click on button th 'CHECK IN' and leave your feedback.</p>
+      <p class="txt-warn">No checkins, click on button the 'CHECK IN' and leave your feedback.</p>
     {{/each}}
   </script>
 
@@ -209,12 +250,28 @@
     <img src="https://samples.quickblox.com/web/resources/marker_create.png" width="1" height="1" alt="Preload image" />
   </div>
 
+  <!-- Polyfills -->
+  <script>
+      (function(ELEMENT) {
+          ELEMENT.matches = ELEMENT.matches || ELEMENT.mozMatchesSelector || ELEMENT.msMatchesSelector || ELEMENT.oMatchesSelector || ELEMENT.webkitMatchesSelector;
+          ELEMENT.closest = ELEMENT.closest || function closest(selector) {
+              if (!this) return null;
+              if (this.matches(selector)) return this;
+              if (!this.parentElement) {return null}
+              else return this.parentElement.closest(selector)
+          };
+      }(Element.prototype));
+  </script>
+
   <!-- Helper libraries -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxg7dFxOIQWCUEBCrUAnU3qf5Xm-ejb0E"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
   <script src="https://unpkg.com/siema@1.4.6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-load-image/2.14.0/load-image.all.min.js"></script>
+
   <!-- Quickblox SDK, uses as global variable QB -->
   <script src="../../quickblox.min.js"></script>
+  
   <!-- APP -->
   <script src="config.js"></script>
   

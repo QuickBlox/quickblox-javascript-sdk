@@ -7,8 +7,14 @@ var QB_CREDS = {
 };
 
 var QB_CONFIG = {
-   debug: {
-      mode: 1 // the SDK will be printing logs to console.log
+  debug: {
+    mode: 1 // the SDK will be printing logs to console.log
+  },
+  on: {
+    sessionExpired: function() {
+      alert('Session is expired, the page will be reload.');
+      window.location.reload();
+    }
   }
 };
 

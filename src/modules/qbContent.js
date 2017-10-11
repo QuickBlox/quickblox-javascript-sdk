@@ -19,14 +19,14 @@ var config = require('../qbConfig'),
 var isBrowser = typeof window !== 'undefined';
 
 if(!isBrowser){
-  var xml2js = require('xml2js');
+    var xml2js = require('xml2js');
 }
 
 
 var taggedForUserUrl = config.urls.blobs + '/tagged';
 
 function ContentProxy(service) {
-  this.service = service;
+    this.service = service;
 }
 
 ContentProxy.prototype = {
@@ -36,36 +36,50 @@ ContentProxy.prototype = {
             data: {blob: params},
             url: Utils.getUrl(config.urls.blobs)
         }, function(err, result) {
-            if (err){ callback(err, null); }
-            else { callback (err, result.blob); }
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(err, result.blob);
+            }
         });
     },
 
-  list: function(params, callback){
-    if (typeof params === 'function' && typeof callback ==='undefined') {
-      callback = params;
-      params = null;
-    }
+    list: function(params, callback){
+        if (typeof params === 'function' && typeof callback ==='undefined') {
+            callback = params;
+            params = null;
+        }
 
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
-      if (err){ callback(err, null); }
-      else { callback (err, result); }
-    });
-  },
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs), data: params, type: 'GET'}, function(err,result){
+            if (err) {
+                callback(err, null);
+            } else {
+                callback (err, result);
+            }
+        });
+    },
 
-  delete: function(id, callback){
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
-      if (err) { callback(err,null); }
-      else { callback(null, true); }
-    });
-  },
+    delete: function(id, callback){
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs, id), type: 'DELETE', dataType: 'text'}, function(err, result) {
+            if (err) {
+                callback(err,null);
+            } else {
+                callback(null, true);
+            }
+        });
+    },
 
     createAndUpload: function(params, callback){
         var _this = this,
             createParams= {},
-            file, name, type, size, fileId;
+            file,
+            name,
+            type,
+            size,
+            fileId;
 
         var clonedParams = JSON.parse(JSON.stringify(params));
+
         clonedParams.file.data = "...";
 
         file = params.file;
@@ -76,31 +90,31 @@ ContentProxy.prototype = {
         createParams.name = name;
         createParams.content_type = type;
 
-        if(params.public) { createParams.public = params.public; }
-        if(params.tag_list) { createParams.tag_list = params.tag_list; }
+        if (params.public) createParams.public = params.public;
+        if (params.tag_list) createParams.tag_list = params.tag_list;
 
         // Create a file object
         this.create(createParams, function(err, createResult){
-            if(err) {
+            if (err) {
                 callback(err, null);
             } else {
-                var uri = parseUri(createResult.blob_object_access.params);
-                var uploadUrl = uri.protocol + "://" + uri.authority + uri.path;
-                var uploadParams = {url: uploadUrl};
-
-                var data = isBrowser ? new FormData() : {};
+                var uri = parseUri(createResult.blob_object_access.params),
+                    uploadUrl = uri.protocol + "://" + uri.authority + uri.path,
+                    uploadParams = {url: uploadUrl},
+                    data = isBrowser ? new FormData() : {};
 
                 fileId = createResult.id;
+                createResult.size = size;
 
                 Object.keys(uri.queryKey).forEach(function(val) {
-                    if(isBrowser){
+                    if (isBrowser) {
                         data.append(val, decodeURIComponent(uri.queryKey[val]));
                     } else {
                         data[val] = decodeURIComponent(uri.queryKey[val]);
                     }
                 });
 
-                if(isBrowser){
+                if (isBrowser) {
                     data.append('file', file, createResult.name);
                 } else {
                     data.file = file;
@@ -129,6 +143,7 @@ ContentProxy.prototype = {
             }
         });
     },
+
     upload: function(params, callback){
         var uploadParams = {
             type: 'POST',
@@ -148,58 +163,86 @@ ContentProxy.prototype = {
         });
     },
 
-  taggedForCurrentUser: function(callback) {
-    this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
-      if (err) { callback(err, null); }
-      else { callback(null, result); }
-    });
-  },
+    taggedForCurrentUser: function(callback) {
+        this.service.ajax({url: Utils.getUrl(taggedForUserUrl)}, function(err, result) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, result);
+            }
+        });
+    },
 
-  markUploaded: function (params, callback) {
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id + '/complete'), type: 'PUT', data: {size: params.size}, dataType: 'text' }, function(err, res){
-      if (err) { callback (err, null); }
-      else { callback (null, res); }
-    });
-  },
+    markUploaded: function (params, callback) {
+        this.service.ajax({
+            url: Utils.getUrl(config.urls.blobs, params.id + '/complete'),
+            type: 'PUT',
+            data: {
+                size: params.size
+            },
+            dataType: 'text'
+        }, function(err, res){
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, res);
+            }
+        });
+    },
 
-  getInfo: function (id, callback) {
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
-      if (err) { callback (err, null); }
-      else { callback (null, res); }
-    });
-  },
+    getInfo: function (id, callback) {
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs, id)}, function (err, res) {
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, res);
+            }
+        });
+    },
 
-  getFile: function (uid, callback) {
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
-      if (err) { callback (err, null); }
-      else { callback (null, res); }
-    });
-  },
+    getFile: function (uid, callback) {
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs, uid)}, function (err, res) {
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, res);
+            }
+        });
+    },
 
-  getFileUrl: function (id, callback) {
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
-      if (err) { callback (err, null); }
-      else { callback (null, res.blob_object_access.params); }
-    });
-  },
+    getFileUrl: function (id, callback) {
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs, id + '/getblobobjectbyid'), type: 'POST'}, function (err, res) {
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, res.blob_object_access.params);
+            }
+        });
+    },
 
-  update: function (params, callback) {
-    var data = {};
-    data.blob = {};
-    if (typeof params.name !== 'undefined') { data.blob.name = params.name; }
-    this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
-      if (err) { callback (err, null); }
-      else { callback (null, res); }
-    });
-  },
+    update: function (params, callback) {
+        var data = {};
 
-  privateUrl: function (fileUID){
-    return "https://" + config.endpoints.api + "/blobs/" + fileUID + "?token=" + this.service.getSession().token;
-  },
+        data.blob = {};
 
-  publicUrl: function (fileUID){
-    return "https://" + config.endpoints.api + "/blobs/" + fileUID;
-  }
+        if (typeof params.name !== 'undefined') data.blob.name = params.name;
+
+        this.service.ajax({url: Utils.getUrl(config.urls.blobs, params.id), data: data}, function(err, res) {
+            if (err) {
+                callback (err, null);
+            } else {
+                callback (null, res);
+            }
+        });
+    },
+
+    privateUrl: function (fileUID){
+        return "https://" + config.endpoints.api + "/blobs/" + fileUID + "?token=" + this.service.getSession().token;
+    },
+
+    publicUrl: function (fileUID){
+        return "https://" + config.endpoints.api + "/blobs/" + fileUID;
+    }
 
 };
 
@@ -210,30 +253,30 @@ module.exports = ContentProxy;
 // MIT License
 // http://blog.stevenlevithan.com/archives/parseuri
 function parseUri (str) {
-  var o   = parseUri.options,
-    m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
-    uri = {},
-    i   = 14;
+    var o   = parseUri.options,
+        m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+        uri = {},
+        i   = 14;
 
-  while (i--) {uri[o.key[i]] = m[i] || "";}
+    while (i--) {uri[o.key[i]] = m[i] || "";}
 
-  uri[o.q.name] = {};
-  uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
-    if ($1) {uri[o.q.name][$1] = $2;}
-  });
+    uri[o.q.name] = {};
+    uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+        if ($1) {uri[o.q.name][$1] = $2;}
+    });
 
-  return uri;
+    return uri;
 }
 
 parseUri.options = {
-  strictMode: false,
-  key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
-  q:   {
-    name:   "queryKey",
-    parser: /(?:^|&)([^&=]*)=?([^&]*)/g
-  },
-  parser: {
-    strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
-    loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
-  }
+    strictMode: false,
+    key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+    q: {
+        name: "queryKey",
+        parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+    },
+    parser: {
+        strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+        loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+    }
 };
