@@ -33,6 +33,8 @@ class Client extends User {
       throw new Error(Client.ERRORS['InvalidConfigurationError'].message);
     }
 
+    this.version = '3.0.0';
+
     this._appId = creds.appId;
     this._authKey = creds.authKey ? creds.authKey : null;
     this._authSecret = creds.authSecret ? creds.authSecret : null;
@@ -44,8 +46,6 @@ class Client extends User {
 
     this._endpoints = {};
     Object.assign(this._endpoints, defaultEndpoints, opts.endpoints);
-
-    this.version = '3.0.0';
 
     this.service = axios.create({
       baseURL: `https://${this._endpoints.api}/`,
