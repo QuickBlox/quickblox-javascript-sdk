@@ -14,7 +14,7 @@ The QuickBlox JavaScript SDK provides a JavaScript library making it even easier
 ## Dependencies for browser
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.6.1/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.6.2/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
