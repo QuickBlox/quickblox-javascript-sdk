@@ -209,9 +209,9 @@ ContentProxy.prototype = {
      * Upload a file to cloud storage ({@link https://docsdev.quickblox.com/rest_api/Content_API.html#Upload_file read more})
      * @private
      * @memberof QB.content
-     * @param {Object} params - Object of parameters (use blob-object-access from QB.content.create())
-     * @param {string} params.url - {@link https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/src/modules/qbContent.js#L163 Url} from QB.content.create()
-     * @param {object} params.data - {@link https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/src/modules/qbContent.js#L184 Form data} from QB.content.create()
+     * @param {Object} params - Object of parameters (see into source code of QB.content.createAndUpload(params, callback) to know how to prepare the params object)
+     * @param {string} params.url - location url
+     * @param {object} params.data - formed data with file
      * @param {uploadFileCallback} callback - The uploadFileCallback function
      */
     upload: function(params, callback) {
