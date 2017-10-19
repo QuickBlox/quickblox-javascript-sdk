@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: privacylist</title>
+    <title>Namespace: subscriptions</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -544,7 +544,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.privacylist.html">Namespace: privacylist</h1>
+        <h1 class="page-title" data-filename="QB.pushnotifications.subscriptions.html">Namespace: subscriptions</h1>
         
 
 
@@ -553,9 +553,7 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
-    
-    privacylist
+    subscriptions
     </h2>
     
 </header>  
@@ -565,6 +563,8 @@
     
     
     
+        
+            <div class="description">Push Notifications Subscriptions</div>
         
         
         
@@ -618,12 +618,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.create<span class="signature">(list, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1616
+            modules/qbPushNotifications.js, line 55
         </div>
         
     </div>
@@ -634,7 +634,7 @@
     
     
     <div class="description">
-        Create a privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list">More info.</a>
+        Create device based subscription (subscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Create_subscription">read more</a>)
     </div>
     
 
@@ -665,13 +665,13 @@
 	
         <tr>
             
-                <td class="name"><code>list</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -681,7 +681,274 @@
             
             <td class="description last">
                 
-                privacy list object.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>notification_channel</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Declare which notification channels could be used to notify user about events. Allowed values: apns, apns_voip, gcm, mpns, bbps and email</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>push_token</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>environment</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Determine application mode. It allows conveniently separate development and production modes. Allowed values: evelopment or production</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>bundle_identifier</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                A unique identifier for client's application. In iOS, this is the Bundle Identifier. In Android - package id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>client_identification_sequence</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Identifies client device in 3-rd party service like APNS, GCM/FCM, BBPS or MPNS. Initially retrieved from 3-rd service and should be send to QuickBlox to let it send push notifications to the client</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>device</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>platform</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Platform of device, which is the source of application running. Allowed values: ios, android, windows_phone, blackberry</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>udid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                UDID (Unique Device identifier) of device, which is the source of application running. This must be anything sequence which uniquely identify particular device. This is needed to support schema: 1 User - Multiple devices</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -694,7 +961,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createPrivacylistCallback">createPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#createPushSubscriptionCallback">createPushSubscriptionCallback</a></span>
 
 
             
@@ -704,7 +971,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The createPushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -757,12 +1024,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.delete<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1988
+            modules/qbPushNotifications.js, line 86
         </div>
         
     </div>
@@ -773,7 +1040,7 @@
     
     
     <div class="description">
-        Delete privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list">More info.</a>
+        Remove a subscription by its identifier (unsubscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Remove_subscription">read more</a>)
     </div>
     
 
@@ -804,13 +1071,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">number</span>
 
 
             
@@ -820,7 +1087,7 @@
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                An id of subscription to remove</td>
         </tr>
 	
 	
@@ -833,7 +1100,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deletePrivacylistCallback">deletePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deletePushSubscriptionCallback">deletePushSubscriptionCallback</a></span>
 
 
             
@@ -843,7 +1110,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deletePushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -894,14 +1161,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getList">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getList<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.list<span class="signature">(callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1772
+            modules/qbPushNotifications.js, line 70
         </div>
         
     </div>
@@ -912,147 +1179,7 @@
     
     
     <div class="description">
-        Get the privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of the list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#getListPrivacylistCallback">getListPrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getNames">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.getNames<span class="signature">(callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1894
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get names of privacy lists. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names">More info.</a>
-Run without parameters
+        Retrieve subscriptions for the user which is specified in the session token (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_subscriptions">read more</a>)
     </div>
     
 
@@ -1089,7 +1216,7 @@ Run without parameters
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getNamesPrivacylistCallback">getNamesPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#listPushSubscriptionCallback">listPushSubscriptionCallback</a></span>
 
 
             
@@ -1099,423 +1226,7 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2102
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a></li><ul></dd>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".setAsDefault">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2048
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Set as default privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#setAsDefaultPrivacylistCallback">setAsDefaultPrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".update">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.update<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1859
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Update the privacy list.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of the list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#updatePrivacylistCallback">updatePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
+                The listPushSubscriptionCallback function</td>
         </tr>
 	
 	

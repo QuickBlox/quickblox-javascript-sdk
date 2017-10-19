@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: privacylist</title>
+    <title>Namespace: content</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -544,7 +544,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.privacylist.html">Namespace: privacylist</h1>
+        <h1 class="page-title" data-filename="QB.content.html">Namespace: content</h1>
         
 
 
@@ -553,9 +553,9 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
+        <span class="ancestors"><a href="QB.html">QB</a>.</span>
     
-    privacylist
+    content
     </h2>
     
 </header>  
@@ -565,6 +565,8 @@
     
     
     
+        
+            <div class="description">Content</div>
         
         
         
@@ -618,12 +620,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.create<span class="signature">(list, callback)</span>
+            <span class="type-signature ">private,static</span>QB.content.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1616
+            modules/qbContent.js, line 69
         </div>
         
     </div>
@@ -634,7 +636,7 @@
     
     
     <div class="description">
-        Create a privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list">More info.</a>
+        Create new file object (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Create_file">read more</a>)
     </div>
     
 
@@ -665,13 +667,13 @@
 	
         <tr>
             
-                <td class="name"><code>list</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -681,7 +683,131 @@
             
             <td class="description last">
                 
-                privacy list object.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>content_type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's mime (<a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types">content type</a>)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's visibility. public means it will be possible to access this file without QuickBlox session token provided. Default is 'false'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -694,7 +820,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createPrivacylistCallback">createPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#createFileCallback">createFileCallback</a></span>
 
 
             
@@ -704,7 +830,334 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The createFileCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".createAndUpload">
+            
+            <span class="type-signature static">static</span>QB.content.createAndUpload<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 122
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Create file > upload file > mark file as uploaded > return result.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                File object</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's mime (<a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types">content type</a>)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>size</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Size of file, in bytes</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's visibility. public means it will be possible to access this file without QuickBlox session token provided. Default is 'false'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#createAndUploadFileCallback">createAndUploadFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The createAndUploadFileCallback function</td>
         </tr>
 	
 	
@@ -757,12 +1210,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.delete<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.content.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1988
+            modules/qbContent.js, line 95
         </div>
         
     </div>
@@ -773,7 +1226,7 @@
     
     
     <div class="description">
-        Delete privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list">More info.</a>
+        Delete file by id (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Delete_file">read more</a>)
     </div>
     
 
@@ -804,13 +1257,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Number</span>
 
 
             
@@ -820,7 +1273,7 @@
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                blob_id</td>
         </tr>
 	
 	
@@ -833,7 +1286,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deletePrivacylistCallback">deletePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deleteFileCallback">deleteFileCallback</a></span>
 
 
             
@@ -843,7 +1296,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deleteFileCallback function.</td>
         </tr>
 	
 	
@@ -894,14 +1347,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getList">
+        <h4 class="name" id=".getFile">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getList<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.content.getFile<span class="signature">(uid, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1772
+            modules/qbContent.js, line 302
         </div>
         
     </div>
@@ -912,7 +1365,7 @@
     
     
     <div class="description">
-        Get the privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list">More info.</a>
+        Download file by UID. If the file is public then it's possible to download it without a session token (@link https://docsdev.quickblox.com/rest_api/Content_API.html#Download_file read more})
     </div>
     
 
@@ -943,7 +1396,7 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>uid</code></td>
             
             
             <td class="type">
@@ -959,7 +1412,7 @@
             
             <td class="description last">
                 
-                The name of the list.</td>
+                The uid of file to declare as uploaded</td>
         </tr>
 	
 	
@@ -972,7 +1425,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getListPrivacylistCallback">getListPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#downloadFileByUIDCallback">downloadFileByUIDCallback</a></span>
 
 
             
@@ -982,7 +1435,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The downloadFileByUIDCallback function</td>
         </tr>
 	
 	
@@ -1033,14 +1486,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getNames">
+        <h4 class="name" id=".getInfo">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getNames<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.content.getInfo<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1894
+            modules/qbContent.js, line 280
         </div>
         
     </div>
@@ -1051,8 +1504,7 @@
     
     
     <div class="description">
-        Get names of privacy lists. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names">More info.</a>
-Run without parameters
+        Retrieve file object by id (@link https://docsdev.quickblox.com/rest_api/Content_API.html#Retrieve_file read more})
     </div>
     
 
@@ -1083,13 +1535,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getNamesPrivacylistCallback">getNamesPrivacylistCallback</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -1099,7 +1551,30 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#getFileInfoByIdCallback">getFileInfoByIdCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The getFileInfoByIdCallback function return file's object.</td>
         </tr>
 	
 	
@@ -1150,14 +1625,14 @@ Run without parameters
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.content.list<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2102
+            modules/qbContent.js, line 38
         </div>
         
     </div>
@@ -1166,6 +1641,10 @@ Run without parameters
 </dt>
 <dd>
     
+    
+    <div class="description">
+        Get a list of files for current user (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Retrieve_files">read more</a>)
+    </div>
     
 
     
@@ -1195,13 +1674,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">object</span>
 
 
             
@@ -1211,7 +1690,103 @@ Run without parameters
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Used to paginate the results when more than one page of files retrieved</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>per_page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    10
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The maximum number of files to return per page, if not specified then the default is 10</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1224,7 +1799,7 @@ Run without parameters
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#listOfFilesCallback">listOfFilesCallback</a></span>
 
 
             
@@ -1234,7 +1809,7 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
+                The listOfFilesCallback function</td>
         </tr>
 	
 	
@@ -1250,9 +1825,6 @@ Run without parameters
     
     
 
-    
-        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a></li><ul></dd>
     
     
     
@@ -1288,14 +1860,14 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsDefault">
+        <h4 class="name" id=".markUploaded">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
+            <span class="type-signature ">private,static</span>QB.content.markUploaded<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2048
+            modules/qbContent.js, line 251
         </div>
         
     </div>
@@ -1306,7 +1878,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     <div class="description">
-        Set as default privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
+        Declare file uploaded. The file's 'status' field will be set to 'complete' (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Declare_file_uploaded">read more</a>)
     </div>
     
 
@@ -1337,7 +1909,214 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>blob_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>size</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Size of file, in bytes</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#markUploadedFileCallback">markUploadedFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The markUploadedFileCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".privateUrl">
+            
+            <span class="type-signature static">static</span>QB.content.privateUrl<span class="signature">(fileUID)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 355
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get private URL for file download by file_uid (blob_uid).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>fileUID</code></td>
             
             
             <td class="type">
@@ -1353,20 +2132,113 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                The uid of file to declare as uploaded</td>
         </tr>
 	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".publicUrl">
+            
+            <span class="type-signature static">static</span>QB.content.publicUrl<span class="signature">(fileUID)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 364
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get public URL for file download by file_uid (blob_uid).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
 	
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>fileUID</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsDefaultPrivacylistCallback">setAsDefaultPrivacylistCallback</a></span>
+<span class="param-type">String</span>
 
 
             
@@ -1376,7 +2248,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The callback function.</td>
+                The uid of file to declare as uploaded</td>
         </tr>
 	
 	
@@ -1429,12 +2301,12 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     <div class="nameContainer">
         <h4 class="name" id=".update">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.update<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.content.update<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1859
+            modules/qbContent.js, line 326
         </div>
         
     </div>
@@ -1445,7 +2317,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     <div class="description">
-        Update the privacy list.
+        Edit a file by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Download_file">read more</a>)
     </div>
     
 
@@ -1476,13 +2348,13 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">object</span>
 
 
             
@@ -1492,7 +2364,87 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The name of the list.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                New file name</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1505,7 +2457,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#updatePrivacylistCallback">updatePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#updateFileCallback">updateFileCallback</a></span>
 
 
             
@@ -1515,7 +2467,214 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The callback function.</td>
+                The updateFileCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".upload">
+            
+            <span class="type-signature ">private,static</span>QB.content.upload<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 217
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Upload a file to cloud storage (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Upload_file">read more</a>)
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters (use blob-object-access from QB.content.create())
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/src/modules/qbContent.js#L163">Url</a> from QB.content.create()</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/src/modules/qbContent.js#L184">Form data</a> from QB.content.create()</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#uploadFileCallback">uploadFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uploadFileCallback function</td>
         </tr>
 	
 	

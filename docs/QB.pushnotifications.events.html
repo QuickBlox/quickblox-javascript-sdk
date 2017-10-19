@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: privacylist</title>
+    <title>Namespace: events</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -544,7 +544,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.privacylist.html">Namespace: privacylist</h1>
+        <h1 class="page-title" data-filename="QB.pushnotifications.events.html">Namespace: events</h1>
         
 
 
@@ -553,9 +553,7 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
-    
-    privacylist
+    events
     </h2>
     
 </header>  
@@ -565,6 +563,8 @@
     
     
     
+        
+            <div class="description">Push Notifications Events</div>
         
         
         
@@ -618,12 +618,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.create<span class="signature">(list, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.events.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1616
+            modules/qbPushNotifications.js, line 145
         </div>
         
     </div>
@@ -634,7 +634,7 @@
     
     
     <div class="description">
-        Create a privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list">More info.</a>
+        Create notification event. This request will immediately produce notification delivery (push notification or email) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Create_event">read more</a>)
     </div>
     
 
@@ -665,13 +665,13 @@
 	
         <tr>
             
-                <td class="name"><code>list</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -681,7 +681,569 @@
             
             <td class="description last">
                 
-                privacy list object.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>notification_type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Type of notification. Allowed values: push or email</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>environment</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                An environment of the notification. Allowed values: development or production</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                A payload of event. For push notifications: if event[push_type] not present - should be Base64 encoded text. if event[push_type] specified - should be formatted as described in <a target="_blank" href="https://quickblox.com/developers/Messages#Push_Notification_Formats">QuickBlox Push Notifications Formats</a> For email: Base64 encoded text</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>push_type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Push Notification type. Used only if event[notification_type] = push, ignored in other cases. If not present - Notification will be delivered to all possible devices for specified users. Each platform has their own standard format. See <a target="_blank" href="https://quickblox.com/developers/Messages#Push_Notification_Formats">QuickBlox Push Notifications Formats</a> for more information. If specified - Notification will be delivered to the specified platform only. Allowed values: apns, apns_voip, gcm, mpns or bbps</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>event_type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Allowed values: one_shot, fixed_date or period_date. one_shot - a one-time event, which causes by an external object (the value is only valid if the 'date' is not specified). fixed_date - a one-time event, which occurs at a specified 'date' (the value is valid only if the 'date' is given). period_date - reusable event that occurs within a given 'period' from the initial 'date' (the value is only valid if the 'period' specified). By default: fixed_date, if 'date' is specified. period_date, if 'period' is specified. one_shot, if 'date' is not specified</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The name of the event. Service information. Only for your own usage</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>period</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The period of the event in seconds. Required if the event[event_type] = period_date. Possible values: 86400 (1 day). 604800 (1 week). 2592000 (1 month). 31557600 (1 year)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The date of the event to send on. Required if event[event_type] = fixed_date or period_date. If event[event_type] = fixed_date, the date can not be in the pas</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                User's object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>ids</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;number></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Notification's recipients - should contain a string of users' ids divided by commas</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>tags</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                User's object of tags
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>any</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Notification's recipients - should contain a string of tags divided by commas. Recipients (users) must have at least one tag that specified in the list</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>all</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Notification's recipients - should contain a string of tags divided by commas. Recipients (users) must exactly have only all tags that specified in list</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>exclude</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Notification's recipients - should contain a string of tags divided by commas. Recipients (users) mustn't have tags that specified in list</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>external_user</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                External user's object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>ids</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;number></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Notification's recipients - should contain a string of tags divided by commas. Recipients (users) mustn't have tags that specified in list</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -694,7 +1256,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createPrivacylistCallback">createPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#createPushEventCallback">createPushEventCallback</a></span>
 
 
             
@@ -704,7 +1266,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The createPushEventCallback function</td>
         </tr>
 	
 	
@@ -757,12 +1319,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.delete<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.events.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1988
+            modules/qbPushNotifications.js, line 198
         </div>
         
     </div>
@@ -773,7 +1335,7 @@
     
     
     <div class="description">
-        Delete privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list">More info.</a>
+        Delete an event by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Delete_event">read more</a>)
     </div>
     
 
@@ -804,13 +1366,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">number</span>
 
 
             
@@ -820,7 +1382,7 @@
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                An id of event to delete</td>
         </tr>
 	
 	
@@ -833,7 +1395,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deletePrivacylistCallback">deletePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deletePushEventByIdCallback">deletePushEventByIdCallback</a></span>
 
 
             
@@ -843,7 +1405,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deletePushEventByIdCallback function</td>
         </tr>
 	
 	
@@ -894,14 +1456,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getList">
+        <h4 class="name" id=".get">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getList<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.events.get<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1772
+            modules/qbPushNotifications.js, line 183
         </div>
         
     </div>
@@ -912,7 +1474,7 @@
     
     
     <div class="description">
-        Get the privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list">More info.</a>
+        Retrieve an event by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_event">read more</a>)
     </div>
     
 
@@ -943,13 +1505,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">number</span>
 
 
             
@@ -959,7 +1521,7 @@
             
             <td class="description last">
                 
-                The name of the list.</td>
+                An id of event to retrieve</td>
         </tr>
 	
 	
@@ -972,7 +1534,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getListPrivacylistCallback">getListPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#getPushEventByIdCallback">getPushEventByIdCallback</a></span>
 
 
             
@@ -982,7 +1544,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The getPushEventByIdCallback function</td>
         </tr>
 	
 	
@@ -1033,14 +1595,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getNames">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getNames<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.events.list<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1894
+            modules/qbPushNotifications.js, line 163
         </div>
         
     </div>
@@ -1051,8 +1613,7 @@
     
     
     <div class="description">
-        Get names of privacy lists. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names">More info.</a>
-Run without parameters
+        Get list of events which were created by current user (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_events">read more</a>)
     </div>
     
 
@@ -1083,13 +1644,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getNamesPrivacylistCallback">getNamesPrivacylistCallback</a></span>
+<span class="param-type">object</span>
 
 
             
@@ -1099,7 +1660,126 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Used to paginate the results when more than one page of events retrieved</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>per_page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    10
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The maximum number of events to return per page, if not specified then the default is 10</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#listPushEventsCallback">listPushEventsCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The listOfFilesCallback function</td>
         </tr>
 	
 	
@@ -1150,152 +1830,14 @@ Run without parameters
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
+        <h4 class="name" id=".status">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.events.status<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2102
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a></li><ul></dd>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".setAsDefault">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2048
+            modules/qbPushNotifications.js, line 213
         </div>
         
     </div>
@@ -1306,7 +1848,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     <div class="description">
-        Set as default privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
+        Retrieve an event's status by ID
     </div>
     
 
@@ -1337,13 +1879,13 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">number</span>
 
 
             
@@ -1353,7 +1895,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                An id of event to retrieve its status</td>
         </tr>
 	
 	
@@ -1366,7 +1908,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsDefaultPrivacylistCallback">setAsDefaultPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#getPushEventStatusByIdCallback">getPushEventStatusByIdCallback</a></span>
 
 
             
@@ -1376,146 +1918,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".update">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.update<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1859
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Update the privacy list.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of the list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#updatePrivacylistCallback">updatePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
+                The getPushEventStatusByIdCallback function</td>
         </tr>
 	
 	

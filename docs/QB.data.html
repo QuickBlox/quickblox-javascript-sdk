@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: privacylist</title>
+    <title>Namespace: data</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -544,7 +544,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.privacylist.html">Namespace: privacylist</h1>
+        <h1 class="page-title" data-filename="QB.data.html">Namespace: data</h1>
         
 
 
@@ -553,9 +553,9 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
+        <span class="ancestors"><a href="QB.html">QB</a>.</span>
     
-    privacylist
+    data
     </h2>
     
 </header>  
@@ -565,6 +565,8 @@
     
     
     
+        
+            <div class="description">Custom Objects</div>
         
         
         
@@ -618,12 +620,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.create<span class="signature">(list, callback)</span>
+            <span class="type-signature static">static</span>QB.data.create<span class="signature">(className, data, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1616
+            modules/qbData.js, line 48
         </div>
         
     </div>
@@ -634,7 +636,7 @@
     
     
     <div class="description">
-        Create a privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list">More info.</a>
+        Create new custom object (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Create_object">read more</a>)
     </div>
     
 
@@ -665,13 +667,13 @@
 	
         <tr>
             
-                <td class="name"><code>list</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">string</span>
 
 
             
@@ -681,7 +683,30 @@
             
             <td class="description last">
                 
-                privacy list object.</td>
+                A class name to which a new object belongs</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters (custom fields' names and their values)</td>
         </tr>
 	
 	
@@ -694,7 +719,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createPrivacylistCallback">createPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#createDataCallback">createDataCallback</a></span>
 
 
             
@@ -704,7 +729,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The createDataCallback function</td>
         </tr>
 	
 	
@@ -748,6 +773,27 @@
     
     
     
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint"><code>QB.data.create('GameOfThrones', {
+    'name': 'John',
+    'age':'20',
+    'family': [
+        'Stark',
+        'Targaryen'
+    ]
+}, function(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+});</code></pre>
+    
+
     
 </dd>
 
@@ -757,12 +803,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.delete<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.data.delete<span class="signature">(className, id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1988
+            modules/qbData.js, line 160
         </div>
         
     </div>
@@ -773,7 +819,7 @@
     
     
     <div class="description">
-        Delete privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list">More info.</a>
+        Delete record by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_objects_by_IDs">or records by ids</a>) of particular class (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object">read more</a>)
     </div>
     
 
@@ -804,13 +850,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
@@ -820,7 +866,33 @@
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                A class name of record (records)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">array</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An ID of record (or an array of records' ids) to delete</td>
         </tr>
 	
 	
@@ -833,7 +905,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deletePrivacylistCallback">deletePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deleteDataByIdsCallback">deleteDataByIdsCallback</a></span>
 
 
             
@@ -843,7 +915,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deleteDataByIdsCallback function</td>
         </tr>
 	
 	
@@ -894,14 +966,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getList">
+        <h4 class="name" id=".deleteFile">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getList<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.data.deleteFile<span class="signature">(className, params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1772
+            modules/qbData.js, line 269
         </div>
         
     </div>
@@ -912,7 +984,7 @@
     
     
     <div class="description">
-        Get the privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list">More info.</a>
+        Delete file from file field by ID (<a target="_blank" href="https://quickblox.com/developers/Custom_Objects#Delete_file">read more</a>)
     </div>
     
 
@@ -943,13 +1015,13 @@
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
@@ -959,7 +1031,98 @@
             
             <td class="description last">
                 
-                The name of the list.</td>
+                A class name of record</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>field_name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The file's field name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The record's ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -972,7 +1135,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getListPrivacylistCallback">getListPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#deleteFileFromDataCallback">deleteFileFromDataCallback</a></span>
 
 
             
@@ -982,7 +1145,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deleteFileFromDataCallback function</td>
         </tr>
 	
 	
@@ -1033,14 +1196,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getNames">
+        <h4 class="name" id=".downloadFile">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.getNames<span class="signature">(callback)</span>
+            <span class="type-signature static">static</span>QB.data.downloadFile<span class="signature">(className, params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1894
+            modules/qbData.js, line 234
         </div>
         
     </div>
@@ -1051,8 +1214,7 @@
     
     
     <div class="description">
-        Get names of privacy lists. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names">More info.</a>
-Run without parameters
+        Download file from file field by ID (<a target="_blank" href="https://quickblox.com/developers/Custom_Objects#Download_file">read more</a>)
     </div>
     
 
@@ -1083,13 +1245,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#getNamesPrivacylistCallback">getNamesPrivacylistCallback</a></span>
+<span class="param-type">string</span>
 
 
             
@@ -1099,7 +1261,121 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
+                A class name of record</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>field_name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The file's field name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The record's ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#downloadFileFromDataCallback">downloadFileFromDataCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The downloadFileFromDataCallback function</td>
         </tr>
 	
 	
@@ -1150,14 +1426,14 @@ Run without parameters
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
+        <h4 class="name" id=".fileUrl">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.data.fileUrl<span class="signature">(className, params)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2102
+            modules/qbData.js, line 254
         </div>
         
     </div>
@@ -1166,6 +1442,10 @@ Run without parameters
 </dt>
 <dd>
     
+    
+    <div class="description">
+        Return file's URL from file field by ID
+    </div>
     
 
     
@@ -1195,13 +1475,13 @@ Run without parameters
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
@@ -1211,20 +1491,20 @@ Run without parameters
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                A class name of record</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
+<span class="param-type">object</span>
 
 
             
@@ -1234,7 +1514,75 @@ Run without parameters
             
             <td class="description last">
                 
-                The callback function.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>field_name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The file's field name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The record's ID</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1250,9 +1598,6 @@ Run without parameters
     
     
 
-    
-        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a></li><ul></dd>
     
     
     
@@ -1288,14 +1633,14 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsDefault">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.data.list<span class="signature">(className, filters, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2048
+            modules/qbData.js, line 94
         </div>
         
     </div>
@@ -1306,7 +1651,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     <div class="description">
-        Set as default privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a>
+        Search for records of particular class (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects">read more</a>)
     </div>
     
 
@@ -1337,13 +1682,13 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
@@ -1353,7 +1698,163 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The name of privacy list.</td>
+                A class name to which a new record belongs</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>filters</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Search records with field which contains exactly specified value or by array of records' ids to retrieve
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>skip</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Skip N records in search results. Useful for pagination. Default (if not specified) - 0</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    100
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Limit search results to N records. Useful for pagination. Default and max values - 100. If limit is equal to -1 only last record will be returned</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>*</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects">See more filters' parameters</a></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1366,7 +1867,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#setAsDefaultPrivacylistCallback">setAsDefaultPrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#listOfDataCallback">listOfDataCallback</a></span>
 
 
             
@@ -1376,7 +1877,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The callback function.</td>
+                The listOfDataCallback function</td>
         </tr>
 	
 	
@@ -1420,6 +1921,32 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint"><code>var filter = {
+    'skip': 0,
+    'limit': 100,
+    'sort_desc': 'updated_at',
+    'family': {
+        'in': 'Stark,Targaryen'
+    }
+};
+
+var ids = ['53aaa06f535c12cea9007496', '53aaa06f535c12cea9007495'];
+
+// use filter or ids to get records:
+QB.data.list('GameOfThrones', filter, function(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+});</code></pre>
+    
+
     
 </dd>
 
@@ -1429,12 +1956,12 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     <div class="nameContainer">
         <h4 class="name" id=".update">
             
-            <span class="type-signature static">static</span>QB.chat.privacylist.update<span class="signature">(name, callback)</span>
+            <span class="type-signature static">static</span>QB.data.update<span class="signature">(className, data, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1859
+            modules/qbData.js, line 137
         </div>
         
     </div>
@@ -1445,7 +1972,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
     
     <div class="description">
-        Update the privacy list.
+        Update record by ID of particular class (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects">read more</a>)
     </div>
     
 
@@ -1476,13 +2003,13 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
 	
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>className</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
@@ -1492,7 +2019,75 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The name of the list.</td>
+                A class name of record</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                An ID of record to update</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1505,7 +2100,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#updatePrivacylistCallback">updatePrivacylistCallback</a></span>
+<span class="param-type"><a href="global.html#updateDataCallback">updateDataCallback</a></span>
 
 
             
@@ -1515,7 +2110,300 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
             
             <td class="description last">
                 
-                The callback function.</td>
+                The updateDataCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint"><code>QB.data.update('GameOfThrones', {
+    '_id': '53aaa06f535c12cea9007496',
+    'pull': {
+        'family':'Stark'
+    }
+}, function(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+});</code></pre>
+    
+
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".uploadFile">
+            
+            <span class="type-signature static">static</span>QB.data.uploadFile<span class="signature">(className, params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbData.js, line 187
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Upload file to file field (<a target="_blank" href="https://quickblox.com/developers/Custom_Objects#Upload.2FUpdate_file">read more</a>)
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>className</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                A class name to which a new object belongs</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>field_name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's field name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                File object</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#uploadFileToDataCallback">uploadFileToDataCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uploadFileToDataCallback function</td>
         </tr>
 	
 	
