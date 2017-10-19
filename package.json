@@ -58,7 +58,7 @@
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.6.0",
     "jquery-custom": "^1.1.1",
-    "jsdoc": "^3.4.3",
+    "jsdoc": "^3.5.5",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
     "karma": "^1.6.0",
