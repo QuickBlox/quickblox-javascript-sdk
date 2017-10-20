@@ -43,8 +43,7 @@
     "request": "^2.48.0",
     "sdp-transform": "^2.3.0",
     "strophe.js": "1.2.12",
-    "webrtc-adapter": "^2.1.0",
-    "xml2js": "^0.4.13"
+    "webrtc-adapter": "^2.1.0"
   },
   "devDependencies": {
     "browserify": "^13.1.0",
@@ -58,7 +57,7 @@
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.6.0",
     "jquery-custom": "^1.1.1",
-    "jsdoc": "^3.4.3",
+    "jsdoc": "^3.5.5",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
     "karma": "^1.6.0",
