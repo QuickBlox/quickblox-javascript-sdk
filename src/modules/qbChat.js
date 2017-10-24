@@ -23,10 +23,9 @@ if (Utils.getEnv().browser) {
     Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
     Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
     Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
-}else{
+} else {
     var NodeClient = require('node-xmpp-client');
 }
-
 
 function ChatProxy(service) {
     var self = this;
@@ -99,7 +98,7 @@ function ChatProxy(service) {
     this.chatUtils = chatUtils;
 
     if (config.streamManagement.enable){
-        if(config.chatProtocol.active === 2){
+        if (config.chatProtocol.active === 2){
             this.streamManagement = new StreamManagement(config.streamManagement);
             self._sentMessageCallback = function(messageLost, messageSent){
                 if(typeof self.onSentMessageCallback === 'function'){

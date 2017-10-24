@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: chat</title>
+    <title>Namespace: content</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -544,7 +544,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.html">Namespace: chat</h1>
+        <h1 class="page-title" data-filename="QB.content.html">Namespace: content</h1>
         
 
 
@@ -555,7 +555,7 @@
     <h2>
         <span class="ancestors"><a href="QB.html">QB</a>.</span>
     
-    chat
+    content
     </h2>
     
 </header>  
@@ -565,6 +565,8 @@
     
     
     
+        
+            <div class="description">Content</div>
         
         
         
@@ -606,28 +608,6 @@
     
     
     
-        <h3 class="subsection-title">Namespaces</h3>
-        
-        <dl>
-            <dt><a href="namespaces.html#QB.chat.dialog"><a href="QB.chat.dialog.html">dialog</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#QB.chat.helpers"><a href="QB.chat.helpers.html">helpers</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#QB.chat.message"><a href="QB.chat.message.html">message</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#QB.chat.muc"><a href="QB.chat.muc.html">muc</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#QB.chat.privacylist"><a href="QB.chat.privacylist.html">privacylist</a></a></dt>
-            <dd></dd>
-        
-            <dt><a href="namespaces.html#QB.chat.roster"><a href="QB.chat.roster.html">roster</a></a></dt>
-            <dd></dd>
-        </dl>
-    
     
     
     
@@ -638,14 +618,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".connect">
+        <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.connect<span class="signature">(params, callback)</span>
+            <span class="type-signature ">private,static</span>QB.content.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 621
+            modules/qbContent.js, line 69
         </div>
         
     </div>
@@ -656,7 +636,7 @@
     
     
     <div class="description">
-        self.connection to the chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat">More info.</a>
+        Create new file object (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Create_file">read more</a>)
     </div>
     
 
@@ -693,7 +673,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -703,7 +683,131 @@
             
             <td class="description last">
                 
-                Connect to the chat parameters.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>content_type</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's mime (<a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types">content type</a>)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The file's name</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's visibility. public means it will be possible to access this file without QuickBlox session token provided. Default is 'false'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -716,7 +820,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#chatConnectCallback">chatConnectCallback</a></span>
+<span class="param-type"><a href="global.html#createFileCallback">createFileCallback</a></span>
 
 
             
@@ -726,7 +830,7 @@
             
             <td class="description last">
                 
-                The chatConnectCallback callback.</td>
+                The createFileCallback function</td>
         </tr>
 	
 	
@@ -777,14 +881,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".disconnect">
+        <h4 class="name" id=".createAndUpload">
             
-            <span class="type-signature static">static</span>QB.chat.disconnect<span class="signature">()</span>
+            <span class="type-signature static">static</span>QB.content.createAndUpload<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1106
+            modules/qbContent.js, line 122
         </div>
         
     </div>
@@ -795,78 +899,7 @@
     
     
     <div class="description">
-        Logout from the Chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onConfirmSubscribeListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onConfirmSubscribeListener<span class="signature">(userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 234
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Receive confirm request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
+        Create file > upload file > mark file as uploaded > return result.
     </div>
     
 
@@ -897,13 +930,13 @@
 	
         <tr>
             
-                <td class="name"><code>userId</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">object</span>
 
 
             
@@ -913,123 +946,89 @@
             
             <td class="description last">
                 
-                The sender ID</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                File object</td>
         </tr>
 	
 	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onContactListListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onContactListListener<span class="signature">(userId, type)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 219
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Receive user status (online / offline). <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
 	
         <tr>
             
-                <td class="name"><code>userId</code></td>
+                <td class="name"><code>name</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">string</span>
 
 
             
             </td>
             
             
+                <td class="default">
+                
+                </td>
+            
             
             <td class="description last">
                 
-                The sender ID</td>
+                    
+                    
+                        
+                    
+                
+                The file's name</td>
         </tr>
 	
 	
@@ -1042,2107 +1041,113 @@
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
             
             </td>
             
             
-            
-            <td class="description last">
+                <td class="default">
                 
-                If user leave the chat, type will be 'unavailable'</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onDeliveredStatusListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onDeliveredStatusListener<span class="signature">(messageId, dialogId, userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 170
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Receive delivery confirmations <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>messageId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
+                </td>
             
             
             <td class="description last">
                 
-                Typing Status</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The dialog id</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                User Id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onDisconnectedListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onDisconnectedListener<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 248
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Run after disconnect from chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onJoinOccupant">
-            
-            <span class="type-signature static">static</span>QB.chat.onJoinOccupant<span class="signature">(dialogId, userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 203
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        You will receive this callback when some user joined group chat dialog you are in.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of chat dialog that user joined.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of user who joined chat dialog.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onKickOccupant">
-            
-            <span class="type-signature static">static</span>QB.chat.onKickOccupant<span class="signature">(dialogId, initiatorUserId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 195
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        You will receive this callback when you are in group chat dialog(joined) and other user (chat dialog's creator) removed you from occupants.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of chat dialog where you was kicked from.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>initiatorUserId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of user who has kicked you.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onLeaveOccupant">
-            
-            <span class="type-signature static">static</span>QB.chat.onLeaveOccupant<span class="signature">(dialogId, userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 211
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        You will receive this callback when some user left group chat dialog you are in.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of chat dialog that user left.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                An Id of user who left chat dialog.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onMessageErrorListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onMessageErrorListener<span class="signature">(error, message)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 145
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The error object</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of subscribed users.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onMessageListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onMessageListener<span class="signature">(error, message)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 137
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        You need to set onMessageListener function, to get messages. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The error object</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of subscribed users.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onMessageTypingListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onMessageTypingListener<span class="signature">(isTyping, userId, dialogId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 161
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Show typing status in chat or groupchat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>isTyping</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Typing Status</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of subscribed users.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The dialog id</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onReadStatusListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onReadStatusListener<span class="signature">(messageId, dialogId, userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 179
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        You can manage 'read' notifications in chat. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>messageId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Typing Status</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The dialog id</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                User Id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onReconnectListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onReconnectListener<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 254
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        By default Javascript SDK reconnects automatically when connection to server is lost. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onRejectSubscribeListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onRejectSubscribeListener<span class="signature">(userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 241
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Receive reject request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The sender ID</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onSentMessageCallback">
-            
-            <span class="type-signature static">static</span>QB.chat.onSentMessageCallback<span class="signature">(error, message)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 153
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The error object</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of subscribed users.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onSubscribeListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onSubscribeListener<span class="signature">(userId)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 227
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Receive subscription request. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The sender ID</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".onSystemMessageListener">
-            
-            <span class="type-signature static">static</span>QB.chat.onSystemMessageListener<span class="signature">(receivedMessage)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 188
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        These messages work over separated channel and won't be mixed with the regular chat messages. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>receivedMessage</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Recieved Message. Always have type: 'headline'</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".send">
-            
-            <span class="type-signature static">static</span>QB.chat.send<span class="signature">(jid_or_user_id, message)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 875
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Send message to 1 to 1 or group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_dialog">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid_or_user_id</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The message object.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
+                    
+                    
                         
                     
-            </td>
-            <td class="description last">messageId</td>
+                
+                The file's mime (<a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types">content type</a>)</td>
         </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".sendIsStopTypingStatus">
-            
-            <span class="type-signature static">static</span>QB.chat.sendIsStopTypingStatus<span class="signature">(jid_or_user_id)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 1014
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Send is stop typing status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
 	
-	<tbody>
 	
 	
         <tr>
             
-                <td class="name"><code>jid_or_user_id</code></td>
+                <td class="name"><code>size</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
-|
+<span class="param-type">number</span>
 
-<span class="param-type">Number</span>
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Size of file, in bytes</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The file's visibility. public means it will be possible to access this file without QuickBlox session token provided. Default is 'false'</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#createAndUploadFileCallback">createAndUploadFileCallback</a></span>
 
 
             
@@ -3152,7 +1157,7 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                The createAndUploadFileCallback function</td>
         </tr>
 	
 	
@@ -3203,14 +1208,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".sendIsTypingStatus">
+        <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.sendIsTypingStatus<span class="signature">(jid_or_user_id)</span>
+            <span class="type-signature static">static</span>QB.content.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 987
+            modules/qbContent.js, line 95
         </div>
         
     </div>
@@ -3221,7 +1226,7 @@
     
     
     <div class="description">
-        Send is typing status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status">More info.</a>
+        Delete file by id (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Delete_file">read more</a>)
     </div>
     
 
@@ -3252,15 +1257,12 @@
 	
         <tr>
             
-                <td class="name"><code>jid_or_user_id</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
-|
-
 <span class="param-type">Number</span>
 
 
@@ -3271,7 +1273,30 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                blob_id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#deleteFileCallback">deleteFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The deleteFileCallback function.</td>
         </tr>
 	
 	
@@ -3322,14 +1347,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".sendReadStatus">
+        <h4 class="name" id=".getFile">
             
-            <span class="type-signature static">static</span>QB.chat.sendReadStatus<span class="signature">(params)</span>
+            <span class="type-signature static">static</span>QB.content.getFile<span class="signature">(uid, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1074
+            modules/qbContent.js, line 302
         </div>
         
     </div>
@@ -3340,7 +1365,1178 @@
     
     
     <div class="description">
-        Send is read status. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status">More info.</a>
+        Download file by UID. If the file is public then it's possible to download it without a session token (@link https://docsdev.quickblox.com/rest_api/Content_API.html#Download_file read more})
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uid of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#downloadFileByUIDCallback">downloadFileByUIDCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The downloadFileByUIDCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".getInfo">
+            
+            <span class="type-signature static">static</span>QB.content.getInfo<span class="signature">(id, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 280
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Retrieve file object by id (@link https://docsdev.quickblox.com/rest_api/Content_API.html#Retrieve_file read more})
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#getFileInfoByIdCallback">getFileInfoByIdCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The getFileInfoByIdCallback function return file's object.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".list">
+            
+            <span class="type-signature static">static</span>QB.content.list<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 38
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get a list of files for current user (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Retrieve_files">read more</a>)
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Used to paginate the results when more than one page of files retrieved</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>per_page</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    10
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The maximum number of files to return per page, if not specified then the default is 10</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#listOfFilesCallback">listOfFilesCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The listOfFilesCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".markUploaded">
+            
+            <span class="type-signature ">private,static</span>QB.content.markUploaded<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 251
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Declare file uploaded. The file's 'status' field will be set to 'complete' (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Declare_file_uploaded">read more</a>)
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>blob_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>size</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Size of file, in bytes</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#markUploadedFileCallback">markUploadedFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The markUploadedFileCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".privateUrl">
+            
+            <span class="type-signature static">static</span>QB.content.privateUrl<span class="signature">(fileUID)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 355
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get private URL for file download by file_uid (blob_uid).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>fileUID</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uid of file to declare as uploaded</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".publicUrl">
+            
+            <span class="type-signature static">static</span>QB.content.publicUrl<span class="signature">(fileUID)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 364
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Get public URL for file download by file_uid (blob_uid).
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>fileUID</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uid of file to declare as uploaded</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".update">
+            
+            <span class="type-signature static">static</span>QB.content.update<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 326
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Edit a file by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Download_file">read more</a>)
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The id of file to declare as uploaded</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                New file name</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#updateFileCallback">updateFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The updateFileCallback function</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".upload">
+            
+            <span class="type-signature ">private,static</span>QB.content.upload<span class="signature">(params, callback)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbContent.js, line 217
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Upload a file to cloud storage (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Content_API.html#Upload_file">read more</a>)
     </div>
     
 
@@ -3387,85 +2583,8 @@
             
             <td class="description last">
                 
-                Object of parameters. Consist of messageId, userId and dialogId keys.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".sendSystemMessage">
-            
-            <span class="type-signature static">static</span>QB.chat.sendSystemMessage<span class="signature">(jid_or_user_id, message)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 937
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Send system message (system notification) to 1 to 1 or group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
+                Object of parameters (see into source code of QB.content.createAndUpload(params, callback) to know how to prepare the params object)
+                
 
 <table class="params">
     <thead>
@@ -3487,16 +2606,13 @@
 	
         <tr>
             
-                <td class="name"><code>jid_or_user_id</code></td>
+                <td class="name"><code>url</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
+<span class="param-type">string</span>
 
 
             
@@ -3506,20 +2622,20 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                location url</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>data</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -3529,7 +2645,36 @@
             
             <td class="description last">
                 
-                The message object.</td>
+                formed data with file</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#uploadFileCallback">uploadFileCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The uploadFileCallback function</td>
         </tr>
 	
 	
@@ -3571,35 +2716,6 @@
     
     
     
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">messageId</td>
-        </tr>
-    
-    </tbody>
-</table>
-
     
     
     
@@ -3622,7 +2738,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Oct 19 2017 16:08:43 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Oct 19 2017 16:08:44 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>
