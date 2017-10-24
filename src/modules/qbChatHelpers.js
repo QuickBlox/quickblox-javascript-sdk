@@ -163,11 +163,12 @@ var qbChatHelpers = {
     parseExtraParams: function(extraParams) {
         var self = this;
 
-        if(!extraParams){
+        if (!extraParams) {
             return null;
         }
 
         var extension = {};
+
         var dialogId,
             attach,
             attributes;
@@ -182,7 +183,7 @@ var qbChatHelpers = {
                     attributes = extraParams.childNodes[i].attributes;
 
                     for (var j = 0, len2 = attributes.length; j < len2; j++) {
-                        if (attributes[j].name === 'size'){
+                        if (attributes[j].name === 'size') {
                             attach[attributes[j].name] = parseInt(attributes[j].value);
                         } else {
                             attach[attributes[j].name] = attributes[j].value;
@@ -205,7 +206,7 @@ var qbChatHelpers = {
 
                         if (nodeTextContentSize > 4096) {
                             var wholeNodeContent = "";
-                            for(var k=0; k<extraParams.childNodes[i].childNodes.length; ++k){
+                            for (var k=0; k<extraParams.childNodes[i].childNodes.length; ++k) {
                                 wholeNodeContent += extraParams.childNodes[i].childNodes[k].textContent;
                             }
                             extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
@@ -218,7 +219,7 @@ var qbChatHelpers = {
                 }
             }
 
-        } else if(utils.getEnv().node) {
+        } else if (utils.getEnv().node) {
             for (var c = 0, lenght = extraParams.children.length; c < lenght; c++) {
                 if (extraParams.children[c].name === 'attachment') {
                     attach = {};
@@ -241,7 +242,7 @@ var qbChatHelpers = {
                     extension.dialog_id = dialogId;
                 }
 
-                if(extraParams.children[c].children.length === 1) {
+                if (extraParams.children[c].children.length === 1) {
                     var child = extraParams.children[c];
 
                     extension[child.name] = child.children[0];
@@ -253,7 +254,7 @@ var qbChatHelpers = {
             extension.attachments = attachments;
         }
 
-        if(extension.moduleIdentifier) {
+        if (extension.moduleIdentifier) {
             delete extension.moduleIdentifier;
         }
 
