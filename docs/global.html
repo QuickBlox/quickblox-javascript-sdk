@@ -53,9 +53,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -91,9 +88,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -101,6 +95,8 @@
                 <li data-name="QB.chat.connect"><a href="QB.chat.html#.connect">connect</a></li>
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
+            
+                <li data-name="QB.chat.getLastUserActivity"><a href="QB.chat.html#.getLastUserActivity">getLastUserActivity</a></li>
             
                 <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
             
@@ -113,6 +109,8 @@
                 <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
             
                 <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLastUserActivityListener"><a href="QB.chat.html#.onLastUserActivityListener">onLastUserActivityListener</a></li>
             
                 <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
             
@@ -163,9 +161,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -196,9 +191,6 @@
             <span class="subtitle">Members</span>
             
                 <li data-name="QB.chat.helpers.getUniqueId"><a href="QB.chat.helpers.html#.getUniqueId">getUniqueId</a></li>
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -253,9 +245,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -289,9 +278,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -316,9 +302,6 @@
                 
             </span>
             <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -356,9 +339,6 @@
                 
             </span>
             <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -643,7 +623,8 @@
 <dd>
     
     <div class="description">
-        For server-side applications through using npm package 'quickblox'you should include the following lines
+        For server-side applications through using npm package 'quickblox'
+you should include the following lines
     </div>
     
     
@@ -977,7 +958,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2271
+            modules/qbChat.js, line 2337
         </div>
         
     </div>
@@ -1287,7 +1268,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1260
+            modules/qbChat.js, line 1325
         </div>
         
     </div>
@@ -1353,12 +1334,12 @@
     <div class="nameContainer">
         <h4 class="name" id="chatConnectCallback">
             
-            chatConnectCallback<span class="signature">(error, roster)</span>
+            chatConnectCallback<span class="signature">(error, response)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 623
+            modules/qbChat.js, line 648
         </div>
         
     </div>
@@ -1423,13 +1404,16 @@
 	
         <tr>
             
-                <td class="name"><code>roster</code></td>
+                <td class="name"><code>response</code></td>
             
             
             <td class="type">
             
                 
 <span class="param-type">Object</span>
+|
+
+<span class="param-type">Boolean</span>
 
 
             
@@ -1439,7 +1423,7 @@
             
             <td class="description last">
                 
-                Object of subscribed users.</td>
+                Object of subscribed users (roster) or empty body.</td>
         </tr>
 	
 	
@@ -1497,7 +1481,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1291
+            modules/qbChat.js, line 1356
         </div>
         
     </div>
@@ -1568,7 +1552,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2198
+            modules/qbChat.js, line 2264
         </div>
         
     </div>
@@ -1707,7 +1691,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2307
+            modules/qbChat.js, line 2373
         </div>
         
     </div>
@@ -1846,7 +1830,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1618
+            modules/qbChat.js, line 1684
         </div>
         
     </div>
@@ -2101,7 +2085,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2246
+            modules/qbChat.js, line 2312
         </div>
         
     </div>
@@ -2217,7 +2201,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2354
+            modules/qbChat.js, line 2420
         </div>
         
     </div>
@@ -2356,7 +2340,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1990
+            modules/qbChat.js, line 2056
         </div>
         
     </div>
@@ -2617,7 +2601,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1774
+            modules/qbChat.js, line 1840
         </div>
         
     </div>
@@ -2756,7 +2740,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1896
+            modules/qbChat.js, line 1962
         </div>
         
     </div>
@@ -2895,7 +2879,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1198
+            modules/qbChat.js, line 1263
         </div>
         
     </div>
@@ -3150,7 +3134,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1446
+            modules/qbChat.js, line 1512
         </div>
         
     </div>
@@ -3266,7 +3250,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1492
+            modules/qbChat.js, line 1558
         </div>
         
     </div>
@@ -3277,7 +3261,8 @@
     
     
     <div class="description">
-        Callback for QB.chat.muc.leave().run without parameters;
+        Callback for QB.chat.muc.leave().
+run without parameters;
     </div>
     
 
@@ -3337,7 +3322,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2173
+            modules/qbChat.js, line 2239
         </div>
         
     </div>
@@ -3476,7 +3461,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2287
+            modules/qbChat.js, line 2353
         </div>
         
     </div>
@@ -3615,7 +3600,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1535
+            modules/qbChat.js, line 1601
         </div>
         
     </div>
@@ -4021,7 +4006,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1328
+            modules/qbChat.js, line 1393
         </div>
         
     </div>
@@ -4092,7 +4077,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1360
+            modules/qbChat.js, line 1425
         </div>
         
     </div>
@@ -4163,7 +4148,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2104
+            modules/qbChat.js, line 2170
         </div>
         
     </div>
@@ -4279,7 +4264,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2050
+            modules/qbChat.js, line 2116
         </div>
         
     </div>
@@ -4395,7 +4380,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2383
+            modules/qbChat.js, line 2449
         </div>
         
     </div>
@@ -4534,7 +4519,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2224
+            modules/qbChat.js, line 2290
         </div>
         
     </div>
@@ -4673,7 +4658,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2329
+            modules/qbChat.js, line 2395
         </div>
         
     </div>
@@ -4812,7 +4797,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1861
+            modules/qbChat.js, line 1927
         </div>
         
     </div>
@@ -4944,8 +4929,6 @@
     
     
     
-
-    
 </article>
 
 </section>  
@@ -4957,7 +4940,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Wed Oct 11 2017 11:15:06 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 24 2017 12:30:38 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>

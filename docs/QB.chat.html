@@ -53,9 +53,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -91,9 +88,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -101,6 +95,8 @@
                 <li data-name="QB.chat.connect"><a href="QB.chat.html#.connect">connect</a></li>
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
+            
+                <li data-name="QB.chat.getLastUserActivity"><a href="QB.chat.html#.getLastUserActivity">getLastUserActivity</a></li>
             
                 <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
             
@@ -113,6 +109,8 @@
                 <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
             
                 <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLastUserActivityListener"><a href="QB.chat.html#.onLastUserActivityListener">onLastUserActivityListener</a></li>
             
                 <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
             
@@ -163,9 +161,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -196,9 +191,6 @@
             <span class="subtitle">Members</span>
             
                 <li data-name="QB.chat.helpers.getUniqueId"><a href="QB.chat.helpers.html#.getUniqueId">getUniqueId</a></li>
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -253,9 +245,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -289,9 +278,6 @@
             <ul class="typedefs itemMembers">
             
             </ul>
-            <ul class="typedefs itemMembers">
-            
-            </ul>
             <ul class="methods itemMembers">
             
             <span class="subtitle">Methods</span>
@@ -316,9 +302,6 @@
                 
             </span>
             <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -356,9 +339,6 @@
                 
             </span>
             <ul class="members itemMembers">
-            
-            </ul>
-            <ul class="typedefs itemMembers">
             
             </ul>
             <ul class="typedefs itemMembers">
@@ -488,7 +468,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 622
+            modules/qbChat.js, line 647
         </div>
         
     </div>
@@ -546,7 +526,195 @@
             
             <td class="description last">
                 
-                Connect to the chat parameters.</td>
+                Connect to the chat parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Connect to the chat by user id (use instead params.email and params.jid)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Connect to the chat by user jid (use instead params.userId and params.email)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Connect to the chat by user's email (use instead params.userId and params.jid)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>password</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                The user's password or session token</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>connectWithoutGettingRoster</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                true if you don't need to get roster of subscriptions</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -569,7 +737,7 @@
             
             <td class="description last">
                 
-                The chatConnectCallback callback.</td>
+                The chatConnectCallback callback</td>
         </tr>
 	
 	
@@ -627,7 +795,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1107
+            modules/qbChat.js, line 1170
         </div>
         
     </div>
@@ -691,6 +859,125 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".getLastUserActivity">
+            
+            <span class="type-signature static">static</span>QB.chat.getLastUserActivity<span class="signature">(jid_or_user_id)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 1139
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Send query to get last user activity by QB.chat.onLastUserActivityListener(userId, seconds). <a target="_blank" href="https://xmpp.org/extensions/xep-0012.html">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>jid_or_user_id</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The user id or jid, that the last activity we want to know</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id=".onConfirmSubscribeListener">
             
             <span class="type-signature static">static</span>QB.chat.onConfirmSubscribeListener<span class="signature">(userId)</span>
@@ -698,7 +985,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 235
+            modules/qbChat.js, line 236
         </div>
         
     </div>
@@ -814,7 +1101,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 220
+            modules/qbChat.js, line 221
         </div>
         
     </div>
@@ -953,7 +1240,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 171
+            modules/qbChat.js, line 172
         </div>
         
     </div>
@@ -1011,7 +1298,7 @@
             
             <td class="description last">
                 
-                Typing Status</td>
+                Delivered message id</td>
         </tr>
 	
 	
@@ -1057,7 +1344,7 @@
             
             <td class="description last">
                 
-                User Id.</td>
+                User id</td>
         </tr>
 	
 	
@@ -1115,7 +1402,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 249
+            modules/qbChat.js, line 258
         </div>
         
     </div>
@@ -1186,7 +1473,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 204
+            modules/qbChat.js, line 205
         </div>
         
     </div>
@@ -1244,7 +1531,7 @@
             
             <td class="description last">
                 
-                An Id of chat dialog that user joined.</td>
+                An id of chat dialog that user joined.</td>
         </tr>
 	
 	
@@ -1267,7 +1554,7 @@
             
             <td class="description last">
                 
-                An Id of user who joined chat dialog.</td>
+                An id of user who joined chat dialog.</td>
         </tr>
 	
 	
@@ -1325,7 +1612,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 196
+            modules/qbChat.js, line 197
         </div>
         
     </div>
@@ -1383,7 +1670,7 @@
             
             <td class="description last">
                 
-                An Id of chat dialog where you was kicked from.</td>
+                An id of chat dialog where you was kicked from.</td>
         </tr>
 	
 	
@@ -1406,7 +1693,146 @@
             
             <td class="description last">
                 
-                An Id of user who has kicked you.</td>
+                An id of user who has kicked you.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".onLastUserActivityListener">
+            
+            <span class="type-signature static">static</span>QB.chat.onLastUserActivityListener<span class="signature">(userId, seconds)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/qbChat.js, line 250
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Receive user's last activity (time ago). <a target="_blank" href="https://xmpp.org/extensions/xep-0012.html">More info.</a>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The user's ID which last activity time we receive</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>seconds</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Time ago (last activity in seconds or 0 if user online or undefined if user never registered in chat)</td>
         </tr>
 	
 	
@@ -1464,7 +1890,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 212
+            modules/qbChat.js, line 213
         </div>
         
     </div>
@@ -1522,7 +1948,7 @@
             
             <td class="description last">
                 
-                An Id of chat dialog that user left.</td>
+                An id of chat dialog that user left.</td>
         </tr>
 	
 	
@@ -1545,7 +1971,7 @@
             
             <td class="description last">
                 
-                An Id of user who left chat dialog.</td>
+                An id of user who left chat dialog.</td>
         </tr>
 	
 	
@@ -1598,12 +2024,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".onMessageErrorListener">
             
-            <span class="type-signature static">static</span>QB.chat.onMessageErrorListener<span class="signature">(error, message)</span>
+            <span class="type-signature static">static</span>QB.chat.onMessageErrorListener<span class="signature">(messageId, error)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 146
+            modules/qbChat.js, line 147
         </div>
         
     </div>
@@ -1645,7 +2071,7 @@
 	
         <tr>
             
-                <td class="name"><code>error</code></td>
+                <td class="name"><code>messageId</code></td>
             
             
             <td class="type">
@@ -1661,14 +2087,14 @@
             
             <td class="description last">
                 
-                The error object</td>
+                The message id</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>error</code></td>
             
             
             <td class="type">
@@ -1684,7 +2110,7 @@
             
             <td class="description last">
                 
-                Object of subscribed users.</td>
+                The error object</td>
         </tr>
 	
 	
@@ -1737,12 +2163,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".onMessageListener">
             
-            <span class="type-signature static">static</span>QB.chat.onMessageListener<span class="signature">(error, message)</span>
+            <span class="type-signature static">static</span>QB.chat.onMessageListener<span class="signature">(userId, message)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 138
+            modules/qbChat.js, line 139
         </div>
         
     </div>
@@ -1784,7 +2210,7 @@
 	
         <tr>
             
-                <td class="name"><code>error</code></td>
+                <td class="name"><code>userId</code></td>
             
             
             <td class="type">
@@ -1800,7 +2226,7 @@
             
             <td class="description last">
                 
-                The error object</td>
+                Sender id</td>
         </tr>
 	
 	
@@ -1823,7 +2249,7 @@
             
             <td class="description last">
                 
-                Object of subscribed users.</td>
+                The message model object</td>
         </tr>
 	
 	
@@ -1881,7 +2307,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 162
+            modules/qbChat.js, line 163
         </div>
         
     </div>
@@ -1939,7 +2365,7 @@
             
             <td class="description last">
                 
-                Typing Status</td>
+                Typing Status (true - typing, false - stop typing)</td>
         </tr>
 	
 	
@@ -1962,7 +2388,7 @@
             
             <td class="description last">
                 
-                Object of subscribed users.</td>
+                Typing user id</td>
         </tr>
 	
 	
@@ -2043,7 +2469,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 180
+            modules/qbChat.js, line 181
         </div>
         
     </div>
@@ -2101,7 +2527,7 @@
             
             <td class="description last">
                 
-                Typing Status</td>
+                Read message id</td>
         </tr>
 	
 	
@@ -2147,7 +2573,7 @@
             
             <td class="description last">
                 
-                User Id.</td>
+                User Id</td>
         </tr>
 	
 	
@@ -2205,7 +2631,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 255
+            modules/qbChat.js, line 264
         </div>
         
     </div>
@@ -2276,7 +2702,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 242
+            modules/qbChat.js, line 243
         </div>
         
     </div>
@@ -2387,12 +2813,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".onSentMessageCallback">
             
-            <span class="type-signature static">static</span>QB.chat.onSentMessageCallback<span class="signature">(error, message)</span>
+            <span class="type-signature static">static</span>QB.chat.onSentMessageCallback<span class="signature">(messageLost, messageSent)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 154
+            modules/qbChat.js, line 155
         </div>
         
     </div>
@@ -2434,30 +2860,7 @@
 	
         <tr>
             
-                <td class="name"><code>error</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The error object</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>messageLost</code></td>
             
             
             <td class="type">
@@ -2473,7 +2876,30 @@
             
             <td class="description last">
                 
-                Object of subscribed users.</td>
+                The lost message model object (Fail)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>messageSent</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The sent message model object (Success)</td>
         </tr>
 	
 	
@@ -2531,7 +2957,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 228
+            modules/qbChat.js, line 229
         </div>
         
     </div>
@@ -2642,12 +3068,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".onSystemMessageListener">
             
-            <span class="type-signature static">static</span>QB.chat.onSystemMessageListener<span class="signature">(receivedMessage)</span>
+            <span class="type-signature static">static</span>QB.chat.onSystemMessageListener<span class="signature">(message)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 189
+            modules/qbChat.js, line 190
         </div>
         
     </div>
@@ -2689,7 +3115,7 @@
 	
         <tr>
             
-                <td class="name"><code>receivedMessage</code></td>
+                <td class="name"><code>message</code></td>
             
             
             <td class="type">
@@ -2705,7 +3131,7 @@
             
             <td class="description last">
                 
-                Recieved Message. Always have type: 'headline'</td>
+                The system message model object. Always have type: 'headline'</td>
         </tr>
 	
 	
@@ -2763,7 +3189,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 876
+            modules/qbChat.js, line 901
         </div>
         
     </div>
@@ -2824,7 +3250,7 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                Use opponent id or jid for 1 to 1 chat, and room jid for group chat.</td>
         </tr>
 	
 	
@@ -2912,7 +3338,7 @@
                         
                     
             </td>
-            <td class="description last">messageId</td>
+            <td class="description last">messageId - The current message id (was generated by SDK)</td>
         </tr>
     
     </tbody>
@@ -2934,7 +3360,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1015
+            modules/qbChat.js, line 1040
         </div>
         
     </div>
@@ -2995,7 +3421,7 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                Use opponent id or jid for 1 to 1 chat, and room jid for group chat.</td>
         </tr>
 	
 	
@@ -3053,7 +3479,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 988
+            modules/qbChat.js, line 1013
         </div>
         
     </div>
@@ -3114,7 +3540,7 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                Use opponent id or jid for 1 to 1 chat, and room jid for group chat.</td>
         </tr>
 	
 	
@@ -3172,7 +3598,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1075
+            modules/qbChat.js, line 1106
         </div>
         
     </div>
@@ -3230,7 +3656,98 @@
             
             <td class="description last">
                 
-                Object of parameters. Consist of messageId, userId and dialogId keys.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The receiver id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>messageId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The delivered message id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>dialogId</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The dialog id</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -3288,7 +3805,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 938
+            modules/qbChat.js, line 963
         </div>
         
     </div>
@@ -3349,7 +3866,7 @@
             
             <td class="description last">
                 
-                Use opponent id for 1 to 1 chat, and jid for group chat.</td>
+                Use opponent id or jid for 1 to 1 chat, and room jid for group chat.</td>
         </tr>
 	
 	
@@ -3437,7 +3954,7 @@
                         
                     
             </td>
-            <td class="description last">messageId</td>
+            <td class="description last">messageId - The current message id (was generated by SDK)</td>
         </tr>
     
     </tbody>
@@ -3454,8 +3971,6 @@
     
     
     
-
-    
 </article>
 
 </section>  
@@ -3467,7 +3982,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Wed Oct 11 2017 11:15:06 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 24 2017 12:30:38 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>

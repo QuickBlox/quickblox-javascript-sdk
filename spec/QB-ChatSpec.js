@@ -1391,6 +1391,38 @@ describe('Chat API', function() {
 
         });
 
+        // ============================Last Activity================================
+
+        describe('User Last Activity: ', function() {
+
+            it('can send query to the last user activity and get response (not existing user)', function(done) {
+                var notExistingUserId = 999999999999000;
+
+                QB_SENDER.chat.onLastUserActivityListener = function(userId, seconds) {
+                    expect(userId).toEqual(notExistingUserId);
+                    expect(seconds).toBeUndefined();
+
+                    done();
+                };
+
+                // send query to the last user activity from the never logged user
+                QB_SENDER.chat.getLastUserActivity(notExistingUserId);
+            }, IQ_TIMEOUT);
+
+            it('can send query to the last user activity and get response (existing user)', function(done) {
+                QB_SENDER.chat.onLastUserActivityListener = function(userId, seconds) {
+                    expect(userId).toEqual(QBUser2.id);
+                    expect(seconds).toBeGreaterThanOrEqual(0);
+
+                    done();
+                };
+
+                // send query to the last user activity from the receiver
+                QB_SENDER.chat.getLastUserActivity(QBUser2.id);
+            }, IQ_TIMEOUT);
+
+        });
+
         // ============================Contact List=================================
 
         describe('[Roster] Contact list: ', function() {
