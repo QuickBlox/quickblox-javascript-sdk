@@ -1234,7 +1234,7 @@ ChatProxy.prototype = {
 
 /* Chat module: Roster
  *
- * The protocol documented by this schema is defined in XEP-0012:
+ * Integration of Roster Items and Presence Subscriptions
  * http://xmpp.org/rfcs/rfc3921.html#int
  * default - Mutual Subscription
  *
