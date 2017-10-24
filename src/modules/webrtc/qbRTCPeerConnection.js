@@ -82,8 +82,14 @@ RTCPeerConnection.prototype.getRemoteSDP = function(){
   return this.remoteSDP;
 };
 
-RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback){
+RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
+
+  var ffVersion = getVersionFirefox();
+
+  if(ffVersion !== null && (ffVersion === 56 || ffVersion === 57) ) {
+    desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
+  }
 
   function successCallback() {
     callback(null);
@@ -395,6 +401,54 @@ function _modifySDPforFixIssue(sdp) {
   });
 
   return transform.write(parsedSDP);
+}
+
+/**
+ * It's functions to fixed issue
+ * https://blog.mozilla.org/webrtc/when-your-video-freezes/
+ */
+function _modifySDPforFixIssueFFAndFreezes(sdp) {
+  return setMediaBitrate(sdp, 'video', 12288);
+}
+
+function setMediaBitrate(sdp, media, bitrate) {
+  var lines = sdp.split("\n");
+  var line = -1;
+
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].indexOf("m="+media) === 0) {
+      line = i;
+      break;
+    }
+  }
+
+  if (line === -1) {
+    console.debug("Could not find the m line for", media);
+    return sdp;
+  }
+  console.debug("Found the m line for", media, "at line", line);
+ 
+  // Pass the m line
+  line++;
+ 
+  // Skip i and c lines
+  while(lines[line].indexOf("i=") === 0 || lines[line].indexOf("c=") === 0) {
+    line++;
+  }
+ 
+  // If we're on a b line, replace it
+  if (lines[line].indexOf("b") === 0) {
+    console.debug("Replaced b line at line", line);
+    lines[line] = "b=AS:"+bitrate;
+    return lines.join("\n");
+  }
+  
+  // Add a new b line
+  console.debug("Adding new b line before line", line);
+  var newLines = lines.slice(0, line);
+  newLines.push("b=AS:"+bitrate);
+  newLines = newLines.concat(lines.slice(line, lines.length));
+  return newLines.join("\n");
 }
 
 module.exports = RTCPeerConnection;
