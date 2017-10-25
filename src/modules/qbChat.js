@@ -2157,64 +2157,8 @@ PrivacyListProxy.prototype = {
             };
             this.nClient.send(iq);
         }
-    },
-
-    /**
-     * @deprecated Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-     * Set as active privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
-     * @param {String} name - The name of privacy list.
-     * @memberof QB.chat.privacylist
-     * @param {setAsActivePrivacylistCallback} callback - The callback function.
-     * */
-    setAsActive: function(name, callback) {
-        /**
-         * Callback for QB.chat.privacylist.setAsActive().
-         * @param {Object} error - The error object
-         * @callback setAsActivePrivacylistCallback
-         * */
-
-        var iq,
-            stanzaParams = {
-                'from': this.connection ? this.connection.jid : this.nClient.jid.user,
-                'type': 'set',
-                'id': chatUtils.getUniqueId('active')
-            };
-
-        Utils.QBLog('Deprecated!', 'QB.chat.privacylist.setAsActive() will be deprecated since version 2.8.0');
-
-        if(Utils.getEnv().browser){
-            iq = $iq(stanzaParams).c('query', {
-                xmlns: Strophe.NS.PRIVACY_LIST
-            }).c('active', name && name.length > 0 ? {name: name} : {});
-
-            this.connection.sendIQ(iq, function(stanzaResult) {
-                callback(null);
-            }, function(stanzaError){
-                if(stanzaError){
-                    var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
-                    callback(errorObject);
-                }else{
-                    callback(Utils.getError(408));
-                }
-            });
-        } else if(Utils.getEnv().node){
-            iq = new NodeClient.Stanza('iq', stanzaParams);
-
-            iq.c('query', {
-                xmlns: chatUtils.MARKERS.PRIVACY
-            }).c('active', name && name.length > 0 ? {name: name} : {});
-
-            this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
-                if(!stanza.getChildElements('error').length){
-                    callback(null);
-                } else {
-                    callback(Utils.getError(408));
-                }
-            };
-
-            this.nClient.send(iq);
-        }
     }
+
 };
 
 /*
@@ -2385,17 +2329,20 @@ MessageProxy.prototype = {
     },
 
     /**
-     * Update message. {@link http://quickblox.com/developers/Chat#Update_message More info.}
+     * Update message. {@link https://docsdev.quickblox.com/rest_api/Chat_API.html#Update_message More info.}
      * @memberof QB.chat.message
      * @param {String} id - The message id.
-     * @param {Object} params - Object of parameters. You can set change read, delivered or message parameter.
-     * @param {updateMessageCallback} callback - The callback function.
+     * @param {Object} params - Object of parameters
+     * @param {Number} [params.read] - Mark message as read (read=1)
+     * @param {Number} [params.delivered] - Mark message as delivered (delivered=1)
+     * @param {String} [params.message] - The message's text
+     * @param {updateMessageCallback} callback - The callback function
      * */
     update: function(id, params, callback) {
         /**
          * Callback for QB.chat.message.update()
          * @param {Object} error - The error object
-         * @param {Object} messages - The message object.
+         * @param {Object} response - Empty body.
          * @callback updateMessageCallback
          * */
 
