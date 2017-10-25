@@ -561,11 +561,11 @@ describe('Chat API', function() {
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
             it('can create a message and then receive it (private dialog) (send_to_chat=1) (chat_dialog_id)', function(done) {
-                pending('Does not get by XMPP');
                 var msgExtension = {
                     param1: "value1",
                     param2: "value2"
                 };
+                
                 var params = {
                     chat_dialog_id: dialogId4Private,
                     message: "hello world, it's me, a message with send_to_chat=1 in private dialog " + Math.floor((Math.random() * 100) + 1),
@@ -581,8 +581,6 @@ describe('Chat API', function() {
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
             it('can create a message and then receive it (private dialog) (send_to_chat=1) (recipient_id)', function(done) {
-                pending('Does not get by XMPP');
-
                 var msgExtension = {
                     param1: "value1",
                     param2: "value2"
@@ -649,12 +647,11 @@ describe('Chat API', function() {
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
             it('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
-                pending('Does not get by XMPP');
-
                 var msgExtension = {
                     param1: "value1",
                     param2: "value2"
                 };
+
                 var params = {
                     chat_dialog_id: dialogId1Group,
                     message: "hello world, it's me, a message with send_to_chat=1 in group dialog " + Math.floor((Math.random() * 100) + 1),
@@ -1391,6 +1388,38 @@ describe('Chat API', function() {
 
         });
 
+        // ============================Last Activity================================
+
+        describe('User Last Activity: ', function() {
+
+            it('can send query to the last user activity and get response (not existing user)', function(done) {
+                var notExistingUserId = 999999999999000;
+
+                QB_SENDER.chat.onLastUserActivityListener = function(userId, seconds) {
+                    expect(userId).toEqual(notExistingUserId);
+                    expect(seconds).toBeUndefined();
+
+                    done();
+                };
+
+                // send query to the last user activity from the never logged user
+                QB_SENDER.chat.getLastUserActivity(notExistingUserId);
+            }, IQ_TIMEOUT);
+
+            it('can send query to the last user activity and get response (existing user)', function(done) {
+                QB_SENDER.chat.onLastUserActivityListener = function(userId, seconds) {
+                    expect(userId).toEqual(QBUser2.id);
+                    expect(seconds).toBeGreaterThanOrEqual(0);
+
+                    done();
+                };
+
+                // send query to the last user activity from the receiver
+                QB_SENDER.chat.getLastUserActivity(QBUser2.id);
+            }, IQ_TIMEOUT);
+
+        });
+
         // ============================Contact List=================================
 
         describe('[Roster] Contact list: ', function() {
@@ -1501,7 +1530,37 @@ describe('Chat API', function() {
 
                     done();
                 });
+
+                QB_RECEIVER.chat.privacylist.create(list, function(error) {
+                    expect(error).toBeNull();
+
+                    done();
+                });
             }, IQ_TIMEOUT);
+
+            it('can set default list', function(done) {
+                QB_SENDER.chat.privacylist.setAsDefault(PRIVACY_LIST_NAME, function(error) {
+                    expect(error).toBeNull();
+
+                    QB_SENDER.chat.privacylist.getNames(function(error, response) {
+                        expect(error).toBeNull();
+                        expect(response.default).toEqual(PRIVACY_LIST_NAME);
+
+                        done();
+                    });
+                });
+
+                QB_RECEIVER.chat.privacylist.setAsDefault(PRIVACY_LIST_NAME, function(error) {
+                    expect(error).toBeNull();
+
+                    QB_RECEIVER.chat.privacylist.getNames(function(error, response) {
+                        expect(error).toBeNull();
+                        expect(response.default).toEqual(PRIVACY_LIST_NAME);
+
+                        done();
+                    });
+                });
+            });
 
             it('can get list by name', function(done) {
                 QB_SENDER.chat.privacylist.getList(PRIVACY_LIST_NAME, function(error, response) {
@@ -1515,80 +1574,28 @@ describe('Chat API', function() {
                 });
             }, IQ_TIMEOUT);
 
-            it('can set active list', function(done) {
-                QB_SENDER.chat.privacylist.setAsActive(PRIVACY_LIST_NAME, function(error) {
-                    expect(error).toBeNull();
-
-                    QB_SENDER.chat.privacylist.getNames(function(error, response) {
-                        expect(error).toBeNull();
-                        expect(response.active).toEqual(PRIVACY_LIST_NAME);
-
-                        done();
-
-                    });
-
-                });
-            });
-
-            it('can not send a message when blocked (sender)', function(done) {
+            it('can not send a message when blocked', function(done) {
                 // Try to send a message
                 //
                 var msg = {
-                    type: 'chat',
-                    body: 'Warning! Privacy is coming'
-                };
+                        type: 'chat',
+                        body: 'Warning! Privacy is coming'
+                    };
 
-                msg.id = QB_SENDER.chat.send(QBUser2.id, msg);
+                var sendersMessageId = QB_SENDER.chat.send(QBUser2.id, msg),
+                    receiversMessageId = QB_RECEIVER.chat.send(QBUser1.id, msg);
 
-                QB_SENDER.chat.onMessageErrorListener = function(messageId, error){
-                    expect(msg.id).toEqual(messageId);
-
-                    done();
-                };
-            });
-
-            it('can not send a message when blocked (receiver)', function(done) {
-                // Try to send a message
-                //
-                var msg = {
-                    type: 'chat',
-                    body: 'Warning! Privacy is coming'
-                };
-
-                msg.id = QB_RECEIVER.chat.send(QBUser1.id, msg);
-
-                QB_RECEIVER.chat.onMessageErrorListener = function(messageId, error){
-                    expect(msg.id).toEqual(messageId);
+                QB_SENDER.chat.onMessageErrorListener = function(messageId, error) {
+                    expect(sendersMessageId).toEqual(messageId);
 
                     done();
                 };
-            });
 
-            it('can declines the use of active lists', function(done) {
-                QB_SENDER.chat.privacylist.setAsActive('', function(error) {
-                    expect(error).toBeNull();
+                QB_RECEIVER.chat.onMessageErrorListener = function(messageId, error) {
+                    expect(receiversMessageId).toEqual(messageId);
 
-                    QB_SENDER.chat.privacylist.getNames(function(error, response) {
-                        expect(error).toBeNull();
-                        expect(response.active).toBeNull();
-
-                        done();
-                    });
-                });
-            });
-
-            it('can set default list', function(done) {
-                QB_SENDER.chat.privacylist.setAsDefault(PRIVACY_LIST_NAME, function(error) {
-                    expect(error).toBeNull();
-
-                    QB_SENDER.chat.privacylist.getNames(function(error, response) {
-                        expect(error).toBeNull();
-                        expect(response.default).toEqual(PRIVACY_LIST_NAME);
-
-                        done();
-                    });
-
-                });
+                    done();
+                };
             });
 
             it('can declines the use of default lists', function(done) {
@@ -1601,14 +1608,23 @@ describe('Chat API', function() {
 
                         done();
                     });
+                });
 
+                QB_RECEIVER.chat.privacylist.setAsDefault(null, function(error) {
+                    expect(error).toBeNull();
+
+                    QB_RECEIVER.chat.privacylist.getNames(function(error, response) {
+                        expect(error).toBeNull();
+                        expect(response.default).toBeNull();
+
+                        done();
+                    });
                 });
             });
 
             it('can get names of privacy lists', function(done) {
                 QB_SENDER.chat.privacylist.getNames(function(error, response) {
                     expect(error).toBeNull();
-                    expect(response.active).toBeNull();
                     expect(response.default).toBeNull();
                     expect(response.names.length).toEqual(1);
                     expect(response.names[0]).toEqual(PRIVACY_LIST_NAME);
@@ -1621,6 +1637,7 @@ describe('Chat API', function() {
                 var usersArr = [
                     {user_id: QBUser2.id, action: 'allow'}
                 ];
+
                 var list = {name: PRIVACY_LIST_NAME, items: usersArr};
 
                 QB_SENDER.chat.privacylist.update(list, function(error) {
@@ -1648,7 +1665,17 @@ describe('Chat API', function() {
 
                         done();
                     });
+                });
 
+                QB_RECEIVER.chat.privacylist.delete(PRIVACY_LIST_NAME, function(error) {
+                    expect(error).toBeNull();
+
+                    QB_RECEIVER.chat.privacylist.getNames(function(error, response) {
+                        expect(error).toBeNull();
+                        expect(response.names.length).toEqual(0);
+
+                        done();
+                    });
                 });
             });
 
@@ -1815,7 +1842,7 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
 
     QB_SENDER.chat.message.create(params, function(err, res) {
         expect(err).toBeNull();
-        expect(res).toBeDefined()
+        expect(res).toBeDefined();
         expect(res._id).not.toBeNull();
         expect(res.message).toEqual(params.message);
         expect(res.chat_dialog_id).toEqual(dialogId);
