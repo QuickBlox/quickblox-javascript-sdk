@@ -89,6 +89,7 @@ var config = {
     subscriptions: 'subscriptions',
     events: 'events',
     data: 'data',
+    addressbook: 'address_book',
     type: '.json'
   },
   on: {

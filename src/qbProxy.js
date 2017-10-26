@@ -82,6 +82,7 @@ ServiceProxy.prototype = {
             dataType: params.dataType || 'json',
             data: params.data || ' ',
             timeout: config.timeout,
+            contentType: params.contentType || 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(jqXHR, settings) {
                 if (settings.url.indexOf('s3.amazonaws.com') === -1) {
                     if (_this.qbInst.session && _this.qbInst.session.token) {
