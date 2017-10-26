@@ -96,6 +96,8 @@
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
             
+                <li data-name="QB.chat.getLastUserActivity"><a href="QB.chat.html#.getLastUserActivity">getLastUserActivity</a></li>
+            
                 <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
             
                 <li data-name="QB.chat.onContactListListener"><a href="QB.chat.html#.onContactListListener">onContactListListener</a></li>
@@ -107,6 +109,8 @@
                 <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
             
                 <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLastUserActivityListener"><a href="QB.chat.html#.onLastUserActivityListener">onLastUserActivityListener</a></li>
             
                 <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
             
@@ -314,8 +318,6 @@
                 <li data-name="QB.chat.privacylist.getList"><a href="QB.chat.privacylist.html#.getList">getList</a></li>
             
                 <li data-name="QB.chat.privacylist.getNames"><a href="QB.chat.privacylist.html#.getNames">getNames</a></li>
-            
-                <li data-name="QB.chat.privacylist.setAsActive"><a href="QB.chat.privacylist.html#.setAsActive">setAsActive</a></li>
             
                 <li data-name="QB.chat.privacylist.setAsDefault"><a href="QB.chat.privacylist.html#.setAsDefault">setAsDefault</a></li>
             
@@ -623,7 +625,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2305
+            modules/qbChat.js, line 2316
         </div>
         
     </div>
@@ -762,7 +764,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2352
+            modules/qbChat.js, line 2366
         </div>
         
     </div>
@@ -924,7 +926,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2285
+            modules/qbChat.js, line 2296
         </div>
         
     </div>
@@ -1063,7 +1065,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2381
+            modules/qbChat.js, line 2395
         </div>
         
     </div>
@@ -1202,7 +1204,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2327
+            modules/qbChat.js, line 2341
         </div>
         
     </div>
@@ -1213,7 +1215,7 @@
     
     
     <div class="description">
-        Update message. <a target="_blank" href="http://quickblox.com/developers/Chat#Update_message">More info.</a>
+        Update message. <a target="_blank" href="https://docsdev.quickblox.com/rest_api/Chat_API.html#Update_message">More info.</a>
     </div>
     
 
@@ -1283,7 +1285,119 @@
             
             <td class="description last">
                 
-                Object of parameters. You can set change read, delivered or message parameter.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>read</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Mark message as read (read=1)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>delivered</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                Mark message as delivered (delivered=1)</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                The message's text</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -1306,7 +1420,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The callback function</td>
         </tr>
 	
 	
@@ -1370,7 +1484,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Oct 19 2017 16:08:43 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Oct 25 2017 11:05:02 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>
