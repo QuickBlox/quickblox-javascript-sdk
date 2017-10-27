@@ -96,6 +96,8 @@
             
                 <li data-name="QB.chat.disconnect"><a href="QB.chat.html#.disconnect">disconnect</a></li>
             
+                <li data-name="QB.chat.getLastUserActivity"><a href="QB.chat.html#.getLastUserActivity">getLastUserActivity</a></li>
+            
                 <li data-name="QB.chat.onConfirmSubscribeListener"><a href="QB.chat.html#.onConfirmSubscribeListener">onConfirmSubscribeListener</a></li>
             
                 <li data-name="QB.chat.onContactListListener"><a href="QB.chat.html#.onContactListListener">onContactListListener</a></li>
@@ -107,6 +109,8 @@
                 <li data-name="QB.chat.onJoinOccupant"><a href="QB.chat.html#.onJoinOccupant">onJoinOccupant</a></li>
             
                 <li data-name="QB.chat.onKickOccupant"><a href="QB.chat.html#.onKickOccupant">onKickOccupant</a></li>
+            
+                <li data-name="QB.chat.onLastUserActivityListener"><a href="QB.chat.html#.onLastUserActivityListener">onLastUserActivityListener</a></li>
             
                 <li data-name="QB.chat.onLeaveOccupant"><a href="QB.chat.html#.onLeaveOccupant">onLeaveOccupant</a></li>
             
@@ -314,8 +318,6 @@
                 <li data-name="QB.chat.privacylist.getList"><a href="QB.chat.privacylist.html#.getList">getList</a></li>
             
                 <li data-name="QB.chat.privacylist.getNames"><a href="QB.chat.privacylist.html#.getNames">getNames</a></li>
-            
-                <li data-name="QB.chat.privacylist.setAsActive"><a href="QB.chat.privacylist.html#.setAsActive">setAsActive</a></li>
             
                 <li data-name="QB.chat.privacylist.setAsDefault"><a href="QB.chat.privacylist.html#.setAsDefault">setAsDefault</a></li>
             
@@ -623,7 +625,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1616
+            modules/qbChat.js, line 1683
         </div>
         
     </div>
@@ -762,7 +764,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1988
+            modules/qbChat.js, line 2055
         </div>
         
     </div>
@@ -901,7 +903,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1772
+            modules/qbChat.js, line 1839
         </div>
         
     </div>
@@ -1040,7 +1042,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1894
+            modules/qbChat.js, line 1961
         </div>
         
     </div>
@@ -1150,144 +1152,6 @@ Run without parameters
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".setAsActive">
-            
-            <span class="type-signature static">static</span>QB.chat.privacylist.setAsActive<span class="signature">(name, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2102
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The name of privacy list.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#setAsActivePrivacylistCallback">setAsActivePrivacylistCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-        <dt class="important tag-deprecated">Deprecated</dt><dd><ul class="dummy"><li>Only QB.chat.privacylist.setAsDefault() will be used since version 2.8.0.
-Set as active privacy list. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list">More info.</a></li><ul></dd>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id=".setAsDefault">
             
             <span class="type-signature static">static</span>QB.chat.privacylist.setAsDefault<span class="signature">(name, callback)</span>
@@ -1295,7 +1159,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2048
+            modules/qbChat.js, line 2115
         </div>
         
     </div>
@@ -1434,7 +1298,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1859
+            modules/qbChat.js, line 1926
         </div>
         
     </div>
@@ -1579,7 +1443,7 @@ Set as active privacy list. <a target="_blank" href="https://quickblox.com/devel
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Oct 19 2017 16:08:44 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Oct 25 2017 11:05:02 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>
