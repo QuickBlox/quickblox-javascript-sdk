@@ -120,7 +120,11 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
     var elem = document.getElementById(id);
 
     if (elem) {
-        elem.srcObject = stream;
+        if (typeof elem.srcObject === 'object') {
+            elem.srcObject = stream;
+        } else {
+            elem.src = window.URL.createObjectURL(stream);
+        }
 
         if (options && options.muted) {
             elem.muted = true;
@@ -131,7 +135,9 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
             elem.style.transform = 'scaleX(-1)';
         }
 
-        elem.play();
+        elem.onloadedmetadata = function(e) {
+            elem.play();
+        };
     } else {
         throw new Error('Unable to attach media stream, element ' + id  + ' is undefined');
     }
@@ -160,7 +166,12 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
 
     if (elem) {
         elem.pause();
-        elem.src = '';
+
+        if (typeof elem.srcObject === 'object') {
+            elem.srcObject = null;
+        } else {
+            elem.src = '';
+        }
     }
 };
 
@@ -646,6 +657,7 @@ WebRTCSession.prototype._close = function() {
 
     for (var key in this.peerConnections) {
         var peer = this.peerConnections[key];
+
         try {
             peer.release();
         } catch (e) {

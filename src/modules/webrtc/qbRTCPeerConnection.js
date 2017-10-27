@@ -18,10 +18,6 @@ var transform = require('sdp-transform');
 var RTCPeerConnection = window.RTCPeerConnection;
 var RTCSessionDescription = window.RTCSessionDescription;
 var RTCIceCandidate = window.RTCIceCandidate;
-var offerOptions = {
-    offerToReceiveAudio: 1,
-    offerToReceiveVideo: 1
-};
 
 RTCPeerConnection.State = {
     NEW: 1,
@@ -53,6 +49,7 @@ RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) 
     if (Helpers.getVersionSafari() >= 11) {
         this.remoteStream = new MediaStream();
         this.ontrack = this.onAddRemoteMediaCallback.bind(this);
+        this.onStatusClosedChecker = undefined;
     } else {
         this.remoteStream = null;
         this.onaddstream = this.onAddRemoteMediaCallback.bind(this);
@@ -63,9 +60,6 @@ RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) 
     this.answerTimeInterval = 0;
     this.statsReportTimer = null;
 
-    /** timer to detect network blips */
-    this.reconnectTimer = 0;
-
     this.iceCandidates = [];
 };
 
@@ -75,6 +69,11 @@ RTCPeerConnection.prototype.release = function(){
 
     if (this.connectionState !== 'closed') {
         this.close();
+    }
+
+    // TODO: 'closed' state doesn't fires on Safari 11 (do it manually)
+    if (Helpers.getVersionSafari() >= 11) {
+        this.onIceConnectionStateCallback();
     }
 };
 
@@ -93,7 +92,7 @@ RTCPeerConnection.prototype.getRemoteSDP = function(){
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
   var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
 
-  var ffVersion = getVersionFirefox();
+  var ffVersion = Helpers.getVersionFirefox();
 
   if(ffVersion !== null && (ffVersion === 56 || ffVersion === 57) ) {
     desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
@@ -242,9 +241,9 @@ RTCPeerConnection.prototype.onAddRemoteMediaCallback = function(event) {
             ((self.delegate.callType == 2) && self.remoteStream.getAudioTracks().length)) {
             this.delegate._onRemoteStreamListener(self.userID, self.remoteStream);
         }
-    }
 
-    self._getStatsWrap();
+        self._getStatsWrap();
+    }
 };
 
 RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
@@ -258,6 +257,10 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
      */
     if (typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
         var connectionState = null;
+
+        if (Helpers.getVersionSafari() >= 11) {
+            clearTimeout(this.onStatusClosedChecker);
+        }
 
         switch (this.iceConnectionState) {
             case 'checking':
@@ -286,6 +289,13 @@ RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
                 this._startWaitingReconnectTimer();
                 this.state = RTCPeerConnection.State.DISCONNECTED;
                 connectionState = Helpers.SessionConnectionState.DISCONNECTED;
+
+                // repeat to call onIceConnectionStateCallback to get status "closed"
+                if (Helpers.getVersionSafari() >= 11) {
+                    this.onStatusClosedChecker = setTimeout(function() {
+                        self.onIceConnectionStateCallback();
+                    }, 500);
+                }
                 break;
 
             // TODO: this state doesn't fires on Safari 11
@@ -431,18 +441,6 @@ function _getStats(peer, selector, successCallback, errorCallback) {
  * It's functions to fixed issue
  * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
  */
-function getVersionFirefox() {
-    var ua = navigator ? navigator.userAgent : false;
-    var version;
-
-    if(ua) {
-        var ffInfo = ua.match(/(?:firefox)[ \/](\d+)/i) || [];
-        version = ffInfo[1] ? +ffInfo[1] : null;
-    }
-
-    return version;
-}
-
 function _modifySDPforFixIssue(sdp) {
     var parsedSDP = transform.parse(sdp);
 
@@ -453,6 +451,54 @@ function _modifySDPforFixIssue(sdp) {
     });
 
     return transform.write(parsedSDP);
+}
+
+/**
+ * It's functions to fixed issue
+ * https://blog.mozilla.org/webrtc/when-your-video-freezes/
+ */
+function _modifySDPforFixIssueFFAndFreezes(sdp) {
+    return setMediaBitrate(sdp, 'video', 12288);
+}
+
+function setMediaBitrate(sdp, media, bitrate) {
+    var lines = sdp.split("\n");
+    var line = -1;
+
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf("m="+media) === 0) {
+            line = i;
+            break;
+        }
+    }
+
+    if (line === -1) {
+        console.debug("Could not find the m line for", media);
+        return sdp;
+    }
+    console.debug("Found the m line for", media, "at line", line);
+
+    // Pass the m line
+    line++;
+
+    // Skip i and c lines
+    while(lines[line].indexOf("i=") === 0 || lines[line].indexOf("c=") === 0) {
+        line++;
+    }
+
+    // If we're on a b line, replace it
+    if (lines[line].indexOf("b") === 0) {
+        console.debug("Replaced b line at line", line);
+        lines[line] = "b=AS:"+bitrate;
+        return lines.join("\n");
+    }
+
+    // Add a new b line
+    console.debug("Adding new b line before line", line);
+    var newLines = lines.slice(0, line);
+    newLines.push("b=AS:"+bitrate);
+    newLines = newLines.concat(lines.slice(line, lines.length));
+    return newLines.join("\n");
 }
 
 module.exports = RTCPeerConnection;

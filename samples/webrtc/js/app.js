@@ -565,7 +565,7 @@
                 userId = +($(this).data('user')),
                 activeClass = [];
 
-            if( app.currentSession.peerConnections[userId].stream && !_.isEmpty( $that.attr('src')) ) {
+            if( app.currentSession.peerConnections[userId].stream && !$that.srcObject ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
 
@@ -831,7 +831,6 @@
                 if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
-
                 }
             });
         };
