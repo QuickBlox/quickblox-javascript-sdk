@@ -14,16 +14,32 @@ describe('AddressBook', function() {
 
   var CONTACTS = [
     {
-      'name':'Frederic Cartwright',
-      'phone': '8879108395'
+      'name':'Gordie Kann',
+      'phone': '1879108395',
     },
     {
-      'name':'Nessi McLaughlin',
-      'phone': '8759108396'
+      'name':'Wildon Gilleon',
+      'phone': '2759108396'
+    },
+    {
+      'name':'Gaston Center',
+      'phone': '3759108396'
     }
   ];
 
-  beforeAll(function(done){
+  var UID = 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
+  var CONTACTS_BY_UID = [
+    {
+      'name':'Romona Ledes',
+      'phone': '4879108395'
+    },
+    {
+      'name':'Chico Yoodall',
+      'phone': '5759108396'
+    }
+  ];
+
+  beforeAll(function(done) {
     QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
 
     QB.createSession(QBUser1, function(err, res) {
@@ -31,58 +47,158 @@ describe('AddressBook', function() {
         done.fail('Create session error: ' + JSON.stringify(err));
       } else {
         expect(res).not.toBeNull();
+
         done();
       }
     });
   }, REST_REQUESTS_TIMEOUT);
 
-  describe('Create / Overwrite', function() {
-    it('save contacts in global address book / without UDID', function(done) {
+  describe('Add contacts', function() {
+    it('in global address book / without UDID', function(done) {
       function addressBookSaved(err, res) {
         expect(err).toBeNull();
         expect(res).toBeDefined();
+        expect(res.created).toEqual(CONTACTS.length);
 
         done();
       }
 
-      QB.addressbook.save(CONTACTS, addressBookSaved);
+      QB.addressbook.cud(CONTACTS, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
 
-    // TODO
-    // it('with UDID', function(done){
-    // }, REST_REQUESTS_TIMEOUT);
+    it('in specific address book / with UDID', function(done) {
+      function addressBookSaved(err, res) {
+        expect(err).toBeNull();
+        expect(res).toBeDefined();
+        expect(res.created).toEqual(CONTACTS_BY_UID.length);
+
+        done();
+      }
+
+      var options = { 
+        'udid': UID
+      };
+
+      QB.addressbook.cud(CONTACTS_BY_UID, options, addressBookSaved);
+    }, REST_REQUESTS_TIMEOUT);
   });
 
-  // describe('get address book', function() {
-  //   it('without UDID', function(done) {
-  //     function gotAddressBook(err, res) {
-  //       expect(err).toBeNull();
-  //       expect(res).not.toBeNull();
+  describe('Get contacts', function() {
+    it('call without required callback function', function () {
+      expect(function() {
+        QB.addressbook.get();
+      }).toThrowError('The QB.addressbook.get accept callback function is required.');
+    });
 
-  //       done();
-  //     }
+    it('in global address book / without UDID', function(done) {
+      function addressBookSaved(err, res) {
+        expect(err).toBeNull();
+        expect(res).toEqual(CONTACTS);
 
-  //     QB.addressbook.get(null, gotAddressBook);
-  //   }, REST_REQUESTS_TIMEOUT);
+        done();
+      }
 
-  //   // TODO
-  //   // it('with UDID', function(done){
-  //   // }, REST_REQUESTS_TIMEOUT);
-  // });
+      QB.addressbook.get(addressBookSaved);
+    }, REST_REQUESTS_TIMEOUT);
 
+    it('in specific address book / with UDID', function(done) {
+      function addressBookSaved(err, res) {
+        expect(err).toBeNull();
+        expect(res).toEqual(CONTACTS_BY_UID);
 
+        done();
+      }
 
-  // describe('retrive / get', function() {
-  //   it('without UDID', function(done){
-  //     // 
-  //   }, REST_REQUESTS_TIMEOUT);
+      QB.addressbook.get(UID, addressBookSaved);
+    }, REST_REQUESTS_TIMEOUT);
+  });
 
-  //   // TODO
-  //   // it('with UDID', function(done){
-  //   // }, REST_REQUESTS_TIMEOUT);
-  // });
+  describe('Update contacts', function() {
+    function prepareForUpdate(contacts) {
+      return contacts.map( function(contact, index) {
 
-  
+        contact.name += ' Updated';
+        
+        return contact;
+      });
+    }
 
+    it('in global address book / without UDID', function(done) {
+      var contactsUpdated = prepareForUpdate(CONTACTS);
 
+      function addressBookUpdated(err, res) {
+        expect(err).toBeNull();
+        expect(res).toBeDefined();
+        expect(res.updated).toEqual(contactsUpdated.length);
+
+        done();
+      }
+
+      QB.addressbook.cud(contactsUpdated, addressBookUpdated);
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('in specific address book / with UDID', function(done) {
+      var contactsUpdated = prepareForUpdate(CONTACTS_BY_UID);
+
+      function addressBookUpdated(err, res) {
+        expect(err).toBeNull();
+        expect(res).toBeDefined();
+        expect(res.updated).toEqual(contactsUpdated.length);
+
+        done();
+      }
+
+      var options = { 
+        'udid': UID
+      };
+
+      QB.addressbook.cud(contactsUpdated, options, addressBookUpdated);
+    }, REST_REQUESTS_TIMEOUT);
+  });
+
+  describe('Remove contacts', function() {
+    function prepareForDestroy(contacts) {
+      return contacts.map( function(contact, index) {
+        if(index%2 !== 0) {
+          delete contact.name;
+        }
+
+        contact.destroy = 1;
+        
+        return contact;
+      });
+    }
+
+    it('in global address book / without UDID', function(done) {
+      var contactsDestroy = prepareForDestroy(CONTACTS);
+
+      function removedContacts(err, res) {
+        expect(err).toBeNull();
+        expect(res).toBeDefined();
+        expect(res.deleted).toEqual(contactsDestroy.length);
+
+        done();
+      }
+
+      QB.addressbook.cud(contactsDestroy, removedContacts);
+    });
+
+    it('in specific address book / with UDID', function(done) {
+      var contactsDestroy = prepareForDestroy(CONTACTS_BY_UID);
+
+      function removedContacts(err, res) {
+        expect(err).toBeNull();
+        expect(res).toBeDefined();
+        expect(res.deleted).toEqual(contactsDestroy.length);
+
+        done();
+      }
+
+      var options = { 
+        'udid': UID
+      };
+
+      QB.addressbook.cud(contactsDestroy, options, removedContacts);
+    });
+  });
 });
