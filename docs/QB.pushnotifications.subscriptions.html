@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: dialog</title>
+    <title>Namespace: subscriptions</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -546,7 +546,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.dialog.html">Namespace: dialog</h1>
+        <h1 class="page-title" data-filename="QB.pushnotifications.subscriptions.html">Namespace: subscriptions</h1>
         
 
 
@@ -555,9 +555,7 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
-    
-    dialog
+    subscriptions
     </h2>
     
 </header>  
@@ -567,6 +565,8 @@
     
     
     
+        
+            <div class="description">Push Notifications Subscriptions</div>
         
         
         
@@ -620,12 +620,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.dialog.create<span class="signature">(params, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2207
+            modules/qbPushNotifications.js, line 55
         </div>
         
     </div>
@@ -636,7 +636,7 @@
     
     
     <div class="description">
-        Create new dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog">More info.</a>
+        Create device based subscription (subscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Create_subscription">read more</a>)
     </div>
     
 
@@ -673,7 +673,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -683,7 +683,274 @@
             
             <td class="description last">
                 
-                Object of parameters.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>notification_channel</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Declare which notification channels could be used to notify user about events. Allowed values: apns, apns_voip, gcm, mpns, bbps and email</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>push_token</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>environment</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Determine application mode. It allows conveniently separate development and production modes. Allowed values: evelopment or production</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>bundle_identifier</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                A unique identifier for client's application. In iOS, this is the Bundle Identifier. In Android - package id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>client_identification_sequence</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Identifies client device in 3-rd party service like APNS, GCM/FCM, BBPS or MPNS. Initially retrieved from 3-rd service and should be send to QuickBlox to let it send push notifications to the client</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>device</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>platform</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Platform of device, which is the source of application running. Allowed values: ios, android, windows_phone, blackberry</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>udid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                UDID (Unique Device identifier) of device, which is the source of application running. This must be anything sequence which uniquely identify particular device. This is needed to support schema: 1 User - Multiple devices</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -696,7 +963,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#createDialogCallback">createDialogCallback</a></span>
+<span class="param-type"><a href="global.html#createPushSubscriptionCallback">createPushSubscriptionCallback</a></span>
 
 
             
@@ -706,7 +973,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The createPushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -759,12 +1026,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.dialog.delete<span class="signature">(id, params_or_callback, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2255
+            modules/qbPushNotifications.js, line 86
         </div>
         
     </div>
@@ -775,7 +1042,7 @@
     
     
     <div class="description">
-        Delete a dialog or dialogs. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_dialog">More info.</a>
+        Remove a subscription by its identifier (unsubscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Remove_subscription">read more</a>)
     </div>
     
 
@@ -812,7 +1079,7 @@
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">number</span>
 
 
             
@@ -822,33 +1089,7 @@
             
             <td class="description last">
                 
-                The dialog IDs array.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>params_or_callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of parameters or callback function.</td>
+                An id of subscription to remove</td>
         </tr>
 	
 	
@@ -861,7 +1102,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deleteDialogCallback">deleteDialogCallback</a></span>
+<span class="param-type"><a href="global.html#deletePushSubscriptionCallback">deletePushSubscriptionCallback</a></span>
 
 
             
@@ -871,7 +1112,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
+                The deletePushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -924,12 +1165,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.dialog.list<span class="signature">(params, callback)</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.list<span class="signature">(callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2182
+            modules/qbPushNotifications.js, line 70
         </div>
         
     </div>
@@ -940,7 +1181,7 @@
     
     
     <div class="description">
-        Retrieve list of dialogs. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_list_of_dialogs">More info.</a>
+        Retrieve subscriptions for the user which is specified in the session token (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_subscriptions">read more</a>)
     </div>
     
 
@@ -971,36 +1212,13 @@
 	
         <tr>
             
-                <td class="name"><code>params</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Some filters to get only chat dialogs you need.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
                 <td class="name"><code>callback</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#listDialogCallback">listDialogCallback</a></span>
+<span class="param-type"><a href="global.html#listPushSubscriptionCallback">listPushSubscriptionCallback</a></span>
 
 
             
@@ -1010,169 +1228,7 @@
             
             <td class="description last">
                 
-                The callback function.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".update">
-            
-            <span class="type-signature static">static</span>QB.chat.dialog.update<span class="signature">(id, params, callback)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2233
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Update group dialog. <a target="_blank" href="https://quickblox.com/developers/Web_XMPP_Chat_Sample#Update_group_dialog">More info.</a>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>id</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The dialog ID.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Object of parameters.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#updateDialogCallback">updateDialogCallback</a></span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The callback function.</td>
+                The listPushSubscriptionCallback function</td>
         </tr>
 	
 	

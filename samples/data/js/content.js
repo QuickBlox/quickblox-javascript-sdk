@@ -80,7 +80,7 @@ var qbContent = {
 
     _cropImage: function(img) {
         return new Promise(function(resolve, reject) {
-            if (!loadImage || (img.h < 250)) {
+            if (!loadImage || (img.h < 250) || !HTMLCanvasElement.prototype.toBlob) {
                 resolve(img.file);
             }
 
@@ -96,7 +96,7 @@ var qbContent = {
                     );
 
                     resolve(croppedImg);
-                }, img.file.type);
+                }, img.file.type, 1);
             }, {
                 'crop': true,
                 'canvas': true,

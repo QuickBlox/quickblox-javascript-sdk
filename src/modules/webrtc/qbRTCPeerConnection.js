@@ -87,18 +87,24 @@ RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
 };
 
 RTCPeerConnection.prototype.getRemoteSDP = function(){
-    return this.remoteSDP;
+  return this.remoteSDP;
 };
 
-RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback){
-    var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
+RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
+  var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
 
-    function successCallback() {
-        callback(null);
-    }
-    function errorCallback(error) {
-        callback(error);
-    }
+  var ffVersion = getVersionFirefox();
+
+  if(ffVersion !== null && (ffVersion === 56 || ffVersion === 57) ) {
+    desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
+  }
+
+  function successCallback() {
+    callback(null);
+  }
+  function errorCallback(error) {
+    callback(error);
+  }
 
     this.setRemoteDescription(desc, successCallback, errorCallback);
 };
@@ -419,6 +425,22 @@ function _getStats(peer, selector, successCallback, errorCallback) {
         });
         successCallback(items);
     }, errorCallback);
+}
+
+/**
+ * It's functions to fixed issue
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
+ */
+function getVersionFirefox() {
+    var ua = navigator ? navigator.userAgent : false;
+    var version;
+
+    if(ua) {
+        var ffInfo = ua.match(/(?:firefox)[ \/](\d+)/i) || [];
+        version = ffInfo[1] ? +ffInfo[1] : null;
+    }
+
+    return version;
 }
 
 function _modifySDPforFixIssue(sdp) {

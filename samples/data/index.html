@@ -9,7 +9,7 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" >
-  
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -105,7 +105,7 @@
           </div>
 
           <div class="form_item">
-            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="150">
+            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="80">
           </div>
 
           <div class="form_item">
@@ -250,13 +250,28 @@
     <img src="https://samples.quickblox.com/web/resources/marker_create.png" width="1" height="1" alt="Preload image" />
   </div>
 
+  <!-- Polyfills -->
+  <script>
+      (function(ELEMENT) {
+          ELEMENT.matches = ELEMENT.matches || ELEMENT.mozMatchesSelector || ELEMENT.msMatchesSelector || ELEMENT.oMatchesSelector || ELEMENT.webkitMatchesSelector;
+          ELEMENT.closest = ELEMENT.closest || function closest(selector) {
+              if (!this) return null;
+              if (this.matches(selector)) return this;
+              if (!this.parentElement) {return null}
+              else return this.parentElement.closest(selector)
+          };
+      }(Element.prototype));
+  </script>
+
   <!-- Helper libraries -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxg7dFxOIQWCUEBCrUAnU3qf5Xm-ejb0E"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
   <script src="https://unpkg.com/siema@1.4.6"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-load-image/2.14.0/load-image.all.min.js"></script>
+
   <!-- Quickblox SDK, uses as global variable QB -->
   <script src="../../quickblox.min.js"></script>
+  
   <!-- APP -->
   <script src="config.js"></script>
   
