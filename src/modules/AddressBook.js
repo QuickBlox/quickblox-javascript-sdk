@@ -164,6 +164,48 @@ AddressBook.prototype = {
         cb(null, res);
       }
     });
+  },
+
+  getAll: function(isCompact, callback) {
+    var data, cb;
+
+    if(isFunction(isCompact)) {
+      cb = isCompact;
+    } else {
+      data = isCompact;
+      cb = callback;
+    }
+
+    if(!isFunction(cb)) {
+      throw new Error('The QB.addressbook.get accept callback function is required.');
+    }
+
+    var ajaxParams = {
+      'type': 'GET',
+      'url': Utils.getUrl(config.urls.addressbookRegistered),
+      'contentType': 'application/json; charset=utf-8'
+    };
+
+    if(data) {
+      ajaxParams.data = {'compact': 1};
+    }
+
+    this.service.ajax(ajaxParams, function(err, res) {
+      if (err) {
+        // Don't ask me why.
+        // Thanks to backend developers for this
+        // sooo sad IF 
+        var errDetails = JSON.parse(err.detail);
+  
+        if(err.code === 404 && errDetails.errors[0] === 'Empty address book') {
+          cb(null, []);
+        } else {
+          cb(err, null);
+        }
+      } else {
+        cb(null, res);
+      }
+    });
   }
 };
 

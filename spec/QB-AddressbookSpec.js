@@ -113,6 +113,19 @@ describe('AddressBook', function() {
     }, REST_REQUESTS_TIMEOUT);
   });
 
+  // describe('Get all existed contacts', function() {
+  //   xit('GET get', function(done) {
+  //     function addressBookGot(err, res) {
+  //       expect(err).toBeNull();
+  //       expect(res).toEqual(CONTACTS);
+
+  //       done();
+  //     }
+
+  //     QB.addressbook.getAll(addressBookGot);
+  //   }, REST_REQUESTS_TIMEOUT);
+  // });
+
   describe('Update contacts', function() {
     function prepareForUpdate(contacts) {
       return contacts.map( function(contact, index) {
