@@ -327,7 +327,8 @@ RTCPeerConnection.prototype._clearStatsReportTimer = function(){
 
 RTCPeerConnection.prototype._getStatsWrap = function() {
     var self = this,
-        selector = self.delegate.callType == 1 ? self.getLocalStreams()[0].getVideoTracks()[0] : self.getLocalStreams()[0].getAudioTracks()[0],
+        localStream = self.getLocalStreams().length ? self.getLocalStreams()[0] : self.delegate.localStream,
+        selector = self.delegate.callType == 1 ? localStream.getVideoTracks()[0] : localStream.getAudioTracks()[0],
         statsReportInterval;
 
     if (config.webrtc && config.webrtc.statsReportTimeInterval) {
