@@ -13,7 +13,7 @@
 
 var config = {
   version: '2.6.2',
-  buildNumber: '1037',
+  buildNumber: '1042',
   creds: {
     appId: '',
     authKey: '',

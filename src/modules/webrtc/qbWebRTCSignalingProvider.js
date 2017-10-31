@@ -28,74 +28,74 @@ WebRTCSignalingProvider.prototype.sendCandidate = function(userId, iceCandidates
 };
 
 WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingType) {
-  var extension = ext || {},
-      self = this,
-      msg, params;
+    var extension = ext || {},
+        self = this,
+        msg, params;
 
-  /** basic parameters */
-  extension.moduleIdentifier = SignalingConstants.MODULE_ID;
-  extension.signalType = signalingType;
-  /** extension.sessionID */
-  /** extension.callType */
-  extension.platform = 'web';
-  /** extension.callerID */
-  /** extension.opponentsIDs */
-  /** extension.sdp */
+    /** basic parameters */
+    extension.moduleIdentifier = SignalingConstants.MODULE_ID;
+    extension.signalType = signalingType;
+    /** extension.sessionID */
+    /** extension.callType */
+    extension.platform = 'web';
+    /** extension.callerID */
+    /** extension.opponentsIDs */
+    /** extension.sdp */
 
-  params = {
-    to: Helpers.getUserJid(userId, config.creds.appId),
-    type: 'headline',
-    id: Utils.getBsonObjectId()
-  };
+    params = {
+        to: Helpers.getUserJid(userId, config.creds.appId),
+        type: 'headline',
+        id: Utils.getBsonObjectId()
+    };
 
-  msg = $msg(params).c('extraParams', {
-    xmlns: Strophe.NS.CLIENT
-  });
+    msg = $msg(params).c('extraParams', {
+        xmlns: Strophe.NS.CLIENT
+    });
 
-  Object.keys(extension).forEach(function(field) {
-    if (field === 'iceCandidates') {
+    Object.keys(extension).forEach(function(field) {
+        if (field === 'iceCandidates') {
 
-      /** iceCandidates */
-      msg = msg.c('iceCandidates');
-      extension[field].forEach(function(candidate) {
-        msg = msg.c('iceCandidate');
-        Object.keys(candidate).forEach(function(key) {
-          msg.c(key).t(candidate[key]).up();
-        });
-        msg.up();
-      });
-      msg.up();
+            /** iceCandidates */
+            msg = msg.c('iceCandidates');
+            extension[field].forEach(function(candidate) {
+                msg = msg.c('iceCandidate');
+                Object.keys(candidate).forEach(function(key) {
+                    msg.c(key).t(candidate[key]).up();
+                });
+                msg.up();
+            });
+            msg.up();
 
-    } else if (field === 'opponentsIDs') {
-      /** opponentsIDs */
-      msg = msg.c('opponentsIDs');
-      extension[field].forEach(function(opponentId) {
-        msg = msg.c('opponentID').t(opponentId).up();
-      });
-      msg.up();
+        } else if (field === 'opponentsIDs') {
+            /** opponentsIDs */
+            msg = msg.c('opponentsIDs');
+            extension[field].forEach(function(opponentId) {
+                msg = msg.c('opponentID').t(opponentId).up();
+            });
+            msg.up();
 
-    } else if (typeof extension[field] === 'object') {
-      self._JStoXML(field, extension[field], msg);
+        } else if (typeof extension[field] === 'object') {
+            self._JStoXML(field, extension[field], msg);
 
-    } else {
-      msg.c(field).t(extension[field]).up();
-    }
-  });
+        } else {
+            msg.c(field).t(extension[field]).up();
+        }
+    });
 
-  this.connection.send(msg);
+    this.connection.send(msg);
 };
 
 /** TODO: the magic */
 WebRTCSignalingProvider.prototype._JStoXML = function(title, obj, msg) {
-  var self = this;
-  msg.c(title);
-  Object.keys(obj).forEach(function(field) {
-    if (typeof obj[field] === 'object')
-      self._JStoXML(field, obj[field], msg);
-    else
-      msg.c(field).t(obj[field]).up();
-  });
-  msg.up();
+    var self = this;
+    msg.c(title);
+    Object.keys(obj).forEach(function(field) {
+        if (typeof obj[field] === 'object')
+            self._JStoXML(field, obj[field], msg);
+        else
+            msg.c(field).t(obj[field]).up();
+    });
+    msg.up();
 };
 
 module.exports = WebRTCSignalingProvider;

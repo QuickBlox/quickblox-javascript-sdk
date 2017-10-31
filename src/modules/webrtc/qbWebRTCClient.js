@@ -124,6 +124,7 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
 /**
  * Deletes a session
  * @param {string} Session ID
+ *
  */
 WebRTCClient.prototype.clearSession = function(sessionId) {
     delete WebRTCClient.sessions[sessionId];
@@ -157,7 +158,7 @@ WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessi
  * DELEGATE (signaling)
  */
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
-    var extensionClone = this._cleanupExtension(extension);
+    var userInfo = extension.userInfo || {};
 
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
@@ -171,7 +172,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
         this.signalingProvider.sendMessage(userID, extension, SignalingConstants.SignalingType.REJECT);
 
         if (typeof this.onInvalidEventsListener  === 'function'){
-          Utils.safeCallbackCall(this.onInvalidEventsListener, 'onCall', sessionID, userID, extensionClone);
+            Utils.safeCallbackCall(this.onInvalidEventsListener, 'onCall', sessionID, userID, userInfo);
         }
     } else {
         var session = this.sessions[sessionID];
@@ -180,7 +181,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
             session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
 
             if (typeof this.onCallListener === 'function') {
-                Utils.safeCallbackCall(this.onCallListener, session, extensionClone);
+                Utils.safeCallbackCall(this.onCallListener, session, userInfo);
             }
         }
 
@@ -190,20 +191,20 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
 
 WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension) {
     var session = this.sessions[sessionID],
-        extensionClone = this._cleanupExtension(extension);
+        userInfo = extension.userInfo || {};
 
     Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
 
     if (session) {
         if (session.state === WebRTCSession.State.ACTIVE) {
             if (typeof this.onAcceptCallListener === 'function') {
-                Utils.safeCallbackCall(this.onAcceptCallListener, session, userID, extensionClone);
+                Utils.safeCallbackCall(this.onAcceptCallListener, session, userID, userInfo);
             }
 
             session.processOnAccept(userID, extension);
         } else {
             if (typeof this.onInvalidEventsListener === 'function'){
-              Utils.safeCallbackCall(this.onInvalidEventsListener, 'onAccept', session, userID, extensionClone);
+                Utils.safeCallbackCall(this.onInvalidEventsListener, 'onAccept', session, userID, userInfo);
             }
 
             Helpers.traceWarning("Ignore 'onAccept', the session( " + sessionID + " ) has invalid state.");
@@ -220,10 +221,10 @@ WebRTCClient.prototype._onRejectListener = function(userID, sessionID, extension
     Helpers.trace("onReject. UserID:" + userID + ". SessionID: " + sessionID);
 
     if (session) {
-        var extensionClone = that._cleanupExtension(extension);
+        var userInfo = extension.userInfo || {};
 
         if (typeof this.onRejectCallListener === 'function') {
-            Utils.safeCallbackCall(that.onRejectCallListener, session, userID, extensionClone);
+            Utils.safeCallbackCall(that.onRejectCallListener, session, userID, userInfo);
         }
 
         session.processOnReject(userID, extension);
@@ -236,20 +237,18 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     Helpers.trace("onStop. UserID:" + userID + ". SessionID: " + sessionID);
 
     var session = this.sessions[sessionID],
-        extensionClone;
+        userInfo = extension.userInfo || {};
 
     if (session && (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)) {
-        extensionClone = this._cleanupExtension(extension);
-
         if (typeof this.onStopCallListener === 'function') {
-            Utils.safeCallbackCall(this.onStopCallListener, session, userID, extensionClone);
+            Utils.safeCallbackCall(this.onStopCallListener, session, userID, userInfo);
         }
 
         // Need to make this asynchronously, to keep the strophe handler alive
         setTimeout(session.processOnStop.bind(session), 10, userID, extension);
     } else {
         if (typeof this.onInvalidEventsListener === 'function'){
-          Utils.safeCallbackCall(this.onInvalidEventsListener, 'onStop', session, userID, extensionClone);
+            Utils.safeCallbackCall(this.onInvalidEventsListener, 'onStop', session, userID, userInfo);
         }
 
         Helpers.traceError("Ignore 'onStop', there is no information about session " + sessionID + " by some reason.");
@@ -273,35 +272,14 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
 };
 
 WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension) {
-    var session = this.sessions[sessionID];
+    var session = this.sessions[sessionID],
+        userInfo = extension.userInfo || {};
 
-    Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(extension));
+    Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(userInfo));
 
     if (typeof this.onUpdateCallListener === 'function') {
-        Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, extension);
+        Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, userInfo);
     }
-};
-
-WebRTCClient.prototype._cleanupExtension = function(extension) {
-    var extensionClone = JSON.parse(JSON.stringify(extension));
-
-    if (extensionClone.hasOwnProperty('userInfo')) {
-        var userInfo = extensionClone.userInfo;
-
-        for (var key in userInfo) {
-            extensionClone[key] = userInfo[key];
-        }
-
-        delete extensionClone.userInfo;
-    }
-
-    delete extensionClone.platform;
-    delete extensionClone.sdp;
-    delete extensionClone.opponentsIDs;
-    delete extensionClone.callerID;
-    delete extensionClone.callType;
-
-    return extensionClone;
 };
 
 module.exports = WebRTCClient;
