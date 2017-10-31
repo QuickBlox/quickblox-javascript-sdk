@@ -111,9 +111,7 @@ describe('AddressBook', function() {
     it('GET get', function(done) {
       function addressBookGot(err, res) {
         expect(err).toBeNull();
-        // expect(res).toEqual();
-        console.log("TESTSTS");
-        console.log(res);
+        expect(res.items.length).toBeGreaterThan(0);
 
         done();
       }
