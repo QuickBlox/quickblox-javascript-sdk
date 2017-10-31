@@ -2,32 +2,6 @@
     'use strict';
 
     $(function() {
-        if ("Notification" in window) {
-            Notification.requestPermission();
-        }
-
-        function showNotification(title) {
-            var notification;
-
-            if (Notification.permission === "granted") {
-                notification = new Notification(title);
-            } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission(function (permission) {
-                    if (permission === "granted") {
-                        notification = new Notification(title);
-                    }
-                });
-            }
-
-            if (notification) {
-                notification.onclick = function(event) {
-                    event.preventDefault();
-                    window.focus();
-                    notification.close();
-                };
-            }
-        }
-
         var sounds = {
             'call': 'callingSignal',
             'end': 'endCallSignal',
@@ -760,8 +734,6 @@
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
             console.log('onSessionCloseListener: ', session);
 
-            showNotification('The call is over');
-
             document.getElementById(sounds.call).pause();
             document.getElementById(sounds.end).play();
 
@@ -859,7 +831,6 @@
                 if (app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
-                    showNotification('Incomming call from ' + initiator.full_name);
                 }
             });
         };
