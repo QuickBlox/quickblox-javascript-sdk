@@ -8,9 +8,33 @@ describe('AddressBook', function() {
 
   var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
 
-  var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-  var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
-  var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  // var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+  // var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+  // var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+
+  var CREDS = {
+    'appId': 40771,
+    'authKey': 'a9VnGdCqXky7Bns',
+    'authSecret': 'aaznbzqmgsQq2jf'
+  };
+
+  var CONFIG = {
+    endpoints: {
+      api: 'apirc.quickblox.com', // set custom API endpoint
+      chat: 'chatrc.quickblox.com' // set custom Chat endpoint
+    },
+    chatProtocol: {
+      active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+    },
+    debug: { mode: 1 }
+  };
+
+  var QBUser1 = {
+    'id': 12747447,
+    'login': "js_jasmine22",
+    'password': "js_jasmine22",
+    'email': "js_jasmine22@quickblox.com"
+  };
 
   var CONTACTS = [
     {
@@ -83,6 +107,21 @@ describe('AddressBook', function() {
     }, REST_REQUESTS_TIMEOUT);
   });
 
+  describe('Get all existed contacts', function() {
+    it('GET get', function(done) {
+      function addressBookGot(err, res) {
+        expect(err).toBeNull();
+        // expect(res).toEqual();
+        console.log("TESTSTS");
+        console.log(res);
+
+        done();
+      }
+
+      QB.addressbook.getAll(addressBookGot);
+    }, REST_REQUESTS_TIMEOUT);
+  });
+
   describe('Get contacts', function() {
     it('call without required callback function', function () {
       expect(function() {
@@ -112,19 +151,6 @@ describe('AddressBook', function() {
       QB.addressbook.get(UID, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
   });
-
-  // describe('Get all existed contacts', function() {
-  //   xit('GET get', function(done) {
-  //     function addressBookGot(err, res) {
-  //       expect(err).toBeNull();
-  //       expect(res).toEqual(CONTACTS);
-
-  //       done();
-  //     }
-
-  //     QB.addressbook.getAll(addressBookGot);
-  //   }, REST_REQUESTS_TIMEOUT);
-  // });
 
   describe('Update contacts', function() {
     function prepareForUpdate(contacts) {
