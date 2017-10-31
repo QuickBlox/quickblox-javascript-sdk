@@ -21,7 +21,7 @@
 
                         var down = confirm('Do you want to download video?');
 
-                        if(down) {
+                        if (down) {
                             recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
                         }
 
@@ -75,7 +75,7 @@
 
         function closeConn(userId) {
             if(recorder) {
-                recorder.stop()
+                recorder.stop();
             }
 
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
@@ -565,7 +565,7 @@
                 userId = +($(this).data('user')),
                 activeClass = [];
 
-            if( app.currentSession.peerConnections[userId].stream && !_.isEmpty( $that.attr('src')) ) {
+            if( app.currentSession.peerConnections[userId].stream && !$that.srcObject ) {
                 if( $that.hasClass('active') ) {
                     $that.removeClass('active');
 
@@ -828,10 +828,9 @@
                 $('.j-ic_initiator').text(initiator.full_name);
 
                 // check the current session state
-                if(app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
+                if (app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
                     $(ui.income_call).modal('show');
                     document.getElementById(sounds.rington).play();
-
                 }
             });
         };

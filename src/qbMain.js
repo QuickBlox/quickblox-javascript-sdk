@@ -63,7 +63,7 @@ QuickBlox.prototype = {
         this.addressbook = new AddressBook(this.service);
 
         if (isBrowser) {
-            /** add atapter.js*/
+            /** add adapter.js*/
             require('webrtc-adapter');
 
             /** add WebRTC API if API is avaible */
