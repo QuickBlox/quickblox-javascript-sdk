@@ -166,13 +166,27 @@ AddressBook.prototype = {
     });
   },
 
-  getAll: function(isCompact, callback) {
-    var data, cb;
+  /**
+   * This callback is called `gotExistedContacts` and passed 2 arguments: err and responce.
+   * @callback gotExistedContacts
+   * @param {Object} err 
+   * @param {Object[]} responce
+   */
 
-    if(isFunction(isCompact)) {
-      cb = isCompact;
+  /**
+   * Retrive all user that has phone number from your address book.
+   * The methods accepts 1 or 2 parameters.
+   * @memberof QB.addressbook
+   * @param {boolean|function} udidOrCallback - You could pass `isCompact` format of returnd users of address book or callback
+   * @param {gotExistedContacts} [callback] - Callback function uses as 2nd parameter if you pass `isCompact` as 1st parameters.
+   */
+  getAll: function(isCompactOrCallback, callback) {
+    var isCompact, cb;
+
+    if(isFunction(isCompactOrCallback)) {
+      cb = isCompactOrCallback;
     } else {
-      data = isCompact;
+      isCompact = isCompactOrCallback;
       cb = callback;
     }
 
@@ -186,22 +200,13 @@ AddressBook.prototype = {
       'contentType': 'application/json; charset=utf-8'
     };
 
-    if(data) {
+    if(isCompact) {
       ajaxParams.data = {'compact': 1};
     }
 
     this.service.ajax(ajaxParams, function(err, res) {
       if (err) {
-        // Don't ask me why.
-        // Thanks to backend developers for this
-        // sooo sad IF 
-        var errDetails = JSON.parse(err.detail);
-  
-        if(err.code === 404 && errDetails.errors[0] === 'Empty address book') {
-          cb(null, []);
-        } else {
-          cb(err, null);
-        }
+        cb(err, null);
       } else {
         cb(null, res);
       }
