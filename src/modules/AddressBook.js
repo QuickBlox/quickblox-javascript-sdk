@@ -73,7 +73,7 @@ AddressBook.prototype = {
     var data = { contacts: list };
 
     if(opts) {
-      if(opts.force && opts.force) {
+      if(opts.force) {
         data.force = opts.force;
       }
 
@@ -86,8 +86,9 @@ AddressBook.prototype = {
       'type': 'POST',
       'dataType': 'json',
       'url': Utils.getUrl(config.urls.addressbook),
-      'data': JSON.stringify(data),
-      'contentType': 'application/json; charset=utf-8'
+      'data': data,
+      'contentType': 'application/json; charset=utf-8',
+      'isNeedStringify': true
     },function(err, res) {
       if (err) {
         cb(err, null);
@@ -95,6 +96,11 @@ AddressBook.prototype = {
         cb(null, res);
       }
     });
+  },
+
+  _isFakeErrorEmptyAddressBook: function(err) {
+    var errDetails = err.detail ? err.detail : err.message.errors;
+    return err.code === 404 && errDetails[0] === 'Empty address book';
   },
 
   /**
@@ -125,6 +131,7 @@ AddressBook.prototype = {
    * QB.addressbook.get(UDID, gotContacts);
    */
   get: function(udidOrCallback, callback) {
+    var self = this;
     var udid, cb;
 
     if(isFunction(udidOrCallback)) {
@@ -140,8 +147,10 @@ AddressBook.prototype = {
 
     var ajaxParams = {
       'type': 'GET',
+      'dataType': 'json',
       'url': Utils.getUrl(config.urls.addressbook),
-      'contentType': 'application/json; charset=utf-8'
+      'contentType': 'application/json; charset=utf-8',
+      'isStringify': true
     };
 
     if(udid) {
@@ -152,10 +161,9 @@ AddressBook.prototype = {
       if (err) {
         // Don't ask me why.
         // Thanks to backend developers for this
-        // sooo sad IF 
-        var errDetails = JSON.parse(err.detail);
-  
-        if(err.code === 404 && errDetails.errors[0] === 'Empty address book') {
+        var isFakeErrorEmptyAddressBook = self._isFakeErrorEmptyAddressBook(err);
+        
+        if(isFakeErrorEmptyAddressBook) {
           cb(null, []);
         } else {
           cb(err, null);
@@ -181,6 +189,7 @@ AddressBook.prototype = {
    * @param {gotExistedContacts} [callback] - Callback function uses as 2nd parameter if you pass `isCompact` as 1st parameters.
    */
   getAll: function(isCompactOrCallback, callback) {
+    var self = this;
     var isCompact, cb;
 
     if(isFunction(isCompactOrCallback)) {
@@ -206,7 +215,15 @@ AddressBook.prototype = {
 
     this.service.ajax(ajaxParams, function(err, res) {
       if (err) {
-        cb(err, null);
+        // Don't ask me why.
+        // Thanks to backend developers for this
+        var isFakeErrorEmptyAddressBook = self._isFakeErrorEmptyAddressBook(err);
+        
+        if(isFakeErrorEmptyAddressBook) {
+          cb(null, []);
+        } else {
+          cb(err, null);
+        }
       } else {
         cb(null, res);
       }

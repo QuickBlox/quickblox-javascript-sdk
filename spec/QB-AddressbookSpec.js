@@ -87,7 +87,11 @@ describe('AddressBook', function() {
         done();
       }
 
-      QB.addressbook.cud(CONTACTS, addressBookSaved);
+      var options = {
+        'force': 1
+      };
+
+      QB.addressbook.cud(CONTACTS, options, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
 
     it('in specific address book / with UDID', function(done) {

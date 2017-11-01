@@ -175,6 +175,11 @@ ServiceProxy.prototype = {
 
         // link: https://github.com/request/request#multipartform-data-multipart-form-uploads
         if(isBrowser) {
+
+            if(params.isNeedStringify) {
+                ajaxCall.data = JSON.stringify(ajaxCall.data);
+            }
+
             ajax( ajaxCall );
         } else {
             var r = request(qbRequest, requestCallback),
