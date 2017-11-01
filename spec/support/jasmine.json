@@ -6,6 +6,7 @@
     "QB-CoreSpec.js",
     "QB-UsersSpec.js",
     "QB-ContentSpec.js",
+    "QB-AddressBookSpec.js",
     "QB-DataSpec.js",
     "QB-PushnotificationsSpec.js",
     "QB-WebRTCSpec.js"

@@ -51,7 +51,8 @@ QuickBlox.prototype = {
             Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
-            Data = require('./modules/qbData');
+            Data = require('./modules/qbData'),
+            AddressBook = require('./modules/AddressBook');
 
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
@@ -59,6 +60,7 @@ QuickBlox.prototype = {
         this.content = new Content(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
+        this.addressbook = new AddressBook(this.service);
 
         if (isBrowser) {
             /** add adapter.js*/
