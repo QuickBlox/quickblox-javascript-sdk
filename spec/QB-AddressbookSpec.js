@@ -51,8 +51,8 @@ describe('AddressBook', function() {
     }
   ];
 
-  var UID = 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
-  var CONTACTS_BY_UID = [
+  var UDID = 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
+  var CONTACTS_BY_UDID = [
     {
       'name':'Romona Ledes',
       'phone': '4879108395'
@@ -91,23 +91,23 @@ describe('AddressBook', function() {
         'force': 1
       };
 
-      QB.addressbook.cud(CONTACTS, options, addressBookSaved);
+      QB.addressbook.uploadAddressBook(CONTACTS, options, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
 
     it('in specific address book / with UDID', function(done) {
       function addressBookSaved(err, res) {
         expect(err).toBeNull();
         expect(res).toBeDefined();
-        expect(res.created).toEqual(CONTACTS_BY_UID.length);
+        expect(res.created).toEqual(CONTACTS_BY_UDID.length);
 
         done();
       }
 
       var options = { 
-        'udid': UID
+        'udid': UDID
       };
 
-      QB.addressbook.cud(CONTACTS_BY_UID, options, addressBookSaved);
+      QB.addressbook.uploadAddressBook(CONTACTS_BY_UDID, options, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
   });
 
@@ -120,7 +120,7 @@ describe('AddressBook', function() {
         done();
       }
 
-      QB.addressbook.getAll(addressBookGot);
+      QB.addressbook.getRegisteredUsers(addressBookGot);
     }, REST_REQUESTS_TIMEOUT);
   });
 
@@ -145,12 +145,12 @@ describe('AddressBook', function() {
     it('in specific address book / with UDID', function(done) {
       function addressBookSaved(err, res) {
         expect(err).toBeNull();
-        expect(res).toEqual(CONTACTS_BY_UID);
+        expect(res).toEqual(CONTACTS_BY_UDID);
 
         done();
       }
 
-      QB.addressbook.get(UID, addressBookSaved);
+      QB.addressbook.get(UDID, addressBookSaved);
     }, REST_REQUESTS_TIMEOUT);
   });
 
@@ -175,11 +175,11 @@ describe('AddressBook', function() {
         done();
       }
 
-      QB.addressbook.cud(contactsUpdated, addressBookUpdated);
+      QB.addressbook.uploadAddressBook(contactsUpdated, addressBookUpdated);
     }, REST_REQUESTS_TIMEOUT);
 
     it('in specific address book / with UDID', function(done) {
-      var contactsUpdated = prepareForUpdate(CONTACTS_BY_UID);
+      var contactsUpdated = prepareForUpdate(CONTACTS_BY_UDID);
 
       function addressBookUpdated(err, res) {
         expect(err).toBeNull();
@@ -190,10 +190,10 @@ describe('AddressBook', function() {
       }
 
       var options = { 
-        'udid': UID
+        'udid': UDID
       };
 
-      QB.addressbook.cud(contactsUpdated, options, addressBookUpdated);
+      QB.addressbook.uploadAddressBook(contactsUpdated, options, addressBookUpdated);
     }, REST_REQUESTS_TIMEOUT);
   });
 
@@ -221,11 +221,11 @@ describe('AddressBook', function() {
         done();
       }
 
-      QB.addressbook.cud(contactsDestroy, removedContacts);
+      QB.addressbook.uploadAddressBook(contactsDestroy, removedContacts);
     });
 
     it('in specific address book / with UDID', function(done) {
-      var contactsDestroy = prepareForDestroy(CONTACTS_BY_UID);
+      var contactsDestroy = prepareForDestroy(CONTACTS_BY_UDID);
 
       function removedContacts(err, res) {
         expect(err).toBeNull();
@@ -236,10 +236,10 @@ describe('AddressBook', function() {
       }
 
       var options = { 
-        'udid': UID
+        'udid': UDID
       };
 
-      QB.addressbook.cud(contactsDestroy, options, removedContacts);
+      QB.addressbook.uploadAddressBook(contactsDestroy, options, removedContacts);
     });
   });
 });

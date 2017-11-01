@@ -13,14 +13,14 @@ function AddressBook(service) {
 
 AddressBook.prototype = {
   /**
-   * Method cud is create, update and delete contacts in address book. <br />
-   * An operation choosens by state: if contacts (to identify uses phone number) doesn't exist in address book it will save,
-   * if contact founds it will update, if passed a property `destroy` with 1 the contact will remove. <br />
+   * The method is used to create, update and delete contacts in address book.<br />
+   * If contacts doesn't exist in address book then it will be created. If contacts exists then it will be updated. 
+   * If pass 'destroy: 1' then the contact will be removed.<br />
    * {@link https://quickblox.com/developers/AddressBook Found more here}. <br />
-   * The methods accepts 2 or 3 parameters. 
+   * The method accepts 2 or 3 parameters. 
    * @memberof QB.addressbook
    * @param {Object[]} list - A list of contacts to create / update / delete.
-   * @param {Object} [options] - Search records with field which contains exactly specified value or by array of records' ids to retrieve
+   * @param {Object} [options]
    * @param {string} [options.udid] - User's device identifier. If specified all operations will be in this context. Max length 64 symbols.
    * If not - it means a user has one global address book across all his devices.
    * @param {number} [options.force] - Defines force rewrite mode.
@@ -50,12 +50,12 @@ AddressBook.prototype = {
    *    }
    *  }
    * 
-   *  QB.addressbook.cud(addressBookList, savedAddressBookCallback);
+   *  QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback);
    *  // or second parameters can be options
-   *  QB.addressbook.cud(addressBookList, options, savedAddressBookCallback);
+   *  QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);
    * 
    */
-  cud: function(list, optionsOrcallback, callback) {
+  uploadAddressBook: function(list, optionsOrcallback, callback) {
     if (!Array.isArray(list)) {
       new Error('First parameter must be an Array.');
       return;
@@ -84,7 +84,6 @@ AddressBook.prototype = {
 
     this.service.ajax({
       'type': 'POST',
-      'dataType': 'json',
       'url': Utils.getUrl(config.urls.addressbook),
       'data': data,
       'contentType': 'application/json; charset=utf-8',
@@ -104,20 +103,13 @@ AddressBook.prototype = {
   },
 
   /**
-   * This callback is called `getContactsCallback` and passed 2 arguments: err and responce.
-   * @callback getContactsCallback
-   * @param {Object} err 
-   * @param {Object[]} responce
-   */
-
-  /**
    * Retrive all contacts from address book.
-   * The methods accepts 1 or 2 parameters.
+   * The method accepts 1 or 2 parameters.
    * @memberof QB.addressbook
    * @param {string|function} udidOrCallback - You could pass udid of address book or
    * callback function if you want to get contacts from global address book.
-   * @param {getContactsCallback} [callback] - Callback function uses as 2nd parameter if you pass udid as 1st parameters.
-   * This callback 2 arguments: error and responce.
+   * @param {function} [callback] - Callback function is uses as 2nd parameter if you pass udid as 1st parameters.
+   * This callback takes 2 arguments: an error and a response.
    *
    * @example
    * var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
@@ -147,7 +139,6 @@ AddressBook.prototype = {
 
     var ajaxParams = {
       'type': 'GET',
-      'dataType': 'json',
       'url': Utils.getUrl(config.urls.addressbook),
       'contentType': 'application/json; charset=utf-8',
       'isStringify': true
@@ -175,20 +166,14 @@ AddressBook.prototype = {
   },
 
   /**
-   * This callback is called `gotExistedContacts` and passed 2 arguments: err and responce.
-   * @callback gotExistedContacts
-   * @param {Object} err 
-   * @param {Object[]} responce
-   */
-
-  /**
    * Retrive all user that has phone number from your address book.
    * The methods accepts 1 or 2 parameters.
    * @memberof QB.addressbook
-   * @param {boolean|function} udidOrCallback - You could pass `isCompact` format of returnd users of address book or callback
-   * @param {gotExistedContacts} [callback] - Callback function uses as 2nd parameter if you pass `isCompact` as 1st parameters.
+   * @param {boolean|function} udidOrCallback - You can pass isCompact parameter or callback object. If isCompact is passed then only user's id and phone fields will be returned from server. Otherwise - all standard user's parameters will be returned.
+   * @param {function} [callback] - Callback function is uses as 2nd parameter if you pass `isCompact` as 1st parameters.
+   * This callback takes 2 arguments: an error and a response.
    */
-  getAll: function(isCompactOrCallback, callback) {
+  getRegisteredUsers: function(isCompactOrCallback, callback) {
     var self = this;
     var isCompact, cb;
 
