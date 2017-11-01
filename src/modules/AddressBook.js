@@ -42,7 +42,7 @@ AddressBook.prototype = {
    *    udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB'
    *  };
    * 
-   *  function addressBookSaved(err, responce) {
+   *  function addressBookSaved(err, response) {
    *    if(err) {
    *      
    *    } else {
