@@ -9,6 +9,7 @@
         };
 
         var recorder = null;
+
         var recorderOpts = {
                 callbacks: {
                     onStart: function onStartRecord() {
@@ -160,8 +161,13 @@
                 });
 
                 /** render frames */
-                var framesTpl =  _.template( $('#frames_tpl').html() );
+                var framesTpl = _.template( $('#frames_tpl').html() );
                 $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
+
+                // TODO: Hide a record button if browser not supported it
+                if (!qbMediaRecorder.isAvailable()) {
+                    $('.j-record').hide();
+                }
 
                 QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
                     if(devices.length > 1) {
