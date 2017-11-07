@@ -14,10 +14,10 @@ function AddressBook(service) {
 AddressBook.prototype = {
   /**
    * The method is used to create, update and delete contacts in address book.<br />
-   * If contacts doesn't exist in address book then it will be created. If contacts exists then it will be updated. 
+   * If contacts doesn't exist in address book then it will be created. If contacts exists then it will be updated.
    * If pass 'destroy: 1' then the contact will be removed.<br />
    * {@link https://quickblox.com/developers/AddressBook Found more here}. <br />
-   * The method accepts 2 or 3 parameters. 
+   * The method accepts 2 or 3 parameters.
    * @memberof QB.addressbook
    * @param {Object[]} list - A list of contacts to create / update / delete.
    * @param {Object} [options]
@@ -26,7 +26,7 @@ AddressBook.prototype = {
    * @param {number} [options.force] - Defines force rewrite mode.
    * If set 1 then all previous contacts for device context will be replaced by new ones.
    * @param {Function} callback - The savedAddressBookCallback function
-   * 
+   *
    * @example
    *  var people = [{
    *    'name':'Frederic Cartwright',
@@ -36,24 +36,24 @@ AddressBook.prototype = {
    *    'phone': '8759108396',
    *    'destroy': 1
    *  }];
-   * 
+   *
    *  var options = {
    *    force: 1,
    *    udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB'
    *  };
-   * 
+   *
    *  function addressBookSaved(err, response) {
    *    if(err) {
-   *      
+   *
    *    } else {
    *      console.log('All constacts saved');
    *    }
    *  }
-   * 
+   *
    *  QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback);
    *  // or second parameters can be options
    *  QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);
-   * 
+   *
    */
   uploadAddressBook: function(list, optionsOrcallback, callback) {
     if (!Array.isArray(list)) {
@@ -113,13 +113,13 @@ AddressBook.prototype = {
    *
    * @example
    * var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
-   * 
+   *
    * function gotContacts(err, contacts) {
    *  contacts.forEach( (contact) => { alert(contact); })
    * }
-   * 
+   *
    * QB.addressbook.get(gotContacts);
-   * // or you could specify what address book you need by udid 
+   * // or you could specify what address book you need by udid
    * QB.addressbook.get(UDID, gotContacts);
    */
   get: function(udidOrCallback, callback) {
@@ -153,7 +153,7 @@ AddressBook.prototype = {
         // Don't ask me why.
         // Thanks to backend developers for this
         var isFakeErrorEmptyAddressBook = self._isFakeErrorEmptyAddressBook(err);
-        
+
         if(isFakeErrorEmptyAddressBook) {
           cb(null, []);
         } else {
@@ -203,7 +203,7 @@ AddressBook.prototype = {
         // Don't ask me why.
         // Thanks to backend developers for this
         var isFakeErrorEmptyAddressBook = self._isFakeErrorEmptyAddressBook(err);
-        
+
         if(isFakeErrorEmptyAddressBook) {
           cb(null, []);
         } else {

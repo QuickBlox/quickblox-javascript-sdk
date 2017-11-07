@@ -212,7 +212,9 @@ WebRTCSession.prototype._callInternal = function(userID, extension, withOnNotAns
     var safariVersion = Helpers.getVersionSafari();
 
     if (safariVersion && safariVersion >= 11) {
-        self.localStream.getTracks().forEach(track => peer.addTrack(track, self.localStream));
+        self.localStream.getTracks().forEach(function(track) {
+            peer.addTrack(track, self.localStream);
+        });
     } else {
         peer.addLocalStream(self.localStream);
     }
@@ -290,7 +292,9 @@ WebRTCSession.prototype._acceptInternal = function(userID, extension) {
         var safariVersion = Helpers.getVersionSafari();
 
         if (safariVersion && safariVersion >= 11) {
-            self.localStream.getTracks().forEach(track => peerConnection.addTrack(track, self.localStream));
+            self.localStream.getTracks().forEach(function(track) {
+                peerConnection.addTrack(track, self.localStream);
+            });
         } else {
             peerConnection.addLocalStream(self.localStream);
         }
