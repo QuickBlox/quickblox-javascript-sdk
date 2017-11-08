@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import ERRORS from '../Error.js';
 import config from '../config.js';
-import {urls as defaultUrls, endpoints as defaultEndpoints } from '../defaults.js';
+import {urls as defaultUrls, endpoints as defaultEndpoints} from '../defaults.js';
 
 import eventEmitterMixin from '../eventEmitter/eventEmitterMixin.js';
 
@@ -25,6 +25,12 @@ class Client extends User {
    * @param {string} [creds.authSecret] - Uses as salt.
    * @param {any} [opts={}]
    * @memberof Client
+   * 
+   * @example
+   * import QB from 'quickblox-javascript-sdk';
+   * 
+   * const creds = {'appId': 5, authKey: 'KnUm1', authSecret: 'MKmn-asd1'};
+   * const client = new QB(creds);
    */
   constructor(creds, opts = {}) {
     super();
@@ -52,6 +58,10 @@ class Client extends User {
     });
   }
 
+  /**
+   * 
+   * @param {*} userCreds 
+   */
   auth(userCreds) {
     const self = this;
 

@@ -33,14 +33,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Client.html">Client</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="User.html">User</a></li>
+					<li><a href="Client.html">Client</a></li><li><a href="User.html">User</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="global.html">Global</a></li>
+					<li><a href="global.html#eventEmitterMixin">eventEmitterMixin</a></li>
 				</ul>
 			</li>
 			
@@ -145,106 +145,18 @@
     
 
     
-
-    
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
+        <h3 class="subsection-title">Members</h3>
 
         <dl>
-                
+            
 <hr>
-<dt>
-    <h4 class="name" id="requestCallback"><span class="type-signature"></span>requestCallback(responseCode, responseMessage)</h4>
-    
+<dt class="name" id="eventEmitterMixin">
+    <h4 id="eventEmitterMixin"><span class="type-signature">&lt;private> </span>eventEmitterMixin<span class="type-signature"></span></h4>
+
     
 </dt>
 <dd>
-
     
-    <div class="description">
-        <p>This callback type is called <code>requestCallback</code> and is displayed as a global symbol.</p>
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>responseCode</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>responseMessage</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
     
 
@@ -289,21 +201,19 @@
 
 
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">Object.assign(Client.prototype, eventEmitterMixin);let client = new Client();function handleCustomEvent(data) { console.log(Incoming data, data);}client.addListener(&#x27;customEvent&#x27;, handleCustomEvent);client.emit(&#x27;customEvent&#x27;, { &#x27;cutom&#x27;: &#x27;field&#x27;});// emit return this for create a chainclient.emit(&#x27;event1&#x27;, {&#x27;some&#x27;: &#x27;data&#x27;}).emit(&#x27;event2&#x27;, {&#x27;some&#x27;: &#x27;data&#x27;});</pre>
 
-    
-
-    
-
-    
-
-    
-
-    
 
     
 </dd>
 
-            </dl>
+        </dl>
+    
+
+    
+
     
 
     
