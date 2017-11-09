@@ -75,6 +75,35 @@
             </ul>
         </li>
     
+        <li class="item" data-name="QB.addressbook">
+            <span class="title">
+                <a href="QB.addressbook.html">QB.addressbook</a>
+                
+                <span class="static">static</span>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            <span class="subtitle">Methods</span>
+            
+                <li data-name="QB.addressbook.get"><a href="QB.addressbook.html#.get">get</a></li>
+            
+                <li data-name="QB.addressbook.getRegisteredUsers"><a href="QB.addressbook.html#.getRegisteredUsers">getRegisteredUsers</a></li>
+            
+                <li data-name="QB.addressbook.uploadAddressBook"><a href="QB.addressbook.html#.uploadAddressBook">uploadAddressBook</a></li>
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
         <li class="item" data-name="QB.chat">
             <span class="title">
                 <a href="QB.chat.html">QB.chat</a>
@@ -667,7 +696,7 @@
 <dd>
     
     <div class="description">
-        User's callbacks (listener-functions):- onUserNotAnswerListener(session, userID)- onRemoteStreamListener(session, userID, stream)- onSessionConnectionStateChangedListener(session, userID, connectionState)- onSessionCloseListener(session)- onCallStatsReport(session, userId, stats, error)
+        Modules
     </div>
     
     
@@ -757,7 +786,7 @@
 <dd>
     
     <div class="description">
-        Modules
+        User's callbacks (listener-functions):- onUserNotAnswerListener(session, userID)- onRemoteStreamListener(session, userID, stream)- onSessionConnectionStateChangedListener(session, userID, connectionState)- onSessionCloseListener(session)- onCallStatsReport(session, userId, stats, error)
     </div>
     
     
@@ -802,8 +831,7 @@
 <dd>
     
     <div class="description">
-        For server-side applications through using npm package 'quickblox'
-you should include the following lines
+        For server-side applications through using npm package 'quickblox'you should include the following lines
     </div>
     
     
@@ -853,7 +881,7 @@ you should include the following lines
     
         
         <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 358
+            modules/webrtc/qbRTCPeerConnection.js, line 427
         </div>
         
     </div>
@@ -917,85 +945,14 @@ you should include the following lines
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="_prepareExtension">
+        <h4 class="name" id="_modifySDPforFixIssue">
             
-            _prepareExtension<span class="signature">()</span>
+            _modifySDPforFixIssue<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/webrtc/qbWebRTCSession.js, line 825
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        private _prepareExtension - replace property null to empty stringreturn object with property or empty if extension didn't set
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="getVersionFirefox">
-            
-            getVersionFirefox<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 376
+            modules/webrtc/qbRTCPeerConnection.js, line 445
         </div>
         
     </div>
@@ -1059,6 +1016,148 @@ you should include the following lines
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id="_modifySDPforFixIssueFFAndFreezes">
+            
+            _modifySDPforFixIssueFFAndFreezes<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/webrtc/qbRTCPeerConnection.js, line 461
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        It's functions to fixed issuehttps://blog.mozilla.org/webrtc/when-your-video-freezes/
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_prepareExtension">
+            
+            _prepareExtension<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            modules/webrtc/qbWebRTCSession.js, line 858
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        private _prepareExtension - replace property null to empty stringreturn object with property or empty if extension didn't set
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="isOpponentsEqual">
             
             isOpponentsEqual<span class="signature">()</span>
@@ -1066,7 +1165,7 @@ you should include the following lines
     
         
         <div class="tag-source">
-            modules/webrtc/qbWebRTCClient.js, line 312
+            modules/webrtc/qbWebRTCClient.js, line 290
         </div>
         
     </div>
@@ -2820,7 +2919,7 @@ you should include the following lines
     
         
         <div class="tag-source">
-            qbMain.js, line 116
+            qbMain.js, line 118
         </div>
         
     </div>
@@ -4303,7 +4402,7 @@ you should include the following lines
     
         
         <div class="tag-source">
-            qbMain.js, line 131
+            qbMain.js, line 133
         </div>
         
     </div>
@@ -5537,7 +5636,7 @@ you should include the following lines
     
         
         <div class="tag-source">
-            qbMain.js, line 100
+            qbMain.js, line 102
         </div>
         
     </div>
@@ -5942,8 +6041,7 @@ you should include the following lines
     
     
     <div class="description">
-        Callback for QB.chat.muc.leave().
-run without parameters;
+        Callback for QB.chat.muc.leave().run without parameters;
     </div>
     
 
@@ -7092,7 +7190,7 @@ run without parameters;
     
         
         <div class="tag-source">
-            qbMain.js, line 147
+            qbMain.js, line 149
         </div>
         
     </div>
@@ -7237,7 +7335,7 @@ run without parameters;
     
         
         <div class="tag-source">
-            qbMain.js, line 162
+            qbMain.js, line 164
         </div>
         
     </div>
@@ -9173,7 +9271,7 @@ run without parameters;
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Oct 25 2017 11:05:02 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Nov 09 2017 14:48:38 GMT+0200 (FLE Standard Time)
         </footer>
     </div>
 </div>

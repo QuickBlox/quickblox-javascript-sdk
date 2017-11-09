@@ -14,7 +14,7 @@ function AddressBook(service) {
 AddressBook.prototype = {
   /**
    * The method is used to create, update and delete contacts in address book.<br />
-   * If contacts doesn't exist in address book then it will be created. If contacts exists then it will be updated.
+   * If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.
    * If pass 'destroy: 1' then the contact will be removed.<br />
    * {@link https://quickblox.com/developers/AddressBook Found more here}. <br />
    * The method accepts 2 or 3 parameters.
@@ -108,7 +108,7 @@ AddressBook.prototype = {
    * @memberof QB.addressbook
    * @param {string|function} udidOrCallback - You could pass udid of address book or
    * callback function if you want to get contacts from global address book.
-   * @param {function} [callback] - Callback function is uses as 2nd parameter if you pass udid as 1st parameters.
+   * @param {function} [callback] - Callback function is used as 2nd parameter if you pass udid as 1st parameters.
    * This callback takes 2 arguments: an error and a response.
    *
    * @example
@@ -166,11 +166,11 @@ AddressBook.prototype = {
   },
 
   /**
-   * Retrive all user that has phone number from your address book.
+   * Retrieve QuickBlox users that have phone numbers from your address book.
    * The methods accepts 1 or 2 parameters.
    * @memberof QB.addressbook
-   * @param {boolean|function} udidOrCallback - You can pass isCompact parameter or callback object. If isCompact is passed then only user's id and phone fields will be returned from server. Otherwise - all standard user's parameters will be returned.
-   * @param {function} [callback] - Callback function is uses as 2nd parameter if you pass `isCompact` as 1st parameters.
+   * @param {boolean|function} udidOrCallback - You can pass isCompact parameter or callback object. If isCompact is passed then only user's id and phone fields will be returned from server. Otherwise - all standard user's fields will be returned.
+   * @param {function} [callback] - Callback function is useв as 2nd parameter if you pass `isCompact` as 1st parameter.
    * This callback takes 2 arguments: an error and a response.
    */
   getRegisteredUsers: function(isCompactOrCallback, callback) {

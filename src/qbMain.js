@@ -52,7 +52,7 @@ QuickBlox.prototype = {
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
-            AddressBook = require('./modules/AddressBook');
+            AddressBook = require('./modules/qbAddressBook');
 
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
