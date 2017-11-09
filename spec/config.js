@@ -1,6 +1,7 @@
+/*eslint strict:off */
+
 (function() {
     'use strict';
-
 
     var NEW_SERVER = false;
 

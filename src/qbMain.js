@@ -17,6 +17,17 @@ var Utils = require('./qbUtils');
 function QuickBlox() {}
 
 QuickBlox.prototype = {
+    /**
+     * Return current version of QuickBlox JavaScript SDK
+     * @memberof QB
+     * */
+    version: config.version,
+
+    /**
+     * Return current build number of QuickBlox JavaScript SDK
+     * @memberof QB
+     * */
+    buildNumber: config.buildNumber,
 
     /**
      * @memberof QB
@@ -30,19 +41,8 @@ QuickBlox.prototype = {
             config.set(configMap);
         }
 
-        /**
-         * Return current version of QuickBlox JavaScript SDK
-         * @memberof QB
-         * */
-        this.version = config.version;
-
-        /**
-         * Return current build number of QuickBlox JavaScript SDK
-         * @memberof QB
-         * */
-        this.buildNumber = config.buildNumber;
-
         var Proxy = require('./qbProxy');
+
         this.service = new Proxy();
 
         /** include dependencies */
@@ -51,7 +51,8 @@ QuickBlox.prototype = {
             Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
-            Data = require('./modules/qbData');
+            Data = require('./modules/qbData'),
+            AddressBook = require('./modules/qbAddressBook');
 
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
@@ -59,9 +60,10 @@ QuickBlox.prototype = {
         this.content = new Content(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
+        this.addressbook = new AddressBook(this.service);
 
         if (isBrowser) {
-            /** add atapter.js*/
+            /** add adapter.js*/
             require('webrtc-adapter');
 
             /** add WebRTC API if API is avaible */

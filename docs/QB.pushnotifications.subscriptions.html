@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Namespace: helpers</title>
+    <title>Namespace: subscriptions</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -575,7 +575,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="QB.chat.helpers.html">Namespace: helpers</h1>
+        <h1 class="page-title" data-filename="QB.pushnotifications.subscriptions.html">Namespace: subscriptions</h1>
         
 
 
@@ -584,9 +584,7 @@
     
 <header>
     <h2>
-        <span class="ancestors"><a href="QB.html">QB</a><a href="QB.chat.html">.chat</a>.</span>
-    
-    helpers
+    subscriptions
     </h2>
     
 </header>  
@@ -597,6 +595,8 @@
     
     
         
+            <div class="description">Push Notifications Subscriptions</div>
+        
         
         
 <dl class="details">
@@ -638,55 +638,6 @@
     
     
     
-    
-        <h3 class="subsection-title">Members</h3>
-        
-        <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getUniqueId"><span class="type-signature static">static</span>QB.chat.helpers.getUniqueId</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        Get unique id.
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        </dl>
     
     
     
@@ -696,14 +647,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getBsonObjectId">
+        <h4 class="name" id=".create">
             
-            <span class="type-signature static">static</span>QB.chat.helpers.getBsonObjectId<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.create<span class="signature">(params, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2578
+            modules/qbPushNotifications.js, line 55
         </div>
         
     </div>
@@ -714,107 +665,7 @@
     
     
     <div class="description">
-        Generate BSON ObjectId.
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">BsonObjectId - The bson object id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getDialogIdFromNode">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getDialogIdFromNode<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2522
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the dialog id from jid.
+        Create device based subscription (subscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Create_subscription">read more</a>)
     </div>
     
 
@@ -845,13 +696,13 @@
 	
         <tr>
             
-                <td class="name"><code>jid</code></td>
+                <td class="name"><code>params</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">object</span>
 
 
             
@@ -861,7 +712,297 @@
             
             <td class="description last">
                 
-                The dialog jid.</td>
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>notification_channel</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Declare which notification channels could be used to notify user about events. Allowed values: apns, apns_voip, gcm, mpns, bbps and email</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>push_token</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>environment</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Determine application mode. It allows conveniently separate development and production modes. Allowed values: evelopment or production</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>bundle_identifier</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                A unique identifier for client's application. In iOS, this is the Bundle Identifier. In Android - package id</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>client_identification_sequence</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                Identifies client device in 3-rd party service like APNS, GCM/FCM, BBPS or MPNS. Initially retrieved from 3-rd service and should be send to QuickBlox to let it send push notifications to the client</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>device</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Object of parameters
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>platform</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Platform of device, which is the source of application running. Allowed values: ios, android, windows_phone, blackberry</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>udid</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                UDID (Unique Device identifier) of device, which is the source of application running. This must be anything sequence which uniquely identify particular device. This is needed to support schema: 1 User - Multiple devices</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#createPushSubscriptionCallback">createPushSubscriptionCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The createPushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -904,35 +1045,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">dialogId - The dialog id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
     
     
 </dd>
@@ -941,14 +1053,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getIdFromNode">
+        <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.chat.helpers.getIdFromNode<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Number}</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.delete<span class="signature">(id, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2512
+            modules/qbPushNotifications.js, line 86
         </div>
         
     </div>
@@ -959,7 +1071,7 @@
     
     
     <div class="description">
-        Get the User id from jid.
+        Remove a subscription by its identifier (unsubscribes) (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Remove_subscription">read more</a>)
     </div>
     
 
@@ -990,13 +1102,13 @@
 	
         <tr>
             
-                <td class="name"><code>jid</code></td>
+                <td class="name"><code>id</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">number</span>
 
 
             
@@ -1006,7 +1118,30 @@
             
             <td class="description last">
                 
-                The user jid.</td>
+                An id of subscription to remove</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#deletePushSubscriptionCallback">deletePushSubscriptionCallback</a></span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                The deletePushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -1049,35 +1184,6 @@
     
     
     
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        Number
-                        
-                    
-            </td>
-            <td class="description last">id - The user id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
     
     
 </dd>
@@ -1086,14 +1192,14 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".getIdFromResource">
+        <h4 class="name" id=".list">
             
-            <span class="type-signature static">static</span>QB.chat.helpers.getIdFromResource<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
+            <span class="type-signature static">static</span>QB.pushnotifications.subscriptions.list<span class="signature">(callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2554
+            modules/qbPushNotifications.js, line 70
         </div>
         
     </div>
@@ -1104,7 +1210,7 @@
     
     
     <div class="description">
-        Get user id from dialog's full jid.
+        Retrieve subscriptions for the user which is specified in the session token (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_subscriptions">read more</a>)
     </div>
     
 
@@ -1135,13 +1241,13 @@
 	
         <tr>
             
-                <td class="name"><code>jid</code></td>
+                <td class="name"><code>callback</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type"><a href="global.html#listPushSubscriptionCallback">listPushSubscriptionCallback</a></span>
 
 
             
@@ -1151,7 +1257,7 @@
             
             <td class="description last">
                 
-                dialog's full jid.</td>
+                The listPushSubscriptionCallback function</td>
         </tr>
 	
 	
@@ -1193,1415 +1299,6 @@
     
     
     
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">user_id - User Id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getRecipientId">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getRecipientId<span class="signature">(occupantsIds, UserId)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{Number}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2472
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the recipint id.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>occupantsIds</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Array of user ids.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>UserId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Jid or user id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        Number
-                        
-                    
-            </td>
-            <td class="description last">recipient - recipient id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getRoomJid">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJid<span class="signature">(jid, userJid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2544
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the full room jid from room bare jid & user jid.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                dialog's bare jid.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>userJid</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                user's jid.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">jid - dialog's full jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getRoomJidFromDialogId">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJidFromDialogId<span class="signature">(dialogId)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2533
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the room jid from dialog id.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>dialogId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The dialog id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">jid - The dialog jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getRoomJidFromRoomFullJid">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getRoomJidFromRoomFullJid<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2567
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get bare dialog's jid from dialog's full jid.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                dialog's full jid.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">room_jid - dialog's bare jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getUserIdFromRoomJid">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getUserIdFromRoomJid<span class="signature">(jid)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2588
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the user id from the room jid.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                resourse jid.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">userId - The user id.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getUserJid">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getUserJid<span class="signature">(UserId, appId)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2489
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the User jid id.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>UserId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The user id.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>appId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The application id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">jid - The user jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".getUserNickWithMucDomain">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.getUserNickWithMucDomain<span class="signature">(UserId)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2502
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the User nick with the muc domain.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>UserId</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                The user id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">mucDomainWithNick - The mac domain with he nick.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".jidOrUserId">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.jidOrUserId<span class="signature">(jid_or_user_id)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2435
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get unique id.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid_or_user_id</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Jid or user id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">- jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".typeChat">
-            
-            <span class="type-signature static">static</span>QB.chat.helpers.typeChat<span class="signature">(jid_or_user_id)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{String}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2453
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Get the chat type.
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>jid_or_user_id</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                Jid or user id.</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        String
-                        
-                    
-            </td>
-            <td class="description last">- jid.</td>
-        </tr>
-    
-    </tbody>
-</table>
-
     
     
     

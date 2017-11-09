@@ -1,6 +1,6 @@
-describe('Custom Objects API', function() {
-    'use strict';
+'use strict';
 
+describe('Custom Objects API', function() {
     var REST_REQUESTS_TIMEOUT = 5000;
     var session;
 

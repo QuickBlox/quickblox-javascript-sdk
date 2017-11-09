@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.6.2',
-  buildNumber: '1027',
+  version: '2.7.0',
+  buildNumber: '1047',
   creds: {
     appId: '',
     authKey: '',
@@ -89,6 +89,8 @@ var config = {
     subscriptions: 'subscriptions',
     events: 'events',
     data: 'data',
+    addressbook: 'address_book',
+    addressbookRegistered: 'address_book/registered_users',
     type: '.json'
   },
   on: {
