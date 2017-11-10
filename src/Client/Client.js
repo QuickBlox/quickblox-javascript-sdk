@@ -66,19 +66,8 @@ class Client extends User {
     const self = this;
 
     return new Promise((resolve, reject) => {
-      // auth without user parameters
-      // will create an application session 
-
-      // responce always return session and user info
-      // user info schema:
-      // - 
-
-      // Error schema:
-      // 
       if(!userCreds) {
         this._createApplicationSession().then((responce) => {
-          // TODO: session management switch on
-          // write user info
           let data = responce.data.session;
           
           self.session_token = data.token;
@@ -88,18 +77,7 @@ class Client extends User {
         }).catch(error => {
           reject(error);
         });
-      } 
-      else if(userCreds.session) {
-        // need to get info about session
-        // need to get info about user 
-
-        this._authByExistSession(userCreds.session);
-        // .then(function(responce) {
-
-        // }).catch(error => {
-        //   reject(error);
-        // });
-      } 
+      }  
     });
   }
 
@@ -108,13 +86,9 @@ class Client extends User {
   _createApplicationSession() {
     const self = this;
 
-    // TODO - check authKey, authSecret
-
     return new Promise((resolve, reject) => {
       let authMessage = this._generateAuthMessage(this._appId, this._authKey);
       authMessage.signature = this._signAuthMessage(authMessage, this._authSecret);
-
-      // this.service()
 
       this.service({
         method: 'POST',
@@ -194,29 +168,24 @@ class Client extends User {
     return Crypto(stingify, salt).toString();
   }
 
-  createData(className) {
-    
-    const token = this.session_token;
-    const SDK_version = this.version;
+  // createData(className) {
+  //   const token = this.session_token;
+  //   const SDK_version = this.version;
 
-    if(!token) {
-      throw new Error(ERRORS['AuthorizationRequired'].message);
-    }
+  //   if(!token) {
+  //     throw new Error(ERRORS['AuthorizationRequired'].message);
+  //   }
 
-    let service = axios.create({
-      baseURL: `https://${this._endpoints.api}/${this._urls.data}/`,
-      headers: {
-        'QB-SDK': `Quickblox JS SDK ${SDK_version}`,
-        'QB-Token': token
-      }
-    });
+  //   let service = axios.create({
+  //     baseURL: `https://${this._endpoints.api}/${this._urls.data}/`,
+  //     headers: {
+  //       'QB-SDK': `Quickblox JS SDK ${SDK_version}`,
+  //       'QB-Token': token
+  //     }
+  //   });
 
-    return new Data(className, service);
-  }
-
-  createDataCollection() {
-
-  }
+  //   return new Data(className, service);
+  // }
 
 }
 

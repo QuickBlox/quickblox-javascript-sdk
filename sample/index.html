@@ -22,7 +22,9 @@
 
         const client = new window.Quickblox(creds);
 
-        console.log(client);
+        client.auth().then( () => {
+          console.log('Success auth');
+        });
 
         // When client checking connection with API server 
         // and create a session
