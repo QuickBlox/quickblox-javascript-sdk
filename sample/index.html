@@ -1,35 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Sample JS SDK uses</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-  <script src="./../quickblox.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const creds = {
-        appId: 28783,
-        authKey: 'b5bVGCHHv6rcAmD',
-        authSecret: 'ySwEpardeE7ZXHB'
-      };
+    <title>Sample JS SDK uses</title>
+  </head>
 
-      const client = new window.Quickblox(creds);
+  <body>
 
-      client.addListener('error', (error) => {
-        console.log(error);
+    <script src="./../quickblox.min.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const creds = {
+          appId: 53851,
+          authKey: 'XeTM6Acx9Jsyb4D',
+          authSecret: 'SA-h4W-sZgzhO-u'
+        };
+
+        const client = new window.Quickblox(creds);
+
+        client.auth().then( () => {
+          console.log('Success auth');
+        });
+
+        // When client checking connection with API server 
+        // and create a session
+        // client.addListener('connect', function() {
+        //   console.log('You\'re client connect to Quickblox REST server without any problems');
+        // });
+
+        // When client authorizine by API server 
+        // and get fetched user info 
+        // client.on('auth', function() {
+        //   console.log('You\'r client connect to Quickblox REST server without any problems')
+        // });
+
+        // return promise and will call when emited an event `auth`
+        // client.auth({session: 'ce72a7096fb6804a06c7765151015d7e1b00d25b'});
+
+        // .then( () => {
+        //     // let place = client.createData('Place');
+
+        //     // console.log(place.toJSON());
+
+        //     // place.set('rate', '5');
+        //     // place.set('title', 'SDK 3 new place');
+        //     // place.set('description', 'You could add a new property to data');
+
+        //     // console.log(place.toJSON());
+
+        //     // place.save().then((data) => {
+        //     //   console.log('A record for the data place saved.', data);
+        //     // });
+        //   }).catch((error) => {
+        //     // console.error(error);
+        //   });
       });
-      console.log(client);
-      client.auth()
-        .then((token) => {
-          console.log('askmaksldm', token);
-        }).catch((error) => {
-          console.error(error);
-        })
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

@@ -3,21 +3,43 @@ import axios from 'axios';
 
 import ERRORS from '../Error.js';
 import config from '../config.js';
-import {urls as defaultUrls, endpoints as defaultEndpoints } from '../defaults.js';
+import {urls as defaultUrls, endpoints as defaultEndpoints} from '../defaults.js';
+
+import eventEmitterMixin from '../eventEmitter/eventEmitterMixin.js';
 
 import User from '../User/User.js';
+import Data from '../Data/Data.js';
 
-// import QBRESTController from '../QBRESTController.js';
-
-// import {QBRESTController as restController} from '../QBRESTController.js';
-
+/**
+ * Contains all JS SDK API classes and functions.
+ * This is the top level component for any Quickblox based application.
+ * 
+ * @extends {User}
+ */
 class Client extends User {
+  /**
+   * Creates an instance of Client.
+   * @param {Object} creds - all of this parameters you could found in admin panel.
+   * @param {number} creds.appId - The Id of uses app.
+   * @param {string} [creds.authKey] - The authKey of uses app for authorization/ 
+   * @param {string} [creds.authSecret] - Uses as salt.
+   * @param {any} [opts={}]
+   * @memberof Client
+   * 
+   * @example
+   * import QB from 'quickblox-javascript-sdk';
+   * 
+   * const creds = {'appId': 5, authKey: 'KnUm1', authSecret: 'MKmn-asd1'};
+   * const client = new QB(creds);
+   */
   constructor(creds, opts = {}) {
     super();
 
     if(!creds || !creds.appId) {
       throw new Error(Client.ERRORS['InvalidConfigurationError'].message);
     }
+
+    this.version = '3.0.0';
 
     this._appId = creds.appId;
     this._authKey = creds.authKey ? creds.authKey : null;
@@ -31,36 +53,83 @@ class Client extends User {
     this._endpoints = {};
     Object.assign(this._endpoints, defaultEndpoints, opts.endpoints);
 
-    this.version = '3.0.0';
-  }
-
-  auth() {
-    return new Promise((resolve, reject) => {
-      this._createApplicationSession().then((responce) => {
-        console.log(responce.data.session.token);
-        resolve(responce.data.session.token);
-      }).catch(error => {
-        reject(error);
-      });
+    this.service = axios.create({
+      baseURL: `https://${this._endpoints.api}/`,
     });
   }
 
+  /**
+   * 
+   * @param {*} userCreds 
+   */
+  auth(userCreds) {
+    const self = this;
+
+    return new Promise((resolve, reject) => {
+      if(!userCreds) {
+        this._createApplicationSession().then((responce) => {
+          let data = responce.data.session;
+          
+          self.session_token = data.token;
+          self.user_id = data.user_id !== 0 ? data.user_id : null;
+
+          resolve();
+        }).catch(error => {
+          reject(error);
+        });
+      }  
+    });
+  }
+
+  // Auth MODULE
+  // TODO: make pure function
   _createApplicationSession() {
     const self = this;
 
     return new Promise((resolve, reject) => {
       let authMessage = this._generateAuthMessage(this._appId, this._authKey);
       authMessage.signature = this._signAuthMessage(authMessage, this._authSecret);
-      // console.log(authMessage);
-      axios({
+
+      this.service({
         method: 'POST',
-        url: `https://${self._endpoints.api}/${self._urls.session}.json`,
+        url: `${self._urls.session}.json`,
         data: authMessage
       }).then(function(data) {
         resolve(data);
       }).catch(function(error) {
         reject(error);
       });
+    });
+  }
+
+  _authByExistSession(sessionToken) {
+    const self = this;
+
+    // return new Promise 
+
+    this.service({
+      method: 'GET',
+      url: `${self._urls.session}.json`,
+      headers: {
+        'QB-Token': sessionToken
+      }
+    }).then( (responce) => {
+      const userId = responce.data.session.user_id;
+
+      // if(userId && userId !== 0) {
+        
+      // } 
+
+      // Get user info / if session with user id
+
+      console.log('AA');
+      console.log(responce.data.session.user_id);
+
+      // resolve(data);
+    }).catch(function(error) {
+      console.log('BB');
+      console.log(error);
+      // reject(error);
     });
   }
 
@@ -98,7 +167,29 @@ class Client extends User {
 
     return Crypto(stingify, salt).toString();
   }
+
+  // createData(className) {
+  //   const token = this.session_token;
+  //   const SDK_version = this.version;
+
+  //   if(!token) {
+  //     throw new Error(ERRORS['AuthorizationRequired'].message);
+  //   }
+
+  //   let service = axios.create({
+  //     baseURL: `https://${this._endpoints.api}/${this._urls.data}/`,
+  //     headers: {
+  //       'QB-SDK': `Quickblox JS SDK ${SDK_version}`,
+  //       'QB-Token': token
+  //     }
+  //   });
+
+  //   return new Data(className, service);
+  // }
+
 }
+
+Object.assign(Client.prototype, eventEmitterMixin);
 
 Client.ERRORS = ERRORS;
 
