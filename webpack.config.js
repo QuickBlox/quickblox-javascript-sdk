@@ -1,6 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
-const MinifyPlugin = require("babel-minify-webpack-plugin");
+const MinifyPlugin = require('babel-minify-webpack-plugin');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
