@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "crypto-js": "3.1.2-2",
+    "form-data": "^2.3.1",
+    "node-fetch": "^1.7.3",
     "node-xmpp-client": "^3.0.0",
     "request": "^2.48.0",
     "sdp-transform": "^2.3.0",
@@ -77,8 +79,6 @@
   },
   "config": {
     "ghooks": {
-      "pre-commit": "npm run lint",
-      "pre-push": "jasmine"
     }
   },
   "scripts": {

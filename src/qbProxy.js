@@ -3,206 +3,195 @@
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 
-var versionNum = config.version;
-
 /**
  * For server-side applications through using npm package 'quickblox'
  * you should include the following lines
  */
-var isBrowser = typeof window !== 'undefined';
+var isBrowser = typeof window !== 'undefined',
+    isNativeScript = !!(global && (global.android || global.ios));
 
-if (!isBrowser) {
-    var request = require('request');
+var qbFetch,
+    qbFormData;
+
+if (isBrowser || isNativeScript) {
+    qbFetch = fetch;
+    qbFormData = FormData;
+} else {
+    qbFetch = require('node-fetch');
+    qbFormData = require('form-data');
 }
 
-var ajax = require('./plugins/jquery.ajax').ajax;
-
 function ServiceProxy() {
-  this.qbInst = {
-    config: config,
-    session: null
-  };
+    this.qbInst = {
+        config: config,
+        session: null
+    };
 
-  this.reqCount = 0;
+    this.reqCount = 0;
 }
 
 ServiceProxy.prototype = {
     setSession: function(session) {
         this.qbInst.session = session;
     },
+
     getSession: function() {
         return this.qbInst.session;
     },
+
     handleResponse: function(error, response, next, retry) {
         // can add middleware here...
 
-        if(error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-            config.on.sessionExpired(function(){next(error,response);}, retry);
+        if (error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
+            config.on.sessionExpired(function() {
+                next(error,response);
+            }, retry);
         } else {
             if (error) {
                 next(error, null);
             } else {
-                if (config.addISOTime) response = Utils.injectISOTimes(response);
+                if (config.addISOTime) {
+                    response = Utils.injectISOTimes(response);
+                }
+
                 next(null, response);
             }
         }
     },
-    ajax: function(params, callback) {
 
-        var _this = this,
+    ajax: function(params, callback) {
+        console.log(params);
+        var self = this,
             qbRequest,
-            requestCallback,
-            isJSONRequest;
+            qbResponse,
+            makingQBRequest,
+            qbData,
+            _requestCallback,
+            retry;
 
         ++this.reqCount;
 
         // Logger
-        //
         var clonedData;
-        if(params.data && params.data.file){
-          clonedData = JSON.parse(JSON.stringify(params.data));
-          clonedData.file = "...";
-        }else{
-          clonedData = params.data;
-        }
-        Utils.QBLog('[Request][' + this.reqCount + ']', (params.type || 'GET') + ' ' + params.url, clonedData ? clonedData : "");
-        //
-        //
 
-        var retry = function(session) {
-            if(!!session) {
-                _this.setSession(session);
-                _this.ajax(params, callback);
+        if (params.data && params.data.file) {
+            clonedData = JSON.parse(JSON.stringify(params.data));
+            clonedData.file = "...";
+        } else {
+            clonedData = params.data;
+        }
+
+        Utils.QBLog('[Request][' + this.reqCount + ']', (params.type || 'GET') + ' ' + params.url, clonedData ? clonedData : "");
+
+        retry = function(session) {
+            if (!!session) {
+                self.setSession(session);
+                self.ajax(params, callback);
             }
         };
 
-        var ajaxCall = {
-            url: params.url,
-            type: params.type || 'GET',
-            dataType: params.dataType || 'json',
-            data: params.data || ' ',
-            timeout: config.timeout,
-            contentType: params.contentType || 'application/x-www-form-urlencoded; charset=UTF-8',
-            beforeSend: function(jqXHR, settings) {
-                if (settings.url.indexOf('s3.amazonaws.com') === -1) {
-                    if (_this.qbInst.session && _this.qbInst.session.token) {
-                        jqXHR.setRequestHeader('QB-Token', _this.qbInst.session.token);
-                        jqXHR.setRequestHeader('QB-SDK', 'JS ' + versionNum + ' - Client');
-                    }
+        _requestCallback = function(error, response, body) {
+            var statusCode = response && (response.status || response.statusCode);
+
+            if (error || (statusCode !== 200 && statusCode !== 201 && statusCode !== 202)) {
+                var errorMsg;
+
+                try {
+                    errorMsg = {
+                        code: response && statusCode || error && error.code,
+                        status: response && response.headers && response.headers.status || 'error',
+                        message: body || error && error.errno,
+                        detail: body && body.errors || error && error.syscall
+                    };
+                } catch(e) {
+                    errorMsg = error;
                 }
-            },
-            success: function(data, status, jqHXR) {
-                Utils.QBLog('[Response][' + _this.reqCount + ']', (data && data !== " ") ? data : 'empty body');
+
+                Utils.QBLog('[Response][' + self.reqCount + ']', 'error', statusCode, body || error || body.errors);
 
                 if (params.url.indexOf(config.urls.session) === -1) {
-                    _this.handleResponse(null, data, callback, retry);
-                } else {
-                    callback(null, data);
-                }
-            },
-            error: function(jqHXR, status, error) {
-                Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', jqHXR.status, error, jqHXR.responseText);
-
-                var errorMsg = {
-                    code: jqHXR.status,
-                    status: status,
-                    message: error,
-                    detail: jqHXR.responseText
-                };
-                if (params.url.indexOf(config.urls.session) === -1) {
-                    _this.handleResponse(errorMsg, null, callback, retry);
+                    self.handleResponse(errorMsg, null, callback, retry);
                 } else {
                     callback(errorMsg, null);
                 }
+            } else {
+                Utils.QBLog('[Response][' + self.reqCount + ']', (body && body !== " ") ? body : 'empty body');
+
+                if (params.url.indexOf(config.urls.session) === -1) {
+                    self.handleResponse(null, body, callback, retry);
+                } else {
+                    callback(null, body);
+                }
             }
         };
 
-        if(!isBrowser) {
-            isJSONRequest = ajaxCall.dataType === 'json';
-
-            var makingQBRequest = params.url.indexOf('s3.amazonaws.com') === -1 && _this.qbInst && _this.qbInst.session && _this.qbInst.session.token || false;
-
-            qbRequest = {
-                url: ajaxCall.url,
-                method: ajaxCall.type,
-                timeout: config.timeout,
-                json: (isJSONRequest && !params.isFileUpload) ? ajaxCall.data : null,
-                headers: makingQBRequest ? { 'QB-Token' : _this.qbInst.session.token, 'QB-SDK': 'JS ' + versionNum + ' - Server' } : null
-            };
-
-            requestCallback = function(error, response, body) {
-                if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
-                    var errorMsg;
-                    try {
-                        errorMsg = {
-                          code: response && response.statusCode || error && error.code,
-                          status: response && response.headers && response.headers.status || 'error',
-                          message: body || error && error.errno,
-                          detail: body && body.errors || error && error.syscall
-                        };
-                    } catch(e) {
-                        errorMsg = error;
-                    }
-
-                    Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', response.statusCode, body || error || body.errors);
-
-                    if (qbRequest.url.indexOf(config.urls.session) === -1) {
-                        _this.handleResponse(errorMsg, null, callback, retry);
-                    } else {
-                        callback(errorMsg, null);
-                    }
+        if (params.isStringify) {
+            console.log("params.isStringify");
+            qbData = JSON.stringify(params.data);
+        } else if (typeof params.data === 'object') {
+            console.log("typeof params.data === 'object'");
+            var message = params.data;
+            qbData = Object.keys(message).map(function(val) {
+                if (typeof message[val] === 'object') {
+                    return Object.keys(message[val]).map(function(val1) {
+                        return val + '[' + val1 + ']=' + message[val][val1];
+                    }).sort().join('&');
                 } else {
-                  Utils.QBLog('[Response][' + _this.reqCount + ']', (body && body !== " ") ? body : 'empty body');
-
-                  if (qbRequest.url.indexOf(config.urls.session) === -1) {
-                      _this.handleResponse(null, body, callback, retry);
-                  } else {
-                      callback(null, body);
-                  }
+                    return val + '=' + message[val];
                 }
-            };
-        }
+            }).sort().join('&');
+        } else if (params.dataType !== 'json') {
+            console.log("params.dataType !== 'json'");
+            qbData = new qbFormData();
 
-        // Optional - for example 'multipart/form-data' when sending a file.
-        // Default is 'application/x-www-form-urlencoded; charset=UTF-8'
-        if (typeof params.contentType === 'boolean' || typeof params.contentType === 'string') {
-            ajaxCall.contentType = params.contentType;
-        }
+            Object.keys(params.data).forEach(function(item) {
+                qbData.append(item, params.data[item]);
+            });
+        } else if (params.isFileUpload) {
+            console.log("params.isFileUpload");
+            qbData = new qbFormData();
 
-        if (typeof params.processData === 'boolean') {
-            ajaxCall.processData = params.processData;
-        }
-
-        // link: https://github.com/request/request#multipartform-data-multipart-form-uploads
-        if(isBrowser) {
-
-            if(params.isNeedStringify) {
-                ajaxCall.data = JSON.stringify(ajaxCall.data);
-            }
-
-            ajax( ajaxCall );
+            Object.keys(params.data).forEach(function(item) {
+                if (item === "file") {
+                    qbData.append(item, params.data[item].data, {filename: params.data[item].name});
+                } else {
+                    qbData.append(item, params.data[item]);
+                }
+            });
         } else {
-            var r = request(qbRequest, requestCallback),
-                form;
-
-            if(!isJSONRequest){
-                form = r.form();
-
-                Object.keys(ajaxCall.data).forEach(function(item,i,arr){
-                    form.append(item, ajaxCall.data[item]);
-                });
-            } else if(params.isFileUpload) {
-                form = r.form();
-
-                Object.keys(ajaxCall.data).forEach(function(item,i,arr){
-                    if(item === "file"){
-                        form.append(item, ajaxCall.data[item].data, {filename: ajaxCall.data[item].name});
-                    } else {
-                        form.append(item, ajaxCall.data[item]);
-                    }
-                });
-            }
+            console.log("just else");
+            qbData = ' ';
         }
+
+        qbRequest = {
+            'method': params.type || 'GET',
+            'timeout': config.timeout,
+            'body': qbData,
+            'headers': {
+                'Content-Type': params.contentType || 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        };
+
+        if ( (params.url.indexOf('s3.amazonaws.com') === -1) &&
+            self.qbInst && self.qbInst.session && self.qbInst.session.token) {
+            qbRequest['headers']['QB-Token'] = self.qbInst.session.token;
+            qbRequest['headers']['QB-SDK'] = 'JS ' + config.version + ' - Server';
+        }
+
+console.log(qbRequest);
+        qbFetch(params.url, qbRequest)
+            .then(function(response) {
+                qbResponse = response;
+                console.log(response);
+                return response.json();
+            })
+            .then(function(body) {
+                console.log(body);
+                _requestCallback(null, qbResponse, body);
+            })
+            .catch(function(error) {
+                _requestCallback(error);
+            });
     }
 };
 

@@ -41,39 +41,37 @@ QuickBlox.prototype = {
             config.set(configMap);
         }
 
-        var Proxy = require('./qbProxy');
-
-        this.service = new Proxy();
-
         /** include dependencies */
-        var Auth = require('./modules/qbAuth'),
+        var Proxy = require('./qbProxy'),
+            Auth = require('./modules/qbAuth'),
             Users = require('./modules/qbUsers'),
-            Chat = require('./modules/qbChat'),
+            // Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
             AddressBook = require('./modules/qbAddressBook');
 
+        this.service = new Proxy();
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
-        this.chat = new Chat(this.service);
+        // this.chat = new Chat(this.service);
         this.content = new Content(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
         this.addressbook = new AddressBook(this.service);
 
         if (isBrowser) {
-            /** add adapter.js*/
-            require('webrtc-adapter');
-
-            /** add WebRTC API if API is avaible */
-            if( Utils.isWebRTCAvailble() ) {
-                var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
-                this.webrtc = new WebRTCClient(this.service, this.chat.connection);
-                this.chat.webrtcSignalingProcessor = this.webrtc.signalingProcessor;
-            } else {
+            // /** add adapter.js*/
+            // require('webrtc-adapter');
+            //
+            // /** add WebRTC API if API is avaible */
+            // if( Utils.isWebRTCAvailble() ) {
+            //     var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+            //     this.webrtc = new WebRTCClient(this.service, this.chat.connection);
+            //     this.chat.webrtcSignalingProcessor = this.webrtc.signalingProcessor;
+            // } else {
                 this.webrtc = false;
-            }
+            // }
         } else {
             this.webrtc = false;
         }

@@ -4,10 +4,12 @@
 
 var config = require('./qbConfig');
 
-var isBrowser = typeof window !== "undefined";
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
-if(!isBrowser){
+var isBrowser = typeof window !== "undefined",
+    isNativeScript = !!(global && (global.android || global.ios));
+
+if (!isBrowser && !isNativeScript) {
   var fs = require('fs');
 }
 
@@ -97,8 +99,8 @@ var Utils = {
   },
 
     QBLog: function(){
-        if(this.loggers){
-            for(var i=0;i<this.loggers.length;++i){
+        if (this.loggers) {
+            for (var i=0; i<this.loggers.length; ++i) {
                 this.loggers[i](arguments);
             }
 
@@ -106,6 +108,7 @@ var Utils = {
         }
 
         var logger;
+
         this.loggers = [];
 
         var consoleLoggerFunction = function(){
@@ -118,7 +121,7 @@ var Utils = {
 
         var fileLoggerFunction = function(){
             var logger = function(args){
-                if(isBrowser){
+                if (!fs) {
                     throw unsupported;
                 } else {
                     var data = [];
