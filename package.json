@@ -79,6 +79,8 @@
   },
   "config": {
     "ghooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "jasmine"
     }
   },
   "scripts": {

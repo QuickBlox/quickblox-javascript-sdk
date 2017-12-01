@@ -288,7 +288,7 @@ UsersProxy.prototype = {
          * @param {object} error - The error object
          * @param {object} response - Empty body
          */
-        this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}, type: 'GET', dataType: 'text'}, callback);
+        this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}, dataType: 'text'}, callback);
     }
 
 };

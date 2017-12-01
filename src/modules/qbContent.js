@@ -162,25 +162,16 @@ ContentProxy.prototype = {
                 var uri = parseUri(createResult.blob_object_access.params),
                     uploadUrl = uri.protocol + "://" + uri.authority + uri.path,
                     uploadParams = {url: uploadUrl},
-                    data = isBrowser ? new FormData() : {};
+                    data = {};
 
                 fileId = createResult.id;
                 createResult.size = size;
 
                 Object.keys(uri.queryKey).forEach(function(val) {
-                    if (isBrowser) {
-                        data.append(val, decodeURIComponent(uri.queryKey[val]));
-                    } else {
-                        data[val] = decodeURIComponent(uri.queryKey[val]);
-                    }
+                    data[val] = decodeURIComponent(uri.queryKey[val]);
                 });
 
-                if (isBrowser) {
-                    data.append('file', file, createResult.name);
-                } else {
-                    data.file = file;
-                }
-
+                data.file = file;
                 uploadParams.data = data;
 
                 // Upload the file to Amazon S3

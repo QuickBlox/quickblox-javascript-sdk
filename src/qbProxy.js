@@ -10,8 +10,7 @@ var Utils = require('./qbUtils');
 var isBrowser = typeof window !== 'undefined',
     isNativeScript = !!(global && (global.android || global.ios));
 
-var qbFetch,
-    qbFormData;
+var qbFetch, qbFormData;
 
 if (isBrowser || isNativeScript) {
     qbFetch = fetch;
@@ -59,20 +58,10 @@ ServiceProxy.prototype = {
         }
     },
 
-    ajax: function(params, callback) {
-        console.log(params);
-        var self = this,
-            qbRequest,
-            qbResponse,
-            makingQBRequest,
-            qbData,
-            _requestCallback,
-            retry;
+    startLogger: function(params) {
+        var clonedData;
 
         ++this.reqCount;
-
-        // Logger
-        var clonedData;
 
         if (params.data && params.data.file) {
             clonedData = JSON.parse(JSON.stringify(params.data));
@@ -82,15 +71,111 @@ ServiceProxy.prototype = {
         }
 
         Utils.QBLog('[Request][' + this.reqCount + ']', (params.type || 'GET') + ' ' + params.url, clonedData ? clonedData : "");
+    },
 
-        retry = function(session) {
-            if (!!session) {
-                self.setSession(session);
-                self.ajax(params, callback);
+    ajax: function(params, callback) {
+        this.startLogger(params);
+
+        var self = this,
+            qbSessioToken = self.qbInst && self.qbInst.session && self.qbInst.session.token,
+            isQBRequest = params.url.indexOf('s3.amazonaws.com') === -1,
+            isGetOrHeadType = !params.type || params.type === 'HEAD',
+            isMultipartFormData = params.contentType === false,
+            qbDataType = params.dataType || 'json',
+            qbRequestBody = _getBodyRequest(),
+            qbUrl = params.url,
+            qbRequest = {},
+            qbResponse;
+
+        qbRequest.method = params.type || 'GET';
+
+        if (isGetOrHeadType) {
+            qbUrl += '?' + qbRequestBody;
+        } else {
+            qbRequest.body = qbRequestBody;
+        }
+
+        if (!isMultipartFormData) {
+            qbRequest.headers = {
+                'Content-Type': params.contentType || 'application/x-www-form-urlencoded; charset=UTF-8'
+            };
+        }
+
+        if (isQBRequest && qbSessioToken) {
+            qbRequest.headers['QB-Token'] = qbSessioToken;
+            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
+        }
+
+        if (config.timeout) {
+            qbRequest.timeout = config.timeout;
+        }
+
+        qbFetch(qbUrl, qbRequest)
+            .then(function(response) {
+                qbResponse = response.clone();
+
+                if (qbDataType === 'text') {
+                    return response.text();
+                } else {
+                    return response.json();
+                }
+            })
+            .then(function(body) {
+                console.warn("BODY:", body);
+
+                _requestCallback(null, qbResponse, body);
+            });
+            // .catch(function(error) {
+            //     _requestCallback(error);
+            // });
+
+        /*
+         * Private functions
+         * Only for ServiceProxy.ajax() method closure
+         */
+        function _getBodyRequest() {
+            var qbData;
+
+            if (params.isNeedStringify) {
+                qbData = JSON.stringify(params.data);
+            } else {
+                var message = params.data;
+
+                qbData = Object.keys(message).map(function(val) {
+                    if (typeof message[val] === 'object') {
+                        return Object.keys(message[val]).map(function(val1) {
+                            return val + '[' + val1 + ']=' + message[val][val1];
+                        }).sort().join('&');
+                    } else {
+                        return val + '=' + message[val];
+                    }
+                }).sort().join('&');
             }
-        };
 
-        _requestCallback = function(error, response, body) {
+            if (isMultipartFormData) {
+                qbData = new qbFormData();
+
+                Object.keys(params.data).forEach(function(item) {
+                    qbData.append(item, params.data[item]);
+                });
+            }
+
+            if (params.isFileUpload) {
+                qbData = new qbFormData();
+
+                Object.keys(params.data).forEach(function(item) {
+                    if (item === "file") {
+                        qbData.append(item, params.data[item].data, {filename: params.data[item].name});
+                    } else {
+                        qbData.append(item, params.data[item]);
+                    }
+                });
+            }
+
+            return qbData;
+        }
+
+        function _requestCallback(error, response, body) {
             var statusCode = response && (response.status || response.statusCode);
 
             if (error || (statusCode !== 200 && statusCode !== 201 && statusCode !== 202)) {
@@ -123,75 +208,14 @@ ServiceProxy.prototype = {
                     callback(null, body);
                 }
             }
-        };
-
-        if (params.isStringify) {
-            console.log("params.isStringify");
-            qbData = JSON.stringify(params.data);
-        } else if (typeof params.data === 'object') {
-            console.log("typeof params.data === 'object'");
-            var message = params.data;
-            qbData = Object.keys(message).map(function(val) {
-                if (typeof message[val] === 'object') {
-                    return Object.keys(message[val]).map(function(val1) {
-                        return val + '[' + val1 + ']=' + message[val][val1];
-                    }).sort().join('&');
-                } else {
-                    return val + '=' + message[val];
-                }
-            }).sort().join('&');
-        } else if (params.dataType !== 'json') {
-            console.log("params.dataType !== 'json'");
-            qbData = new qbFormData();
-
-            Object.keys(params.data).forEach(function(item) {
-                qbData.append(item, params.data[item]);
-            });
-        } else if (params.isFileUpload) {
-            console.log("params.isFileUpload");
-            qbData = new qbFormData();
-
-            Object.keys(params.data).forEach(function(item) {
-                if (item === "file") {
-                    qbData.append(item, params.data[item].data, {filename: params.data[item].name});
-                } else {
-                    qbData.append(item, params.data[item]);
-                }
-            });
-        } else {
-            console.log("just else");
-            qbData = ' ';
         }
 
-        qbRequest = {
-            'method': params.type || 'GET',
-            'timeout': config.timeout,
-            'body': qbData,
-            'headers': {
-                'Content-Type': params.contentType || 'application/x-www-form-urlencoded; charset=UTF-8'
+        function retry(session) {
+            if (!!session) {
+                self.setSession(session);
+                self.ajax(params, callback);
             }
-        };
-
-        if ( (params.url.indexOf('s3.amazonaws.com') === -1) &&
-            self.qbInst && self.qbInst.session && self.qbInst.session.token) {
-            qbRequest['headers']['QB-Token'] = self.qbInst.session.token;
-            qbRequest['headers']['QB-SDK'] = 'JS ' + config.version + ' - Server';
         }
-
-console.log(qbRequest);
-        qbFetch(params.url, qbRequest)
-            .then(function(response) {
-                qbResponse = response;
-                console.log(response);
-                return response.json();
-            })
-            .then(function(body) {
-                console.log(body);
-                _requestCallback(null, qbResponse, body);
-            })
-            .catch(function(error) {
-                _requestCallback(error);
-            });
     }
 };
 
