@@ -77,22 +77,24 @@ ServiceProxy.prototype = {
         this.startLogger(params);
 
         var self = this,
-            qbSessioToken = self.qbInst && self.qbInst.session && self.qbInst.session.token,
+            isGetOrHeadType = !params.type || params.type === 'GET' || params.type === 'HEAD',
+            qbSessionToken = self.qbInst && self.qbInst.session && self.qbInst.session.token,
             isQBRequest = params.url.indexOf('s3.amazonaws.com') === -1,
-            isGetOrHeadType = !params.type || params.type === 'HEAD',
             isMultipartFormData = params.contentType === false,
+            qbRequestBody = params.data && _getBodyRequest(),
             qbDataType = params.dataType || 'json',
-            qbRequestBody = _getBodyRequest(),
             qbUrl = params.url,
             qbRequest = {},
             qbResponse;
 
         qbRequest.method = params.type || 'GET';
 
-        if (isGetOrHeadType) {
-            qbUrl += '?' + qbRequestBody;
-        } else {
-            qbRequest.body = qbRequestBody;
+        if (qbRequestBody) {
+            if (isGetOrHeadType) {
+                qbUrl += '?' + qbRequestBody;
+            } else {
+                qbRequest.body = qbRequestBody;
+            }
         }
 
         if (!isMultipartFormData) {
@@ -101,8 +103,8 @@ ServiceProxy.prototype = {
             };
         }
 
-        if (isQBRequest && qbSessioToken) {
-            qbRequest.headers['QB-Token'] = qbSessioToken;
+        if (isQBRequest && qbSessionToken) {
+            qbRequest.headers['QB-Token'] = qbSessionToken;
             qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
         }
 
@@ -112,8 +114,8 @@ ServiceProxy.prototype = {
 
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
+                console.warn("response:", response);
                 qbResponse = response.clone();
-
                 if (qbDataType === 'text') {
                     return response.text();
                 } else {
@@ -121,13 +123,8 @@ ServiceProxy.prototype = {
                 }
             })
             .then(function(body) {
-                console.warn("BODY:", body);
-
                 _requestCallback(null, qbResponse, body);
             });
-            // .catch(function(error) {
-            //     _requestCallback(error);
-            // });
 
         /*
          * Private functions
