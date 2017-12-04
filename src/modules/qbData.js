@@ -141,7 +141,13 @@ DataProxy.prototype = {
          * @param {object} error - The error object
          * @param {object} response - An object
          */
-        this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + data._id), data: data, type: 'PUT'}, function(err,result){
+        this.service.ajax({
+            'url': Utils.getUrl(config.urls.data, className + '/' + data._id),
+            'type': 'PUT',
+            'contentType': 'application/json; charset=utf-8',
+            'isNeedStringify': true,
+            'data': data
+        }, function(err,result){
             if (err) {
                 callback(err, null);
             } else {
@@ -191,28 +197,19 @@ DataProxy.prototype = {
          * @param {object} error - The error object
          * @param {object} response - The file object
          */
-        var formData;
-
-        if (isBrowser) {
-            formData = new FormData();
-            formData.append('field_name', params.field_name);
-            formData.append('file', params.file);
-        } else {
-            formData = {
+        var data = {
                 field_name: params.field_name,
                 file: {
                     data: params.file,
                     name: params.name
                 }
             };
-        }
 
-        this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),
-            data: formData,
+        this.service.ajax({
+            url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),
+            type: 'POST',
             contentType: false,
-            processData: false,
-            type:'POST',
-            isFileUpload: true
+            data: data,
         }, function(err, result){
             if (err) {
                 callback(err, null);

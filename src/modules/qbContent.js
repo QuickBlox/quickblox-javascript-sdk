@@ -216,7 +216,6 @@ ContentProxy.prototype = {
             type: 'POST',
             dataType: 'text',
             contentType: false,
-            processData: false,
             url: params.url,
             data: params.data
         };

@@ -2239,9 +2239,11 @@ DialogProxy.prototype = {
          * */
 
         this.service.ajax({
-            url: Utils.getUrl(DIALOGS_API_URL, id),
-            type: 'PUT',
-            data: params
+            'url': Utils.getUrl(DIALOGS_API_URL, id),
+            'type': 'PUT',
+            'contentType': 'application/json; charset=utf-8',
+            'isNeedStringify': true,
+            'data': params
         }, callback);
     },
 

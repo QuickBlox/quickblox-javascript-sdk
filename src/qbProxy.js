@@ -104,6 +104,10 @@ ServiceProxy.prototype = {
         }
 
         if (isQBRequest && qbSessionToken) {
+            if (!qbRequest.headers) {
+                qbRequest.headers = {};
+            }
+
             qbRequest.headers['QB-Token'] = qbSessionToken;
             qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
         }
@@ -114,8 +118,8 @@ ServiceProxy.prototype = {
 
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
-                console.warn("response:", response);
                 qbResponse = response.clone();
+
                 if (qbDataType === 'text') {
                     return response.text();
                 } else {
@@ -131,20 +135,21 @@ ServiceProxy.prototype = {
          * Only for ServiceProxy.ajax() method closure
          */
         function _getBodyRequest() {
-            var qbData;
+            var data = params.data,
+                qbData;
 
             if (params.isNeedStringify) {
-                qbData = JSON.stringify(params.data);
+                qbData = JSON.stringify(data);
             } else {
-                var message = params.data;
+                qbData = Object.keys(data).map(function(value) {
+                    var dataProp = data[value];
 
-                qbData = Object.keys(message).map(function(val) {
-                    if (typeof message[val] === 'object') {
-                        return Object.keys(message[val]).map(function(val1) {
-                            return val + '[' + val1 + ']=' + message[val][val1];
+                    if ((dataProp !== null) && (typeof dataProp === 'object')) {
+                        return Object.keys(dataProp).map(function(value1) {
+                            return value + '[' + value1 + ']=' + dataProp[value1];
                         }).sort().join('&');
                     } else {
-                        return val + '=' + message[val];
+                        return value + '=' + dataProp;
                     }
                 }).sort().join('&');
             }
@@ -152,17 +157,9 @@ ServiceProxy.prototype = {
             if (isMultipartFormData) {
                 qbData = new qbFormData();
 
-                Object.keys(params.data).forEach(function(item) {
-                    qbData.append(item, params.data[item]);
-                });
-            }
-
-            if (params.isFileUpload) {
-                qbData = new qbFormData();
-
-                Object.keys(params.data).forEach(function(item) {
-                    if (item === "file") {
-                        qbData.append(item, params.data[item].data, {filename: params.data[item].name});
+                Object.keys(data).forEach(function(item) {
+                    if (item === 'file') {
+                        qbData.append(item, data[item].data, data[item].name);
                     } else {
                         qbData.append(item, params.data[item]);
                     }
