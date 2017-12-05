@@ -81,15 +81,17 @@ ServiceProxy.prototype = {
             qbSessionToken = self.qbInst && self.qbInst.session && self.qbInst.session.token,
             isQBRequest = params.url.indexOf('s3.amazonaws.com') === -1,
             isMultipartFormData = params.contentType === false,
-            qbRequestBody = params.data && _getBodyRequest(),
             qbDataType = params.dataType || 'json',
             qbUrl = params.url,
             qbRequest = {},
+            qbRequestBody,
             qbResponse;
 
         qbRequest.method = params.type || 'GET';
 
-        if (qbRequestBody) {
+        if (params.data) {
+            qbRequestBody = _getBodyRequest();
+
             if (isGetOrHeadType) {
                 qbUrl += '?' + qbRequestBody;
             } else {
@@ -138,32 +140,27 @@ ServiceProxy.prototype = {
             var data = params.data,
                 qbData;
 
-            if (params.isNeedStringify) {
-                qbData = JSON.stringify(data);
-            } else {
-                qbData = Object.keys(data).map(function(value) {
-                    var dataProp = data[value];
-
-                    if ((dataProp !== null) && (typeof dataProp === 'object')) {
-                        return Object.keys(dataProp).map(function(value1) {
-                            return value + '[' + value1 + ']=' + dataProp[value1];
-                        }).sort().join('&');
-                    } else {
-                        return value + '=' + dataProp;
-                    }
-                }).sort().join('&');
-            }
-
             if (isMultipartFormData) {
                 qbData = new qbFormData();
-
                 Object.keys(data).forEach(function(item) {
-                    if (item === 'file') {
+                    if (params.fileToCustomObject && (item === 'file')) {
                         qbData.append(item, data[item].data, data[item].name);
                     } else {
                         qbData.append(item, params.data[item]);
                     }
                 });
+            } else if (params.isNeedStringify) {
+                qbData = JSON.stringify(data);
+            } else {
+                qbData = Object.keys(data).map(function(k) {
+                    if (Utils.isObject(data[k])) {
+                        return Object.keys(data[k]).map(function(v) {
+                            return k + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + data[k][v];
+                        }).sort().join('&');
+                    } else {
+                        return k + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + data[k];
+                    }
+                }).sort().join('&');
             }
 
             return qbData;

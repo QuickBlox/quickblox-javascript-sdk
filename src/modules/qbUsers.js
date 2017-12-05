@@ -10,12 +10,6 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-if (!Array.isArray) {
-    Array.isArray = function(arg) {
-        return Object.prototype.toString.call(arg) === '[object Array]';
-    };
-}
-
 var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
 var NUMBER_FIELDS = ['id', 'external_user_id'];
 
@@ -79,7 +73,8 @@ UsersProxy.prototype = {
             message.per_page = params.per_page;
         }
 
-        this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
+        this.service.ajax({
+            url: Utils.getUrl(config.urls.users), data: message}, callback);
     },
 
     /**
@@ -300,7 +295,7 @@ module.exports = UsersProxy;
 function generateFilter(obj) {
     var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
 
-    if (Array.isArray(obj.value)) {
+    if (Utils.isArray(obj.value)) {
         if (type === 'object') {
             type = typeof obj.value[0];
         }

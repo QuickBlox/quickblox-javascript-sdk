@@ -206,10 +206,11 @@ DataProxy.prototype = {
             };
 
         this.service.ajax({
-            url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),
-            type: 'POST',
-            contentType: false,
-            data: data,
+            'url': Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'),
+            'type': 'POST',
+            'fileToCustomObject': true,
+            'contentType': false,
+            'data': data,
         }, function(err, result){
             if (err) {
                 callback(err, null);
