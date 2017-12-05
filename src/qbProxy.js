@@ -66,6 +66,8 @@ ServiceProxy.prototype = {
         if (params.data && params.data.file) {
             clonedData = JSON.parse(JSON.stringify(params.data));
             clonedData.file = "...";
+        } else if (isNativeScript) {
+            clonedData = JSON.stringify(params.data);
         } else {
             clonedData = params.data;
         }
@@ -120,7 +122,7 @@ ServiceProxy.prototype = {
 
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
-                qbResponse = response.clone();
+                qbResponse = response;
 
                 if (qbDataType === 'text') {
                     return response.text();
@@ -130,6 +132,9 @@ ServiceProxy.prototype = {
             })
             .then(function(body) {
                 _requestCallback(null, qbResponse, body);
+            })
+            .catch(function(error) {
+                _requestCallback(error);
             });
 
         /*
@@ -167,7 +172,9 @@ ServiceProxy.prototype = {
         }
 
         function _requestCallback(error, response, body) {
-            var statusCode = response && (response.status || response.statusCode);
+            var statusCode = response && (response.status || response.statusCode),
+                responseMessage,
+                responseBody;
 
             if (error || (statusCode !== 200 && statusCode !== 201 && statusCode !== 202)) {
                 var errorMsg;
@@ -183,7 +190,10 @@ ServiceProxy.prototype = {
                     errorMsg = error;
                 }
 
-                Utils.QBLog('[Response][' + self.reqCount + ']', 'error', statusCode, body || error || body.errors);
+                responseBody = body || error || body.errors;
+                responseMessage = isNativeScript ? JSON.stringify(responseBody) : responseBody;
+
+                Utils.QBLog('[Response][' + self.reqCount + ']', 'error', statusCode, responseMessage);
 
                 if (params.url.indexOf(config.urls.session) === -1) {
                     self.handleResponse(errorMsg, null, callback, retry);
@@ -191,7 +201,10 @@ ServiceProxy.prototype = {
                     callback(errorMsg, null);
                 }
             } else {
-                Utils.QBLog('[Response][' + self.reqCount + ']', (body && body !== " ") ? body : 'empty body');
+                responseBody = (body && body !== " ") ? body : 'empty body';
+                responseMessage = isNativeScript ? JSON.stringify(responseBody) : responseBody;
+
+                Utils.QBLog('[Response][' + self.reqCount + ']', responseMessage);
 
                 if (params.url.indexOf(config.urls.session) === -1) {
                     self.handleResponse(null, body, callback, retry);

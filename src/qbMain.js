@@ -7,7 +7,8 @@
  *
  */
 
-var isBrowser = typeof window !== 'undefined';
+var isBrowser = typeof window !== 'undefined',
+    isNativeScript = !!(global && (global.android || global.ios));
 
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
@@ -45,7 +46,6 @@ QuickBlox.prototype = {
         var Proxy = require('./qbProxy'),
             Auth = require('./modules/qbAuth'),
             Users = require('./modules/qbUsers'),
-            Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
@@ -54,11 +54,16 @@ QuickBlox.prototype = {
         this.service = new Proxy();
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
-        this.chat = new Chat(this.service);
         this.content = new Content(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
         this.addressbook = new AddressBook(this.service);
+
+        // TODO: Quickblox Chat Module isn't ready for NativeScript
+        if (!isNativeScript) {
+            var Chat = require('./modules/qbChat');
+            this.chat = new Chat(this.service);
+        }
 
         if (isBrowser) {
             /** add adapter.js*/
