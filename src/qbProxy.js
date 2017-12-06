@@ -134,7 +134,12 @@ ServiceProxy.prototype = {
                 _requestCallback(null, qbResponse, body);
             })
             .catch(function(error) {
-                _requestCallback(error);
+                // TODO: find status 200 for NativeScript
+                if (typeof error === 'object' && !Object.keys(error).length) {
+                    _requestCallback(null, {status: 200}, ' ');
+                } else {
+                    _requestCallback(error);
+                }
             });
 
         /*
@@ -201,7 +206,7 @@ ServiceProxy.prototype = {
                     callback(errorMsg, null);
                 }
             } else {
-                responseBody = (body && body !== " ") ? body : 'empty body';
+                responseBody = (body && body !== ' ') ? body : 'empty body';
                 responseMessage = isNativeScript ? JSON.stringify(responseBody) : responseBody;
 
                 Utils.QBLog('[Response][' + self.reqCount + ']', responseMessage);
