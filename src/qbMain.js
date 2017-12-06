@@ -49,7 +49,9 @@ QuickBlox.prototype = {
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
-            AddressBook = require('./modules/qbAddressBook');
+            AddressBook = require('./modules/qbAddressBook'),
+            DialogProxy = require('./modules/chat/qbDialog'),
+            MessageProxy = require('./modules/chat/qbMessage');
 
         this.service = new Proxy();
         this.auth = new Auth(this.service);
@@ -61,9 +63,14 @@ QuickBlox.prototype = {
 
         // TODO: Quickblox Chat Module isn't ready for NativeScript
         if (!isNativeScript) {
-            var Chat = require('./modules/qbChat');
+            var Chat = require('./modules/chat/qbChat');
             this.chat = new Chat(this.service);
+        } else {
+            this.chat = {};
         }
+
+        this.chat.dialog = new DialogProxy(this.service);
+        this.chat.message = new MessageProxy(this.service);
 
         if (isBrowser) {
             /** add adapter.js*/

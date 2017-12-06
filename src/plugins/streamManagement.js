@@ -29,7 +29,7 @@
 /* globals $build */
 
 var Utils = require('../qbUtils'),
-    chatUtils = require('../modules/qbChatHelpers');
+    chatUtils = require('../modules/chat/qbChatHelpers');
 
 function StreamManagement(options) {
 

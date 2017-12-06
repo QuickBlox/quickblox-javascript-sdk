@@ -1,7 +1,7 @@
 'use strict';
 
-var utils = require('../qbUtils');
-var config = require('../qbConfig');
+var utils = require('../../qbUtils');
+var config = require('../../qbConfig');
 
 var ERR_UNKNOWN_INTERFACE = 'Unknown interface. SDK support browser / node env.';
 
