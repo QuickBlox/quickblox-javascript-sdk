@@ -131,11 +131,14 @@ ServiceProxy.prototype = {
             };
 
             requestCallback = function(error, response, body) {
-                if(error || response.statusCode !== 200 && response.statusCode !== 201 && response.statusCode !== 202) {
+                var statusCode = response && (response.status || response.statusCode);
+
+                if(error || statusCode !== 200 && statusCode !== 201 && statusCode !== 202) {
                     var errorMsg;
+
                     try {
                         errorMsg = {
-                          code: response && response.statusCode || error && error.code,
+                          code: response && statusCode || error && error.code,
                           status: response && response.headers && response.headers.status || 'error',
                           message: body || error && error.errno,
                           detail: body && body.errors || error && error.syscall
@@ -144,7 +147,7 @@ ServiceProxy.prototype = {
                         errorMsg = error;
                     }
 
-                    Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', response.statusCode, body || error || body.errors);
+                    Utils.QBLog('[Response][' + _this.reqCount + ']', 'error', statusCode, body || error || body.errors);
 
                     if (qbRequest.url.indexOf(config.urls.session) === -1) {
                         _this.handleResponse(errorMsg, null, callback, retry);
