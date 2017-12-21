@@ -2,7 +2,6 @@
 
 var LOGIN_TIMEOUT = 10000;
 var MESSAGING_TIMEOUT = 7000;
-var REST_REQUESTS_TIMEOUT = 6000;
 
 var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
