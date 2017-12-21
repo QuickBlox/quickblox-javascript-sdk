@@ -15,7 +15,8 @@ gulp.task('build', function () {
     var isDevelopment = process.env.NODE_ENV === 'develop',
         browserifyOpts = {
             debug: isDevelopment,
-            standalone: 'QB'
+            standalone: 'QB',
+            ignoreMissing: true
         };
 
     return browserify('./src/qbMain.js', browserifyOpts)

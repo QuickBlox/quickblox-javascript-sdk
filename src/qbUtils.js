@@ -27,10 +27,12 @@ var Utils = {
      * @return {object} return names of env. (node/browser)
      */
     getEnv: function() {
-        var isNode = typeof window === 'undefined' && typeof exports === 'object',
+        var isNativeScript = typeof global === 'object' && (global.android || global.NSObject),
+            isNode = typeof window === 'undefined' && typeof exports === 'object' && !isNativeScript,
             isBrowser = typeof window !== 'undefined';
 
         return {
+            'nativescript': isNativeScript,
             'browser': isBrowser,
             'node': isNode
         };

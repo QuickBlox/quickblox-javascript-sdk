@@ -10,6 +10,8 @@ var chatUtils = require('./qbChatHelpers'),
 
 var unsupportedError = 'This function isn\'t supported outside of the browser (...yet)';
 
+var NodeClient;
+
 /** create StropheJS or NodeXMPP connection object */
 if (Utils.getEnv().browser) {
     var Connection = require('../../qbStrophe');
@@ -18,8 +20,10 @@ if (Utils.getEnv().browser) {
     Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
     Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
     Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
+} else if (Utils.getEnv().nativescript) {
+    NodeClient = require('nativescript-xmpp-client');
 } else {
-    var NodeClient = require('node-xmpp-client');
+    NodeClient = require('node-xmpp-client');
 }
 
 
@@ -47,14 +51,25 @@ function ChatProxy(service) {
             }
         };
     } else {
+        // nativescript-xmpp-client
+        if (Utils.getEnv().nativescript) {
+            self.nClient = new NodeClient.Client({
+                'websocket': { 'url': config.chatProtocol.websocket },
+                'autostart': false,
+                'reconnect': true
+            });
         // node-xmpp-client
-        self.nClient = new NodeClient({
-            'autostart': false,
-            'reconnect': true
-        });
+        } else if (Utils.getEnv().node) {
+            self.nClient = new NodeClient({
+
+                'autostart': false,
+                'reconnect': true
+            });
+        }
 
         // override 'send' function to add some logs
         var originSendFunction = self.nClient.send;
+
         self.nClient.send = function(stanza) {
             Utils.QBLog('[Chat]', 'SENT:', stanza.toString());
             originSendFunction.call(self.nClient, stanza);
@@ -269,19 +284,24 @@ function ChatProxy(service) {
             delay = chatUtils.getElement(stanza, 'delay'),
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
             bodyContent = chatUtils.getElementText(stanza, 'body'),
+            forwarded = chatUtils.getElement(stanza, 'forwarded'),
+            extraParamsParsed,
+            recipientId,
+            recipient,
             jid;
-
-        var recipient, recipientId;
-        var extraParamsParsed;
 
         if (Utils.getEnv().browser) {
             recipient = stanza.querySelector('forwarded') ? stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null;
-            recipientId = recipient ? self.helpers.getIdFromNode(recipient) : null;
 
             jid = self.connection.jid;
         } else if(Utils.getEnv().node){
+            var forwardedMessage = forwarded ? chatUtils.getElement(forwarded, 'message') : null;
+            recipient = forwardedMessage ? chatUtils.getAttr(forwardedMessage, 'to') : null;
+
             jid = self.nClient.options.jid.user;
         }
+
+        recipientId = recipient ? self.helpers.getIdFromNode(recipient) : null;
 
         var dialogId = type === 'groupchat' ? self.helpers.getDialogIdFromNode(from) : null,
             userId = type === 'groupchat' ? self.helpers.getIdFromResource(from) : self.helpers.getIdFromNode(from),
