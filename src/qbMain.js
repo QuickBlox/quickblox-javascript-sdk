@@ -6,13 +6,8 @@
  * Main SDK Module
  *
  */
-
-var isBrowser = typeof window !== 'undefined',
-    isNativeScript = !!(global && (global.android || global.ios));
-
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -50,6 +45,7 @@ QuickBlox.prototype = {
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
             AddressBook = require('./modules/qbAddressBook'),
+            Chat = require('./modules/chat/qbChat'),
             DialogProxy = require('./modules/chat/qbDialog'),
             MessageProxy = require('./modules/chat/qbMessage');
 
@@ -60,19 +56,11 @@ QuickBlox.prototype = {
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
         this.addressbook = new AddressBook(this.service);
-
-        // TODO: Quickblox Chat Module isn't ready for NativeScript
-        if (!isNativeScript) {
-            var Chat = require('./modules/chat/qbChat');
-            this.chat = new Chat(this.service);
-        } else {
-            this.chat = {};
-        }
-
+        this.chat = new Chat(this.service);
         this.chat.dialog = new DialogProxy(this.service);
         this.chat.message = new MessageProxy(this.service);
 
-        if (isBrowser) {
+        if (Utils.getEnv().browser) {
             /** add adapter.js*/
             require('webrtc-adapter');
 

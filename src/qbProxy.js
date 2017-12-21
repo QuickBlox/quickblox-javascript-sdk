@@ -7,17 +7,14 @@ var Utils = require('./qbUtils');
  * For server-side applications through using npm package 'quickblox'
  * you should include the following lines
  */
-var isBrowser = typeof window !== 'undefined',
-    isNativeScript = !!(global && (global.android || global.ios));
-
 var qbFetch, qbFormData;
 
-if (isBrowser || isNativeScript) {
-    qbFetch = fetch;
-    qbFormData = FormData;
-} else {
+if (Utils.getEnv().node) {
     qbFetch = require('node-fetch');
     qbFormData = require('form-data');
+} else {
+    qbFetch = fetch;
+    qbFormData = FormData;
 }
 
 function ServiceProxy() {
@@ -66,7 +63,7 @@ ServiceProxy.prototype = {
         if (params.data && params.data.file) {
             clonedData = JSON.parse(JSON.stringify(params.data));
             clonedData.file = "...";
-        } else if (isNativeScript) {
+        } else if (Utils.getEnv().nativescript) {
             clonedData = JSON.stringify(params.data);
         } else {
             clonedData = params.data;
@@ -196,7 +193,7 @@ ServiceProxy.prototype = {
                 }
 
                 responseBody = body || error || body.errors;
-                responseMessage = isNativeScript ? JSON.stringify(responseBody) : responseBody;
+                responseMessage = Utils.getEnv().nativescript ? JSON.stringify(responseBody) : responseBody;
 
                 Utils.QBLog('[Response][' + self.reqCount + ']', 'error', statusCode, responseMessage);
 
@@ -207,7 +204,7 @@ ServiceProxy.prototype = {
                 }
             } else {
                 responseBody = (body && body !== ' ') ? body : 'empty body';
-                responseMessage = isNativeScript ? JSON.stringify(responseBody) : responseBody;
+                responseMessage = Utils.getEnv().nativescript ? JSON.stringify(responseBody) : responseBody;
 
                 Utils.QBLog('[Response][' + self.reqCount + ']', responseMessage);
 

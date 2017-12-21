@@ -40,6 +40,8 @@
   "dependencies": {
     "crypto-js": "3.1.2-2",
     "form-data": "^2.3.1",
+    "nativescript-websockets": "soulfly/nativescript-websockets#rfc6455",
+    "nativescript-xmpp-client": "1.2.0",
     "node-fetch": "^1.7.3",
     "node-xmpp-client": "^3.0.0",
     "sdp-transform": "^2.3.0",
