@@ -43,7 +43,7 @@ var qbChatHelpers = {
 
         if(utils.getEnv().browser) {
             stanza = builder(params);
-        } else if(utils.getEnv().node) {
+        } else {
             stanza = new builder(type ? type : 'message', params);
         }
 
@@ -140,7 +140,7 @@ var qbChatHelpers = {
                 extension[field].forEach(function(attach) {
                     if (utils.getEnv().browser) {
                         stanza.c('attachment', attach).up();
-                    } else if (utils.getEnv().node) {
+                    } else {
                         stanza.getChild('extraParams')
                             .c('attachment', attach).up();
                     }
@@ -150,7 +150,7 @@ var qbChatHelpers = {
             } else {
                 if (utils.getEnv().browser) {
                     stanza.c(field).t(extension[field]).up();
-                } else if (utils.getEnv().node) {
+                } else {
                     stanza.getChild('extraParams')
                         .c(field).t(extension[field]).up();
                 }
@@ -220,7 +220,7 @@ var qbChatHelpers = {
                 }
             }
 
-        } else if (utils.getEnv().node) {
+        } else {
             for (var c = 0, lenght = extraParams.children.length; c < lenght; c++) {
                 if (extraParams.children[c].name === 'attachment') {
                     attach = {};
