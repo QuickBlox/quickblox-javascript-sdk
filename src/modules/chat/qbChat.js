@@ -294,7 +294,7 @@ function ChatProxy(service) {
             recipient = stanza.querySelector('forwarded') ? stanza.querySelector('forwarded').querySelector('message').getAttribute('to') : null;
 
             jid = self.connection.jid;
-        } else if(Utils.getEnv().node){
+        } else {
             var forwardedMessage = forwarded ? chatUtils.getElement(forwarded, 'message') : null;
             recipient = forwardedMessage ? chatUtils.getAttr(forwardedMessage, 'to') : null;
 
@@ -434,7 +434,7 @@ function ChatProxy(service) {
             }
         }
 
-        if(Utils.getEnv().node) {
+        if(!Utils.getEnv().browser) {
             /** MUC */
             if(xXMLNS){
                 if(xXMLNS == "http://jabber.org/protocol/muc#user"){
@@ -545,7 +545,7 @@ function ChatProxy(service) {
                     if (userId === currentUserId) {
                         if(Utils.getEnv().browser){
                             self.connection.send($pres());
-                        } else if(Utils.getEnv().node){
+                        } else {
                             self.nClient.send(chatUtils.createStanza(NodeClient.Stanza, null,'presence'));
                         }
                     }
@@ -573,7 +573,7 @@ function ChatProxy(service) {
             Utils.safeCallbackCall(self.onLastUserActivityListener, userId, seconds);
         }
 
-        if (Utils.getEnv().node) {
+        if (!Utils.getEnv().browser) {
             if (self.nodeStanzasCallbacks[stanzaId]) {
                 Utils.safeCallbackCall(self.nodeStanzasCallbacks[stanzaId], stanza);
                 delete self.nodeStanzasCallbacks[stanzaId];
@@ -796,7 +796,7 @@ ChatProxy.prototype = {
         }
 
         /** connect for node */
-        if(Utils.getEnv().node) {
+        if(!Utils.getEnv().browser) {
             self.nClient.options.jid = userJid;
             self.nClient.options.password = params.password;
 
@@ -946,7 +946,7 @@ ChatProxy.prototype = {
             } else {
                 self.connection.send(stanza);
             }
-        } else if (Utils.getEnv().node) {
+        } else {
             if(config.streamManagement.enable){
                 message.id = paramsCreateMsg.id;
                 message.jid_or_user_id = jid_or_user_id;
@@ -995,9 +995,7 @@ ChatProxy.prototype = {
             }
 
             self.connection.send(stanza);
-        }
-
-        if(Utils.getEnv().node) {
+        } else {
             if (message.extension) {
                 stanza.c('extraParams',  {
                     xmlns: chatUtils.MARKERS.CLIENT
@@ -1034,7 +1032,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser){
             self.connection.send(stanza);
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(stanza);
         }
     },
@@ -1061,7 +1059,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser){
             self.connection.send(stanza);
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(stanza);
         }
     },
@@ -1097,7 +1095,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             self.connection.send(stanza);
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(stanza);
         }
     },
@@ -1133,7 +1131,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             self.connection.send(stanza);
-        } else if(Utils.getEnv().node){
+        } else {
             self.nClient.send(stanza);
         }
     },
@@ -1165,7 +1163,7 @@ ChatProxy.prototype = {
 
         if (Utils.getEnv().browser) {
             this.connection.sendIQ(iq);
-        } else if (Utils.getEnv().node) {
+        } else {
             this.nClient.send(iq);
         }
     },
@@ -1182,7 +1180,7 @@ ChatProxy.prototype = {
         if(Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
-        } else if(Utils.getEnv().node) {
+        } else {
             this.nClient.end();
         }
     },
@@ -1190,7 +1188,7 @@ ChatProxy.prototype = {
     addListener: function(params, callback) {
         Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
 
-        if(Utils.getEnv().node) {
+        if(!Utils.getEnv().browser) {
             throw new Error(unsupportedError);
         }
 
@@ -1206,7 +1204,7 @@ ChatProxy.prototype = {
     deleteListener: function(ref) {
         Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
 
-        if(Utils.getEnv().node) {
+        if(!Utils.getEnv().browser) {
             throw new Error(unsupportedError);
         }
 
@@ -1233,7 +1231,7 @@ ChatProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             self.connection.sendIQ(iq);
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(iq);
         }
     }
@@ -1287,7 +1285,7 @@ RosterProxy.prototype = {
         function _getItems(stanza) {
             if(Utils.getEnv().browser) {
                 return stanza.getElementsByTagName('item');
-            } else if(Utils.getEnv().node) {
+            } else {
                 return stanza.getChild('query').children;
             }
         }
@@ -1315,7 +1313,7 @@ RosterProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             self.connection.sendIQ(iq, _callbackWrap);
-        } else if(Utils.getEnv().node){
+        } else {
             self.nodeStanzasCallbacks[iqParams.id] = _callbackWrap;
             self.nClient.send(iq);
         }
@@ -1463,8 +1461,7 @@ RosterProxy.prototype = {
 
         if(Utils.getEnv().browser) {
             self.connection.sendIQ(iq, _callbackWrap);
-
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nodeStanzasCallbacks[iqParams.id] = _callbackWrap;
             self.nClient.send(iq);
         }
@@ -1481,7 +1478,7 @@ RosterProxy.prototype = {
 
         if (Utils.getEnv().browser){
             this.connection.send(pres);
-        } else if (Utils.getEnv().node) {
+        } else {
             this.nClient.send(pres);
         }
     }
@@ -1546,7 +1543,7 @@ MucProxy.prototype = {
             }
 
             self.connection.send(pres);
-        } else if(Utils.getEnv().node){
+        } else {
             if (typeof callback === 'function') {
                 self.nodeStanzasCallbacks[id] = callback;
             }
@@ -1588,7 +1585,7 @@ MucProxy.prototype = {
             }
 
             self.connection.send(pres);
-        } else if(Utils.getEnv().node) {
+        } else {
             /** The answer don't contain id */
             if(typeof callback === 'function') {
                 self.nodeStanzasCallbacks['muc:leave'] = callback;
@@ -1655,7 +1652,7 @@ MucProxy.prototype = {
 
                 callback(onlineUsers);
             });
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(iq);
 
             self.nodeStanzasCallbacks[iqParams.id] = _getUsers;
@@ -1740,7 +1737,7 @@ PrivacyListProxy.prototype = {
                     .up().c('presence-out', {})
                     .up().c('iq', {})
                     .up().up();
-            } else if(Utils.getEnv().node) {
+            } else {
                 var list = iq.getChild('query').getChild('list');
 
                 list.c('item', {
@@ -1766,7 +1763,7 @@ PrivacyListProxy.prototype = {
                     action: params.userAction,
                     order: params.order
                 }).up();
-            } else if(Utils.getEnv().node) {
+            } else {
                 var list = iq.getChild('query').getChild('list');
 
                 list.c('item', {
@@ -1824,7 +1821,7 @@ PrivacyListProxy.prototype = {
                     callback(Utils.getError(408));
                 }
             });
-        } else if(Utils.getEnv().node) {
+        } else {
             self.nClient.send(iq);
 
             self.nodeStanzasCallbacks[iqParams.id] = function (stanza) {
@@ -1895,7 +1892,7 @@ PrivacyListProxy.prototype = {
                     callback(Utils.getError(408), null);
                 }
             });
-        } else if(Utils.getEnv().node){
+        } else {
             self.nodeStanzasCallbacks[iqParams.id] = function(stanza){
                 var stanzaQuery = stanza.getChild('query'),
                     list = stanzaQuery ? stanzaQuery.getChild('list') : null,
@@ -2014,7 +2011,7 @@ PrivacyListProxy.prototype = {
                     callback(Utils.getError(408), null);
                 }
             });
-        } else if(Utils.getEnv().node) {
+        } else {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
@@ -2091,7 +2088,7 @@ PrivacyListProxy.prototype = {
                 }
             });
 
-        } else if(Utils.getEnv().node){
+        } else {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
@@ -2148,7 +2145,7 @@ PrivacyListProxy.prototype = {
                     callback(Utils.getError(408));
                 }
             });
-        } else if(Utils.getEnv().node){
+        } else {
             iq = new NodeClient.Stanza('iq', stanzaParams);
 
             iq.c('query', {
