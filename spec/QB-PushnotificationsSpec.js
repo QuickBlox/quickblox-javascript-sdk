@@ -1,6 +1,8 @@
-describe('PushNotifications API', function() {
-  'use strict';
+/* globals describe, beforeAll, expect, it, xit */
 
+'use strict';
+
+describe('PushNotifications API', function() {
   var REST_REQUESTS_TIMEOUT = 3000;
 
   var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
@@ -9,7 +11,6 @@ describe('PushNotifications API', function() {
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-
 
   var subscriptionId;
   var eventId;
@@ -36,7 +37,6 @@ describe('PushNotifications API', function() {
         done.fail('Create session error: ' + JSON.stringify(err));
       } else {
         expect(session).not.toBeNull();
-
         done();
       }
     });
