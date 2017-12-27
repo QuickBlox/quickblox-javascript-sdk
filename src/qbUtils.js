@@ -7,7 +7,7 @@ var config = require('./qbConfig');
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
 var isBrowser = typeof window !== "undefined",
-    isNativeScript = !!(global && (global.android || global.ios));
+    isNativeScript = typeof global === 'object' && (global.android || global.NSObject);
 
 if (!isBrowser && !isNativeScript) {
     var fs = require('fs');
