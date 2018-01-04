@@ -11,14 +11,12 @@ var notify = require('gulp-notify');
 var uglify = require('gulp-uglify');
 var pump = require('pump');
 
-var fs = require('fs');
-var builder = require('jquery-custom');
-
 gulp.task('build', function () {
     var isDevelopment = process.env.NODE_ENV === 'develop',
         browserifyOpts = {
             debug: isDevelopment,
-            standalone: 'QB'
+            standalone: 'QB',
+            ignoreMissing: true
         };
 
     return browserify('./src/qbMain.js', browserifyOpts)
@@ -71,38 +69,6 @@ gulp.task('generate-build_version', function() {
             }
         });
     });
-});
-
-gulp.task('jquery', function () {
-    return builder({
-        flags: [
-            '-deprecated',
-            '-dimensions',
-            '-effects',
-            '-event',
-            '-event/alias',
-            '-event/focusin',
-            '-event/trigger',
-            '-offset',
-            '-wrap',
-            '-core/ready',
-            '-exports/global',
-            '-sizzle'
-        ],
-    }, function (err, compiledContent) {
-        if (err){
-            notify('Can\'t build jquery lib.');
-            return console.error(err);
-        }
-
-        fs.writeFile('./src/plugins/jquery.ajax.js', compiledContent, function (err) {
-            if (err){
-                notify('Can\'t build jquery lib.');
-                return console.error(err);
-            }
-            notify('Jquery task is finished.');
-        })
-    })
 });
 
 gulp.task('watch', function () {

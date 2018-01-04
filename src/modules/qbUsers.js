@@ -8,8 +8,7 @@
  */
 
 var config = require('../qbConfig'),
-    Utils = require('../qbUtils'),
-    util = require('util');
+    Utils = require('../qbUtils');
 
 var DATE_FIELDS = ['created_at', 'updated_at', 'last_request_at'];
 var NUMBER_FIELDS = ['id', 'external_user_id'];
@@ -17,7 +16,7 @@ var NUMBER_FIELDS = ['id', 'external_user_id'];
 var resetPasswordUrl = config.urls.users + '/password/reset';
 
 /**
- * @namespace QB.user
+ * @namespace QB.users
  **/
 function UsersProxy(service) {
     this.service = service;
@@ -27,7 +26,7 @@ UsersProxy.prototype = {
 
     /**
      * Call this API to get a list of current users of you app. By default it returns upto 10 users, but you can change this by adding pagination parameters. You can filter the list of users by supplying a filter string. You can sort results by ask/desc ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Retrieve_Users read more})
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {object} params - Object of parameters
      * @param {number} [params.page=1] - Used to paginate the results when more than one page of users retrieved
      * @param {number} [params.per_page=10] - The maximum number of users to return per page, if not specified then the default is 10
@@ -37,7 +36,7 @@ UsersProxy.prototype = {
      */
     listUsers: function(params, callback) {
         /**
-         * Callback for QB.user.listUsers(params, callback)
+         * Callback for QB.users.listUsers(params, callback)
          * @callback listUsersCallback
          * @param {object} error - The error object
          * @param {object} response - Object with Array of users
@@ -74,12 +73,13 @@ UsersProxy.prototype = {
             message.per_page = params.per_page;
         }
 
-        this.service.ajax({url: Utils.getUrl(config.urls.users), data: message}, callback);
+        this.service.ajax({
+            url: Utils.getUrl(config.urls.users), data: message}, callback);
     },
 
     /**
      * Retrieve a specific user or users
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {(number|object)} params - {@link https://docsdev.quickblox.com/rest_api/Users_API.html#Retrieve_user_by_id User ID} (number) or object of parameters (object with one of next required properties)
      * @param {string} params.login - The login of the user to be retrieved ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Retrieve_user_by_login read more})
      * @param {string} params.full_name - The full name of users to be retrieved ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Retrieve_user_by_full_name read more})
@@ -106,7 +106,7 @@ UsersProxy.prototype = {
      * // var id = 53454;
      *
      * // use params or id to get records:
-     * QB.user.get(params, function(error, response) {
+     * QB.users.get(params, function(error, response) {
      *     if (error) {
      *         console.log(error);
      *     } else {
@@ -116,7 +116,7 @@ UsersProxy.prototype = {
      */
     get: function(params, callback) {
         /**
-         * Callback for QB.user.get(params, callback)
+         * Callback for QB.users.get(params, callback)
          * @callback getUsersCallback
          * @param {object} error - The error object
          * @param {object} response - The user object or object with Array of users
@@ -159,7 +159,7 @@ UsersProxy.prototype = {
 
     /**
      * Registers a new app user. Call this API to register a user for the app. You must provide either a user login or email address along with their password, passing both email address and login is permitted but not required ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Sign_Up read more})
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {object} params - object of user's parameters
      * @param {string} params.login - The user's login name
      * @param {string} params.password - The user's password for this app
@@ -177,7 +177,7 @@ UsersProxy.prototype = {
      */
     create: function(params, callback) {
         /**
-         * Callback for QB.user.create(params, callback)
+         * Callback for QB.users.create(params, callback)
          * @callback createUserCallback
          * @param {object} error - The error object
          * @param {object} response - The user object
@@ -194,7 +194,7 @@ UsersProxy.prototype = {
 
     /**
      * Update current user. In normal usage, nobody except the user is allowed to modify their own data. Any fields you don’t specify will remain unchanged, so you can update just a subset of the user’s data. login/email and password may be changed, but the new login/email must not already be in use ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Update_current_user read more})
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {number} id - The id of user to update
      * @param {object} params - object of user's parameters
      * @param {string} [params.login] - The user's login name
@@ -214,7 +214,7 @@ UsersProxy.prototype = {
      */
     update: function(id, params, callback) {
         /**
-         * Callback for QB.user.update(id, params, callback)
+         * Callback for QB.users.update(id, params, callback)
          * @callback updateUserCallback
          * @param {object} error - The error object
          * @param {object} response - The user object
@@ -231,7 +231,7 @@ UsersProxy.prototype = {
 
     /**
      * Remove a user from the app, {@link https://docsdev.quickblox.com/rest_api/Users_API.html#Delete_user_by_id by user's id} or {@link https://docsdev.quickblox.com/rest_api/Users_API.html#Delete_user_by_external_user_id uid that represents the user in an external user registry}
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {(number|object)} params - An id of user to remove or object with external user id
      * @param {(number|string)} params.external - An id of user to remove or object with external user id
      * @param {deleteUserCallback} callback - An uid that represents the user in an external user registry
@@ -242,7 +242,7 @@ UsersProxy.prototype = {
      * // parameter as external user id:
      * // var params = {'external': 'ebdf831abd12da4bcf12f22d'};
      *
-     * QB.user.delete(params, function(error, response) {
+     * QB.users.delete(params, function(error, response) {
      *     if (error) {
      *         console.log(error);
      *     } else {
@@ -252,7 +252,7 @@ UsersProxy.prototype = {
      */
     delete: function(params, callback) {
         /**
-         * Callback for QB.user.delete(params, callback)
+         * Callback for QB.users.delete(params, callback)
          * @callback deleteUserCallback
          * @param {object} error - The error object
          * @param {object} response - Empty body
@@ -272,18 +272,18 @@ UsersProxy.prototype = {
 
     /**
      * You can initiate password resets for users who have emails associated with their account. Password reset instruction will be sent to this email address ({@link https://docsdev.quickblox.com/rest_api/Users_API.html#Password_reset read more})
-     * @memberof QB.user
+     * @memberof QB.users
      * @param {string} email - The user's email to send reset password instruction
      * @param {resetPasswordByEmailCallback} callback - The resetPasswordByEmailCallback function
      */
     resetPassword: function(email, callback) {
         /**
-         * Callback for QB.user.resetPassword(email, callback)
+         * Callback for QB.users.resetPassword(email, callback)
          * @callback resetPasswordByEmailCallback
          * @param {object} error - The error object
          * @param {object} response - Empty body
          */
-        this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}, type: 'GET', dataType: 'text'}, callback);
+        this.service.ajax({url: Utils.getUrl(resetPasswordUrl), data: {email: email}, dataType: 'text'}, callback);
     }
 
 };
@@ -295,8 +295,8 @@ module.exports = UsersProxy;
 function generateFilter(obj) {
     var type = obj.field in DATE_FIELDS ? 'date' : typeof obj.value;
 
-    if (obj.value instanceof Array || util.isArray(obj.value)) {
-        if (type == 'object') {
+    if (Utils.isArray(obj.value)) {
+        if (type === 'object') {
             type = typeof obj.value[0];
         }
         obj.value = obj.value.toString();
