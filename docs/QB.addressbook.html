@@ -537,9 +537,9 @@
             </ul>
         </li>
     
-        <li class="item" data-name="QB.user">
+        <li class="item" data-name="QB.users">
             <span class="title">
-                <a href="QB.user.html">QB.user</a>
+                <a href="QB.users.html">QB.users</a>
                 
                 <span class="static">static</span>
                 
@@ -554,17 +554,17 @@
             
             <span class="subtitle">Methods</span>
             
-                <li data-name="QB.user.create"><a href="QB.user.html#.create">create</a></li>
+                <li data-name="QB.users.create"><a href="QB.users.html#.create">create</a></li>
             
-                <li data-name="QB.user.delete"><a href="QB.user.html#.delete">delete</a></li>
+                <li data-name="QB.users.delete"><a href="QB.users.html#.delete">delete</a></li>
             
-                <li data-name="QB.user.get"><a href="QB.user.html#.get">get</a></li>
+                <li data-name="QB.users.get"><a href="QB.users.html#.get">get</a></li>
             
-                <li data-name="QB.user.listUsers"><a href="QB.user.html#.listUsers">listUsers</a></li>
+                <li data-name="QB.users.listUsers"><a href="QB.users.html#.listUsers">listUsers</a></li>
             
-                <li data-name="QB.user.resetPassword"><a href="QB.user.html#.resetPassword">resetPassword</a></li>
+                <li data-name="QB.users.resetPassword"><a href="QB.users.html#.resetPassword">resetPassword</a></li>
             
-                <li data-name="QB.user.update"><a href="QB.user.html#.update">update</a></li>
+                <li data-name="QB.users.update"><a href="QB.users.html#.update">update</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -667,8 +667,7 @@
     
     
     <div class="description">
-        Retrive all contacts from address book.
-The method accepts 1 or 2 parameters.
+        Retrive all contacts from address book.The method accepts 1 or 2 parameters.
     </div>
     
 
@@ -723,8 +722,7 @@ The method accepts 1 or 2 parameters.
                         
                     
                 
-                You could pass udid of address book or
-callback function if you want to get contacts from global address book.</td>
+                You could pass udid of address book orcallback function if you want to get contacts from global address book.</td>
         </tr>
 	
 	
@@ -754,8 +752,7 @@ callback function if you want to get contacts from global address book.</td>
                         
                     
                 
-                Callback function is used as 2nd parameter if you pass udid as 1st parameters.
-This callback takes 2 arguments: an error and a response.</td>
+                Callback function is used as 2nd parameter if you pass udid as 1st parameters.This callback takes 2 arguments: an error and a response.</td>
         </tr>
 	
 	
@@ -804,15 +801,7 @@ This callback takes 2 arguments: an error and a response.</td>
         
 
     
-    <pre class="prettyprint"><code>var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
-
-function gotContacts(err, contacts) {
- contacts.forEach( (contact) => { alert(contact); })
-}
-
-QB.addressbook.get(gotContacts);
-// or you could specify what address book you need by udid
-QB.addressbook.get(UDID, gotContacts);</code></pre>
+    <pre class="prettyprint"><code>var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';function gotContacts(err, contacts) { contacts.forEach( (contact) => { alert(contact); })}QB.addressbook.get(gotContacts);// or you could specify what address book you need by udidQB.addressbook.get(UDID, gotContacts);</code></pre>
     
 
     
@@ -840,8 +829,7 @@ QB.addressbook.get(UDID, gotContacts);</code></pre>
     
     
     <div class="description">
-        Retrieve QuickBlox users that have phone numbers from your address book.
-The methods accepts 1 or 2 parameters.
+        Retrieve QuickBlox users that have phone numbers from your address book.The methods accepts 1 or 2 parameters.
     </div>
     
 
@@ -926,8 +914,7 @@ The methods accepts 1 or 2 parameters.
                         
                     
                 
-                Callback function is useв as 2nd parameter if you pass `isCompact` as 1st parameter.
-This callback takes 2 arguments: an error and a response.</td>
+                Callback function is useв as 2nd parameter if you pass `isCompact` as 1st parameter.This callback takes 2 arguments: an error and a response.</td>
         </tr>
 	
 	
@@ -996,11 +983,7 @@ This callback takes 2 arguments: an error and a response.</td>
     
     
     <div class="description">
-        The method is used to create, update and delete contacts in address book.<br />
-If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.
-If pass 'destroy: 1' then the contact will be removed.<br />
-<a target="_blank" href="https://quickblox.com/developers/AddressBook">Found more here</a>. <br />
-The method accepts 2 or 3 parameters.
+        The method is used to create, update and delete contacts in address book.<br />If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.If pass 'destroy: 1' then the contact will be removed.<br /><a target="_blank" href="https://quickblox.com/developers/AddressBook">Found more here</a>. <br />The method accepts 2 or 3 parameters.
     </div>
     
 
@@ -1128,8 +1111,7 @@ The method accepts 2 or 3 parameters.
                         
                     
                 
-                User's device identifier. If specified all operations will be in this context. Max length 64 symbols.
-If not - it means a user has one global address book across all his devices.</td>
+                User's device identifier. If specified all operations will be in this context. Max length 64 symbols.If not - it means a user has one global address book across all his devices.</td>
         </tr>
 	
 	
@@ -1159,8 +1141,7 @@ If not - it means a user has one global address book across all his devices.</td
                         
                     
                 
-                Defines force rewrite mode.
-If set 1 then all previous contacts for device context will be replaced by new ones.</td>
+                Defines force rewrite mode.If set 1 then all previous contacts for device context will be replaced by new ones.</td>
         </tr>
 	
 	
@@ -1243,31 +1224,7 @@ If set 1 then all previous contacts for device context will be replaced by new o
         
 
     
-    <pre class="prettyprint"><code>var people = [{
-   'name':'Frederic Cartwright',
-   'phone': '8879108395'
- },
- {
-   'phone': '8759108396',
-   'destroy': 1
- }];
-
- var options = {
-   force: 1,
-   udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB'
- };
-
- function addressBookSaved(err, response) {
-   if(err) {
-
-   } else {
-     console.log('All constacts saved');
-   }
- }
-
- QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback);
- // or second parameters can be options
- QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);</code></pre>
+    <pre class="prettyprint"><code>var people = [{   'name':'Frederic Cartwright',   'phone': '8879108395' }, {   'phone': '8759108396',   'destroy': 1 }]; var options = {   force: 1,   udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB' }; function addressBookSaved(err, response) {   if(err) {   } else {     console.log('All constacts saved');   } } QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback); // or second parameters can be options QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);</code></pre>
     
 
     
@@ -1290,7 +1247,7 @@ If set 1 then all previous contacts for device context will be replaced by new o
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Nov 09 2017 14:48:38 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jan 04 2018 16:37:51 GMT+0200 (FLE Standard Time)
         </footer>
     </div>
 </div>

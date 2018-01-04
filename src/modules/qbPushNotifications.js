@@ -149,8 +149,15 @@ EventsProxy.prototype = {
          * @param {object} error - The error object
          * @param {object} response - An event object
          */
-        var message = {event: params};
-        this.service.ajax({url: Utils.getUrl(config.urls.events), type: 'POST', data: message}, callback);
+        this.service.ajax({
+            'url': Utils.getUrl(config.urls.events),
+            'type': 'POST',
+            'contentType': 'application/json; charset=utf-8',
+            'isNeedStringify': true,
+            'data': {
+                'event': params
+            }
+        }, callback);
     },
 
     /** Get list of events which were created by current user ({@link https://docsdev.quickblox.com/rest_api/Push_Notifications_API.html#Retrieve_events read more})

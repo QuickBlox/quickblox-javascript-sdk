@@ -12,8 +12,11 @@ AuthProxy.prototype = {
 
     getSession: function(callback) {
         this.service.ajax({url: Utils.getUrl(config.urls.session)}, function(err,res){
-            if (err){ callback(err, null); }
-            else { callback (err, res); }
+            if (err) {
+                callback(err, null);
+            } else {
+                callback (err, res);
+            }
         });
     },
 
@@ -24,7 +27,8 @@ AuthProxy.prototype = {
             throw new Error('Cannot create a new session without app credentials (app ID, auth key and auth secret)');
         }
 
-        var _this = this, message;
+        var _this = this,
+            message;
 
         if (typeof params === 'function' && typeof callback === 'undefined') {
             callback = params;

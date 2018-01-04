@@ -537,9 +537,9 @@
             </ul>
         </li>
     
-        <li class="item" data-name="QB.user">
+        <li class="item" data-name="QB.users">
             <span class="title">
-                <a href="QB.user.html">QB.user</a>
+                <a href="QB.users.html">QB.users</a>
                 
                 <span class="static">static</span>
                 
@@ -554,17 +554,17 @@
             
             <span class="subtitle">Methods</span>
             
-                <li data-name="QB.user.create"><a href="QB.user.html#.create">create</a></li>
+                <li data-name="QB.users.create"><a href="QB.users.html#.create">create</a></li>
             
-                <li data-name="QB.user.delete"><a href="QB.user.html#.delete">delete</a></li>
+                <li data-name="QB.users.delete"><a href="QB.users.html#.delete">delete</a></li>
             
-                <li data-name="QB.user.get"><a href="QB.user.html#.get">get</a></li>
+                <li data-name="QB.users.get"><a href="QB.users.html#.get">get</a></li>
             
-                <li data-name="QB.user.listUsers"><a href="QB.user.html#.listUsers">listUsers</a></li>
+                <li data-name="QB.users.listUsers"><a href="QB.users.html#.listUsers">listUsers</a></li>
             
-                <li data-name="QB.user.resetPassword"><a href="QB.user.html#.resetPassword">resetPassword</a></li>
+                <li data-name="QB.users.resetPassword"><a href="QB.users.html#.resetPassword">resetPassword</a></li>
             
-                <li data-name="QB.user.update"><a href="QB.user.html#.update">update</a></li>
+                <li data-name="QB.users.update"><a href="QB.users.html#.update">update</a></li>
             
             </ul>
             <ul class="events itemMembers">
@@ -696,6 +696,51 @@
 <dd>
     
     <div class="description">
+        User's callbacks (listener-functions):- onUserNotAnswerListener(session, userID)- onRemoteStreamListener(session, userID, stream)- onSessionConnectionStateChangedListener(session, userID, connectionState)- onSessionCloseListener(session)- onCallStatsReport(session, userId, stats, error)
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="config">config</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
         Modules
     </div>
     
@@ -778,52 +823,7 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="config">config</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        User's callbacks (listener-functions):- onUserNotAnswerListener(session, userID)- onRemoteStreamListener(session, userID, stream)- onSessionConnectionStateChangedListener(session, userID, connectionState)- onSessionCloseListener(session)- onCallStatsReport(session, userId, stats, error)
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="isBrowser">isBrowser</h4>
+        <h4 class="name" id="qbFetch">qbFetch</h4>
     </div>
     
     
@@ -1229,77 +1229,6 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="MessageProxy">
-            
-            MessageProxy<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            modules/qbChat.js, line 2281
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        MessageProxy
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
         <h4 class="name" id="WebRTCSession">
             
             WebRTCSession<span class="signature">(An, An, Type)</span>
@@ -1546,7 +1475,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1325
+            modules/chat/qbChat.js, line 1330
         </div>
         
     </div>
@@ -1617,7 +1546,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 648
+            modules/chat/qbChat.js, line 655
         </div>
         
     </div>
@@ -1759,7 +1688,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1356
+            modules/chat/qbChat.js, line 1361
         </div>
         
     </div>
@@ -2108,7 +2037,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2208
+            modules/chat/qbDialog.js, line 48
         </div>
         
     </div>
@@ -2386,7 +2315,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2317
+            modules/chat/qbMessage.js, line 43
         </div>
         
     </div>
@@ -2525,7 +2454,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1684
+            modules/chat/qbChat.js, line 1688
         </div>
         
     </div>
@@ -2919,7 +2848,7 @@
     
         
         <div class="tag-source">
-            qbMain.js, line 118
+            qbMain.js, line 116
         </div>
         
     </div>
@@ -3069,7 +2998,7 @@
     
     
     <div class="description">
-        Callback for QB.user.create(params, callback)
+        Callback for QB.users.create(params, callback)
     </div>
     
 
@@ -3197,7 +3126,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 161
+            modules/qbData.js, line 167
         </div>
         
     </div>
@@ -3336,7 +3265,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2256
+            modules/chat/qbDialog.js, line 98
         </div>
         
     </div>
@@ -3591,7 +3520,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 270
+            modules/qbData.js, line 268
         </div>
         
     </div>
@@ -3730,7 +3659,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2367
+            modules/chat/qbMessage.js, line 93
         </div>
         
     </div>
@@ -3869,7 +3798,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2056
+            modules/chat/qbChat.js, line 2060
         </div>
         
     </div>
@@ -3985,7 +3914,7 @@
     
         
         <div class="tag-source">
-            modules/qbPushNotifications.js, line 199
+            modules/qbPushNotifications.js, line 206
         </div>
         
     </div>
@@ -4274,7 +4203,7 @@
     
     
     <div class="description">
-        Callback for QB.user.delete(params, callback)
+        Callback for QB.users.delete(params, callback)
     </div>
     
 
@@ -4402,7 +4331,7 @@
     
         
         <div class="tag-source">
-            qbMain.js, line 133
+            qbMain.js, line 131
         </div>
         
     </div>
@@ -4547,7 +4476,7 @@
     
         
         <div class="tag-source">
-            modules/qbContent.js, line 303
+            modules/qbContent.js, line 293
         </div>
         
     </div>
@@ -4686,7 +4615,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 235
+            modules/qbData.js, line 233
         </div>
         
     </div>
@@ -4825,7 +4754,7 @@
     
         
         <div class="tag-source">
-            modules/qbContent.js, line 281
+            modules/qbContent.js, line 271
         </div>
         
     </div>
@@ -4964,7 +4893,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1840
+            modules/chat/qbChat.js, line 1844
         </div>
         
     </div>
@@ -5103,7 +5032,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1962
+            modules/chat/qbChat.js, line 1966
         </div>
         
     </div>
@@ -5242,7 +5171,7 @@
     
         
         <div class="tag-source">
-            modules/qbPushNotifications.js, line 184
+            modules/qbPushNotifications.js, line 191
         </div>
         
     </div>
@@ -5381,7 +5310,7 @@
     
         
         <div class="tag-source">
-            modules/qbPushNotifications.js, line 214
+            modules/qbPushNotifications.js, line 221
         </div>
         
     </div>
@@ -5520,7 +5449,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1263
+            modules/chat/qbChat.js, line 1268
         </div>
         
     </div>
@@ -5636,7 +5565,7 @@
     
         
         <div class="tag-source">
-            qbMain.js, line 102
+            qbMain.js, line 100
         </div>
         
     </div>
@@ -5786,7 +5715,7 @@
     
     
     <div class="description">
-        Callback for QB.user.get(params, callback)
+        Callback for QB.users.get(params, callback)
     </div>
     
 
@@ -5914,7 +5843,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1512
+            modules/chat/qbChat.js, line 1516
         </div>
         
     </div>
@@ -6030,7 +5959,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1558
+            modules/chat/qbChat.js, line 1562
         </div>
         
     </div>
@@ -6101,7 +6030,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2183
+            modules/chat/qbDialog.js, line 23
         </div>
         
     </div>
@@ -6240,7 +6169,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2297
+            modules/chat/qbMessage.js, line 23
         </div>
         
     </div>
@@ -6657,7 +6586,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1601
+            modules/chat/qbChat.js, line 1605
         </div>
         
     </div>
@@ -6773,7 +6702,7 @@
     
         
         <div class="tag-source">
-            modules/qbPushNotifications.js, line 164
+            modules/qbPushNotifications.js, line 171
         </div>
         
     </div>
@@ -7051,7 +6980,7 @@
     
         
         <div class="tag-source">
-            modules/qbUsers.js, line 39
+            modules/qbUsers.js, line 38
         </div>
         
     </div>
@@ -7062,7 +6991,7 @@
     
     
     <div class="description">
-        Callback for QB.user.listUsers(params, callback)
+        Callback for QB.users.listUsers(params, callback)
     </div>
     
 
@@ -7190,7 +7119,7 @@
     
         
         <div class="tag-source">
-            qbMain.js, line 149
+            qbMain.js, line 147
         </div>
         
     </div>
@@ -7335,7 +7264,7 @@
     
         
         <div class="tag-source">
-            qbMain.js, line 164
+            qbMain.js, line 162
         </div>
         
     </div>
@@ -7480,7 +7409,7 @@
     
         
         <div class="tag-source">
-            modules/qbContent.js, line 252
+            modules/qbContent.js, line 242
         </div>
         
     </div>
@@ -7619,7 +7548,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1393
+            modules/chat/qbChat.js, line 1398
         </div>
         
     </div>
@@ -7690,7 +7619,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1425
+            modules/chat/qbChat.js, line 1430
         </div>
         
     </div>
@@ -7772,7 +7701,7 @@
     
     
     <div class="description">
-        Callback for QB.user.resetPassword(email, callback)
+        Callback for QB.users.resetPassword(email, callback)
     </div>
     
 
@@ -7900,7 +7829,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2116
+            modules/chat/qbChat.js, line 2120
         </div>
         
     </div>
@@ -8016,7 +7945,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2396
+            modules/chat/qbMessage.js, line 122
         </div>
         
     </div>
@@ -8294,7 +8223,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2234
+            modules/chat/qbDialog.js, line 74
         </div>
         
     </div>
@@ -8433,7 +8362,7 @@
     
         
         <div class="tag-source">
-            modules/qbContent.js, line 327
+            modules/qbContent.js, line 317
         </div>
         
     </div>
@@ -8572,7 +8501,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 2342
+            modules/chat/qbMessage.js, line 68
         </div>
         
     </div>
@@ -8711,7 +8640,7 @@
     
         
         <div class="tag-source">
-            modules/qbChat.js, line 1927
+            modules/chat/qbChat.js, line 1931
         </div>
         
     </div>
@@ -8861,7 +8790,7 @@
     
     
     <div class="description">
-        Callback for QB.user.update(id, params, callback)
+        Callback for QB.users.update(id, params, callback)
     </div>
     
 
@@ -8989,7 +8918,7 @@
     
         
         <div class="tag-source">
-            modules/qbContent.js, line 218
+            modules/qbContent.js, line 209
         </div>
         
     </div>
@@ -9128,7 +9057,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 188
+            modules/qbData.js, line 194
         </div>
         
     </div>
@@ -9271,7 +9200,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Nov 09 2017 14:48:38 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jan 04 2018 16:37:50 GMT+0200 (FLE Standard Time)
         </footer>
     </div>
 </div>

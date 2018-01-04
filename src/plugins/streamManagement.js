@@ -29,7 +29,7 @@
 /* globals $build */
 
 var Utils = require('../qbUtils'),
-    chatUtils = require('../modules/qbChatHelpers');
+    chatUtils = require('../modules/chat/qbChatHelpers');
 
 function StreamManagement(options) {
 
@@ -81,7 +81,7 @@ StreamManagement.prototype.enable = function (connection, client) {
         this._clientSentStanzasCounter = null;
         self._addEnableHandlers();
         stanza = $build('enable', enableParams);
-    } else if (Utils.getEnv().node){
+    } else {
         self._nodeBuilder =  client.Stanza;
         self._addEnableHandlers();
         stanza = chatUtils.createStanza(self._nodeBuilder, enableParams, 'enable');
@@ -113,7 +113,7 @@ StreamManagement.prototype._addEnableHandlers = function () {
 
     if (Utils.getEnv().browser) {
         self._c.XAddTrackedHandler(_incomingStanzaHandler.bind(self));
-    } else if (Utils.getEnv().node){
+    } else {
         self._c.on('stanza', _incomingStanzaHandler.bind(self));
     }
 

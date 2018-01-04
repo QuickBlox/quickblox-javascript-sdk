@@ -6,12 +6,8 @@
  * Main SDK Module
  *
  */
-
-var isBrowser = typeof window !== 'undefined';
-
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -41,28 +37,30 @@ QuickBlox.prototype = {
             config.set(configMap);
         }
 
-        var Proxy = require('./qbProxy');
-
-        this.service = new Proxy();
-
         /** include dependencies */
-        var Auth = require('./modules/qbAuth'),
+        var Proxy = require('./qbProxy'),
+            Auth = require('./modules/qbAuth'),
             Users = require('./modules/qbUsers'),
-            Chat = require('./modules/qbChat'),
             Content = require('./modules/qbContent'),
             PushNotifications = require('./modules/qbPushNotifications'),
             Data = require('./modules/qbData'),
-            AddressBook = require('./modules/qbAddressBook');
+            AddressBook = require('./modules/qbAddressBook'),
+            Chat = require('./modules/chat/qbChat'),
+            DialogProxy = require('./modules/chat/qbDialog'),
+            MessageProxy = require('./modules/chat/qbMessage');
 
+        this.service = new Proxy();
         this.auth = new Auth(this.service);
         this.users = new Users(this.service);
-        this.chat = new Chat(this.service);
         this.content = new Content(this.service);
         this.pushnotifications = new PushNotifications(this.service);
         this.data = new Data(this.service);
         this.addressbook = new AddressBook(this.service);
+        this.chat = new Chat(this.service);
+        this.chat.dialog = new DialogProxy(this.service);
+        this.chat.message = new MessageProxy(this.service);
 
-        if (isBrowser) {
+        if (Utils.getEnv().browser) {
             /** add adapter.js*/
             require('webrtc-adapter');
 

@@ -9,12 +9,14 @@ The QuickBlox JavaScript SDK provides a JavaScript library making it even easier
 
 [QuickBlox](https://quickblox.com) is a suite of communication features & data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.
 
+Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-sdk/docs/) for more detailed information about our SDK.
+
 # Install
 
 ## Dependencies for browser
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.7.0/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.8.0/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS

@@ -141,7 +141,7 @@ AddressBook.prototype = {
       'type': 'GET',
       'url': Utils.getUrl(config.urls.addressbook),
       'contentType': 'application/json; charset=utf-8',
-      'isStringify': true
+      'isNeedStringify': true
     };
 
     if(udid) {
