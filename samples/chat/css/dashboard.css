@@ -308,8 +308,8 @@
     margin: 0 0 16px 0;
 }
 
-.message__wrap.m-notification_message {
-    display: block;
+.message__wrap .m-notification_message {
+    width: 100%;
     color: #778594;
     font-size: 13px;
     font-weight: 500;
