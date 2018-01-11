@@ -104,13 +104,18 @@ ServiceProxy.prototype = {
             };
         }
 
-        if (isQBRequest && qbSessionToken) {
+        if (isQBRequest) {
             if (!qbRequest.headers) {
                 qbRequest.headers = {};
             }
 
-            qbRequest.headers['QB-Token'] = qbSessionToken;
-            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
+            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
+            // qbRequest.headers['QB-OS'] = Utils.getOS();
+            console.log("TEST:",  Utils.getOS());
+
+            if(qbSessionToken) {
+                qbRequest.headers['QB-Token'] = qbSessionToken;
+            }
         }
 
         if (config.timeout) {
