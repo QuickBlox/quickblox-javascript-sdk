@@ -110,8 +110,7 @@ ServiceProxy.prototype = {
             }
 
             qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
-            // qbRequest.headers['QB-OS'] = Utils.getOS();
-            console.log("TEST:",  Utils.getOS());
+            qbRequest.headers['QB-OS'] = Utils.getOS();
 
             if(qbSessionToken) {
                 qbRequest.headers['QB-Token'] = qbSessionToken;
