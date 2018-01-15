@@ -35,6 +35,8 @@ function App() {
 
   /* A list of possible name of pages */
   this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+
+  this._activePageName = '';
     
   /**
    * Write to root element a class name of a page
@@ -55,10 +57,15 @@ function App() {
 
       // render the page
       self.renderPage(params.pageName, params.detailed);
+
+      this._activePageName = params.pageName;
+    },
+    get: function() {
+      return this._activePageName;
     }
   });
 
-    this._init();
+  this._init();
 }
 
 App.prototype._init = function() {
@@ -486,7 +493,9 @@ App.prototype.renderPlaceDetailed = function(placeId) {
                 }).then(function(res) {
                     self.places.updateLocal(res);
 
-                    self.renderPlaceDetailed(placeId);
+                    if(self.activePage === 'place_detailed') {
+                        self.renderPlaceDetailed(placeId);
+                    }
                 });
             });
         });
