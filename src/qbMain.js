@@ -25,6 +25,8 @@ QuickBlox.prototype = {
      * */
     buildNumber: config.buildNumber,
 
+    _getOS: Utils.getOS.bind(Utils),
+
     /**
      * @memberof QB
      * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.

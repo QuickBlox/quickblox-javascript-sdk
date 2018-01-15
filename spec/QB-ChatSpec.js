@@ -1858,7 +1858,6 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
     });
 
     QB_RECEIVER.chat.onMessageListener = function(userId, receivedMessage) {
-        console.info('TESTTS2');
         expect(userId).toEqual(QBUser1.id);
         expect(receivedMessage).toBeDefined();
         expect(receivedMessage.id).not.toBeNull();
