@@ -52,7 +52,15 @@ DataProxy.prototype = {
          * @param {object} error - The error object
          * @param {object} response - An object
          */
-        this.service.ajax({url: Utils.getUrl(config.urls.data, className), data: data, type: 'POST'}, function(err,res) {
+        var ajaxParams = {
+            'type': 'POST',
+            'data': data,
+            'isNeedStringify': true,
+            'contentType': 'application/json; charset=utf-8',
+            'url': Utils.getUrl(config.urls.data, className)
+        };
+
+        this.service.ajax(ajaxParams, function(err,res) {
             if (err) {
                 callback(err, null);
             } else {
