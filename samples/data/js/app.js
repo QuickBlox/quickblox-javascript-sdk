@@ -514,7 +514,7 @@ App.prototype.renderCheckin = function(placeId) {
     var place = self.places.getPlace(placeId),
         checkinForm = document.getElementById('checkin-submit');
 
-    // this fix deletes empty symbols from start and end of form's values (https://quickblox.atlassian.net/browse/QBWEBSDK-559)
+    // this fix deletes empty symbols from start and end of form's values
     checkinForm.addEventListener('change', function() {
         var comment = document.getElementById('checkin_comment').value.trim();
 
@@ -556,7 +556,6 @@ App.prototype.renderCheckin = function(placeId) {
 
         // clear form
         target.parentNode.removeChild(target);
-
 
         return false;
     });

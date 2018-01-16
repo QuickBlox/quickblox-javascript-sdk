@@ -80,5 +80,12 @@ Places.prototype.update = function(params) {
 Places.prototype.updateLocal = function(newPlace) {
     var place = this.getPlace(newPlace._id);
 
+    function sortByUpdate(a, b) {
+        if (a.updated_at < b.updated_at) return 1;
+        if (a.updated_at > b.updated_at) return -1;
+    }
+
     Object.assign(place, newPlace);
+
+    this.items.sort(sortByUpdate);
 };
