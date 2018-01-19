@@ -48,8 +48,8 @@ UsersProxy.prototype = {
             params = {};
         }
 
-        if (params.filter) {
-            if (params.filter instanceof Array) {
+        if (params && params.filter) {
+            if (Utils.isArray(params.filter)) {
                 params.filter.forEach(function(el) {
                     item = generateFilter(el);
                     filters.push(item);

@@ -461,7 +461,7 @@ Dialog.prototype.updateDialog = function (updates) {
         if(updates.title !== dialog.name){
             toUpdateParams.name = updates.title;
             updatedMsg.extension.dialog_name = updates.title;
-            updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".'
+            updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".';
         }
     }
 
