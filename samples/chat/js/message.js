@@ -184,10 +184,10 @@ Message.prototype.getMessages = function (dialogId) {
     self.container.classList.add('loading');
 
     QB.chat.message.list(params, function (err, messages) {
-        if (!err) {
+        if (messages) {
             var dialog = dialogModule._cache[dialogId];
             dialog.messages = dialog.messages.concat(messages.items);
-
+            
             if (messages.items.length < self.limit) {
                 dialog.full = true;
             }
@@ -266,8 +266,9 @@ Message.prototype.sendReadStatus = function(messageId, userId, dialogId){
 Message.prototype.renderMessage = function (message, setAsFirst) {
     var self = this,
         sender = userModule._cache[message.sender_id],
+        dialogId = message.chat_dialog_id,
         messagesHtml,
-        dialogId = message.chat_dialog_id;
+        messageText;
 
     if(!message.selfReaded){
         self.sendReadStatus(message._id, message.sender_id, dialogId);
@@ -276,11 +277,14 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
     }
 
     if(message.notification_type || (message.extension && message.extension.notification_type)) {
-        messagesHtml = helpers.fillTemplate('tpl_notificationMessage', message);
+        messageText = message.message ? helpers.escapeHTML(message.message) : helpers.escapeHTML(message.body);
+
+        messagesHtml = helpers.fillTemplate('tpl_notificationMessage', {
+            id: message._id,
+            text: messageText
+        });
     } else {
-        var messageText = message.message ?
-            helpers.fillMessageBody(message.message || '') :
-            helpers.fillMessageBody(message.body || '');
+        messageText = message.message ? helpers.fillMessageBody(message.message || '') : helpers.fillMessageBody(message.body || '');
 
         messagesHtml = helpers.fillTemplate('tpl_message', {
             message: {
