@@ -127,7 +127,7 @@ ServiceProxy.prototype = {
                     return response.json();
                 }
             }, function() {
-                // TODO: Response - Status 200 OK (empty body)
+                // Need to research this issue, response doesn't exist if server will return empty body (status 200)
                 qbResponse = {
                     status: 200
                 };
