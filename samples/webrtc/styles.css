@@ -485,7 +485,7 @@ b {
 }
 
 .caller__ctrl{
-    height: 100px;
+    height: 90px;
 }
 
 .caller__ctrl_btn {
@@ -522,6 +522,9 @@ b {
     .caller__ctrl_btn.hangup:hover {
         background: #ff2d55;
         color: #fff;
+    }
+    .caller__ctrl_btn:last-child {
+        margin-bottom: 0;
     }
 
 .caller__name {
@@ -586,7 +589,7 @@ b {
     }
 
 .caller__frames_fl {
-    margin: 30px 0 10px 0;
+    margin: 15px 0 10px 0;
 }
 
 /**
@@ -683,4 +686,11 @@ b {
     white-space: nowrap;
     font-size: 15px;
     line-height: 1.2;
+}
+
+.sample_info {
+    margin: 5px 0 0 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #808080;
 }
