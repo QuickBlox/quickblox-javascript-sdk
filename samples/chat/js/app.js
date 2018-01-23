@@ -60,6 +60,8 @@ App.prototype.renderDashboard = function (activeTabName) {
         QB.users.delete(app.user.id, function(err, user){
             if (!user) {
                 console.error('Can\'t delete user by id: '+app.user.id+' ', err);
+
+                return false;
             }
             
             loginModule.isLogin = false;
