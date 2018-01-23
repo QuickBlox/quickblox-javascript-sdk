@@ -9,14 +9,19 @@
         };
 
         var recorder = null;
+        var recorderTimeoutID;
 
         var recorderOpts = {
                 onstart: function onStartRecord() {
-                    console.log('[QB Recorder] onStartRecording');
                     $('.j-record').addClass('active');
+
+                    recorderTimeoutID = setTimeout(function() {
+                        if(recorder) {
+                            recorder.stop();
+                        }
+                    }, 600000); // 10min
                 },
                 onstop: function(blob) {
-                    console.log('[QB Recorder] onStopRecording');
                     $('.j-record').removeClass('active');
 
                     var down = confirm('Do you want to download video?');
@@ -26,6 +31,7 @@
                     }
 
                     recorder = null;
+                    clearTimeout(recorderTimeoutID);
                 },
                 onerror: function(error) {
                     console.error('Recorder error', error);
@@ -73,7 +79,7 @@
         var remoteStreamCounter = 0;
 
         function closeConn(userId) {
-            if(recorder) {
+            if(recorder && recorderTimeoutID) {
                 recorder.stop();
             }
 
@@ -222,6 +228,12 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            /** Check internet connection */
+            if(!window.navigator.onLine) {
+                alert(CONFIG.MESSAGES['no_internet']);
+                return false;
+            }
+
             if(localStorage.getItem('isAuth')) {
                 $('#already_auth').modal();
                 return false;
@@ -229,7 +241,7 @@
 
             $form.addClass('join-wait');
 
-            app.helpers.join(data).then(function (user) {
+            app.helpers.join(data).then(function(user) {
                 app.caller = user;
 
                 QB.chat.connect({
@@ -329,8 +341,9 @@
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
 
-                    if(recorder) {
+                    if(recorder && recorderTimeoutID) {
                         recorder.stop();
+
                     }
 
                     app.currentSession.stop({});
