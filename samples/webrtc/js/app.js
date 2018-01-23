@@ -228,6 +228,12 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            /** Check internet connection */
+            if(!window.navigator.onLine) {
+                alert(CONFIG.MESSAGES['no_internet']);
+                return false;
+            }
+
             if(localStorage.getItem('isAuth')) {
                 $('#already_auth').modal();
                 return false;
@@ -235,13 +241,14 @@
 
             $form.addClass('join-wait');
 
-            app.helpers.join(data).then(function (user) {
+            app.helpers.join(data).then(function(user) {
                 app.caller = user;
 
                 QB.chat.connect({
                     jid: QB.chat.helpers.getUserJid( app.caller.id, CREDS.appId ),
                     password: 'webAppPass'
                 }, function(err, res) {
+                    console.log('TEST', err);
                     if(err) {
                         if(!_.isEmpty(app.currentSession)) {
                             app.currentSession.stop({});
