@@ -11,26 +11,24 @@
         var recorder = null;
 
         var recorderOpts = {
-                callbacks: {
-                    onStart: function onStartRecord() {
-                        console.log('[QB Recorder] onStartRecording');
-                        $('.j-record').addClass('active');
-                    },
-                    onStop: function(blob) {
-                        console.log('[QB Recorder] onStopRecording');
-                        $('.j-record').removeClass('active');
+                onstart: function onStartRecord() {
+                    console.log('[QB Recorder] onStartRecording');
+                    $('.j-record').addClass('active');
+                },
+                onstop: function(blob) {
+                    console.log('[QB Recorder] onStopRecording');
+                    $('.j-record').removeClass('active');
 
-                        var down = confirm('Do you want to download video?');
+                    var down = confirm('Do you want to download video?');
 
-                        if (down) {
-                            recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
-                        }
-
-                        recorder = null;
-                    },
-                    onError: function(error) {
-                        console.error('Recorder error', error);
+                    if (down) {
+                        recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
                     }
+
+                    recorder = null;
+                },
+                onerror: function(error) {
+                    console.error('Recorder error', error);
                 }
             };
         var isAudio = false;
@@ -164,8 +162,8 @@
                 var framesTpl = _.template( $('#frames_tpl').html() );
                 $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
 
-                // TODO: Hide a record button if browser not supported it
-                if (!qbMediaRecorder.isAvailable()) {
+                // Hide a record button if browser not supported it
+                if (!QBMediaRecorder.isAvailable()) {
                     $('.j-record').hide();
                 }
 
@@ -622,7 +620,7 @@
 
             if(_.isEmpty(app.currentSession)) {
                 return false;
-            } else if(qbMediaRecorder.isAvailable()) {
+            } else if(QBMediaRecorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
                         connection = connections[app.mainVideo],
@@ -632,8 +630,8 @@
                         return false;
                     }
 
-                    recorder = new qbMediaRecorder(connection.stream, recorderOpts);
-                    recorder.start();
+                    recorder = new QBMediaRecorder(recorderOpts);
+                    recorder.start(connection.stream);
                 } else {
                     recorder.stop();
                 }
