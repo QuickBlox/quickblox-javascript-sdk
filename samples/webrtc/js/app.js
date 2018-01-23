@@ -248,7 +248,6 @@
                     jid: QB.chat.helpers.getUserJid( app.caller.id, CREDS.appId ),
                     password: 'webAppPass'
                 }, function(err, res) {
-                    console.log('TEST', err);
                     if(err) {
                         if(!_.isEmpty(app.currentSession)) {
                             app.currentSession.stop({});
