@@ -226,12 +226,6 @@ Dialog.prototype.renderMessages = function (dialogId) {
             self.sidebar.classList.add('active');
         }.bind(self));
 
-        self.quitLink.addEventListener('click', function(e){
-           e.preventDefault();
-            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
-            self.quitFromTheDialog(dialogId)
-        });
-
         messageModule.init();
     } else {
         if (self.prevDialogId) {
@@ -268,6 +262,12 @@ Dialog.prototype.renderMessages = function (dialogId) {
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
+
+        self.quitLink.onclick = function(e){
+            e.preventDefault();
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
+            self.quitFromTheDialog(dialogId);
+        };
     }
 
     messageModule.setLoadMoreMessagesListener();
