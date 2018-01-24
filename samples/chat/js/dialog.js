@@ -226,12 +226,6 @@ Dialog.prototype.renderMessages = function (dialogId) {
             self.sidebar.classList.add('active');
         }.bind(self));
 
-        self.quitLink.addEventListener('click', function(e){
-           e.preventDefault();
-            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
-            self.quitFromTheDialog(dialogId)
-        });
-
         messageModule.init();
     } else {
         if (self.prevDialogId) {
@@ -268,6 +262,12 @@ Dialog.prototype.renderMessages = function (dialogId) {
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
+
+        self.quitLink.onclick = function(e){
+            e.preventDefault();
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
+            self.quitFromTheDialog(dialogId);
+        };
     }
 
     messageModule.setLoadMoreMessagesListener();
@@ -329,13 +329,18 @@ Dialog.prototype.createDialog = function (params) {
         if (err) {
             console.error(err);
         } else {
-            var id = createdDialog._id;
-            var occupants = createdDialog.occupants_ids,
+            var occupants_names = [],
+                id = createdDialog._id,
+                occupants = createdDialog.occupants_ids,
                 message_body = (app.user.name || app.user.login) + ' created new dialog with: ';
 
             _.each(occupants, function (occupantId) {
-                message_body += (userModule._cache[occupantId].name || userModule._cache[occupantId].login) + " ";
+                var occupant_name = userModule._cache[occupantId].name || userModule._cache[occupantId].login;
+
+                occupants_names.push(occupant_name);
             });
+
+            message_body += occupants_names.join(', ');
 
             var systemMessage = {
                 extension: {

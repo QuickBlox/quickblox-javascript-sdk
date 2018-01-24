@@ -57,11 +57,13 @@ App.prototype.renderDashboard = function (activeTabName) {
     listeners.setListeners();
 
     logoutBtn.addEventListener('click', function () {
-        QB.logout(function(error, result){
-            if (error) {
-                console.error('Logout was unsuccessful', error);
-            }
+        QB.users.delete(app.user.id, function(err, user){
+            if (!user) {
+                console.error('Can\'t delete user by id: '+app.user.id+' ', err);
 
+                return false;
+            }
+            
             loginModule.isLogin = false;
             app.isDashboardLoaded = false;
 
