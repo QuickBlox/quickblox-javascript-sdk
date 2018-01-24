@@ -58,9 +58,9 @@ App.prototype.renderDashboard = function (activeTabName) {
 
     logoutBtn.addEventListener('click', function () {
         QB.users.delete(app.user.id, function(err, user){
-            if (!user) {
+            if (err) {
                 console.error('Can\'t delete user by id: '+app.user.id+' ', err);
-
+                
                 return false;
             }
             
@@ -69,7 +69,9 @@ App.prototype.renderDashboard = function (activeTabName) {
 
             localStorage.removeItem('user');
             helpers.clearCache();
+
             QB.chat.disconnect();
+            
             router.navigate('#!/login');
         });
     });
