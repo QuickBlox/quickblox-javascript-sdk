@@ -227,15 +227,12 @@ Dialog.prototype.renderMessages = function (dialogId) {
         }.bind(self));
 
         messageModule.init();
-<<<<<<< HEAD
 
         self.quitLink.addEventListener('click', function(e) {
             e.preventDefault();
             if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
             self.quitFromTheDialog(this.dataset.dialog);
         });
-=======
->>>>>>> 220f861589cbbe140c18c502eec13dba7fb6a352
     } else {
         if (self.prevDialogId) {
             messageModule.sendStopTypingStatus(self.prevDialogId);
@@ -273,12 +270,6 @@ Dialog.prototype.renderMessages = function (dialogId) {
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
-
-        self.quitLink.onclick = function(e){
-            e.preventDefault();
-            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
-            self.quitFromTheDialog(dialogId);
-        };
     }
 
     messageModule.setLoadMoreMessagesListener();
