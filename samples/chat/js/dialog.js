@@ -227,6 +227,12 @@ Dialog.prototype.renderMessages = function (dialogId) {
         }.bind(self));
 
         messageModule.init();
+
+        self.quitLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
+            self.quitFromTheDialog(this.dataset.dialog);
+        });
     } else {
         if (self.prevDialogId) {
             messageModule.sendStopTypingStatus(self.prevDialogId);
@@ -246,9 +252,11 @@ Dialog.prototype.renderMessages = function (dialogId) {
             }
         }
 
+        self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
+        self.quitLink.dataset.dialog = dialogId;
+
         if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
             self.editLink.classList.remove('hidden');
-            self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
         } else {
             self.editLink.classList.add('hidden');
         }
@@ -262,12 +270,6 @@ Dialog.prototype.renderMessages = function (dialogId) {
         helpers.clearView(self.messagesContainer);
         helpers.clearView(self.attachmentsPreviewContainer);
         document.forms.send_message.attach_file.value = null;
-
-        self.quitLink.onclick = function(e){
-            e.preventDefault();
-            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
-            self.quitFromTheDialog(dialogId);
-        };
     }
 
     messageModule.setLoadMoreMessagesListener();
@@ -484,7 +486,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
             self._cache[dialogId].users = self._cache[dialogId].users.concat(newUsers);
 
-            updatedMsg.body = app.user.name + ' adds ' + usernames.join(',') + ' to the conversation.';
+            updatedMsg.body = app.user.name + ' adds ' + usernames.join(', ') + ' to the conversation.';
             updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
             router.navigate('/dialog/' + dialogId);
@@ -536,7 +538,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
         _.each(users, function(user){
             QB.chat.sendSystemMessage(+user, msg);
-        })
+        });
     }
 };
 
