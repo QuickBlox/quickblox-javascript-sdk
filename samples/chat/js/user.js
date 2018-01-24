@@ -93,7 +93,7 @@ User.prototype.getUsers = function () {
 
             resolve(userList);
         });
-    })
+    });
 };
 
 User.prototype.buildUserItem = function (user) {

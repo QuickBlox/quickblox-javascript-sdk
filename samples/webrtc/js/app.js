@@ -9,28 +9,32 @@
         };
 
         var recorder = null;
+        var recorderTimeoutID;
 
         var recorderOpts = {
-                callbacks: {
-                    onStart: function onStartRecord() {
-                        console.log('[QB Recorder] onStartRecording');
-                        $('.j-record').addClass('active');
-                    },
-                    onStop: function(blob) {
-                        console.log('[QB Recorder] onStopRecording');
-                        $('.j-record').removeClass('active');
+                onstart: function onStartRecord() {
+                    $('.j-record').addClass('active');
 
-                        var down = confirm('Do you want to download video?');
-
-                        if (down) {
-                            recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
+                    recorderTimeoutID = setTimeout(function() {
+                        if(recorder) {
+                            recorder.stop();
                         }
+                    }, 600000); // 10min
+                },
+                onstop: function(blob) {
+                    $('.j-record').removeClass('active');
 
-                        recorder = null;
-                    },
-                    onError: function(error) {
-                        console.error('Recorder error', error);
+                    var down = confirm('Do you want to download video?');
+
+                    if (down) {
+                        recorder.download('QB_WEBrtc_sample' + Date.now(), blob);
                     }
+
+                    recorder = null;
+                    clearTimeout(recorderTimeoutID);
+                },
+                onerror: function(error) {
+                    console.error('Recorder error', error);
                 }
             };
         var isAudio = false;
@@ -75,7 +79,7 @@
         var remoteStreamCounter = 0;
 
         function closeConn(userId) {
-            if(recorder) {
+            if(recorder && recorderTimeoutID) {
                 recorder.stop();
             }
 
@@ -164,8 +168,8 @@
                 var framesTpl = _.template( $('#frames_tpl').html() );
                 $('.j-board').append( framesTpl({'nameUser': app.caller.full_name}));
 
-                // TODO: Hide a record button if browser not supported it
-                if (!qbMediaRecorder.isAvailable()) {
+                // Hide a record button if browser not supported it
+                if (!QBMediaRecorder.isAvailable()) {
                     $('.j-record').hide();
                 }
 
@@ -224,6 +228,12 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            /** Check internet connection */
+            if(!window.navigator.onLine) {
+                alert(CONFIG.MESSAGES['no_internet']);
+                return false;
+            }
+
             if(localStorage.getItem('isAuth')) {
                 $('#already_auth').modal();
                 return false;
@@ -231,7 +241,7 @@
 
             $form.addClass('join-wait');
 
-            app.helpers.join(data).then(function (user) {
+            app.helpers.join(data).then(function(user) {
                 app.caller = user;
 
                 QB.chat.connect({
@@ -331,8 +341,9 @@
             if ($btn.hasClass('hangup')) {
                 if(!_.isEmpty(app.currentSession)) {
 
-                    if(recorder) {
+                    if(recorder && recorderTimeoutID) {
                         recorder.stop();
+
                     }
 
                     app.currentSession.stop({});
@@ -622,7 +633,7 @@
 
             if(_.isEmpty(app.currentSession)) {
                 return false;
-            } else if(qbMediaRecorder.isAvailable()) {
+            } else if(QBMediaRecorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
                         connection = connections[app.mainVideo],
@@ -632,8 +643,8 @@
                         return false;
                     }
 
-                    recorder = new qbMediaRecorder(connection.stream, recorderOpts);
-                    recorder.start();
+                    recorder = new QBMediaRecorder(recorderOpts);
+                    recorder.start(connection.stream);
                 } else {
                     recorder.stop();
                 }

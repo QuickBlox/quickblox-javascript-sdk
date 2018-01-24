@@ -78,7 +78,8 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
         msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id],
         extension = message.extension,
-        dialogId = message.dialog_id;
+        dialogId = message.dialog_id,
+        occupantsIdsAdded = extension.occupants_ids_added && extension.occupants_ids_added.split(',');
 
     if(extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.UPDATE_DIALOG){
         if (extension.occupants_ids_removed) {
@@ -86,7 +87,11 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
                 return user !== userId;
             });
         } else if(extension.occupants_ids_added) {
-            dialog.users.push(userId);
+            _.each(occupantsIdsAdded, function(userId) {
+                if (dialog.users.indexOf(+userId) === -1) {
+                    dialog.users.push(+userId);
+                }
+            });
         } else if(extension.dialog_name){
             dialog.name = extension.dialog_name;
             dialogModule.updateDialogUi(dialogId, extension.dialog_name);
