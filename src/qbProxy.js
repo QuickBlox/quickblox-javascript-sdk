@@ -104,13 +104,20 @@ ServiceProxy.prototype = {
             };
         }
 
-        if (isQBRequest && qbSessionToken) {
+        if (isQBRequest) {
             if (!qbRequest.headers) {
                 qbRequest.headers = {};
             }
 
-            qbRequest.headers['QB-Token'] = qbSessionToken;
-            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
+            // TODO: include QB-OS header in Access-Control-Allow-Headers;
+            // Now gets error 'Request header field QB-OS is not allowed by Access-Control-Allow-Headers in preflight response'
+            // qbRequest.headers['QB-OS'] = Utils.getOS();
+
+            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
+
+            if(qbSessionToken) {
+                qbRequest.headers['QB-Token'] = qbSessionToken;
+            }
         }
 
         if (config.timeout) {

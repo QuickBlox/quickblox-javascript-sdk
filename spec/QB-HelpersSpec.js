@@ -17,6 +17,12 @@ describe('Helpers', function() {
     QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
   });
 
+  it('can get OS information', function(){
+    const env = QB._getOS();
+
+    expect(env).toEqual(jasmine.any(String));
+  });
+
   it('can generate user\'s jid', function() {
     var userJid = QB.chat.helpers.getUserJid(5, appId);
 
