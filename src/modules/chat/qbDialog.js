@@ -52,7 +52,7 @@ DialogProxy.prototype = {
          * @callback createDialogCallback
          * */
 
-        if (params.occupants_ids instanceof Array) {
+        if (params && params.occupants_ids && Utils.isArray(params.occupants_ids)) {
             params.occupants_ids = params.occupants_ids.join(', ');
         }
 

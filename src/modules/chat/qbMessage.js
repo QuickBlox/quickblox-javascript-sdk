@@ -126,6 +126,10 @@ MessageProxy.prototype = {
          * @callback unreadCountMessageCallback
          * */
 
+        if (params && params.chat_dialog_ids && Utils.isArray(params.chat_dialog_ids)) {
+            params.chat_dialog_ids = params.chat_dialog_ids.join(', ');
+        }
+
         this.service.ajax({
             url: Utils.getUrl(MESSAGES_API_URL + '/unread'),
             data: params

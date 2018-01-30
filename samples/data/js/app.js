@@ -35,6 +35,8 @@ function App() {
 
   /* A list of possible name of pages */
   this._PAGES = ['dashboard', 'new_place', 'place_detailed', 'checkin'];
+
+  this._activePageName = '';
     
   /**
    * Write to root element a class name of a page
@@ -55,10 +57,15 @@ function App() {
 
       // render the page
       self.renderPage(params.pageName, params.detailed);
+
+      this._activePageName = params.pageName;
+    },
+    get: function() {
+      return this._activePageName;
     }
   });
 
-    this._init();
+  this._init();
 }
 
 App.prototype._init = function() {
@@ -486,7 +493,9 @@ App.prototype.renderPlaceDetailed = function(placeId) {
                 }).then(function(res) {
                     self.places.updateLocal(res);
 
-                    self.renderPlaceDetailed(placeId);
+                    if(self.activePage === 'place_detailed') {
+                        self.renderPlaceDetailed(placeId);
+                    }
                 });
             });
         });
@@ -505,7 +514,7 @@ App.prototype.renderCheckin = function(placeId) {
     var place = self.places.getPlace(placeId),
         checkinForm = document.getElementById('checkin-submit');
 
-    // this fix deletes empty symbols from start and end of form's values (https://quickblox.atlassian.net/browse/QBWEBSDK-559)
+    // this fix deletes empty symbols from start and end of form's values
     checkinForm.addEventListener('change', function() {
         var comment = document.getElementById('checkin_comment').value.trim();
 
@@ -547,7 +556,6 @@ App.prototype.renderCheckin = function(placeId) {
 
         // clear form
         target.parentNode.removeChild(target);
-
 
         return false;
     });

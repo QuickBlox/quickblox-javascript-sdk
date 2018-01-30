@@ -226,13 +226,13 @@ Dialog.prototype.renderMessages = function (dialogId) {
             self.sidebar.classList.add('active');
         }.bind(self));
 
-        self.quitLink.addEventListener('click', function(e){
-           e.preventDefault();
-            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
-            self.quitFromTheDialog(dialogId)
-        });
-
         messageModule.init();
+
+        self.quitLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if(dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT) return;
+            self.quitFromTheDialog(this.dataset.dialog);
+        });
     } else {
         if (self.prevDialogId) {
             messageModule.sendStopTypingStatus(self.prevDialogId);
@@ -252,9 +252,11 @@ Dialog.prototype.renderMessages = function (dialogId) {
             }
         }
 
+        self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
+        self.quitLink.dataset.dialog = dialogId;
+
         if(dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
             self.editLink.classList.remove('hidden');
-            self.editLink.href = '#!/dialog/' + self.dialogId + '/edit';
         } else {
             self.editLink.classList.add('hidden');
         }
@@ -329,13 +331,18 @@ Dialog.prototype.createDialog = function (params) {
         if (err) {
             console.error(err);
         } else {
-            var id = createdDialog._id;
-            var occupants = createdDialog.occupants_ids,
+            var occupants_names = [],
+                id = createdDialog._id,
+                occupants = createdDialog.occupants_ids,
                 message_body = (app.user.name || app.user.login) + ' created new dialog with: ';
 
             _.each(occupants, function (occupantId) {
-                message_body += (userModule._cache[occupantId].name || userModule._cache[occupantId].login) + " ";
+                var occupant_name = userModule._cache[occupantId].name || userModule._cache[occupantId].login;
+
+                occupants_names.push(occupant_name);
             });
+
+            message_body += occupants_names.join(', ');
 
             var systemMessage = {
                 extension: {
@@ -461,7 +468,7 @@ Dialog.prototype.updateDialog = function (updates) {
         if(updates.title !== dialog.name){
             toUpdateParams.name = updates.title;
             updatedMsg.extension.dialog_name = updates.title;
-            updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".'
+            updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".';
         }
     }
 
@@ -479,7 +486,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
             self._cache[dialogId].users = self._cache[dialogId].users.concat(newUsers);
 
-            updatedMsg.body = app.user.name + ' adds ' + usernames.join(',') + ' to the conversation.';
+            updatedMsg.body = app.user.name + ' adds ' + usernames.join(', ') + ' to the conversation.';
             updatedMsg.extension.occupants_ids_added = newUsers.join(',');
         } else {
             router.navigate('/dialog/' + dialogId);
@@ -531,7 +538,7 @@ Dialog.prototype.updateDialog = function (updates) {
 
         _.each(users, function(user){
             QB.chat.sendSystemMessage(+user, msg);
-        })
+        });
     }
 };
 

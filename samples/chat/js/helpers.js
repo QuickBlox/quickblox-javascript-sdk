@@ -136,9 +136,10 @@ Helpers.prototype.fillMessagePrams = function (message) {
     if (message.message === CONSTANTS.ATTACHMENT.BODY) {
         message.message = '';
     }
+
     if(!selfDelevered){
         messageModule.sendDeliveredStatus(message._id, message.sender_id, message.chat_dialog_id);
-    };
+    }
 
     message.selfReaded = selfReaded;
 
@@ -163,25 +164,26 @@ Helpers.prototype.getMessageStatus = function(message){
 };
 
 Helpers.prototype.fillMessageBody = function (str) {
-    var url, url_text,
-        URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+    var self = this,
+        url,
+        URL_REGEXP = /https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|www\.[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}/g;
 
-    str = escapeHTML(str);
+    str = self.escapeHTML(str);
 
     // parser of paragraphs
     str = str.replace(/\n/g, '<br>');
     // parser of links
     str = str.replace(URL_REGEXP, function(match) {
-        url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
-        url_text = match;
-        return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
+        url = (/^[a-z]+:/i).test(match) ? match : 'https://' + match;
+
+        return '<a href="' + self.escapeHTML(url) + '" target="_blank">' + self.escapeHTML(match) + '</a>';
     });
 
     return str;
+};
 
-    function escapeHTML(s) {
-        return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+Helpers.prototype.escapeHTML = function (str) {
+    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 };
 
 Helpers.prototype.getSrcFromAttachmentId = function (id) {

@@ -101,16 +101,16 @@
           <input id="latlng" type="hidden" value={{latLng}}>
 
           <div class="form_item">
-            <input id="title" class="inp" type="text" required placeholder="Place name" maxlength="40">
+            <input id="title" class="inp" type="text" required pattern="[A-Za-z\s]{4,40}" title="Only latin from 4 to 40 symbols" placeholder="Place name">
           </div>
 
           <div class="form_item">
-            <input id="description" class="inp" type="text" required placeholder="Description" maxlength="80">
+            <input id="description" class="inp" type="text" required pattern="[A-Za-z\s]{4,80}" title="Only latin from 4 to 80 symbols" placeholder="Description" >
           </div>
 
           <div class="form_item">
             <label for="rate">Rate</label>
-            <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="0" required>
+            <input id="rate"  class="inp" type="number" min="0" max="5" step="0.1" value="5" required>
           </div>
 
           <div class="form_item"  class="form_item form_item-media">
@@ -227,7 +227,12 @@
           <input id="checkin_id" type="hidden" value={{id}}>
 
           <div class="form_item">
-            <input id="checkin_comment" class="inp" type="text" required placeholder="Enter your comment" maxlength="40" required>
+            <input id="checkin_comment" class="inp"
+              type="text" 
+              placeholder="Enter your comment" 
+              pattern="[A-Za-z\s]{4,40}"
+              title="Only latin from 4 to 40 symbols"
+              required>
           </div>
 
           <div class="form_item">

@@ -185,6 +185,7 @@ router.on({
                     var userItem = JSON.parse(JSON.stringify(user));
 
                     userItem.selected = dialogOccupants.indexOf(userItem.id) !== -1;
+                    
                     return userItem;
                 });
 
@@ -197,15 +198,15 @@ router.on({
                         if(elem.classList.contains('disabled')) return;
                         if(elem.classList.contains('selected')){
                             elem.classList.remove('selected');
-                            newUsersCount--
+                            newUsersCount--;
                         } else {
                             elem.classList.add('selected');
-                            newUsersCount++
+                            newUsersCount++;
                         }
 
                         counterElem.innerText = newUsersCount;
 
-                        addUsersBtn.disabled = !newUsersCount
+                        addUsersBtn.disabled = !newUsersCount;
                     });
 
                     userList.appendChild(userElem);

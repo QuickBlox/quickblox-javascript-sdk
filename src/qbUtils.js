@@ -11,6 +11,7 @@ var isBrowser = typeof window !== "undefined",
 
 if (!isBrowser && !isNativeScript) {
     var fs = require('fs');
+    var os = require('os');
 }
 
 // The object for type MongoDB.Bson.ObjectId
@@ -37,6 +38,55 @@ var Utils = {
             'node': isNode
         };
     },
+
+    _getOSInfoFromNodeJS: function() {
+        return os.platform();
+    },
+
+    _getOSInfoFromBrowser: function() {
+        return window.navigator.userAgent;
+    },
+
+    getOS: function() {
+        var self = this;
+        var osName = 'An unknown OS';
+
+        var OS_LIST = [
+            {
+                osName:'Windows',
+                codeNames:['Windows', 'win32']
+            },
+            {
+                osName:'Linux',
+                codeNames:['Linux', 'linux']
+            },
+            {
+                osName:'macOS',
+                codeNames:['Mac OS', 'darwin']
+            }
+        ];
+
+        var platformInfo;
+
+        if(self.getEnv().browser) {
+            platformInfo = self._getOSInfoFromBrowser();
+        } else if(self.getEnv().node) {
+            platformInfo = self._getOSInfoFromNodeJS();
+        }
+
+        OS_LIST.forEach( function(osInfo) {
+            osInfo.codeNames.forEach( function(codeName) {
+                var index = platformInfo.indexOf(codeName);
+
+                if(index !== -1) {
+                    osName = osInfo.osName;
+                }
+            });
+        });
+
+        return osName;
+    },
+
     safeCallbackCall: function() {
         var listenerString = arguments[0].toString(),
             listenerName = listenerString.split('(')[0].split(' ')[1],

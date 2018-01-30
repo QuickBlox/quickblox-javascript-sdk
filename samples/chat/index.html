@@ -146,8 +146,12 @@
             <button class="open_sidebar j-open_sidebar"></button>
             <h1 class="dialog__title j-dialog__title"><%- title %></h1>
             <div class="action_links">
-                <a href="#!/dialog/<%- _id %>/edit" class="add_to_dialog j-add_to_dialog <% type !== 2 ? print('hidden') : ''%>"><i class="material-icons">person_add</i></a>
-                <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link <% type === 1 ? print('hidden') : ''%>"><i class="material-icons">delete</i></a>
+                <a href="#!/dialog/<%- _id %>/edit" class="add_to_dialog j-add_to_dialog <% type !== 2 ? print('hidden') : ''%>">
+                    <i class="material-icons">person_add</i>
+                </a>
+                <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link <% type === 1 ? print('hidden') : ''%>" data-dialog="<%- _id %>">
+                    <i class="material-icons">delete</i>
+                </a>
             </div>
         </div>
         <div class="notifications j-notifications hidden"></div>
@@ -238,8 +242,8 @@
     </script>
 
     <script type="text/template" id="tpl_notificationMessage">
-        <div class="message__wrap m-notification_message" id="<%= _id %>">
-            <%= message || body %>
+        <div class="message__wrap" id="<%= id %>">
+            <p class="m-notification_message"><%= text %></p>
         </div>
     </script>
 

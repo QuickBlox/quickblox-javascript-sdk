@@ -104,13 +104,20 @@ ServiceProxy.prototype = {
             };
         }
 
-        if (isQBRequest && qbSessionToken) {
+        if (isQBRequest) {
             if (!qbRequest.headers) {
                 qbRequest.headers = {};
             }
 
-            qbRequest.headers['QB-Token'] = qbSessionToken;
-            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Server';
+            // TODO: include QB-OS header in Access-Control-Allow-Headers;
+            // Now gets error 'Request header field QB-OS is not allowed by Access-Control-Allow-Headers in preflight response'
+            // qbRequest.headers['QB-OS'] = Utils.getOS();
+
+            qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
+
+            if(qbSessionToken) {
+                qbRequest.headers['QB-Token'] = qbSessionToken;
+            }
         }
 
         if (config.timeout) {
@@ -126,18 +133,18 @@ ServiceProxy.prototype = {
                 } else {
                     return response.json();
                 }
-            })
-            .then(function(body) {
-                _requestCallback(null, qbResponse, body);
-            })
-            .catch(function(error) {
-                // TODO: find status 200 for NativeScript
-                if (typeof error === 'object' && !Object.keys(error).length) {
-                    _requestCallback(null, {status: 200}, ' ');
-                } else {
-                    _requestCallback(error);
-                }
-            });
+            }, function() {
+                // Need to research this issue, response doesn't exist if server will return empty body (status 200)
+                qbResponse = {
+                    status: 200
+                };
+
+                return ' ';
+            }).then(function(body) {
+            _requestCallback(null, qbResponse, body);
+        }, function(error) {
+            _requestCallback(error);
+        });
 
         /*
          * Private functions

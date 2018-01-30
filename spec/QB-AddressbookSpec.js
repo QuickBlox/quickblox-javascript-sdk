@@ -8,33 +8,9 @@ describe('AddressBook', function() {
 
     var QB = isNodeEnv ? require('../src/qbMain') : window.QB;
 
-    // var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
-    // var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
-    // var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
-
-    var CREDS = {
-        'appId': 40771,
-        'authKey': 'a9VnGdCqXky7Bns',
-        'authSecret': 'aaznbzqmgsQq2jf'
-    };
-
-    var CONFIG = {
-        endpoints: {
-            api: 'apirc.quickblox.com', // set custom API endpoint
-            chat: 'chatrc.quickblox.com' // set custom Chat endpoint
-        },
-        chatProtocol: {
-            active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
-        },
-        debug: { mode: 1 }
-    };
-
-    var QBUser1 = {
-        'id': 12747447,
-        'login': "js_jasmine22",
-        'password': "js_jasmine22",
-        'email': "js_jasmine22@quickblox.com"
-    };
+    var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
+    var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
+    var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
     var CONTACTS = [
         {
