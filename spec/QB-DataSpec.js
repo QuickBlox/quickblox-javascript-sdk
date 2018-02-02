@@ -80,27 +80,98 @@ describe('Custom Objects API', function() {
                 }
             });
         }, REST_REQUESTS_TIMEOUT);
+    });
 
-        it('can delete custom object', function(done){
-            QB.data.create('cars', {make: 'BMW', model: 'M5', value: 100, damaged: true}, function(err, result) {
-                if (err) {
-                    done.fail('Create custom object error: ' + JSON.stringify(err));
-                } else {
-                    QB.data.delete('cars', result._id, function(err, res) {
-                        if (err) {
-                            done.fail("Create delete object error: " + JSON.stringify(err));
+    describe('Delete custom object', function() {
+        const className = 'cars';
+
+        function createCustomObject(className, params) {
+            const defaultCarParams = {
+                make: 'BMW',
+                model: 'M5',
+                value: 100,
+                damaged: true
+            };
+
+            const carParams = Object.assign(defaultCarParams, params);
+
+            return new Promise((resolve, reject) => {
+                QB.data.create(className, carParams, function(error, result) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }
+
+        it('by ID', function(done) {
+            createCustomObject(className, {}).then((car) => {
+                QB.data.delete(className, car._id, function(error, responce) {
+                    if (error) {
+                        done.fail("Create delete object error: " + JSON.stringify(error));
+                    } else {
+                        expect(responce).not.toBeNull();
+                        expect(responce.deleted[0]).toEqual(car._id);
+
+                        done();
+                    }
+                });
+            });
+        }, REST_REQUESTS_TIMEOUT);
+
+        it('by IDs', function(done) {
+            const promiseCreateCar1 = createCustomObject(className, {});
+            const promiseCreateCar2 = createCustomObject(className, {});
+            const promiseCreateCar3 = createCustomObject(className, {});
+
+            const promisesArray = [promiseCreateCar1, promiseCreateCar2, promiseCreateCar3];
+
+            Promise.all(promisesArray).then(function(cars) {
+                const ids = cars.map(car => car._id);
+
+                QB.data.delete(className, ids, function(error, res) {
+                    if (error) {
+                        done.fail("Create delete object error: " + JSON.stringify(error));
+                    } else {
+                        expect(res).not.toBeNull();
+                        // Need sort arrays before compare
+                        // cause jasmine to compare one by one item
+                        expect(res.deleted.sort()).toEqual(ids.sort());
+
+                        done();
+                    }
+                });
+            });
+        }, REST_REQUESTS_TIMEOUT * 3);
+
+        it('by criteria', function(done) {
+            const criteria = {
+                'value': {
+                    'gt': 100
+                }
+            };
+
+            const promiseCreateCar1 = createCustomObject(className, {value: 150});
+            const promiseCreateCar2 = createCustomObject(className, {value: 150});
+            const promiseCreateCar3 = createCustomObject(className, {value: 150});
+
+            Promise.all([promiseCreateCar1, promiseCreateCar2, promiseCreateCar3])
+                .then(function(cars) {
+                    QB.data.delete(className, criteria, function(error, res) {
+                        if (error) {
+                            done.fail("Create delete object error: " + JSON.stringify(error));
                         } else {
                             expect(res).not.toBeNull();
-                            expect(res).toBe(true);
+                            expect(res.deletedCount).toEqual(cars.length);
 
                             done();
                         }
                     });
-                }
-            });
-        }, REST_REQUESTS_TIMEOUT);
+                });
+        }, REST_REQUESTS_TIMEOUT * 3);
     });
-
 
     describe('Custom Objects with files', function() {
       var paramsFile,
@@ -204,9 +275,7 @@ describe('Custom Objects API', function() {
 
     });
 
-
     describe('Some more complex searching', function() {
-
         it('can find instances of cars with a value over 50 (value: 100)', function(done){
             var filter = {
                 'value': {
@@ -249,5 +318,4 @@ describe('Custom Objects API', function() {
             });
         }, REST_REQUESTS_TIMEOUT);
     });
-
 });
