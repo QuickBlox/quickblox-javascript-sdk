@@ -1,20 +1,10 @@
 'use strict';
 
-/*
- * QuickBlox JavaScript SDK
- *
- * Custom Objects module
- *
- */
-
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
-
-// For server-side applications through using npm package 'quickblox' you should include the following lines
-var isBrowser = typeof window !== 'undefined';
+const config = require('../qbConfig');
+const Utils = require('../qbUtils');
 
 /**
- * Custom Objects
+ * Custom Objects Module
  * @namespace QB.data
  **/
 function DataProxy(service){
@@ -22,28 +12,34 @@ function DataProxy(service){
 }
 
 DataProxy.prototype = {
-
     /**
      * Create new custom object ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Create_object read more})
+     * 
      * @memberof QB.data
+     * 
      * @param {string} className - A class name to which a new object belongs
      * @param {object} data - Object of parameters (custom fields' names and their values)
      * @param {createDataCallback} callback - The createDataCallback function
+     * 
      * @example
-     * QB.data.create('GameOfThrones', {
+     * const data = {
      *     'name': 'John',
      *     'age':'20',
      *     'family': [
      *         'Stark',
      *         'Targaryen'
      *     ]
-     * }, function(error, response) {
+     * };
+     * 
+     * function createdDataCallback(error, response) {
      *     if (error) {
      *         console.log(error);
      *     } else {
      *         console.log(response);
      *     }
-     * });
+     * }
+     * 
+     * QB.data.create('GameOfThrones', data, createdDataCallback);
      */
     create: function(className, data, callback) {
         /**
@@ -71,7 +67,9 @@ DataProxy.prototype = {
 
     /**
      * Search for records of particular class ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects read more})
+     * 
      * @memberof QB.data
+     * 
      * @param {string} className - A class name to which a new record belongs
      * @param {(object|string[])} filters - Search records with field which contains exactly specified value or by array of records' ids to retrieve
      * @param {number} [filters.skip=0] - Skip N records in search results. Useful for pagination. Default (if not specified) - 0
@@ -122,7 +120,7 @@ DataProxy.prototype = {
     },
 
     /**
-     * Update record by ID of particular class ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects read more})
+     * Update record by ID of particular class. ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects Read more})
      * @memberof QB.data
      * @param {string} className - A class name of record
      * @param {object} data - Object of parameters
@@ -165,27 +163,114 @@ DataProxy.prototype = {
     },
 
     /**
-     * Delete record by ID ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_objects_by_IDs or records by ids}) of particular class ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object read more})
+     * Delete record / records by ID, IDs or criteria (filters) of particular class. <br />
+     * Check out {@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object official documentaion} to get detailed information.
+     * 
      * @memberof QB.data
-     * @param {string} className - A class name of record (records)
-     * @param {(string|array)} id - An ID of record (or an array of records' ids) to delete
-     * @param {deleteDataByIdsCallback} callback - The deleteDataByIdsCallback function
+     * 
+     * @param {string} className - A class name of record
+     * @param {(string|array|object)} requestedData - An ID of record or an array of record's ids or object of criteria rules to delete
+     * @param {deletedDataCallback} callback - The deletedDataCallback function
+     * 
+     * @example
+     * const className = 'Movie';
+     * 
+     * function deletedMovie(error, responce) {
+     *   if(error) {
+     *     throw new Error(error.toString());
+     *   } else {
+     *     console.log(`Deleted movies with ids: ${responce.deleted.toString()}`);
+     *   }
+     * }
+     * 
+     * // By ID, must be string
+     * const id = '502f7c4036c9ae2163000002';
+     * QB.data.delete(className, id, deletedMovie);
+     * 
+     * // By IDs, must be array
+     * const ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];
+     * QB.data.delete(className, ids, deletedMovie);
+     * 
+     * const criteria = { 'price': { 'gt': 100 };
+     * function deletedMoviesByCriteria(error, responce) {
+     *   if(error) {
+     *      throw new Error(error.toString());
+     *   } else {
+     *      // Note! Deleted by creteria doesn't return ids of deleted objects
+     *      console.log(`Deleted ${responce.deletedCount} movies`);
+     *   }
+     * }
+     * QB.data.delete(className, criteria, deletedMoviesByCriteria);
+     * 
+     * 
      */
-    delete: function(className, id, callback) {
+    delete: function(className, requestedData, callback) {
         /**
-         * Callback for QB.data.delete(className, id, callback)
-         * @callback deleteDataByIdsCallback
+         * Callback for QB.data.delete(className, requestedData, callback)
+         * @callback deletedDataCallback
          * @param {object} error - The error object
-         * @param {object} response - Empty body
+         * @param {object|null} response
+         * @param {array} response.deleted - Array of ids of deleted records. If you delete BY CRITERIA this property will be null.
+         * @param {number} response.deletedCount - count of deleted records.
          */
-        this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + id), type: 'DELETE', dataType: 'text'},
-            function(err, result) {
-                if (err) {
-                    callback(err, null);
-                } else {
-                    callback (err, true);
+        const typesData = {
+            id: 1,
+            ids: 2,
+            criteria: 3
+        };
+
+        let requestedTypeOf;
+
+        const responceNormalized = {
+            deleted: [],
+            deletedCount: 0
+        };
+
+        const ajaxParams = {
+            type: 'DELETE',
+            dataType: 'text'
+        };
+
+        /** Define what type of data passed by client */
+        if(typeof requestedData === 'string') {
+            requestedTypeOf = typesData.id;
+        } else if(Utils.isArray(requestedData)) {
+            requestedTypeOf = typesData.ids;
+        } else if(Utils.isObject(requestedData)) {
+            requestedTypeOf = typesData.criteria;
+        }
+
+        if(requestedTypeOf === typesData.id) {
+            ajaxParams.url = Utils.getUrl(config.urls.data, className + '/' + requestedData);
+        } else if(requestedTypeOf === typesData.ids) {
+            ajaxParams.url = Utils.getUrl(config.urls.data, className + '/' + requestedData.toString());
+        } else if(requestedTypeOf === typesData.criteria) {
+            ajaxParams.url = Utils.getUrl(config.urls.data, className + '/by_criteria');
+            ajaxParams.data = requestedData;
+        }
+
+        function handleDeleteCO(error, result) {
+            if (error) {
+                callback(error, null);
+            } else {
+                if(requestedTypeOf === typesData.id) {
+                    responceNormalized.deleted.push(requestedData);
+                    responceNormalized.deletedCount = responceNormalized.deleted.length;
+                } else if(requestedTypeOf === typesData.ids) {
+                    const response = JSON.parse(result);
+                    responceNormalized.deleted = response.SuccessfullyDeleted.ids.slice(0);
+                    responceNormalized.deletedCount = responceNormalized.deleted.length;
+                } else if(requestedTypeOf === typesData.criteria) {
+                    const response = JSON.parse(result);
+                    responceNormalized.deleted = null;
+                    responceNormalized.deletedCount = response.total_deleted;
                 }
-            });
+
+                callback (error, responceNormalized);
+            }
+        }
+
+        this.service.ajax(ajaxParams, handleDeleteCO);
     },
 
     /**
