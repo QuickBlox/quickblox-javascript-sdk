@@ -244,11 +244,10 @@ DataProxy.prototype = {
             ajaxParams.url = Utils.getUrl(config.urls.data, className + '/' + requestedData);
         } else if(requestedTypeOf === typesData.ids) {
             ajaxParams.url = Utils.getUrl(config.urls.data, className + '/' + requestedData.toString());
-        } else if(Utils.isObject(requestedData)) {
+        } else if(requestedTypeOf === typesData.criteria) {
             ajaxParams.url = Utils.getUrl(config.urls.data, className + '/by_criteria');
             ajaxParams.data = requestedData;
         }
-
 
         function handleDeleteCO(error, result) {
             if (error) {
@@ -261,7 +260,7 @@ DataProxy.prototype = {
                     const response = JSON.parse(result);
                     responceNormalized.deleted = response.SuccessfullyDeleted.ids.slice(0);
                     responceNormalized.deletedCount = responceNormalized.deleted.length;
-                } else if(Utils.isObject(requestedData)) {
+                } else if(requestedTypeOf === typesData.criteria) {
                     const response = JSON.parse(result);
                     responceNormalized.deleted = null;
                     responceNormalized.deletedCount = response.total_deleted;
