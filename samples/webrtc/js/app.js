@@ -193,17 +193,19 @@
         /**
          * INIT
          */
-        var CREDS = app.helpers.getQueryVar('creds') === 'test' ? CONFIG.CREDENTIALS.test : CONFIG.CREDENTIALS.prod;
-
         QB.init(
-            CREDS.appId,
-            CREDS.authKey,
-            CREDS.authSecret,
+            CONFIG.CREDENTIALS.appId,
+            CONFIG.CREDENTIALS.authKey,
+            CONFIG.CREDENTIALS.authSecret,
             CONFIG.APP_CONFIG
         );
 
-        /* Insert version + versiobBuild to sample for QA */
+        /* Insert version + versionBuild to sample for QA */
         $('.j-version').text('v.' + QB.version + '.' + QB.buildNumber);
+        /* Insert info about creds and endpoints */
+        let configTxt = 'Uses: ' + JSON.stringify(CONFIG.CREDENTIALS) + ',';
+        configTxt += ' endpoints: ' + (CONFIG.APP_CONFIG.endpoints ? JSON.stringify(CONFIG.APP_CONFIG.endpoints) : 'test server');
+        $('.j-config').text(configTxt);
 
         var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
 

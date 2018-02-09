@@ -5,7 +5,7 @@ var gulp = require('gulp');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 
-var connect = require('gulp-connect');
+var webserver = require('gulp-webserver');
 var notify = require('gulp-notify');
 
 var uglify = require('gulp-uglify');
@@ -41,10 +41,14 @@ gulp.task('minify', function () {
 });
 
 gulp.task('connect', function() {
-    connect.server({
-        port: 3000,
-        https: true
-    });
+    gulp.src('./')
+    .pipe(webserver({
+        host: 'localhost',
+        https: true,
+        livereload: true,
+        directoryListing: true,
+        open: true
+    }));
 });
 
 gulp.task('generate-build_version', function() {

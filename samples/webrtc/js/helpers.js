@@ -9,48 +9,6 @@
     };
     app.network = {};
 
-
-    /* [getQueryVar get value of key from search string of url]
-     * @param  {[string]} q [name of query]
-     * @return {[string]}   [value of query]
-     */
-    app.helpers.getQueryVar = function(q){
-        var query = window.location.search.substring(1),
-            vars = query.split('&'),
-            answ = false;
-
-        vars.forEach(function(el, i){
-            var pair = el.split('=');
-
-            if(pair[0] === q) {
-                answ = pair[1];
-            }
-        });
-
-        return answ;
-    };
-
-    app.helpers.isBytesReceivedChanges = function(userId, inboundrtp) {
-        var res = true,
-            inbBytesRec = inboundrtp ? inboundrtp.bytesReceived : 0;
-
-        if(!app.network[userId]) {
-            app.network[userId] = {
-              'bytesReceived': inbBytesRec
-            };
-        } else {
-            if(app.network[userId].bytesReceived >= inbBytesRec) {
-                res = false;
-            } else {
-                app.network[userId] = {
-                    'bytesReceived': inbBytesRec
-                };
-            }
-        }
-
-        return res;
-    };
-
     /**
      * [Set fixed of relative position on footer]
      */
@@ -130,7 +88,7 @@
      * [getUui - generate a unique id]
      * @return {[string]} [a unique id]
      */
-    function _getUui() {
+    function _getUui(identifyAppId) {
         var navigator_info = window.navigator;
         var screen_info = window.screen;
         var uid = navigator_info.mimeTypes.length;
@@ -140,14 +98,14 @@
         uid += screen_info.height || '';
         uid += screen_info.width || '';
         uid += screen_info.pixelDepth || '';
-        uid += app.helpers.getQueryVar('creds') === 'test' ? 'WebrtcTest' : 'WebrtcProd';
+        uid += identifyAppId;
         
         return uid;
     }
 
     app.helpers.join = function(data) {
         var userRequiredParams = {
-            'login': _getUui(),
+            'login': _getUui(CONFIG.CREDENTIALS.appId),
             'password': 'webAppPass'
         };
 

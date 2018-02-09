@@ -205,6 +205,14 @@ b {
     font-weight: 600;
 }
 
+.footer-config {
+    max-width: 90%;
+    margin: 0 auto 5px auto;
+
+    font-size: 11px;
+    word-wrap: break-word
+}
+
 /**
  * PAGE
  */
