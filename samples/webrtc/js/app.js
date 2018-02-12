@@ -87,15 +87,6 @@
             app.currentSession.closeConnection(userId);
         }
 
-        var ffHack = {
-            waitingReconnectTimer: null,
-            waitingReconnectTimeoutCallback: function(userId, cb) {
-                clearTimeout(this.waitingReconnectTimer);
-                cb(userId);
-            },
-            isFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1
-        };
-
         var Router = Backbone.Router.extend({
             'routes': {
                 'join': 'join',
@@ -202,17 +193,19 @@
         /**
          * INIT
          */
-        var CREDS = app.helpers.getQueryVar('creds') === 'test' ? CONFIG.CREDENTIALS.test : CONFIG.CREDENTIALS.prod;
-
         QB.init(
-            CREDS.appId,
-            CREDS.authKey,
-            CREDS.authSecret,
+            CONFIG.CREDENTIALS.appId,
+            CONFIG.CREDENTIALS.authKey,
+            CONFIG.CREDENTIALS.authSecret,
             CONFIG.APP_CONFIG
         );
 
-        /* Insert version + versiobBuild to sample for QA */
+        /* Insert version + versionBuild to sample for QA */
         $('.j-version').text('v.' + QB.version + '.' + QB.buildNumber);
+        /* Insert info about creds and endpoints */
+        let configTxt = 'Uses: ' + JSON.stringify(CONFIG.CREDENTIALS) + ',';
+        configTxt += ' endpoints: ' + (CONFIG.APP_CONFIG.endpoints ? JSON.stringify(CONFIG.APP_CONFIG.endpoints) : 'test server');
+        $('.j-config').text(configTxt);
 
         var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
 
@@ -708,44 +701,6 @@
                 console.log('session: ', session);
                 console.log('stats: ', stats);
             console.groupEnd();
-
-            /**
-             * Hack for Firefox
-             * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
-             * Was fix in FF52
-             */
-            // if(ffHack.isFirefox) {
-            //     var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
-            //         webrtcConf = CONFIG.APP_CONFIG.webrtc,
-            //         timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
-
-            //     if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-            //         console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
-
-            //         if(recorder) {
-            //             recorder.pause();
-            //         }
-
-            //         app.helpers.toggleRemoteVideoView(userId, 'hide');
-            //         $('.j-callee_status_' + userId).text('disconnected');
-
-            //         if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
-            //             ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
-            //         }
-            //     } else {
-            //         if(recorder) {
-            //             recorder.resume();
-            //         }
-
-            //         if(ffHack.waitingReconnectTimer) {
-            //             clearTimeout(ffHack.waitingReconnectTimer);
-            //             ffHack.waitingReconnectTimer = null;
-            //         }
-
-            //         app.helpers.toggleRemoteVideoView(userId, 'show');
-            //         $('.j-callee_status_' + userId).text('connected');
-            //     }
-            // }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
@@ -758,10 +713,6 @@
             $('.j-caller__ctrl').removeClass('active');
             $(ui.sourceFilter).attr('disabled', false);
             $('.j-callees').empty();
-
-            if(!ffHack.isFirefox && recorder) {
-                recorder.stop();
-            }
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -783,16 +734,6 @@
                         'name':  app.caller.full_name,
                     }
                 });
-            }
-
-            if(ffHack.isFirefox) {
-                if(call.callTimer) {
-                    $('#timer').addClass('invisible');
-                    clearInterval(call.callTimer);
-                    call.callTimer = null;
-                    call.callTime = 0;
-                    app.helpers.network = {};
-                }
             }
 
             if(document.querySelector('.j-actions[hidden]')){
