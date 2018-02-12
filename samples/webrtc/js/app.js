@@ -238,7 +238,7 @@
                 app.caller = user;
 
                 QB.chat.connect({
-                    jid: QB.chat.helpers.getUserJid( app.caller.id, CREDS.appId ),
+                    jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
