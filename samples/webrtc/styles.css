@@ -600,6 +600,10 @@ b {
     margin: 15px 0 10px 0;
 }
 
+.caller__frames_bandwidth {
+    margin: 10px 0 0 0;
+}
+
 /**
  * MAIN VIDEO
  */
@@ -694,6 +698,21 @@ b {
     white-space: nowrap;
     font-size: 15px;
     line-height: 1.2;
+}
+
+.frames_callee__bitrate {
+    display: none;
+    position: absolute;
+    bottom: 28px;
+    right: 10px;
+    background: rgba(0,0,0, .3);
+    color: #fff;
+    width: calc(100% - 10px);
+    height: 15px;
+    line-height: 15px;
+    text-align: right;
+    padding: 0 1px 0 0;
+    font-size: 12px;
 }
 
 .sample_info {

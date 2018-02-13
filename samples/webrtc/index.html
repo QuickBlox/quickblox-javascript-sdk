@@ -42,11 +42,11 @@
 
                     <div class="join__body">
                         <div class="join__row">
-                            <input type="text" class="join__input" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,19}$">
+                            <input type="text" class="join__input j-join__username" name="username" placeholder="Username" autofocus required title="Field should contain alphanumeric characters only in a range 3 to 20. The first character must be a letter." pattern="^[a-zA-Z][\w]{2,19}$">
                         </div>
 
                         <div class="join__row">
-                            <input type="text" class="join__input" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][a-zA-Z0-9]{2,14}$">
+                            <input type="text" class="join__input j-join__room" name="room" placeholder="Chat room name" required title="Field should contain alphanumeric characters only in a range 3 to 15, without space. The first character must be a letter." pattern="^[a-zA-Z][a-zA-Z0-9]{2,14}$">
                         </div>
 
                         <div class="join__row">
@@ -304,6 +304,17 @@
                     <select class="qb-select j-source invisible">
                     </select>
                 </div>
+
+                <div class="caller__frames_bandwidth">
+                    <select class="qb-select j-bandwidth">
+                        <option value="">Standart</option>
+                        <option value="2048">2048 kbps</option>
+                        <option value="1024">1024 kbps</option>
+                        <option value="512">512 kbps</option>
+                        <option value="256">256 kbps</option>
+                        <option value="128">128 kbps</option>
+                    </select>
+                </div>
             </div>
         </div>
     </script>
@@ -357,6 +368,10 @@
             </div>
 
             <p class="frames_callee__name"><%=name%></p>
+
+            <div class="frames_callee__bitrate">
+                <span id="bitrate_<%=userID%>">0</span> kbps
+            </div>
         </div>
     </script>
 

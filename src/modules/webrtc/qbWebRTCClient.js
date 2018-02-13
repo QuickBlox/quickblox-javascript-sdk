@@ -88,9 +88,10 @@ WebRTCClient.prototype.sessions = {};
  * @param  {number} ct          Call type
  * @param  {number} cID         Initiator ID
  */
-WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, bw) {
     var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
         callerID = cID || Helpers.getIdFromNode(this.connection.jid),
+        bandwidth = isNaN(bw) ? 0 : +bw,
         isIdentifyOpponents = false,
         callType = ct || 2;
 
@@ -101,14 +102,14 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
     isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
     if (!isIdentifyOpponents) {
-        return this._createAndStoreSession(null, callerID, opponentsIDs, callType);
+        return this._createAndStoreSession(null, callerID, opponentsIDs, callType, bandwidth);
     } else {
         throw new Error('Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.');
     }
 };
 
-WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid));
+WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType, bandwidth) {
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid), bandwidth);
 
     /** set callbacks */
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
@@ -178,7 +179,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
         var session = this.sessions[sessionID];
 
         if (!session) {
-            session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
+            session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, +extension.userInfo.bandwidth);
 
             if (typeof this.onCallListener === 'function') {
                 Utils.safeCallbackCall(this.onCallListener, session, userInfo);

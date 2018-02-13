@@ -86,26 +86,29 @@ RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
 };
 
 RTCPeerConnection.prototype.getRemoteSDP = function(){
-  return this.remoteSDP;
+    return this.remoteSDP;
 };
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
-  var desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type});
+    var self = this,
+        desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type}),
+        ffVersion = Helpers.getVersionFirefox();
+        
+    if (ffVersion !== null && (ffVersion === 56 || ffVersion === 57) && !self.delegate.bandwidth) {
+        desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
+    } else {
+        desc.sdp = setMediaBitrate(desc.sdp, 'video', self.delegate.bandwidth);
+    }
+        
+    function successCallback(desc) {
+        callback(null);
+    }
 
-  var ffVersion = Helpers.getVersionFirefox();
+    function errorCallback(error) {
+        callback(error);
+    }
 
-  if(ffVersion !== null && (ffVersion === 56 || ffVersion === 57) ) {
-    desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
-  }
-
-  function successCallback() {
-    callback(null);
-  }
-  function errorCallback(error) {
-    callback(error);
-  }
-
-    this.setRemoteDescription(desc, successCallback, errorCallback);
+    self.setRemoteDescription(desc).then(successCallback, errorCallback);
 };
 
 RTCPeerConnection.prototype.addLocalStream = function(localStream){
@@ -125,20 +128,20 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
         // Additional parameters for SDP Constraints
         // http://www.w3.org/TR/webrtc/#h-offer-answer-options
 
-        // self.createOffer(successCallback, errorCallback, constraints)
+        self.createOffer().then(function(offer) {
+            offer.sdp = setMediaBitrate(offer.sdp, 'video', self.delegate.bandwidth);
+            successCallback(offer);
+        }).catch(function(reason) {
+            errorCallback(reason);
+        });
 
-        if (Helpers.getVersionSafari() >= 11) {
-            self.createOffer().then(function(offer) {
-                successCallback(offer);
-            }).catch(function(reason) {
-                errorCallback(reason);
-            });
-            // TODO for safari
-        } else {
-            self.createOffer(successCallback, errorCallback);
-        }
     } else {
-        self.createAnswer(successCallback, errorCallback);
+        self.createAnswer().then(function(answer) {
+            answer.sdp = setMediaBitrate(answer.sdp, 'video', self.delegate.bandwidth);
+            successCallback(answer);
+        }).catch(function(reason) {
+            errorCallback(reason);
+        });
     }
 
     function successCallback(desc) {
@@ -148,22 +151,16 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
          * callType === 2 is audio only
          */
         var ffVersion = Helpers.getVersionFirefox();
-
+        
         if (ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
             desc.sdp = _modifySDPforFixIssue(desc.sdp);
         }
-
-        if(Helpers.getVersionSafari() >= 11) {
-            self.setLocalDescription(desc).then(function() {
-                callback(null);
-            }).catch(function(error) {
-                errorCallback(error);
-            });
-        } else {
-            self.setLocalDescription(desc, function() {
-                callback(null);
-            }, errorCallback);
-        }
+        
+        self.setLocalDescription(desc).then(function() {
+            callback(null);
+        }).catch(function(error) {
+            errorCallback(error);
+        });
     }
 
     function errorCallback(error) {
@@ -328,8 +325,8 @@ RTCPeerConnection.prototype._clearStatsReportTimer = function(){
 RTCPeerConnection.prototype._getStatsWrap = function() {
     var self = this,
         localStream = self.getLocalStreams().length ? self.getLocalStreams()[0] : self.delegate.localStream,
-        selector = self.delegate.callType == 1 ? localStream.getVideoTracks()[0] : localStream.getAudioTracks()[0],
-        statsReportInterval;
+        statsReportInterval,
+        lastResult;
 
     if (config.webrtc && config.webrtc.statsReportTimeInterval) {
         if (isNaN(+config.webrtc.statsReportTimeInterval)) {
@@ -339,15 +336,13 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
         statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
         var _statsReportCallback = function() {
-            _getStats(self, selector,
-                function (results) {
-                    self.delegate._onCallStatsReport(self.userID, results, null);
-                },
-                function errorLog(err) {
-                    Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
-                    self.delegate._onCallStatsReport(self.userID, null, err);
-                }
-            );
+            _getStats(self, lastResult, function(results, lastResults) {
+                lastResult = lastResults;
+                self.delegate._onCallStatsReport(self.userID, results, null);
+            }, function errorLog(err) {
+                Helpers.traceError('_getStats error. ' + err.name + ': ' + err.message);
+                self.delegate._onCallStatsReport(self.userID, null, err);
+            });
         };
 
         Helpers.trace('Stats tracker has been started.');
@@ -424,18 +419,61 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
 /**
  * PRIVATE
  */
-function _getStats(peer, selector, successCallback, errorCallback) {
-    peer.getStats(selector, function (res) {
-        var items = [];
-        res.forEach(function (result) {
+function _getStats(peer, lastResults, successCallback, errorCallback) {
+    var statistic = {
+        'inbound_audio': null,
+        'inbound_video': null,
+        'outbound_audio': null,
+        'outbound_video': null,
+        'total_transport': null,
+    };
+
+    peer.getStats(null).then(function(results) {
+        results.forEach(function(result) {
             var item = {};
-            item.id = result.id;
-            item.type = result.type;
-            item.timestamp = result.timestamp;
-            items.push(item);
+            if (result.bytesSent && result.type === 'outbound-rtp') {
+                item.bitrate = _getBitratePerSecond(result, lastResults, true);
+                item.type = result.type;
+                item.mediaType = result.mediaType;
+                item.bytesSent = result.bytesSent;
+                item.packetsSent = result.packetsSent;
+                item.timestamp = result.timestamp;
+                statistic['outbound_' + result.mediaType] = item;
+            }
+            if (result.bytesReceived && result.type === 'inbound-rtp') {
+                item.bitrate = _getBitratePerSecond(result, lastResults, false);   
+                item.type = result.type;
+                item.mediaType = result.mediaType;
+                item.bytesReceived = result.bytesReceived;
+                item.packetsReceived = result.packetsReceived;
+                item.timestamp = result.timestamp;
+                statistic['inbound_' + result.mediaType] = item;
+            }
+            if (result.bytesSent && result.bytesReceived && result.type === 'transport') {
+                item.bitrate_out = _getBitratePerSecond(result, lastResults, true);
+                item.bitrate_in = _getBitratePerSecond(result, lastResults, false);    
+                item.type = result.type;
+                item.bytesSent = result.bytesSent;
+                item.bytesReceived = result.bytesReceived;
+                item.timestamp = result.timestamp;
+                statistic['total_' + result.type] = item;
+            }
         });
-        successCallback(items);
+        successCallback(statistic, results);
     }, errorCallback);
+
+    function _getBitratePerSecond(result, lastResults, isSent) {
+        var lastResult = lastResults && lastResults.get(result.id),
+            bitrate;
+        if (!lastResult) {
+            bitrate = 0;
+        } else if (isSent) {
+            bitrate = 8*(result.bytesSent-lastResult.bytesSent)/(result.timestamp-lastResult.timestamp);
+        } else {
+            bitrate = 8*(result.bytesReceived-lastResult.bytesReceived)/(result.timestamp-lastResult.timestamp);
+        }
+        return Math.round(bitrate);
+    }
 }
 
 /**
@@ -463,8 +501,9 @@ function _modifySDPforFixIssueFFAndFreezes(sdp) {
 }
 
 function setMediaBitrate(sdp, media, bitrate) {
-    var lines = sdp.split("\n");
+    var lines = sdp.split('\n');
     var line = -1;
+    var modifier = 'AS';
 
     for (var i = 0; i < lines.length; i++) {
         if (lines[i].indexOf("m="+media) === 0) {
@@ -474,32 +513,26 @@ function setMediaBitrate(sdp, media, bitrate) {
     }
 
     if (line === -1) {
-        console.debug("Could not find the m line for", media);
         return sdp;
     }
-    console.debug("Found the m line for", media, "at line", line);
 
-    // Pass the m line
     line++;
 
-    // Skip i and c lines
-    while(lines[line].indexOf("i=") === 0 || lines[line].indexOf("c=") === 0) {
+    while(lines[line].indexOf('i=') === 0 || lines[line].indexOf('c=') === 0) {
         line++;
     }
 
-    // If we're on a b line, replace it
-    if (lines[line].indexOf("b") === 0) {
-        console.debug("Replaced b line at line", line);
-        lines[line] = "b=AS:"+bitrate;
-        return lines.join("\n");
+    if (lines[line].indexOf('b') === 0) {
+        lines[line] = 'b='+modifier+':'+bitrate;
+        return lines.join('\n');
     }
 
-    // Add a new b line
-    console.debug("Adding new b line before line", line);
     var newLines = lines.slice(0, line);
-    newLines.push("b=AS:"+bitrate);
+
+    newLines.push('b='+modifier+':'+bitrate);
     newLines = newLines.concat(lines.slice(line, lines.length));
-    return newLines.join("\n");
+    
+    return newLines.join('\n');
 }
 
 module.exports = RTCPeerConnection;
