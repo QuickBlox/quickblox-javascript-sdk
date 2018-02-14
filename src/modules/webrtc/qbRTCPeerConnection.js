@@ -464,13 +464,15 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
 
     function _getBitratePerSecond(result, lastResults, isSent) {
         var lastResult = lastResults && lastResults.get(result.id),
+            bit = 8,
             bitrate;
+
         if (!lastResult) {
             bitrate = 0;
         } else if (isSent) {
-            bitrate = 8*(result.bytesSent-lastResult.bytesSent)/(result.timestamp-lastResult.timestamp);
+            bitrate = bit*(result.bytesSent-lastResult.bytesSent)/(result.timestamp-lastResult.timestamp);
         } else {
-            bitrate = 8*(result.bytesReceived-lastResult.bytesReceived)/(result.timestamp-lastResult.timestamp);
+            bitrate = bit*(result.bytesReceived-lastResult.bytesReceived)/(result.timestamp-lastResult.timestamp);
         }
         return Math.round(bitrate);
     }

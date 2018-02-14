@@ -84,10 +84,10 @@ WebRTCClient.prototype.sessions = {};
 
 /**
  * Creates the new session.
- * @param  {array} opponentsIDs Opponents IDs
- * @param  {number} ct          Call type
- * @param  {number} cID         Initiator ID
- * @param  {number} bw          Bandwidth limit (kbps)
+ * @param  {array} opponentsIDs      - Opponents IDs
+ * @param  {number} ct               - Call type
+ * @param  {number} [cID=yourUserId] - Initiator ID
+ * @param  {number} [bw=0]           - Bandwidth limit (kbps)
  */
 WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, bw) {
     var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
