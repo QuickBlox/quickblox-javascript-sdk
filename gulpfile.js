@@ -32,12 +32,10 @@ gulp.task('build', function () {
 });
 
 gulp.task('minify', function () {
-    pump([
-        gulp.src('./quickblox.min.js'),
-        uglify(),
-        notify('Minify task is finished.'),
-        gulp.dest('./')
-    ]);
+    return gulp.src(['./quickblox.min.js'])
+        .pipe(uglify())
+        .on('error', function (err) { console.log('ERROR', err) })
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('connect', function() {

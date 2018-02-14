@@ -1,7 +1,7 @@
 'use strict';
 
-const config = require('../qbConfig');
-const Utils = require('../qbUtils');
+var config = require('../qbConfig');
+var Utils = require('../qbUtils');
 
 /**
  * Custom Objects Module
@@ -22,7 +22,7 @@ DataProxy.prototype = {
      * @param {createDataCallback} callback - The createDataCallback function
      * 
      * @example
-     * const data = {
+     * var data = {
      *     'name': 'John',
      *     'age':'20',
      *     'family': [
@@ -173,7 +173,7 @@ DataProxy.prototype = {
      * @param {deletedDataCallback} callback - The deletedDataCallback function
      * 
      * @example
-     * const className = 'Movie';
+     * var className = 'Movie';
      * 
      * function deletedMovie(error, responce) {
      *   if(error) {
@@ -184,14 +184,14 @@ DataProxy.prototype = {
      * }
      * 
      * // By ID, must be string
-     * const id = '502f7c4036c9ae2163000002';
+     * var id = '502f7c4036c9ae2163000002';
      * QB.data.delete(className, id, deletedMovie);
      * 
      * // By IDs, must be array
-     * const ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];
+     * var ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];
      * QB.data.delete(className, ids, deletedMovie);
      * 
-     * const criteria = { 'price': { 'gt': 100 };
+     * var criteria = { 'price': { 'gt': 100 };
      * function deletedMoviesByCriteria(error, responce) {
      *   if(error) {
      *      throw new Error(error.toString());
@@ -213,20 +213,20 @@ DataProxy.prototype = {
          * @param {array} response.deleted - Array of ids of deleted records. If you delete BY CRITERIA this property will be null.
          * @param {number} response.deletedCount - count of deleted records.
          */
-        const typesData = {
+        var typesData = {
             id: 1,
             ids: 2,
             criteria: 3
         };
 
-        let requestedTypeOf;
+        var requestedTypeOf;
 
-        const responceNormalized = {
+        var responceNormalized = {
             deleted: [],
             deletedCount: 0
         };
 
-        const ajaxParams = {
+        var ajaxParams = {
             type: 'DELETE',
             dataType: 'text'
         };
@@ -253,15 +253,17 @@ DataProxy.prototype = {
             if (error) {
                 callback(error, null);
             } else {
+                var response;
+
                 if(requestedTypeOf === typesData.id) {
                     responceNormalized.deleted.push(requestedData);
                     responceNormalized.deletedCount = responceNormalized.deleted.length;
                 } else if(requestedTypeOf === typesData.ids) {
-                    const response = JSON.parse(result);
+                    response = JSON.parse(result);
                     responceNormalized.deleted = response.SuccessfullyDeleted.ids.slice(0);
                     responceNormalized.deletedCount = responceNormalized.deleted.length;
                 } else if(requestedTypeOf === typesData.criteria) {
-                    const response = JSON.parse(result);
+                    response = JSON.parse(result);
                     responceNormalized.deleted = null;
                     responceNormalized.deletedCount = response.total_deleted;
                 }
