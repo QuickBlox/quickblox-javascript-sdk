@@ -38,7 +38,7 @@ WebRTCSession.State = {
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvider, currentUserID) {
+function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvider, currentUserID, bandwidth) {
     this.ID = sessionID ? sessionID : generateUUID();
     this.state = WebRTCSession.State.NEW;
 
@@ -53,6 +53,8 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
     this.signalingProvider = signalingProvider;
 
     this.currentUserID = currentUserID;
+
+    this.bandwidth = bandwidth;
 
     /**
      * We use this timeout to fix next issue:
@@ -568,6 +570,10 @@ WebRTCSession.prototype.processCall = function(peerConnection, ext) {
     extension.opponentsIDs = this.opponentsIDs;
     extension.sdp = peerConnection.localDescription.sdp;
 
+    //TODO: set bandwidth to the userInfo object
+    extension.userInfo = ext.userInfo || {};
+    extension.userInfo.bandwidth = this.bandwidth;
+
     this.signalingProvider.sendMessage(peerConnection.userID, extension, SignalingConstants.SignalingType.CALL);
 };
 
@@ -620,10 +626,8 @@ WebRTCSession.prototype._onCallStatsReport = function(userId, stats, error) {
 };
 
 WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
-    var self = this;
-
-    if (typeof self.onSessionConnectionStateChangedListener === 'function') {
-        Utils.safeCallbackCall(self.onSessionConnectionStateChangedListener, self, userID, connectionState);
+    if (typeof this.onSessionConnectionStateChangedListener === 'function') {
+        Utils.safeCallbackCall(this.onSessionConnectionStateChangedListener, this, userID, connectionState);
     }
 };
 

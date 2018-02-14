@@ -42,6 +42,7 @@
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
             'sourceFilter': '.j-source',
+            'bandwidthSelect': '.j-bandwidth',
             'insertOccupants': function() {
                 var $occupantsCont = $('.j-users');
 
@@ -122,6 +123,13 @@
                 app.calleesAnwered = [];
                 app.calleesRejected = [];
                 app.users = [];
+
+                var user = JSON.parse(localStorage.getItem('data'));
+         
+                if (user) {
+                    $('.j-join__username').val(user.username);
+                    $('.j-join__room').val(user.room);
+                }
             },
             'dashboard': function() {
                 if(_.isEmpty(app.caller)) {
@@ -221,6 +229,8 @@
                     return [item.name, item.value.trim()];
                 }));
 
+            localStorage.setItem('data', JSON.stringify(data));
+
             /** Check internet connection */
             if(!window.navigator.onLine) {
                 alert(CONFIG.MESSAGES['no_internet']);
@@ -317,6 +327,8 @@
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
                 $videoSourceFilter = $(ui.sourceFilter),
+                $bandwidthSelect = $(ui.bandwidthSelect),
+                bandwidth = $.trim($(ui.bandwidthSelect).val()),
                 videoElems = '',
                 mediaParams = {
                     'audio': true,
@@ -371,7 +383,7 @@
 
                 isAudio = $btn.data('call') === 'audio';
 
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO, null, bandwidth);
 
                 if(isAudio) {
                     mediaParams = {
@@ -429,6 +441,7 @@
                                 $('.j-callees').append(videoElems);
 
                                 $videoSourceFilter.attr('disabled', true);
+                                $bandwidthSelect.attr('disabled', true);
                                 $btn.addClass('hangup');
                                 app.helpers.setFooterPosition();
                             }
@@ -523,6 +536,7 @@
 
                     $('.j-actions').addClass('hangup');
                     $(ui.sourceFilter).attr('disabled', true);
+                    $(ui.bandwidthSelect).attr('disabled', true);
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -656,6 +670,7 @@
 
                 QB.chat.disconnect();
                 localStorage.removeItem('isAuth');
+                localStorage.removeItem('data');
                 app.router.navigate('join', {'trigger': true});
                 app.helpers.setFooterPosition();
             });
@@ -696,6 +711,8 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
+            $('#bitrate_' + userId).text(stats.inbound_video.bitrate);
+
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);
@@ -712,7 +729,9 @@
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
             $(ui.sourceFilter).attr('disabled', false);
+            $(ui.bandwidthSelect).attr('disabled', false);
             $('.j-callees').empty();
+            $('.frames_callee__bitrate').hide();
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -890,6 +909,8 @@
             if(!call.callTimer) {
                 call.callTimer = setInterval( function(){ call.updTimer.call(call); }, 1000);
             }
+
+            $('.frames_callee__bitrate').show();
         };
 
         QB.webrtc.onUpdateCallListener = function onUpdateCallListener(session, userId, extension) {
