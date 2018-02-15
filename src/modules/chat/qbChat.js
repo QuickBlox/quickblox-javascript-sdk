@@ -731,11 +731,7 @@ ChatProxy.prototype = {
 
                         // enable carbons
                         self._enableCarbons();
-
-                        // chat server will close your connection if you are not active in chat during one minute
-                        // initial presence and an automatic reminder of it each 55 seconds
-                        self.connection.send($pres());
-
+                        
                         if (typeof callback === 'function') {
                             if (params.connectWithoutGettingRoster) {
                                 // connected and return nothing as result
@@ -759,13 +755,16 @@ ChatProxy.prototype = {
                             for (var i = 0, len = rooms.length; i < len; i++) {
                                 self.muc.join(rooms[i]);
                             }
-
+                            
                             // fire 'onReconnectListener'
-                            if (typeof self.onReconnectListener === 'function'){
+                            if (typeof self.onReconnectListener === 'function') {
                                 Utils.safeCallbackCall(self.onReconnectListener);
                             }
                         }
 
+                        // chat server will close your connection if you are not active in chat during one minute
+                        // initial presence and an automatic reminder of it each 55 seconds
+                        self.connection.send($pres());
                         break;
                     case Strophe.Status.DISCONNECTING:
                         Utils.QBLog('[Chat]', 'Status.DISCONNECTING');
