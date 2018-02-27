@@ -818,9 +818,6 @@ ChatProxy.prototype = {
 
                 self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
 
-                // enable carbons
-                self._enableCarbons();
-
                 if (typeof callback === 'function') {
                     var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
 
