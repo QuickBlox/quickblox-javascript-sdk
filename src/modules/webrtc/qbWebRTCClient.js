@@ -177,11 +177,12 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
             Utils.safeCallbackCall(this.onInvalidEventsListener, 'onCall', sessionID, userID, userInfo);
         }
     } else {
-        var session = this.sessions[sessionID];
+        var session = this.sessions[sessionID],
+            bandwidth = +userInfo.bandwidth || 0;
 
-        if (!session) {
-            session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, +extension.userInfo.bandwidth);
-
+            if (!session) {
+                session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, bandwidth);
+                
             if (typeof this.onCallListener === 'function') {
                 Utils.safeCallbackCall(this.onCallListener, session, userInfo);
             }
