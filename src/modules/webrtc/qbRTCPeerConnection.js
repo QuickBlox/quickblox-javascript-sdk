@@ -503,6 +503,10 @@ function _modifySDPforFixIssueFFAndFreezes(sdp) {
 }
 
 function setMediaBitrate(sdp, media, bitrate) {
+    if (!bitrate) {
+        return sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
+    }
+
     var lines = sdp.split('\n');
     var line = -1;
     var modifier = 'AS';
