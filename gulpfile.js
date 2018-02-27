@@ -43,7 +43,6 @@ gulp.task('connect', function() {
     .pipe(webserver({
         host: 'localhost',
         https: true,
-        livereload: true,
         directoryListing: true,
         open: true
     }));
