@@ -739,11 +739,15 @@ ChatProxy.prototype = {
                                 // get the roster and save
                                 self.roster.get(function(contacts) {
                                     self.roster.contacts = contacts;
+                                    // send first presence if user is online
+                                    self.connection.send($pres());
                                 });
                             } else {
                                 // get the roster and save
                                 self.roster.get(function(contacts) {
                                     self.roster.contacts = contacts;
+                                    // send first presence if user is online
+                                    self.connection.send($pres());
                                     // connected and return roster as result
                                     callback(null, self.roster.contacts);
                                 });
@@ -762,9 +766,6 @@ ChatProxy.prototype = {
                             }
                         }
 
-                        // chat server will close your connection if you are not active in chat during one minute
-                        // initial presence and an automatic reminder of it each 55 seconds
-                        self.connection.send($pres());
                         break;
                     case Strophe.Status.DISCONNECTING:
                         Utils.QBLog('[Chat]', 'Status.DISCONNECTING');
@@ -817,12 +818,31 @@ ChatProxy.prototype = {
 
                 self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
 
-                /** Send first presence if user is online */
-                var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
-                self.Client.send(presence);
+                // enable carbons
+                self._enableCarbons();
 
                 if (typeof callback === 'function') {
-                    callback(null, true);
+                    var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
+
+                    if (params.connectWithoutGettingRoster) {
+                        // connected and return nothing as result
+                        callback(null, undefined);
+                        // get the roster and save
+                        self.roster.get(function(contacts) {
+                            self.roster.contacts = contacts;
+                            // send first presence if user is online
+                            self.Client.send(presence);
+                        });
+                    } else {
+                        // get the roster and save
+                        self.roster.get(function(contacts) {
+                            self.roster.contacts = contacts;
+                            // send first presence if user is online
+                            self.Client.send(presence);
+                            // connected and return roster as result
+                            callback(null, self.roster.contacts);
+                        });
+                    }
                 }
             });
 
