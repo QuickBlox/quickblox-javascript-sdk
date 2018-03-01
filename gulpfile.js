@@ -5,7 +5,7 @@ var gulp = require('gulp');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 
-var connect = require('gulp-connect');
+var webserver = require('gulp-webserver');
 var notify = require('gulp-notify');
 
 var uglify = require('gulp-uglify');
@@ -32,19 +32,20 @@ gulp.task('build', function () {
 });
 
 gulp.task('minify', function () {
-    pump([
-        gulp.src('./quickblox.min.js'),
-        uglify(),
-        notify('Minify task is finished.'),
-        gulp.dest('./')
-    ]);
+    return gulp.src(['./quickblox.min.js'])
+        .pipe(uglify())
+        .on('error', function (err) { console.log('ERROR', err) })
+        .pipe(gulp.dest('./'));
 });
 
 gulp.task('connect', function() {
-    connect.server({
-        port: 3000,
-        https: true
-    });
+    gulp.src('./')
+    .pipe(webserver({
+        host: 'localhost',
+        https: true,
+        directoryListing: true,
+        open: true
+    }));
 });
 
 gulp.task('generate-build_version', function() {

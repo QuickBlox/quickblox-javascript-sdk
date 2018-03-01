@@ -42,6 +42,7 @@
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
             'sourceFilter': '.j-source',
+            'bandwidthSelect': '.j-bandwidth',
             'insertOccupants': function() {
                 var $occupantsCont = $('.j-users');
 
@@ -87,15 +88,6 @@
             app.currentSession.closeConnection(userId);
         }
 
-        var ffHack = {
-            waitingReconnectTimer: null,
-            waitingReconnectTimeoutCallback: function(userId, cb) {
-                clearTimeout(this.waitingReconnectTimer);
-                cb(userId);
-            },
-            isFirefox: navigator.userAgent.toLowerCase().indexOf('firefox') > -1
-        };
-
         var Router = Backbone.Router.extend({
             'routes': {
                 'join': 'join',
@@ -131,6 +123,13 @@
                 app.calleesAnwered = [];
                 app.calleesRejected = [];
                 app.users = [];
+
+                var user = JSON.parse(localStorage.getItem('data'));
+         
+                if (user) {
+                    $('.j-join__username').val(user.username);
+                    $('.j-join__room').val(user.room);
+                }
             },
             'dashboard': function() {
                 if(_.isEmpty(app.caller)) {
@@ -202,17 +201,19 @@
         /**
          * INIT
          */
-        var CREDS = app.helpers.getQueryVar('creds') === 'test' ? CONFIG.CREDENTIALS.test : CONFIG.CREDENTIALS.prod;
-
         QB.init(
-            CREDS.appId,
-            CREDS.authKey,
-            CREDS.authSecret,
+            CONFIG.CREDENTIALS.appId,
+            CONFIG.CREDENTIALS.authKey,
+            CONFIG.CREDENTIALS.authSecret,
             CONFIG.APP_CONFIG
         );
 
-        /* Insert version + versiobBuild to sample for QA */
+        /* Insert version + versionBuild to sample for QA */
         $('.j-version').text('v.' + QB.version + '.' + QB.buildNumber);
+        /* Insert info about creds and endpoints */
+        let configTxt = 'Uses: ' + JSON.stringify(CONFIG.CREDENTIALS) + ',';
+        configTxt += ' endpoints: ' + (CONFIG.APP_CONFIG.endpoints ? JSON.stringify(CONFIG.APP_CONFIG.endpoints) : 'test server');
+        $('.j-config').text(configTxt);
 
         var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
 
@@ -227,6 +228,8 @@
                 data = _.object( _.map( $form.serializeArray(), function(item) {
                     return [item.name, item.value.trim()];
                 }));
+
+            localStorage.setItem('data', JSON.stringify(data));
 
             /** Check internet connection */
             if(!window.navigator.onLine) {
@@ -245,7 +248,7 @@
                 app.caller = user;
 
                 QB.chat.connect({
-                    jid: QB.chat.helpers.getUserJid( app.caller.id, CREDS.appId ),
+                    jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
                     password: 'webAppPass'
                 }, function(err, res) {
                     if(err) {
@@ -324,6 +327,8 @@
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
                 $videoSourceFilter = $(ui.sourceFilter),
+                $bandwidthSelect = $(ui.bandwidthSelect),
+                bandwidth = $.trim($(ui.bandwidthSelect).val()),
                 videoElems = '',
                 mediaParams = {
                     'audio': true,
@@ -378,7 +383,7 @@
 
                 isAudio = $btn.data('call') === 'audio';
 
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO);
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO, null, bandwidth);
 
                 if(isAudio) {
                     mediaParams = {
@@ -436,6 +441,7 @@
                                 $('.j-callees').append(videoElems);
 
                                 $videoSourceFilter.attr('disabled', true);
+                                $bandwidthSelect.attr('disabled', true);
                                 $btn.addClass('hangup');
                                 app.helpers.setFooterPosition();
                             }
@@ -530,6 +536,7 @@
 
                     $('.j-actions').addClass('hangup');
                     $(ui.sourceFilter).attr('disabled', true);
+                    $(ui.bandwidthSelect).attr('disabled', true);
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -663,6 +670,7 @@
 
                 QB.chat.disconnect();
                 localStorage.removeItem('isAuth');
+                localStorage.removeItem('data');
                 app.router.navigate('join', {'trigger': true});
                 app.helpers.setFooterPosition();
             });
@@ -703,49 +711,13 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
+            $('#bitrate_' + userId).text(stats.inbound_video.bitrate);
+
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);
                 console.log('stats: ', stats);
             console.groupEnd();
-
-            /**
-             * Hack for Firefox
-             * (https://bugzilla.mozilla.org/show_bug.cgi?id=852665)
-             * Was fix in FF52
-             */
-            // if(ffHack.isFirefox) {
-            //     var inboundrtp = _.findWhere(stats, {'type': 'inboundrtp'}),
-            //         webrtcConf = CONFIG.APP_CONFIG.webrtc,
-            //         timeout = (webrtcConf.disconnectTimeInterval - webrtcConf.statsReportTimeInterval) * 1000;
-
-            //     if(!app.helpers.isBytesReceivedChanges(userId, inboundrtp)) {
-            //         console.warn('This is Firefox and user ' + userId + ' has lost his connection.');
-
-            //         if(recorder) {
-            //             recorder.pause();
-            //         }
-
-            //         app.helpers.toggleRemoteVideoView(userId, 'hide');
-            //         $('.j-callee_status_' + userId).text('disconnected');
-
-            //         if(!_.isEmpty(app.currentSession) && !ffHack.waitingReconnectTimer) {
-            //             ffHack.waitingReconnectTimer = setTimeout(ffHack.waitingReconnectTimeoutCallback, timeout, userId, closeConn);
-            //         }
-            //     } else {
-            //         if(recorder) {
-            //             recorder.resume();
-            //         }
-
-            //         if(ffHack.waitingReconnectTimer) {
-            //             clearTimeout(ffHack.waitingReconnectTimer);
-            //             ffHack.waitingReconnectTimer = null;
-            //         }
-
-            //         app.helpers.toggleRemoteVideoView(userId, 'show');
-            //         $('.j-callee_status_' + userId).text('connected');
-            //     }
-            // }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
@@ -757,11 +729,9 @@
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
             $(ui.sourceFilter).attr('disabled', false);
+            $(ui.bandwidthSelect).attr('disabled', false);
             $('.j-callees').empty();
-
-            if(!ffHack.isFirefox && recorder) {
-                recorder.stop();
-            }
+            $('.frames_callee__bitrate').hide();
 
             app.currentSession.detachMediaStream('main_video');
             app.currentSession.detachMediaStream('localVideo');
@@ -783,16 +753,6 @@
                         'name':  app.caller.full_name,
                     }
                 });
-            }
-
-            if(ffHack.isFirefox) {
-                if(call.callTimer) {
-                    $('#timer').addClass('invisible');
-                    clearInterval(call.callTimer);
-                    call.callTimer = null;
-                    call.callTime = 0;
-                    app.helpers.network = {};
-                }
             }
 
             if(document.querySelector('.j-actions[hidden]')){
@@ -949,6 +909,8 @@
             if(!call.callTimer) {
                 call.callTimer = setInterval( function(){ call.updTimer.call(call); }, 1000);
             }
+
+            $('.frames_callee__bitrate').show();
         };
 
         QB.webrtc.onUpdateCallListener = function onUpdateCallListener(session, userId, extension) {

@@ -84,13 +84,16 @@ WebRTCClient.prototype.sessions = {};
 
 /**
  * Creates the new session.
- * @param  {array} opponentsIDs Opponents IDs
- * @param  {number} ct          Call type
- * @param  {number} cID         Initiator ID
+ * @param  {array} opponentsIDs      - Opponents IDs
+ * @param  {number} ct               - Call type
+ * @param  {number} [cID=yourUserId] - Initiator ID
+ * @param  {object} [opts]
+ * @param  {number} [opts.bandwidth=0] - Bandwidth limit (kbps)
  */
-WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
+WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) {
     var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
         callerID = cID || Helpers.getIdFromNode(this.connection.jid),
+        bandwidth = opts && opts.bandwidth && (!isNaN(opts.bandwidth)) ? +opts.bandwidth : 0,
         isIdentifyOpponents = false,
         callType = ct || 2;
 
@@ -101,14 +104,14 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID) {
     isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
     if (!isIdentifyOpponents) {
-        return this._createAndStoreSession(null, callerID, opponentsIDs, callType);
+        return this._createAndStoreSession(null, callerID, opponentsIDs, callType, bandwidth);
     } else {
         throw new Error('Can\'t create a session with the same opponentsIDs. There is a session already in NEW or ACTIVE state.');
     }
 };
 
-WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid));
+WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType, bandwidth) {
+    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid), bandwidth);
 
     /** set callbacks */
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
@@ -175,11 +178,12 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
             Utils.safeCallbackCall(this.onInvalidEventsListener, 'onCall', sessionID, userID, userInfo);
         }
     } else {
-        var session = this.sessions[sessionID];
+        var session = this.sessions[sessionID],
+            bandwidth = +userInfo.bandwidth || 0;
 
-        if (!session) {
-            session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType);
-
+            if (!session) {
+                session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, bandwidth);
+                
             if (typeof this.onCallListener === 'function') {
                 Utils.safeCallbackCall(this.onCallListener, session, userInfo);
             }
