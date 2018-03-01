@@ -639,7 +639,7 @@
     
     
         
-            <div class="description">Custom Objects</div>
+            <div class="description">Custom Objects Module</div>
         
         
         
@@ -698,7 +698,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 48
+            modules/qbData.js, line 44
         </div>
         
     </div>
@@ -851,7 +851,24 @@
         
 
     
-    <pre class="prettyprint"><code>QB.data.create('GameOfThrones', {    'name': 'John',    'age':'20',    'family': [        'Stark',        'Targaryen'    ]}, function(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }});</code></pre>
+    <pre class="prettyprint"><code>var data = {
+    'name': 'John',
+    'age':'20',
+    'family': [
+        'Stark',
+        'Targaryen'
+    ]
+};
+
+function createdDataCallback(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+}
+
+QB.data.create('GameOfThrones', data, createdDataCallback);</code></pre>
     
 
     
@@ -863,12 +880,12 @@
     <div class="nameContainer">
         <h4 class="name" id=".delete">
             
-            <span class="type-signature static">static</span>QB.data.delete<span class="signature">(className, id, callback)</span>
+            <span class="type-signature static">static</span>QB.data.delete<span class="signature">(className, requestedData, callback)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbData.js, line 174
+            modules/qbData.js, line 207
         </div>
         
     </div>
@@ -879,7 +896,8 @@
     
     
     <div class="description">
-        Delete record by ID (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_objects_by_IDs">or records by ids</a>) of particular class (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object">read more</a>)
+        Delete record / records by ID, IDs or criteria (filters) of particular class. <br />
+Check out <a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object">official documentaion</a> to get detailed information.
     </div>
     
 
@@ -926,14 +944,14 @@
             
             <td class="description last">
                 
-                A class name of record (records)</td>
+                A class name of record</td>
         </tr>
 	
 	
 	
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>requestedData</code></td>
             
             
             <td class="type">
@@ -943,6 +961,9 @@
 |
 
 <span class="param-type">array</span>
+|
+
+<span class="param-type">object</span>
 
 
             
@@ -952,7 +973,7 @@
             
             <td class="description last">
                 
-                An ID of record (or an array of records' ids) to delete</td>
+                An ID of record or an array of record's ids or object of criteria rules to delete</td>
         </tr>
 	
 	
@@ -965,7 +986,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#deleteDataByIdsCallback">deleteDataByIdsCallback</a></span>
+<span class="param-type"><a href="global.html#deletedDataCallback">deletedDataCallback</a></span>
 
 
             
@@ -975,7 +996,7 @@
             
             <td class="description last">
                 
-                The deleteDataByIdsCallback function</td>
+                The deletedDataCallback function</td>
         </tr>
 	
 	
@@ -1020,6 +1041,41 @@
     
     
     
+        <h5>Example</h5>
+        
+
+    
+    <pre class="prettyprint"><code>var className = 'Movie';
+
+function deletedMovie(error, responce) {
+  if(error) {
+    throw new Error(error.toString());
+  } else {
+    console.log(`Deleted movies with ids: ${responce.deleted.toString()}`);
+  }
+}
+
+// By ID, must be string
+var id = '502f7c4036c9ae2163000002';
+QB.data.delete(className, id, deletedMovie);
+
+// By IDs, must be array
+var ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];
+QB.data.delete(className, ids, deletedMovie);
+
+var criteria = { 'price': { 'gt': 100 };
+function deletedMoviesByCriteria(error, responce) {
+  if(error) {
+     throw new Error(error.toString());
+  } else {
+     // Note! Deleted by creteria doesn't return ids of deleted objects
+     console.log(`Deleted ${responce.deletedCount} movies`);
+  }
+}
+QB.data.delete(className, criteria, deletedMoviesByCriteria);</code></pre>
+    
+
+    
 </dd>
 
         
@@ -1033,7 +1089,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 275
+            modules/qbData.js, line 362
         </div>
         
     </div>
@@ -1263,7 +1319,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 240
+            modules/qbData.js, line 327
         </div>
         
     </div>
@@ -1493,7 +1549,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 260
+            modules/qbData.js, line 347
         </div>
         
     </div>
@@ -1700,7 +1756,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 102
+            modules/qbData.js, line 100
         </div>
         
     </div>
@@ -1986,7 +2042,25 @@
         
 
     
-    <pre class="prettyprint"><code>var filter = {    'skip': 0,    'limit': 100,    'sort_desc': 'updated_at',    'family': {        'in': 'Stark,Targaryen'    }};var ids = ['53aaa06f535c12cea9007496', '53aaa06f535c12cea9007495'];// use filter or ids to get records:QB.data.list('GameOfThrones', filter, function(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }});</code></pre>
+    <pre class="prettyprint"><code>var filter = {
+    'skip': 0,
+    'limit': 100,
+    'sort_desc': 'updated_at',
+    'family': {
+        'in': 'Stark,Targaryen'
+    }
+};
+
+var ids = ['53aaa06f535c12cea9007496', '53aaa06f535c12cea9007495'];
+
+// use filter or ids to get records:
+QB.data.list('GameOfThrones', filter, function(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+});</code></pre>
     
 
     
@@ -2003,7 +2077,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 145
+            modules/qbData.js, line 143
         </div>
         
     </div>
@@ -2014,7 +2088,7 @@
     
     
     <div class="description">
-        Update record by ID of particular class (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects">read more</a>)
+        Update record by ID of particular class. (<a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects">Read more</a>)
     </div>
     
 
@@ -2201,7 +2275,18 @@
         
 
     
-    <pre class="prettyprint"><code>QB.data.update('GameOfThrones', {    '_id': '53aaa06f535c12cea9007496',    'pull': {        'family':'Stark'    }}, function(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }});</code></pre>
+    <pre class="prettyprint"><code>QB.data.update('GameOfThrones', {
+    '_id': '53aaa06f535c12cea9007496',
+    'pull': {
+        'family':'Stark'
+    }
+}, function(error, response) {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log(response);
+    }
+});</code></pre>
     
 
     
@@ -2218,7 +2303,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 201
+            modules/qbData.js, line 288
         </div>
         
     </div>
@@ -2500,7 +2585,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jan 30 2018 14:55:06 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 28 2018 18:12:50 GMT+0200 (FLE Standard Time)
         </footer>
     </div>
 </div>

@@ -923,7 +923,7 @@
     
         
         <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 427
+            modules/webrtc/qbRTCPeerConnection.js, line 422
         </div>
         
     </div>
@@ -994,7 +994,7 @@
     
         
         <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 445
+            modules/webrtc/qbRTCPeerConnection.js, line 485
         </div>
         
     </div>
@@ -1065,7 +1065,7 @@
     
         
         <div class="tag-source">
-            modules/webrtc/qbRTCPeerConnection.js, line 461
+            modules/webrtc/qbRTCPeerConnection.js, line 501
         </div>
         
     </div>
@@ -1136,7 +1136,7 @@
     
         
         <div class="tag-source">
-            modules/webrtc/qbWebRTCSession.js, line 858
+            modules/webrtc/qbWebRTCSession.js, line 862
         </div>
         
     </div>
@@ -1207,7 +1207,7 @@
     
         
         <div class="tag-source">
-            modules/webrtc/qbWebRTCClient.js, line 290
+            modules/webrtc/qbWebRTCClient.js, line 294
         </div>
         
     </div>
@@ -1517,7 +1517,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1330
+            modules/chat/qbChat.js, line 1346
         </div>
         
     </div>
@@ -1730,7 +1730,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1361
+            modules/chat/qbChat.js, line 1377
         </div>
         
     </div>
@@ -1940,7 +1940,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 49
+            modules/qbData.js, line 45
         </div>
         
     </div>
@@ -2496,7 +2496,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1688
+            modules/chat/qbChat.js, line 1704
         </div>
         
     </div>
@@ -3161,14 +3161,14 @@
                 
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="deleteDataByIdsCallback">
+        <h4 class="name" id="deletedDataCallback">
             
-            deleteDataByIdsCallback<span class="signature">(error, response)</span>
+            deletedDataCallback<span class="signature">(error, response)</span>
         </h4>
     
         
         <div class="tag-source">
-            modules/qbData.js, line 175
+            modules/qbData.js, line 208
         </div>
         
     </div>
@@ -3179,7 +3179,7 @@
     
     
     <div class="description">
-        Callback for QB.data.delete(className, id, callback)
+        Callback for QB.data.delete(className, requestedData, callback)
     </div>
     
 
@@ -3240,6 +3240,9 @@
             
                 
 <span class="param-type">object</span>
+|
+
+<span class="param-type">null</span>
 
 
             
@@ -3249,7 +3252,75 @@
             
             <td class="description last">
                 
-                Empty body</td>
+                
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>deleted</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                Array of ids of deleted records. If you delete BY CRITERIA this property will be null.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>deletedCount</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                count of deleted records.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
         </tr>
 	
 	
@@ -3562,7 +3633,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 276
+            modules/qbData.js, line 363
         </div>
         
     </div>
@@ -3840,7 +3911,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 2060
+            modules/chat/qbChat.js, line 2076
         </div>
         
     </div>
@@ -4657,7 +4728,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 241
+            modules/qbData.js, line 328
         </div>
         
     </div>
@@ -4935,7 +5006,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1844
+            modules/chat/qbChat.js, line 1860
         </div>
         
     </div>
@@ -5074,7 +5145,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1966
+            modules/chat/qbChat.js, line 1982
         </div>
         
     </div>
@@ -5491,7 +5562,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1268
+            modules/chat/qbChat.js, line 1284
         </div>
         
     </div>
@@ -5885,7 +5956,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1516
+            modules/chat/qbChat.js, line 1532
         </div>
         
     </div>
@@ -6001,7 +6072,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1562
+            modules/chat/qbChat.js, line 1578
         </div>
         
     </div>
@@ -6350,7 +6421,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 103
+            modules/qbData.js, line 101
         </div>
         
     </div>
@@ -6628,7 +6699,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1605
+            modules/chat/qbChat.js, line 1621
         </div>
         
     </div>
@@ -7590,7 +7661,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1398
+            modules/chat/qbChat.js, line 1414
         </div>
         
     </div>
@@ -7661,7 +7732,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1430
+            modules/chat/qbChat.js, line 1446
         </div>
         
     </div>
@@ -7871,7 +7942,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 2120
+            modules/chat/qbChat.js, line 2136
         </div>
         
     </div>
@@ -8126,7 +8197,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 146
+            modules/qbData.js, line 144
         </div>
         
     </div>
@@ -8682,7 +8753,7 @@
     
         
         <div class="tag-source">
-            modules/chat/qbChat.js, line 1931
+            modules/chat/qbChat.js, line 1947
         </div>
         
     </div>
@@ -9099,7 +9170,7 @@
     
         
         <div class="tag-source">
-            modules/qbData.js, line 202
+            modules/qbData.js, line 289
         </div>
         
     </div>
@@ -9244,7 +9315,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jan 30 2018 14:55:06 GMT+0200 (FLE Standard Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 28 2018 18:12:50 GMT+0200 (FLE Standard Time)
         </footer>
     </div>
 </div>
