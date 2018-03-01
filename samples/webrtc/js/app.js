@@ -383,7 +383,7 @@
 
                 isAudio = $btn.data('call') === 'audio';
 
-                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO, null, bandwidth);
+                app.currentSession = QB.webrtc.createNewSession(Object.keys(app.callees), isAudio ? QB.webrtc.CallType.AUDIO : QB.webrtc.CallType.VIDEO, null, {'bandwidth': bandwidth});
 
                 if(isAudio) {
                     mediaParams = {
