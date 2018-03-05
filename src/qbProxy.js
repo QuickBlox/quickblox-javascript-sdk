@@ -109,10 +109,7 @@ ServiceProxy.prototype = {
                 qbRequest.headers = {};
             }
 
-            // TODO: include QB-OS header in Access-Control-Allow-Headers;
-            // Now gets error 'Request header field QB-OS is not allowed by Access-Control-Allow-Headers in preflight response'
-            // qbRequest.headers['QB-OS'] = Utils.getOS();
-
+            qbRequest.headers['QB-OS'] = Utils.getOS();
             qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
 
             if(qbSessionToken) {
