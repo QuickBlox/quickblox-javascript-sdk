@@ -24,6 +24,7 @@ var config = {
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
   },
+  hash: 'sha1',
   streamManagement: {
     enable: false
   },
