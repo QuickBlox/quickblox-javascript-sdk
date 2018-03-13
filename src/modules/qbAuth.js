@@ -131,8 +131,10 @@ function signMessage(message, secret) {
     var cryptoSessionMsg;
     
     if(config.hash === 'sha1') {
+        console.log('test, uses sha1');
         cryptoSessionMsg = sha1(sessionMsg, secret).toString();
-    } else if(config.hash === 'sha256'){
+    } else if(config.hash === 'sha256') {
+        console.log('test, uses sha256');
         cryptoSessionMsg = sha256(sessionMsg, secret).toString();
     } else {
         throw new Error('Quickblox SDK: unknown crypto standards, available sha1 or sha256');
