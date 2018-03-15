@@ -2,7 +2,8 @@
 
 var config = require('../qbConfig'),
     Utils = require('../qbUtils'),
-    CryptoJS = require('crypto-js/hmac-sha1');
+    sha1 = require('crypto-js/hmac-sha1'),
+    sha256 = require('crypto-js/hmac-sha256');
 
 function AuthProxy(service) {
     this.service = service;
@@ -126,5 +127,18 @@ function signMessage(message, secret) {
         }
     }).sort().join('&');
 
-    return CryptoJS(sessionMsg, secret).toString();
+
+    var cryptoSessionMsg;
+    
+    if(config.hash === 'sha1') {
+        console.log('test, uses sha1');
+        cryptoSessionMsg = sha1(sessionMsg, secret).toString();
+    } else if(config.hash === 'sha256') {
+        console.log('test, uses sha256');
+        cryptoSessionMsg = sha256(sessionMsg, secret).toString();
+    } else {
+        throw new Error('Quickblox SDK: unknown crypto standards, available sha1 or sha256');
+    }
+
+    return cryptoSessionMsg;
 }
