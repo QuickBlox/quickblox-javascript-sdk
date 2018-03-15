@@ -5,106 +5,73 @@
 
     var NEW_SERVER = false;
 
-    // if(NEW_SERVER){
+    if(NEW_SERVER){
 
-    //   var CREDS =  {
-    //       'appId': 10,
-    //       'authKey': 'XR-B4J64ad6SGvL',
-    //       'authSecret': 'Nw27vzzEVfNXw47'
-    //   };
+      var CREDS =  {
+          'appId': 10,
+          'authKey': 'XR-B4J64ad6SGvL',
+          'authSecret': 'Nw27vzzEVfNXw47'
+      };
 
-    //   var QBUser1 = {
-    //           'id': 4275,
-    //           'login': "js_jasmine22",
-    //           'password': "js_jasmine22",
-    //           'email': "js_jasmine22@quickblox.com"
-    //       },
-    //       QBUser2 = {
-    //           'id': 4276,
-    //           'login': "js_jasmine222",
-    //           'password': "js_jasmine222"
-    //       };
+      var QBUser1 = {
+              'id': 4275,
+              'login': "js_jasmine22",
+              'password': "js_jasmine22",
+              'email': "js_jasmine22@quickblox.com"
+          },
+          QBUser2 = {
+              'id': 4276,
+              'login': "js_jasmine222",
+              'password': "js_jasmine222"
+          };
 
-    //   var CONFIG = {
-    //     endpoints: {
-    //       api: "apikafkacluster.quickblox.com", // set custom API endpoint
-    //       chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
-    //     },
-    //     chatProtocol: {
-    //       active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
-    //     },
-    //     'debug': {
-    //         'mode': 1,
-    //         'file': null
-    //     }
-    //   };
-
-    // }else{
-    //   var CREDS =  {
-    //       'appId': 29650,
-    //       'authKey': 'WULOyezrmxpOgQ-',
-    //       'authSecret': 'TqQmBFbANJ6cfu4'
-    //   };
-
-    //   var QBUser1 = {
-    //           'id': 26904575,
-    //           'login': "js_jasmine22",
-    //           'password': "js_jasmine22",
-    //           'email': "js_jasmine22@quickblox.com"
-    //       },
-    //       QBUser2 = {
-    //           'id': 26904594,
-    //           'login': "js_jasmine222",
-    //           'password': "js_jasmine222"
-    //       };
-
-    //   var CONFIG = {
-    //     endpoints: {
-    //       api: "api.quickblox.com", // set custom API endpoint
-    //       chat: "chat.quickblox.com" // set custom Chat endpoint
-    //     },
-    //     chatProtocol: {
-    //       active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
-    //     },
-    //     'debug': {
-    //         'mode': 1,
-    //         'file': null
-    //     }
-    //   };
-    // }
-
-
-    var CREDS =  {
-        'appId': 46,
-        'authKey': 'KXt6ar2bNAmdQZp',
-        'authSecret': '87W8gCXS6YsLVPg'
-    };
-
-    var QBUser1 = {
-            'id': 9999,
-            'login': "user1@quickblox.com",
-            'password': "user1quickblox",
-            'email': "user1quickblox"
+      var CONFIG = {
+        endpoints: {
+          api: "apikafkacluster.quickblox.com", // set custom API endpoint
+          chat: "chatkafkacluster.quickblox.com" // set custom Chat endpoint
         },
-        QBUser2 = {
-            'id': 10000,
-            'login': "user2quickblox",
-            'password': "user2quickblox"
-        };
+        chatProtocol: {
+          active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+        },
+        'debug': {
+            'mode': 1,
+            'file': null
+        }
+      };
 
-    var CONFIG = {
-      endpoints: {
-        api: "apistage2.quickblox.com",
-        chat: "chatstage2.quickblox.com"
-      },
-      chatProtocol: {
-        active: 2
-      },
-      hash: 'sha256',
-      debug: {
-          mode: 1
-      }
-    };
+    }else{
+      var CREDS =  {
+          'appId': 29650,
+          'authKey': 'WULOyezrmxpOgQ-',
+          'authSecret': 'TqQmBFbANJ6cfu4'
+      };
+
+      var QBUser1 = {
+              'id': 26904575,
+              'login': "js_jasmine22",
+              'password': "js_jasmine22",
+              'email': "js_jasmine22@quickblox.com"
+          },
+          QBUser2 = {
+              'id': 26904594,
+              'login': "js_jasmine222",
+              'password': "js_jasmine222"
+          };
+
+      var CONFIG = {
+        endpoints: {
+          api: "api.quickblox.com", // set custom API endpoint
+          chat: "chat.quickblox.com" // set custom Chat endpoint
+        },
+        chatProtocol: {
+          active: 2 // set 1 to use BOSH, set 2 to use WebSockets (default)
+        },
+        'debug': {
+            'mode': 1,
+            'file': null
+        }
+      };
+    }
 
     /**
      * Check Node env.
