@@ -12,7 +12,7 @@
  */
 
 var config = {
-  version: '2.9.0',
+  version: '2.10.0',
   buildNumber: '1073',
   creds: {
     appId: '',
@@ -24,6 +24,7 @@ var config = {
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
   },
+  hash: 'sha1',
   streamManagement: {
     enable: false
   },

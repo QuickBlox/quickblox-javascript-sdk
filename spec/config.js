@@ -71,9 +71,7 @@
             'file': null
         }
       };
-
     }
-
 
     /**
      * Check Node env.
