@@ -90,7 +90,7 @@ ServiceProxy.prototype = {
 
         if (params.data) {
             qbRequestBody = _getBodyRequest();
-
+            
             if (isGetOrHeadType) {
                 qbUrl += '?' + qbRequestBody;
             } else {
@@ -147,6 +147,13 @@ ServiceProxy.prototype = {
          * Private functions
          * Only for ServiceProxy.ajax() method closure
          */
+
+        function fixedEncodeURIComponent(str) {
+            return encodeURIComponent(str).replace(/[#$&+,/:;=?@\[\]]/g, function(c) {
+              return '%' + c.charCodeAt(0).toString(16);
+            });
+        }
+
         function _getBodyRequest() {
             var data = params.data,
                 qbData;
@@ -166,10 +173,10 @@ ServiceProxy.prototype = {
                 qbData = Object.keys(data).map(function(k) {
                     if (Utils.isObject(data[k])) {
                         return Object.keys(data[k]).map(function(v) {
-                            return k + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + data[k][v];
+                            return encodeURIComponent(k) + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + encodeURIComponent(data[k][v]);
                         }).sort().join('&');
                     } else {
-                        return k + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + data[k];
+                        return encodeURIComponent(k) + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + encodeURIComponent(data[k]);
                     }
                 }).sort().join('&');
             }

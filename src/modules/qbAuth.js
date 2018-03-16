@@ -66,14 +66,21 @@ AuthProxy.prototype = {
     },
 
     login: function(params, callback) {
-        this.service.ajax({url: Utils.getUrl(config.urls.login), type: 'POST', data: params},
-            function(err, res) {
-                if (err) {
-                  callback(err, null);
-                } else {
-                  callback(null, res.user);
-                }
-            });
+        var ajaxParams = {
+            type: 'POST',
+            url: Utils.getUrl(config.urls.login),
+            data: params
+        };
+
+        function handleResponce(err, res) {
+            if (err) {
+              callback(err, null);
+            } else {
+              callback(null, res.user);
+            }
+        }
+
+        this.service.ajax(ajaxParams,handleResponce);
     },
 
     logout: function(callback) {
@@ -131,10 +138,8 @@ function signMessage(message, secret) {
     var cryptoSessionMsg;
     
     if(config.hash === 'sha1') {
-        console.log('test, uses sha1');
         cryptoSessionMsg = sha1(sessionMsg, secret).toString();
     } else if(config.hash === 'sha256') {
-        console.log('test, uses sha256');
         cryptoSessionMsg = sha256(sessionMsg, secret).toString();
     } else {
         throw new Error('Quickblox SDK: unknown crypto standards, available sha1 or sha256');
