@@ -847,7 +847,6 @@ ChatProxy.prototype = {
                     }
     
                     self._enableCarbons();
-                    self.Client.end();
                 });
     
                 self.Client.on('reconnect', function() {
