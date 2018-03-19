@@ -148,7 +148,7 @@ ServiceProxy.prototype = {
          * Only for ServiceProxy.ajax() method closure
          */
 
-        function fixedEncodeURIComponent(str) {
+        function _fixedEncodeURIComponent(str) {
             return encodeURIComponent(str).replace(/[#$&+,/:;=?@\[\]]/g, function(c) {
               return '%' + c.charCodeAt(0).toString(16);
             });
@@ -173,10 +173,10 @@ ServiceProxy.prototype = {
                 qbData = Object.keys(data).map(function(k) {
                     if (Utils.isObject(data[k])) {
                         return Object.keys(data[k]).map(function(v) {
-                            return encodeURIComponent(k) + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + encodeURIComponent(data[k][v]);
+                            return _fixedEncodeURIComponent(k) + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + _fixedEncodeURIComponent(data[k][v]);
                         }).sort().join('&');
                     } else {
-                        return encodeURIComponent(k) + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + encodeURIComponent(data[k]);
+                        return _fixedEncodeURIComponent(k) + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + _fixedEncodeURIComponent(data[k]);
                     }
                 }).sort().join('&');
             }
