@@ -82,6 +82,7 @@ function ChatProxy(service) {
 
     this._isLogout = false;
     this._isDisconnected = false;
+    this._isXmppClientHandlersEnabled = true;
 
     //
     this.helpers = new Helpers();
@@ -801,114 +802,92 @@ ChatProxy.prototype = {
             self.Client.options.password = params.password;
 
             /** HANDLERS */
-            self.Client.on('auth', function () {
-                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
-            });
-
-            self.Client.on('online', function () {
-                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
-
-                if(config.streamManagement.enable){
-                    self.streamManagement.enable(self.Client, XMPP);
-                    self.streamManagement.sentMessageCallback = self._sentMessageCallback;
-                }
-
-                self._isDisconnected = false;
-                self._isLogout = false;
-
-                self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
-
-                if (typeof callback === 'function') {
-                    var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
-
-                    if (params.connectWithoutGettingRoster) {
-                        // connected and return nothing as result
-                        callback(null, undefined);
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                        });
-                    } else {
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                            // connected and return roster as result
-                            callback(null, self.roster.contacts);
-                        });
+            if (!self._isXmppClientHandlersEnabled) {
+                self.Client.on('online', function () {
+                    Utils.QBLog('[Chat]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
+                    Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+    
+                    if (config.streamManagement.enable) {
+                        self.streamManagement.enable(self.Client, XMPP);
+                        self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                     }
-                }
-            });
+    
+                    self._isDisconnected = false;
 
-            self.Client.on('connect', function () {
-                Utils.QBLog('[Chat] client is connected');
-                self._enableCarbons();
-            });
-
-            self.Client.on('reconnect', function () {
-                Utils.QBLog('[Chat] client is reconnected');
-
-                self._isDisconnected = true;
-                self._isLogout = true;
-            });
-
-            self.Client.on('disconnect', function () {
-                Utils.QBLog('[Chat] client is disconnected');
-
-
-                // fire 'onDisconnectedListener' only once
-                if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
-                    Utils.safeCallbackCall(self.onDisconnectedListener);
-                }
-
-                self._isLogout = true;
-                self._isDisconnected = true;
-            });
-
-            self.Client.on('stanza', function (stanza) {
-                Utils.QBLog('[QBChat] RECV:', stanza.toString());
-
-                /**
-                 * Detect typeof incoming stanza
-                 * and fire the Listener
-                 */
-                if (stanza.is('presence')) {
-                    self._onPresence(stanza);
-                } else if (stanza.is('iq')) {
-                    self._onIQ(stanza);
-                } else if(stanza.is('message')){
-                    if(stanza.attrs.type === 'headline') {
-                        self._onSystemMessageListener(stanza);
-                    }else if(stanza.attrs.type === 'error') {
-                        self._onMessageErrorListener(stanza);
-                    } else {
-                        self._onMessage(stanza);
+                    self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
+    
+                    if (typeof callback === 'function') {
+                        var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
+    
+                        if (params.connectWithoutGettingRoster) {
+                            // connected and return nothing as result
+                            callback(null, undefined);
+                            // get the roster and save
+                            self.roster.get(function(contacts) {
+                                self.roster.contacts = contacts;
+                                // send first presence if user is online
+                                self.Client.send(presence);
+                            });
+                        } else {
+                            // get the roster and save
+                            self.roster.get(function(contacts) {
+                                self.roster.contacts = contacts;
+                                // send first presence if user is online
+                                self.Client.send(presence);
+                                // connected and return roster as result
+                                callback(null, self.roster.contacts);
+                            });
+                        }
                     }
-                }
-            });
+    
+                    self._enableCarbons();
+                });
+    
+                self.Client.on('disconnect', function () {
+                    Utils.QBLog('[Chat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
+    
+                    // fire 'onDisconnectedListener' only once
+                    if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
+                        Utils.safeCallbackCall(self.onDisconnectedListener);
+                    }
+    
+                    self._isDisconnected = true;
+                });
+    
+                self.Client.on('stanza', function (stanza) {
+                    Utils.QBLog('[Chat] RECV:', stanza.toString());
+                    /**
+                     * Detect typeof incoming stanza
+                     * and fire the Listener
+                     */
+                    if (stanza.is('presence')) {
+                        self._onPresence(stanza);
+                    } else if (stanza.is('iq')) {
+                        self._onIQ(stanza);
+                    } else if(stanza.is('message')) {
+                        if (stanza.attrs.type === 'headline') {
+                            self._onSystemMessageListener(stanza);
+                        } else if(stanza.attrs.type === 'error') {
+                            self._onMessageErrorListener(stanza);
+                        } else {
+                            self._onMessage(stanza);
+                        }
+                    }
+                });
+    
+                self.Client.on('error', function (e) { 
+                    self._isDisconnected = true;
+                    self._isLogout = true;
 
-            self.Client.on('offline', function () {
-                Utils.QBLog('[QBChat] client goes offline');
+                    err = Utils.getError(422, 'Status.ERROR - An error has occurred');
+    
+                    if (typeof callback === 'function') {
+                        callback(err, null);
+                    }
+                });
 
-                self._isDisconnected = true;
-                self._isLogout = true;
-            });
-
-            self.Client.on('error', function (e) {
-                Utils.QBLog('[QBChat] client got error', e);
-
-                self._isDisconnected = true;
-                self._isLogout = true;
-
-                err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-
-                if(typeof callback === 'function') {
-                    callback(err, null);
-                }
-            });
+                self._isXmppClientHandlersEnabled = true;
+            }
 
             self.Client.connect();
         }
