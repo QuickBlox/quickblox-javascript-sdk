@@ -54,16 +54,15 @@ function ChatProxy(service) {
         // nativescript-xmpp-client
         if (Utils.getEnv().nativescript) {
             self.Client = new XMPP.Client({
-                'websocket': { 'url': config.chatProtocol.websocket },
-                'autostart': false,
-                'reconnect': true
+                'websocket': {
+                    'url': config.chatProtocol.websocket
+                },
+                'autostart': false
             });
         // node-xmpp-client
         } else if (Utils.getEnv().node) {
             self.Client = new XMPP({
-
-                'autostart': false,
-                'reconnect': true
+                'autostart': false
             });
         }
 
@@ -82,7 +81,7 @@ function ChatProxy(service) {
 
     this._isLogout = false;
     this._isDisconnected = false;
-    this._isXmppClientHandlersEnabled = true;
+    this._isXmppClientHandlersEnabled = false;
 
     //
     this.helpers = new Helpers();
@@ -659,7 +658,7 @@ ChatProxy.prototype = {
          * @param {Object} error - The error object
          * @param {(Object|Boolean)} response - Object of subscribed users (roster) or empty body.
          * */
-        Utils.QBLog('[Chat]', 'connect', params);
+        Utils.QBLog('[Chat]', 'Connect with parameters ' + JSON.stringify(params));
 
         var self = this,
             err, rooms;
@@ -803,9 +802,16 @@ ChatProxy.prototype = {
 
             /** HANDLERS */
             if (!self._isXmppClientHandlersEnabled) {
-                self.Client.on('online', function () {
-                    Utils.QBLog('[Chat]', 'Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket'));
-                    Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                self.Client.on('auth', function() {
+                    Utils.QBLog('[Chat]', 'Status.AUTHENTICATED - ' + chatUtils.getLocalTime());
+                });
+
+                self.Client.on('connect', function() {
+                    Utils.QBLog('[Chat]', 'Status.CONNECTING - ' + chatUtils.getLocalTime());
+                });
+
+                self.Client.on('online', function() {
+                    Utils.QBLog('[Chat]', 'Status.CONNECTED - ' + chatUtils.getLocalTime());
     
                     if (config.streamManagement.enable) {
                         self.streamManagement.enable(self.Client, XMPP);
@@ -841,10 +847,17 @@ ChatProxy.prototype = {
                     }
     
                     self._enableCarbons();
+                    self.Client.end();
                 });
     
-                self.Client.on('disconnect', function () {
-                    Utils.QBLog('[Chat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
+                self.Client.on('reconnect', function() {
+                    Utils.QBLog('[Chat]', 'Status.RECONNECT - ' + chatUtils.getLocalTime());
+    
+                    self._isDisconnected = true;
+                });
+    
+                self.Client.on('disconnect', function() {
+                    Utils.QBLog('[Chat]', 'Status.DISCONNECTING - ' + chatUtils.getLocalTime());
     
                     // fire 'onDisconnectedListener' only once
                     if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
@@ -854,7 +867,7 @@ ChatProxy.prototype = {
                     self._isDisconnected = true;
                 });
     
-                self.Client.on('stanza', function (stanza) {
+                self.Client.on('stanza', function(stanza) {
                     Utils.QBLog('[Chat] RECV:', stanza.toString());
                     /**
                      * Detect typeof incoming stanza
@@ -874,10 +887,15 @@ ChatProxy.prototype = {
                         }
                     }
                 });
+
+                self.Client.on('offline', function() {
+                    Utils.QBLog('[Chat]', 'Status.DISCONNECTED - ' + chatUtils.getLocalTime());
+    
+                    self._isDisconnected = true;
+                });
     
                 self.Client.on('error', function (e) { 
                     self._isDisconnected = true;
-                    self._isLogout = true;
 
                     err = Utils.getError(422, 'Status.ERROR - An error has occurred');
     
