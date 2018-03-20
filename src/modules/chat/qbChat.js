@@ -57,12 +57,14 @@ function ChatProxy(service) {
                 'websocket': {
                     'url': config.chatProtocol.websocket
                 },
-                'autostart': false
+                'autostart': false,
+                'reconnect': true
             });
         // node-xmpp-client
         } else if (Utils.getEnv().node) {
             self.Client = new XMPP({
-                'autostart': false
+                'autostart': false,
+                'reconnect': true
             });
         }
 
@@ -81,7 +83,6 @@ function ChatProxy(service) {
 
     this._isLogout = false;
     this._isDisconnected = false;
-    this._isXmppClientHandlersEnabled = false;
 
     //
     this.helpers = new Helpers();
@@ -797,115 +798,98 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
+            self.Client.on('connect', function() {
+                Utils.QBLog('[Chat]', 'CONNECT - ' + chatUtils.getLocalTime());
+            });
+    
+            self.Client.on('reconnect', function() {
+                Utils.QBLog('[Chat]', 'RECONNECT - ' + chatUtils.getLocalTime());
+
+                if (typeof self.onReconnectListener === 'function') {
+                    Utils.safeCallbackCall(self.onReconnectListener);
+                }
+            });
+                    
+            self.Client.on('online', function() {
+                Utils.QBLog('[Chat]', 'CONNECTED - ' + chatUtils.getLocalTime());
+    
+                if (config.streamManagement.enable) {
+                    self.streamManagement.enable(self.Client, XMPP);
+                    self.streamManagement.sentMessageCallback = self._sentMessageCallback;
+                }
+    
+                self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
+    
+                if (typeof callback === 'function') {
+                    var presence = chatUtils.createStanza(XMPP.Stanza, null, 'presence');
+    
+                    if (params.connectWithoutGettingRoster) {
+                        // connected and return nothing as result
+                        callback(null, undefined);
+                        // get the roster and save
+                        self.roster.get(function(contacts) {
+                            self.roster.contacts = contacts;
+                            // send first presence if user is online
+                            self.Client.send(presence);
+                        });
+                    } else {
+                        // get the roster and save
+                        self.roster.get(function(contacts) {
+                            self.roster.contacts = contacts;
+                            // send first presence if user is online
+                            self.Client.send(presence);
+                            // connected and return roster as result
+                            callback(null, self.roster.contacts);
+                        });
+                    }
+                }
+
+                self._enableCarbons();
+            });
+    
+            self.Client.on('stanza', function(stanza) {
+                Utils.QBLog('[Chat] RECV:', stanza.toString());
+                /**
+                 * Detect typeof incoming stanza
+                 * and fire the Listener
+                 */
+                if (stanza.is('presence')) {
+                    self._onPresence(stanza);
+                } else if (stanza.is('iq')) {
+                    self._onIQ(stanza);
+                } else if(stanza.is('message')) {
+                    if (stanza.attrs.type === 'headline') {
+                        self._onSystemMessageListener(stanza);
+                    } else if(stanza.attrs.type === 'error') {
+                        self._onMessageErrorListener(stanza);
+                    } else {
+                        self._onMessage(stanza);
+                    }
+                }
+            });
+            
+            self.Client.on('disconnect', function() {
+                Utils.QBLog('[Chat]', 'DISCONNECT - ' + chatUtils.getLocalTime());
+
+                if (typeof self.onDisconnectedListener === 'function') {
+                    Utils.safeCallbackCall(self.onDisconnectedListener);
+                }
+
+                self.Client._events = {};
+                self.Client._eventsCount = 0;
+            });
+            
+            self.Client.on('error', function (e) {
+                Utils.QBLog('[Chat]', 'ERROR - ' + chatUtils.getLocalTime());
+                err = Utils.getError(422, 'ERROR - An error has occurred');
+    
+                if (typeof callback === 'function') {
+                    callback(err, null);
+                }
+            });
+
             self.Client.options.jid = userJid;
             self.Client.options.password = params.password;
-
-            /** HANDLERS */
-            if (!self._isXmppClientHandlersEnabled) {
-                self.Client.on('auth', function() {
-                    Utils.QBLog('[Chat]', 'Status.AUTHENTICATED - ' + chatUtils.getLocalTime());
-                });
-
-                self.Client.on('connect', function() {
-                    Utils.QBLog('[Chat]', 'Status.CONNECTING - ' + chatUtils.getLocalTime());
-                });
-
-                self.Client.on('online', function() {
-                    Utils.QBLog('[Chat]', 'Status.CONNECTED - ' + chatUtils.getLocalTime());
-    
-                    if (config.streamManagement.enable) {
-                        self.streamManagement.enable(self.Client, XMPP);
-                        self.streamManagement.sentMessageCallback = self._sentMessageCallback;
-                    }
-    
-                    self._isDisconnected = false;
-
-                    self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
-    
-                    if (typeof callback === 'function') {
-                        var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
-    
-                        if (params.connectWithoutGettingRoster) {
-                            // connected and return nothing as result
-                            callback(null, undefined);
-                            // get the roster and save
-                            self.roster.get(function(contacts) {
-                                self.roster.contacts = contacts;
-                                // send first presence if user is online
-                                self.Client.send(presence);
-                            });
-                        } else {
-                            // get the roster and save
-                            self.roster.get(function(contacts) {
-                                self.roster.contacts = contacts;
-                                // send first presence if user is online
-                                self.Client.send(presence);
-                                // connected and return roster as result
-                                callback(null, self.roster.contacts);
-                            });
-                        }
-                    }
-    
-                    self._enableCarbons();
-                });
-    
-                self.Client.on('reconnect', function() {
-                    Utils.QBLog('[Chat]', 'Status.RECONNECT - ' + chatUtils.getLocalTime());
-    
-                    self._isDisconnected = true;
-                });
-    
-                self.Client.on('disconnect', function() {
-                    Utils.QBLog('[Chat]', 'Status.DISCONNECTING - ' + chatUtils.getLocalTime());
-    
-                    // fire 'onDisconnectedListener' only once
-                    if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
-                        Utils.safeCallbackCall(self.onDisconnectedListener);
-                    }
-    
-                    self._isDisconnected = true;
-                });
-    
-                self.Client.on('stanza', function(stanza) {
-                    Utils.QBLog('[Chat] RECV:', stanza.toString());
-                    /**
-                     * Detect typeof incoming stanza
-                     * and fire the Listener
-                     */
-                    if (stanza.is('presence')) {
-                        self._onPresence(stanza);
-                    } else if (stanza.is('iq')) {
-                        self._onIQ(stanza);
-                    } else if(stanza.is('message')) {
-                        if (stanza.attrs.type === 'headline') {
-                            self._onSystemMessageListener(stanza);
-                        } else if(stanza.attrs.type === 'error') {
-                            self._onMessageErrorListener(stanza);
-                        } else {
-                            self._onMessage(stanza);
-                        }
-                    }
-                });
-
-                self.Client.on('offline', function() {
-                    Utils.QBLog('[Chat]', 'Status.DISCONNECTED - ' + chatUtils.getLocalTime());
-    
-                    self._isDisconnected = true;
-                });
-    
-                self.Client.on('error', function (e) { 
-                    self._isDisconnected = true;
-
-                    err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-    
-                    if (typeof callback === 'function') {
-                        callback(err, null);
-                    }
-                });
-
-                self._isXmppClientHandlersEnabled = true;
-            }
-
             self.Client.connect();
         }
     },
@@ -1189,7 +1173,7 @@ ChatProxy.prototype = {
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
         } else {
