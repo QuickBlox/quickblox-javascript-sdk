@@ -80,6 +80,9 @@ function ChatProxy(service) {
     }
 
     this.service = service;
+        
+    // Check the chat connection (return true/false)
+    this.connected = false;
 
     this._isLogout = false;
     this._isDisconnected = false;
@@ -649,7 +652,6 @@ ChatProxy.prototype = {
      * @param {String} params.jid - Connect to the chat by user jid (use instead params.userId and params.email)
      * @param {String} params.email - Connect to the chat by user's email (use instead params.userId and params.jid)
      * @param {String} params.password - The user's password or session token
-     * @param {Boolean} [params.connectWithoutGettingRoster=false] - true if you don't need to get roster of subscriptions
      * @param {chatConnectCallback} callback - The chatConnectCallback callback
      * */
     connect: function(params, callback) {
@@ -734,25 +736,14 @@ ChatProxy.prototype = {
                         self._enableCarbons();
                         
                         if (typeof callback === 'function') {
-                            if (params.connectWithoutGettingRoster) {
-                                // connected and return nothing as result
-                                callback(null, undefined);
-                                // get the roster and save
-                                self.roster.get(function(contacts) {
-                                    self.roster.contacts = contacts;
-                                    // send first presence if user is online
-                                    self.connection.send($pres());
-                                });
-                            } else {
-                                // get the roster and save
-                                self.roster.get(function(contacts) {
-                                    self.roster.contacts = contacts;
-                                    // send first presence if user is online
-                                    self.connection.send($pres());
-                                    // connected and return roster as result
-                                    callback(null, self.roster.contacts);
-                                });
-                            }
+                            // get the roster and save
+                            self.roster.get(function(contacts) {
+                                self.roster.contacts = contacts;
+                                // send first presence if user is online
+                                self.connection.send($pres());
+                                // connected and return roster as result
+                                callback(null, self.roster.contacts);
+                            });
                         } else {
                             // recover the joined rooms
                             rooms = Object.keys(self.muc.joinedRooms);
@@ -798,6 +789,11 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
+            if (self.connected) {
+                callback(null, self.roster.contacts);
+                return;
+            }
+
             self.Client.on('connect', function() {
                 Utils.QBLog('[Chat]', 'CONNECT - ' + chatUtils.getLocalTime());
             });
@@ -808,6 +804,8 @@ ChatProxy.prototype = {
                 if (typeof self.onReconnectListener === 'function') {
                     Utils.safeCallbackCall(self.onReconnectListener);
                 }
+
+                self.connected = false;
             });
                     
             self.Client.on('online', function() {
@@ -819,29 +817,20 @@ ChatProxy.prototype = {
                 }
     
                 self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
+
+                self.connected = true;
     
                 if (typeof callback === 'function') {
                     var presence = chatUtils.createStanza(XMPP.Stanza, null, 'presence');
     
-                    if (params.connectWithoutGettingRoster) {
-                        // connected and return nothing as result
-                        callback(null, undefined);
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                        });
-                    } else {
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                            // connected and return roster as result
-                            callback(null, self.roster.contacts);
-                        });
-                    }
+                    // get the roster and save
+                    self.roster.get(function(contacts) {
+                        self.roster.contacts = contacts;
+                        // send first presence if user is online,
+                        self.Client.send(presence);
+                        // connected and return roster as result
+                        callback(null, self.roster.contacts);
+                    });
                 }
 
                 self._enableCarbons();
@@ -875,6 +864,7 @@ ChatProxy.prototype = {
                     Utils.safeCallbackCall(self.onDisconnectedListener);
                 }
 
+                self.connected = false;
                 self.Client._events = {};
                 self.Client._eventsCount = 0;
             });
@@ -886,6 +876,8 @@ ChatProxy.prototype = {
                 if (typeof callback === 'function') {
                     callback(err, null);
                 }
+
+                self.connected = false;
             });
 
             self.Client.options.jid = userJid;
