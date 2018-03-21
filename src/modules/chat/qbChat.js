@@ -82,7 +82,7 @@ function ChatProxy(service) {
     this.service = service;
         
     // Check the chat connection (return true/false)
-    this.connected = false;
+    this.isConnected = false;
 
     this._isLogout = false;
     this._isDisconnected = false;
@@ -789,7 +789,7 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
-            if (self.connected) {
+            if (self.isConnected) {
                 callback(null, self.roster.contacts);
                 return;
             }
@@ -805,7 +805,7 @@ ChatProxy.prototype = {
                     Utils.safeCallbackCall(self.onReconnectListener);
                 }
 
-                self.connected = false;
+                self.isConnected = false;
             });
                     
             self.Client.on('online', function() {
@@ -818,7 +818,7 @@ ChatProxy.prototype = {
     
                 self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
 
-                self.connected = true;
+                self.isConnected = true;
     
                 if (typeof callback === 'function') {
                     var presence = chatUtils.createStanza(XMPP.Stanza, null, 'presence');
@@ -864,7 +864,7 @@ ChatProxy.prototype = {
                     Utils.safeCallbackCall(self.onDisconnectedListener);
                 }
 
-                self.connected = false;
+                self.isConnected = false;
                 self.Client._events = {};
                 self.Client._eventsCount = 0;
             });
@@ -877,7 +877,7 @@ ChatProxy.prototype = {
                     callback(err, null);
                 }
 
-                self.connected = false;
+                self.isConnected = false;
             });
 
             self.Client.options.jid = userJid;
