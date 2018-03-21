@@ -736,12 +736,11 @@ ChatProxy.prototype = {
                         self._enableCarbons();
                         
                         if (typeof callback === 'function') {
-                            // get the roster and save
                             self.roster.get(function(contacts) {
                                 self.roster.contacts = contacts;
                                 // send first presence if user is online
                                 self.connection.send($pres());
-                                // connected and return roster as result
+
                                 callback(null, self.roster.contacts);
                             });
                         } else {
@@ -822,13 +821,12 @@ ChatProxy.prototype = {
     
                 if (typeof callback === 'function') {
                     var presence = chatUtils.createStanza(XMPP.Stanza, null, 'presence');
-    
-                    // get the roster and save
+
                     self.roster.get(function(contacts) {
                         self.roster.contacts = contacts;
-                        // send first presence if user is online,
+                        // send first presence if user is online
                         self.Client.send(presence);
-                        // connected and return roster as result
+                        
                         callback(null, self.roster.contacts);
                     });
                 }
