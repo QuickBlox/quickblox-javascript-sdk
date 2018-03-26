@@ -54,14 +54,15 @@ function ChatProxy(service) {
         // nativescript-xmpp-client
         if (Utils.getEnv().nativescript) {
             self.Client = new XMPP.Client({
-                'websocket': { 'url': config.chatProtocol.websocket },
+                'websocket': {
+                    'url': config.chatProtocol.websocket
+                },
                 'autostart': false,
                 'reconnect': true
             });
         // node-xmpp-client
         } else if (Utils.getEnv().node) {
             self.Client = new XMPP({
-
                 'autostart': false,
                 'reconnect': true
             });
@@ -79,6 +80,9 @@ function ChatProxy(service) {
     }
 
     this.service = service;
+        
+    // Check the chat connection (return true/false)
+    this.isConnected = false;
 
     this._isLogout = false;
     this._isDisconnected = false;
@@ -648,7 +652,6 @@ ChatProxy.prototype = {
      * @param {String} params.jid - Connect to the chat by user jid (use instead params.userId and params.email)
      * @param {String} params.email - Connect to the chat by user's email (use instead params.userId and params.jid)
      * @param {String} params.password - The user's password or session token
-     * @param {Boolean} [params.connectWithoutGettingRoster=false] - true if you don't need to get roster of subscriptions
      * @param {chatConnectCallback} callback - The chatConnectCallback callback
      * */
     connect: function(params, callback) {
@@ -658,7 +661,7 @@ ChatProxy.prototype = {
          * @param {Object} error - The error object
          * @param {(Object|Boolean)} response - Object of subscribed users (roster) or empty body.
          * */
-        Utils.QBLog('[Chat]', 'connect', params);
+        Utils.QBLog('[Chat]', 'Connect with parameters ' + JSON.stringify(params));
 
         var self = this,
             err, rooms;
@@ -733,25 +736,13 @@ ChatProxy.prototype = {
                         self._enableCarbons();
                         
                         if (typeof callback === 'function') {
-                            if (params.connectWithoutGettingRoster) {
-                                // connected and return nothing as result
-                                callback(null, undefined);
-                                // get the roster and save
-                                self.roster.get(function(contacts) {
-                                    self.roster.contacts = contacts;
-                                    // send first presence if user is online
-                                    self.connection.send($pres());
-                                });
-                            } else {
-                                // get the roster and save
-                                self.roster.get(function(contacts) {
-                                    self.roster.contacts = contacts;
-                                    // send first presence if user is online
-                                    self.connection.send($pres());
-                                    // connected and return roster as result
-                                    callback(null, self.roster.contacts);
-                                });
-                            }
+                            self.roster.get(function(contacts) {
+                                self.roster.contacts = contacts;
+                                // send first presence if user is online
+                                self.connection.send($pres());
+
+                                callback(null, self.roster.contacts);
+                            });
                         } else {
                             // recover the joined rooms
                             rooms = Object.keys(self.muc.joinedRooms);
@@ -797,80 +788,54 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
-            self.Client.options.jid = userJid;
-            self.Client.options.password = params.password;
+            if (self.isConnected) {
+                callback(null, self.roster.contacts);
+                return;
+            }
 
-            /** HANDLERS */
-            self.Client.on('auth', function () {
-                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+            self.Client.on('connect', function() {
+                Utils.QBLog('[Chat]', 'CONNECT - ' + chatUtils.getLocalTime());
             });
+    
+            self.Client.on('reconnect', function() {
+                Utils.QBLog('[Chat]', 'RECONNECT - ' + chatUtils.getLocalTime());
 
-            self.Client.on('online', function () {
-                Utils.QBLog('[Chat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                if (typeof self.onReconnectListener === 'function') {
+                    Utils.safeCallbackCall(self.onReconnectListener);
+                }
 
-                if(config.streamManagement.enable){
+                self.isConnected = false;
+            });
+                    
+            self.Client.on('online', function() {
+                Utils.QBLog('[Chat]', 'CONNECTED - ' + chatUtils.getLocalTime());
+    
+                if (config.streamManagement.enable) {
                     self.streamManagement.enable(self.Client, XMPP);
                     self.streamManagement.sentMessageCallback = self._sentMessageCallback;
                 }
-
-                self._isDisconnected = false;
-                self._isLogout = false;
-
+    
                 self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(self.Client));
 
+                self.isConnected = true;
+    
                 if (typeof callback === 'function') {
-                    var presence = chatUtils.createStanza(XMPP.Stanza, null,'presence');
+                    var presence = chatUtils.createStanza(XMPP.Stanza, null, 'presence');
 
-                    if (params.connectWithoutGettingRoster) {
-                        // connected and return nothing as result
-                        callback(null, undefined);
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                        });
-                    } else {
-                        // get the roster and save
-                        self.roster.get(function(contacts) {
-                            self.roster.contacts = contacts;
-                            // send first presence if user is online
-                            self.Client.send(presence);
-                            // connected and return roster as result
-                            callback(null, self.roster.contacts);
-                        });
-                    }
+                    self.roster.get(function(contacts) {
+                        self.roster.contacts = contacts;
+                        // send first presence if user is online
+                        self.Client.send(presence);
+                        
+                        callback(null, self.roster.contacts);
+                    });
                 }
-            });
 
-            self.Client.on('connect', function () {
-                Utils.QBLog('[Chat] client is connected');
                 self._enableCarbons();
             });
-
-            self.Client.on('reconnect', function () {
-                Utils.QBLog('[Chat] client is reconnected');
-
-                self._isDisconnected = true;
-                self._isLogout = true;
-            });
-
-            self.Client.on('disconnect', function () {
-                Utils.QBLog('[Chat] client is disconnected');
-
-
-                // fire 'onDisconnectedListener' only once
-                if (!self._isDisconnected && typeof self.onDisconnectedListener === 'function'){
-                    Utils.safeCallbackCall(self.onDisconnectedListener);
-                }
-
-                self._isLogout = true;
-                self._isDisconnected = true;
-            });
-
-            self.Client.on('stanza', function (stanza) {
-                Utils.QBLog('[QBChat] RECV:', stanza.toString());
-
+    
+            self.Client.on('stanza', function(stanza) {
+                Utils.QBLog('[Chat] RECV:', stanza.toString());
                 /**
                  * Detect typeof incoming stanza
                  * and fire the Listener
@@ -879,37 +844,42 @@ ChatProxy.prototype = {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
                     self._onIQ(stanza);
-                } else if(stanza.is('message')){
-                    if(stanza.attrs.type === 'headline') {
+                } else if(stanza.is('message')) {
+                    if (stanza.attrs.type === 'headline') {
                         self._onSystemMessageListener(stanza);
-                    }else if(stanza.attrs.type === 'error') {
+                    } else if(stanza.attrs.type === 'error') {
                         self._onMessageErrorListener(stanza);
                     } else {
                         self._onMessage(stanza);
                     }
                 }
             });
+            
+            self.Client.on('disconnect', function() {
+                Utils.QBLog('[Chat]', 'DISCONNECT - ' + chatUtils.getLocalTime());
 
-            self.Client.on('offline', function () {
-                Utils.QBLog('[QBChat] client goes offline');
+                if (typeof self.onDisconnectedListener === 'function') {
+                    Utils.safeCallbackCall(self.onDisconnectedListener);
+                }
 
-                self._isDisconnected = true;
-                self._isLogout = true;
+                self.isConnected = false;
+                self.Client._events = {};
+                self.Client._eventsCount = 0;
             });
-
+            
             self.Client.on('error', function (e) {
-                Utils.QBLog('[QBChat] client got error', e);
-
-                self._isDisconnected = true;
-                self._isLogout = true;
-
-                err = Utils.getError(422, 'Status.ERROR - An error has occurred');
-
-                if(typeof callback === 'function') {
+                Utils.QBLog('[Chat]', 'ERROR - ' + chatUtils.getLocalTime());
+                err = Utils.getError(422, 'ERROR - An error has occurred');
+    
+                if (typeof callback === 'function') {
                     callback(err, null);
                 }
+
+                self.isConnected = false;
             });
 
+            self.Client.options.jid = userJid;
+            self.Client.options.password = params.password;
             self.Client.connect();
         }
     },
@@ -1193,7 +1163,7 @@ ChatProxy.prototype = {
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
         } else {

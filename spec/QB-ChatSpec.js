@@ -80,6 +80,8 @@ describe('Chat API', function() {
                 };
 
                 QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                     expect(err).toBeNull();
                     expect(res).not.toBeNull();
                     expect(res._id).not.toBeNull();
@@ -87,7 +89,7 @@ describe('Chat API', function() {
                     if(!isOldVersion){
                         expect(res.is_joinable).toEqual(0);
                     }
-                    expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                    expect(res.occupants_ids).toEqual(usersIds);
 
                     dialogId4Private = res._id;
 
@@ -128,6 +130,8 @@ describe('Chat API', function() {
                 };
 
                 QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                     expect(err).toBeNull();
                     expect(res).not.toBeNull();
                     expect(res._id).not.toBeNull();
@@ -137,7 +141,7 @@ describe('Chat API', function() {
                     if(!isOldVersion){
                         expect(res.is_joinable).toEqual(1);
                     }
-                    expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                    expect(res.occupants_ids).toEqual(usersIds);
 
                     dialogId1Group = res._id;
                     console.info("dialogId1Group: " + dialogId1Group);
@@ -165,6 +169,8 @@ describe('Chat API', function() {
                 };
 
                 QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                     expect(err).toBeNull();
                     expect(res).not.toBeNull();
                     expect(res._id).not.toBeNull();
@@ -172,7 +178,7 @@ describe('Chat API', function() {
                     expect(res.name).toEqual(params.name);
                     expect(res.xmpp_room_jid).toContain(chatEndpoint);
                     expect(res.is_joinable).toEqual(params.is_joinable);
-                    expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                    expect(res.occupants_ids).toEqual(usersIds);
 
                     dialogId2GroupNotJoinable = res._id;
 
@@ -494,9 +500,11 @@ describe('Chat API', function() {
                     push_all: {occupants_ids: [QBUser2.id]},
                 };
                 QB_SENDER.chat.dialog.update(dialogId1Group, toUpdateParams, function(err, res) {
+                    var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                     expect(err).toBeNull();
                     expect(res).toBeDefined();
-                    expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                    expect(res.occupants_ids.sort()).toEqual(usersIds);
 
                     done();
                 });
@@ -1021,11 +1029,13 @@ describe('Chat API', function() {
                     };
 
                     QB_SENDER.chat.dialog.create(dialogCreateParams, function (err, res) {
+                        var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                         expect(err).toBeNull();
                         expect(res).toBeDefined();
                         expect(res.type).toEqual(dialogCreateParams.type);
                         expect(res.name).toEqual(dialogCreateParams.name);
-                        expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                        expect(res.occupants_ids).toEqual(usersIds);
 
                         dialog = res;
 
@@ -1108,10 +1118,11 @@ describe('Chat API', function() {
                     expect(dialogId).toEqual(deliveredParams.dialogId);
                     expect(userId).toEqual(QBUser2.id);
 
-                    QB_SENDER.chat.message.list({_id: message._id, chat_dialog_id: dialog._id}, function(err, res){
+                    QB_SENDER.chat.message.list({_id: message._id, chat_dialog_id: dialog._id}, function(err, res) {
+                        var usersIds = [QBUser1.id, QBUser2.id].sort();
                         expect(err).toBeNull();
                         expect(res).not.toBeNull();
-                        expect(res.items[0].delivered_ids).toEqual(sortUsers(QBUser1.id, QBUser2.id));
+                        expect(res.items[0].delivered_ids.sort()).toEqual(usersIds);
 
                         done();
                     });
@@ -1136,9 +1147,11 @@ describe('Chat API', function() {
                     expect(userId).toEqual(QBUser2.id);
 
                     QB_SENDER.chat.message.list({_id: message._id, chat_dialog_id: dialog._id}, function(err, res){
+                        var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                         expect(err).toBeNull();
                         expect(res).not.toBeNull();
-                        expect(res.items[0].read_ids).toEqual(sortUsers(QBUser1.id, QBUser2.id));
+                        expect(res.items[0].read_ids.sort()).toEqual(usersIds);
 
                         done();
                     });
@@ -1188,11 +1201,13 @@ describe('Chat API', function() {
                     };
 
                     QB_SENDER.chat.dialog.create(dialogCreateParams, function (err, res) {
+                        var usersIds = [QBUser1.id, QBUser2.id].sort();
+
                         expect(err).toBeNull();
                         expect(res).toBeDefined();
                         expect(res.type).toEqual(dialogCreateParams.type);
                         expect(res.name).toEqual(dialogCreateParams.name);
-                        expect(res.occupants_ids).toEqual(sortUsers(QBUser2.id, QBUser1.id));
+                        expect(res.occupants_ids).toEqual(usersIds);
 
                         dialogJoinable = res;
 
@@ -1736,13 +1751,6 @@ function incrementMessagesSentPerDialog(dialogId, isREST, userId){
     ++count;
     messagesUnreadStats[dialogId][uid] = count;
     console.info("UNREAD: " + count+ ". userId: " + uid + ". Dialog: " + dialogId);
-}
-
-function sortUsers(user1, user2){
-    var ocuupantsArray = [user1, user2].sort(function(a,b){
-        return a - b;
-    });
-    return ocuupantsArray;
 }
 
 function groupChat_joinAndSendAndReceiveMessageAndLeave(roomJid, dialogId, callback){
