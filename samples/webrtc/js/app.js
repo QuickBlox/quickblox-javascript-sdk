@@ -711,13 +711,13 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
-            $('#bitrate_' + userId).text(stats.inbound_video.bitrate);
-
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);
                 console.log('stats: ', stats);
             console.groupEnd();
+            
+            $('#bitrate_' + userId).text(stats.remote.video.bitrate);
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){

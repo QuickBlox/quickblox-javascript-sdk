@@ -324,7 +324,6 @@ RTCPeerConnection.prototype._clearStatsReportTimer = function(){
 
 RTCPeerConnection.prototype._getStatsWrap = function() {
     var self = this,
-        localStream = self.getLocalStreams().length ? self.getLocalStreams()[0] : self.delegate.localStream,
         statsReportInterval,
         lastResult;
 
@@ -421,60 +420,113 @@ RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAn
  */
 function _getStats(peer, lastResults, successCallback, errorCallback) {
     var statistic = {
-        'inbound_audio': null,
-        'inbound_video': null,
-        'outbound_audio': null,
-        'outbound_video': null,
-        'total_transport': null,
+        'local': {
+            'audio': {},
+            'video': {},
+            'candidate': {}
+        },
+        'remote': {
+            'audio': {},
+            'video': {},
+            'candidate': {}
+        }
     };
+
+    if (Helpers.getVersionFirefox()) {
+        var localStream = peer.getLocalStreams().length ? peer.getLocalStreams()[0] : peer.delegate.localStream,
+            localVideoSettings = localStream.getVideoTracks()[0].getSettings();
+
+        statistic.local.video.frameHeight = localVideoSettings.height;
+        statistic.local.video.frameWidth = localVideoSettings.width;
+    }
 
     peer.getStats(null).then(function(results) {
         results.forEach(function(result) {
-            var item = {};
-            if (result.bytesSent && result.type === 'outbound-rtp') {
-                item.bitrate = _getBitratePerSecond(result, lastResults, true);
-                item.type = result.type;
-                item.mediaType = result.mediaType;
-                item.bytesSent = result.bytesSent;
-                item.packetsSent = result.packetsSent;
-                item.timestamp = result.timestamp;
-                statistic['outbound_' + result.mediaType] = item;
-            }
+            var item;
+
             if (result.bytesReceived && result.type === 'inbound-rtp') {
+                item = statistic.remote[result.mediaType];
                 item.bitrate = _getBitratePerSecond(result, lastResults, false);   
-                item.type = result.type;
-                item.mediaType = result.mediaType;
                 item.bytesReceived = result.bytesReceived;
                 item.packetsReceived = result.packetsReceived;
                 item.timestamp = result.timestamp;
-                statistic['inbound_' + result.mediaType] = item;
-            }
-            if (result.bytesSent && result.bytesReceived && result.type === 'transport') {
-                item.bitrate_out = _getBitratePerSecond(result, lastResults, true);
-                item.bitrate_in = _getBitratePerSecond(result, lastResults, false);    
-                item.type = result.type;
+                if (result.mediaType === 'video' && result.framerateMean) {
+                    item.framesPerSecond = Math.round(result.framerateMean * 10) / 10;
+                }
+            } else if (result.bytesSent && result.type === 'outbound-rtp') {
+                item = statistic.local[result.mediaType];
+                item.bitrate = _getBitratePerSecond(result, lastResults, true);
                 item.bytesSent = result.bytesSent;
-                item.bytesReceived = result.bytesReceived;
+                item.packetsSent = result.packetsSent;
                 item.timestamp = result.timestamp;
-                statistic['total_' + result.type] = item;
+                if (result.mediaType === 'video' && result.framerateMean) {
+                    item.framesPerSecond = Math.round(result.framerateMean * 10) / 10;
+                }
+            } else if (result.type === 'local-candidate') {
+                item = statistic.local.candidate;
+                if (result.candidateType === 'host' && result.mozLocalTransport === 'udp' && result.transport === 'udp') {
+                    item.protocol = result.transport;
+                    item.ip = result.ipAddress;
+                    item.port = result.portNumber;
+                } else if (!Helpers.getVersionFirefox()) {                 
+                    item.protocol = result.protocol;
+                    item.ip = result.ip;
+                    item.port = result.port;
+                }
+            } else if (result.type === 'remote-candidate') {
+                item = statistic.remote.candidate;
+                item.protocol = result.protocol || result.transport;
+                item.ip = result.ip || result.ipAddress;
+                item.port = result.port || result.portNumber;
+            } else if (result.type === 'track' && result.kind === 'video' && !Helpers.getVersionFirefox()) {
+                if (result.remoteSource) {
+                    item = statistic.remote.video;
+                    item.frameHeight = result.frameHeight;
+                    item.frameWidth = result.frameWidth;
+                    item.framesPerSecond = _getFramesPerSecond(result, lastResults, false);
+                } else {
+                    item = statistic.local.video;
+                    item.frameHeight = result.frameHeight;
+                    item.frameWidth = result.frameWidth;
+                    item.framesPerSecond = _getFramesPerSecond(result, lastResults, true);  
+                }
             }
         });
         successCallback(statistic, results);
     }, errorCallback);
 
-    function _getBitratePerSecond(result, lastResults, isSent) {
+    function _getBitratePerSecond(result, lastResults, isLocal) {
         var lastResult = lastResults && lastResults.get(result.id),
+            seconds = lastResult ? ((result.timestamp - lastResult.timestamp) / 1000) : 5,
+            kilo = 1024,
             bit = 8,
             bitrate;
 
         if (!lastResult) {
             bitrate = 0;
-        } else if (isSent) {
-            bitrate = bit*(result.bytesSent-lastResult.bytesSent)/(result.timestamp-lastResult.timestamp);
+        } else if (isLocal) {
+            bitrate = bit * (result.bytesSent - lastResult.bytesSent) / (kilo * seconds);
         } else {
-            bitrate = bit*(result.bytesReceived-lastResult.bytesReceived)/(result.timestamp-lastResult.timestamp);
+            bitrate = bit * (result.bytesReceived - lastResult.bytesReceived) / (kilo * seconds);
         }
+
         return Math.round(bitrate);
+    }
+
+    function _getFramesPerSecond(result, lastResults, isLocal) {
+        var lastResult = lastResults && lastResults.get(result.id),
+            seconds = lastResult ? ((result.timestamp - lastResult.timestamp) / 1000) : 5,
+            framesPerSecond;
+
+        if (!lastResult) {
+            framesPerSecond = 0;
+        } else if (isLocal) {
+            framesPerSecond = (result.framesSent - lastResult.framesSent) / seconds;
+        } else {
+            framesPerSecond = (result.framesReceived - lastResult.framesReceived) / seconds;
+        }
+
+        return Math.round(framesPerSecond * 10) / 10;
     }
 }
 
@@ -507,9 +559,10 @@ function setMediaBitrate(sdp, media, bitrate) {
         return sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
     }
 
-    var lines = sdp.split('\n');
-    var line = -1;
-    var modifier = 'AS';
+    var lines = sdp.split('\n'),
+        line = -1,
+        modifier = Helpers.getVersionFirefox() ? 'TIAS' : 'AS',
+        amount = Helpers.getVersionFirefox() ? bitrate*1024 : bitrate;
 
     for (var i = 0; i < lines.length; i++) {
         if (lines[i].indexOf("m="+media) === 0) {
@@ -529,13 +582,12 @@ function setMediaBitrate(sdp, media, bitrate) {
     }
 
     if (lines[line].indexOf('b') === 0) {
-        lines[line] = 'b='+modifier+':'+bitrate;
+        lines[line] = 'b='+modifier+':'+amount;
         return lines.join('\n');
     }
 
     var newLines = lines.slice(0, line);
-
-    newLines.push('b='+modifier+':'+bitrate);
+    newLines.push('b='+modifier+':'+amount);
     newLines = newLines.concat(lines.slice(line, lines.length));
     
     return newLines.join('\n');

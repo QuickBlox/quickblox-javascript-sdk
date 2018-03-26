@@ -13,4 +13,3 @@ exclude_paths:
 - "spec/"
 - "docs/"
 - "samples/"
-- "src/plugins/jquery.ajax.js"
