@@ -434,10 +434,10 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
 
     if (Helpers.getVersionFirefox()) {
         var localStream = peer.getLocalStreams().length ? peer.getLocalStreams()[0] : peer.delegate.localStream,
-            localVideoSettings = localStream.getVideoTracks()[0].getSettings();
+            localVideoSettings = localStream.getVideoTracks().length ? localStream.getVideoTracks()[0].getSettings() : null;
 
-        statistic.local.video.frameHeight = localVideoSettings.height;
-        statistic.local.video.frameWidth = localVideoSettings.width;
+        statistic.local.video.frameHeight = localVideoSettings && localVideoSettings.height;
+        statistic.local.video.frameWidth = localVideoSettings && localVideoSettings.width;
     }
 
     peer.getStats(null).then(function(results) {

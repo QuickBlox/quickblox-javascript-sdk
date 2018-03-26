@@ -716,8 +716,12 @@
                 console.log('session: ', session);
                 console.log('stats: ', stats);
             console.groupEnd();
-            
-            $('#bitrate_' + userId).text(stats.remote.video.bitrate);
+
+            if (stats.remote.video.bitrate) {
+                $('#bitrate_' + userId).text('video bitrate: ' + stats.remote.video.bitrate);
+            } else if (stats.remote.audio.bitrate) {
+                $('#bitrate_' + userId).text('audio bitrate: ' + stats.remote.audio.bitrate);
+            }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
