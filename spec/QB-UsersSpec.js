@@ -10,6 +10,7 @@ describe('Users API', function() {
   var CREDENTIALS = isNodeEnv ? require('./config').CREDS : window.CREDS;
   var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
   var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
+  var QBUser2 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
 
   beforeAll(function(done){
