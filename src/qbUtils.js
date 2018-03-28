@@ -47,6 +47,10 @@ var Utils = {
         return window.navigator.userAgent;
     },
 
+    _getOSInfoFromNativeScript: function() {
+        return (global && global.android ? 'Android' : 'iOS') + ' - NativeScript';
+    },
+
     getOS: function() {
         var self = this;
         var osName = 'An unknown OS';
@@ -68,18 +72,22 @@ var Utils = {
 
         var platformInfo;
 
-        if(self.getEnv().browser) {
+        if (self.getEnv().browser) {
             platformInfo = self._getOSInfoFromBrowser();
-        } else if(self.getEnv().node) {
+        } else if (self.getEnv().nativescript) {
+            platformInfo = self._getOSInfoFromNativeScript();
+        } else if (self.getEnv().node)  {
             platformInfo = self._getOSInfoFromNodeJS();
         }
 
-        OS_LIST.forEach( function(osInfo) {
-            osInfo.codeNames.forEach( function(codeName) {
+        OS_LIST.forEach(function(osInfo) {
+            osInfo.codeNames.forEach(function(codeName) {
                 var index = platformInfo.indexOf(codeName);
 
-                if(index !== -1) {
+                if (index !== -1) {
                     osName = osInfo.osName;
+                } else if (typeof platformInfo === 'string') {
+                    osName = platformInfo;
                 }
             });
         });
