@@ -13,13 +13,15 @@
         'id': 45267491,
         'login': "js_specsymbols",
         'password': "[yo^kj?]i246#(!*&d7sm/zb@xwagrv5",
-        'email': "js_specsymbols@quickblox.com"
+        'email': "js_specsymbols@quickblox.com",
+        'full_name': 'Stone face'
     };
     var QBUser2 = {
         'id': 26904575,
         'login': "js_jasmine22",
         'password': "js_jasmine22",
-        'email': "js_jasmine22@quickblox.com"
+        'email': "js_jasmine22@quickblox.com",
+        'full_name': 'Piña grande y madura'
     };
 
     var CONFIG = {

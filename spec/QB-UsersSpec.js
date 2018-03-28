@@ -76,6 +76,36 @@ describe('Users API', function() {
       });
     }, REST_REQUESTS_TIMEOUT);
 
+    it('can get users by full_name (Latin symbols)', function(done) {
+      var params = { 'full_name': QBUser1.full_name };
+
+      QB.users.get(params, function(err, res){
+        if (err) {
+          done.fail("Get user by full_name error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.items[0].user.id).toBe(QBUser1.id);
+
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
+    it('can get users by full_name (Spanish symbols)', function(done) {
+      var params = { 'full_name': QBUser2.full_name };
+
+      QB.users.get(params, function(err, res){
+        if (err) {
+          done.fail("Get user by full_name error: " + JSON.stringify(err));
+        }else{
+          expect(res).not.toBeNull();
+          expect(res.items[0].user.id).toBe(QBUser2.id);
+
+          done();
+        }
+      });
+    }, REST_REQUESTS_TIMEOUT);
+
     it('can get users by login', function(done) {
       var params = { 'login': QBUser1.login };
 
@@ -90,7 +120,7 @@ describe('Users API', function() {
         }
       });
     }, REST_REQUESTS_TIMEOUT);
-
+    
     it('can get users by email', function(done) {
       var params = { 'email': QBUser1.email };
 
