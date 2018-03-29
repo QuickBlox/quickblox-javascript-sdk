@@ -121,7 +121,6 @@ describe('Chat API', function() {
         // =========================CREATE GROUP DIALOG=============================
 
         describe('Create Group Dialog:', function() {
-
             it('can create a dialog (group) and then join and send/receive a message', function(done) {
                 var params = {
                     occupants_ids: [QBUser2.id],
@@ -147,7 +146,6 @@ describe('Chat API', function() {
                     console.info("dialogId1Group: " + dialogId1Group);
 
                     // now try to join and send a message
-                    //
                     groupChat_joinAndSendAndReceiveMessageAndLeave(res.xmpp_room_jid, res._id, function(){
                         done();
                     });
@@ -183,26 +181,22 @@ describe('Chat API', function() {
                     dialogId2GroupNotJoinable = res._id;
 
                     // now try to send a message without join
-                    //
                     groupChat_sendAndReceiveMessage(res.xmpp_room_jid, res._id, function(){
                         done();
                     });
 
                 });
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
-
         });
 
         // =======================CREATE PUBLIC GROUP DIALOG========================
 
         describe('Create Public Group Dialog:', function() {
-
             it('can create a dialog (public group) and then join and send/receive a message', function(done) {
                 var params = {
                     name: 'Public Awesome chat',
                     type: 1
                 };
-
                 QB_SENDER.chat.dialog.create(params, function(err, res) {
                     expect(err).toBeNull();
                     expect(res).not.toBeNull();
@@ -210,6 +204,7 @@ describe('Chat API', function() {
                     expect(res.type).toEqual(params.type);
                     expect(res.name).toEqual(params.name);
                     expect(res.xmpp_room_jid).toContain(chatEndpoint);
+
                     if(!isOldVersion){
                         expect(res.is_joinable).toEqual(1);
                     }
@@ -394,18 +389,18 @@ describe('Chat API', function() {
             }, 3*REST_REQUESTS_TIMEOUT);
 
             it("can update a dialog (group) (remove user and he received a 'kick' message)", function(done) {
-
                 // User2 to join dialog
-                //
                 var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
-                QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
-                    expect(stanzaResponse).not.toBeNull();
+
+                QB_RECEIVER.chat.muc.join(dialogJid, function(error, responce) {
+                    expect(error).toBeNull();
+                    expect(responce).toBeDefined();
 
                     // User1 to remove User2 from occupants
-                    //
                     var toUpdateParams = {
                         pull_all: {occupants_ids: [QBUser2.id]},
                     };
+
                     QB_SENDER.chat.dialog.update(dialogId1Group, toUpdateParams, function(err, res) {
                         expect(err).toBeNull();
                         expect(res).toBeDefined();
@@ -414,7 +409,7 @@ describe('Chat API', function() {
 
                     // User2 should receive a 'kick' message
                     //
-                    QB_RECEIVER.chat.onKickOccupant = function(dialogId, initiatorUserId){
+                    QB_RECEIVER.chat.onKickOccupant = function(dialogId, initiatorUserId) {
                         expect(dialogId).toEqual(dialogId1Group);
                         if(!isOldVersion){
                             // we have different logic of 'actor' formation. In current version it's the account owner.
@@ -427,34 +422,15 @@ describe('Chat API', function() {
                     };
 
                 });
-            }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT)
+            }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
 
             it("can't join dialog where user is not in occupants", function(done) {
-
                 setTimeout(function(){
                     var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
-                    QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
-                        var joined = true;
-                        var errorCode;
-                        var errorName;
-                        var errorDescription;
-
-                        var errElement = xmlGetElement(stanzaResponse, 'error');
-                        if(errElement){
-                            errorCode = xmlGetAttr(errElement, "code");
-                            errorName = xmlGetElement(errElement, 'forbidden');
-                            errorDescription = xmlGetElementText(errElement, 'text');
-                            joined = false;
-                        }
-
-                        expect(joined).toEqual(false);
-                        if(isOldVersion){
-                            expect(errorCode).toEqual("500");
-                        }else{
-                            expect(errorCode).toEqual("403");
-                            expect(errorName).not.toBeNull();
-                            expect(errorDescription).toEqual("Your user is not in occupants list of the dialog");
-                        }
+                    QB_RECEIVER.chat.muc.join(dialogJid, function(error, responce) {
+                        expect(error).not.toBeNull();
+                        expect(error.code).toEqual('500');
+                        expect(error.message).toBeDefined();
 
                         done();
                     });
@@ -463,28 +439,11 @@ describe('Chat API', function() {
             }, MESSAGING_TIMEOUT+1000);
 
             it("can't join not existent dialog", function(done) {
-
                 setTimeout(function(){
-                    QB_RECEIVER.chat.muc.join(CREDS.appId+"_53fc460b515c128132016675@muc."+chatEndpoint, function(stanzaResponse) {
-
-                        var joined = true;
-                        var errorCode;
-                        var errorName;
-
-                        var errElement = xmlGetElement(stanzaResponse, 'error');
-                        if(errElement){
-                            errorCode = xmlGetAttr(errElement, "code");
-                            errorName = xmlGetElement(errElement, 'item-not-found');
-                            joined = false;
-                        }
-
-                        expect(joined).toEqual(false);
-                        if(isOldVersion){
-                            expect(errorCode).toEqual("500");
-                        }else{
-                            expect(errorCode).toEqual("404");
-                            expect(errorName).not.toBeNull();
-                        }
+                    QB_RECEIVER.chat.muc.join(CREDS.appId+"_53fc460b515c128132016675@muc."+chatEndpoint, function(error, responce) {
+                        expect(error).not.toBeNull();
+                        expect(error.code).toEqual('500');
+                        expect(error.message).toBeDefined();
 
                         done();
                     });
@@ -493,12 +452,11 @@ describe('Chat API', function() {
             }, MESSAGING_TIMEOUT+1000);
 
             it("can update a dialog (group) (add user)", function(done) {
-
                 // User1 to add User2 from occupants
-                //
                 var toUpdateParams = {
                     push_all: {occupants_ids: [QBUser2.id]},
                 };
+
                 QB_SENDER.chat.dialog.update(dialogId1Group, toUpdateParams, function(err, res) {
                     var usersIds = [QBUser1.id, QBUser2.id].sort();
 
@@ -653,7 +611,7 @@ describe('Chat API', function() {
                 });
 
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
-
+            // TODO
             it('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
                 var msgExtension = {
                     param1: "value1",
@@ -669,9 +627,9 @@ describe('Chat API', function() {
                 };
 
                 var dialogJid = QB_SENDER.chat.helpers.getRoomJidFromDialogId(dialogId1Group);
-                //
-                QB_RECEIVER.chat.muc.join(dialogJid, function(stanzaResponse) {
-                    expect(stanzaResponse).not.toBeNull();
+                QB_RECEIVER.chat.muc.join(dialogJid, function(error, responce) {
+                    expect(error).toBeNull();
+                    expect(responce).toBeDefined();
 
                     createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialogId1Group, "groupchat", function(messageId){
 
@@ -1183,7 +1141,6 @@ describe('Chat API', function() {
             var dialogJoinable;
 
             beforeAll(function(done){
-
                 var createSessionParams = {
                     'login': QBUser1.login,
                     'password': QBUser1.password
@@ -1217,9 +1174,39 @@ describe('Chat API', function() {
 
             }, REST_REQUESTS_TIMEOUT*2);
 
-            it('can join group chat', function(done) {
-                QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-                    expect(stanza).not.toBeNull();
+            it('can join group chat by JID', function(done) {
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
+
+                QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
+                    console.log('START JOINED', error, responce);
+                    expect(error).toBeNull();
+                    expect(responce.dialogId).toEqual(dialogId);
+
+                    done();
+                });
+            }, MESSAGING_TIMEOUT);
+
+            it('can join group chat by Id', function(done) {
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
+
+                QB_SENDER.chat.muc.join(dialogId, function(error, responce) {
+                    console.log('START JOINED', error, responce);
+                    expect(error).toBeNull();
+                    expect(responce.dialogId).toEqual(dialogId);
+
+                    done();
+                });
+            }, MESSAGING_TIMEOUT);
+
+            it('can get error joining unexisted dialog', function(done) {
+                var wrongJid = 'a'+ dialogJoinable.xmpp_room_jid;
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(wrongJid);
+
+                QB_SENDER.chat.muc.join(wrongJid, function(error, responce) {
+                    console.log('START UNJOINED', error, responce);
+                    expect(error).toBeDefined();
+                    expect(responce.dialogId).toEqual(dialogId);
+
                     done();
                 });
             }, MESSAGING_TIMEOUT);
@@ -1239,7 +1226,6 @@ describe('Chat API', function() {
             }, MESSAGING_TIMEOUT);
 
             it("can receive statuses related to join", function(done){
-
                 var statusesReceivedCount = 0;
 
                 var maybeDone = function(){
@@ -1249,15 +1235,16 @@ describe('Chat API', function() {
                     }
                 };
 
-                console.info("JOIN USER1");
-                QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-                    console.info("JOINED USER1");
-                    expect(stanza).not.toBeNull();
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
 
-                    console.info("JOIN USER2");
-                    QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-                        console.info("JOINED USER2");
-                        expect(stanza).not.toBeNull();
+                QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
+                    expect(error).toBeNull();
+                    expect(responce.dialogId).toEqual(dialogId);
+
+
+                    QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
+                        expect(error).toBeNull();
+                        expect(responce.dialogId).toEqual(dialogId);
 
                         maybeDone();
                     });
@@ -1306,7 +1293,6 @@ describe('Chat API', function() {
             }, 5000);
 
             it("can't send messages to not joined room", function(done) {
-
                 var msg = {
                     type: 'groupchat',
                     body: 'Warning! People are coming! XMPP message ' + Math.floor((Math.random() * 100) + 1)
@@ -1357,15 +1343,17 @@ describe('Chat API', function() {
                             ++statusesReceivedCount;
                         };
 
-                        QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-                            expect(stanza).not.toBeNull();
+                        QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
+                            expect(error).not.toBeNull();
+                            expect(responce).toBeDefined();
 
                             QB_RECEIVER.chat.onJoinOccupant = function(dialogId, userId){
                                 ++statusesReceivedCount;
                             };
 
-                            QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
-                                expect(stanza).not.toBeNull();
+                            QB_RECEIVER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
+                                expect(error).not.toBeNull();
+                                expect(responce).toBeDefined();
                             });
                         });
 
@@ -1384,8 +1372,6 @@ describe('Chat API', function() {
                     }, 3000);
 
                 });
-
-
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT+3000);
 
             afterAll(function(done) {
@@ -1753,20 +1739,18 @@ function incrementMessagesSentPerDialog(dialogId, isREST, userId){
     console.info("UNREAD: " + count+ ". userId: " + uid + ". Dialog: " + dialogId);
 }
 
-function groupChat_joinAndSendAndReceiveMessageAndLeave(roomJid, dialogId, callback){
-    groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, function(){
-        console.log("leaving");
+function groupChat_joinAndSendAndReceiveMessageAndLeave(roomJid, dialogId, callback) {
+    groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, function() {
         QB_RECEIVER.chat.muc.leave(roomJid, function() {
-            console.log("left");
             callback();
         });
     });
 }
 
-function groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, callback){
-    QB_RECEIVER.chat.muc.join(roomJid, function(stanzaResponse) {
-        console.log("joined");
-        expect(stanzaResponse).not.toBeNull();
+function groupChat_joinAndSendAndReceiveMessage(roomJid, dialogId, callback) {
+    QB_RECEIVER.chat.muc.join(roomJid, function(error, responce) {
+        expect(error).toBeNull();
+        expect(responce).toBeDefined();
 
         groupChat_sendAndReceiveMessage(roomJid, dialogId, function(){
             callback();
@@ -1885,48 +1869,4 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
             normalMessageIdXMPP = receivedMessage.id;
         }
     };
-};
-
-function xmlGetAttr(el, attrName) {
-    var attr;
-
-    if(typeof el.getAttribute === 'function') {
-        attr = el.getAttribute(attrName);
-    } else if(el.attrs) {
-        attr = el.attrs[attrName];
-    } else {
-        throw ERR_UNKNOWN_INTERFACE;
-    }
-
-    return attr ? attr : null;
-};
-
-function xmlGetElement(stanza, elName) {
-    var el;
-
-    if(typeof stanza.querySelector === 'function') {
-        el = stanza.querySelector(elName);
-    } else if(typeof stanza.getChild === 'function'){
-        el = stanza.getChild(elName);
-    } else {
-        throw ERR_UNKNOWN_INTERFACE;
-    }
-
-    return el ? el : null;
-};
-
-function xmlGetElementText(stanza, elName) {
-    var el,
-        txt;
-
-    if(typeof stanza.querySelector === 'function') {
-        el = stanza.querySelector(elName);
-        txt = el ? el.textContent : null;
-    } else if(typeof stanza.getChildText === 'function') {
-        txt = stanza.getChildText(elName);
-    } else {
-        throw ERR_UNKNOWN_INTERFACE;
-    }
-
-    return txt ? txt : null;
 };
