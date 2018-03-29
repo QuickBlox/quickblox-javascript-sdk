@@ -1535,6 +1535,11 @@ MucProxy.prototype = {
             var status = chatUtils.getElement(x, 'status');
             var statusCode = chatUtils.getAttr(status, 'code');
 
+            if (callback.length == 1) {
+                Utils.safeCallbackCall(callback, stanza);
+                return true;
+            }
+
             if(status && statusCode == '110') {
                 Utils.safeCallbackCall(callback, null, {
                     dialogId: dialogId
@@ -2391,15 +2396,7 @@ Helpers.prototype = {
     },
 
     getDialogJid: function(identifier) {
-        var jid;
-
-        if(identifier.indexOf('@') > 0) {
-            jid = identifier;
-        } else {
-            jid = config.creds.appId + '_' + identifier + '@' + config.endpoints.muc;
-        }
-
-        return jid;
+        return identifier.indexOf('@') > 0 ? identifier : this.getRoomJidFromDialogId(identifier);
     }
 };
 /**

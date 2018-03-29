@@ -611,7 +611,7 @@ describe('Chat API', function() {
                 });
 
             }, REST_REQUESTS_TIMEOUT+MESSAGING_TIMEOUT);
-            // TODO
+
             it('can create a message and then receive it (group dialog) (send_to_chat=1)', function(done) {
                 var msgExtension = {
                     param1: "value1",
@@ -1174,11 +1174,20 @@ describe('Chat API', function() {
 
             }, REST_REQUESTS_TIMEOUT*2);
 
+            it('can join group chat by JID / OLD way', function(done) {
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
+
+                QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(stanza) {
+                    expect(stanza).not.toBeNull();
+
+                    done();
+                });
+            }, MESSAGING_TIMEOUT);
+
             it('can join group chat by JID', function(done) {
                 var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
 
                 QB_SENDER.chat.muc.join(dialogJoinable.xmpp_room_jid, function(error, responce) {
-                    console.log('START JOINED', error, responce);
                     expect(error).toBeNull();
                     expect(responce.dialogId).toEqual(dialogId);
 
@@ -1190,7 +1199,6 @@ describe('Chat API', function() {
                 var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(dialogJoinable.xmpp_room_jid);
 
                 QB_SENDER.chat.muc.join(dialogId, function(error, responce) {
-                    console.log('START JOINED', error, responce);
                     expect(error).toBeNull();
                     expect(responce.dialogId).toEqual(dialogId);
 
@@ -1203,9 +1211,28 @@ describe('Chat API', function() {
                 var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(wrongJid);
 
                 QB_SENDER.chat.muc.join(wrongJid, function(error, responce) {
-                    console.log('START UNJOINED', error, responce);
                     expect(error).toBeDefined();
                     expect(responce.dialogId).toEqual(dialogId);
+
+                    done();
+                });
+            }, MESSAGING_TIMEOUT);
+
+            it('can get error joining unexisted dialog / OLD way', function(done) {
+                var wrongJid = 'a'+ dialogJoinable.xmpp_room_jid;
+                var dialogId = QB_SENDER.chat.helpers.getDialogIdFromNode(wrongJid);
+
+                QB_SENDER.chat.muc.join(wrongJid, function(stanza) {
+                    var errorCode;
+                    var errorName;
+                    var errElement = xmlGetElement(stanza, 'error');
+
+                    if(errElement){	
+                        errorCode = xmlGetAttr(errElement, 'code');	
+                        errorName = xmlGetElement(errElement, 'item-not-found');	
+                    }
+
+                    expect(errorCode).toEqual('500');
 
                     done();
                 });
@@ -1694,11 +1721,7 @@ describe('Chat API', function() {
 
             QB_SENDER.chat.disconnect();
         });
-
-
     });
-
-
 });
 
 
@@ -1869,4 +1892,32 @@ function createNormalMessageViaRESTAndReceiveItTest(params, msgExtension, dialog
             normalMessageIdXMPP = receivedMessage.id;
         }
     };
+};
+
+function xmlGetAttr(el, attrName) {	
+    var attr;	
+	
+    if(typeof el.getAttribute === 'function') {	
+        attr = el.getAttribute(attrName);	
+    } else if(el.attrs) {	
+        attr = el.attrs[attrName];	
+    } else {	
+        throw ERR_UNKNOWN_INTERFACE;	
+    }	
+	
+    return attr ? attr : null;	
+};	
+	
+function xmlGetElement(stanza, elName) {	
+    var el;	
+    	
+    if(typeof stanza.querySelector === 'function') {	
+        el = stanza.querySelector(elName);	
+    } else if(typeof stanza.getChild === 'function'){	
+        el = stanza.getChild(elName);	
+    } else {	
+        throw ERR_UNKNOWN_INTERFACE;	
+    }	
+    	
+    return el ? el : null;	
 };
