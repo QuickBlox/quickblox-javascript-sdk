@@ -115,7 +115,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
                     }
                 } else {
                     if (extraParams.childNodes[i].tagName === 'userInfo') {
-                         extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                        extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
                     } else {
                         extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
                     }
