@@ -1495,10 +1495,10 @@ MucProxy.prototype = {
     /**
      * Join to the group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
      * @memberof QB.chat.muc
-     * @param {String} dialogIdentifier - Use dialog jid or dialog id to join to this dialog.
+     * @param {String} dialogIdOrJid - Use dialog jid or dialog id to join to this dialog.
      * @param {joinMacCallback} callback - The callback function.
      * */
-    join: function(dialogIdentifier, callback) {
+    join: function(dialogIdOrJid, callback) {
         /**
          * Callback for QB.chat.muc.join().
          * @param {Object} error - Returns error object or null
@@ -1508,7 +1508,7 @@ MucProxy.prototype = {
         var self = this,
             id = chatUtils.getUniqueId('join');
 
-        var dialogJid = this.helpers.getDialogJid(dialogIdentifier);
+        var dialogJid = this.helpers.getDialogJid(dialogIdOrJid);
 
         var presParams = {
                 id: id,
