@@ -52,12 +52,14 @@ var qbChatHelpers = {
     getAttr: function(el, attrName) {
         var attr;
 
+        if(!el) {
+            return null;
+        }
+
         if(typeof el.getAttribute === 'function') {
             attr = el.getAttribute(attrName);
         } else if(el.attrs) {
             attr = el.attrs[attrName];
-        } else {
-            throw ERR_UNKNOWN_INTERFACE;
         }
 
         return attr ? attr : null;

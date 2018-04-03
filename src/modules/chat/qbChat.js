@@ -395,11 +395,8 @@ function ChatProxy(service) {
             }
         }
 
-
         // MUC presences go here
-
         if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
-
             dialogId = self.helpers.getDialogIdFromNode(from);
             userId = self.helpers.getUserIdFromRoomJid(from);
 
@@ -452,27 +449,30 @@ function ChatProxy(service) {
                             if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
                                 Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
                             }
-                            return true;
                         }
+
+                        return true;
                     }
 
                     /** JOIN to dialog success */
                     if(id.endsWith(":join") && status && statusCode == "110"){
                         if(typeof self.nodeStanzasCallbacks[id] === 'function') {
-                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                            self.nodeStanzasCallbacks[id](stanza);
                         }
+
                         return true;
                     }
 
                     // an error
-                }else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
+                } else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
                     /** JOIN to dialog error */
                     if(id.endsWith(":join")){
                         if(typeof self.nodeStanzasCallbacks[id] === 'function') {
-                            Utils.safeCallbackCall(self.nodeStanzasCallbacks[id], stanza);
+                            self.nodeStanzasCallbacks[id](stanza);
                         }
-                        return true;
                     }
+
+                    return true;
                 }
             }
         }
@@ -1495,18 +1495,20 @@ MucProxy.prototype = {
     /**
      * Join to the group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
      * @memberof QB.chat.muc
-     * @param {String} dialogJid - Use dialog jid to join to this dialog.
+     * @param {String} dialogIdOrJid - Use dialog jid or dialog id to join to this dialog.
      * @param {joinMacCallback} callback - The callback function.
      * */
-    join: function(dialogJid, callback) {
+    join: function(dialogIdOrJid, callback) {
         /**
          * Callback for QB.chat.muc.join().
-         * @param {Object} resultStanza - Returns the stanza.
+         * @param {Object} error - Returns error object or null
+         * @param {Object} responce - Returns responce
          * @callback joinMacCallback
          * */
-
         var self = this,
             id = chatUtils.getUniqueId('join');
+
+        var dialogJid = this.helpers.getDialogJid(dialogIdOrJid);
 
         var presParams = {
                 id: id,
@@ -1523,15 +1525,52 @@ MucProxy.prototype = {
 
         this.joinedRooms[dialogJid] = true;
 
+        function handleJoinAnswer(stanza) {
+            var id = chatUtils.getAttr(stanza, 'id');
+            var from = chatUtils.getAttr(stanza, 'from');
+            var dialogId = self.helpers.getDialogIdFromNode(from);
+            
+            var x = chatUtils.getElement(stanza, 'x');
+            var xXMLNS = chatUtils.getAttr(x, 'xmlns');
+            var status = chatUtils.getElement(x, 'status');
+            var statusCode = chatUtils.getAttr(status, 'code');
+
+            if (callback.length == 1) {
+                Utils.safeCallbackCall(callback, stanza);
+                return true;
+            }
+
+            if(status && statusCode == '110') {
+                Utils.safeCallbackCall(callback, null, {
+                    dialogId: dialogId
+                });
+            } else {
+                var type = chatUtils.getAttr(stanza, 'type');
+
+                if(type && type === 'error' && xXMLNS == 'http://jabber.org/protocol/muc' && id.endsWith(':join')) {
+                    var errorEl = chatUtils.getElement(stanza, 'error');
+                    var code = chatUtils.getAttr(errorEl, 'code');
+                    var errorMessage = chatUtils.getElementText(errorEl, 'text');
+    
+                    Utils.safeCallbackCall(callback, {
+                        code: code || 500,
+                        message: errorMessage || 'Unknown issue'
+                    }, {
+                        dialogId: dialogId
+                    });
+                }
+            }
+        }
+
         if (Utils.getEnv().browser) {
             if (typeof callback === 'function') {
-                self.connection.XAddTrackedHandler(callback, null, 'presence', null, id);
+                self.connection.XAddTrackedHandler(handleJoinAnswer, null, 'presence', null, id);
             }
 
             self.connection.send(pres);
         } else {
             if (typeof callback === 'function') {
-                self.nodeStanzasCallbacks[id] = callback;
+                self.nodeStanzasCallbacks[id] = handleJoinAnswer;
             }
 
             self.Client.send(pres);
@@ -2354,6 +2393,10 @@ Helpers.prototype = {
 
     setUserCurrentJid: function(jid) {
         this._userCurrentJid = jid;
+    },
+
+    getDialogJid: function(identifier) {
+        return identifier.indexOf('@') > 0 ? identifier : this.getRoomJidFromDialogId(identifier);
     }
 };
 /**

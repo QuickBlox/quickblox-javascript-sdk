@@ -711,13 +711,17 @@
         };
 
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
-            $('#bitrate_' + userId).text(stats.inbound_video.bitrate);
-
             console.group('onCallStatsReport');
                 console.log('userId: ', userId);
                 console.log('session: ', session);
                 console.log('stats: ', stats);
             console.groupEnd();
+
+            if (stats.remote.video.bitrate) {
+                $('#bitrate_' + userId).text('video bitrate: ' + stats.remote.video.bitrate);
+            } else if (stats.remote.audio.bitrate) {
+                $('#bitrate_' + userId).text('audio bitrate: ' + stats.remote.audio.bitrate);
+            }
         };
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
