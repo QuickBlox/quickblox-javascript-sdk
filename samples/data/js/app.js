@@ -382,7 +382,7 @@ App.prototype._setListenersPlacesNew = function() {
         }
 
         // clear form
-        target.parentNode.removeChild(target);
+        $overlay.innerHTML = '';
 
         return false;
     });
