@@ -24,6 +24,11 @@ Places.prototype.sync = function(skip) {
                 reject(err);
             } else {
                 res.items.forEach(function(el) {
+                    // Slice media to 20 items max
+                    if(el.media && el.media.length > Places._maxMediaLength) {
+                        el.media.length = Places._maxMediaLength;
+                    }
+
                     self.items.push(el);
 
                     if (res.length === maxLimit) {
@@ -89,3 +94,5 @@ Places.prototype.updateLocal = function(newPlace) {
 
     this.items.sort(sortByUpdate);
 };
+
+Places._maxMediaLength = 20;
