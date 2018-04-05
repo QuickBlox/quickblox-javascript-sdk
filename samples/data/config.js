@@ -18,5 +18,10 @@ var QB_CONFIG = {
   }
 };
 
+var APP_CONFIG = {
+  maxMediaItemsCount: 20 
+}
+
 window.QB_CREDS = QB_CREDS;
 window.QB_CONFIG = QB_CONFIG;
+window.APP_CONFIG = APP_CONFIG;
