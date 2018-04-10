@@ -382,7 +382,9 @@ App.prototype._setListenersPlacesNew = function() {
         }
 
         // clear form
-        target.parentNode.removeChild(target);
+        if($overlay) {
+            $overlay.innerHTML = '';
+        }
 
         return false;
     });
@@ -446,7 +448,7 @@ App.prototype.renderPlaceDetailed = function(placeId) {
         e.preventDefault();
         
         var photosCount = document.querySelectorAll('.j-photo').length,
-            limit = 20 - photosCount,
+            limit = APP_CONFIG.maxMediaItemsCount - photosCount,
             validationPromises = [],
             listPromises = [],
             warnMessage;
@@ -544,18 +546,21 @@ App.prototype.renderCheckin = function(placeId) {
                 _id: placeId,
                 rate: newRate.toFixed(2)
             }).then(function(res) {
+                console.log('RESR', res);
                 self.places.updateLocal(res);
+                console.log('ALL', self.places);
                 self.activePage = {
                     pageName: 'place_detailed',
                     detailed: res._id
                 };
+
+                // clear form
+                var $overlay = document.getElementById('j-overlay');
+                $overlay.innerHTML = '';
             });
         }).catch(function(err) {
             console.error(err);
         });
-
-        // clear form
-        target.parentNode.removeChild(target);
 
         return false;
     });
