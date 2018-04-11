@@ -420,7 +420,11 @@
                         //
                         var pushRecipients = [];
                         app.currentSession.call({}, function(error) {
-                            if(error) {
+                            if (error) {
+                                app.currentSession.stop({});
+
+                                app.helpers.stateBoard.update({'title': 'connect_error', 'isError': 'qb-error'});
+                                
                                 console.warn(error.detail);
                             } else {
                                 var compiled = _.template( $('#callee_video').html() );
