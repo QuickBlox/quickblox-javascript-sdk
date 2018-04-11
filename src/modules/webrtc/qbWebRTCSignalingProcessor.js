@@ -12,7 +12,7 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
 function WebRTCSignalingProcessor(service, delegate, connection) {
     var self = this;
 
-    self.service = delegate.service;
+    self.service = service;
     self.delegate = delegate;
     self.connection = connection;
 
