@@ -90,7 +90,7 @@ ServiceProxy.prototype = {
 
         if (params.data) {
             qbRequestBody = _getBodyRequest();
-
+            
             if (isGetOrHeadType) {
                 qbUrl += '?' + qbRequestBody;
             } else {
@@ -109,10 +109,7 @@ ServiceProxy.prototype = {
                 qbRequest.headers = {};
             }
 
-            // TODO: include QB-OS header in Access-Control-Allow-Headers;
-            // Now gets error 'Request header field QB-OS is not allowed by Access-Control-Allow-Headers in preflight response'
-            // qbRequest.headers['QB-OS'] = Utils.getOS();
-
+            qbRequest.headers['QB-OS'] = Utils.getOS();
             qbRequest.headers['QB-SDK'] = 'JS ' + config.version + ' - Client';
 
             if(qbSessionToken) {
@@ -150,6 +147,13 @@ ServiceProxy.prototype = {
          * Private functions
          * Only for ServiceProxy.ajax() method closure
          */
+
+        function _fixedEncodeURIComponent(str) {
+            return encodeURIComponent(str).replace(/[#$&+,/:;=?@\[\]]/g, function(c) {
+              return '%' + c.charCodeAt(0).toString(16);
+            });
+        }
+
         function _getBodyRequest() {
             var data = params.data,
                 qbData;
@@ -169,10 +173,10 @@ ServiceProxy.prototype = {
                 qbData = Object.keys(data).map(function(k) {
                     if (Utils.isObject(data[k])) {
                         return Object.keys(data[k]).map(function(v) {
-                            return k + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + data[k][v];
+                            return _fixedEncodeURIComponent(k) + '[' + (Utils.isArray(data[k]) ? '' : v) + ']=' + _fixedEncodeURIComponent(data[k][v]);
                         }).sort().join('&');
                     } else {
-                        return k + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + data[k];
+                        return _fixedEncodeURIComponent(k) + (Utils.isArray(data[k]) ? '[]' : '' ) + '=' + _fixedEncodeURIComponent(data[k]);
                     }
                 }).sort().join('&');
             }

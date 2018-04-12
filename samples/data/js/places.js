@@ -24,6 +24,11 @@ Places.prototype.sync = function(skip) {
                 reject(err);
             } else {
                 res.items.forEach(function(el) {
+                    // Slice media to 20 items max
+                    if(el.media && el.media.length > APP_CONFIG.maxMediaItemsCount) {
+                        el.media.length =  APP_CONFIG.maxMediaItemsCount;
+                    }
+
                     self.items.push(el);
 
                     if (res.length === maxLimit) {
@@ -80,12 +85,15 @@ Places.prototype.update = function(params) {
 Places.prototype.updateLocal = function(newPlace) {
     var place = this.getPlace(newPlace._id);
 
-    function sortByUpdate(a, b) {
-        if (a.updated_at < b.updated_at) return 1;
-        if (a.updated_at > b.updated_at) return -1;
+    if(newPlace.media && newPlace.media.length > APP_CONFIG.maxMediaItemsCount) {
+        newPlace.media.length = APP_CONFIG.maxMediaItemsCount;
     }
 
     Object.assign(place, newPlace);
+
+    function sortByUpdate(a, b) {
+        return b.updated_at - a.updated_at;
+    }
 
     this.items.sort(sortByUpdate);
 };

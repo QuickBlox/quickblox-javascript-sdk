@@ -96,6 +96,7 @@ describe('Stream Managment', function() {
         };
 
         function onSentMessageCallback(messageLost, messageSent) {
+
             if(message.id === messageSent.id) {
                 expect(messageLost).toBeNull();
                 expect(messageSent).toBeDefined();
@@ -108,8 +109,9 @@ describe('Stream Managment', function() {
         };
         QB_SENDER.chat.onSentMessageCallback = onSentMessageCallback;
 
-        function handleDialogJoined(stanza) {
-            expect(stanza).not.toBeNull();
+        function handleDialogJoined(error, responce) {
+            expect(error).toBeNull();
+            expect(responce).toBeDefined();
 
             message.id = QB_SENDER.chat.send(dialogJoinable.xmpp_room_jid, message);
         }

@@ -42,6 +42,10 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingT
     /** extension.opponentsIDs */
     /** extension.sdp */
 
+    if (extension.userInfo && !Object.keys(extension.userInfo).length) {
+        delete extension.userInfo;
+    }
+
     params = {
         to: Helpers.getUserJid(userId, config.creds.appId),
         type: 'headline',
@@ -54,7 +58,6 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingT
 
     Object.keys(extension).forEach(function(field) {
         if (field === 'iceCandidates') {
-
             /** iceCandidates */
             msg = msg.c('iceCandidates');
             extension[field].forEach(function(candidate) {
@@ -65,7 +68,6 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingT
                 msg.up();
             });
             msg.up();
-
         } else if (field === 'opponentsIDs') {
             /** opponentsIDs */
             msg = msg.c('opponentsIDs');
@@ -73,10 +75,8 @@ WebRTCSignalingProvider.prototype.sendMessage = function(userId, ext, signalingT
                 msg = msg.c('opponentID').t(opponentId).up();
             });
             msg.up();
-
         } else if (typeof extension[field] === 'object') {
             self._JStoXML(field, extension[field], msg);
-
         } else {
             msg.c(field).t(extension[field]).up();
         }

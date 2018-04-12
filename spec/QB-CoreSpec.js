@@ -11,11 +11,11 @@ describe('Session API', function() {
     var CONFIG =  isNodeEnv ? require('./config').CONFIG : window.CONFIG;
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
-    // it('can init SDK with session token and appId', function(){
-    //     QB.init('56655ac9a0eb476d92002b66', CREDS.appId);
+    it('can init SDK with session token and appId', function(){
+        QB.init('56655ac9a0eb476d92002b66', CREDS.appId);
 
-    //     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
-    // });
+        expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
+    });
 
     it('can init SDK with appId, authKey, authSecret, config', function(){
         QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
