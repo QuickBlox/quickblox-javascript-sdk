@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "license": "(Apache-2.0)",
@@ -26,8 +26,7 @@
   "contributors": [
     "Igor Khomenko <igor@quickblox.com>",
     "Vlad Lukhanin <vladislav.lukhanin@quickblox.com>",
-    "Dima Lobanov <dmytro.lobanov@injoit.com>",
-    "Iegor Kozakov <iegor.kozakov@injoit.com>"
+    "Dima Lobanov <dmytro.lobanov@injoit.com>"
   ],
   "repository": {
     "type": "git",
