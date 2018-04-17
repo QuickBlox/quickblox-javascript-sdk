@@ -670,8 +670,7 @@ ChatProxy.prototype = {
         var userJid = chatUtils.buildUserJid(params);
 
         if (self._isConnecting) {
-            Utils.QBLog('[QBChat]', 'Status.REJECT - The connection is still in the CONNECTING state');
-            err = Utils.getError(422, 'Status.REJECT - Can\'t connect more than once', 'QBChat');
+            err = Utils.getError(422, 'Status.REJECT - The connection is still in the Status.CONNECTING state', 'QBChat');
 
             if (typeof callback === 'function') {
                 callback(err, null);
@@ -902,10 +901,10 @@ ChatProxy.prototype = {
                 if (self._isLogout) {
                     self.Client._events = {};
                     self.Client._eventsCount = 0;
+    
+                    // reconnect to chat and enable check connection
+                    self._establishConnection(params);
                 }
-
-                // reconnect to chat and enable check connection
-                self._establishConnection(params);
             });
             
             self.Client.on('error', function (e) {
@@ -1274,21 +1273,13 @@ ChatProxy.prototype = {
             return;
         }
 
-        var _connect = function() {
-            if (!self.isConnected && !self._isConnecting) {
-                self.connect(params);
-            }
-        };
-
-        _connect();
-
         self._checkConnectionTimer = setInterval(function() {
             if (self.isConnected) {
                 clearInterval(self._checkConnectionTimer);
                 self._checkConnectionTimer = undefined;
+            } else if (!self.isConnected && !self._isConnecting) {
+                self.connect(params);
             }
-            
-            _connect();
         }, config.chatReconnectionTimeInterval * 1000);
     }
 };
