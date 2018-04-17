@@ -672,11 +672,19 @@ ChatProxy.prototype = {
         var userJid = chatUtils.buildUserJid(params);
 
         if (self._isConnecting) {
+            Utils.QBLog('[Chat]', 'Status.REJECT - The connection is still in the CONNECTING state');
+            err = Utils.getError(422, 'Status.REJECT - Can\'t connect more than once');
+            
+            callback(err, null);
+
             return;
         }
 
         if (self.isConnected) {
+            Utils.QBLog('[Chat]', 'Status.CONNECTED - You are already connected');
+
             callback(null, self.roster.contacts);
+
             return;
         }
 
@@ -684,7 +692,6 @@ ChatProxy.prototype = {
 
         /** Connect for browser env. */
         if (Utils.getEnv().browser) {
-
             self.connection.connect(userJid, params.password, function(status) {
                 switch (status) {
                     case Strophe.Status.ERROR:
@@ -823,11 +830,11 @@ ChatProxy.prototype = {
         /** connect for node */
         if(!Utils.getEnv().browser) {
             self.Client.on('connect', function() {
-                Utils.QBLog('[Chat]', 'CONNECT - ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.CONNECT - ' + chatUtils.getLocalTime());
             });
     
             self.Client.on('reconnect', function() {
-                Utils.QBLog('[Chat]', 'RECONNECT - ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.RECONNECT - ' + chatUtils.getLocalTime());
 
                 if (typeof self.onReconnectListener === 'function') {
                     Utils.safeCallbackCall(self.onReconnectListener);
@@ -837,7 +844,7 @@ ChatProxy.prototype = {
             });
                     
             self.Client.on('online', function() {
-                Utils.QBLog('[Chat]', 'CONNECTED - ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.CONNECTED - ' + chatUtils.getLocalTime());
     
                 if (config.streamManagement.enable) {
                     self.streamManagement.enable(self.Client, XMPP);
@@ -889,7 +896,7 @@ ChatProxy.prototype = {
             });
             
             self.Client.on('disconnect', function() {
-                Utils.QBLog('[Chat]', 'DISCONNECT - ' + chatUtils.getLocalTime());
+                Utils.QBLog('[Chat]', 'Status.DISCONNECT - ' + chatUtils.getLocalTime());
 
                 if (typeof self.onDisconnectedListener === 'function') {
                     Utils.safeCallbackCall(self.onDisconnectedListener);
@@ -905,8 +912,8 @@ ChatProxy.prototype = {
             });
             
             self.Client.on('error', function (e) {
-                Utils.QBLog('[Chat]', 'ERROR - ' + chatUtils.getLocalTime());
-                err = Utils.getError(422, 'ERROR - An error has occurred');
+                Utils.QBLog('[Chat]', 'Status.ERROR - ' + chatUtils.getLocalTime());
+                err = Utils.getError(422, 'Status.ERROR - An error has occurred');
     
                 if (typeof callback === 'function') {
                     callback(err, null);
@@ -1263,7 +1270,7 @@ ChatProxy.prototype = {
     _checkConnection: function(params) {
         var self = this;
         
-        if (self._isLogout) {
+        if (self._isLogout || self._checkConnectionTimer) {
             return;
         }
         
