@@ -76,10 +76,16 @@ function prepareLocalVideoUI() {
 
     $('#videolocal').append('<video class="rounded centered" id="myvideo" width="100%" height="100%" autoplay muted="muted"/>');
 
+    // Add a 'video full screen' button
+    $('#videolocal').append('<button class="btn btn-default btn-xs" id="fullscreen" style="position: absolute; top: 0px; right: 0px; margin-top: 28px; margin-right: 20px; background-color: #ccc;"> <img src="images/icon-full-mode-on.png" /></button>');
+    $('#fullscreen').click(toggleFullscreen);
+
     // Add a 'mute' button
     $('#videolocal').append('<button class="btn btn-warning btn-xs" id="mute" style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">Mute</button>');
     $('#mute').click(toggleMute);
     // $('#mute').click(ICE_RESTART_LOCAL_TEST);
+    //
+    //icon-full-mode-on.png
 }
 
 function prepareRemoteVideoUI(userId) {
@@ -89,12 +95,16 @@ function prepareRemoteVideoUI(userId) {
     }
     if(!isAudioCallOnly){
       $('#videoremote' + userId).append(
-          '<span class="label label-primary hide" id="curres' + userId + '" style="position: absolute; top: 17px; right: 0px; margin: 15px;"></span>' +
+          '<span class="label label-primary hide" id="curres' + userId + '" style="position: absolute; top: 17px; left: 10px; margin: 15px;"></span>' +
           '<span class="label label-info hide" id="curbitrate' + userId + '" style="position: absolute; bottom: 0px; right: 0px; margin: 15px;"></span>'
       );
     }
     //
     $('#videoremote' + userId).append('<meter max="1" value="0" id="audioStreamVolume' + userId + '" style="position: absolute; bottom: 10px; left: 0px; right: 0px; margin: 34px; color: #0f9d58; width: 65%;"></meter>');
+
+    // Add a 'video full screen' button
+    $('#videoremote' + userId).append('<button class="btn btn-default btn-xs" id="fullscreen_' + userId + '" style="position: absolute; top: 0px; right: 0px; margin-top: 28px; margin-right: 20px; background-color: #ccc;"> <img src="images/icon-full-mode-on.png" id="fullscreen_' + userId + '" /></button>');
+    $('#fullscreen_' + userId).click(toggleRemoteFullscreen);
 
     // Add a 'mute' button
     $('#videoremote' + userId).append('<button class="btn btn-warning btn-xs" id="mute_' + userId + '" style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">Mute</button>');

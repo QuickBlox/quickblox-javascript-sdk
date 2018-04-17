@@ -462,11 +462,26 @@ function toggleMute() {
     console.info("Now is muted=" + muted);
 }
 
+function toggleFullscreen(){
+  var mediaScreen = document.getElementById("myvideo");
+  enableFullScreen(mediaScreen);
+}
+
 function toggleRemoteMute(event) {
     var userId = parseInt(event.target.id.replace("mute_", ""));
     var muted = client.toggleRemoteAudioMute(userId);
     $("#" + event.target.id).html(muted ? "Unmute" : "Mute");
     console.info("Now remote is muted=" + muted);
+}
+
+function toggleRemoteFullscreen(event){
+  console.log(event);
+  console.log(event.target.id);
+    var userId = parseInt(event.target.id.replace("fullscreen_", ""));
+    console.log(userId);
+    var mediaScreen = document.getElementById("remotevideo"+userId);
+    console.log(mediaScreen)
+    enableFullScreen(mediaScreen);
 }
 
 function actionsForTheInitiator() {
@@ -601,6 +616,28 @@ function dialogIdForVideoRecording(){
   }
 
   return roomIdToJoin;
+}
+
+function enableFullScreen(mediaScreen){
+  if (mediaScreen.requestFullscreen) {
+    if (document.fullScreenElement) {
+        document.cancelFullScreen();
+    } else {
+        mediaScreen.requestFullscreen();
+    }
+  } else if (mediaScreen.mozRequestFullScreen) {
+    if (document.mozFullScreenElement) {
+        document.mozCancelFullScreen();
+    } else {
+        mediaScreen.mozRequestFullScreen();
+    }
+  } else if (mediaScreen.webkitRequestFullscreen) {
+    if (document.webkitFullscreenElement) {
+        document.webkitCancelFullScreen();
+    } else {
+        mediaScreen.webkitRequestFullscreen();
+    }
+  }
 }
 
 // function ICE_RESTART_LOCAL_TEST(){
