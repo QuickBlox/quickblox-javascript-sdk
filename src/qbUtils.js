@@ -302,7 +302,7 @@ var Utils = {
                 break;
         }
 
-        this.QBLog('[' + moduleName + ']', 'error: ', detail);
+        this.QBLog('[' + moduleName + ']', 'Error:', detail);
 
         return errorMsg;
     },
