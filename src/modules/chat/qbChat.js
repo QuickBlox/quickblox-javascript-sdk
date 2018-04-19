@@ -785,13 +785,14 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
+            // Remove all connection handlers exist from a previous connection
             self.Client.removeAllListeners();
 
             self.Client.on('connect', function() {
                 Utils.QBLog('[QBChat]', 'Status.CONNECTING', '(Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket' + ')'));
             });
 
-            self.Client.on('auth', function(e) {
+            self.Client.on('auth', function() {
                 Utils.QBLog('[QBChat]', 'Status.AUTHENTICATING');
             });
                     
@@ -836,7 +837,7 @@ ChatProxy.prototype = {
                 self._establishConnection(params);
             });
             
-            self.Client.on('error', function(e) {
+            self.Client.on('error', function() {
                 Utils.QBLog('[QBChat]', 'Status.ERROR - ' + chatUtils.getLocalTime());
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred', 'QBChat');
     
@@ -848,10 +849,8 @@ ChatProxy.prototype = {
                 self._isConnecting = false;
             });
 
-            self.Client.on('end', function(e) {
-                Utils.QBLog('[QBChat]', 'Status.END - ' + chatUtils.getLocalTime());
-
-                self.Client.removeAllListeners();
+            self.Client.on('end', function() {
+                self.Client.removeAllListeners();                
             });
 
             self.Client.options.jid = userJid;
@@ -901,7 +900,7 @@ ChatProxy.prototype = {
             
             xmppClient.send(presence);
 
-            Utils.QBLog('[QBChat]', 'Re-joining ' + rooms.length + " rooms..");
+            Utils.QBLog('[QBChat]', 'Re-joining ' + rooms.length + " rooms...");
 
             for (var i = 0, len = rooms.length; i < len; i++) {
                 self.muc.join(rooms[i]);
@@ -923,19 +922,17 @@ ChatProxy.prototype = {
         var _connect = function() {
             if (!self.isConnected && !self._isConnecting) {
                 self.connect(params);
+            } else {
+                clearInterval(self._checkConnectionTimer);
+                self._checkConnectionTimer = undefined;
             }
         };
 
         _connect();
 
         self._checkConnectionTimer = setInterval(function() {
-            if (self.isConnected) {
-                clearInterval(self._checkConnectionTimer);
-                self._checkConnectionTimer = undefined;
-            }
-
             _connect();
-        }, config.chatReconnectionTimeInterval * 1000);
+        }, 5000);
     },
 
     /**
@@ -1213,6 +1210,8 @@ ChatProxy.prototype = {
      * @memberof QB.chat
      * */
     disconnect: function() {
+        clearInterval(this._checkConnectionTimer);
+        this._checkConnectionTimer = undefined;
         this.muc.joinedRooms = {};
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');

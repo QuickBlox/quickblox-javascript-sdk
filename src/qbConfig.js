@@ -33,7 +33,6 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
-  chatReconnectionTimeInterval: 1,
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,
