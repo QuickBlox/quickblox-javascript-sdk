@@ -932,7 +932,7 @@ ChatProxy.prototype = {
 
         self._checkConnectionTimer = setInterval(function() {
             _connect();
-        }, 5000);
+        }, config.chatReconnectionTimeInterval * 1000);
     },
 
     /**
