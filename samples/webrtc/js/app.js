@@ -419,9 +419,10 @@
                         // Call to users
                         //
                         var pushRecipients = [];
-                        app.currentSession.call({}, function(error) {
-                            if(error) {
-                                console.warn(error.detail);
+                        app.currentSession.call({}, function() {
+                            if (!window.navigator.onLine) {
+                                app.currentSession.stop({});
+                                app.helpers.stateBoard.update({'title': 'connect_error', 'isError': 'qb-error'});
                             } else {
                                 var compiled = _.template( $('#callee_video').html() );
 

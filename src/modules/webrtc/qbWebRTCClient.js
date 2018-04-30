@@ -47,7 +47,7 @@ function WebRTCClient(service, connection) {
 /**
  * [Return data or all active devices]
  * @param  {String} spec [specify what type of devices you wnat to get.
- *                         Possible values: audioinput, audiooutput,  videoinput]
+ *                         Possible values: audioinput, audiooutput, videoinput]
  * @returns {Array}       [array of devices]
  */
 WebRTCClient.prototype.getMediaDevices = function(spec) {
@@ -111,7 +111,15 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) 
 };
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType, bandwidth) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid), bandwidth);
+    var newSession = new WebRTCSession({
+        sessionID: sessionID,
+        initiatorID: callerID,
+        opIDs: opponentsIDs,
+        callType: callType,
+        signalingProvider: this.signalingProvider,
+        currentUserID: Helpers.getIdFromNode(this.connection.jid),
+        bandwidth: bandwidth
+    });
 
     /** set callbacks */
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;

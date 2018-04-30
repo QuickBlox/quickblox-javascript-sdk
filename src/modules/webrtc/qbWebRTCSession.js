@@ -38,23 +38,23 @@ WebRTCSession.State = {
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvider, currentUserID, bandwidth) {
-    this.ID = sessionID ? sessionID : generateUUID();
+function WebRTCSession(params) {
+    this.ID = params.sessionID ? params.sessionID : generateUUID();
     this.state = WebRTCSession.State.NEW;
 
-    this.initiatorID = parseInt(initiatorID);
-    this.opponentsIDs = opIDs;
-    this.callType = parseInt(callType);
+    this.initiatorID = parseInt(params.initiatorID);
+    this.opponentsIDs = params.opIDs;
+    this.callType = parseInt(params.callType);
 
     this.peerConnections = {};
 
     this.localStream = null;
 
-    this.signalingProvider = signalingProvider;
+    this.signalingProvider = params.signalingProvider;
 
-    this.currentUserID = currentUserID;
+    this.currentUserID = params.currentUserID;
 
-    this.bandwidth = bandwidth;
+    this.bandwidth = params.bandwidth;
 
     /**
      * We use this timeout to fix next issue:
@@ -184,26 +184,19 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  */
 WebRTCSession.prototype.call = function(extension, callback) {
     var self = this,
-        ext = _prepareExtension(extension),
-        isOnlineline = window.navigator.onLine,
-        error = null;
+        ext = _prepareExtension(extension);
 
     Helpers.trace('Call, extension: ' + JSON.stringify(ext.userInfo));
 
-    if (isOnlineline) {
-        self.state = WebRTCSession.State.ACTIVE;
+    self.state = WebRTCSession.State.ACTIVE;
 
-        // create a peer connection for each opponent
-        self.opponentsIDs.forEach(function(userID, i, arr) {
-            self._callInternal(userID, ext, true);
-        });
-    } else {
-        self.state = WebRTCSession.State.CLOSED;
-        error = Utils.getError(408, 'Call.ERROR - ERR_INTERNET_DISCONNECTED');
-    }
+    // create a peer connection for each opponent
+    self.opponentsIDs.forEach(function(userID, i, arr) {
+        self._callInternal(userID, ext, true);
+    });
 
     if (typeof callback === 'function') {
-        callback(error);
+        callback(null);
     }
 };
 
