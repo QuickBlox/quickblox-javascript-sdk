@@ -21,18 +21,21 @@ WebRTCHelpers = {
 
     trace: function(text) {
         if (config.debug) {
+            // eslint-disable-next-line
             console.log('[QBWebRTC]:', text);
         }
     },
 
     traceWarning: function(text) {
         if (config.debug) {
+            // eslint-disable-next-line
             console.warn('[QBWebRTC]:', text);
         }
     },
 
     traceError: function(text) {
         if (config.debug) {
+            // eslint-disable-next-line
             console.error('[QBWebRTC]:', text);
         }
     },
@@ -63,6 +66,7 @@ WebRTCHelpers = {
         var version;
 
         if (ua) {
+            // eslint-disable-next-line
             var ffInfo = ua.match(/(?:firefox)[ \/](\d+)/i) || [];
             version = ffInfo[1] ? + ffInfo[1] : null;
         }
@@ -75,9 +79,11 @@ WebRTCHelpers = {
         var version;
 
         if (ua) {
+            // eslint-disable-next-line
             var sInfo = ua.match(/(?:safari)[ \/](\d+)/i) || [];
 
             if (sInfo.length) {
+                // eslint-disable-next-line
                 var sVer = ua.match(/(?:version)[ \/](\d+)/i) || [];
 
                 if (sVer) {

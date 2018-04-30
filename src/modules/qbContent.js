@@ -15,9 +15,6 @@
 var config = require('../qbConfig'),
     Utils = require('../qbUtils');
 
-// For server-side applications through using npm package 'quickblox' you should include the following lines
-var isBrowser = typeof window !== 'undefined';
-
 /**
  * Content
  * @namespace QB.content
@@ -379,6 +376,7 @@ function parseUri (str) {
     return uri;
 }
 
+
 parseUri.options = {
     strictMode: false,
     key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
@@ -387,7 +385,9 @@ parseUri.options = {
         parser: /(?:^|&)([^&=]*)=?([^&]*)/g
     },
     parser: {
+        /* eslint-disable-next-line */
         strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+        /* eslint-disable-next-line */
         loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
     }
 };

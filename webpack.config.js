@@ -1,4 +1,6 @@
-var path = require('path');
+'use strict';
+
+const path = require('path');
 
 // const pkg = require('./package.json');
 // let libraryName = pkg.name;

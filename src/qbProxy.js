@@ -149,6 +149,7 @@ ServiceProxy.prototype = {
          */
 
         function _fixedEncodeURIComponent(str) {
+            // eslint-disable-next-line
             return encodeURIComponent(str).replace(/[#$&+,/:;=?@\[\]]/g, function(c) {
               return '%' + c.charCodeAt(0).toString(16);
             });
@@ -228,7 +229,7 @@ ServiceProxy.prototype = {
         }
 
         function retry(session) {
-            if (!!session) {
+            if (session) {
                 self.setSession(session);
                 self.ajax(params, callback);
             }

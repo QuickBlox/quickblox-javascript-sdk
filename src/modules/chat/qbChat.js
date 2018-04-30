@@ -1258,7 +1258,7 @@ RosterProxy.prototype = {
          * */
 
         var self = this,
-            items, userId, contacts = {},
+            contacts = {},
             iqParams = {
                 'type': 'get',
                 'from': self.helpers.getUserCurrentJid(),

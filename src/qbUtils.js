@@ -110,8 +110,10 @@ var Utils = {
             listenerCall.apply(null, argumentsCopy);
         } catch (err) {
             if (listenerName === '') {
+                // eslint-disable-next-line
                 console.error('Error: ' + err);
             }else{
+                // eslint-disable-next-line
                 console.error('Error in listener ' + listenerName + ': ' + err);
             }
         }
@@ -180,7 +182,8 @@ var Utils = {
         this.loggers = [];
 
         var consoleLoggerFunction = function(){
-            var logger = function(args){
+            var logger = function(args) {
+                // eslint-disable-next-line
                 console.log.apply(console, Array.prototype.slice.call(args));
             };
 
@@ -204,6 +207,7 @@ var Utils = {
 
                     fs.appendFile(config.debug.file, toLog, function(err) {
                         if(err) {
+                            // eslint-disable-next-line
                             return console.error('Error while writing log to file. Error: ' + err);
                         }
                     });
