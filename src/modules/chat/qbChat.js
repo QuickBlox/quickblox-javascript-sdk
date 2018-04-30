@@ -276,7 +276,7 @@ function ChatProxy(service) {
 
     this._onMessage = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
-            to = chatUtils.getAttr(stanza, 'to'),
+            // to = chatUtils.getAttr(stanza, 'to'),
             type = chatUtils.getAttr(stanza, 'type'),
             messageId = chatUtils.getAttr(stanza, 'id'),
             markable = chatUtils.getElement(stanza, 'markable'),
@@ -380,7 +380,7 @@ function ChatProxy(service) {
 
     this._onPresence = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
-            to = chatUtils.getAttr(stanza, 'to'),
+            // to = chatUtils.getAttr(stanza, 'to'),
             id = chatUtils.getAttr(stanza, 'id'),
             type = chatUtils.getAttr(stanza, 'type'),
             currentUserId = self.helpers.getIdFromNode(self.helpers.userCurrentJid(Utils.getEnv().browser ? self.connection : self.Client)),
@@ -589,7 +589,7 @@ function ChatProxy(service) {
 
     this._onSystemMessageListener = function(stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
-            to = chatUtils.getAttr(stanza, 'to'),
+            // to = chatUtils.getAttr(stanza, 'to'),
             messageId = chatUtils.getAttr(stanza, 'id'),
             extraParams = chatUtils.getElement(stanza, 'extraParams'),
             userId = self.helpers.getIdFromNode(from),
