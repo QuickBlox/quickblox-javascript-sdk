@@ -1,5 +1,3 @@
-'use strict';
-
 const path = require('path');
 
 // const pkg = require('./package.json');
@@ -14,6 +12,7 @@ module.exports = {
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
+  mode: 'development',
   externals: {
     'node-xmpp-client': 'XMPP',
     'nativescript-xmpp-client': 'XMPP'

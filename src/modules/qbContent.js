@@ -1,5 +1,3 @@
-'use strict';
-
 /*
  * QuickBlox JavaScript SDK
  *
@@ -12,8 +10,8 @@
  *
  */
 
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils');
+import config from '../qbConfig';
+import Utils from '../qbUtils';
 
 /**
  * Content

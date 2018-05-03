@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC signaling constants)
@@ -18,4 +16,4 @@ WebRTCSignalingConstants.SignalingType = {
     PARAMETERS_CHANGED: 'update'
 };
 
-module.exports = WebRTCSignalingConstants;
+export default WebRTCSignalingConstants;

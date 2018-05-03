@@ -1,8 +1,4 @@
-/* eslint no-console: 2 */
-
-'use strict';
-
-var config = require('./qbConfig');
+import config from './qbConfig';
 
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
@@ -329,4 +325,4 @@ var Utils = {
     }
 };
 
-module.exports = Utils;
+export default Utils;

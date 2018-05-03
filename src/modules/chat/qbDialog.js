@@ -1,7 +1,5 @@
-'use strict';
-
-var config = require('../../qbConfig'),
-    Utils = require('../../qbUtils');
+import config from '../../qbConfig';
+import Utils from '../../qbUtils';
 
 var DIALOGS_API_URL = config.urls.chat + '/Dialog';
 

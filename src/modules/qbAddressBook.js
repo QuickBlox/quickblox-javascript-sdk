@@ -1,7 +1,5 @@
-'use strict';
-
-var Utils = require('../qbUtils');
-var config = require('../qbConfig');
+import Utils from '../qbUtils';
+import config from '../qbConfig';
 
 /**
  * Address Book

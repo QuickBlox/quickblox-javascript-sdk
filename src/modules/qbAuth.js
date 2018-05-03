@@ -1,9 +1,7 @@
-'use strict';
-
-var config = require('../qbConfig'),
-    Utils = require('../qbUtils'),
-    sha1 = require('crypto-js/hmac-sha1'),
-    sha256 = require('crypto-js/hmac-sha256');
+import config from '../qbConfig';
+import Utils from '../qbUtils';
+import sha1 from 'crypto-js/hmac-sha1';
+import sha256 from 'crypto-js/hmac-sha256';
 
 function AuthProxy(service) {
     this.service = service;

@@ -1,4 +1,3 @@
-'use strict';
 
 var config = require('../qbConfig');
 var Utils = require('../qbUtils');

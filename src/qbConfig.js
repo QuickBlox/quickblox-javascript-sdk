@@ -1,6 +1,4 @@
-'use strict';
-
-/*
+/**
  * QuickBlox JavaScript SDK
  *
  * Configuration Module
@@ -132,4 +130,4 @@ config.set = function(options) {
   });
 };
 
-module.exports = config;
+export default config;

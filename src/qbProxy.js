@@ -1,7 +1,5 @@
-'use strict';
-
-var config = require('./qbConfig');
-var Utils = require('./qbUtils');
+import config from './qbConfig';
+import Utils from './qbUtils';
 
 /**
  * For server-side applications through using npm package 'quickblox'

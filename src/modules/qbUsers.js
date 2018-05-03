@@ -1,5 +1,3 @@
-'use strict';
-
 /*
  * QuickBlox JavaScript SDK
  *

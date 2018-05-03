@@ -1,4 +1,3 @@
-'use strict';
 /** JSHint inline rules */
 /* globals Strophe */
 

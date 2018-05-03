@@ -1,7 +1,5 @@
-'use strict';
-
-var config = require('../../qbConfig'),
-    Utils = require('../../qbUtils');
+import config from '../../qbConfig';
+import Utils from '../../qbUtils';
 
 var MESSAGES_API_URL = config.urls.chat + '/Message';
 

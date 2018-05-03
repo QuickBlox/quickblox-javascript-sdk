@@ -1,12 +1,13 @@
-'use strict';
 
 /** JSHint inline rules */
 /* globals Strophe, $pres, $msg, $iq */
 
-var chatUtils = require('./qbChatHelpers'),
-    config = require('../../qbConfig'),
-    Utils = require('../../qbUtils'),
-    StreamManagement = require('../../plugins/streamManagement');
+import chatUtils from './qbChatHelpers';
+import config from '../../qbConfig';
+import Utils from '../../qbUtils';
+import StreamManagement from '../../plugins/streamManagement';
+
+import Connection from '../../qbStrophe';
 
 var unsupportedError = 'This function isn\'t supported outside of the browser (...yet)';
 
@@ -14,8 +15,6 @@ var XMPP;
 
 /** create StropheJS or NodeXMPP connection object */
 if (Utils.getEnv().browser) {
-    var Connection = require('../../qbStrophe');
-
     Strophe.addNamespace('CARBONS', chatUtils.MARKERS.CARBONS);
     Strophe.addNamespace('CHAT_MARKERS', chatUtils.MARKERS.CHAT);
     Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);

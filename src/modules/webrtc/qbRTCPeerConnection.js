@@ -1,5 +1,3 @@
-'use strict';
-
 /** JSHint inline rules (TODO: loopfunc will delete) */
 /* jshint loopfunc: true */
 /* globals MediaStream */
