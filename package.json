@@ -85,7 +85,7 @@
   },
   "config": {
     "ghooks": {
-      "pre-push": "jasmine"
+  
     }
   },
   "scripts": {
