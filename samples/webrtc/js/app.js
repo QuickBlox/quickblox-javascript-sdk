@@ -419,9 +419,10 @@
                         // Call to users
                         //
                         var pushRecipients = [];
-                        app.currentSession.call({}, function(error) {
-                            if(error) {
-                                console.warn(error.detail);
+                        app.currentSession.call({}, function() {
+                            if (!window.navigator.onLine) {
+                                app.currentSession.stop({});
+                                app.helpers.stateBoard.update({'title': 'connect_error', 'isError': 'qb-error'});
                             } else {
                                 var compiled = _.template( $('#callee_video').html() );
 
@@ -440,7 +441,6 @@
 
                                 $('.j-callees').append(videoElems);
 
-                                $videoSourceFilter.attr('disabled', true);
                                 $bandwidthSelect.attr('disabled', true);
                                 $btn.addClass('hangup');
                                 app.helpers.setFooterPosition();
@@ -535,7 +535,6 @@
                         compiled = _.template( $('#callee_video').html() );
 
                     $('.j-actions').addClass('hangup');
-                    $(ui.sourceFilter).attr('disabled', true);
                     $(ui.bandwidthSelect).attr('disabled', true);
 
                     /** get all opponents */
@@ -582,6 +581,32 @@
             if(!_.isEmpty(app.currentSession)) {
                 app.currentSession.update({'filter': filterName});
             }
+        });
+
+        /** CHANGE SOURCE */
+        $(document).on('change', ui.sourceFilter, function() {
+            if (!document.getElementById('localVideo').srcObject) {
+                return true;
+            }
+
+            var deviceId = $(this).val(),
+                callback = function(err, stream) {
+                    if (err || !stream.getAudioTracks().length ||
+                        (isAudio ? false : !stream.getVideoTracks().length)
+                    ) {
+                        app.currentSession.stop({});
+    
+                        app.helpers.stateBoard.update({
+                            'title': 'tpl_device_not_found',
+                            'isError': 'qb-error',
+                            'property': {
+                                'name': app.caller.full_name
+                            }
+                        });
+                    }
+                };
+
+            app.currentSession.switchVideoSource(deviceId, callback);
         });
 
         $(document).on('click', '.j-callees__callee__video', function() {
@@ -732,7 +757,6 @@
 
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
-            $(ui.sourceFilter).attr('disabled', false);
             $(ui.bandwidthSelect).attr('disabled', false);
             $('.j-callees').empty();
             $('.frames_callee__bitrate').hide();
