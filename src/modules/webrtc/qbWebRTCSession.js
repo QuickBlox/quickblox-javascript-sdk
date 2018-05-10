@@ -196,9 +196,9 @@ WebRTCSession.prototype.switchVideoSource = function(deviceId, callback) {
     navigator.mediaDevices.getUserMedia({
         audio: self.mediaParam.audio || false,
         video: self.mediaParam.video || false
-    })
-    .then(self._replaceTracks.bind(self))
-    .then(function(stream) {
+    }).then(function(stream) {
+        self._replaceTracks(stream);
+
         callback(null, stream);
     }).catch(function(error) {
         callback(error, null);
@@ -237,8 +237,6 @@ WebRTCSession.prototype._replaceTracks = function(stream) {
             }));
         });
     }
-
-    return stream;
 };
 
 /**
