@@ -50,6 +50,8 @@ function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvide
 
     this.localStream = null;
 
+    this.mediaParam = null;
+
     this.signalingProvider = signalingProvider;
 
     this.currentUserID = currentUserID;
@@ -98,9 +100,9 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     navigator.mediaDevices.getUserMedia({
         audio: params.audio || false,
         video: params.video || false
-
     }).then(function(stream) {
         self.localStream = stream;
+        self.mediaParam = params;
 
         if (params.elemId) {
             self.attachMediaStream(params.elemId, stream, params.options);
@@ -110,6 +112,20 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     }).catch(function(err) {
         callback(err, null);
     });
+};
+
+/**
+ * Get the state of connection
+ * @param {number} The User Id
+ */
+WebRTCSession.prototype.connectionStateForUser = function(userID) {
+    var peerConnection = this.peerConnections[userID];
+
+    if (peerConnection) {
+        return peerConnection.state;
+    }
+
+    return null;
 };
 
 /**
@@ -146,20 +162,6 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 };
 
 /**
- * Get the state of connection
- * @param {number} The User Id
- */
-WebRTCSession.prototype.connectionStateForUser = function(userID) {
-    var peerConnection = this.peerConnections[userID];
-
-    if (peerConnection) {
-        return peerConnection.state;
-    }
-
-    return null;
-};
-
-/**
  * Detach media stream from audio/video element
  * @param {string} The Id of an element to detach a stream
  */
@@ -174,6 +176,66 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
         } else {
             elem.src = '';
         }
+    }
+};
+
+/**
+ * Switch media stream into audio/video element and replace tracks in peers 
+ * @param {string} The Id of an element to switch tracks
+ * @param {function} A callback to get a result of the function
+ */
+WebRTCSession.prototype.switchVideoSource = function(deviceId, callback) {
+    if(!navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia() is not supported in your browser');
+    }
+
+    var self = this;
+
+    self.mediaParam.video.deviceId = deviceId;
+    
+    navigator.mediaDevices.getUserMedia({
+        audio: self.mediaParam.audio || false,
+        video: self.mediaParam.video || false
+    }).then(function(stream) {
+        self._replaceTracks(stream);
+
+        callback(null, stream);
+    }).catch(function(error) {
+        callback(error, null);
+    });
+};
+
+WebRTCSession.prototype._replaceTracks = function(stream) {
+    var peers = this.peerConnections,
+        localStream = this.localStream,
+        elemId = this.mediaParam.elemId,
+        ops = this.mediaParam.options,
+        localStreamTracks = localStream.getTracks(),
+        newStreamTracks = stream.getTracks();
+
+    localStreamTracks.forEach(function(track) {
+        track.stop();
+        localStream.removeTrack(track);
+    });
+
+    this.detachMediaStream(elemId);
+    
+    newStreamTracks.forEach(function(track) {
+        localStream.addTrack(track);
+    });
+
+    this.attachMediaStream(elemId, localStream, ops);
+    
+    for (var userId in peers) {
+        _replaceTracksForPeer(peers[userId]);
+    }
+
+    function _replaceTracksForPeer(peer) {
+        peer.getSenders().map(function(sender) {
+            sender.replaceTrack(newStreamTracks.find(function(track) {
+                return track.kind === sender.track.kind;
+            }));
+        });
     }
 };
 
