@@ -90,7 +90,7 @@ describe('Users API', function() {
         }
       });
     }, REST_REQUESTS_TIMEOUT);
-
+    
     it('can get users by email', function(done) {
       var params = { 'email': QBUser1.email };
 
