@@ -180,11 +180,56 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
 };
 
 /**
- * Switch media stream into audio/video element and replace tracks in peers 
- * @param {string} The Id of an element to switch tracks
- * @param {function} A callback to get a result of the function
+ * Switch media stream in audio/video element and replace tracks in peers 
+ * @param {string} deviceId - the deviceId of a media element (can be gotten from QB.webrtc.getMediaDevices(spec);)
+ * @param {switchVideoSourceCallback} callback - the callback to get a result of the function
+ * 
+ * @example
+ * var webRTCSession = QB.webrtc.createNewSession(params);
+ * 
+ * QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+ *     var selectVideoInput = document.createElement('select'),
+ *         selectVideoInput.id = 'videoInput',
+ *         someDocumentElement.appendChild(selectVideoInput);
+ * 
+ *     if (devices.length > 1) {
+ *         for (var i = 0; i !== devices.length; ++i) {
+ *             var device = devices[i],
+ *                 option = document.createElement('option');
+ * 
+ *             if (deviceInfo.kind === 'videoinput') {
+ *                 option.value = device.deviceId;
+ *                 option.text = deviceInfo.label;
+ *                 selectVideoInput.appendChild(option);
+ *             }
+ *         }
+ *     }
+ * }).catch(function(error) {
+ *     console.error(error);
+ * });
+ * 
+ * document.getElementById('videoInput').onchange = function(event) {
+ *     var deviceId = this.value,
+ *           callback = function(error, stream) {
+ *               if (err) {
+ *                   console.error(error);
+ *               } else {
+ *                   console.log(stream);
+ *               }
+ *           };
+ * 
+ *     // Switch media stream in video element (the local stream)
+ *     // replace tracks in peers (will change the video for each user in WebRTC session)
+ *     webRTCSession.switchVideoSource(deviceId, callback);
+ * }
  */
 WebRTCSession.prototype.switchVideoSource = function(deviceId, callback) {
+    /**
+     * Callback for webRTCSession.switchVideoSource(deviceId, callback)
+     * @callback switchVideoSourceCallback
+     * @param {object} error - The error object
+     * @param {object} stream - The stream from new media source
+     */
     if(!navigator.mediaDevices.getUserMedia) {
         throw new Error('getUserMedia() is not supported in your browser');
     }
