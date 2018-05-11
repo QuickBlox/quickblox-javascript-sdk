@@ -197,9 +197,9 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  *             var device = devices[i],
  *                 option = document.createElement('option');
  * 
- *             if (deviceInfo.kind === 'videoinput') {
+ *             if (device.kind === 'videoinput') {
  *                 option.value = device.deviceId;
- *                 option.text = deviceInfo.label;
+ *                 option.text = device.label;
  *                 selectVideoInput.appendChild(option);
  *             }
  *         }
