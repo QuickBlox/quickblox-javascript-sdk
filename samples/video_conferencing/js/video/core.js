@@ -16,7 +16,7 @@ function initialise(){
         iceServers: [{urls: "stun:stun.l.google.com:19302"},
                      {urls: "turn:turn.quickblox.com:3478?transport=udp", username: "quickblox", credential: "baccb97ba2d92d71e26eb9886da5f1e0"},
                      {urls: "turn:turn.quickblox.com:3478?transport=tcp", username: "quickblox", credential: "baccb97ba2d92d71e26eb9886da5f1e0"}],
-        video: {quality: 'lowres', frameRate: 25}
+        video: {quality: VIDEO_RESOLUTION}
     };
     client = new QBVideoConferencingClient(config);
 
@@ -302,7 +302,7 @@ function clickJoinOrLeaveVideoChat(isStopByInitiator, isStopByBadNetwork) {
                                 addFeedView(currentUser.id, true);
 
                                 // join video chat
-                                var roomIdToJoin = dialogIdForVideoRecording();
+                                var roomIdToJoin = currentDialog._id;
 
                                 client.join(roomIdToJoin, currentUser.id, isAudioCallOnly, {
                                     success: function() {
@@ -485,7 +485,7 @@ function toggleRemoteFullscreen(event){
 }
 
 function actionsForTheInitiator() {
-    client.listOnlineParticipants(dialogIdForVideoRecording(), {
+    client.listOnlineParticipants(currentDialog._id, {
         success: function(participants){
             console.log("listOnlineParticipants, participants: ", participants);
             if (!participants) {
@@ -605,17 +605,6 @@ function stopAllICEFailedTimers(){
       clearInterval(iceFailedTimers[key]);
   });
   iceFailedTimers = [];
-}
-
-
-function dialogIdForVideoRecording(){
-  if(currentDialog.name == "RecordingDemoRoom"){
-    roomIdToJoin = "5ab234c01cc0c00e62c96960";
-  }else{
-    roomIdToJoin = currentDialog._id;
-  }
-
-  return roomIdToJoin;
 }
 
 function enableFullScreen(mediaScreen){
