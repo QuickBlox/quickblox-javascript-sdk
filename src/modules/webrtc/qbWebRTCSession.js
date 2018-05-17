@@ -180,11 +180,15 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
 };
 
 /**
- * Switch media stream in audio/video element and replace tracks in peers 
- * @param {string} deviceId - the deviceId of a media element (can be gotten from QB.webrtc.getMediaDevices(spec);)
+ * Switch media tracks in audio/video HTML's element and replace its in peers.
+ * @param {object} deviceIds - the object with deviceIds of plugged devices
+ * @param {string} [deviceIds.audio] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput')
+ * @param {string} [deviceIds.video] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput')
  * @param {switchVideoSourceCallback} callback - the callback to get a result of the function
  * 
  * @example
+ * var switchMediaTracksBtn = document.getElementById('confirmSwitchMediaTracks');
+ * 
  * var webRTCSession = QB.webrtc.createNewSession(params);
  * 
  * QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
@@ -208,42 +212,80 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  *     console.error(error);
  * });
  * 
- * document.getElementById('videoInput').onchange = function(event) {
- *     var deviceId = this.value,
- *           callback = function(error, stream) {
- *               if (err) {
- *                   console.error(error);
- *               } else {
- *                   console.log(stream);
- *               }
- *           };
+ * QB.webrtc.getMediaDevices('audioinput').then(function(devices) {
+ *     var selectAudioInput = document.createElement('select'),
+ *         selectAudioInput.id = 'audioInput',
+ *         someDocumentElement.appendChild(selectAudioInput);
  * 
- *     // Switch media stream in video element (the local stream)
- *     // replace tracks in peers (will change the video for each user in WebRTC session)
- *     webRTCSession.switchVideoSource(deviceId, callback);
+ *     if (devices.length > 1) {
+ *         for (var i = 0; i !== devices.length; ++i) {
+ *             var device = devices[i],
+ *                 option = document.createElement('option');
+ * 
+ *             if (device.kind === 'audioinput') {
+ *                 option.value = device.deviceId;
+ *                 option.text = device.label;
+ *                 selectAudioInput.appendChild(option);
+ *             }
+ *         }
+ *     }
+ * }).catch(function(error) {
+ *     console.error(error);
+ * });
+ * 
+ * switchMediaTracksBtn.onclick = function(event) {
+ *     var audioDeviceId = document.getElementById('audioInput').value || undefined,
+ *         videoDeviceId = document.getElementById('videoInput').value || undefined,
+ *         deviceIds = {
+ *             audio: audioDeviceId,
+ *             video: videoDeviceId,
+ *         };
+ * 
+ *     var callback = function(error, stream) {
+ *             if (err) {
+ *                 console.error(error);
+ *             } else {
+ *                 console.log(stream);
+ *             }
+ *          };
+ * 
+ *     // Switch media tracks in audio/video HTML's element (the local stream)
+ *     // replace media tracks in peers (will change media tracks for each user in WebRTC session)
+ *     webRTCSession.switchMediaTracks(deviceIds, callback);
  * }
  */
-WebRTCSession.prototype.switchVideoSource = function(deviceId, callback) {
+WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
     /**
-     * Callback for webRTCSession.switchVideoSource(deviceId, callback)
-     * @callback switchVideoSourceCallback
+     * Callback for webRTCSession.switchMediaTracks(deviceIds, callback)
+     * @callback switchMediaTracksCallback
      * @param {object} error - The error object
-     * @param {object} stream - The stream from new media source
+     * @param {object} stream - The stream from new media device
      */
+
     if(!navigator.mediaDevices.getUserMedia) {
         throw new Error('getUserMedia() is not supported in your browser');
     }
 
-    var self = this;
+    var self = this,
+        localStream = this.localStream;
 
-    self.mediaParam.video.deviceId = deviceId;
+    if (deviceIds && deviceIds.audio) {
+        self.mediaParam.audio.deviceId = deviceIds.audio;
+    }
     
+    if (deviceIds && deviceIds.video) {
+        self.mediaParam.video.deviceId = deviceIds.video;
+    }
+
+    localStream.getTracks().forEach(function(track) {
+        track.stop();
+    });
+
     navigator.mediaDevices.getUserMedia({
         audio: self.mediaParam.audio || false,
         video: self.mediaParam.video || false
     }).then(function(stream) {
         self._replaceTracks(stream);
-
         callback(null, stream);
     }).catch(function(error) {
         callback(error, null);
@@ -255,15 +297,7 @@ WebRTCSession.prototype._replaceTracks = function(stream) {
         localStream = this.localStream,
         elemId = this.mediaParam.elemId,
         ops = this.mediaParam.options,
-        localStreamTracks = localStream.getTracks(),
         newStreamTracks = stream.getTracks();
-
-    localStreamTracks.forEach(function(track) {
-        track.stop();
-        localStream.removeTrack(track);
-    });
-
-    this.detachMediaStream(elemId);
     
     newStreamTracks.forEach(function(track) {
         localStream.addTrack(track);

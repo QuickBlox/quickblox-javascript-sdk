@@ -44,7 +44,8 @@
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
-            'sourceFilter': '.j-source',
+            'videoSourceFilter': '.j-video_source',
+            'audioSourceFilter': '.j-audio_source',
             'bandwidthSelect': '.j-bandwidth',
             'insertOccupants': function() {
                 var $occupantsCont = $('.j-users');
@@ -89,6 +90,40 @@
 
             app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
             app.currentSession.closeConnection(userId);
+        }
+        
+        function showAllVideoDevices(kind, stream) {
+            QB.webrtc.getMediaDevices(kind).then(function(devices) {
+                if(devices.length > 1) {
+                    var $select = (kind === 'videoinput') ? $(ui.videoSourceFilter) : $(ui.audioSourceFilter),
+                        $label = (kind === 'videoinput') ? $('.j-video_source_label') : $('.j-audio_source_label');
+
+                    for (var i = 0; i !== devices.length; ++i) {
+                        var deviceInfo = devices[i],
+                            option = document.createElement('option');
+
+                        option.value = deviceInfo.deviceId;
+
+                        if (deviceInfo.kind === kind) {
+                            option.text = deviceInfo.label || ((kind === 'videoinput') ? 'Camera ' : 'Mic ') + (i + 1);
+                            $select.append(option);
+                        }
+                    }
+
+                    if (stream) {
+                        var tracks = (kind === 'videoinput') ? stream.getVideoTracks() : stream.getAudioTracks();
+
+                        tracks.forEach(function(track) {
+                            track.stop();
+                        });
+                    }
+
+                    $label.removeClass('invisible')
+                    $select.removeClass('invisible');
+                }
+            }).catch(function(error) {
+                console.warn('getMediaDevices', error);
+            });
         }
 
         var Router = Backbone.Router.extend({
@@ -175,26 +210,16 @@
                     $('.j-record').hide();
                 }
 
-                QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
-                    if(devices.length > 1) {
-                        var $select = $(ui.sourceFilter);
-
-                        for (var i = 0; i !== devices.length; ++i) {
-                            var deviceInfo = devices[i],
-                                option = document.createElement('option');
-
-                            option.value = deviceInfo.deviceId;
-
-                            if (deviceInfo.kind === 'videoinput') {
-                                option.text = deviceInfo.label || 'Camera ' + (i + 1);
-                                $select.append(option);
-                            }
-                        }
-
-                        $select.removeClass('invisible');
-                    }
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                }).then(function(stream) {
+                    showAllVideoDevices('videoinput', stream);
+                    showAllVideoDevices('audioinput', stream);
                 }).catch(function(error) {
-                    console.warn('getMediaDevices', error);
+                    showAllVideoDevices('videoinput');
+                    showAllVideoDevices('audioinput');
+                    console.warn('Video devices were shown without names (getUserMedia error)', error);
                 });
 
                 app.helpers.setFooterPosition();
@@ -329,12 +354,15 @@
         /** Call / End of call */
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
-                $videoSourceFilter = $(ui.sourceFilter),
+                $videoSourceFilter = $(ui.videoSourceFilter),
+                $audioSourceFilter = $(ui.audioSourceFilter),
                 $bandwidthSelect = $(ui.bandwidthSelect),
                 bandwidth = $.trim($(ui.bandwidthSelect).val()),
                 videoElems = '',
                 mediaParams = {
-                    'audio': true,
+                    'audio': {
+                        deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
+                    },
                     'video': {
                         deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
@@ -446,6 +474,7 @@
 
                                 if (!isFirefox) {
                                     $videoSourceFilter.attr('disabled', true);
+                                    $audioSourceFilter.attr('disabled', true);
                                 }
 
                                 $bandwidthSelect.attr('disabled', true);
@@ -493,7 +522,8 @@
         $(document).on('click', '.j-accept', function() {
             isAudio = app.currentSession.callType === QB.webrtc.CallType.AUDIO;
 
-            var $videoSourceFilter = $(ui.sourceFilter),
+            var $videoSourceFilter = $(ui.videoSourceFilter),
+                $audioSourceFilter = $(ui.audioSourceFilter),
                 mediaParams;
 
             if(isAudio){
@@ -505,7 +535,9 @@
                 document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
             } else {
                 mediaParams = {
-                    audio: true,
+                    audio: {
+                        deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
+                    },
                     video: {
                         deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
@@ -545,7 +577,8 @@
                     $(ui.bandwidthSelect).attr('disabled', true);
 
                     if (!isFirefox) {
-                        $(ui.sourceFilter).attr('disabled', true);
+                        $(ui.videoSourceFilter).attr('disabled', true);
+                        $(ui.audioSourceFilter).attr('disabled', true);
                     }
 
                     /** get all opponents */
@@ -595,13 +628,19 @@
         });
 
         /** CHANGE SOURCE */
-        $(document).on('change', ui.sourceFilter, function() {
+        $(document).on('click', '.j-confirm_media', function() {
             if (!document.getElementById('localVideo').srcObject) {
                 return true;
             }
 
-            var deviceId = $(this).val(),
-                callback = function(err, stream) {
+            var audioDeviceId = $(ui.audioSourceFilter).val() ? $(ui.audioSourceFilter).val() : undefined,
+                videoDeviceId = $(ui.videoSourceFilter).val() ? $(ui.videoSourceFilter).val() : undefined,
+                deviceIds = {
+                    audio: audioDeviceId,
+                    video: videoDeviceId
+                };
+
+            var callback = function(err, stream) {
                     if (err || !stream.getAudioTracks().length ||
                         (isAudio ? false : !stream.getVideoTracks().length)
                     ) {
@@ -617,7 +656,7 @@
                     }
                 };
 
-            app.currentSession.switchVideoSource(deviceId, callback);
+            app.currentSession.switchMediaTracks(deviceIds, callback);
         });
 
         $(document).on('click', '.j-callees__callee__video', function() {
@@ -771,7 +810,8 @@
             $(ui.bandwidthSelect).attr('disabled', false);
 
             if (!isFirefox) {
-                $(ui.sourceFilter).attr('disabled', false);
+                $(ui.videoSourceFilter).attr('disabled', false);
+                $(ui.audioSourceFilter).attr('disabled', false);
             }
 
             $('.j-callees').empty();

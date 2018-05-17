@@ -67,6 +67,10 @@ WebRTCClient.prototype.getMediaDevices = function(spec) {
                         }
                     });
 
+                    navigator.mediaDevices.ondevicechange = function() {
+                        console.error('ondevicechange');
+                    };
+
                     resolve(specDevices);
                 } else {
                     resolve(devices);

@@ -597,11 +597,26 @@ b {
     }
 
 .caller__frames_fl {
-    margin: 15px 0 10px 0;
+    margin-top: 15px;
 }
 
 .caller__frames_bandwidth {
-    margin: 10px 0 10px 0;
+    margin-top: 10px;
+}
+
+.caller__frames_media_source {
+    margin-top: 10px;
+    padding: 2px;
+    border-radius: 3px;
+    border: 1px solid #cdcdcd;
+}
+
+.source_label {
+    padding: 5px 0 5px 5px;
+}
+
+.confirm_media {
+    margin-top: 10px;
 }
 
 /**
