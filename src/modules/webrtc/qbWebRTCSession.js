@@ -184,7 +184,7 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  * @param {object} deviceIds - the object with deviceIds of plugged devices
  * @param {string} [deviceIds.audio] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput')
  * @param {string} [deviceIds.video] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput')
- * @param {switchVideoSourceCallback} callback - the callback to get a result of the function
+ * @param {switchMediaTracksCallback} callback - the callback to get a result of the function
  * 
  * @example
  * var switchMediaTracksBtn = document.getElementById('confirmSwitchMediaTracks');
