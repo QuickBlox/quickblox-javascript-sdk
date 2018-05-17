@@ -50,7 +50,7 @@ function WebRTCSession(params) {
 
     this.localStream = null;
 
-    this.mediaParam = null;
+    this.mediaParams = null;
 
     this.signalingProvider = params.signalingProvider;
 
@@ -102,7 +102,7 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
         video: params.video || false
     }).then(function(stream) {
         self.localStream = stream;
-        self.mediaParam = params;
+        self.mediaParams = params;
 
         if (params.elemId) {
             self.attachMediaStream(params.elemId, stream, params.options);
@@ -270,11 +270,11 @@ WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
         localStream = this.localStream;
 
     if (deviceIds && deviceIds.audio) {
-        self.mediaParam.audio.deviceId = deviceIds.audio;
+        self.mediaParams.audio.deviceId = deviceIds.audio;
     }
     
     if (deviceIds && deviceIds.video) {
-        self.mediaParam.video.deviceId = deviceIds.video;
+        self.mediaParams.video.deviceId = deviceIds.video;
     }
 
     localStream.getTracks().forEach(function(track) {
@@ -282,8 +282,8 @@ WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
     });
 
     navigator.mediaDevices.getUserMedia({
-        audio: self.mediaParam.audio || false,
-        video: self.mediaParam.video || false
+        audio: self.mediaParams.audio || false,
+        video: self.mediaParams.video || false
     }).then(function(stream) {
         self._replaceTracks(stream);
         callback(null, stream);
@@ -295,8 +295,8 @@ WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
 WebRTCSession.prototype._replaceTracks = function(stream) {
     var peers = this.peerConnections,
         localStream = this.localStream,
-        elemId = this.mediaParam.elemId,
-        ops = this.mediaParam.options,
+        elemId = this.mediaParams.elemId,
+        ops = this.mediaParams.options,
         newStreamTracks = stream.getTracks();
     
     newStreamTracks.forEach(function(track) {

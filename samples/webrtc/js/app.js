@@ -83,49 +83,6 @@
 
         var remoteStreamCounter = 0;
 
-        function closeConn(userId) {
-            if(recorder && recorderTimeoutID) {
-                recorder.stop();
-            }
-
-            app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
-            app.currentSession.closeConnection(userId);
-        }
-        
-        function showAllVideoDevices(kind, stream) {
-            QB.webrtc.getMediaDevices(kind).then(function(devices) {
-                if(devices.length > 1) {
-                    var $select = (kind === 'videoinput') ? $(ui.videoSourceFilter) : $(ui.audioSourceFilter),
-                        $label = (kind === 'videoinput') ? $('.j-video_source_label') : $('.j-audio_source_label');
-
-                    for (var i = 0; i !== devices.length; ++i) {
-                        var deviceInfo = devices[i],
-                            option = document.createElement('option');
-
-                        option.value = deviceInfo.deviceId;
-
-                        if (deviceInfo.kind === kind) {
-                            option.text = deviceInfo.label || ((kind === 'videoinput') ? 'Camera ' : 'Mic ') + (i + 1);
-                            $select.append(option);
-                        }
-                    }
-
-                    if (stream) {
-                        var tracks = (kind === 'videoinput') ? stream.getVideoTracks() : stream.getAudioTracks();
-
-                        tracks.forEach(function(track) {
-                            track.stop();
-                        });
-                    }
-
-                    $label.removeClass('invisible')
-                    $select.removeClass('invisible');
-                }
-            }).catch(function(error) {
-                console.warn('getMediaDevices', error);
-            });
-        }
-
         var Router = Backbone.Router.extend({
             'routes': {
                 'join': 'join',
@@ -210,17 +167,7 @@
                     $('.j-record').hide();
                 }
 
-                navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: true
-                }).then(function(stream) {
-                    showAllVideoDevices('videoinput', stream);
-                    showAllVideoDevices('audioinput', stream);
-                }).catch(function(error) {
-                    showAllVideoDevices('videoinput');
-                    showAllVideoDevices('audioinput');
-                    console.warn('Video devices were shown without names (getUserMedia error)', error);
-                });
+                fillMediaSelects();
 
                 app.helpers.setFooterPosition();
             }
@@ -629,34 +576,7 @@
 
         /** CHANGE SOURCE */
         $(document).on('click', '.j-confirm_media', function() {
-            if (!document.getElementById('localVideo').srcObject) {
-                return true;
-            }
-
-            var audioDeviceId = $(ui.audioSourceFilter).val() ? $(ui.audioSourceFilter).val() : undefined,
-                videoDeviceId = $(ui.videoSourceFilter).val() ? $(ui.videoSourceFilter).val() : undefined,
-                deviceIds = {
-                    audio: audioDeviceId,
-                    video: videoDeviceId
-                };
-
-            var callback = function(err, stream) {
-                    if (err || !stream.getAudioTracks().length ||
-                        (isAudio ? false : !stream.getVideoTracks().length)
-                    ) {
-                        app.currentSession.stop({});
-    
-                        app.helpers.stateBoard.update({
-                            'title': 'tpl_device_not_found',
-                            'isError': 'qb-error',
-                            'property': {
-                                'name': app.caller.full_name
-                            }
-                        });
-                    }
-                };
-
-            app.currentSession.switchMediaTracks(deviceIds, callback);
+            switchMediaTracks();
         });
 
         $(document).on('click', '.j-callees__callee__video', function() {
@@ -779,6 +699,8 @@
          * - onStopCallListener
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
+         * 
+         * - onDevicesAmountWereChangedListener
          */
 
         QB.chat.onDisconnectedListener = function() {
@@ -1100,5 +1022,112 @@
                 }
             }
         };
+        
+        QB.webrtc.onDevicesAmountWereChangedListener = function onDevicesAmountWereChangedListeners() {
+            fillMediaSelects().then(switchMediaTracks);
+        };
+
+        // private functions
+        function closeConn(userId) {
+            if(recorder && recorderTimeoutID) {
+                recorder.stop();
+            }
+
+            app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
+            app.currentSession.closeConnection(userId);
+        }
+        
+        function showMediaDevices(kind) {
+            return new Promise(function(resolve, reject) {
+                QB.webrtc.getMediaDevices(kind).then(function(devices) {
+                    var isVideoInput = (kind === 'videoinput'),
+                        $select = isVideoInput ? $(ui.videoSourceFilter) : $(ui.audioSourceFilter);
+
+                    $select.empty();
+
+                    if (devices.length) {
+                        for (var i = 0; i !== devices.length; ++i) {
+                            var deviceInfo = devices[i],
+                                option = document.createElement('option');
+
+                            option.value = deviceInfo.deviceId;
+
+                            if (deviceInfo.kind === kind) {
+                                option.text = deviceInfo.label || (isVideoInput ? 'Camera ' : 'Mic ') + (i + 1);
+                                $select.append(option);
+                            }
+                        }
+
+                        $('.j-media_sources').removeClass('invisible');
+                    } else {
+                        $('.j-media_sources').addClass('invisible');
+                    }
+                
+                    resolve();
+                }).catch(function(error) {
+                    console.warn('getMediaDevices', error);
+
+                    reject();
+                });
+            });
+        }
+
+        function fillMediaSelects() {
+            return new Promise(function(resolve, reject) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                }).then(function(stream) {
+                    showMediaDevices('videoinput').then(function() {
+                        return showMediaDevices('audioinput');
+                    }).then(function() {
+                        stream.getTracks().forEach(function(track) {
+                            track.stop();
+                        });
+                        
+                        resolve();
+                    });
+                }).catch(function(error) {
+                    console.warn('Video devices were shown without names (getUserMedia error)', error);
+                    
+                    showMediaDevices('videoinput').then(function() {
+                        return showMediaDevices('audioinput');
+                    }).then(function() {
+                        resolve();
+                    });
+                });
+            });
+        }
+
+        function switchMediaTracks() {
+            if (!document.getElementById('localVideo').srcObject || !app.currentSession) {
+                return true;
+            }
+
+            var audioDeviceId = $(ui.audioSourceFilter).val() ? $(ui.audioSourceFilter).val() : undefined,
+                videoDeviceId = $(ui.videoSourceFilter).val() ? $(ui.videoSourceFilter).val() : undefined,
+                deviceIds = {
+                    audio: audioDeviceId,
+                    video: videoDeviceId
+                };
+
+            var callback = function(err, stream) {
+                    if (err || !stream.getAudioTracks().length ||
+                        (isAudio ? false : !stream.getVideoTracks().length)
+                    ) {
+                        app.currentSession.stop({});
+    
+                        app.helpers.stateBoard.update({
+                            'title': 'tpl_device_not_found',
+                            'isError': 'qb-error',
+                            'property': {
+                                'name': app.caller.full_name
+                            }
+                        });
+                    }
+                };
+
+            app.currentSession.switchMediaTracks(deviceIds, callback);
+        }
     });
 }(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
