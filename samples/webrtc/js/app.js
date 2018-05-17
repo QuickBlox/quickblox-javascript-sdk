@@ -8,9 +8,6 @@
             'rington': 'ringtoneSignal'
         };
 
-        // TODO: It is need for possibility to switch cameras (while available only in the Firefox)
-        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
         var recorder = null;
         var recorderTimeoutID;
 
@@ -419,11 +416,6 @@
 
                                 $('.j-callees').append(videoElems);
 
-                                if (!isFirefox) {
-                                    $videoSourceFilter.attr('disabled', true);
-                                    $audioSourceFilter.attr('disabled', true);
-                                }
-
                                 $bandwidthSelect.attr('disabled', true);
                                 $btn.addClass('hangup');
                                 app.helpers.setFooterPosition();
@@ -522,11 +514,6 @@
 
                     $('.j-actions').addClass('hangup');
                     $(ui.bandwidthSelect).attr('disabled', true);
-
-                    if (!isFirefox) {
-                        $(ui.videoSourceFilter).attr('disabled', true);
-                        $(ui.audioSourceFilter).attr('disabled', true);
-                    }
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -730,11 +717,6 @@
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
             $(ui.bandwidthSelect).attr('disabled', false);
-
-            if (!isFirefox) {
-                $(ui.videoSourceFilter).attr('disabled', false);
-                $(ui.audioSourceFilter).attr('disabled', false);
-            }
 
             $('.j-callees').empty();
             $('.frames_callee__bitrate').hide();

@@ -298,12 +298,14 @@ WebRTCSession.prototype._replaceTracks = function(stream) {
         elemId = this.mediaParams.elemId,
         ops = this.mediaParams.options,
         newStreamTracks = stream.getTracks();
+
+    this.detachMediaStream(elemId);
     
     newStreamTracks.forEach(function(track) {
         localStream.addTrack(track);
     });
 
-    this.attachMediaStream(elemId, localStream, ops);
+    this.attachMediaStream(elemId, stream, ops);
     
     for (var userId in peers) {
         _replaceTracksForPeer(peers[userId]);
