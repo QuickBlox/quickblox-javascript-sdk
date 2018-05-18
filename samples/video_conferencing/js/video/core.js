@@ -16,7 +16,7 @@ function initialise(){
         iceServers: [{urls: "stun:stun.l.google.com:19302"},
                      {urls: "turn:turn.quickblox.com:3478?transport=udp", username: "quickblox", credential: "baccb97ba2d92d71e26eb9886da5f1e0"},
                      {urls: "turn:turn.quickblox.com:3478?transport=tcp", username: "quickblox", credential: "baccb97ba2d92d71e26eb9886da5f1e0"}],
-        video: {quality: 'lowres', frameRate: 25}
+        video: {quality: VIDEO_RESOLUTION}
     };
     client = new QBVideoConferencingClient(config);
 
@@ -274,6 +274,11 @@ function clickJoinOrLeaveVideoChat(isStopByInitiator, isStopByBadNetwork) {
 
     // Start
     } else {
+        if(!currentDialog){
+          bootbox.alert("Please create a chat dialog first");
+          return;
+        }
+
         $('#call_btn').prop('disabled', "disabled");
 
         // Init Video engine
@@ -302,7 +307,7 @@ function clickJoinOrLeaveVideoChat(isStopByInitiator, isStopByBadNetwork) {
                                 addFeedView(currentUser.id, true);
 
                                 // join video chat
-                                var roomIdToJoin = dialogIdForVideoRecording();
+                                var roomIdToJoin = currentDialog._id;
 
                                 client.join(roomIdToJoin, currentUser.id, isAudioCallOnly, {
                                     success: function() {
@@ -462,6 +467,11 @@ function toggleMute() {
     console.info("Now is muted=" + muted);
 }
 
+function toggleFullscreen(){
+  var mediaScreen = document.getElementById("myvideo");
+  enableFullScreen(mediaScreen);
+}
+
 function toggleRemoteMute(event) {
     var userId = parseInt(event.target.id.replace("mute_", ""));
     var muted = client.toggleRemoteAudioMute(userId);
@@ -469,8 +479,18 @@ function toggleRemoteMute(event) {
     console.info("Now remote is muted=" + muted);
 }
 
+function toggleRemoteFullscreen(event){
+  console.log(event);
+  console.log(event.target.id);
+    var userId = parseInt(event.target.id.replace("fullscreen_", ""));
+    console.log(userId);
+    var mediaScreen = document.getElementById("remotevideo"+userId);
+    console.log(mediaScreen)
+    enableFullScreen(mediaScreen);
+}
+
 function actionsForTheInitiator() {
-    client.listOnlineParticipants(dialogIdForVideoRecording(), {
+    client.listOnlineParticipants(currentDialog._id, {
         success: function(participants){
             console.log("listOnlineParticipants, participants: ", participants);
             if (!participants) {
@@ -592,15 +612,26 @@ function stopAllICEFailedTimers(){
   iceFailedTimers = [];
 }
 
-
-function dialogIdForVideoRecording(){
-  if(currentDialog.name == "RecordingDemoRoom"){
-    roomIdToJoin = "5ab234c01cc0c00e62c96960";
-  }else{
-    roomIdToJoin = currentDialog._id;
+function enableFullScreen(mediaScreen){
+  if (mediaScreen.requestFullscreen) {
+    if (document.fullScreenElement) {
+        document.cancelFullScreen();
+    } else {
+        mediaScreen.requestFullscreen();
+    }
+  } else if (mediaScreen.mozRequestFullScreen) {
+    if (document.mozFullScreenElement) {
+        document.mozCancelFullScreen();
+    } else {
+        mediaScreen.mozRequestFullScreen();
+    }
+  } else if (mediaScreen.webkitRequestFullscreen) {
+    if (document.webkitFullscreenElement) {
+        document.webkitCancelFullScreen();
+    } else {
+        mediaScreen.webkitRequestFullscreen();
+    }
   }
-
-  return roomIdToJoin;
 }
 
 // function ICE_RESTART_LOCAL_TEST(){
