@@ -13,6 +13,7 @@
  * - onStopCallListener(session, userID, extension)
  * - onUpdateCallListener(session, userID, extension)
  * - onInvalidEventsListener (state, session, userID, extension)
+ * - onDevicesChangeListener()
  */
 
 var WebRTCSession = require('./qbWebRTCSession');
@@ -42,6 +43,8 @@ function WebRTCClient(service, connection) {
     this.PeerConnectionState = RTCPeerConnection.State;
 
     this.sessions = {};
+    
+    navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
 }
 
 /**
@@ -291,6 +294,12 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
 
     if (typeof this.onUpdateCallListener === 'function') {
         Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, userInfo);
+    }
+};
+
+WebRTCClient.prototype._onDevicesChangeListener = function() {
+    if (typeof this.onDevicesChangeListener === 'function') {
+        Utils.safeCallbackCall(this.onDevicesChangeListener);
     }
 };
 

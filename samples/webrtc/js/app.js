@@ -8,9 +8,6 @@
             'rington': 'ringtoneSignal'
         };
 
-        // TODO: It is need for possibility to switch cameras (while available only in the Firefox)
-        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
         var recorder = null;
         var recorderTimeoutID;
 
@@ -44,7 +41,8 @@
         var ui = {
             'income_call': '#income_call',
             'filterSelect': '.j-filter',
-            'sourceFilter': '.j-source',
+            'videoSourceFilter': '.j-video_source',
+            'audioSourceFilter': '.j-audio_source',
             'bandwidthSelect': '.j-bandwidth',
             'insertOccupants': function() {
                 var $occupantsCont = $('.j-users');
@@ -81,15 +79,6 @@
         };
 
         var remoteStreamCounter = 0;
-
-        function closeConn(userId) {
-            if(recorder && recorderTimeoutID) {
-                recorder.stop();
-            }
-
-            app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
-            app.currentSession.closeConnection(userId);
-        }
 
         var Router = Backbone.Router.extend({
             'routes': {
@@ -175,27 +164,7 @@
                     $('.j-record').hide();
                 }
 
-                QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
-                    if(devices.length > 1) {
-                        var $select = $(ui.sourceFilter);
-
-                        for (var i = 0; i !== devices.length; ++i) {
-                            var deviceInfo = devices[i],
-                                option = document.createElement('option');
-
-                            option.value = deviceInfo.deviceId;
-
-                            if (deviceInfo.kind === 'videoinput') {
-                                option.text = deviceInfo.label || 'Camera ' + (i + 1);
-                                $select.append(option);
-                            }
-                        }
-
-                        $select.removeClass('invisible');
-                    }
-                }).catch(function(error) {
-                    console.warn('getMediaDevices', error);
-                });
+                fillMediaSelects();
 
                 app.helpers.setFooterPosition();
             }
@@ -329,12 +298,15 @@
         /** Call / End of call */
         $(document).on('click', '.j-actions', function() {
             var $btn = $(this),
-                $videoSourceFilter = $(ui.sourceFilter),
+                $videoSourceFilter = $(ui.videoSourceFilter),
+                $audioSourceFilter = $(ui.audioSourceFilter),
                 $bandwidthSelect = $(ui.bandwidthSelect),
                 bandwidth = $.trim($(ui.bandwidthSelect).val()),
                 videoElems = '',
                 mediaParams = {
-                    'audio': true,
+                    'audio': {
+                        deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
+                    },
                     'video': {
                         deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
@@ -444,10 +416,6 @@
 
                                 $('.j-callees').append(videoElems);
 
-                                if (!isFirefox) {
-                                    $videoSourceFilter.attr('disabled', true);
-                                }
-
                                 $bandwidthSelect.attr('disabled', true);
                                 $btn.addClass('hangup');
                                 app.helpers.setFooterPosition();
@@ -493,7 +461,8 @@
         $(document).on('click', '.j-accept', function() {
             isAudio = app.currentSession.callType === QB.webrtc.CallType.AUDIO;
 
-            var $videoSourceFilter = $(ui.sourceFilter),
+            var $videoSourceFilter = $(ui.videoSourceFilter),
+                $audioSourceFilter = $(ui.audioSourceFilter),
                 mediaParams;
 
             if(isAudio){
@@ -505,7 +474,9 @@
                 document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
             } else {
                 mediaParams = {
-                    audio: true,
+                    audio: {
+                        deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
+                    },
                     video: {
                         deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
                     },
@@ -543,10 +514,6 @@
 
                     $('.j-actions').addClass('hangup');
                     $(ui.bandwidthSelect).attr('disabled', true);
-
-                    if (!isFirefox) {
-                        $(ui.sourceFilter).attr('disabled', true);
-                    }
 
                     /** get all opponents */
                     app.currentSession.opponentsIDs.forEach(function(userID, i, arr) {
@@ -595,29 +562,8 @@
         });
 
         /** CHANGE SOURCE */
-        $(document).on('change', ui.sourceFilter, function() {
-            if (!document.getElementById('localVideo').srcObject) {
-                return true;
-            }
-
-            var deviceId = $(this).val(),
-                callback = function(err, stream) {
-                    if (err || !stream.getAudioTracks().length ||
-                        (isAudio ? false : !stream.getVideoTracks().length)
-                    ) {
-                        app.currentSession.stop({});
-    
-                        app.helpers.stateBoard.update({
-                            'title': 'tpl_device_not_found',
-                            'isError': 'qb-error',
-                            'property': {
-                                'name': app.caller.full_name
-                            }
-                        });
-                    }
-                };
-
-            app.currentSession.switchVideoSource(deviceId, callback);
+        $(document).on('click', '.j-confirm_media', function() {
+            switchMediaTracks();
         });
 
         $(document).on('click', '.j-callees__callee__video', function() {
@@ -740,6 +686,8 @@
          * - onStopCallListener
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
+         * 
+         * - onDevicesChangeListener
          */
 
         QB.chat.onDisconnectedListener = function() {
@@ -769,10 +717,6 @@
             $('.j-actions').removeClass('hangup');
             $('.j-caller__ctrl').removeClass('active');
             $(ui.bandwidthSelect).attr('disabled', false);
-
-            if (!isFirefox) {
-                $(ui.sourceFilter).attr('disabled', false);
-            }
 
             $('.j-callees').empty();
             $('.frames_callee__bitrate').hide();
@@ -1060,5 +1004,112 @@
                 }
             }
         };
+        
+        QB.webrtc.onDevicesChangeListener = function onDevicesChangeListeners() {
+            fillMediaSelects().then(switchMediaTracks);
+        };
+
+        // private functions
+        function closeConn(userId) {
+            if(recorder && recorderTimeoutID) {
+                recorder.stop();
+            }
+
+            app.helpers.notifyIfUserLeaveCall(app.currentSession, userId, 'disconnected', 'Disconnected');
+            app.currentSession.closeConnection(userId);
+        }
+        
+        function showMediaDevices(kind) {
+            return new Promise(function(resolve, reject) {
+                QB.webrtc.getMediaDevices(kind).then(function(devices) {
+                    var isVideoInput = (kind === 'videoinput'),
+                        $select = isVideoInput ? $(ui.videoSourceFilter) : $(ui.audioSourceFilter);
+
+                    $select.empty();
+
+                    if (devices.length) {
+                        for (var i = 0; i !== devices.length; ++i) {
+                            var deviceInfo = devices[i],
+                                option = document.createElement('option');
+
+                            option.value = deviceInfo.deviceId;
+
+                            if (deviceInfo.kind === kind) {
+                                option.text = deviceInfo.label || (isVideoInput ? 'Camera ' : 'Mic ') + (i + 1);
+                                $select.append(option);
+                            }
+                        }
+
+                        $('.j-media_sources').removeClass('invisible');
+                    } else {
+                        $('.j-media_sources').addClass('invisible');
+                    }
+                
+                    resolve();
+                }).catch(function(error) {
+                    console.warn('getMediaDevices', error);
+
+                    reject();
+                });
+            });
+        }
+
+        function fillMediaSelects() {
+            return new Promise(function(resolve, reject) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: true
+                }).then(function(stream) {
+                    showMediaDevices('videoinput').then(function() {
+                        return showMediaDevices('audioinput');
+                    }).then(function() {
+                        stream.getTracks().forEach(function(track) {
+                            track.stop();
+                        });
+                        
+                        resolve();
+                    });
+                }).catch(function(error) {
+                    console.warn('Video devices were shown without names (getUserMedia error)', error);
+                    
+                    showMediaDevices('videoinput').then(function() {
+                        return showMediaDevices('audioinput');
+                    }).then(function() {
+                        resolve();
+                    });
+                });
+            });
+        }
+
+        function switchMediaTracks() {
+            if (!document.getElementById('localVideo').srcObject || !app.currentSession) {
+                return true;
+            }
+
+            var audioDeviceId = $(ui.audioSourceFilter).val() ? $(ui.audioSourceFilter).val() : undefined,
+                videoDeviceId = $(ui.videoSourceFilter).val() ? $(ui.videoSourceFilter).val() : undefined,
+                deviceIds = {
+                    audio: audioDeviceId,
+                    video: videoDeviceId
+                };
+
+            var callback = function(err, stream) {
+                    if (err || !stream.getAudioTracks().length ||
+                        (isAudio ? false : !stream.getVideoTracks().length)
+                    ) {
+                        app.currentSession.stop({});
+    
+                        app.helpers.stateBoard.update({
+                            'title': 'tpl_device_not_found',
+                            'isError': 'qb-error',
+                            'property': {
+                                'name': app.caller.full_name
+                            }
+                        });
+                    }
+                };
+
+            app.currentSession.switchMediaTracks(deviceIds, callback);
+        }
     });
 }(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
