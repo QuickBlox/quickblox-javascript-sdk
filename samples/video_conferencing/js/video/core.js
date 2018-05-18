@@ -274,6 +274,11 @@ function clickJoinOrLeaveVideoChat(isStopByInitiator, isStopByBadNetwork) {
 
     // Start
     } else {
+        if(!currentDialog){
+          bootbox.alert("Please create a chat dialog first");
+          return;
+        }
+
         $('#call_btn').prop('disabled', "disabled");
 
         // Init Video engine

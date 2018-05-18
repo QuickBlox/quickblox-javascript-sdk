@@ -23,8 +23,6 @@ if(!QB_APP){
 }else{
   appCreds = DEMO_APPS[QB_APP];
 }
-console.log(DEMO_APPS);
-console.log(DEMO_APPS[QB_APP]);
 
 var QBCONFIG = {
     endpoints: appCreds.endpoints,
