@@ -687,7 +687,7 @@
          * - onSessionCloseListener
          * - onSessionConnectionStateChangedListener
          * 
-         * - onDevicesAmountWereChangedListener
+         * - onDevicesChangeListener
          */
 
         QB.chat.onDisconnectedListener = function() {
@@ -1005,7 +1005,7 @@
             }
         };
         
-        QB.webrtc.onDevicesAmountWereChangedListener = function onDevicesAmountWereChangedListeners() {
+        QB.webrtc.onDevicesChangeListener = function onDevicesChangeListeners() {
             fillMediaSelects().then(switchMediaTracks);
         };
 
