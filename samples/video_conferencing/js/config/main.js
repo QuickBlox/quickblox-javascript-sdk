@@ -37,3 +37,9 @@ var QBCONFIG = {
 var QBAppCreds = appCreds.credentials;
 
 var DEMO_DIALOG_ID = appCreds.demoChatDialogId;
+
+var VIDEO_RESOLUTION = getQueryVar('videores');
+if(!VIDEO_RESOLUTION){
+  VIDEO_RESOLUTION = "lowres";
+}
+console.info("video resolution: ", VIDEO_RESOLUTION);
