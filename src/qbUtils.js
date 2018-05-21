@@ -6,10 +6,11 @@ var config = require('./qbConfig');
 
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
-var isBrowser = typeof window !== "undefined",
-    isNativeScript = typeof global === 'object' && (global.android || global.NSObject);
+var isNativeScript = typeof global === 'object' && (global.hasOwnProperty('android') || global.hasOwnProperty('NSObject')),
+    isNode = typeof window === 'undefined' && typeof exports === 'object' && !isNativeScript,
+    isBrowser = typeof window !== 'undefined';
 
-if (!isBrowser && !isNativeScript) {
+if (isNode) {
     var fs = require('fs');
     var os = require('os');
 }
@@ -28,10 +29,6 @@ var Utils = {
      * @return {object} return names of env. (node/browser)
      */
     getEnv: function() {
-        var isNativeScript = typeof global === 'object' && (global.hasOwnProperty('android') || global.hasOwnProperty('NSObject')),
-            isNode = typeof window === 'undefined' && typeof exports === 'object' && !isNativeScript,
-            isBrowser = typeof window !== 'undefined';
-
         return {
             'nativescript': isNativeScript,
             'browser': isBrowser,
