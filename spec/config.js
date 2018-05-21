@@ -10,7 +10,7 @@
     };
 
     var QBUser1 = {
-        'id': 45267491,
+        'id': 50402830,
         'login': "js_specsymbols",
         'password': "[yo^kj?]i246#(!*&d7sm/zb@xwagrv5",
         'email': "js_specsymbols@quickblox.com"
