@@ -28,7 +28,7 @@ var Utils = {
      * @return {object} return names of env. (node/browser)
      */
     getEnv: function() {
-        var isNativeScript = typeof global === 'object' && (global.android || global.NSObject),
+        var isNativeScript = typeof global === 'object' && (global.hasOwnProperty('android') || global.hasOwnProperty('NSObject')),
             isNode = typeof window === 'undefined' && typeof exports === 'object' && !isNativeScript,
             isBrowser = typeof window !== 'undefined';
 
@@ -74,10 +74,10 @@ var Utils = {
 
         if (self.getEnv().browser) {
             platformInfo = self._getOSInfoFromBrowser();
-        } else if (self.getEnv().nativescript) {
-            platformInfo = self._getOSInfoFromNativeScript();
         } else if (self.getEnv().node)  {
             platformInfo = self._getOSInfoFromNodeJS();
+        } else if (self.getEnv().nativescript) {
+            return self._getOSInfoFromNativeScript();
         }
 
         OS_LIST.forEach(function(osInfo) {
@@ -86,8 +86,6 @@ var Utils = {
 
                 if (index !== -1) {
                     osName = osInfo.osName;
-                } else if (typeof platformInfo === 'string') {
-                    osName = platformInfo;
                 }
             });
         });
