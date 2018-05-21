@@ -48,7 +48,7 @@ var Utils = {
     },
 
     _getOSInfoFromNativeScript: function() {
-        return (global && global.android ? 'Android' : 'iOS') + ' - NativeScript';
+        return (global && global.hasOwnProperty('android') ? 'Android' : 'iOS') + ' - NativeScript';
     },
 
     getOS: function() {
