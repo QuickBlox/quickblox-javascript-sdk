@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.11.0',
-  buildNumber: '1078',
+  version: '2.12.0',
+  buildNumber: '1081',
   creds: {
     appId: '',
     authKey: '',
@@ -33,6 +33,7 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
+  chatReconnectionTimeInterval: 5,
   webrtc: {
     answerTimeInterval: 60,
     dialingTimeInterval: 5,

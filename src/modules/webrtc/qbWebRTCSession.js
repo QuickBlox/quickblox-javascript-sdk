@@ -38,23 +38,25 @@ WebRTCSession.State = {
  * @param {array} An array with opponents
  * @param {enum} Type of a call
  */
-function WebRTCSession(sessionID, initiatorID, opIDs, callType, signalingProvider, currentUserID, bandwidth) {
-    this.ID = sessionID ? sessionID : generateUUID();
+function WebRTCSession(params) {
+    this.ID = params.sessionID ? params.sessionID : generateUUID();
     this.state = WebRTCSession.State.NEW;
 
-    this.initiatorID = parseInt(initiatorID);
-    this.opponentsIDs = opIDs;
-    this.callType = parseInt(callType);
+    this.initiatorID = parseInt(params.initiatorID);
+    this.opponentsIDs = params.opIDs;
+    this.callType = parseInt(params.callType);
 
     this.peerConnections = {};
 
     this.localStream = null;
 
-    this.signalingProvider = signalingProvider;
+    this.mediaParams = null;
 
-    this.currentUserID = currentUserID;
+    this.signalingProvider = params.signalingProvider;
 
-    this.bandwidth = bandwidth;
+    this.currentUserID = params.currentUserID;
+
+    this.bandwidth = params.bandwidth;
 
     /**
      * We use this timeout to fix next issue:
@@ -98,9 +100,9 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     navigator.mediaDevices.getUserMedia({
         audio: params.audio || false,
         video: params.video || false
-
     }).then(function(stream) {
         self.localStream = stream;
+        self.mediaParams = params;
 
         if (params.elemId) {
             self.attachMediaStream(params.elemId, stream, params.options);
@@ -110,6 +112,20 @@ WebRTCSession.prototype.getUserMedia = function(params, callback) {
     }).catch(function(err) {
         callback(err, null);
     });
+};
+
+/**
+ * Get the state of connection
+ * @param {number} The User Id
+ */
+WebRTCSession.prototype.connectionStateForUser = function(userID) {
+    var peerConnection = this.peerConnections[userID];
+
+    if (peerConnection) {
+        return peerConnection.state;
+    }
+
+    return null;
 };
 
 /**
@@ -146,20 +162,6 @@ WebRTCSession.prototype.attachMediaStream = function(id, stream, options) {
 };
 
 /**
- * Get the state of connection
- * @param {number} The User Id
- */
-WebRTCSession.prototype.connectionStateForUser = function(userID) {
-    var peerConnection = this.peerConnections[userID];
-
-    if (peerConnection) {
-        return peerConnection.state;
-    }
-
-    return null;
-};
-
-/**
  * Detach media stream from audio/video element
  * @param {string} The Id of an element to detach a stream
  */
@@ -178,32 +180,166 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
 };
 
 /**
+ * Switch media tracks in audio/video HTML's element and replace its in peers.
+ * @param {object} deviceIds - the object with deviceIds of plugged devices
+ * @param {string} [deviceIds.audio] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput')
+ * @param {string} [deviceIds.video] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput')
+ * @param {switchMediaTracksCallback} callback - the callback to get a result of the function
+ * 
+ * @example
+ * var switchMediaTracksBtn = document.getElementById('confirmSwitchMediaTracks');
+ * 
+ * var webRTCSession = QB.webrtc.createNewSession(params);
+ * 
+ * QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
+ *     var selectVideoInput = document.createElement('select'),
+ *         selectVideoInput.id = 'videoInput',
+ *         someDocumentElement.appendChild(selectVideoInput);
+ * 
+ *     if (devices.length > 1) {
+ *         for (var i = 0; i !== devices.length; ++i) {
+ *             var device = devices[i],
+ *                 option = document.createElement('option');
+ * 
+ *             if (device.kind === 'videoinput') {
+ *                 option.value = device.deviceId;
+ *                 option.text = device.label;
+ *                 selectVideoInput.appendChild(option);
+ *             }
+ *         }
+ *     }
+ * }).catch(function(error) {
+ *     console.error(error);
+ * });
+ * 
+ * QB.webrtc.getMediaDevices('audioinput').then(function(devices) {
+ *     var selectAudioInput = document.createElement('select'),
+ *         selectAudioInput.id = 'audioInput',
+ *         someDocumentElement.appendChild(selectAudioInput);
+ * 
+ *     if (devices.length > 1) {
+ *         for (var i = 0; i !== devices.length; ++i) {
+ *             var device = devices[i],
+ *                 option = document.createElement('option');
+ * 
+ *             if (device.kind === 'audioinput') {
+ *                 option.value = device.deviceId;
+ *                 option.text = device.label;
+ *                 selectAudioInput.appendChild(option);
+ *             }
+ *         }
+ *     }
+ * }).catch(function(error) {
+ *     console.error(error);
+ * });
+ * 
+ * switchMediaTracksBtn.onclick = function(event) {
+ *     var audioDeviceId = document.getElementById('audioInput').value || undefined,
+ *         videoDeviceId = document.getElementById('videoInput').value || undefined,
+ *         deviceIds = {
+ *             audio: audioDeviceId,
+ *             video: videoDeviceId,
+ *         };
+ * 
+ *     var callback = function(error, stream) {
+ *             if (err) {
+ *                 console.error(error);
+ *             } else {
+ *                 console.log(stream);
+ *             }
+ *          };
+ * 
+ *     // Switch media tracks in audio/video HTML's element (the local stream)
+ *     // replace media tracks in peers (will change media tracks for each user in WebRTC session)
+ *     webRTCSession.switchMediaTracks(deviceIds, callback);
+ * }
+ */
+WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
+    /**
+     * Callback for webRTCSession.switchMediaTracks(deviceIds, callback)
+     * @callback switchMediaTracksCallback
+     * @param {object} error - The error object
+     * @param {object} stream - The stream from new media device
+     */
+
+    if(!navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia() is not supported in your browser');
+    }
+
+    var self = this,
+        localStream = this.localStream;
+
+    if (deviceIds && deviceIds.audio) {
+        self.mediaParams.audio.deviceId = deviceIds.audio;
+    }
+    
+    if (deviceIds && deviceIds.video) {
+        self.mediaParams.video.deviceId = deviceIds.video;
+    }
+
+    localStream.getTracks().forEach(function(track) {
+        track.stop();
+    });
+
+    navigator.mediaDevices.getUserMedia({
+        audio: self.mediaParams.audio || false,
+        video: self.mediaParams.video || false
+    }).then(function(stream) {
+        self._replaceTracks(stream);
+        callback(null, stream);
+    }).catch(function(error) {
+        callback(error, null);
+    });
+};
+
+WebRTCSession.prototype._replaceTracks = function(stream) {
+    var peers = this.peerConnections,
+        localStream = this.localStream,
+        elemId = this.mediaParams.elemId,
+        ops = this.mediaParams.options,
+        newStreamTracks = stream.getTracks();
+
+    this.detachMediaStream(elemId);
+    
+    newStreamTracks.forEach(function(track) {
+        localStream.addTrack(track);
+    });
+
+    this.attachMediaStream(elemId, stream, ops);
+    
+    for (var userId in peers) {
+        _replaceTracksForPeer(peers[userId]);
+    }
+
+    function _replaceTracksForPeer(peer) {
+        peer.getSenders().map(function(sender) {
+            sender.replaceTrack(newStreamTracks.find(function(track) {
+                return track.kind === sender.track.kind;
+            }));
+        });
+    }
+};
+
+/**
  * [Initiate a call]
  * @param  {object}   extension [custom parametrs]
  * @param  {Function} callback
  */
 WebRTCSession.prototype.call = function(extension, callback) {
     var self = this,
-        ext = _prepareExtension(extension),
-        isOnlineline = window.navigator.onLine,
-        error = null;
+        ext = _prepareExtension(extension);
 
     Helpers.trace('Call, extension: ' + JSON.stringify(ext.userInfo));
 
-    if (isOnlineline) {
-        self.state = WebRTCSession.State.ACTIVE;
+    self.state = WebRTCSession.State.ACTIVE;
 
-        // create a peer connection for each opponent
-        self.opponentsIDs.forEach(function(userID, i, arr) {
-            self._callInternal(userID, ext, true);
-        });
-    } else {
-        self.state = WebRTCSession.State.CLOSED;
-        error = Utils.getError(408, 'Call.ERROR - ERR_INTERNET_DISCONNECTED');
-    }
+    // create a peer connection for each opponent
+    self.opponentsIDs.forEach(function(userID, i, arr) {
+        self._callInternal(userID, ext, true);
+    });
 
     if (typeof callback === 'function') {
-        callback(error);
+        callback(null);
     }
 };
 

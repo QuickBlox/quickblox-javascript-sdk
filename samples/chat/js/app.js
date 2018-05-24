@@ -60,10 +60,8 @@ App.prototype.renderDashboard = function (activeTabName) {
         QB.users.delete(app.user.id, function(err, user){
             if (err) {
                 console.error('Can\'t delete user by id: '+app.user.id+' ', err);
-                
-                return false;
             }
-            
+
             loginModule.isLogin = false;
             app.isDashboardLoaded = false;
 
@@ -71,6 +69,7 @@ App.prototype.renderDashboard = function (activeTabName) {
             helpers.clearCache();
 
             QB.chat.disconnect();
+            QB.destroySession();
             
             router.navigate('#!/login');
         });

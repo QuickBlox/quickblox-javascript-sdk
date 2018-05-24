@@ -851,24 +851,7 @@
         
 
     
-    <pre class="prettyprint"><code>var data = {
-    'name': 'John',
-    'age':'20',
-    'family': [
-        'Stark',
-        'Targaryen'
-    ]
-};
-
-function createdDataCallback(error, response) {
-    if (error) {
-        console.log(error);
-    } else {
-        console.log(response);
-    }
-}
-
-QB.data.create('GameOfThrones', data, createdDataCallback);</code></pre>
+    <pre class="prettyprint"><code>var data = {    'name': 'John',    'age':'20',    'family': [        'Stark',        'Targaryen'    ]};function createdDataCallback(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }}QB.data.create('GameOfThrones', data, createdDataCallback);</code></pre>
     
 
     
@@ -896,8 +879,7 @@ QB.data.create('GameOfThrones', data, createdDataCallback);</code></pre>
     
     
     <div class="description">
-        Delete record / records by ID, IDs or criteria (filters) of particular class. <br />
-Check out <a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object">official documentaion</a> to get detailed information.
+        Delete record / records by ID, IDs or criteria (filters) of particular class. <br />Check out <a target="_blank" href="https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object">official documentaion</a> to get detailed information.
     </div>
     
 
@@ -1045,34 +1027,7 @@ Check out <a target="_blank" href="https://docsdev.quickblox.com/rest_api/Custom
         
 
     
-    <pre class="prettyprint"><code>var className = 'Movie';
-
-function deletedMovie(error, responce) {
-  if(error) {
-    throw new Error(error.toString());
-  } else {
-    console.log(`Deleted movies with ids: ${responce.deleted.toString()}`);
-  }
-}
-
-// By ID, must be string
-var id = '502f7c4036c9ae2163000002';
-QB.data.delete(className, id, deletedMovie);
-
-// By IDs, must be array
-var ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];
-QB.data.delete(className, ids, deletedMovie);
-
-var criteria = { 'price': { 'gt': 100 };
-function deletedMoviesByCriteria(error, responce) {
-  if(error) {
-     throw new Error(error.toString());
-  } else {
-     // Note! Deleted by creteria doesn't return ids of deleted objects
-     console.log(`Deleted ${responce.deletedCount} movies`);
-  }
-}
-QB.data.delete(className, criteria, deletedMoviesByCriteria);</code></pre>
+    <pre class="prettyprint"><code>var className = 'Movie';function deletedMovie(error, responce) {  if(error) {    throw new Error(error.toString());  } else {    console.log(`Deleted movies with ids: ${responce.deleted.toString()}`);  }}// By ID, must be stringvar id = '502f7c4036c9ae2163000002';QB.data.delete(className, id, deletedMovie);// By IDs, must be arrayvar ids = ['502f7c4036c9ae2163000002', '502f7c4036c9ae2163000003'];QB.data.delete(className, ids, deletedMovie);var criteria = { 'price': { 'gt': 100 };function deletedMoviesByCriteria(error, responce) {  if(error) {     throw new Error(error.toString());  } else {     // Note! Deleted by creteria doesn't return ids of deleted objects     console.log(`Deleted ${responce.deletedCount} movies`);  }}QB.data.delete(className, criteria, deletedMoviesByCriteria);</code></pre>
     
 
     
@@ -2042,25 +1997,7 @@ QB.data.delete(className, criteria, deletedMoviesByCriteria);</code></pre>
         
 
     
-    <pre class="prettyprint"><code>var filter = {
-    'skip': 0,
-    'limit': 100,
-    'sort_desc': 'updated_at',
-    'family': {
-        'in': 'Stark,Targaryen'
-    }
-};
-
-var ids = ['53aaa06f535c12cea9007496', '53aaa06f535c12cea9007495'];
-
-// use filter or ids to get records:
-QB.data.list('GameOfThrones', filter, function(error, response) {
-    if (error) {
-        console.log(error);
-    } else {
-        console.log(response);
-    }
-});</code></pre>
+    <pre class="prettyprint"><code>var filter = {    'skip': 0,    'limit': 100,    'sort_desc': 'updated_at',    'family': {        'in': 'Stark,Targaryen'    }};var ids = ['53aaa06f535c12cea9007496', '53aaa06f535c12cea9007495'];// use filter or ids to get records:QB.data.list('GameOfThrones', filter, function(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }});</code></pre>
     
 
     
@@ -2275,18 +2212,7 @@ QB.data.list('GameOfThrones', filter, function(error, response) {
         
 
     
-    <pre class="prettyprint"><code>QB.data.update('GameOfThrones', {
-    '_id': '53aaa06f535c12cea9007496',
-    'pull': {
-        'family':'Stark'
-    }
-}, function(error, response) {
-    if (error) {
-        console.log(error);
-    } else {
-        console.log(response);
-    }
-});</code></pre>
+    <pre class="prettyprint"><code>QB.data.update('GameOfThrones', {    '_id': '53aaa06f535c12cea9007496',    'pull': {        'family':'Stark'    }}, function(error, response) {    if (error) {        console.log(error);    } else {        console.log(response);    }});</code></pre>
     
 
     
@@ -2585,7 +2511,7 @@ QB.data.list('GameOfThrones', filter, function(error, response) {
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Apr 12 2018 14:47:37 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 24 2018 15:18:04 GMT+0300 (FLE Daylight Time)
         </footer>
     </div>
 </div>

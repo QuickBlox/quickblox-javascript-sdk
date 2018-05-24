@@ -13,6 +13,7 @@
  * - onStopCallListener(session, userID, extension)
  * - onUpdateCallListener(session, userID, extension)
  * - onInvalidEventsListener (state, session, userID, extension)
+ * - onDevicesChangeListener()
  */
 
 var WebRTCSession = require('./qbWebRTCSession');
@@ -42,12 +43,19 @@ function WebRTCClient(service, connection) {
     this.PeerConnectionState = RTCPeerConnection.State;
 
     this.sessions = {};
+
+    // Enable the listener (disabled in some browsers)
+    if(navigator.mediaDevices.ondevicechange && navigator.mediaDevices.ondevicechange.enabled) {
+        navigator.mediaDevices.ondevicechange.enabled = true;
+    }
+
+    navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
 }
 
 /**
  * [Return data or all active devices]
  * @param  {String} spec [specify what type of devices you wnat to get.
- *                         Possible values: audioinput, audiooutput,  videoinput]
+ *                         Possible values: audioinput, audiooutput, videoinput]
  * @returns {Array}       [array of devices]
  */
 WebRTCClient.prototype.getMediaDevices = function(spec) {
@@ -111,7 +119,15 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) 
 };
 
 WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, opponentsIDs, callType, bandwidth) {
-    var newSession = new WebRTCSession(sessionID, callerID, opponentsIDs, callType, this.signalingProvider, Helpers.getIdFromNode(this.connection.jid), bandwidth);
+    var newSession = new WebRTCSession({
+        sessionID: sessionID,
+        initiatorID: callerID,
+        opIDs: opponentsIDs,
+        callType: callType,
+        signalingProvider: this.signalingProvider,
+        currentUserID: Helpers.getIdFromNode(this.connection.jid),
+        bandwidth: bandwidth
+    });
 
     /** set callbacks */
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
@@ -283,6 +299,12 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
 
     if (typeof this.onUpdateCallListener === 'function') {
         Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, userInfo);
+    }
+};
+
+WebRTCClient.prototype._onDevicesChangeListener = function() {
+    if (typeof this.onDevicesChangeListener === 'function') {
+        Utils.safeCallbackCall(this.onDevicesChangeListener);
     }
 };
 
