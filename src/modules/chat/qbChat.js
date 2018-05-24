@@ -724,6 +724,9 @@ ChatProxy.prototype = {
                     case Strophe.Status.AUTHFAIL:
                         self.isConnected = false;
                         self._isConnecting = false;
+
+                        clearInterval(this._checkConnectionTimer);
+                        this._checkConnectionTimer = undefined;
                         
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed', 'QBChat');
                         
@@ -837,16 +840,22 @@ ChatProxy.prototype = {
                 self._establishConnection(params);
             });
             
-            self.Client.on('error', function() {
-                Utils.QBLog('[QBChat]', 'Status.ERROR - ' + chatUtils.getLocalTime());
-                err = Utils.getError(422, 'Status.ERROR - An error has occurred', 'QBChat');
+            self.Client.on('error', function(error) {
+                self.isConnected = false;
+                self._isConnecting = false;
+                
+                if (error === 'XMPP authentication failure') {
+                    clearInterval(self._checkConnectionTimer);
+                    self._checkConnectionTimer = undefined;
+
+                    err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed', 'QBChat');
+                } else {
+                    err = Utils.getError(422, 'Status.ERROR - An error has occurred', 'QBChat');
+                }
     
                 if (isInitialConnect) {
                     callback(err, null);
                 }
-
-                self.isConnected = false;
-                self._isConnecting = false;
             });
 
             self.Client.on('end', function() {
