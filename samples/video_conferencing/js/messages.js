@@ -1,4 +1,4 @@
-var currentDialog = {};
+var currentDialog;
 var opponentId;
 
 var dialogsMessages = [];
