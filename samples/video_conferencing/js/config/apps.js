@@ -5,9 +5,9 @@ var DEMO_APPS = {
       chat: "chat.quickblox.com"
     },
     credentials: {
-      'appId': 56252,
-      'authKey': 'yPJfas45qY3jbgq',
-      'authSecret': 'qTFM-eN4vN8rmAw'
+      'appId': 72448,
+      'authKey': 'f4HYBYdeqTZ7KNb',
+      'authSecret': 'ZC7dK39bOjVc-Z8'
     },
     demoChatDialogId: ""
   },

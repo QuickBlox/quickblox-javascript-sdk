@@ -4,22 +4,22 @@
     'use strict';
 
     var CREDS =  {
-        'appId': 29650,
-        'authKey': 'WULOyezrmxpOgQ-',
-        'authSecret': 'TqQmBFbANJ6cfu4'
+        'appId': 72448,
+        'authKey': 'f4HYBYdeqTZ7KNb',
+        'authSecret': 'ZC7dK39bOjVc-Z8'
     };
 
     var QBUser1 = {
-        'id': 50402830,
-        'login': "js_specsymbols",
-        'password': "[yo^kj?]i246#(!*&d7sm/zb@xwagrv5",
-        'email': "js_specsymbols@quickblox.com"
+        'id': 55754625,
+        'login': "webrtctest1",
+        'password': "x6Bt0VDy5",
+        'email': "webrtctest1@test.com"
     };
     var QBUser2 = {
-        'id': 26904575,
-        'login': "js_jasmine22",
-        'password': "js_jasmine22",
-        'email': "js_jasmine22@quickblox.com"
+        'id': 55754637,
+        'login': "webrtctest2",
+        'password': "x6Bt0VDy5",
+        'email': "webrtctest2@test.com"
     };
 
     var CONFIG = {
