@@ -15,9 +15,9 @@ var config = {
   version: '2.12.0',
   buildNumber: '1081',
   creds: {
-    appId: '',
-    authKey: '',
-    authSecret: ''
+    appId: 72448,
+    authKey: 'f4HYBYdeqTZ7KNb',
+    authSecret: 'ZC7dK39bOjVc-Z8'
   },
   endpoints: {
     api: 'api.quickblox.com',

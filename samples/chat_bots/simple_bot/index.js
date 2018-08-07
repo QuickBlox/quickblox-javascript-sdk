@@ -13,9 +13,9 @@ const QB = require('../../../src/qbMain.js');
 // new user for you chat bot. Then put here user's ID, password and full name.
 //
 const CONFIG = {
-    "appId": "13318",
-    "authKey": "WzrAY7vrGmbgFfP",
-    "authSecret": "xS2uerEveGHmEun",
+    "appId": "72448",
+    "authKey": "f4HYBYdeqTZ7KNb",
+    "authSecret": "ZC7dK39bOjVc-Z8",
     "botUser": {
         "id": "2740296",
         "password": "mehdoh00",
