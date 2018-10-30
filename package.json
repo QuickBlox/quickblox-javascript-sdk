@@ -52,7 +52,7 @@
     "ghooks": "^1.3.2",
     "gulp": "^4.0.0",
     "gulp-notify": "^2.2.0",
-    "gulp-uglify": "^3.0.0",
+    "gulp-uglify-es": "^1.0.4",
     "jaguarjs-jsdoc": "^1.0.1",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.6.0",

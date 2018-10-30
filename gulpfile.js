@@ -6,7 +6,7 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 
 var notify = require('gulp-notify');
-var uglify = require('gulp-uglify');
+var uglify = require('gulp-uglify-es').default;
 
 gulp.task('build', function() {
     var isDevelopment = process.env.NODE_ENV === 'develop',
