@@ -83,19 +83,19 @@ describe('Custom Objects API', function() {
     });
 
     describe('Delete custom object', function() {
-        const className = 'cars';
+        var className = 'cars';
 
         function createCustomObject(className, params) {
-            const defaultCarParams = {
+            var defaultCarParams = {
                 make: 'BMW',
                 model: 'M5',
                 value: 100,
                 damaged: true
             };
 
-            const carParams = Object.assign(defaultCarParams, params);
+            var carParams = Object.assign(defaultCarParams, params);
 
-            return new Promise((resolve, reject) => {
+            return new Promise(function(resolve, reject) {
                 QB.data.create(className, carParams, function(error, result) {
                     if (error) {
                         reject(error);
@@ -107,7 +107,7 @@ describe('Custom Objects API', function() {
         }
 
         it('by ID', function(done) {
-            createCustomObject(className, {}).then((car) => {
+            createCustomObject(className, {}).then(function(car) {
                 QB.data.delete(className, car._id, function(error, responce) {
                     if (error) {
                         done.fail("Create delete object error: " + JSON.stringify(error));
@@ -122,14 +122,16 @@ describe('Custom Objects API', function() {
         }, REST_REQUESTS_TIMEOUT);
 
         it('by IDs', function(done) {
-            const promiseCreateCar1 = createCustomObject(className, {});
-            const promiseCreateCar2 = createCustomObject(className, {});
-            const promiseCreateCar3 = createCustomObject(className, {});
+            var promiseCreateCar1 = createCustomObject(className, {});
+            var promiseCreateCar2 = createCustomObject(className, {});
+            var promiseCreateCar3 = createCustomObject(className, {});
 
-            const promisesArray = [promiseCreateCar1, promiseCreateCar2, promiseCreateCar3];
+            var promisesArray = [promiseCreateCar1, promiseCreateCar2, promiseCreateCar3];
 
             Promise.all(promisesArray).then(function(cars) {
-                const ids = cars.map(car => car._id);
+                var ids = cars.map(function(car) {
+                  return car._id;
+                });
 
                 QB.data.delete(className, ids, function(error, res) {
                     if (error) {
@@ -147,15 +149,15 @@ describe('Custom Objects API', function() {
         }, REST_REQUESTS_TIMEOUT * 3);
 
         it('by criteria', function(done) {
-            const criteria = {
+            var criteria = {
                 'value': {
                     'gt': 100
                 }
             };
 
-            const promiseCreateCar1 = createCustomObject(className, {value: 150});
-            const promiseCreateCar2 = createCustomObject(className, {value: 150});
-            const promiseCreateCar3 = createCustomObject(className, {value: 150});
+            var promiseCreateCar1 = createCustomObject(className, {value: 150});
+            var promiseCreateCar2 = createCustomObject(className, {value: 150});
+            var promiseCreateCar3 = createCustomObject(className, {value: 150});
 
             Promise.all([promiseCreateCar1, promiseCreateCar2, promiseCreateCar3])
                 .then(function(cars) {

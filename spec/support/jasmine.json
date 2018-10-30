@@ -1,7 +1,6 @@
 {
   "spec_dir": "spec",
   "spec_files": [
-    "QB-ChatSpec.js",
     "QB-HelpersSpec.js",
     "QB-CoreSpec.js",
     "QB-DataSpec.js",

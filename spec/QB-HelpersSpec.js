@@ -18,7 +18,7 @@ describe('Helpers', function() {
   });
 
   it('can get OS information', function(){
-    const env = QB._getOS();
+    var env = QB._getOS();
 
     expect(env).toEqual(jasmine.any(String));
   });
