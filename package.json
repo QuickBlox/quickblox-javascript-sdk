@@ -87,7 +87,6 @@
     "buildNotMinified": "npm run lint && gulp build",
     "generateBuildVersion": "gulp generate-build_version",
     "docs": "rimraf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
-    "start": "gulp connect",
     "test": "jasmine"
   }
 }
