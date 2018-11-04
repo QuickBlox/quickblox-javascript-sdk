@@ -4,6 +4,7 @@ var gulp = require('gulp');
 
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var rename = require('gulp-rename');
 
 var notify = require('gulp-notify');
 var uglify = require('gulp-uglify-es').default;
@@ -23,15 +24,16 @@ gulp.task('build', function() {
             notify('Failed when create a bundle.');
             this.emit('end');
         })
-        .pipe(source('quickblox.min.js'))
+        .pipe(source('quickblox.js'))
         .pipe(gulp.dest('./'))
         .pipe(notify('Build task is finished.'));
 });
 
 gulp.task('minify', function() {
-    return gulp.src(['./quickblox.min.js'])
+    return gulp.src(['./quickblox.js'])
         .pipe(uglify())
         .on('error', function (err) { console.log('ERROR', err) })
+        .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest('./'));
 });
 
