@@ -228,7 +228,7 @@
                 </div>
 
                 <div class="qb-video">
-                    <video id="main_video" class="frames__main_v qb-video_source"></video>
+                    <video id="main_video" class="frames__main_v qb-video_source" autoplay playsinline></video>
                 </div>
             </div>
 
@@ -248,7 +248,7 @@
 
             <div class="caller__frames">
                 <div class="qb-video">
-                    <video id="localVideo" class="qb-video_source"></video>
+                    <video id="localVideo" class="qb-video_source" autoplay playsinline></video>
                 </div>
 
                 <div class="caller__frames_acts">
@@ -367,7 +367,7 @@
                 <div class="qb-video">
                     <video class="j-callees__callee__video qb-video_source"
                         id="remote_video_<%=userID%>"
-                        data-user="<%=userID%>">
+                        data-user="<%=userID%>" autoplay playsinline>
                     </video>
                 </div>
             </div>
@@ -392,7 +392,6 @@
 
     <!-- QB -->
     <script src="../../quickblox.min.js"></script>
-
     <!-- app -->
     <script src="config.js"></script>
     <script src="js/helpers.js"></script>

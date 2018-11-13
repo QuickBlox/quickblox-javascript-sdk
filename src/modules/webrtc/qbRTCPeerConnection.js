@@ -90,17 +90,17 @@ RTCPeerConnection.prototype.getRemoteSDP = function(){
 };
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
-    var self = this,
-        desc = new RTCSessionDescription({sdp: remoteSessionDescription, type: type}),
-        ffVersion = Helpers.getVersionFirefox();
-        
+    var self = this;
+    var ffVersion = Helpers.getVersionFirefox();
+
+    var modifiedSDP;
     if (ffVersion !== null && (ffVersion === 56 || ffVersion === 57) && !self.delegate.bandwidth) {
-        desc.sdp = _modifySDPforFixIssueFFAndFreezes(desc.sdp);
+        modifiedSDP = _modifySDPforFixIssueFFAndFreezes(remoteSessionDescription);
     } else {
-        desc.sdp = setMediaBitrate(desc.sdp, 'video', self.delegate.bandwidth);
+        modifiedSDP = setMediaBitrate(remoteSessionDescription, 'video', self.delegate.bandwidth);
     }
-        
-    function successCallback(desc) {
+    var sessionDescription = new RTCSessionDescription({sdp: modifiedSDP, type: type});
+    function successCallback(sessionDescription) {
         callback(null);
     }
 
@@ -108,7 +108,7 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
         callback(error);
     }
 
-    self.setRemoteDescription(desc).then(successCallback, errorCallback);
+    self.setRemoteDescription(sessionDescription).then(successCallback, errorCallback);
 };
 
 RTCPeerConnection.prototype.addLocalStream = function(localStream){
@@ -556,7 +556,8 @@ function _modifySDPforFixIssueFFAndFreezes(sdp) {
 
 function setMediaBitrate(sdp, media, bitrate) {
     if (!bitrate) {
-        return sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
+        var modifiedSDP = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
+        return modifiedSDP;
     }
 
     var lines = sdp.split('\n'),
