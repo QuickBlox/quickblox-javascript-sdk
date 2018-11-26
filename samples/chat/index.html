@@ -82,18 +82,19 @@
                     <div class="sidebar__content">
                         <ul class="sidebar__tabs">
                             <li class="sidebar__tab">
-                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link <% tabName === "chat" ? print('active') : '' %>" data-type="chat">chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="chat">chats</a>
                             </li>
                             <li class="sidebar__tab">
-                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link <% tabName === "public" ? print('active') : '' %>" data-type="public">public chats</a>
+                                <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public">public chats</a>
                             </li>
                             <li class="sidebar__tab m-sidebar__tab_new">
-                                <a href="#!/dialog/create" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
+                                <a href="#" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
                                     <i class="material-icons">add_circle_outline</i>
                                 </a>
                             </li>
                         </ul>
                         <ul class="sidebar__dilog_list j-sidebar__dilog_list">
+
                         </ul>
                     </div>
                 </div>
@@ -117,7 +118,7 @@
 
     <script type="text/template" id="tpl_userConversations">
         <li class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
-            <a class="dialog__item_link" href="#!/dialog/<%= dialog._id %>">
+            <a class="dialog__item_link" href="#">
                 <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
                     <% if(dialog.type === 2) { %>
                         <i class="material-icons">supervisor_account</i>
@@ -197,15 +198,14 @@
     </script>
 
     <script type="text/template" id="tpl_editChatUser">
-        <div class="user__item <% selected ? print('disabled selected') : ''%>" id="<%= id %>">
+        <div class="user__item <% selected ? print('disabled selected') : ''%>" >
             <span class="user__avatar m-user__img_<%= color %>">
                 <i class="material-icons m-user_icon">account_circle</i>
             </span>
             <div class="user__details">
                 <p class="user__name"><%= name %></p>
-                <% if (last_request_at) { %>
                 <p class="user__last_seen"><%= last_request_at %></p>
-                <% } %>
+
             </div>
         </div>
     </script>
@@ -242,7 +242,7 @@
     </script>
 
     <script type="text/template" id="tpl_notificationMessage">
-        <div class="message__wrap" id="<%= id %>">
+        <div class="message__wrap" >
             <p class="m-notification_message"><%= text %></p>
         </div>
     </script>

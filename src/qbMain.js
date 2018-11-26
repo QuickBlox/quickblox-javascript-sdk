@@ -148,7 +148,7 @@ QuickBlox.prototype = {
     login: function(params, callback) {
         /**
          * This callback return error or user Object.
-         * @callback loginCallback
+         * @callback login
          * @param {Object | Null} error - The error object if got en error and null if success.
          * @param {Null | Object} result - User data object if everything goes well and null on error.
          * */

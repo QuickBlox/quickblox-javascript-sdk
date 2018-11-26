@@ -43,7 +43,7 @@ Dialog.prototype.init = function () {
 Dialog.prototype.loadDialogs = function (type) {
     var self = this,
         filter = {
-            limit: self.limit,
+            limit: self.limit,nn
             skip: self.dialogsListContainer.querySelectorAll('.j-dialog__item').length,
             sort_desc: "updated_at"
         };
