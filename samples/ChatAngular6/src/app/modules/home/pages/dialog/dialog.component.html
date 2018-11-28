@@ -1,0 +1,30 @@
+<div type="text/template" id="tpl_conversationContainer">
+  <div class="content__title j-content__title j-dialog">
+    <button class="open_sidebar j-open_sidebar"></button>
+    <h1 class="dialog__title j-dialog__title"><%- title %></h1>
+    <div class="action_links">
+      <a href="#" class="add_to_dialog j-add_to_dialog <% type !== 2 ? print('hidden') : ''%>">
+        <i class="material-icons">person_add</i>
+      </a>
+      <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link <% type === 1 ? print('hidden') : ''%>" data-dialog="<%- _id %>">
+        <i class="material-icons">delete</i>
+      </a>
+    </div>
+  </div>
+  <div class="notifications j-notifications hidden"></div>
+  <div class="content__inner j-content__inner">
+    <div class=" messages j-messages"></div>
+    <form name="send_message" class="send_message" autocomplete="off" (ngSubmit)="onSubmit()" >
+                    <textarea name="message_feald" [(ngModel)]="msg" class="message_feald" id="message_feald" autocomplete="off"
+                               autocapitalize="off" placeholder="Type a message" autofocus></textarea>
+      <div class="message__actions">
+        <div class="attachments_preview j-attachments_preview"></div>
+        <label for="attach_btn" class="attach_btn">
+          <i class="material-icons">attachment</i>
+          <input type="file" id="attach_btn" name="attach_file" class="attach_input" accept="image/*"/>
+        </label>
+        <button type="submit" name="login_submit" class="send_btn">send</button>
+      </div>
+    </form>
+  </div>
+</div>

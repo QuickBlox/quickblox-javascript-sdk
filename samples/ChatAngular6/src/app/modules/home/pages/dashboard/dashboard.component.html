@@ -1,0 +1,99 @@
+<div class="dashboard" id="dash">
+  <div class="sidebar j-sidebar active">
+    <div class="sidebar__inner">
+      <div class="sidebar__header">
+        <a href="https://quickblox.com/" class="dashboard__logo">
+          <img src="./../../../../../assets/qb-logo.svg" alt="QuickBlox">
+        </a>
+        <div class="dashboard__status_wrap">
+          <h2 class="dashboard__title">Group</h2>
+          <p class="dashboard__status j-dashboard_status">
+            Logged in as user
+          </p>
+        </div>
+        <a class=" btn logout j-logout" (click)="logout()" >logout</a>
+      </div>
+      <div class="sidebar__content">
+        <ul class="sidebar__tabs">
+          <li class="sidebar__tab">
+            <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="chat" (click)="ChatList()">chats</a>
+          </li>
+          <li class="sidebar__tab">
+            <a href="#" class="sidebar__tab_link j-sidebar__tab_link" data-type="public" (click)="GroupList()">public chats</a>
+          </li>
+          <li class="sidebar__tab m-sidebar__tab_new">
+            <a href="#" class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new" data-type="create">
+              <i class="material-icons">add_circle_outline</i>
+            </a>
+          </li>
+        </ul>
+
+        <div>
+
+          <div *ngIf="showChatList == true">
+            <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">
+              <li *ngIf="i>0 && user.type ==2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+                <a class="dialog__item_link" href="#">
+                  <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                        <i class="material-icons">account_circle</i>
+                  </span>
+                  <span class="dialog__info">
+                    <span class="dialog__name">{{user.name}}</span>
+                    <span class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"></span>
+                </span>
+              <span class="dialog_additional_info">
+                </span>
+            </a>
+          </li>
+          <li *ngIf="i==0"></li>
+        </ul>
+
+
+          </div>
+
+          <div *ngIf="showGroupList == true">
+
+
+            <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">
+              <li></li>
+              <li *ngIf="i>0 && user.type !=2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+                <a class="dialog__item_link" href="#">
+                <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
+                        <i class="material-icons">account_circle</i>
+                </span>
+                  <span class="dialog__info">
+                    <span class="dialog__name">{{user.name}}</span>
+                    <span class="dialog__last_message j-dialog__last_message <%= dialog.attachment ? 'attachment' : ''%>"></span>
+                </span>
+                  <span class="dialog_additional_info">
+                </span>
+                </a>
+              </li>
+            </ul>
+
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content j-content">
+    <div *ngIf="showchat==true">
+    <div class="content__title j-content__title j-welcome">
+      Welcome to QuickBlox chat sample!
+    </div>
+
+    <div class="notifications j-notifications hidden"></div>
+    <div class="content__inner">
+    </div>
+    </div>
+    <app-dialog></app-dialog>
+  </div>
+</div>
+
+
+
+
+
+

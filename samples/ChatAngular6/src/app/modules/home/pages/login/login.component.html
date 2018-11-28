@@ -1,0 +1,39 @@
+<div class="login__wrapper">
+  <div class="login__container">
+    <div class="login__inner">
+      <div class="login__top">
+        <a href="https://quickblox.com/" class="login__logo">
+          <img src="./../../../../../assets/qb-logo.svg" alt="QuickBlox">]
+        </a>
+        <h1>Quickblox Chat Sample</h1>
+        <h3>Please enter your username and user group.
+          Users within the same group will be able
+          to communicate, create chats with each other
+        </h3>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()"  class="login__form">
+        <div class="login_form__row">
+          <input type="text" formControlName="username" class="form-control" [(ngModel)]="username" [ngClass]="{ 'is-invalid': submitted && f.username.errors }" />
+        </div>
+        <div class="login_form__row">
+          <input type="text" formControlName="username" class="form-control" [(ngModel)]="usergroup" [ngClass]="{ 'is-invalid': submitted && f.usergroup.errors }" />
+        </div>
+        <div class="login__button_wrap">
+          <button type="submit" name="login_submit" class="btn m-login__button j-login__button" >
+            login
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="login__footer">
+      <div class="footer__logo_wrap">
+        <a href="https://quickblox.com/" class="footer__logo">
+          <img src="./../../../../../assets/qblogo-grey.svg" alt="QuickBlox">
+        </a>
+        <p>by QuickBlox</p>
+      </div>
+      <span class="footer__version">v. <%= version %></span>
+    </div>
+  </div>
+</div>
