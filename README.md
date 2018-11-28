@@ -16,7 +16,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.0/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.2/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -56,7 +56,7 @@ var QB2 = new QuickBlox();
 
 | Edge   | Firefox | Chrome | Safari | Opera | Node.js |
 |:----:|:-------:|:------:|:------:|:-----:|:-------:|
-| 14+  |  52+    | 50+    |  10.1+  |  36+  |    6+   |
+| 14+  |  52+    | 50+    |  11.1+  |  36+  |    6+   |
 
 # Documentation
 
