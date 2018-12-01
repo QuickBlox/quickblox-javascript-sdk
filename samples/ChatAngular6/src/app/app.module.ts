@@ -7,6 +7,7 @@ import { LoginComponent } from './modules/home/pages/login/login.component';
 import { DashboardComponent } from './modules/home/pages/dashboard/dashboard.component';
 import { DialogComponent } from './modules/home/pages/dialog/dialog.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { MatButtonModule, MatCheckboxModule, MatInputModule, MatButtonToggleModule, MatIconModule } from '@angular/material';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,12 @@ import { AuthGuard } from './core/guards/auth.guard';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatIconModule,
+    MatInputModule,
+    MatCheckboxModule
   ],
   providers: [AuthGuard],
   bootstrap: [AppComponent]

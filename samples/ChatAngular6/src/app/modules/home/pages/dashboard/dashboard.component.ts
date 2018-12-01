@@ -16,10 +16,16 @@ export class DashboardComponent implements OnInit {
   showChatList: boolean;
   showGroupList: boolean;
   users = USERS;
+  username: any;
+  usergroup: any;
+  chatId: '';
 
   constructor(private route: ActivatedRoute,
               private router: Router,
   ) {
+    this.username = JSON.parse(localStorage.getItem('currentUser'));
+    this.showchat = false;
+    console.log(this.showchat);
   }
   ngOnInit() {
     const CREDENTIALS = {
@@ -43,13 +49,14 @@ export class DashboardComponent implements OnInit {
               this.UsersDetails = resDialogs.items;
               console.log(resDialogs);
               this.UsersDetails.forEach( (chat, index) => {
-                  this.users.push({name: this.UsersDetails[index]._id, type: this.UsersDetails[index].type});
+                  USERS.push({name: this.UsersDetails[index]._id, type: this.UsersDetails[index].type});
                 });
+              this.users = USERS;
               }
           });
-          QB.chat.connect({userId: r.id, password: '12345678'}, function (e, roster) {
+          QB.chat.connect({userId: r.id, password: this.usergroup}, function (e, roster) {
             if (!e) {
-              QB.chat.muc.join("34012_56a15ec7a0eb4791ae0003cc@muc.chat.quickblox.com", function (r) {
+              QB.chat.muc.join('34012_56a15ec7a0eb4791ae0003cc@muc.chat.quickblox.com', function (r) {
                 console.log(r);
               });
             }
@@ -69,9 +76,22 @@ export class DashboardComponent implements OnInit {
     this.showChatList = true;
     this.showGroupList = false;
   }
-  GroupList(){
+  GroupList() {
     this.showChatList = false;
     this.showGroupList = true;
+  }
+  chatOpen(dialogId) {
+    this.chatId = dialogId;
+    this.showchat = !this.showchat;
+    console.log(this.showchat);
+    var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
+    QB.chat.message.list(params, (err, messages) => {
+      if (messages) {
+          console.log(messages);
+      }else{
+        console.log(err);
+      }
+    });
   }
 
 }

@@ -32,7 +32,7 @@
 
           <div *ngIf="showChatList == true">
             <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">
-              <li *ngIf="i>0 && user.type ==2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+              <li *ngIf="i>0 && user.type ==2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>" (click)="chatOpen(user.name)">
                 <a class="dialog__item_link" href="#">
                   <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
                         <i class="material-icons">account_circle</i>
@@ -56,7 +56,7 @@
 
             <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">
               <li></li>
-              <li *ngIf="i>0 && user.type !=2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>">
+              <li *ngIf="i>0 && user.type !=2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>" (click)="chatOpen(user.name)">
                 <a class="dialog__item_link" href="#">
                 <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>" >
                         <i class="material-icons">account_circle</i>
@@ -88,7 +88,7 @@
     <div class="content__inner">
     </div>
     </div>
-    <app-dialog></app-dialog>
+    <app-dialog *ngIf="showchat==false"></app-dialog>
   </div>
 </div>
 

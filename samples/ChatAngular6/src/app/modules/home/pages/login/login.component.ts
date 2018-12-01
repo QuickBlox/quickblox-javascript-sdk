@@ -42,9 +42,6 @@ export class LoginComponent implements OnInit {
 
 
   login(username: string, usergroup: string) {
-    localStorage.setItem('currentUser', this.username);
-    localStorage.setItem('currentPassword', this.usergroup);
-    this.router.navigate([this.returnUrl]);
 
 
     const CONFIG = {
@@ -82,7 +79,6 @@ export class LoginComponent implements OnInit {
   logout() {
     // remove user from local storage to log user out
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('currentPassword');
   }
   onSubmit() {
     console.log('form submit clicked..');
@@ -90,16 +86,7 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     this.login(this.f.username.value, this.f.usergroup.value);
-
-
-
-
-
-
-
-
-
-
-
+    const loginInfo = [this.username,this.usergroup];
+    localStorage.setItem('currentUser', JSON.stringify(loginInfo));
   }
 }
