@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import {CommunicationService} from '../../../../core/services/communication.service';
+
 declare var QB: any;
 
 
@@ -23,6 +25,7 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
+    private communication: CommunicationService
   ) {
   }
 
@@ -86,7 +89,9 @@ export class LoginComponent implements OnInit {
 
     this.loading = true;
     this.login(this.f.username.value, this.f.usergroup.value);
-    const loginInfo = [this.username,this.usergroup];
+    const loginInfo = [this.username, this.usergroup];
     localStorage.setItem('currentUser', JSON.stringify(loginInfo));
+    this.communication.username = this.username;
+    this.communication.usergroup = this.usergroup;
   }
 }

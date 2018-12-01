@@ -3,11 +3,11 @@
 </div>
 <div class="container">
   <div  #viewer class="body">
-    <div class="viewer">
+    <div *ngFor="let msg of messages"  class="viewer">
       <div class="message">
         <div class="badge" >RO</div>
         <div class="content" >
-          <span>text</span>
+          <span>{{msg.message}}</span>
         </div>
       </div>
     </div>

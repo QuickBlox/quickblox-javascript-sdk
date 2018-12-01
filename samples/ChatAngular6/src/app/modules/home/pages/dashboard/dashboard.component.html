@@ -30,7 +30,7 @@
 
         <div>
 
-          <div *ngIf="showChatList == true">
+          <div *ngIf="showGroupList == true">
             <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">
               <li *ngIf="i>0 && user.type ==2" class="dialog__item j-dialog__item" id="<%= dialog._id %>" data-name="<%- dialog.name %>" (click)="chatOpen(user.name)">
                 <a class="dialog__item_link" href="#">
@@ -51,7 +51,7 @@
 
           </div>
 
-          <div *ngIf="showGroupList == true">
+          <div *ngIf="showChatList == true">
 
 
             <ul *ngFor="let user of users; let i = index" class="sidebar__dilog_list j-sidebar__dilog_list">

@@ -11,7 +11,6 @@
 .header, .footer {
   background-color: whitesmoke;
   padding: 1rem;
-  display: flex;
   justify-self: center;
   line-height: 2rem;
   border-bottom: 1px solid #444;
@@ -53,6 +52,7 @@
   display: flex;
   flex-flow: column;
   overflow-y: auto;
+ 
 }
 .body .viewer {
   display: flex;

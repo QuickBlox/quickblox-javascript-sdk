@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import {USERS} from '../../../../core/mocks/mock-Users';
+import {CommunicationService} from '../../../../core/services/communication.service';
 
 declare var QB: any;
 @Component({
@@ -10,7 +11,6 @@ declare var QB: any;
 })
 export class DashboardComponent implements OnInit {
   showchat: boolean;
-  id: any;
   name: any;
   UsersDetails: any;
   showChatList: boolean;
@@ -22,10 +22,13 @@ export class DashboardComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
               private router: Router,
+              private communication: CommunicationService,
   ) {
-    this.username = JSON.parse(localStorage.getItem('currentUser'));
+    this.username = this.communication.username;
+    this.usergroup = this.communication.usergroup;
     this.showchat = false;
     console.log(this.showchat);
+
   }
   ngOnInit() {
     const CREDENTIALS = {
@@ -38,7 +41,7 @@ export class DashboardComponent implements OnInit {
 
 
     QB.createSession( (e, r) => {
-      var params = {login: 'romanes', password: '12345678'};
+      var params = {login: this.username, password: this.usergroup};
       QB.login(params, (e, r) => {
         if (r) {
           const filters = null;
@@ -82,8 +85,8 @@ export class DashboardComponent implements OnInit {
   }
   chatOpen(dialogId) {
     this.chatId = dialogId;
+    this.communication.ChatID = dialogId;
     this.showchat = !this.showchat;
-    console.log(this.showchat);
     var params = {chat_dialog_id: dialogId, sort_desc: 'date_sent', limit: 100, skip: 0};
     QB.chat.message.list(params, (err, messages) => {
       if (messages) {
