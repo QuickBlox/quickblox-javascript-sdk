@@ -46,33 +46,40 @@ router.on({
             dialogModule.loadDialogs('chat');
         }
     },
-    '/dialog/create': function(){
-        if (!loginModule.isLogin){
-            loginModule.init().then(function(isLogedIn){
-                if(!isLogedIn){
+    '/dialog/create': {
+        uses: function() {
+            if (!loginModule.isLogin){
+                loginModule.init().then(function(isLogedIn){
+                    if(!isLogedIn){
+                        router.navigate('/login');
+                        return;
+                    }
+                    if(!app.isDashboardLoaded) {
+                        app.renderDashboard('chat');
+                        dialogModule.loadDialogs('chat');
+                    }
+                    _renderNewDialogTmp();
+                }).catch(function(error){
+                    console.error(error);
                     router.navigate('/login');
-                    return;
-                }
-                if(!app.isDashboardLoaded) {
-                    app.renderDashboard('chat');
-                    dialogModule.loadDialogs('chat');
-                }
+                });
+            } else {
                 _renderNewDialogTmp();
-            }).catch(function(error){
-                console.error(error);
-                router.navigate('/login');
-            });
-        } else {
-            _renderNewDialogTmp();
-        }
+            }
 
-        function _renderNewDialogTmp(){
-            var createDialogTab = document.querySelector('.j-sidebar__create_dialog');
+            function _renderNewDialogTmp(){
+                var createDialogTab = document.querySelector('.j-sidebar__create_dialog');
 
-            createDialogTab.classList.add('active');
-            app.sidebar.classList.remove('active');
+                createDialogTab.classList.add('active');
+                app.sidebar.classList.remove('active');
 
-            app.buildCreateDialogTpl();
+                app.buildCreateDialogTpl();
+            }
+        },
+        hooks: {
+            leave: function () {
+                userModule.reset()
+            }
         }
     },
     '/dialog/:dialogId': function(params){
@@ -101,195 +108,194 @@ router.on({
 
         function _renderSelectedDialog(){
             var currentDialog = dialogModule._cache[dialogId];
-            if(!currentDialog){
-                dialogModule.getDialogById(dialogId).then(function(dialog){
-                    var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
-                        tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
-
-                    app.loadChatList(tab).then(function(){
-                        dialogModule.renderMessages(dialogId);
-                        app.sidebar.classList.remove('active');
-                    }).catch(function(error){
-                        console.error(error);
-                    });
-
-                }).catch(function(error){
-                    console.error(error);
-                    var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
-                    app.loadChatList(tab)
-                    router.navigate('/dashboard');
-                });
-            } else {
-                dialogModule.renderMessages(dialogId);
+            if(currentDialog) {
                 dialogModule.selectCurrentDialog(dialogId);
             }
-        }
-    },
-    '/dialog/:dialogId/edit': function(params){
-        var dialogId = params.dialogId;
-        var currentDialog = null;
-
-        if (!loginModule.isLogin){
-            loginModule.init().then(function(isLogedIn){
-                if(!isLogedIn){
-                    router.navigate('/login');
-                    return;
+            dialogModule.getDialogById(dialogId).then(function(dialog){
+                var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                    tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
+                if(!currentDialog) {
+                    app.loadChatList(tab).then(function () {
+                        dialogModule.renderMessages(dialogId);
+                        app.sidebar.classList.remove('active');
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+                }else if(tabDataType === 'chat') {
+                    userModule.getUsersByIds(currentDialog.users).then(function () {
+                        document.getElementById(dialogId).querySelector('.dialog__name').innerHTML = dialog.name;
+                        dialogModule.renderMessages(dialogId);
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+                }else{
+                    dialogModule.renderMessages(dialogId);
                 }
-                _renderEditDialogPage();
             }).catch(function(error){
                 console.error(error);
-                router.navigate('/login');
+                var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
+                app.loadChatList(tab);
+                router.navigate('/dashboard');
             });
-        } else {
-            _renderEditDialogPage();
+
         }
 
-        function _renderEditDialogPage(){
-            if(!app.isDashboardLoaded) {
-                app.renderDashboard();
-            }
-            currentDialog = dialogModule._cache[dialogId];
+        document.addEventListener('visibilitychange', function() {
+            var currentDialog = dialogModule._cache[dialogId],
+                dialogType = currentDialog.type === 1 ? 'public' : 'chat';
 
-            if(!currentDialog){
-                dialogModule.dialogId = dialogId;
-                dialogModule.getDialogById(dialogId).then(function(dialog){
-                    var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
-                        tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
-                    // add to dialog template
-                    app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: dialog.name, _id: dialog._id});
-                    _setEditDiaogListeners();
-                    _renderUsers(dialog.occupants_ids);
-                    app.loadChatList(tab).then(function(){})
-                        .catch(function(error){
-                            console.error(error);
-                        });
+            if (document.visibilityState !== 'visible') {
+                dialogType = currentDialog.type === 1 ? 'chat' : 'public';
+            }
+
+            var tab = document.querySelector('.j-sidebar__tab_link[data-type="'+dialogType+'"]');
+            app.loadChatList(tab).then(function () {
+                if (document.visibilityState === 'visible'
+                    && window.location.href.match(/\/dialog\/[a-zA-Z0-9]+$/)
+                    && !window.location.href.match(/\/dialog\/create$/)) {
+                    dialogModule.renderMessages(dialogModule.dialogId);
+                }
+            });
+        });
+
+    },
+    '/dialog/:dialogId/edit': {
+        uses: function(params) {
+            var dialogId = params.dialogId;
+            var currentDialog = null;
+
+            if (!loginModule.isLogin){
+                loginModule.init().then(function(isLogedIn){
+                    if(!isLogedIn){
+                        router.navigate('/login');
+                        return;
+                    }
+                    _renderEditDialogPage();
                 }).catch(function(error){
-                    router.navigate('#!/dashboard');
+                    console.error(error);
+                    router.navigate('/login');
                 });
             } else {
-                app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: currentDialog.name, _id: currentDialog._id});
-                _setEditDiaogListeners();
-                _renderUsers(currentDialog.users);
+                _renderEditDialogPage();
             }
-        }
 
-        function _renderUsers(dialogOccupants){
-            var userList = document.querySelector('.j-update_chat__user_list'),
-                counterElem = document.querySelector('.j-update__chat_counter'),
-                addUsersBtn = document.querySelector('.j-update_dialog_btn'),
+            function _renderEditDialogPage(){
+                if(!app.isDashboardLoaded) {
+                    app.renderDashboard();
+                }
+                currentDialog = dialogModule._cache[dialogId];
 
-                newUsersCount = +counterElem.innerText.trim();
-
-            userModule.getUsers().then(function(usersArray){
-                var users = usersArray.map(function(user){
-                    var userItem = JSON.parse(JSON.stringify(user));
-
-                    userItem.selected = dialogOccupants.indexOf(userItem.id) !== -1;
-                    
-                    return userItem;
-                });
-
-                _.each(users, function(user){
-                    var userTpl = helpers.fillTemplate('tpl_editChatUser', user),
-                        userElem = helpers.toHtml(userTpl)[0];
-
-                    userElem.addEventListener('click', function(e){
-                        var elem = e.currentTarget;
-                        if(elem.classList.contains('disabled')) return;
-                        if(elem.classList.contains('selected')){
-                            elem.classList.remove('selected');
-                            newUsersCount--;
-                        } else {
-                            elem.classList.add('selected');
-                            newUsersCount++;
-                        }
-
-                        counterElem.innerText = newUsersCount;
-
-                        addUsersBtn.disabled = !newUsersCount;
+                if(!currentDialog) {
+                    dialogModule.dialogId = dialogId;
+                    dialogModule.getDialogById(dialogId).then(function(dialog) {
+                        var tabDataType = dialog.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                            tab = document.querySelector('.j-sidebar__tab_link[data-type="' + tabDataType + '"]');
+                        // add to dialog template
+                        app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: dialog.name, _id: dialog._id});
+                        _renderUsers(dialog.occupants_ids).then(_setEditDialogListeners);
+                        app.loadChatList(tab).then(function(){})
+                            .catch(function(error){
+                                console.error(error);
+                            });
+                    }).catch(function(error){
+                        router.navigate('#!/dashboard');
                     });
-
-                    userList.appendChild(userElem);
-                });
-
-            }).catch(function(error){
-                console.error(error);
-            });
-        }
-
-        function _setEditDiaogListeners(){
-            var editTitleBtn = document.querySelector('.j-update_chat__title_button'),
-                editTitleForm = document.forms.update_chat_name,
-                editTitleInput = editTitleForm.update_chat__title,
-                editUsersCountForm = document.forms.update_dialog,
-                canselBtn = editUsersCountForm.update_dialog_cancel;
-
-            // change Title listener
-            editTitleBtn.addEventListener('click', function(e){
-                e.preventDefault();
-                e.stopPropagation();
-
-
-                editTitleForm.classList.toggle('active');
-
-                if(editTitleForm.classList.contains('active')){
-                    editTitleInput.removeAttribute('disabled');
-                    editTitleInput.focus();
                 } else {
-                    editTitleInput.setAttribute('disabled', true);
-                    _updateDialogTitleRequest();
+                    app.content.innerHTML = helpers.fillTemplate('tpl_UpdateDialogContainer', {title: currentDialog.name, _id: currentDialog._id});
+                    _renderUsers(currentDialog.users).then(_setEditDialogListeners);
                 }
-            });
+            }
 
-            editTitleInput.addEventListener('input', function(e){
-                var titleText = editTitleInput.value,
-                    sylmbolsCount = titleText.length;
-                if(sylmbolsCount > 40) {
-                    editTitleInput.value = titleText.slice(0, 40);
-                }
-            });
+            function _renderUsers(dialogOccupants){
+                userModule.selectedUserIds = dialogOccupants.slice();
+                userModule.disabledUserIds = dialogOccupants.slice();
+                return userModule.initGettingUsers('.j-update_chat__user_list');
+            }
 
-            editTitleForm.addEventListener('submit', function (e) {
-                e.preventDefault();
+            function _setEditDialogListeners(){
+                var editTitleBtn = document.querySelector('.j-update_chat__title_button'),
+                    editTitleForm = document.forms.update_chat_name,
+                    addUsersBtn = document.querySelector('.j-update_dialog_btn'),
+                    counterElem = document.querySelector('.j-update__chat_counter'),
+                    editTitleInput = editTitleForm.update_chat__title,
+                    userList = document.querySelector('.j-update_chat__user_list'),
+                    editUsersCountForm = document.forms.update_dialog,
+                    canselBtn = editUsersCountForm.update_dialog_cancel;
 
-                _updateDialogTitleRequest();
-            });
+                // change Title listener
+                editTitleBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
 
-            editUsersCountForm.addEventListener('submit', function(e){
-                e.preventDefault();
 
-                var userItemsList = document.querySelectorAll('.user__item.selected:not(.disabled)'),
-                    userList = [];
+                    editTitleForm.classList.toggle('active');
 
-                _.each(userItemsList, function(userItem){
-                    userList.push(+userItem.id);
+                    if(editTitleForm.classList.contains('active')){
+                        editTitleInput.removeAttribute('disabled');
+                        editTitleInput.focus();
+                    } else {
+                        editTitleInput.setAttribute('disabled', true);
+                        _updateDialogTitleRequest();
+                    }
                 });
 
-                var params = {
-                    id: dialogId,
-                    userList: userList
-                };
+                editTitleInput.addEventListener('input', function(e){
+                    var titleText = editTitleInput.value,
+                        sylmbolsCount = titleText.length;
+                    if(sylmbolsCount > 40) {
+                        editTitleInput.value = titleText.slice(0, 40);
+                    }
+                });
 
-                dialogModule.updateDialog(params);
-            });
+                userList.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('disabled')) return;
+                    var addUsersCount = userModule.selectedUserIds.filter(function (userId) {
+                        return userModule.disabledUserIds.indexOf(userId) === -1;
+                    }).length;
+                    counterElem.innerText = addUsersCount;
+                    addUsersBtn.disabled = addUsersCount === 0;
+                });
 
-            canselBtn.addEventListener('click', function(e){
-                e.preventDefault();
-                e.stopPropagation();
-                router.navigate('/dialog/' + dialogId);
-            });
+                editTitleForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-            function _updateDialogTitleRequest(){
-                var params = {
-                    id: dialogId,
-                    title: editTitleInput.value.trim()
-                };
+                    _updateDialogTitleRequest();
+                });
 
-                if(dialogModule._cache[dialogId].name !== params.title) {
+                editUsersCountForm.addEventListener('submit', function(e){
+                    e.preventDefault();
+
+                    var params = {
+                        id: dialogId,
+                        userList: userModule.selectedUserIds
+                    };
+
                     dialogModule.updateDialog(params);
-                    editTitleForm.classList.remove('active');
-                    editTitleInput.setAttribute('disabled', true);
+                });
+
+                canselBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.navigate('/dialog/' + dialogId);
+                });
+
+                function _updateDialogTitleRequest(){
+                    var params = {
+                        id: dialogId,
+                        title: editTitleInput.value.trim()
+                    };
+
+                    if(dialogModule._cache[dialogId].name !== params.title) {
+                        dialogModule.updateDialog(params);
+                        editTitleForm.classList.remove('active');
+                        editTitleInput.setAttribute('disabled', true);
+                    }
                 }
+            }
+        },
+        hooks: {
+            leave: function () {
+                userModule.reset()
             }
         }
     }

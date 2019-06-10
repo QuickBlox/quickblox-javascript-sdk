@@ -1,8 +1,8 @@
 var QBconfig = {
     credentials: {
-        appId: 72448,
-        authKey: 'f4HYBYdeqTZ7KNb',
-        authSecret: 'ZC7dK39bOjVc-Z8'
+        appId: '',
+        authKey: '',
+        authSecret: ''
     },
     appConfig: {
         chatProtocol: {
@@ -39,6 +39,7 @@ var CONSTANTS = {
     },
     NOTIFICATION_TYPES: {
         NEW_DIALOG: '1',
-        UPDATE_DIALOG: '2'
+        UPDATE_DIALOG: '2',
+        LEAVE_DIALOG: '3'
     }
 };

@@ -593,6 +593,20 @@
     padding: 7px 24px;
 }
 
+.group_chat__filter {
+    border-bottom: 1px solid #DADFE1;
+    display: flex;
+    padding: 13px 8px;
+}
+.group_chat__filter > input {
+    flex: 1 1 100%;
+    font-size: 16px;
+    line-height: 19px;
+    border: none;
+    margin: 0 10px 0 0;
+    padding: 0 10px;
+}
+
 .user__item {
     padding: 8px 24px;
     display: flex;

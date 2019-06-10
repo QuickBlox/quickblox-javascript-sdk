@@ -97,7 +97,10 @@ Login.prototype.login = function (user) {
         function loginError(error){
             self.renderLoginPage();
             console.error(error);
-            alert(error + "\n" + error.detail);
+            var message = Object.keys(error.detail).map(function (key) { 
+                return key + ' ' + error.detail[key].join('')
+            })
+            alert(message);
             reject(error);
         }
     });
@@ -122,26 +125,25 @@ Login.prototype.renderLoadingPage = function(){
 Login.prototype.setListeners = function(){
     var self = this,
         loginForm = document.forms.loginForm,
-        formInputs = [loginForm.userName, loginForm.userGroup],
+        formInputs = [loginForm.userName, loginForm.userLogin],
         loginBtn = loginForm.login_submit;
 
     loginForm.addEventListener('submit', function(e){
         e.preventDefault();
 
-        if(loginForm.hasAttribute('disabled')){
+        if(loginForm.hasAttribute('disabled') || !loginForm.userName.isValid || !loginForm.userLogin.isValid){
             return false;
         } else {
             loginForm.setAttribute('disabled', true);
         }
 
         var userName = loginForm.userName.value.trim(),
-            userGroup = loginForm.userGroup.value.trim();
+            userLogin = loginForm.userLogin.value.trim();
 
         var user = {
-            login: helpers.getUui(),
+            login: userLogin,
             password: 'webAppPass',
-            full_name: userName,
-            tag_list: userGroup
+            full_name: userName
         };
 
         localStorage.setItem('user', JSON.stringify(user));
@@ -176,14 +178,24 @@ Login.prototype.setListeners = function(){
             }
         });
 
-        i.addEventListener('input', function(){
+        i.addEventListener('input', function(e){
             var userName = loginForm.userName.value.trim(),
-                userGroup = loginForm.userGroup.value.trim();
-            if(userName.length >=3 && userGroup.length >= 3){
-                loginBtn.removeAttribute('disabled');
-            } else {
-                loginBtn.setAttribute('disabled', true);
-            }
+                userLogin = loginForm.userLogin.value.trim();
+
+            loginForm.userName.isValid = 15 >= userName.length && userName.length >=3;
+            loginForm.userLogin.isValid = 15 >= userLogin.length && userLogin.length >= 3 && (userLogin.match(/^[a-zA-Z]{1}[a-zA-Z0-9]+$/)!=null);
+
+            formInputs.forEach(function(e) {
+                var container = e.parentElement;
+                if(e.isValid){
+                    container.classList.remove('error');
+                }else{
+                    container.classList.add('error');
+                }
+            });
+
+            loginBtn.removeAttribute('disabled');
+
         })
     });
 };

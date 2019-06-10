@@ -196,6 +196,7 @@ Message.prototype.getMessages = function (dialogId) {
             if (dialogModule._cache[dialogId].type === 1) {
                 self.checkUsersInPublicDialogMessages(messages.items, params.skip);
             } else {
+
                 for (var i = 0; i < messages.items.length; i++) {
                     var message = helpers.fillMessagePrams(messages.items[i]);
 
@@ -260,7 +261,10 @@ Message.prototype.sendReadStatus = function(messageId, userId, dialogId){
         dialogId: dialogId
     };
 
-    QB.chat.sendReadStatus(params);
+    if (document.visibilityState === 'visible') {
+        QB.chat.sendReadStatus(params);
+    }
+
 };
 
 Message.prototype.renderMessage = function (message, setAsFirst) {
@@ -281,7 +285,8 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
 
         messagesHtml = helpers.fillTemplate('tpl_notificationMessage', {
             id: message._id,
-            text: messageText
+            text: messageText,
+            date_sent: message.date_sent
         });
     } else {
         messageText = message.message ? helpers.fillMessageBody(message.message || '') : helpers.fillMessageBody(message.body || '');
@@ -364,6 +369,27 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
             self.container.scrollTop += containerHeightAfterAppend - containerHeightBeforeAppend;
         }
     }
+
+    var currentDialog = dialogModule._cache[dialogId],
+        date = new Date(message.created_at),
+        month = date.toLocaleString('en-us', { month: 'long' }),
+        template = helpers.fillTemplate('tpl_date_message', {'month':month, 'date':date}),
+        elemDate = helpers.toHtml(template)[0],
+        tmpElem = document.querySelector('#'+month+'-'+date.getDate());
+
+    currentDialog.tplDateMessage = currentDialog.tplDateMessage?currentDialog.tplDateMessage:{};
+
+    if(!currentDialog.tplDateMessage[month+'/'+ date.getDate()] ||
+        parseInt(currentDialog.tplDateMessage[month+'/'+ date.getDate()].replace(/:/, '')) >
+        parseInt(message.date_sent.replace(/:/, ''))
+    ){
+        if(tmpElem){
+            tmpElem.remove();
+        }
+        currentDialog.tplDateMessage[month+'/'+ date.getDate()] = message.date_sent;
+        self.container.insertBefore(elemDate,elem);
+    }
+
 };
 
 Message.prototype.prepareToUpload = function (e) {
