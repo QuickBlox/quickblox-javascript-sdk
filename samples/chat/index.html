@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
 
-    <script src="https://unpkg.com/navigo@4.3.6/lib/navigo.min.js" defer></script>
+    <script src="https://unpkg.com/navigo@7.1.2/lib/navigo.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js" defer></script>
     <script src="../../quickblox.min.js" defer></script>
 </head>
@@ -28,20 +28,26 @@
                             <img src="./img/qb-logo.svg" alt="QuickBlox">]
                         </a>
                         <h1>Quickblox Chat Sample</h1>
-                        <h3>Please enter your username and user group.
-                            Users within the same group will be able
-                            to communicate, create chats with each other
-                        </h3>
+                        <h3>Please enter your Login and User name</h3>
                     </div>
 
                     <form name="loginForm" class="login__form">
                         <div class="login_form__row">
-                            <label for="userName">User name</label>
-                            <input type="text" id="userName" name="userName"/>
+                            <label for="userLogin">Login</label>
+                            <input
+                                type="text"
+                                id="userLogin"
+                                name="userLogin"
+                                minlength="3"
+                                maxlength="15"
+                                pattern='^[a-zA-Z]{1}[a-zA-Z0-9]+$'
+                                title="Field should contain alphanumeric characters only in a range 3-15. The first character must be a letter."
+                                required
+                            />
                         </div>
                         <div class="login_form__row">
-                            <label for="userGroup">User group</label>
-                            <input type="text" id="userGroup" name="userGroup"/>
+                            <label for="userName">User name</label>
+                            <input type="text" id="userName" name="userName" minlength="3" maxlength="15" required />
                         </div>
                         <div class="login__button_wrap">
                             <button type="submit" name="login_submit" class="btn m-login__button j-login__button" disabled>
@@ -72,7 +78,6 @@
                             <img src="./img/qb-logo.svg" alt="QuickBlox">
                         </a>
                         <div class="dashboard__status_wrap">
-                            <h2 class="dashboard__title"><%- user.user_tags %></h2>
                             <p class="dashboard__status j-dashboard_status">
                                 Logged in as <%- user.name %>
                             </p>
@@ -186,6 +191,9 @@
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
+            <div class="group_chat__filter">
+                <input type="text" autocomplete="off" autocorrect="off" placeholder="Filter by User name" />
+            </div>
             <p class="update__chat__description"><span class="update__chat_counter j-update__chat_counter">0</span>&nbsp;user selected:</p>
             <div class="update_chat__user_list j-update_chat__user_list">
             </div>
@@ -206,6 +214,14 @@
                 <% if (last_request_at) { %>
                 <p class="user__last_seen"><%= last_request_at %></p>
                 <% } %>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="tpl_date_message">
+        <div class="message__wrap" id="<%=month+'-'+date.getDate()%>" >
+            <div class="center">
+                <%= month+ '/' + date.getDate() %>
             </div>
         </div>
     </script>
@@ -244,6 +260,9 @@
     <script type="text/template" id="tpl_notificationMessage">
         <div class="message__wrap" id="<%= id %>">
             <p class="m-notification_message"><%= text %></p>
+            <div class="message__timestamp">
+                <%= date_sent %>
+            </div>
         </div>
     </script>
 
@@ -256,6 +275,9 @@
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
+            <div class="group_chat__filter">
+                <input type="text" autocomplete="off" autocorrect="off" placeholder="Filter by User name" />
+            </div>
             <p class="group__chat__description">Select participants:</p>
             <div class="group_chat__user_list j-group_chat__user_list">
             </div>

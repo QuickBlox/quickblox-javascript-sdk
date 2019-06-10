@@ -69,10 +69,7 @@ Dialog.prototype.loadDialogs = function (type) {
             var dialogs = resDialogs.items;
 
             _.each(dialogs, function (dialog) {
-                if (!self._cache[dialog._id]) {
-                    self._cache[dialog._id] = helpers.compileDialogParams(dialog);
-                }
-
+                self._cache[dialog._id] = helpers.compileDialogParams(dialog);
                 self.renderDialog(self._cache[dialog._id]);
             });
 
@@ -188,7 +185,7 @@ Dialog.prototype.replaceDialogLink = function (elem) {
 
 Dialog.prototype.joinToDialog = function (id) {
     var self = this,
-        jidOrUserId = self._cache[id].jidOrUserId;
+        jidOrUserId = ((typeof self._cache[id].jidOrUserId == "number")?String(self._cache[id].jidOrUserId):self._cache[id].jidOrUserId);
 
     return new Promise(function (resolve, reject){
         QB.chat.muc.join(jidOrUserId, function (resultStanza) {
@@ -210,7 +207,7 @@ Dialog.prototype.joinToDialog = function (id) {
 Dialog.prototype.renderMessages = function (dialogId) {
     var self = this,
         dialog = self._cache[dialogId];
-
+    dialog.tplDateMessage = {};
     document.querySelector('.j-sidebar__create_dialog').classList.remove('active');
 
     if (!document.forms.send_message) {
@@ -297,8 +294,8 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
     var self = this,
         dialog = document.getElementById(dialogId),
         message = msg.message;
-    
-    if (message.indexOf('\n') !== -1) {
+
+    if (message && message.indexOf('\n') !== -1) {
         message = message.slice(0, message.indexOf('\n'));
     }
 
@@ -317,6 +314,7 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
         }
 
         dialog.querySelector('.j-dialog__last_message_date').innerText = msg.date_sent;
+        dialogModule.sortedByLastMessage(dialogId);
     }
 };
 
@@ -324,9 +322,7 @@ Dialog.prototype.createDialog = function (params) {
     if (!app.checkInternetConnection()) {
         return false;
     }
-
     var self = this;
-
     QB.chat.dialog.create(params, function (err, createdDialog) {
         if (err) {
             console.error(err);
@@ -358,7 +354,7 @@ Dialog.prototype.createDialog = function (params) {
                     save_to_history: 1,
                     dialog_id: createdDialog._id,
                     notification_type: 1,
-                    occupants_ids: occupants.toString()
+                    date_sent: Date.now()
                 }
             };
 
@@ -366,36 +362,37 @@ Dialog.prototype.createDialog = function (params) {
                 return item != app.user.id
             });
 
-            for (var i = 0; i < newOccupantsIds.length; i++) {
-                QB.chat.sendSystemMessage(newOccupantsIds[i], systemMessage);
-            }
-
             /* Check dialog in cache */
             if (!self._cache[id]) {
                 self._cache[id] = helpers.compileDialogParams(createdDialog);
             }
 
-            self.joinToDialog(id).then(function(){
-                if(createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
-                    messageModule.sendMessage(id, notificationMessage);
+            (new Promise(function (resolve){
+                self.joinToDialog(id).then(function(){
+                    if(createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
+                        messageModule.sendMessage(id, notificationMessage);
+                    }
+                    resolve();
+                });
+            })).then(function(){
+                for (var i = 0; i < newOccupantsIds.length; i++) {
+                    QB.chat.sendSystemMessage(newOccupantsIds[i], systemMessage);
+                }
+                /* Check active tab [chat / public] */
+                var type = params.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
+                    activeTab = document.querySelector('.j-sidebar__tab_link.active');
+                if (activeTab && type !== activeTab.dataset.type) {
+                    var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
+                    app.loadChatList(tab).then(function () {
+                        self.renderDialog(self._cache[id], true);
+                    }).catch(function(error){
+                        console.error(error);
+                    });
+                } else {
+                    self.renderDialog(self._cache[id], true);
+                    router.navigate('/dialog/' + id);
                 }
             });
-
-            /* Check active tab [chat / public] */
-            var type = params.type === CONSTANTS.DIALOG_TYPES.PUBLICCHAT ? 'public' : 'chat',
-                activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
-            if (activeTab && type !== activeTab.dataset.type) {
-                var tab = document.querySelector('.j-sidebar__tab_link[data-type="chat"]');
-                app.loadChatList(tab).then(function () {
-                    self.renderDialog(self._cache[id], true);
-                }).catch(function(error){
-                    console.error(error);
-                });
-            } else {
-                self.renderDialog(self._cache[id], true);
-                router.navigate('/dialog/' + id);
-            }
         }
     });
 };
@@ -459,7 +456,8 @@ Dialog.prototype.updateDialog = function (updates) {
                 dialog_id: dialog._id,
                 notification_type: 2,
                 dialog_updated_at: Date.now() / 1000
-            }
+            },
+            markable: 1
         };
 
     if(dialog.type !== CONSTANTS.DIALOG_TYPES.GROUPCHAT) return false;
@@ -487,7 +485,7 @@ Dialog.prototype.updateDialog = function (updates) {
             self._cache[dialogId].users = self._cache[dialogId].users.concat(newUsers);
 
             updatedMsg.body = app.user.name + ' adds ' + usernames.join(', ') + ' to the conversation.';
-            updatedMsg.extension.occupants_ids_added = newUsers.join(',');
+            updatedMsg.extension.new_occupants_ids = newUsers.join(',');
         } else {
             router.navigate('/dialog/' + dialogId);
             return false;
@@ -498,6 +496,19 @@ Dialog.prototype.updateDialog = function (updates) {
         if(newUsers){
             _notifyNewUsers(newUsers);
         }
+
+        var msg = {
+            extension: {
+                notification_type: 2,
+                dialog_id: dialog._id,
+                new_occupants_ids: newUsers.toString()
+            }
+        };
+
+        _.each(dialog.occupants_ids, function(user){
+            QB.chat.sendSystemMessage(+user, msg);
+        });
+
 
         messageModule.sendMessage(dialogId, updatedMsg);
 
@@ -532,7 +543,8 @@ Dialog.prototype.updateDialog = function (updates) {
         var msg = {
             extension: {
                 notification_type: 2,
-                dialog_id: dialog._id
+                dialog_id: dialog._id,
+                new_occupants_ids: users.toString()
             }
         };
 
@@ -564,24 +576,29 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
             alert('you can\'t remove this dialog');
             break;
         case CONSTANTS.DIALOG_TYPES.CHAT:
-            QB.chat.dialog.delete([dialogId], function(err) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    _removedilogFromCacheAndUi();
-                    router.navigate('/dashboard');
-                }
-            });
-            break;
         case CONSTANTS.DIALOG_TYPES.GROUPCHAT:
-            // remove user from current  group dialog;
-            _notuyfyUsers();
 
-            QB.chat.dialog.update(dialogId, {
-                pull_all: {
-                    occupants_ids: [app.user.id]
+            if(CONSTANTS.DIALOG_TYPES.GROUPCHAT===dialog.type){
+                // remove user from current  group dialog;
+                _notuyfyUsers();
+
+                var systemMessage = {
+                    extension: {
+                        notification_type: 3,
+                        dialog_id: dialog._id
+                    }
+                };
+
+                for (var i = 0; i < dialog.users.length; i++) {
+                    if (dialog.users[i] === app.user.id) {
+                        continue;
+                    }
+                    QB.chat.sendSystemMessage(dialog.users[i], systemMessage);
                 }
-            }, function(err, res) {
+
+            }
+
+            QB.chat.dialog.delete([dialogId], function(err) {
                 if (err) {
                     console.error(err);
                 } else {
@@ -606,15 +623,24 @@ Dialog.prototype.quitFromTheDialog = function(dialogId){
             extension: {
                 save_to_history: 1,
                 dialog_id: dialog._id,
-                notification_type: 2,
-                dialog_updated_at: Date.now() / 1000,
-                occupants_ids_removed: app.user.id
-            }
+                notification_type: 3,
+                dialog_updated_at: Date.now() / 1000
+            },
+            markable: 1
         };
 
         messageModule.sendMessage(dialogId, msg);
     }
 
 };
+
+Dialog.prototype.sortedByLastMessage = function(dialogId){
+    var self = this,
+        elem = document.getElementById(dialogId);
+        if(elem) {
+            self.dialogsListContainer.insertBefore(elem, self.dialogsListContainer.firstElementChild);
+        }
+};
+
 
 var dialogModule = new Dialog();

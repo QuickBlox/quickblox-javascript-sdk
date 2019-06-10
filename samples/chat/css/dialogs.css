@@ -250,3 +250,8 @@
 .dialog_unread_counter.hidden {
     display: none;
 }
+
+.center {
+    width: 100%;
+    text-align: center;
+}

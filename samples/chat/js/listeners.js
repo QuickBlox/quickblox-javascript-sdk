@@ -21,11 +21,18 @@
 function Listeners() {};
 
 Listeners.prototype.onMessageListener = function (userId, message) {
-    if(userId === app.user.id) return false;
 
     var self = this,
         msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
+
+    if (dialog) {
+        dialogModule.sortedByLastMessage(message.dialog_id);
+    }
+
+    if(userId === app.user.id){
+        return false;
+    } 
 
     if(message.markable){
         messageModule.sendDeliveredStatus(msg._id, userId, msg.chat_dialog_id);
@@ -41,11 +48,14 @@ Listeners.prototype.onMessageListener = function (userId, message) {
 
         var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
             tabType = activeTab.dataset.type,
-            dialogType = dialog.type === 1 ? 'public' : 'chat';
+            dialogType = dialog.type === 1 ? 'public' : 'chat',
+            isActiveTab = tabType === dialogType;
 
-        if(tabType === dialogType){
+        if(isActiveTab) {
             dialogModule.renderDialog(dialog, true);
+        }
 
+        if(isActiveTab || message.dialog_id === dialogModule.dialogId ){
             if (dialogModule.dialogId === msg.chat_dialog_id) {
                 messageModule.renderMessage(msg, true);
             } else {
@@ -79,14 +89,14 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
         dialog = dialogModule._cache[message.dialog_id],
         extension = message.extension,
         dialogId = message.dialog_id,
-        occupantsIdsAdded = extension.occupants_ids_added && extension.occupants_ids_added.split(',');
+        occupantsIdsAdded = extension.new_occupants_ids && extension.new_occupants_ids.split(',');
 
-    if(extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.UPDATE_DIALOG){
-        if (extension.occupants_ids_removed) {
+    if(message.extension && ['2','3'].indexOf(message.extension.notification_type) !== -1){
+        if (message.extension.notification_type === '3') {
             dialogModule._cache[dialogId].users = dialogModule._cache[dialogId].users.filter(function(user){
                 return user !== userId;
             });
-        } else if(extension.occupants_ids_added) {
+        } else if(extension.new_occupants_ids) {
             _.each(occupantsIdsAdded, function(userId) {
                 if (dialog.users.indexOf(+userId) === -1) {
                     dialog.users.push(+userId);
@@ -133,7 +143,6 @@ Listeners.prototype.onMessageTypingListener = function (isTyping, userId, dialog
 
 Listeners.prototype.onSystemMessageListener = function (message) {
     var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
-
     if (message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.NEW_DIALOG) {
         if (message.extension.dialog_id) {
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
@@ -149,13 +158,12 @@ Listeners.prototype.onSystemMessageListener = function (message) {
             });
         }
         return false;
-    } else if(message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.UPDATE_DIALOG) {
+    } else if(message.extension && ['2','3'].indexOf(message.extension.notification_type) !== -1 ) {
         if(!dialog){
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
                 var type = dialog.type === 1 ? 'public' : 'chat',
                     activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
                 if (activeTab && type === activeTab.dataset.type) {
                     dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
                 }
@@ -182,15 +190,13 @@ Listeners.prototype.onSentMessageCallback = function (messageLost, messageSent) 
     var message = messageSent || messageLost,
         data = {
             _id: message.id,
-            dialogId: message.extension.dialog_id
+            dialogId: message.extension.dialog_id,
+            status: 'sent'
         };
 
     if (messageLost) {
         // message was not sent to the chat.
-        data.status = 'not sent';
-    } else {
-        // message was sent to the chat but not delivered to che opponent.
-        data.status = 'not delivered yet';
+        data.status = 'not ' + data.status;
     }
 
     messageModule.setMessageStatus(data);
@@ -202,7 +208,7 @@ Listeners.prototype.onReadStatusListener = function (messageId, dialogId, userId
         _id: messageId,
         dialogId: dialogId,
         userId: userId,
-        status: 'seen'
+        status: 'read'
     };
 
     messageModule.setMessageStatus(data);

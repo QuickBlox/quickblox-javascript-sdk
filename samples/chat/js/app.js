@@ -57,22 +57,17 @@ App.prototype.renderDashboard = function (activeTabName) {
     listeners.setListeners();
 
     logoutBtn.addEventListener('click', function () {
-        QB.users.delete(app.user.id, function(err, user){
-            if (err) {
-                console.error('Can\'t delete user by id: '+app.user.id+' ', err);
-            }
 
-            loginModule.isLogin = false;
-            app.isDashboardLoaded = false;
+        loginModule.isLogin = false;
+        app.isDashboardLoaded = false;
 
-            localStorage.removeItem('user');
-            helpers.clearCache();
+        localStorage.removeItem('user');
+        helpers.clearCache();
 
-            QB.chat.disconnect();
-            QB.destroySession();
-            
-            router.navigate('#!/login');
-        });
+        QB.chat.disconnect();
+        QB.destroySession(() => null);
+
+        router.navigate('#!/login');
     });
 
     this.tabSelectInit();
@@ -90,7 +85,7 @@ App.prototype.loadWelcomeTpl = function () {
 App.prototype.tabSelectInit = function () {
     var self = this,
         tabs = document.querySelectorAll('.j-sidebar__tab_link');
-    
+
     _.each(tabs, function (item) {
         item.addEventListener('click', function (e) {
             e.preventDefault();
@@ -99,7 +94,16 @@ App.prototype.tabSelectInit = function () {
             }
             
             var tab = e.currentTarget;
-            self.loadChatList(tab);
+            self.loadChatList(tab).then(function(){
+                var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
+                    tabType = activeTab.dataset.type,
+                    dialogType = dialogModule._cache[dialogModule.dialogId].type === 1 ? 'public' : 'chat',
+                    isActiveTab = tabType === dialogType;
+
+                if(isActiveTab && dialogModule._cache[dialogModule.dialogId].type === CONSTANTS.DIALOG_TYPES.CHAT ) {
+                    dialogModule.renderMessages(dialogModule.dialogId);
+                }
+            });
         });
     });
 };
@@ -153,17 +157,10 @@ App.prototype.buildCreateDialogTpl = function () {
         if (document.forms.create_dialog.create_dialog_submit.disabled) return false;
         
         document.forms.create_dialog.create_dialog_submit.disabled = true;
-        
-        var users = self.userListConteiner.querySelectorAll('.selected'),
-            type = users.length > 2 ? 2 : 3,
-            name = document.forms.create_dialog.dialog_name.value,
-            occupants_ids = [];
 
-        _.each(users, function (user) {
-            if (+user.id !== self.user.id) {
-                occupants_ids.push(user.id);
-            }
-        });
+        var occupants_ids = userModule.selectedUserIds,
+            type = occupants_ids.length > 1 ? 2 : 3,
+            name = document.forms.create_dialog.dialog_name.value;
 
         if (!name && type === 2) {
             var userNames = [];
@@ -197,6 +194,7 @@ App.prototype.buildCreateDialogTpl = function () {
             document.forms.create_dialog.dialog_name.value = titleText.slice(0, 40);
         }
     });
+
     userModule.initGettingUsers();
 };
 

@@ -156,8 +156,8 @@ Helpers.prototype.getMessageStatus = function(message){
     var self = this,
         deleveredToOcuupants = self.checkIsMessageDeliveredToOccupants(message),
         readedByOcuupants = self.checkIsMessageReadedByOccupants(message),
-        status = !deleveredToOcuupants ? 'not delivered yet' :
-            readedByOcuupants ? 'seen' : 'delivered';
+        status = !deleveredToOcuupants ? 'sent' :
+            readedByOcuupants ? 'read' : 'delivered';
 
 
     return status;
@@ -224,8 +224,8 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
         message.notification_type = msg.extension.notification_type;
     }
 
-    if(msg.extension.occupants_ids_added){
-        message.occupants_ids_added = msg.extension.occupants_ids_added;
+    if(msg.extension.new_occupants_ids){
+        message.new_occupants_ids = msg.extension.new_occupants_ids;
     }
 
     message.status = (userId !== app.user.id) ? self.getMessageStatus(message) : undefined;

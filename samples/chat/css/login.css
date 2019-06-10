@@ -87,6 +87,14 @@
     color: #17D04B;
 }
 
+.login_form__row.error input {
+    border-bottom: 2px solid red !important;
+}
+
+.login_form__row.error label {
+    color: red !important;
+}
+
 .m-login__button {
     width: 100%;
 }
