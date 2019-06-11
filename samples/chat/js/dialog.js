@@ -368,6 +368,9 @@ Dialog.prototype.createDialog = function (params) {
             }
 
             (new Promise(function (resolve){
+                if(createdDialog.type===CONSTANTS.DIALOG_TYPES.CHAT){
+                    resolve();
+                }
                 self.joinToDialog(id).then(function(){
                     if(createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT){
                         messageModule.sendMessage(id, notificationMessage);
