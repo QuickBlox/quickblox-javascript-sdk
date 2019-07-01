@@ -44,24 +44,29 @@
             'videoSourceFilter': '.j-video_source',
             'audioSourceFilter': '.j-audio_source',
             'bandwidthSelect': '.j-bandwidth',
-            'insertOccupants': function() {
+            'insertOccupants': function(empty = true) {
                 var $occupantsCont = $('.j-users');
 
-                function cb($cont, res) {
-                    $cont.empty()
-                        .append(res)
-                        .removeClass('wait');
+                function cb($cont, res, empty) {
+                    if(empty){
+                        $cont.empty();
+                    }
+                    $cont.append(res).removeClass('wait');
                 }
 
                 return new Promise(function(resolve, reject) {
                     $occupantsCont.addClass('wait');
-
                     app.helpers.renderUsers().then(function(res) {
-                        cb($occupantsCont, res.usersHTML);
+                        cb($occupantsCont, res.usersHTML,empty);
                         resolve(res.users);
                     }, function(error) {
-                        cb($occupantsCont, error.message);
-                        reject('Not found users by tag');
+                        if(empty){
+                            cb($occupantsCont, error.message, empty);
+                        }else{
+                            $occupantsCont.removeClass('wait');
+                            app.helpers.renderUsers.stop = true;
+                        }
+                        reject('Not found users');
                     });
                 });
             }
@@ -120,7 +125,6 @@
          
                 if (user) {
                     $('.j-join__username').val(user.username);
-                    $('.j-join__room').val(user.room);
                 }
             },
             'dashboard': function() {
@@ -142,7 +146,6 @@
                 app.helpers.stateBoard = new app.helpers.StateBoard('.j-state_board', {
                     title: 'tpl_default',
                     property: {
-                        'tag': app.caller.user_tags,
                         'name':  app.caller.full_name,
                     }
                 });
@@ -192,6 +195,59 @@
         app.router = new Router();
         Backbone.history.start();
 
+        $(document).on('input', '#search_by_username', function (e) {
+
+            var userName = e.target.value.trim();
+            var isValid = 25 >= userName.length;
+
+            if(!isValid){
+                return false;
+            }
+
+            app.callees = {};
+
+            app.helpers.renderUsers.stop = false;
+            app.helpers.renderUsers.condition = {
+                order: {
+                    field:"updated_at",
+                    sort: "desc"
+                },
+                page:1,
+                per_page: 100
+            };
+
+            if(userName.length >=1){
+                app.helpers.renderUsers.condition.filter = {
+                    field: 'full_name',
+                    param: 'in',
+                    value: [userName]
+                };
+            }
+
+            ui.insertOccupants().then(function(users) {
+                app.users = users;
+                app.helpers.setFooterPosition();
+            }, function() {
+                app.helpers.setFooterPosition();
+            });
+
+
+        });
+
+        $(window).scroll(function () {
+            if (($(window).scrollTop() == $(document).height() - $(window).height()) &&
+                app.helpers.renderUsers.condition.page != undefined && !app.helpers.renderUsers.stop
+            ) {
+                app.helpers.renderUsers.condition.page += 1;
+                ui.insertOccupants(false).then(function(users) {
+                    app.users += users;
+                    app.helpers.setFooterPosition();
+                }, function() {
+                    app.helpers.setFooterPosition();
+                });
+            }
+        });
+
         /**
          * JOIN
          */
@@ -221,7 +277,7 @@
 
                 QB.chat.connect({
                     jid: QB.chat.helpers.getUserJid( app.caller.id, CONFIG.CREDENTIALS.appId ),
-                    password: 'webAppPass'
+                    password: 'quickblox'
                 }, function(err, res) {
                     if(err) {
                         if(!_.isEmpty(app.currentSession)) {
@@ -251,7 +307,17 @@
                     }
                 });
             }).catch(function(error) {
-                console.error(error);
+                $form.removeClass('join-wait');
+                try {
+                    if(typeof error.message == "string"){
+                        $('#join_err').find('.error',0).text(error.message);
+                    }else {
+                        $('#join_err').find('.error', 0).text(error.message.errors.base[0]);
+                    }
+                }catch (e) {
+                    console.log(error);
+                }
+                $('#join_err').modal();
             });
 
             return false;
@@ -267,6 +333,8 @@
             app.callees = {};
             $btn.prop('disabled', true);
 
+            app.helpers.renderUsers.stop = false;
+            app.helpers.renderUsers.condition.page = 1;
             ui.insertOccupants().then(function(users) {
                 app.users = users;
 
@@ -308,7 +376,7 @@
                         deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
                     },
                     'video': {
-                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
+                        deviceId: $videoSourceFilter.val() ? { exact: $videoSourceFilter.val() } : undefined
                     },
                     'options': {
                         'muted': true,
@@ -332,7 +400,6 @@
                     app.helpers.stateBoard.update({
                         'title': 'tpl_default',
                         'property': {
-                            'tag': app.caller.user_tags,
                             'name':  app.caller.full_name,
                         }
                     });
@@ -478,7 +545,7 @@
                         deviceId: $audioSourceFilter.val() ? $audioSourceFilter.val() : undefined
                     },
                     video: {
-                        deviceId: $videoSourceFilter.val() ? $videoSourceFilter.val() : undefined
+                        deviceId: $videoSourceFilter.val() ? { exact: $videoSourceFilter.val() } : undefined
                     },
                     elemId: 'localVideo',
                     options: {
@@ -598,21 +665,67 @@
             }
         });
 
+        $(document).on('click', '.j-caller__ctrl[data-target="screen"]', function(e, track) {
+
+            var $btn = $(this),
+                isActive = $btn.hasClass('active'),
+                callMethod = (isActive)?'getUserMedia':'getDisplayMedia';
+
+            if( _.isEmpty( app.currentSession)) {
+                return false;
+            }
+
+            if(track) {
+
+                app.currentSession.localStream.getVideoTracks()[0].stop();
+                var stream = app.currentSession.localStream.clone();
+                stream.removeTrack(stream.getVideoTracks()[0]);
+                stream.addTrack(track);
+                app.currentSession.localStream.getAudioTracks()[0].stop();
+                app.currentSession._replaceTracks(stream);
+                app.currentSession.localStream = stream;
+
+                if(isActive) {
+                    $btn.removeClass('active');
+                } else {
+                    $btn.addClass('active');
+                }
+
+                return true;
+            }
+
+            navigator.mediaDevices[callMethod]({
+                video: true,
+            }).then(stream => {
+                var videoTrack = stream.getVideoTracks()[0];
+                if(callMethod == 'getDisplayMedia') {
+                    videoTrack.onended = function () {
+                        $btn.trigger("click");
+                    };
+                }
+                $btn.trigger("click", [videoTrack]);
+            }).catch(function(error) {
+                console.warn('getMediaDevices', error);
+            });
+
+        });
+
         $(document).on('click', '.j-caller__ctrl', function() {
            var $btn = $(this),
                isActive = $btn.hasClass('active');
 
-           if( _.isEmpty( app.currentSession)) {
+           if( _.isEmpty( app.currentSession) || $btn.data('target') == 'screen') {
                return false;
-           } else {
-               if(isActive) {
-                   $btn.removeClass('active');
-                   app.currentSession.unmute( $btn.data('target') );
-               } else {
-                   $btn.addClass('active');
-                   app.currentSession.mute( $btn.data('target') );
-               }
            }
+
+           if(isActive) {
+               $btn.removeClass('active');
+               app.currentSession.unmute( $btn.data('target') );
+           } else {
+               $btn.addClass('active');
+               app.currentSession.mute( $btn.data('target') );
+           }
+
         });
 
         /** Video recording */
@@ -642,20 +755,17 @@
 
         /** LOGOUT */
         $(document).on('click', '.j-logout', function() {
-            QB.users.delete(app.caller.id, function(err, user){
-                if (!user) {
-                    console.error('Can\'t delete user by id: '+app.caller.id+' ', err);
-                }
+            app.caller = {};
+            app.users = [];
+            QB.chat.disconnect();
+            QB.destroySession(() => null);
+            app.currentSession = {};
+            QB.webrtc.sessions = {};
+            localStorage.removeItem('isAuth');
+            localStorage.removeItem('data');
+            app.router.navigate('join', {'trigger': true});
+            app.helpers.setFooterPosition();
 
-                app.caller = {};
-                app.users = [];
-
-                QB.chat.disconnect();
-                localStorage.removeItem('isAuth');
-                localStorage.removeItem('data');
-                app.router.navigate('join', {'trigger': true});
-                app.helpers.setFooterPosition();
-            });
         });
 
         /** Close tab or browser */
@@ -737,7 +847,6 @@
                 app.helpers.stateBoard.update({
                     title: 'tpl_default',
                     property: {
-                        'tag': app.caller.user_tags,
                         'name':  app.caller.full_name,
                     }
                 });
@@ -1087,27 +1196,25 @@
             }
 
             var audioDeviceId = $(ui.audioSourceFilter).val() ? $(ui.audioSourceFilter).val() : undefined,
-                videoDeviceId = $(ui.videoSourceFilter).val() ? $(ui.videoSourceFilter).val() : undefined,
+                videoDeviceId = $(ui.videoSourceFilter).val() ? { exact: $(ui.videoSourceFilter).val() } : undefined,
                 deviceIds = {
                     audio: audioDeviceId,
                     video: videoDeviceId
                 };
 
             var callback = function(err, stream) {
-                    if (err || !stream.getAudioTracks().length ||
-                        (isAudio ? false : !stream.getVideoTracks().length)
-                    ) {
-                        app.currentSession.stop({});
-    
-                        app.helpers.stateBoard.update({
-                            'title': 'tpl_device_not_found',
-                            'isError': 'qb-error',
-                            'property': {
-                                'name': app.caller.full_name
-                            }
-                        });
-                    }
-                };
+                if (err || (!stream.getAudioTracks().length && !stream.getVideoTracks().length)) {
+                    app.currentSession.stop({});
+
+                    app.helpers.stateBoard.update({
+                        'title': 'tpl_device_not_found',
+                        'isError': 'qb-error',
+                        'property': {
+                            'name': app.caller.full_name
+                        }
+                    });
+                }
+            };
 
             app.currentSession.switchMediaTracks(deviceIds, callback);
         }

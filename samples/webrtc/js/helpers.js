@@ -105,8 +105,8 @@
 
     app.helpers.join = function(data) {
         var userRequiredParams = {
-            'login': _getUui(CONFIG.CREDENTIALS.appId),
-            'password': 'webAppPass'
+            'login': _getUui(data.login),
+            'password': 'quickblox'
         };
 
         return new Promise(function(resolve, reject) {
@@ -122,7 +122,6 @@
                                 'login': userRequiredParams.login,
                                 'password': userRequiredParams.password,
                                 'full_name': data.username,
-                                'tag_list': data.room
                             }, function(createErr, createUser){
                                 if(createErr) {
                                     console.log('[create user] Error:', createErr);
@@ -139,10 +138,9 @@
                             });
                         } else {
                             /** Update info */
-                            if(loginUser.user_tags !== data.room || loginUser.full_name !== data.username) {
+                            if(loginUser.full_name !== data.username) {
                                 QB.users.update(loginUser.id, {
                                     'full_name': data.username,
-                                    'tag_list': data.room
                                 }, function(updateError, updateUser) {
                                     if(updateError) {
                                         console.log('APP [update user] Error:', updateError);
@@ -162,27 +160,53 @@
     };
 
     app.helpers.renderUsers = function() {
+
+        if(app.helpers.renderUsers.stop == undefined){
+            app.helpers.renderUsers.stop = false;
+        }
+
+        if(app.helpers.renderUsers.condition == undefined){
+            app.helpers.renderUsers.condition = {
+                order: {
+                    field:"updated_at",
+                    sort: "desc"
+                },
+                page:1,
+                per_page: 100
+            };
+        }
+
         return new Promise(function(resolve, reject) {
+
+            if(app.helpers.renderUsers.stop){
+                reject({
+                    'title': 'function is stopped',
+                    'message': 'function is stopped'
+                });
+            }
+
             var tpl = _.template( $('#user_tpl').html() ),
                 usersHTML = '',
+                tmp,
                 users = [];
 
-            QB.users.get({'tags': [app.caller.user_tags], 'per_page': 100}, function(err, result){
+            QB.users.listUsers(app.helpers.renderUsers.condition, function(err, result){
                 if (err) {
                     reject(err);
                 } else {
                     _.each(result.items, function(item) {
                         users.push(item.user);
-
                         if( item.user.id !== app.caller.id ) {
                             usersHTML += tpl(item.user);
+                        }else{
+                            tmp += 1;
                         }
                     });
 
-                    if(result.items.length < 2) {
+                    if(result.items.length < tmp) {
                         reject({
                             'title': 'not found',
-                            'message': 'Not found users by tag'
+                            'message': 'Not found users'
                         });
                     } else {
                         resolve({

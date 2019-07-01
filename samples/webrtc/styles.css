@@ -475,7 +475,7 @@ b {
 .board {
     position: relative;
     width: 75%;
-    min-height: 300px;
+    min-height: 660px;
     float: right;
     padding: 0 0 0 14px;
     box-sizing: border-box;
