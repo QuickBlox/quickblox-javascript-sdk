@@ -142,7 +142,7 @@ Login.prototype.setListeners = function(){
 
         var user = {
             login: userLogin,
-            password: 'webAppPass',
+            password: 'quickblox',
             full_name: userName
         };
 
