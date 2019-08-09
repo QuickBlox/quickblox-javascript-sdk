@@ -3,7 +3,7 @@
   "description": "QuickBlox JavaScript SDK",
   "version": "2.12.3",
   "homepage": "https://quickblox.com/developers/Javascript",
-  "main": "quickblox.js",
+  "main": "src/qbMain.js",
   "license": "(Apache-2.0)",
   "keywords": [
     "quickblox",
