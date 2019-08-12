@@ -16,7 +16,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.2/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.4/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -61,6 +61,10 @@ var QB2 = new QuickBlox();
 # Documentation
 
 You can look at it here https://quickblox.com/developers/Javascript
+
+# Known issues
+
+- We are recommend you to use BOSH chat protocol instead of WebSockets for EI/Edge browsers.
 
 # Questions and feedback
 
