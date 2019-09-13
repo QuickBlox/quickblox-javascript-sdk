@@ -171,11 +171,20 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
     if (elem) {
         elem.pause();
 
-        if (typeof elem.srcObject === 'object') {
+        if (elem.srcObject && typeof elem.srcObject === 'object') {
+            elem.srcObject.getTracks().forEach(
+                function(track){
+                    track.stop();
+                    track.enabled = false;
+                }
+            );
             elem.srcObject = null;
         } else {
             elem.src = '';
         }
+
+        elem.removeAttribute("src");
+        elem.removeAttribute("srcObject");
     }
 };
 
@@ -185,12 +194,12 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  * @param {string} [deviceIds.audio] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput')
  * @param {string} [deviceIds.video] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput')
  * @param {switchMediaTracksCallback} callback - the callback to get a result of the function
- * 
+ *
  * @example
  * var switchMediaTracksBtn = document.getElementById('confirmSwitchMediaTracks');
- * 
+ *
  * var webRTCSession = QB.webrtc.createNewSession(params);
- * 
+ *
  * QB.webrtc.getMediaDevices('videoinput').then(function(devices) {
  *     var selectVideoInput = document.createElement('select'),
  *         selectVideoInput.id = 'videoInput',
@@ -211,7 +220,7 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  * }).catch(function(error) {
  *     console.error(error);
  * });
- * 
+ *
  * QB.webrtc.getMediaDevices('audioinput').then(function(devices) {
  *     var selectAudioInput = document.createElement('select'),
  *         selectAudioInput.id = 'audioInput',
@@ -232,7 +241,7 @@ WebRTCSession.prototype.detachMediaStream = function(id) {
  * }).catch(function(error) {
  *     console.error(error);
  * });
- * 
+ *
  * switchMediaTracksBtn.onclick = function(event) {
  *     var audioDeviceId = document.getElementById('audioInput').value || undefined,
  *         videoDeviceId = document.getElementById('videoInput').value || undefined,
@@ -272,7 +281,7 @@ WebRTCSession.prototype.switchMediaTracks = function(deviceIds, callback) {
     if (deviceIds && deviceIds.audio) {
         self.mediaParams.audio.deviceId = deviceIds.audio;
     }
-    
+
     if (deviceIds && deviceIds.video) {
         self.mediaParams.video.deviceId = deviceIds.video;
     }
@@ -300,13 +309,13 @@ WebRTCSession.prototype._replaceTracks = function(stream) {
         newStreamTracks = stream.getTracks();
 
     this.detachMediaStream(elemId);
-    
+
     newStreamTracks.forEach(function(track) {
         localStream.addTrack(track);
     });
 
     this.attachMediaStream(elemId, stream, ops);
-    
+
     for (var userId in peers) {
         _replaceTracksForPeer(peers[userId]);
     }
@@ -764,6 +773,14 @@ WebRTCSession.prototype._onCallStatsReport = function(userId, stats, error) {
 WebRTCSession.prototype._onSessionConnectionStateChangedListener = function(userID, connectionState) {
     if (typeof this.onSessionConnectionStateChangedListener === 'function') {
         Utils.safeCallbackCall(this.onSessionConnectionStateChangedListener, this, userID, connectionState);
+        if(Helpers.SessionConnectionState.CLOSED === connectionState && this.peerConnections[userID]) {
+            this.peerConnections[userID].onicecandidate = null;
+            this.peerConnections[userID].onsignalingstatechange = null;
+            this.peerConnections[userID].ontrack = null;
+            this.peerConnections[userID].oniceconnectionstatechange = null;
+            this.peerConnections[userID]._clearWaitingReconnectTimer();
+            delete this.peerConnections[userID];
+        }
     }
 };
 
@@ -864,10 +881,12 @@ WebRTCSession.prototype._closeLocalMediaStream = function(){
     if (this.localStream) {
         this.localStream.getAudioTracks().forEach(function (audioTrack) {
             audioTrack.stop();
+            audioTrack.enabled = false;
         });
 
         this.localStream.getVideoTracks().forEach(function (videoTrack) {
             videoTrack.stop();
+            videoTrack.enabled = false;
         });
 
         this.localStream = null;

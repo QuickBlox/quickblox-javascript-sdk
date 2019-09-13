@@ -709,7 +709,8 @@
     
     
     <div class="description">
-        Retrive all contacts from address book.The method accepts 1 or 2 parameters.
+        Retrive all contacts from address book.
+The method accepts 1 or 2 parameters.
     </div>
     
 
@@ -764,7 +765,8 @@
                         
                     
                 
-                You could pass udid of address book orcallback function if you want to get contacts from global address book.</td>
+                You could pass udid of address book or
+callback function if you want to get contacts from global address book.</td>
         </tr>
 	
 	
@@ -794,7 +796,8 @@
                         
                     
                 
-                Callback function is used as 2nd parameter if you pass udid as 1st parameters.This callback takes 2 arguments: an error and a response.</td>
+                Callback function is used as 2nd parameter if you pass udid as 1st parameters.
+This callback takes 2 arguments: an error and a response.</td>
         </tr>
 	
 	
@@ -843,7 +846,15 @@
         
 
     
-    <pre class="prettyprint"><code>var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';function gotContacts(err, contacts) { contacts.forEach( (contact) => { alert(contact); })}QB.addressbook.get(gotContacts);// or you could specify what address book you need by udidQB.addressbook.get(UDID, gotContacts);</code></pre>
+    <pre class="prettyprint"><code>var UDID = 'D337E8A4-80AD-8ABA-9F5D-579EFF6BACAB';
+
+function gotContacts(err, contacts) {
+ contacts.forEach( (contact) => { alert(contact); })
+}
+
+QB.addressbook.get(gotContacts);
+// or you could specify what address book you need by udid
+QB.addressbook.get(UDID, gotContacts);</code></pre>
     
 
     
@@ -871,7 +882,8 @@
     
     
     <div class="description">
-        Retrieve QuickBlox users that have phone numbers from your address book.The methods accepts 1 or 2 parameters.
+        Retrieve QuickBlox users that have phone numbers from your address book.
+The methods accepts 1 or 2 parameters.
     </div>
     
 
@@ -956,7 +968,8 @@
                         
                     
                 
-                Callback function is useв as 2nd parameter if you pass `isCompact` as 1st parameter.This callback takes 2 arguments: an error and a response.</td>
+                Callback function is useв as 2nd parameter if you pass `isCompact` as 1st parameter.
+This callback takes 2 arguments: an error and a response.</td>
         </tr>
 	
 	
@@ -1025,7 +1038,11 @@
     
     
     <div class="description">
-        The method is used to create, update and delete contacts in address book.<br />If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.If pass 'destroy: 1' then the contact will be removed.<br /><a target="_blank" href="https://quickblox.com/developers/AddressBook">Found more here</a>. <br />The method accepts 2 or 3 parameters.
+        The method is used to create, update and delete contacts in address book.<br />
+If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.
+If pass 'destroy: 1' then the contact will be removed.<br />
+<a target="_blank" href="https://quickblox.com/developers/AddressBook">Found more here</a>. <br />
+The method accepts 2 or 3 parameters.
     </div>
     
 
@@ -1153,7 +1170,8 @@
                         
                     
                 
-                User's device identifier. If specified all operations will be in this context. Max length 64 symbols.If not - it means a user has one global address book across all his devices.</td>
+                User's device identifier. If specified all operations will be in this context. Max length 64 symbols.
+If not - it means a user has one global address book across all his devices.</td>
         </tr>
 	
 	
@@ -1183,7 +1201,8 @@
                         
                     
                 
-                Defines force rewrite mode.If set 1 then all previous contacts for device context will be replaced by new ones.</td>
+                Defines force rewrite mode.
+If set 1 then all previous contacts for device context will be replaced by new ones.</td>
         </tr>
 	
 	
@@ -1266,7 +1285,31 @@
         
 
     
-    <pre class="prettyprint"><code>var people = [{   'name':'Frederic Cartwright',   'phone': '8879108395' }, {   'phone': '8759108396',   'destroy': 1 }]; var options = {   force: 1,   udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB' }; function addressBookSaved(err, response) {   if(err) {   } else {     console.log('All constacts saved');   } } QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback); // or second parameters can be options QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);</code></pre>
+    <pre class="prettyprint"><code>var people = [{
+   'name':'Frederic Cartwright',
+   'phone': '8879108395'
+ },
+ {
+   'phone': '8759108396',
+   'destroy': 1
+ }];
+
+ var options = {
+   force: 1,
+   udid: 'A337E8A4-80AD-8ABA-9F5D-579EFF6BACAB'
+ };
+
+ function addressBookSaved(err, response) {
+   if(err) {
+
+   } else {
+     console.log('All constacts saved');
+   }
+ }
+
+ QB.addressbook.uploadAddressBook(addressBookList, savedAddressBookCallback);
+ // or second parameters can be options
+ QB.addressbook.uploadAddressBook(addressBookList, options, savedAddressBookCallback);</code></pre>
     
 
     
@@ -1291,7 +1334,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 24 2018 15:18:04 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Fri Sep 13 2019 12:47:51 GMT+0300 (Eastern European Summer Time)
         </footer>
     </div>
 </div>

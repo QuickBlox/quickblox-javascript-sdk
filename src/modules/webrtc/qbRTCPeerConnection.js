@@ -39,6 +39,7 @@ RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) 
     this.userID = userID;
     this.type = type;
     this.remoteSDP = null;
+    this.ice = [];
 
     this.state = RTCPeerConnection.State.NEW;
 
@@ -64,15 +65,60 @@ RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) 
 };
 
 RTCPeerConnection.prototype.release = function(){
+
+    var self = this;
+
     this._clearDialingTimer();
     this._clearStatsReportTimer();
 
     if (this.connectionState !== 'closed') {
+
+        var streams = {
+            "LocalStreams" : self.getLocalStreams(),
+            "RemoteStreams" : (self.getRemoteStreams())
+                .concat([this.remoteStream])
+                .concat([this.stream])
+        };
+
+        if(this.remoteStreams && this.remoteStreams.length>0) {
+            streams.RemoteStreams = streams.RemoteStreams.concat(this.remoteStreams);
+        }
+
+        Object.keys(streams).forEach(function (key) {
+            streams[key].forEach(function (stream,index,array) {
+                if(stream && stream.getTracks) {
+                    stream.getTracks().forEach(function (track) {
+                        if (key === "RemoteStreams") {
+                            track.stop();
+                        }
+                        if (self.removeTrack) {
+                            var tmp = self.getSenders().find(function (sender) {
+                                return sender.track == track;
+                            });
+                            if (tmp !== undefined) {
+                                self.removeTrack(tmp);
+                            }
+                        }
+                    });
+                }
+                if(self.removeStream && typeof stream === "object" && stream instanceof MediaStream){
+                    self.removeStream(stream);
+                }else {
+                    array[index] = null;
+                }
+            });
+        });
+
         this.close();
+        if (navigator.userAgent.indexOf("Edge") > -1) {
+            this.connectionState = 'closed';
+            this.iceConnectionState = 'closed';
+        }
+
     }
 
-    // TODO: 'closed' state doesn't fires on Safari 11 (do it manually)
-    if (Helpers.getVersionSafari() >= 11) {
+    // TODO: 'closed' state doesn't fires on Safari 11 and Edge (do it manually)
+    if (Helpers.getVersionSafari() >= 11 || navigator.userAgent.indexOf("Edge") > -1) {
         this.onIceConnectionStateCallback();
     }
 };
@@ -101,6 +147,9 @@ RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteS
     }
     var sessionDescription = new RTCSessionDescription({sdp: modifiedSDP, type: type});
     function successCallback(sessionDescription) {
+        if(self.ice.length>0) {
+            self.addCandidates();
+        }
         callback(null);
     }
 
@@ -151,11 +200,11 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
          * callType === 2 is audio only
          */
         var ffVersion = Helpers.getVersionFirefox();
-        
+
         if (ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
             desc.sdp = _modifySDPforFixIssue(desc.sdp);
         }
-        
+
         self.setLocalDescription(desc).then(function() {
             callback(null);
         }).catch(function(error) {
@@ -168,22 +217,33 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
     }
 };
 
-RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
-    var candidate;
+RTCPeerConnection.prototype._addIceCandidate = function(iceCandidates) {
+    this.addIceCandidate(
+        new RTCIceCandidate({
+            sdpMLineIndex: iceCandidates.sdpMLineIndex,
+            sdpMid: iceCandidates.sdpMid,
+            candidate: iceCandidates.candidate
+        }),
+        function() {},
+        function(error){
+            Helpers.traceError("Error on 'addIceCandidate': " + error);
+        }
+    );
+};
 
-    for (var i = 0, len = iceCandidates.length; i < len; i++) {
-        candidate = {
-            sdpMLineIndex: iceCandidates[i].sdpMLineIndex,
-            sdpMid: iceCandidates[i].sdpMid,
-            candidate: iceCandidates[i].candidate
-        };
-        this.addIceCandidate(
-            new RTCIceCandidate(candidate),
-            function() {},
-            function(error){
-                Helpers.traceError("Error on 'addIceCandidate': " + error);
-            }
-        );
+RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
+    var self = this;
+
+    if(iceCandidates && iceCandidates.length > 0){
+        iceCandidates = iceCandidates.filter(iceCandidate => self.ice.indexOf(iceCandidate) === -1);
+        self.ice = self.ice.concat(iceCandidates);
+    }
+
+    if(self.remoteDescription && self.remoteDescription.type){
+        self.ice.forEach(function (tmp, i) {
+            self._addIceCandidate(tmp);
+            delete self.ice[i];
+        });
     }
 };
 
@@ -446,7 +506,7 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
 
             if (result.bytesReceived && result.type === 'inbound-rtp') {
                 item = statistic.remote[result.mediaType];
-                item.bitrate = _getBitratePerSecond(result, lastResults, false);   
+                item.bitrate = _getBitratePerSecond(result, lastResults, false);
                 item.bytesReceived = result.bytesReceived;
                 item.packetsReceived = result.packetsReceived;
                 item.timestamp = result.timestamp;
@@ -468,7 +528,7 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
                     item.protocol = result.transport;
                     item.ip = result.ipAddress;
                     item.port = result.portNumber;
-                } else if (!Helpers.getVersionFirefox()) {                 
+                } else if (!Helpers.getVersionFirefox()) {
                     item.protocol = result.protocol;
                     item.ip = result.ip;
                     item.port = result.port;
@@ -488,7 +548,7 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
                     item = statistic.local.video;
                     item.frameHeight = result.frameHeight;
                     item.frameWidth = result.frameWidth;
-                    item.framesPerSecond = _getFramesPerSecond(result, lastResults, true);  
+                    item.framesPerSecond = _getFramesPerSecond(result, lastResults, true);
                 }
             }
         });
@@ -590,7 +650,7 @@ function setMediaBitrate(sdp, media, bitrate) {
     var newLines = lines.slice(0, line);
     newLines.push('b='+modifier+':'+amount);
     newLines = newLines.concat(lines.slice(line, lines.length));
-    
+
     return newLines.join('\n');
 }
 

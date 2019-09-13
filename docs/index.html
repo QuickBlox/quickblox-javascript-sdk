@@ -639,27 +639,42 @@
 
 
     <section>
-        <article class="readme"><h1>QuickBlox JavaScript SDK</h1><p><a target="_blank" href="https://travis-ci.org/QuickBlox/quickblox-javascript-sdk"><img src="https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages" alt="travis-ci"></a>
+        <article class="readme"><h1>QuickBlox JavaScript SDK</h1>
+<p><a target="_blank" href="https://travis-ci.org/QuickBlox/quickblox-javascript-sdk"><img src="https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages" alt="travis-ci"></a>
 <a target="_blank" href="https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk"><img src="https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk/badges/gpa.svg" alt="Code Climate"></a>
 <a target="_blank" href="https://www.npmjs.com/package/quickblox"><img src="https://img.shields.io/npm/v/quickblox.svg" alt="npm"></a>
 <a target="_blank" href="https://www.npmjs.com/package/quickblox"><img src="https://img.shields.io/npm/dm/quickblox.svg" alt="npm"></a></p>
 <p>The QuickBlox JavaScript SDK provides a JavaScript library making it even easier to access the QuickBlox cloud communication backend platform.</p>
 <p><a target="_blank" href="https://quickblox.com">QuickBlox</a> is a suite of communication features &amp; data services (APIs, SDKs, code samples, admin panel, tutorials) which help digital agencies, mobile developers and publishers to add great communication functionality to smartphone applications like in Skype, WhatsApp, Viber.</p>
 <p>Check out our <a target="_blank" href="https://quickblox.github.io/quickblox-javascript-sdk/docs/">API Reference</a> for more detailed information about our SDK.</p>
-<h1>Install</h1><h2>Dependencies for browser</h2><pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.11.0/quickblox.min.js&quot;>&lt;/script></code></pre><h2>Bower and RequireJS</h2><p>If you use the bower package manager for your project, you can install the JS SDK through bower:</p>
-<pre class="prettyprint source"><code>bower install quickblox --save</code></pre><p>When you use <strong>RequireJS</strong>, you are able to use QuickBlox as an AMD compliant module. The SDK supports the <a target="_blank" href="https://github.com/umdjs/umd">UMD (Universal Module Definition)</a> pattern for JavaScript modules, so it is possible to use the SDK everywhere (as a global variable in the browser via an AMD module loader like RequireJS or as a CommonJS module in a Node.js environment).</p>
-<h2>Node.js and NPM integration</h2><p>Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like this:</p>
-<pre class="prettyprint source"><code>npm install quickblox --save</code></pre><p>And you're ready to go:</p>
+<h1>Install</h1>
+<h2>Dependencies for browser</h2>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.2/quickblox.min.js&quot;>&lt;/script>
+</code></pre>
+<h2>Bower and RequireJS</h2>
+<p>If you use the bower package manager for your project, you can install the JS SDK through bower:</p>
+<pre class="prettyprint source"><code>bower install quickblox --save
+</code></pre>
+<p>When you use <strong>RequireJS</strong>, you are able to use QuickBlox as an AMD compliant module. The SDK supports the <a target="_blank" href="https://github.com/umdjs/umd">UMD (Universal Module Definition)</a> pattern for JavaScript modules, so it is possible to use the SDK everywhere (as a global variable in the browser via an AMD module loader like RequireJS or as a CommonJS module in a Node.js environment).</p>
+<h2>Node.js and NPM integration</h2>
+<p>Also you can use QuickBlox JavaScript SDK with server-side applications on NodeJS through the native node package. Just install the package in your application project like this:</p>
+<pre class="prettyprint source"><code>npm install quickblox --save
+</code></pre>
+<p>And you're ready to go:</p>
 <pre class="prettyprint source lang-javascript"><code>var QB = require('quickblox');
 
 // OR to create many QB instances
 var QuickBlox = require('quickblox').QuickBlox;
 var QB1 = new QuickBlox();
-var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/archive/gh-pages.zip">QuickBlox JavaScript SDK, zip archive</a></p>
-<h1>Browsers support</h1><table>
+var QB2 = new QuickBlox();
+</code></pre>
+<h2>Download ZIP archive</h2>
+<p><a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/archive/gh-pages.zip">QuickBlox JavaScript SDK, zip archive</a></p>
+<h1>Browsers support</h1>
+<table>
 <thead>
 <tr>
-<th style="text-align:center">IE</th>
+<th style="text-align:center">Edge</th>
 <th style="text-align:center">Firefox</th>
 <th style="text-align:center">Chrome</th>
 <th style="text-align:center">Safari</th>
@@ -669,20 +684,24 @@ var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">10+</td>
-<td style="text-align:center">30+</td>
-<td style="text-align:center">30+</td>
-<td style="text-align:center">7.1+</td>
-<td style="text-align:center">23+</td>
-<td style="text-align:center">4+</td>
+<td style="text-align:center">14+</td>
+<td style="text-align:center">52+</td>
+<td style="text-align:center">50+</td>
+<td style="text-align:center">11.1+</td>
+<td style="text-align:center">36+</td>
+<td style="text-align:center">6+</td>
 </tr>
 </tbody>
 </table>
-<h1>Documentation</h1><p>You can look at it here https://quickblox.com/developers/Javascript</p>
-<h1>Questions and feedback</h1><p>Please raise questions, requests for help etc. via https://stackoverflow.com/questions/tagged/quickblox</p>
+<h1>Documentation</h1>
+<p>You can look at it here https://quickblox.com/developers/Javascript</p>
+<h1>Questions and feedback</h1>
+<p>Please raise questions, requests for help etc. via https://stackoverflow.com/questions/tagged/quickblox</p>
 <p>Feedback and suggestions for improvement always welcome :)</p>
-<h1>How to contribute</h1><p>See more information at <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md">contributing.md</a></p>
-<h1>License</h1><p>Apache 2.0</p></article>
+<h1>How to contribute</h1>
+<p>See more information at <a target="_blank" href="https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md">contributing.md</a></p>
+<h1>License</h1>
+<p>Apache 2.0</p></article>
     </section>
 
 
@@ -693,7 +712,7 @@ var QB2 = new QuickBlox();</code></pre><h2>Download ZIP archive</h2><p><a target
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 24 2018 15:18:04 GMT+0300 (FLE Daylight Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Fri Sep 13 2019 12:47:51 GMT+0300 (Eastern European Summer Time)
         </footer>
     </div>
 </div>

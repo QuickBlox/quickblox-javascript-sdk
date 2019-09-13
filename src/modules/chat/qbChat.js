@@ -2201,7 +2201,8 @@ PrivacyListProxy.prototype = {
          * @callback setAsDefaultPrivacylistCallback
          * */
 
-        var iq,
+        var self = this,
+            iq,
             stanzaParams = {
                 'from': this.connection ? this.connection.jid : this.Client.jid.user,
                 'type': 'set',
@@ -2214,7 +2215,7 @@ PrivacyListProxy.prototype = {
             }).c('default', name && name.length > 0 ? {name: name} : {});
 
             this.connection.sendIQ(iq, function(stanzaResult) {
-                callback(null);
+                setAsActive(self); //Activate list after setting it as default.
             }, function(stanzaError){
                 if(stanzaError){
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
@@ -2232,12 +2233,53 @@ PrivacyListProxy.prototype = {
 
             this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
                 if(!stanza.getChildElements('error').length){
-                    callback(null);
+                    setAsActive(self); //Activate list after setting it as default.
                 } else {
                     callback(Utils.getError(408));
                 }
             };
             this.Client.send(iq);
+        }
+
+        /**
+        * Set as active privacy list after setting as default.
+        * @param {PrivacyListProxy Object} self - The name of privacy list.
+        * */
+        function setAsActive(self) {
+            var setAsActiveIq,
+            setAsActiveStanzaParams = {
+                'from': self.connection ? self.connection.jid : self.Client.jid.user,
+                'type': 'set',
+                'id': chatUtils.getUniqueId('active1')
+            };
+            if(Utils.getEnv().browser){
+                setAsActiveIq = $iq(setAsActiveStanzaParams).c('query', {
+                    xmlns: Strophe.NS.PRIVACY_LIST
+                }).c('active', name && name.length > 0 ? {name: name} : {});
+                self.connection.sendIQ(setAsActiveIq, function(setAsActiveStanzaResult) {
+                    callback(null);
+                }, function(setAsActiveStanzaError){
+                    if(setAsActiveStanzaError){
+                        var setAsActiveErrorObject = chatUtils.getErrorFromXMLNode(setAsActiveStanzaError);
+                        callback(setAsActiveErrorObject);
+                    }else{
+                        callback(Utils.getError(408));
+                    }
+                });
+            } else {
+                setAsActiveIq = new XMPP.Stanza('iq', setAsActiveStanzaParams);
+                setAsActiveIq.c('query', {
+                    xmlns: chatUtils.MARKERS.PRIVACY
+                }).c('active', name && name.length > 0 ? {name: name} : {});
+                self.nodeStanzasCallbacks[setAsActiveStanzaParams.id] = function(setAsActistanza){
+                    if(!setAsActistanza.getChildElements('error').length){
+                        callback(null);
+                    } else {
+                        callback(Utils.getError(408));
+                    }
+                };
+                self.Client.send(setAsActiveIq);
+            }
         }
     }
 
