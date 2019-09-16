@@ -240,7 +240,12 @@
             ) {
                 app.helpers.renderUsers.condition.page += 1;
                 ui.insertOccupants(false).then(function(users) {
-                    app.users += users;
+                    var ids = users.map(function (user) {
+                        return user.id;
+                    });
+                    app.users = users.concat(app.users.filter(function (item) {
+                        return ids.indexOf(item.id) < 0;
+                    }));
                     app.helpers.setFooterPosition();
                 }, function() {
                     app.helpers.setFooterPosition();
@@ -433,7 +438,6 @@
                         video: false
                     };
                     document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
-                    document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
                 } else {
                     document.querySelector('.j-actions[data-call="audio"]').setAttribute('hidden', true);
                 }
@@ -496,7 +500,11 @@
                           notification_type: 'push',
                           user: {ids: pushRecipients},
                           environment: 'development', // environment, can be 'production' as well.
-                          message: QB.pushnotifications.base64Encode(app.caller.full_name + ' is calling you')
+                          message: QB.pushnotifications.base64Encode(JSON.stringify({
+                              "message": app.caller.full_name + " is calling you",
+                              "ios_voip": "1",
+                              "VOIPCall":"1"
+                          }))
                         };
                         //
                         QB.pushnotifications.events.create(params, function(err, response) {
@@ -538,7 +546,6 @@
                     video: false
                 };
                 document.querySelector('.j-actions[data-call="video"]').setAttribute('hidden', true);
-                document.querySelector('.j-caller__ctrl').setAttribute('hidden', true);
             } else {
                 mediaParams = {
                     audio: {
@@ -640,14 +647,14 @@
 
             if( app.currentSession.peerConnections[userId].stream && !$that.srcObject ) {
                 if( $that.hasClass('active') ) {
-                    $that.removeClass('active');
-
-                    app.currentSession.detachMediaStream('main_video');
-                    app.helpers.changeFilter('#main_video', 'no');
-                    app.mainVideo = 0;
-                    remoteStreamCounter = 0;
+                    return false;
                 } else {
-                    $('.j-callees__callee_video').removeClass('active');
+
+                    if(recorder) {
+                        recorder.stop();
+                    }
+
+                    $('.j-callees__callee__video').removeClass('active');
                     $that.addClass('active');
 
                     app.helpers.changeFilter('#main_video', 'no');
@@ -665,48 +672,48 @@
             }
         });
 
-        $(document).on('click', '.j-caller__ctrl[data-target="screen"]', function(e, track) {
+        $(document).on('click', '.j-caller__ctrl[data-target="screen"]', function() {
 
-            var $btn = $(this),
-                isActive = $btn.hasClass('active'),
-                callMethod = (isActive)?'getUserMedia':'getDisplayMedia';
-
-            if( _.isEmpty( app.currentSession)) {
+            if( _.isEmpty(app.currentSession)) {
                 return false;
             }
 
-            if(track) {
+            var $btn = $(this),
+                isActive = $btn.hasClass('active'),
+                runScreenSharing = function(){
+                    navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                    }).then(stream => {
+                        var videoTrack = stream.getVideoTracks()[0];
+                        videoTrack.onended = stopScreenSharing;
+                        switchMediaTrack(videoTrack);
+                        $btn.addClass('active');
+                    });
+                },
+                stopScreenSharing = function(){
+                    navigator.mediaDevices.getUserMedia({
+                        video: true,
+                    }).then(stream => {
+                        switchMediaTrack(stream.getVideoTracks()[0]);
+                        $btn.removeClass('active');
+                    });
+                },
+                switchMediaTrack = function (track) {
+                    app.currentSession.localStream.getVideoTracks()[0].stop();
+                    var stream = app.currentSession.localStream.clone();
+                    stream.removeTrack(stream.getVideoTracks()[0]);
+                    stream.addTrack(track);
+                    app.currentSession.localStream.getAudioTracks()[0].stop();
+                    app.currentSession._replaceTracks(stream);
+                    app.currentSession.localStream = stream;
+                    return true;
+                };
 
-                app.currentSession.localStream.getVideoTracks()[0].stop();
-                var stream = app.currentSession.localStream.clone();
-                stream.removeTrack(stream.getVideoTracks()[0]);
-                stream.addTrack(track);
-                app.currentSession.localStream.getAudioTracks()[0].stop();
-                app.currentSession._replaceTracks(stream);
-                app.currentSession.localStream = stream;
-
-                if(isActive) {
-                    $btn.removeClass('active');
-                } else {
-                    $btn.addClass('active');
-                }
-
-                return true;
+            if(isActive) {
+                stopScreenSharing();
+            } else {
+                runScreenSharing();
             }
-
-            navigator.mediaDevices[callMethod]({
-                video: true,
-            }).then(stream => {
-                var videoTrack = stream.getVideoTracks()[0];
-                if(callMethod == 'getDisplayMedia') {
-                    videoTrack.onended = function () {
-                        $btn.trigger("click");
-                    };
-                }
-                $btn.trigger("click", [videoTrack]);
-            }).catch(function(error) {
-                console.warn('getMediaDevices', error);
-            });
 
         });
 
@@ -738,15 +745,20 @@
             } else if(QBMediaRecorder.isAvailable()) {
                 if(!isActive){
                     var connections = app.currentSession.peerConnections,
-                        connection = connections[app.mainVideo],
-                        connectionsCount = Object.keys(connections).length;
+                        connection = connections[app.mainVideo];
 
-                    if (!connection || connectionsCount !== 1){
+                    if (!connection){
                         return false;
                     }
 
                     recorder = new QBMediaRecorder(recorderOpts);
-                    recorder.start(connection.stream);
+
+                    var elem = document.getElementById("main_video");
+
+                    if (typeof elem.srcObject === 'object') {
+                        recorder.start(elem.srcObject);
+                    }
+
                 } else {
                     recorder.stop();
                 }
@@ -891,25 +903,32 @@
             console.groupEnd();
 
             app.currentSession = session;
-
-            ui.insertOccupants().then(function(users) {
-                app.users = users;
-                var initiator = _.findWhere(app.users, {id: session.initiatorID});
-                app.callees = {};
-                /** close previous modal */
-                $(ui.income_call).modal('hide');
-
-                $('.j-ic_initiator').text(initiator.full_name);
-
-                // check the current session state
-                if (app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
-                    $(ui.income_call).modal('show');
-                    document.getElementById(sounds.rington).play();
+            QB.users.get(Number(session.initiatorID), function(error, user){
+                if (error) {
+                    console.log(error);
+                } else {
+                    app.users = app.users.filter(function (item) {
+                        return user.id !== item.id;
+                    });
+                    app.users.push(user);
+                    /** close previous modal */
+                    $(ui.income_call).modal('hide');
+                    $('.j-ic_initiator').text(user.full_name);
+                    // check the current session state
+                    if (app.currentSession.state !== QB.webrtc.SessionConnectionState.CLOSED){
+                        $(ui.income_call).modal('show');
+                        document.getElementById(sounds.rington).play();
+                    }
                 }
             });
         };
 
         QB.webrtc.onRejectCallListener = function onRejectCallListener(session, userId, extension) {
+
+            if(app.currentSession.ID !== session){
+                return;
+            }
+
             console.group('onRejectCallListener.');
                 console.log('UserId: ' + userId);
                 console.log('Session: ' + session);
@@ -1059,9 +1078,17 @@
 
                 if(app.mainVideo === userId) {
                     $('#remote_video_' + userId).removeClass('active');
-
                     app.helpers.changeFilter('#main_video', 'no');
                     app.mainVideo = 0;
+                    for(var key in app.currentSession.peerConnections){
+                        if(key != userId
+                            && app.currentSession.peerConnections[key].stream !== undefined
+                            && app.currentSession.peerConnections[key].stream.active) {
+                            app.currentSession.attachMediaStream('main_video', app.currentSession.peerConnections[key].stream);
+                            app.mainVideo = key;
+                            break;
+                        }
+                    }
                 }
 
                 if( !_.isEmpty(app.currentSession) ) {
@@ -1191,7 +1218,9 @@
         }
 
         function switchMediaTracks() {
-            if (!document.getElementById('localVideo').srcObject || !app.currentSession) {
+
+            var localVideo = document.getElementById('localVideo');
+            if ( (typeof localVideo == "object" && !localVideo.srcObject) || !app.currentSession) {
                 return true;
             }
 

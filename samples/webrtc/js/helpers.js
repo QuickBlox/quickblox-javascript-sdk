@@ -2,7 +2,34 @@
     'use strict';
 
     /** GLOBAL */
-    window.app = {};
+    window.app = new Proxy({}, {
+        set: function(obj, prop, value) {
+
+            if (prop === 'currentSession') {
+
+                if(typeof value === "object" && value.opponentsIDs && value.opponentsIDs.length > 1  ){
+                    $('.j-record').css("display", "none");
+                }else{
+                    $('.j-record').css("display", "inline-block");
+                }
+
+                if(typeof value === "object" && value.callType && value.callType === QB.webrtc.CallType.AUDIO){
+                    $('.j-caller__ctrl[data-target="screen"]').css("display", "none");
+                    $('.j-caller__ctrl[data-target="video"]').css("display", "none");
+                }else{
+                    $('.j-caller__ctrl[data-target="screen"]').css("display", "inline-block");
+                    $('.j-caller__ctrl[data-target="video"]').css("display", "inline-block");
+                }
+
+            }
+
+            // The default behavior to store the value
+            obj[prop] = value;
+
+            // Indicate success
+            return true;
+        }
+    });
     app.helpers = {};
     app.filter = {
         'names': 'no _1977 inkwell moon nashville slumber toaster walden'
@@ -84,28 +111,9 @@
         }
     };
 
-    /**
-     * [getUui - generate a unique id]
-     * @return {[string]} [a unique id]
-     */
-    function _getUui(identifyAppId) {
-        var navigator_info = window.navigator;
-        var screen_info = window.screen;
-        var uid = navigator_info.mimeTypes.length;
-
-        uid += navigator_info.userAgent.replace(/\D+/g, '');
-        uid += navigator_info.plugins.length;
-        uid += screen_info.height || '';
-        uid += screen_info.width || '';
-        uid += screen_info.pixelDepth || '';
-        uid += identifyAppId;
-        
-        return uid;
-    }
-
     app.helpers.join = function(data) {
         var userRequiredParams = {
-            'login': _getUui(data.login),
+            'login': data.login,
             'password': 'quickblox'
         };
 
