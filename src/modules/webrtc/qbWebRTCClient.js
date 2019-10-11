@@ -23,6 +23,7 @@ var Helpers = require('./qbWebRTCHelpers');
 var RTCPeerConnection = require('./qbRTCPeerConnection');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 var Utils = require('../../qbUtils');
+var config = require('../../qbConfig');
 
 function WebRTCClient(service, connection) {
     if (WebRTCClient.__instance) {
@@ -155,22 +156,35 @@ WebRTCClient.prototype.clearSession = function(sessionId) {
  * @returns {boolean} if active or new session exist
  */
 WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessionID) {
-    var self = this;
     var exist = false;
+    var sessions = this.sessions;
 
-    if (Object.keys(self.sessions).length > 0) {
-        Object.keys(self.sessions).forEach(function(key, i, arr) {
-            var session = self.sessions[key];
-            if (session.state === WebRTCSession.State.NEW || session.state === WebRTCSession.State.ACTIVE) {
-                if (session.ID !== sessionID) {
-                    exist = true;
-                    // break; // break doesn't work in 'forEach', need to find another way
-                }
-            }
+    if (Object.keys(sessions).length > 0) {
+        exist = Object.keys(sessions).some(function (key) {
+            var session = sessions[key];
+            var sessionActive = (
+                session.state === WebRTCSession.State.NEW ||
+                session.state === WebRTCSession.State.ACTIVE
+            );
+            return sessionActive && session.ID !== sessionID;
         });
     }
 
     return exist;
+};
+
+WebRTCClient.prototype.getNewSessionsCount = function (exceptId) {
+    var sessions = this.sessions;
+    return Object.keys(sessions).reduce(function (count, sessionId) {
+        var session = sessions[sessionId];
+        if (session.ID === exceptId) {
+            return count;
+        }
+        var sessionActive = (
+            session.state === WebRTCSession.State.NEW
+        );
+        return sessionActive ? count + 1 : count;
+    }, 0);
 };
 
 /**
@@ -181,7 +195,18 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
 
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-    if (this.isExistNewOrActiveSessionExceptSessionID(sessionID)) {
+    var otherActiveSessions = this.isExistNewOrActiveSessionExceptSessionID(sessionID);
+    var newSessionsCount = this.getNewSessionsCount(sessionID);
+    if (otherActiveSessions && !this.sessions[sessionID]) {
+        newSessionsCount++;
+    }
+
+    var reject = (
+        otherActiveSessions &&
+        (config.webrtc.autoReject || newSessionsCount > config.webrtc.incomingLimit)
+    );
+
+    if (reject) {
         Helpers.trace('User with id ' + userID + ' is busy at the moment.');
 
         delete extension.sdp;
@@ -197,12 +222,18 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
         var session = this.sessions[sessionID],
             bandwidth = +userInfo.bandwidth || 0;
 
-            if (!session) {
-                session = this._createAndStoreSession(sessionID, extension.callerID, extension.opponentsIDs, extension.callType, bandwidth);
-                
-            if (typeof this.onCallListener === 'function') {
-                Utils.safeCallbackCall(this.onCallListener, session, userInfo);
-            }
+        if (!session) {
+            session = this._createAndStoreSession(
+                sessionID,
+                extension.callerID,
+                extension.opponentsIDs,
+                extension.callType,
+                bandwidth
+            );
+        }
+
+        if (typeof this.onCallListener === 'function') {
+            Utils.safeCallbackCall(this.onCallListener, session, userInfo);
         }
 
         session.processOnCall(userID, extension);

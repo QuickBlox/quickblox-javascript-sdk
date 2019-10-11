@@ -36,13 +36,12 @@ var config = {
   chatReconnectionTimeInterval: 5,
   webrtc: {
     answerTimeInterval: 60,
+    autoReject: true,
+    incomingLimit: 1,
     dialingTimeInterval: 5,
     disconnectTimeInterval: 30,
     statsReportTimeInterval: false,
     iceServers: [
-      {
-        'url': 'stun:stun.l.google.com:19302'
-      },
       {
         'url': 'stun:turn.quickblox.com',
         'username': 'quickblox',
