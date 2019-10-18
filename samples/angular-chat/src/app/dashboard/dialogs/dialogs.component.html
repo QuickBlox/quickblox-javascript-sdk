@@ -1,0 +1,48 @@
+<div class="content__title j-content__title j-dialog">
+  <button class="open_sidebar j-open_sidebar"></button>
+  <h1 class="dialog__title j-dialog__title"> {{chatName}} </h1>
+  <div class="action_links" *ngIf="dialog && dialog.type !== CONSTANTS.DIALOG_TYPES.PUBLICCHAT" >
+    <a *ngIf="dialog.type == CONSTANTS.DIALOG_TYPES.GROUPCHAT" class="add_to_dialog j-add_to_dialog" (click)="showUpdateDialog()">
+      <i class="material-icons">person_add</i>
+    </a>
+    <a class="quit_fom_dialog_link" (click)="quitFromTheDialog()">
+      <i class="material-icons">delete</i>
+    </a>
+  </div>
+</div>
+<div class="notifications j-notifications hidden"></div>
+
+<div class="content__inner j-content__inner">
+  <div class="messages j-messages" (scroll)="loadMoreMessages($event)" >
+    <ng-container *ngFor="let data of messages">
+      <div class="message__wrap" >
+        <div class="center">
+          {{data[0]}}
+        </div>
+      </div>
+      <app-message *ngFor="let message of data[1];" [message]="message" class="message__wrap" id="{{message._id}}" >
+      </app-message>
+    </ng-container>
+  </div>
+  <form (ngSubmit)="onSubmit()" autocomplete="off" class="send_message" name="send_message">
+    <textarea #field autocapitalize="off" (keydown)="onKeydown($event)"
+              (keyup.shift)="shiftDown = false"
+              autocomplete="off" autocorrect="off" autofocus
+              class="message_feald" [(ngModel)]="messageField" name="message_feald" placeholder="Type a message"></textarea>
+    <div class="message__actions">
+      <div class="attachments_preview j-attachments_preview">
+        <ng-container *ngFor="let data of attachments">
+          <div class="attachment_preview__wrap m-loading" id="{{data.id}}">
+            <img class="attachment_preview__item" src="{{data.src}}">
+          </div>
+        </ng-container>
+      </div>
+      <label class="attach_btn" for="attach_btn">
+        <i class="material-icons">attachment</i>
+        <input accept="image/*" class="attach_input" id="attach_btn" (change)="prepareToUpload($event)" name="attach_file" type="file"/>
+      </label>
+      <button class="send_btn">send</button>
+    </div>
+  </form>
+</div>
+

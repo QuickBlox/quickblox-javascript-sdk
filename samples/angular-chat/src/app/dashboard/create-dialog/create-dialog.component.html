@@ -1,0 +1,38 @@
+<div class="content__title j-content__title j-create_dialog">
+  <button (click)="goBack()" class="back_to_dialog j-back_to_dialog">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1 class="group_chat__title">New Group Chat</h1>
+</div>
+<div class="notifications j-notifications hidden"></div>
+<div class="content__inner j-content__inner">
+  <div class="group_chat__filter __web-inspector-hide-shortcut__">
+    <input [(ngModel)]="userName" (input)="getUserList({full_name:userName})" type="text" autocomplete="off"
+           autocorrect="off" placeholder="Filter by Username">
+  </div>
+  <p class="group__chat__description">Select participants:</p>
+  <div class="group_chat__user_list j-group_chat__user_list">
+    <div (click)="toggleSelectItem(user.id)" *ngFor="let user of users"
+         [ngClass]="{ 'disabled selected': selectedUsers.indexOf(user.id) >= 0 }" class="user__item"
+         id="{{ user.id }}">
+			<span class="user__avatar m-user__img_{{ _usersCache[user.id].color }}">
+				<i class="material-icons m-user_icon">account_circle</i>
+			</span>
+      <div class="user__details">
+        <p class="user__name">{{ _usersCache[user.id].name }}</p>
+        <p *ngIf="user.last_request_at"
+           class="user__last_seen">{{ helpers.parseTime(_usersCache[user.id].last_request_at) }}</p>
+      </div>
+    </div>
+  </div>
+  <form action="" (ngSubmit)="onSubmit()" class="dialog_form m-dialog_form_create j-create_dialog_form"
+        name="create_dialog">
+    <input [(ngModel)]="messageField" [disabled]="selectedUsers.length < 3" autocapitalize="off" autocomplete="off" autocorrect="off"
+           class="dialog_name"
+           name="dialog_name" placeholder="Add conversation name" type="text">
+    <button [disabled]="selectedUsers.length < 2" class="btn m-create_dialog_btn j-create_dialog_btn"
+            name="create_dialog_submit"
+            type="submit">create
+    </button>
+  </form>
+</div>

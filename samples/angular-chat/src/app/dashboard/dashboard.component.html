@@ -1,0 +1,77 @@
+<div class="dashboard">
+  <div class="sidebar j-sidebar active">
+    <div class="sidebar__inner">
+      <div class="sidebar__header">
+        <a class="dashboard__logo" href="https://quickblox.com/" target="_blank">
+          <img alt="QuickBlox" src="../../assets/img/qb-logo.svg">
+        </a>
+        <div class="dashboard__status_wrap">
+          <p class="dashboard__status j-dashboard_status">
+            Logged in as {{loggedinUser.full_name}}
+          </p>
+        </div>
+        <a (click)="logout(loggedinUser.id)" class="logout j-logout">logout</a>
+      </div>
+      <div class="sidebar__content">
+        <ul class="sidebar__tabs">
+          <li class="sidebar__tab">
+            <a (click)="getChatList('chat')" [class.active]="chatsClicked" class="sidebar__tab_link" target="_blank">chats</a>
+          </li>
+          <li class="sidebar__tab">
+            <a (click)="getChatList('publicChats')" [class.active]="publicChatClicked"
+               class="sidebar__tab_link j-sidebar__tab_link" target="_blank">public chats</a>
+          </li>
+          <li class="sidebar__tab m-sidebar__tab_new">
+            <a (click)="createNewGroup()" [class.active]="createGroupClicked"
+               class="sidebar__tab_link j-sidebar__create_dialog m-sidebar__tab_link_new"
+               target="_blank">
+              <i class="material-icons">add_circle_outline</i>
+            </a>
+          </li>
+        </ul>
+        <ul class="sidebar__dilog_list j-sidebar__dilog_list">
+          <li (click)="openChat(chat)"
+              *ngFor="let chat of chats" [ngClass]="{'selected': selectedChat === chat._id}"
+              class="dialog__item j-dialog__item">
+            <a class="dialog__item_link">
+                            <span class="dialog__avatar">
+                                <i class="material-icons">account_circle</i>
+                            </span>
+              <span class="dialog__info">
+                                <span class="dialog__name">{{chat.name}}</span>
+                                <span class="dialog__last_message j-dialog__last_message">{{chat.last_message}}</span>
+                            </span>
+              <span class="dialog_additional_info">
+                                <span class="dialog__last_message_date j-dialog__last_message_date">
+                                    {{chat.last_message_date_sent | date:'hh:mm'}}
+                                </span>
+                                <span *ngIf="chat.unread_messages_count > 0"
+                                      class="dialog_unread_counter j-dialog_unread_counter">
+                                    {{chat.unread_messages_count}}
+                                </span>
+                            </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div>
+
+  </div>
+  <app-create-dialog *ngIf="createGroupClicked" [dialog]="dialog"></app-create-dialog>
+  <app-edit-dialog *ngIf="updateDialog" [dialog]="dialog"></app-edit-dialog>
+  <div *ngIf="welcomeChat" class="content j-content">
+    <div class="content__title j-content__title j-welcome">
+      Welcome to QuickBlox chat sample!
+    </div>
+    <div class="notifications j-notifications hidden"></div>
+    <div class="content__inner j-content__inner">
+      <div class="welcome__message">
+        <p>Please select you opponent to start chatting.</p>
+      </div>
+    </div>
+  </div>
+  <app-dialogs *ngIf="onChatClick && dialog" [dialog]="dialog"></app-dialogs>
+
+</div>

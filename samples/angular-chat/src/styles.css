@@ -1,0 +1,144 @@
+/* You can add global styles to this file, and also import other style files */
+@import "https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css";
+
+* {
+  box-sizing: border-box;
+}
+
+select, button, textarea, input {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  outline: none !important;
+}
+
+button:focus {
+  outline: none;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #000;
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
+  background-color: #f0f2f4;
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+/*
+ * SCROLLBAR CUSTOMIZATION
+ */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #ccc;
+  border-left: 1px solid #ccc;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #1FBCD2;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #4054B2;
+  cursor: pointer;
+}
+
+/* Animation */
+#fountainG {
+  flex: 0 0 102px;
+  position: relative;
+  width: 102px;
+  height: 12px;
+}
+
+.fountainG {
+  position: absolute;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0);
+  width: 12px;
+  height: 12px;
+  animation-name: bounce_fountainG;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  transform: scale(.3);
+  border-radius: 8px;
+}
+
+#fountainG_1 {
+  left: 0;
+  animation-delay: 0.6s;
+}
+
+#fountainG_2 {
+  left: 13px;
+  animation-delay: 0.75s;
+}
+
+#fountainG_3 {
+  left: 25px;
+  animation-delay: 0.9s;
+}
+
+@keyframes bounce_fountainG {
+  0% {
+    transform: scale(1);
+    background-color: #778594;
+  }
+
+  100% {
+    transform: scale(.3);
+    background-color: white;
+  }
+}
+
+.loading__wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.loading_inner {
+  margin: auto;
+}
+
+.loading__logo {
+  width: 150px;
+  margin: 0 auto 15px auto;
+}
+
+.loading__description {
+  font-size: 20px;
+  text-align: center;
+}
+
+.btn {
+  min-width: 96px;
+  background-color: #28C849;
+  border-radius: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  color: #FFFFFF;
+  border: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 12px 16px;
+}
+
+.btn:disabled {
+  background-color: #80E491;
+  cursor: no-drop;
+}

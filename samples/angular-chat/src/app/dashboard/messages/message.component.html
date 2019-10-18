@@ -1,0 +1,25 @@
+
+<span *ngIf="!message.notification_type" class="message__avatar">
+    <i class="material-icons">account_circle</i>
+</span>
+<div (visibility)="visibility($event)" class="message__content" #element >
+  <div *ngIf="!message.notification_type" class="message__sender_and_status">
+    <p class="message__sender_name">{{message.full_name}}</p>
+    <p class="message__status j-message__status">{{message.status}}</p>
+  </div>
+  <div class="message__text_and_date">
+    <div class="message__text_wrap">
+      <p [ngStyle]="{'text-align':message.notification_type ? 'center' : 'left' }"
+        *ngIf="message.message && message.message !== CONSTANTS.ATTACHMENT.BODY " [class.m-notification_message]="message.notification_type == 2"
+         class="message__text">{{message.message}}</p>
+      <div *ngIf="message.attachments && message.attachments.length" class="message__attachments_wtap">
+        <img *ngFor="let attachment of message.attachments" (load)="loadImagesEvent($event)" alt="attachment" class="message_attachment"
+             src="{{attachment.src}}">
+      </div>
+    </div>
+    <div class="message__timestamp">
+      {{message.date_sent | date:'hh:mm'}}
+    </div>
+  </div>
+</div>
+

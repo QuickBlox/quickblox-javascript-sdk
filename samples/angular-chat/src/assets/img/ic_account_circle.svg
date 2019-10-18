@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="34px" height="39px" viewBox="0 0 34 39" version="1.1" xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+  <title>ic_account_circle</title>
+  <desc>Created with Sketch.</desc>
+  <defs></defs>
+  <g id="Screens" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Create-Group" transform="translate(-256.000000, -301.000000)">
+      <g id="Conversation/private-Copy-2" transform="translate(233.000000, 280.000000)">
+        <g id="ic_account_circle" transform="translate(16.000000, 16.000000)">
+          <polygon id="Bounds" points="0 0 48 0 48 48 0 48"></polygon>
+          <path
+            d="M24,5 C28.4890141,5 32.1126761,8.62366197 32.1126761,13.1126761 C32.1126761,17.6016901 28.4890141,21.2253521 24,21.2253521 C19.5109859,21.2253521 15.8873239,17.6016901 15.8873239,13.1126761 C15.8873239,8.62366197 19.5109859,5 24,5 L24,5 Z M24,43.4 C17.2394366,43.4 11.2630986,39.9385915 7.77464789,34.6923944 C7.85577465,29.3109859 18.5915493,26.3633803 24,26.3633803 C29.3814085,26.3633803 40.1442254,29.3109859 40.2253521,34.6923944 C36.7369014,39.9385915 30.7605634,43.4 24,43.4 L24,43.4 Z"
+            id="Icon" fill="#FFFFFF" opacity="0.35"></path>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
