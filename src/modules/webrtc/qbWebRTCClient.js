@@ -230,10 +230,9 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
                 extension.callType,
                 bandwidth
             );
-        }
-
-        if (typeof this.onCallListener === 'function') {
-            Utils.safeCallbackCall(this.onCallListener, session, userInfo);
+            if (typeof this.onCallListener === 'function') {
+                Utils.safeCallbackCall(this.onCallListener, session, userInfo);
+            }
         }
 
         session.processOnCall(userID, extension);
