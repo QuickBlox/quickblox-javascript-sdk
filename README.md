@@ -16,7 +16,11 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.6/quickblox.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quickblox/2.12.7/quickblox.min.js"></script>
+```
+or
+```html
+<script src="https://unpkg.com/quickblox@2.12.7/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
