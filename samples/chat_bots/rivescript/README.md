@@ -193,4 +193,4 @@ Here we initialize RiveScript, then load all replies flows from **replies.rive**
  node index.js
 ```
 
-Now you can write something to your bot and will receive a reply. See the documentation at https://docs.quickblox.com/docs/js-quick-start.
+Now you can write something to your bot and will receive a reply. See the documentation at [https://docs.quickblox.com/docs/js-quick-start](https://docs.quickblox.com/docs/js-quick-start).

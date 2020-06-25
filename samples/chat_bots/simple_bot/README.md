@@ -133,4 +133,8 @@ In terminal type the following command:
 node index.js
 ```
 
-Now you can write something to your bot and will receive a reply. See the documentation at https://docs.quickblox.com/docs/js-quick-start.
+Now you can write something to your bot and will receive a reply. See the documentation at [https://docs.quickblox.com/docs/js-quick-start](https://docs.quickblox.com/docs/js-quick-start).
+
+### **Next step**
+
+You can take your simple bot to the next level by adding some intelligence to it. Check out [this sample](https://quickblox.github.io/quickblox-javascript-sdk/samples/chat_bots/rivescript/) to see a clever bot in action. Follow the guide to learn how to run your clever bot.
