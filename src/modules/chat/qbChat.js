@@ -21,9 +21,9 @@ if (Utils.getEnv().browser) {
     Strophe.addNamespace('PRIVACY_LIST', chatUtils.MARKERS.PRIVACY);
     Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
 } else if (Utils.getEnv().nativescript) {
-    XMPP = require('nativescript-xmpp-client');
+    //XMPP = require('nativescript-xmpp-client');
 } else if (Utils.getEnv().node)  {
-    XMPP = require('node-xmpp-client');
+    //XMPP = require('node-xmpp-client');
 }
 
 
@@ -87,7 +87,7 @@ function ChatProxy(service) {
     }
 
     this.service = service;
-        
+
     // Check the chat connection (return true/false)
     this.isConnected = false;
     // Check the chat connecting state (return true/false)

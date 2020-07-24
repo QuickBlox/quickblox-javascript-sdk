@@ -6,13 +6,14 @@ var config = require('./qbConfig');
 
 var unsupported = "This function isn't supported outside of the browser (...yet)";
 
-var isNativeScript = typeof global === 'object' && (global.hasOwnProperty('android') || global.hasOwnProperty('NSObject')),
-    isNode = typeof window === 'undefined' && typeof exports === 'object' && !isNativeScript,
-    isBrowser = typeof window !== 'undefined';
+var isNativeScript = false;
+var isNode = false;
+var isBrowser = true;
 
+var fs, os;
 if (isNode) {
-    var fs = require('fs');
-    var os = require('os');
+    //fs = require('fs');
+    //os = require('os');
 }
 
 // The object for type MongoDB.Bson.ObjectId
@@ -45,7 +46,7 @@ var Utils = {
     },
 
     _getOSInfoFromNativeScript: function() {
-        return (global && global.hasOwnProperty('android') ? 'Android' : 'iOS') + ' - NativeScript';
+        // return (global && global.hasOwnProperty('android') ? 'Android' : 'iOS') + ' - NativeScript';
     },
 
     getOS: function() {
@@ -72,9 +73,9 @@ var Utils = {
         if (self.getEnv().browser) {
             platformInfo = self._getOSInfoFromBrowser();
         } else if (self.getEnv().node)  {
-            platformInfo = self._getOSInfoFromNodeJS();
+            //platformInfo = self._getOSInfoFromNodeJS();
         } else if (self.getEnv().nativescript) {
-            return self._getOSInfoFromNativeScript();
+            //return self._getOSInfoFromNativeScript();
         }
 
         OS_LIST.forEach(function(osInfo) {
