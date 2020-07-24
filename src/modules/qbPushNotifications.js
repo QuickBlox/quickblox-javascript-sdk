@@ -23,7 +23,7 @@ function PushNotificationsProxy(service) {
                 return String.fromCharCode('0x' + p1);
             }));
         } else {
-            return new Buffer(str).toString('base64');
+            //return new Buffer(str).toString('base64');
         }
     };
 }
