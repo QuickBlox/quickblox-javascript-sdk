@@ -431,8 +431,9 @@ RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
         };
 
     Helpers.trace('_startWaitingReconnectTimer, timeout: ' + timeout);
-
-    self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+    if (!self.waitingReconnectTimeoutCallback) {
+        self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+    }
 };
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){

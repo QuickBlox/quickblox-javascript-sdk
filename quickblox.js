@@ -43310,8 +43310,9 @@ RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
         };
 
     Helpers.trace('_startWaitingReconnectTimer, timeout: ' + timeout);
-
-    self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+    if (!self.waitingReconnectTimeoutCallback) {
+        self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
+    }
 };
 
 RTCPeerConnection.prototype._clearDialingTimer = function(){
@@ -44713,22 +44714,11 @@ WebRTCSession.prototype.processOnStop = function(userID, extension) {
 
     this._clearAnswerTimer();
 
-    /** drop the call if the initiator did it */
-    if (userID === self.initiatorID) {
-        if (Object.keys(self.peerConnections).length) {
-            Object.keys(self.peerConnections).forEach(function(key) {
-                self.peerConnections[key].release();
-            });
-        } else {
-            Helpers.traceError("Ignore 'OnStop', there is no information about peer connections by some reason.");
-        }
+    var pc = self.peerConnections[userID];
+    if (pc) {
+        pc.release();
     } else {
-        var pc = self.peerConnections[userID];
-        if (pc) {
-            pc.release();
-        } else {
-            Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
-        }
+        Helpers.traceError("Ignore 'OnStop', there is no information about peer connection by some reason.");
     }
 
     this._closeSessionIfAllConnectionsClosed();
@@ -45595,8 +45585,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.12.7',
-  buildNumber: '1085',
+  version: '2.12.8',
+  buildNumber: '1086',
   creds: {
     appId: '',
     authKey: '',
