@@ -86,7 +86,7 @@ function ChatProxy(service) {
     this._isLogout = false;
 
     this._checkConnectionTimer = undefined;
-
+    this._pings = {};
     //
     this.helpers = new Helpers();
     //
@@ -564,17 +564,45 @@ function ChatProxy(service) {
     };
 
     this._onIQ = function(stanza) {
-        var stanzaId = chatUtils.getAttr(stanza, 'id'),
-            isLastActivity = stanzaId.indexOf('lastActivity') > -1;
+        var stanzaId = chatUtils.getAttr(stanza, 'id');
+        var isLastActivity = stanzaId.indexOf('lastActivity') > -1;
+        var isPong = stanzaId.indexOf('ping') > -1;
+        var ping = chatUtils.getElement(stanza, 'ping');
+        var type = chatUtils.getAttr(stanza, 'type');
+        var from = chatUtils.getAttr(stanza, 'from');
+        var userId = from ?
+            self.helpers.getIdFromNode(from) :
+            null;
 
         if (typeof self.onLastUserActivityListener === 'function' && isLastActivity) {
-            var from = chatUtils.getAttr(stanza, 'from'),
-                userId = self.helpers.getIdFromNode(from),
-                query = chatUtils.getElement(stanza, 'query'),
+            var query = chatUtils.getElement(stanza, 'query'),
                 error = chatUtils.getElement(stanza, 'error'),
                 seconds = error ? undefined : +chatUtils.getAttr(query, 'seconds');
 
             Utils.safeCallbackCall(self.onLastUserActivityListener, userId, seconds);
+        }
+        if ((ping || isPong) && type) {
+            if (type === 'get' && ping) {
+                // pong
+                self.connection.send($iq({
+                    from: self.helpers.getUserCurrentJid(),
+                    id: stanzaId,
+                    to: chatUtils.getAttr(stanza, 'from'),
+                    type: 'result'
+                }));
+            } else {
+                var pingRequest = self._pings[stanzaId];
+                if (pingRequest) {
+                    if (pingRequest.callback) {
+                        pingRequest.callback(null);
+                    }
+                    if (pingRequest.interval) {
+                        clearInterval(pingRequest.interval);
+                    }
+                    self._pings[stanzaId] = undefined;
+                    delete self._pings[stanzaId];
+                }
+            }
         }
 
         if (!Utils.getEnv().browser) {
@@ -1203,6 +1231,44 @@ ChatProxy.prototype = {
         } else {
             this.Client.send(iq);
         }
+    },
+
+    ping: function (jid_or_user_id, callback) {
+        var self = this;
+        var id = this.helpers.getUniqueId('ping');
+        var to;
+        var _callback;
+        if ((typeof jid_or_user_id === 'string' ||
+            typeof jid_or_user_id === 'number') &&
+            typeof callback === 'function') {
+            to = this.helpers.jidOrUserId(jid_or_user_id);
+            _callback = callback;
+        } else {
+            if (typeof jid_or_user_id === 'function' && !callback) {
+                to = config.endpoints.chat;
+                _callback = jid_or_user_id;
+            } else {
+                throw new Error('Invalid arguments provided. Either userId/jid (number/string) and callback or only callback should be provided.');
+            }
+        }
+        var iqParams = {
+            from: this.helpers.getUserCurrentJid(),
+            id: id,
+            to: to,
+            type: 'get'
+        };
+        var stanza = $iq(iqParams).c('ping', { xmlns: "urn:xmpp:ping" });
+        var noAnswer = function () {
+            _callback('No answer');
+            self._pings[id] = undefined;
+            delete self._pings[id];
+        };
+        this.connection.send(stanza);
+        this._pings[id] = {
+            callback: _callback,
+            interval: setTimeout(noAnswer, config.pingTimeout * 1000)
+        };
+        return id;
     },
 
     /**
