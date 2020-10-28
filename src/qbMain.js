@@ -34,10 +34,22 @@ QuickBlox.prototype = {
      * @param {String} authSecret - Authorization secret key (from your admin panel).
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
-    init: function(appIdOrToken, authKeyOrAppId, authSecret, configMap) {
-        if (configMap && typeof configMap === 'object') {
-            config.set(configMap);
+    init: function(appIdOrToken, authKeyOrAppId, authSecret, accountKey, configMap) {
+        if (typeof accountKey === 'string' && accountKey.length) {
+            if (configMap && typeof configMap === 'object') {
+                config.set(configMap);
+            }
+            config.creds.accountKey = accountKey;
+        } else {
+            console.warn('Parameter "accountKey" is missing. This will lead to error in next major release');
+            console.warn('NOTE: Account migration will not work without "accountKey"');
+            if (typeof accountKey === 'object') {
+                config.set(accountKey);
+            }
         }
+
+        var SHARED_API_ENDPOINT = "api.quickblox.com";
+        var SHARED_CHAT_ENDPOINT = "chat.quickblox.com";
 
         /** include dependencies */
         var Proxy = require('./qbProxy'),
@@ -90,6 +102,34 @@ QuickBlox.prototype = {
             config.creds.appId = appIdOrToken;
             config.creds.authKey = authKeyOrAppId;
             config.creds.authSecret = authSecret;
+        }
+
+        var shouldGetSettings = config.creds.accountKey && (
+            !config.endpoints.api ||
+            config.endpoints.api === SHARED_API_ENDPOINT ||
+            !config.endpoints.chat ||
+            config.endpoints.chat === SHARED_CHAT_ENDPOINT
+        );
+        if (shouldGetSettings) {
+            var accountSettingsUrl = [
+                'https://', SHARED_API_ENDPOINT, '/',
+                config.urls.account,
+                config.urls.type
+            ].join('');
+            // account settings
+            this.service.ajax({
+                url: accountSettingsUrl
+            }, function (err, response) {
+                if (!err && typeof response === 'object') {
+                    var update = {
+                        endpoints: {
+                            api: response.api_endpoint.replace(/^https?:\/\//, ''),
+                            chat: response.chat_endpoint
+                        }
+                    };
+                    config.set(update);
+                }
+            });
         }
     },
 

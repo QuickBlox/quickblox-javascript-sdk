@@ -18,13 +18,14 @@
     const creds = {
         'appId': '',
         'authKey': '',
-        'authSecret': ''
+        'authSecret': '',
+        'accountKey': ''
     };
 
     const config = {
         debug: true,
         webrtc: {
-            answerTimeInterval: 30,
+            answerTimeInterval: 60,
             dialingTimeInterval: 5,
             disconnectTimeInterval: 35,
             statsReportTimeInterval: 5

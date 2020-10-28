@@ -26,7 +26,7 @@ function App(config) {
 
 App.prototype.init = function (config) {
     // Step 1. QB SDK initialization.
-    QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
+    QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.credentials.accountKey, config.appConfig);
 };
 
 App.prototype.renderDashboard = function (activeTabName) {

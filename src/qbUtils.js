@@ -255,13 +255,12 @@ var Utils = {
         var RTCPeerConnection = window.RTCPeerConnection,
             IceCandidate = window.RTCIceCandidate,
             SessionDescription = window.RTCSessionDescription,
-            isAvaible = true;
+            MediaDevices = window.navigator.mediaDevices;
 
-        if(!RTCPeerConnection || !IceCandidate || !SessionDescription) {
-            isAvaible = false;
-        }
-
-        return isAvaible;
+        return Boolean(RTCPeerConnection) &&
+            Boolean(IceCandidate) &&
+            Boolean(SessionDescription) &&
+            Boolean(MediaDevices);
     },
 
     getError: function(code, detail, moduleName) {

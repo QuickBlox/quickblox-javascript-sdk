@@ -27,6 +27,10 @@ function ServiceProxy() {
 }
 
 ServiceProxy.prototype = {
+
+    _fetchingSettings: false,
+    _queue: [],
+
     setSession: function(session) {
         this.qbInst.session = session;
     },
@@ -73,6 +77,12 @@ ServiceProxy.prototype = {
     },
 
     ajax: function(params, callback) {
+
+        if (this._fetchingSettings) {
+            this._queue.push(this.ajax.bind(this, params, callback));
+            return;
+        }
+
         this.startLogger(params);
 
         var self = this,
@@ -114,6 +124,10 @@ ServiceProxy.prototype = {
 
             if(qbSessionToken) {
                 qbRequest.headers['QB-Token'] = qbSessionToken;
+            }
+            if (params.url.indexOf(config.urls.account) > -1) {
+                qbRequest.headers['QB-Account-Key'] = config.creds.accountKey;
+                this._fetchingSettings = true;
             }
         }
 
@@ -223,6 +237,13 @@ ServiceProxy.prototype = {
                     self.handleResponse(null, body, callback, retry);
                 } else {
                     callback(null, body);
+                }
+            }
+            if (self._fetchingSettings) {
+                self._fetchingSettings = false;
+                while (self._queue.length) {
+                    var fn = self._queue.shift();
+                    fn();
                 }
             }
         }

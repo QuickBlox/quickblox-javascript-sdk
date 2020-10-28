@@ -180,6 +180,7 @@
             CONFIG.CREDENTIALS.appId,
             CONFIG.CREDENTIALS.authKey,
             CONFIG.CREDENTIALS.authSecret,
+            CONFIG.CREDENTIALS.accountKey,
             CONFIG.APP_CONFIG
         );
 

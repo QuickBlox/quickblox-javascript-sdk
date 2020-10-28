@@ -12,12 +12,13 @@
  */
 
 var config = {
-  version: '2.12.9',
-  buildNumber: '1087',
+  version: '2.13.0',
+  buildNumber: '1089',
   creds: {
     appId: '',
     authKey: '',
-    authSecret: ''
+    authSecret: '',
+    accountKey: ''
   },
   endpoints: {
     api: 'api.quickblox.com',
@@ -61,6 +62,7 @@ var config = {
     ]
   },
   urls: {
+    account: 'account_settings',
     session: 'session',
     login: 'login',
     users: 'users',

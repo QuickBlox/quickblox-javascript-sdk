@@ -45,12 +45,10 @@ function WebRTCClient(service, connection) {
 
     this.sessions = {};
 
-    // Enable the listener (disabled in some browsers)
-    if(navigator.mediaDevices.ondevicechange && navigator.mediaDevices.ondevicechange.enabled) {
-        navigator.mediaDevices.ondevicechange.enabled = true;
+    if (navigator.mediaDevices) {
+        navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
     }
 
-    navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
 }
 
 /**
