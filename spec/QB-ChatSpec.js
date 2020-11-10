@@ -8,15 +8,8 @@ var REST_REQUESTS_TIMEOUT = 6000;
 var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
 var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
-var QB_SENDER;
-var QB_RECEIVER;
-if(isNodeEnv){
-    QB_SENDER = new QB.QuickBlox();
-    QB_RECEIVER = new QB.QuickBlox();
-}else{
-    QB_SENDER = new window.QB.QuickBlox();
-    QB_RECEIVER = new window.QB.QuickBlox();
-}
+var QB_SENDER = new QB.QuickBlox();
+var QB_RECEIVER = new QB.QuickBlox();
 
 var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
 var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
@@ -39,8 +32,8 @@ var messageIdToDelete;
 describe('Chat API', function() {
 
     beforeAll(function() {
-        QB_SENDER.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
-        QB_RECEIVER.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+        QB_SENDER.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CREDS.accountKey, CONFIG);
+        QB_RECEIVER.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CREDS.accountKey, CONFIG);
     });
 
     // =========================== REST API ======================================

@@ -13,7 +13,7 @@ describe('Custom Objects API', function() {
     var QBUser1 = isNodeEnv ? require('./config').QBUser1 : window.QBUser1;
 
     beforeAll(function(done){
-        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CONFIG);
+        QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CREDS.accountKey, CONFIG);
 
         QB.createSession(QBUser1, function(err, res) {
             if (err) {

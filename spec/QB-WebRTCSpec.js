@@ -14,7 +14,13 @@ describe('WebRTC API', function() {
   var session;
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+    QB.init(
+      CREDENTIALS.appId,
+      CREDENTIALS.authKey,
+      CREDENTIALS.authSecret,
+      CREDENTIALS.accountKey,
+      CONFIG
+    );
 
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if(err){

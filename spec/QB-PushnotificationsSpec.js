@@ -30,7 +30,13 @@ describe('PushNotifications API', function() {
   };
 
   beforeAll(function(done){
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+    QB.init(
+      CREDENTIALS.appId,
+      CREDENTIALS.authKey,
+      CREDENTIALS.authSecret,
+      CREDENTIALS.accountKey,
+      CONFIG
+    );
 
     QB.createSession(QBUser1, function(err, session) {
       if (err) {

@@ -14,7 +14,13 @@ describe('Helpers', function() {
   var chatEndpoint = CONFIG.endpoints.chat;
 
   beforeAll(function() {
-    QB.init(CREDENTIALS.appId, CREDENTIALS.authKey, CREDENTIALS.authSecret, CONFIG);
+    QB.init(
+      CREDENTIALS.appId,
+      CREDENTIALS.authKey,
+      CREDENTIALS.authSecret,
+      CREDENTIALS.accountKey,
+      CONFIG
+    );
   });
 
   it('can get OS information', function(){

@@ -582,14 +582,21 @@ function ChatProxy(service) {
             Utils.safeCallbackCall(self.onLastUserActivityListener, userId, seconds);
         }
         if ((ping || isPong) && type) {
-            if (type === 'get' && ping) {
+            if (type === 'get' && ping && self.isConnected) {
                 // pong
-                self.connection.send($iq({
+                var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
+                var pongParams = {
                     from: self.helpers.getUserCurrentJid(),
                     id: stanzaId,
-                    to: chatUtils.getAttr(stanza, 'from'),
+                    to: from,
                     type: 'result'
-                }));
+                };
+                var pongStanza = chatUtils.createStanza(builder, pongParams, 'iq');
+                if(Utils.getEnv().browser) {
+                    self.connection.send(pongStanza);
+                } else {
+                    self.Client.send(pongStanza);
+                }
             } else {
                 var pingRequest = self._pings[stanzaId];
                 if (pingRequest) {
@@ -1236,8 +1243,10 @@ ChatProxy.prototype = {
     ping: function (jid_or_user_id, callback) {
         var self = this;
         var id = this.helpers.getUniqueId('ping');
+        var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
         var to;
         var _callback;
+        var stanza;
         if ((typeof jid_or_user_id === 'string' ||
             typeof jid_or_user_id === 'number') &&
             typeof callback === 'function') {
@@ -1251,19 +1260,29 @@ ChatProxy.prototype = {
                 throw new Error('Invalid arguments provided. Either userId/jid (number/string) and callback or only callback should be provided.');
             }
         }
+        if (!this.isConnected) {
+            throw new Error('Ping attempt failed because chat is not connected');
+        }
+
         var iqParams = {
             from: this.helpers.getUserCurrentJid(),
             id: id,
             to: to,
             type: 'get'
         };
-        var stanza = $iq(iqParams).c('ping', { xmlns: "urn:xmpp:ping" });
+        stanza = chatUtils.createStanza(builder, iqParams, 'iq');
+        stanza.c('ping', { xmlns: "urn:xmpp:ping" });
+
         var noAnswer = function () {
             _callback('No answer');
             self._pings[id] = undefined;
             delete self._pings[id];
         };
-        this.connection.send(stanza);
+        if (Utils.getEnv().browser) {
+            this.connection.send(stanza);
+        } else {
+            this.Client.send(stanza);
+        }
         this._pings[id] = {
             callback: _callback,
             interval: setTimeout(noAnswer, config.pingTimeout * 1000)

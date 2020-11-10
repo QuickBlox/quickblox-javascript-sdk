@@ -79,7 +79,7 @@ ServiceProxy.prototype = {
     ajax: function(params, callback) {
 
         if (this._fetchingSettings) {
-            this._queue.push(this.ajax.bind(this, params, callback));
+            this._queue.push([params, callback]);
             return;
         }
 
@@ -242,8 +242,8 @@ ServiceProxy.prototype = {
             if (self._fetchingSettings) {
                 self._fetchingSettings = false;
                 while (self._queue.length) {
-                    var fn = self._queue.shift();
-                    fn();
+                    var args = self._queue.shift();
+                    self.ajax.apply(self, args);
                 }
             }
         }

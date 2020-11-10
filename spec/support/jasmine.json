@@ -6,6 +6,9 @@
     "QB-DataSpec.js",
     "QB-WebRTCSpec.js"
   ],
+  "helpers": [
+    "helpers/**/*.js"
+  ],
   "stopSpecOnExpectationFailure": true,
   "random": false
 }
