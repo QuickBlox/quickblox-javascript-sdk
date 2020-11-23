@@ -41,21 +41,22 @@ ServiceProxy.prototype = {
 
     handleResponse: function(error, response, next, retry) {
         // can add middleware here...
-
-        if (error && typeof config.on.sessionExpired === 'function' && (error.message === 'Unauthorized' || error.status === '401 Unauthorized')) {
-            config.on.sessionExpired(function() {
-                next(error,response);
-            }, retry);
-        } else {
-            if (error) {
-                next(error, null);
+        if (error) {
+            const errorMsg = JSON.stringify(error.message).toLowerCase();
+            if (typeof config.on.sessionExpired === 'function' &&
+                error.code === 401 &&
+                errorMsg.indexOf('session does not exist') > -1) {
+                config.on.sessionExpired(function() {
+                    next(error, response);
+                }, retry);
             } else {
-                if (config.addISOTime) {
-                    response = Utils.injectISOTimes(response);
-                }
-
-                next(null, response);
+                next(error, null);
             }
+        } else {
+            if (config.addISOTime) {
+                response = Utils.injectISOTimes(response);
+            }
+            next(null, response);
         }
     },
 
@@ -222,22 +223,14 @@ ServiceProxy.prototype = {
 
                 Utils.QBLog('[Response][' + self.reqCount + ']', 'error', statusCode, responseMessage);
 
-                if (params.url.indexOf(config.urls.session) === -1) {
-                    self.handleResponse(errorMsg, null, callback, retry);
-                } else {
-                    callback(errorMsg, null);
-                }
+                self.handleResponse(errorMsg, null, callback, retry);
             } else {
                 responseBody = (body && body !== ' ') ? body : 'empty body';
                 responseMessage = Utils.getEnv().nativescript ? JSON.stringify(responseBody) : responseBody;
 
                 Utils.QBLog('[Response][' + self.reqCount + ']', responseMessage);
 
-                if (params.url.indexOf(config.urls.session) === -1) {
-                    self.handleResponse(null, body, callback, retry);
-                } else {
-                    callback(null, body);
-                }
+                self.handleResponse(null, body, callback, retry);
             }
             if (self._fetchingSettings) {
                 self._fetchingSettings = false;
