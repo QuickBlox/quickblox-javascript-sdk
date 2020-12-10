@@ -10,6 +10,7 @@ function Message() {
     this._typingTimer = null;
     this._typingTime = null;
     this.typingUsers = {};
+    this.setListeners();
 }
 
 Message.prototype.init = function () {
@@ -106,8 +107,14 @@ Message.prototype.submitSendMessage = function (dialogId) {
     if (Object.keys(attachments).length) {
         msg.extension.attachments = [];
 
-        for (var attach in attachments) {
-            msg.extension.attachments.push({id: attach, type: CONSTANTS.ATTACHMENT.TYPE});
+        for (var key in attachments) {
+            msg.extension.attachments.push({
+                "id": key,
+                "type": CONSTANTS.ATTACHMENT.TYPE,
+                "size": attachments[key].size,
+                "name": attachments[key].name,
+                "content-type": attachments[key].type
+            });
         }
 
         msg.body = CONSTANTS.ATTACHMENT.BODY;
@@ -123,7 +130,12 @@ Message.prototype.submitSendMessage = function (dialogId) {
     // Don't send empty message
     if (!msg.body) return false;
 
+    document.querySelector('.attachments_preview').innerHTML = '';
+    document.querySelector('.attachments_preview').style.display = 'none';
+    document.querySelector('.send_message .send_btn').style.top = '10px';
+
     self.sendMessage(dialogId, msg);
+
 };
 
 Message.prototype.setLoadMoreMessagesListener = function () {
@@ -149,7 +161,7 @@ Message.prototype.setLoadMoreMessagesListener = function () {
     }
 };
 
-Message.prototype.sendMessage = function(dialogId, msg){
+Message.prototype.sendMessage = function(dialogId, msg) {
     var self = this,
         message = JSON.parse(JSON.stringify(msg)),
         dialog = dialogModule._cache[dialogId],
@@ -169,6 +181,26 @@ Message.prototype.sendMessage = function(dialogId, msg){
     dialogModule.changeLastMessagePreview(dialogId, newMessage);
 };
 
+Message.prototype._getMessages = function (params) {
+    var self = this;
+    params = params || {
+        chat_dialog_id: dialogId,
+        sort_desc: 'date_sent',
+        limit: self.limit,
+        skip: dialogModule._cache[dialogId].messages.length,
+        mark_as_read: 0
+    };
+
+    return new Promise(function (resolve, reject) {
+        QB.chat.message.list(params, function (err, messages) {
+            if (err) {
+                reject(err);
+            }
+            resolve(messages);
+        })
+    });
+}
+
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
 
@@ -187,25 +219,34 @@ Message.prototype.getMessages = function (dialogId) {
         if (messages) {
             var dialog = dialogModule._cache[dialogId];
             dialog.messages = dialog.messages.concat(messages.items);
-            
-            if (messages.items.length < self.limit) {
-                dialog.full = true;
-            }
-            if (dialogModule.dialogId !== dialogId) return false;
-
-            if (dialogModule._cache[dialogId].type === 1) {
-                self.checkUsersInPublicDialogMessages(messages.items, params.skip);
-            } else {
-
-                for (var i = 0; i < messages.items.length; i++) {
-                    var message = helpers.fillMessagePrams(messages.items[i]);
-
-                    self.renderMessage(message, false);
+            var userIds = (dialog.messages.length>0) ? Array.from(dialog.messages, function (message) {
+                return message.sender_id;
+            }) : [];
+            var displayMessages = function() {
+                if (messages.items.length < self.limit) {
+                    dialog.full = true;
                 }
+                if (dialogModule.dialogId !== dialogId) return false;
 
-                if (!params.skip) {
-                    helpers.scrollTo(self.container, 'bottom');
+                if (dialogModule._cache[dialogId].type === 1) {
+                    self.checkUsersInPublicDialogMessages(messages.items, params.skip);
+                } else {
+
+                    for (var i = 0; i < messages.items.length; i++) {
+                        var message = helpers.fillMessagePrams(messages.items[i]);
+
+                        self.renderMessage(message, false);
+                    }
+
+                    if (!params.skip) {
+                        helpers.scrollTo(self.container, 'bottom');
+                    }
                 }
+            };
+            if(userIds.length>0) {
+                userModule.getUsersByIds(userIds).then(displayMessages);
+            }else{
+                displayMessages();
             }
         } else {
             console.error(err);
@@ -274,7 +315,7 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
         messagesHtml,
         messageText;
 
-    if(!message.selfReaded){
+    if(!message.selfReaded) {
         self.sendReadStatus(message._id, message.sender_id, dialogId);
         message.selfReaded = true;
         dialogModule.decreaseUnreadCounter(dialogId);
@@ -290,7 +331,6 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
         });
     } else {
         messageText = message.message ? helpers.fillMessageBody(message.message || '') : helpers.fillMessageBody(message.body || '');
-
         messagesHtml = helpers.fillTemplate('tpl_message', {
             message: {
                 status: message.status,
@@ -298,9 +338,12 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
                 sender_id: message.sender_id,
                 message: messageText,
                 attachments: message.attachments,
-                date_sent: message.date_sent
+                date_sent: message.date_sent,
+                origin_sender_name: message.origin_sender_name || false
             },
-            sender: sender});
+            sender: sender,
+            dialogType: dialogModule._cache[dialogId].type
+        });
     }
 
     var elem = helpers.toHtml(messagesHtml)[0];
@@ -324,15 +367,55 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
         var images = elem.querySelectorAll('.message_attachment');
 
         for (var i = 0; i < images.length; i++) {
-            images[i].addEventListener('load', function (e) {
-                var img = e.target,
-                    imgPos = self.container.offsetHeight + self.container.scrollTop - img.offsetTop,
-                    scrollHeight = self.container.scrollTop + img.offsetHeight;
+            images[i].addEventListener('load', async function (e) {
 
-                img.classList.add('loaded');
+                if(this.src !== this.getAttribute('data-src')) {
 
-                if (imgPos >= 0) {
-                    self.container.scrollTop = scrollHeight + 5;
+                    var target = e.target;
+                    var imageSrc = this.getAttribute('data-src');
+
+                    var setBlob = function (response){
+                        Promise.all([response.url, response.blob()]).then(([resource, blob]) => {
+                            var bloburl = URL.createObjectURL(blob);
+                            target.src = bloburl;
+                            target.setAttribute('data-src',bloburl);
+                        });
+                    };
+
+                    fetch(imageSrc).catch(async function () {
+
+                        var imageId = target.getAttribute('data-id');
+                        imageSrc = helpers.getSrcFromAttachmentId(imageId);
+                        let response = await fetch(imageSrc);
+
+                        if (response.ok) {
+                            setBlob(response);
+                        }
+
+                    }).then(function (response) {
+                        setBlob(response);
+                    });
+
+
+                }else{
+                    this.style.width = '100%';
+                    this.style.height = 'auto';
+                    this.parentNode.style.width = 'auto';
+                    this.parentNode.style.height = 'auto';
+                }
+
+                var img = e.target;
+
+                if(img) {
+
+                    var imgPos = self.container.offsetHeight + self.container.scrollTop - img.offsetTop,
+                        scrollHeight = self.container.scrollTop + img.offsetHeight;
+
+                    img.classList.add('loaded');
+
+                    if (imgPos >= 0) {
+                        self.container.scrollTop = scrollHeight + 5;
+                    }
                 }
             });
             images[i].addEventListener('error', function (e) {
@@ -371,23 +454,55 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
     }
 
     var currentDialog = dialogModule._cache[dialogId],
+        today = new Date(),
         date = new Date(message.created_at),
-        month = date.toLocaleString('en-us', { month: 'long' }),
-        template = helpers.fillTemplate('tpl_date_message', {'month':month, 'date':date}),
+        day = date.getDate(),
+        year = date.getFullYear().toString(),
+        month = date.toLocaleString('en-us', { month: 'short' }),
+        groupDate = '';
+
+    var yesterday  = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (today.toDateString() === date.toDateString()) {
+        groupDate = 'Today';
+    } else if(yesterday.toDateString() === date.toDateString()){
+        groupDate = 'Yesterday';
+    } else if (today.getFullYear().toString() === year ) {
+        groupDate = day +' '+ month;
+    } else {
+        groupDate = day +' '+ month+', ' + year;
+    }
+
+    var template = helpers.fillTemplate('tpl_date_message', {
+        'month':month,
+        'date':date,
+        'year':year,
+        'groupDate':groupDate
+    }),
         elemDate = helpers.toHtml(template)[0],
         tmpElem = document.querySelector('#'+month+'-'+date.getDate());
 
     currentDialog.tplDateMessage = currentDialog.tplDateMessage?currentDialog.tplDateMessage:{};
 
-    if(!currentDialog.tplDateMessage[month+'/'+ date.getDate()] ||
-        parseInt(currentDialog.tplDateMessage[month+'/'+ date.getDate()].replace(/:/, '')) >
-        parseInt(message.date_sent.replace(/:/, ''))
-    ){
-        if(tmpElem){
-            tmpElem.remove();
+    if(setAsFirst){
+        if (!currentDialog.tplDateMessage[month + '/' + date.getDate()]) {
+            if (tmpElem) {
+                tmpElem.remove();
+            }
+            currentDialog.tplDateMessage[month + '/' + date.getDate()] = message.date_sent;
+            self.container.insertBefore(elemDate, elem);
         }
-        currentDialog.tplDateMessage[month+'/'+ date.getDate()] = message.date_sent;
-        self.container.insertBefore(elemDate,elem);
+    }else {
+        if (!currentDialog.tplDateMessage[month + '/' + date.getDate()] ||
+            Date.parse(date.toDateString() + ' ' + currentDialog.tplDateMessage[month + '/' + date.getDate()]) >=
+            Date.parse(date.toDateString() + ' ' + message.date_sent)) {
+            if (tmpElem) {
+                tmpElem.remove();
+            }
+            currentDialog.tplDateMessage[month + '/' + date.getDate()] = message.date_sent;
+            self.container.insertBefore(elemDate, elem);
+        }
     }
 
 };
@@ -400,6 +515,10 @@ Message.prototype.prepareToUpload = function (e) {
     var self = this,
         files = e.currentTarget.files,
         dialogId = dialogModule.dialogId;
+
+    if(Object.keys(dialogModule._cache[dialogId].draft.attachments).length > 0){
+        return false;
+    }
 
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
@@ -417,6 +536,9 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
     var self = this,
         preview = self.addImagePreview(file);
 
+    document.querySelector('.attachments_preview').style.display = 'flex';
+    document.querySelector('.send_message .send_btn').style.top = '106px';
+
     QB.content.createAndUpload({
         public: false,
         file: file,
@@ -429,11 +551,17 @@ Message.prototype.uploadFilesAndGetIds = function (file, dialogId) {
             console.error(err);
             alert('ERROR: ' + err.detail);
         } else {
-            preview.remove();
+            var tmp = document.querySelector('.attachments_preview .m-loading:last-child');
+            document.querySelector('.attachments_preview .attachment_preview__wrap').classList.remove("attachment_preview__wrap");
+            tmp.querySelector('.img-close').style.display = "block";
+            tmp.querySelector('.attachment_preview__item').dataset.uid = response.uid;
 
-            dialogModule._cache[dialogId].draft.attachments[response.uid] = helpers.getSrcFromAttachmentId(response.uid);
-
-            self.submitSendMessage(dialogId);
+            dialogModule._cache[dialogId].draft.attachments[response.uid] = {
+                uid: helpers.getSrcFromAttachmentId(response.uid),
+                name: file.name,
+                type: file.type,
+                size: file.size
+            };
         }
     });
 };
@@ -460,7 +588,9 @@ Message.prototype.setTypingStatuses = function (isTyping, userId, dialogId) {
     }
 
     if (isTyping) {
-        self.typingUsers[dialogId].push(userId);
+        if(self.typingUsers[dialogId].indexOf(userId) === -1){
+            self.typingUsers[dialogId].push(userId);
+        }
     } else {
         var list = self.typingUsers[dialogId];
 
@@ -469,7 +599,7 @@ Message.prototype.setTypingStatuses = function (isTyping, userId, dialogId) {
         });
     }
     
-    self.renderTypingUsers(dialogId)
+    self.renderTypingUsers(dialogId);
 };
 
 Message.prototype.renderTypingUsers = function (dialogId) {
@@ -500,7 +630,20 @@ Message.prototype.renderTypingUsers = function (dialogId) {
     }
 
     if (users.length) {
-        var tpl = helpers.fillTemplate('tpl_message__typing', {users: users}),
+        var usersTyping = users.map(user => user.name).slice(0, 2).join(',');
+
+
+        if(users.length === 1) {
+            usersTyping = users[0].name+' is ';
+        } else if(users.length === 2) {
+            usersTyping = users[0].name+' and '+users[1].name+' are';
+        }else if(users.length === 3){
+            usersTyping = users[0].name+','+users[1].name+' and '+users[2].name+' are';
+        }else if(users.length > 3){
+            usersTyping = users[0].name+','+users[1].name+', and '+(users.length-2)+' more are';
+        }
+        var tpl = helpers.fillTemplate('tpl_message__typing', {users: usersTyping}),
+
             elem = helpers.toHtml(tpl)[0],
             scrollPosition = self.container.scrollHeight - (self.container.offsetHeight + self.container.scrollTop);
 
@@ -515,33 +658,55 @@ Message.prototype.renderTypingUsers = function (dialogId) {
 Message.prototype.setMessageStatus = function(data) {
     var dialogId = data.dialogId,
         status = data.status,
-        messageId = data._id,
-        dialog = dialogModule._cache[dialogId];
+        messageId = data._id;
 
     // Dialog with this ID was not founded in the cache
-    if(dialog === undefined) return;
+    if(dialogModule._cache[dialogId] === undefined) return;
 
-    var message = dialog.messages.find(function(message){
-        if(message._id === messageId) return true;
-    });
+    var message;
+    for (var i = 0; i < dialogModule._cache[dialogId].messages.length; i++) {
+        if(dialogModule._cache[dialogId].messages[i]._id === messageId){
+            dialogModule._cache[dialogId].messages[i].status = status;
+
+            if(status === "delivered" && dialogModule._cache[dialogId].messages[i].delivered_ids.indexOf(data.userId) === -1){
+                dialogModule._cache[dialogId].messages[i].delivered_ids.push(data.userId);
+            }
+
+            if(status === "read" && dialogModule._cache[dialogId].messages[i].read_ids.indexOf(data.userId) === -1){
+                dialogModule._cache[dialogId].messages[i].read_ids.push(data.userId);
+            }
+
+            message = dialogModule._cache[dialogId].messages[i];
+        }
+    }
 
     // if the message was not fined in cache or it was notification message, DO NOTHING
     if(message === undefined || message.notification_type !== undefined) return;
-
-    // if the same status is coming DO NOTHING
-    if (message.status === status) return;
-
-    message.status = status;
 
     if(dialogId === dialogModule.dialogId){
         var messageElem = document.getElementById(messageId);
 
         if(messageElem !== undefined){
             var statusElem = messageElem.querySelector('.j-message__status');
-
-            statusElem.innerText = status;
+            if(statusElem !== null) {
+                statusElem.src = './img/'+status+'.svg';
+                statusElem.innerText = status;
+            }
         }
     }
+};
+
+Message.prototype.setListeners = function () {
+
+    helpers._(document).on("click", ".img-close", function (_event, _element) {
+        delete dialogModule._cache[dialogModule.dialogId].draft.attachments[_element.parentElement.querySelector('.attachment_preview__item').dataset.uid];
+        _element.parentElement.remove();
+        if(dialogModule._cache[dialogModule.dialogId].draft.attachments) {
+            document.querySelector('.attachments_preview').style.display = 'none';
+            document.querySelector('.send_message .send_btn').style.top = '10px';
+        }
+    });
+
 };
 
 var messageModule = new Message();

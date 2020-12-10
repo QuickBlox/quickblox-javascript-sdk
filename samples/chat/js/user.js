@@ -18,12 +18,44 @@ function User() {
 
     function getUsersFilteredByName () {
         helpers.clearView(self.userListConteiner);
-        self.getUsers({ page: 1 });
+        self.getUsers({ page: 1 }).catch(function (error) {
+
+            if(error.code === 404){
+                self.userListConteiner.innerHTML = "<div id='no-user'>No user with that name</div>";
+            }
+
+        })
+    }
+
+    this.create = function(user) {
+        return new Promise(function (resolve, reject) {
+            QB.users.create(user, function (error, result) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    };
+
+    this.update = function(id, user) {
+        return new Promise(function (resolve, reject) {
+            QB.users.update(id, user, function(error, result) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
     };
 
     /**
      * @typedef GetUsersParam
      * @type {object}
+     * @property {boolean} selected
+     * @property {object} filter
      * @property {string} full_name name of user to search by
      * @property {string} order see [API docs]{@link https://quickblox.com/developers/Users#Sort} for more info on order format
      * @property {number} page number of page to show
@@ -39,9 +71,10 @@ function User() {
             args = {}
         }
         var params = {
-            filter: {
+            filter: args.filter || {
                 field: 'full_name',
                 param: 'in',
+                type: 'string',
                 value: [args.full_name || fullName]
             },
             order: args.order || {
@@ -51,10 +84,11 @@ function User() {
             page: args.page || currentPage,
             per_page: args.per_page || 100
         };
-    
+
         return new Promise(function (resolve, reject) {
             self._isFetching = true;
-            QB.users.listUsers(params, function (err, responce) {
+
+            var colback = function (err, responce) {
                 if (err) {
                     self._isFetching = false;
                     return reject(err);
@@ -64,10 +98,22 @@ function User() {
                 var userList = responce.items.map(function(data){
                     return self.addToCache(data.user);
                 });
-    
+
                 self._isFetching = false;
                 resolve(userList);
-            });
+            };
+
+            if(params.filter.field === 'full_name' && params.filter.value[0].length > 1) {
+                params = {
+                    'full_name': (args.full_name || fullName),
+                    'order': params.order,
+                    'page': params.page,
+                    'per_page': params.per_page
+                };
+                QB.users.get(params, colback);
+            }else {
+                QB.users.listUsers(params, colback);
+            }
         });
     };
 
@@ -84,7 +130,11 @@ function User() {
                 .then(function (users) {
                     if (renderUsers !== false) {
                         users.forEach(function (user) {
-                            self.buildUserItem(self._cache[user.id]);
+                            if(args !== undefined && args.selected !== undefined) {
+                                self.buildUserItem(Object.assign({selected:args.selected}, self._cache[user.id]));
+                            }else{
+                                self.buildUserItem(self._cache[user.id]);
+                            }
                         });
                     }
                     usersListEl && usersListEl.classList.remove('loading');
@@ -134,36 +184,40 @@ function User() {
 }
 
 /**
- * @param {string | HTMLElement} userListContainer HTMLElement or selector string (optional)
+ *
+ * @param {string | HTMLElement} userListConteiner HTMLElement or selector string (optional)
  * @param {string | HTMLElement} userListFilter HTMLElement or selector string (optional)
+ * @param params
+ * @returns {Promise<unknown>}
  */
-User.prototype.initGettingUsers = function (userListContainer, userListFilter) {
-    var userListSelector = '.j-group_chat__user_list';
-    var userListFilterSelector = '.group_chat__filter > input';
-    if (userListContainer) {
-        if (userListContainer instanceof HTMLElement) {
-            this.userListConteiner = userListContainer;
-        } else {
-            if (typeof userListContainer === 'string') {
-                userListSelector = userListContainer;
+User.prototype.initGettingUsers = function (userListConteiner, userListFilter, params) {
+    var
+        self = this,
+        elements = {
+            userListConteiner: {
+                selector: '.j-group_chat__user_list',
+                element: userListConteiner
+            },
+            userListFilter: {
+                selector: '.group_chat__filter > input',
+                element: userListFilter
             }
-            this.userListConteiner = document.querySelector(userListSelector);
-        }
-    } else {
-        this.userListConteiner = document.querySelector(userListSelector);
-    }
-    if (userListFilter) {
-        if (userListFilter instanceof HTMLElement) {
-            this.userListFilter = userListFilter;
-        } else {
-            if (typeof userListFilter === 'string') {
-                userListFilterSelector = userListFilter;
+        };
+
+    Object.keys(elements).forEach(function (key) {
+        if (elements[key].element) {
+            if (elements[key] instanceof HTMLElement) {
+                self[key] = elements[key].element;
+            } else {
+                if (typeof elements[key].element === 'string') {
+                    elements[key].selector = elements[key].element;
+                }
+                self[key] = document.querySelector(elements[key].selector);
             }
-            this.userListFilter = document.querySelector(userListFilterSelector)
+        } else {
+            self[key] = document.querySelector(elements[key].selector);
         }
-    } else {
-        this.userListFilter = document.querySelector(userListFilterSelector);
-    }
+    });
 
     this.userListConteiner &&
     this.userListConteiner.addEventListener('scroll', this.scrollHandler);
@@ -171,7 +225,7 @@ User.prototype.initGettingUsers = function (userListContainer, userListFilter) {
     this.userListFilter &&
     this.userListFilter.addEventListener('input', this.filter);
 
-    return this.getUsers();
+    return this.getUsers(params);
 };
 
 User.prototype.addToCache = function(user) {
@@ -240,38 +294,62 @@ User.prototype.buildUserItem = function (user) {
         userItem.selected = true;
     }
 
+    if (user.selected !== undefined) {
+        userItem.selected = user.selected;
+        user.event = { click: false };
+    }
+
     var userTpl = helpers.fillTemplate('tpl_newGroupChatUser', {user: userItem}),
         elem = helpers.toHtml(userTpl)[0];
 
     if (this.selectedUserIds.indexOf(userItem.id) > -1) {
         elem.classList.add('selected');
     }
-    
-    elem.addEventListener('click', function () {
-        if (elem.classList.contains('disabled')) return;
-        var userId = +elem.getAttribute('id');
-        var index = self.selectedUserIds.indexOf(userId);
-        elem.classList.toggle('selected');
-        if (index > -1) {
-            self.selectedUserIds.splice(index, 1);
-        } else {
-            self.selectedUserIds.push(userId);
-        }
-        
-        if (document.forms.create_dialog) {
-            if (self.selectedUserIds.length) {
-                document.forms.create_dialog.create_dialog_submit.disabled = false;
-            } else {
-                document.forms.create_dialog.create_dialog_submit.disabled = true;
+
+    if (user.event === undefined || user.event.click) {
+        elem.addEventListener('click', function () {
+            if (elem.classList.contains('disabled')) return;
+            var userId = +elem.getAttribute('id');
+            var index = self.selectedUserIds.indexOf(userId);
+
+            if (elem.classList.contains('selected')) {
+                elem.classList.remove('selected');
+                elem.querySelector('input').checked = false;
+                elem.querySelector('input').removeAttribute("checked");
+            }else{
+                elem.classList.add('selected');
+                elem.querySelector('input').setAttribute("checked","checked");
+                elem.querySelector('input').checked = true;
             }
 
-            if (self.selectedUserIds.length >= 2) {
-                document.forms.create_dialog.dialog_name.disabled = false;
+            if (index > -1) {
+                self.selectedUserIds.splice(index, 1);
             } else {
-                document.forms.create_dialog.dialog_name.disabled = true;
+                self.selectedUserIds.push(userId);
             }
-        }
-    });
+
+            if(document.querySelector('#selectedUserIds')) {
+                document.querySelector('#selectedUserIds').innerHTML = self.selectedUserIds.length === 1 ?
+                    self.selectedUserIds.length + ' user selected' :
+                    self.selectedUserIds.length + ' users selected';
+            }
+
+            if (document.forms.create_dialog) {
+                if (self.selectedUserIds.length) {
+                    document.querySelector('.j-create_dialog .j-create_dialog_link').classList.remove('disabled');
+                    document.forms.create_dialog.create_dialog_submit.disabled = false;
+                } else {
+                    document.querySelector('.j-create_dialog .j-create_dialog_link').classList.add('disabled');
+                    document.forms.create_dialog.create_dialog_submit.disabled = true;
+                }
+
+                document.forms.create_dialog.dialog_name.disabled = self.selectedUserIds.length < 2;
+            }
+            return false;
+
+        });
+    }
+
     
     self.userListConteiner.appendChild(elem);
 };
