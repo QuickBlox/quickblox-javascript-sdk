@@ -60,7 +60,7 @@ var QB2 = new QuickBlox();
 
 # Documentation
 
-You can look at it here https://quickblox.com/developers/Javascript
+You can look at it here https://docs.quickblox.com/docs/js-quick-start
 
 # Questions and feedback
 
