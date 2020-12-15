@@ -4,12 +4,14 @@ var QBconfig = {
         authKey: '',
         authSecret: '',
         accountKey: '',
-        apiDomain: 'https://api.quickblox.com',
-        chatDomain: 'chat.quickblox.com'
     },
     appConfig: {
         chatProtocol: {
             active: 2
+        },
+        endpoints: {
+            api: 'api.quickblox.com',
+            chat: 'chat.quickblox.com'
         },
         streamManagement: {
             enable: true
