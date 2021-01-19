@@ -72,4 +72,4 @@ Feedback and suggestions for improvement always welcome :)
 See more information at [contributing.md](https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md)
 
 # License
-Apache 2.0
+Apache 2.0.
