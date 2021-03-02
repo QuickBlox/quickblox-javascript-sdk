@@ -6,7 +6,6 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var rename = require('gulp-rename');
 
-var notify = require('gulp-notify');
 var uglify = require('gulp-uglify-es').default;
 
 gulp.task('build', function() {
@@ -21,12 +20,9 @@ gulp.task('build', function() {
         .bundle()
         .on('error', function(error) {
             throw new Error(error);
-            notify('Failed when create a bundle.');
-            this.emit('end');
         })
         .pipe(source('quickblox.js'))
         .pipe(gulp.dest('./'))
-        .pipe(notify('Build task is finished.'));
 });
 
 gulp.task('minify', function() {

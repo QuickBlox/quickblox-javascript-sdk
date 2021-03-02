@@ -35,13 +35,24 @@ samples
 # QB JS SDK Docs
 docs
 
+# QB JS SDK tests
+spec
+
 # git
+.git
 .github
+.gitignore
 
 # other files (don't need for development)
 .babelrc
 .codeclimate.yml
 .travis.yml
+.jshintrc
+.jshintignore
+.editorconfig
+.eslintignore
+.eslintrc
 bower.json
 jsdoc.conf.json
 karma.conf.js
+gulpfile.js
