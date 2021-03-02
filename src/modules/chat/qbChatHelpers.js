@@ -17,8 +17,34 @@ var MARKERS = {
     LAST: 'jabber:iq:last'
 };
 
+function ChatNotConnectedError(message, fileName, lineNumber) {
+    var instance = new Error(message, fileName, lineNumber);
+    instance.name = 'ChatNotConnectedError';
+    Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
+    if (Error.captureStackTrace) {
+        Error.captureStackTrace(instance, ChatNotConnectedError);
+    }
+    return instance;
+}
+
+ChatNotConnectedError.prototype = Object.create(Error.prototype, {
+    constructor: {
+        value: Error,
+        enumerable: false,
+        writable: true,
+        configurable: true
+    }
+});
+
+if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(ChatNotConnectedError, Error);
+} else {
+    ChatNotConnectedError.__proto__ = Error; // jshint ignore:line
+}
+
 var qbChatHelpers = {
     MARKERS: MARKERS,
+    ChatNotConnectedError: ChatNotConnectedError,
     /**
      * @param {params} this object may contains Jid or Id property
      * @return {string} jid of user
