@@ -33,22 +33,26 @@ function retrieveUsers(callback) {
 }
 
 function updateDialogsUsersStorage(usersIds, callback) {
-    var params = {
-        filter: {
-            field: 'id',
-            param: 'in',
-            value: usersIds
-        },
-        per_page: 100
-    };
+    if (usersIds.length) {
+        var params = {
+            filter: {
+                field: 'id',
+                param: 'in',
+                value: usersIds
+            },
+            per_page: 100
+        };
 
-    QB.users.listUsers(params, function(err, result) {
-        if (result) {
-            mergeUsers(result.items);
-        }
+        QB.users.listUsers(params, function(err, result) {
+            if (result && result.items) {
+                mergeUsers(result.items);
+            }
 
+            callback();
+        });
+    } else {
         callback();
-    });
+    }
 }
 
 function mergeUsers(usersItems) {
