@@ -42,7 +42,7 @@ function updateVideoAndAudioChatButton(status) {
                     .addClass("btn-success");
 
             $callBtn.popover('destroy');
-            $callBtn.attr('onclick', "clickJoinOrLeaveVideoChat()");
+            $callBtn.attr('onclick', "clickJoinOrLeaveConference()");
 
             break;
 
@@ -52,7 +52,7 @@ function updateVideoAndAudioChatButton(status) {
                     .addClass("btn-danger");
 
             $callBtn.popover('destroy');
-            $callBtn.attr('onclick', "clickJoinOrLeaveVideoChat()");
+            $callBtn.attr('onclick', "clickJoinOrLeaveConference()");
 
             break;
 
@@ -62,7 +62,7 @@ function updateVideoAndAudioChatButton(status) {
                     .addClass("btn-danger");
 
             $callBtn.popover('destroy');
-            $callBtn.attr('onclick', "clickJoinOrLeaveVideoChat()");
+            $callBtn.attr('onclick', "clickJoinOrLeaveConference()");
 
             break;
 
@@ -74,7 +74,17 @@ function updateVideoAndAudioChatButton(status) {
 function prepareLocalVideoUI() {
     $('#videolocal').empty();
 
-    $('#videolocal').append('<video class="rounded centered" id="myvideo" width="100%" height="100%" autoplay muted="muted"/>');
+    $('#videolocal').append([
+        '<video',
+            'class="rounded centered"',
+            'id="myvideo"',
+            'width="100%"',
+            'height="100%"',
+            'autoplay',
+            'muted',
+            'playsinline',
+        '/>'
+    ].join(' '));
 
     // Add a 'video full screen' button
     $('#videolocal').append('<button class="btn btn-default btn-xs" id="fullscreen" style="position: absolute; top: 0px; right: 0px; margin-top: 28px; margin-right: 20px; background-color: #ccc;"> <img src="images/icon-full-mode-on.png" /></button>');
@@ -90,7 +100,16 @@ function prepareLocalVideoUI() {
 
 function prepareRemoteVideoUI(userId) {
     if ($('#remotevideo' + userId).length === 0) {
-        $('#videoremote' + userId).append('<video class="rounded centered relative" id="remotevideo' + userId + '" width="100%" height="100%" autoplay/>');
+        $('#videoremote' + userId).append([
+            '<video',
+                'class="rounded centered relative"',
+                'id="remotevideo' + userId + '"',
+                'width="100%"',
+                'height="100%"',
+                'autoplay',
+                'playsinline',
+            '/>'
+        ]. join(' '));
         hideRemoteVideo(userId);
     }
     if(!isAudioCallOnly){
@@ -110,15 +129,6 @@ function prepareRemoteVideoUI(userId) {
     $('#videoremote' + userId).append('<button class="btn btn-warning btn-xs" id="mute_' + userId + '" style="position: absolute; bottom: 0px; left: 0px; margin: 15px;">Mute</button>');
     $('#mute_' + userId).click(toggleRemoteMute);
     // $('#mute_' + userId).click(ICE_RESTART_REMOTE_TEST);
-}
-
-function publishingLocalVideoUI() {
-    if(adapter.browserDetails.browser === "safari") {
-      noWebCameraUI("Video rejected, no supported video codec");
-    }else{
-      //startSpiner("local");
-      //hideLocalVideo();
-    }
 }
 
 function readyLocalVideoUI(videoDevices){
@@ -206,16 +216,10 @@ function stopSpiner(userId) {
 }
 
 function showСurres(width, height, userId) {
-    $('#curres' + userId).removeClass('hide').text(width + 'x' + height).show();
-
-    if (adapter.browserDetails.browser === "firefox") {
-        // Firefox Stable has a bug: width and height are not immediately available after a playing
-        setTimeout(function() {
-            var width = $("#remotevideo" + userId).get(0).videoWidth;
-            var height = $("#remotevideo" + userId).get(0).videoHeight;
-            $('#curres' + userId).removeClass('hide').text(width + 'x' + height).show();
-        }, 2000);
-    }
+    $('#curres' + userId)
+        .removeClass('hide')
+        .text(width + 'x' + height)
+        .show();
 }
 
 function hideСurres(userId) {
@@ -293,13 +297,13 @@ function incomingCallFormOtherDialog(dialogId, dialogName) {
             if (ok) {
                 if (callIsInProgress) {
                     // left current video call
-                    clickJoinOrLeaveVideoChat();
+                    clickJoinOrLeaveConference();
                     updateDelay += 1000;
                 }
                 setTimeout(function () {
                     $('#' + dialogId).click();
                     updateVideoAndAudioChatButton('join');
-                    clickJoinOrLeaveVideoChat();
+                    clickJoinOrLeaveConference();
                 }, updateDelay);
             }
         }
@@ -331,7 +335,7 @@ function showIncomingCallPopup(dialogId, dialogName) {
         callback: function(ok) {
             autoClosePopups(true);
             if (ok && !callIsInProgress) {
-                clickJoinOrLeaveVideoChat();
+                clickJoinOrLeaveConference();
             }
         }
     });
@@ -343,7 +347,7 @@ function cancelCurrentCall(dialogId) {
     changeVideoChatStatus(dialogId, false);
 
     if (callIsInProgress) {
-        clickJoinOrLeaveVideoChat(true);
+        clickJoinOrLeaveConference();
     } else if (dialogId === currentDialog._id) {
         updateVideoAndAudioChatButton('start');
     }
