@@ -3,108 +3,160 @@
 function Login() {
     this.isLoginPageRendered = false;
     this.isLogin = false;
-}
 
-Login.prototype.init = function(){
-    var self = this;
+    this.qbConnect = function (data) {
 
-    return new Promise(function(resolve, reject) {
-        var user = localStorage.getItem('user');
-        if(user && !app.user){
-            var savedUser = JSON.parse(user);
-            app.room = savedUser.tag_list;
-            self.login(savedUser)
-                .then(function(){
-                    resolve(true);
-                }).catch(function(error){
-                reject(error);
-            });
-        } else {
-            resolve(false);
-        }
-    });
-};
-
-Login.prototype.login = function (user) {
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        if(self.isLoginPageRendered){
-            document.forms.loginForm.login_submit.innerText = 'loading...';
-        } else {
-            self.renderLoadingPage();
-        }
-        QB.createSession(function(csErr, csRes) {
-            var userRequiredParams = {
-                'login':user.login,
-                'password': user.password
+        var
+            self = this,
+            timer,
+            userRequiredParams = {
+                'login': data.login,
+                'password': data.password ? data.password : 'quickblox'
             };
-            if (csErr) {
-                loginError(csErr);
-            } else {
-                app.token = csRes.token;
-                QB.login(userRequiredParams, function(loginErr, loginUser){
-                    if(loginErr) {
-                        /** Login failed, trying to create account */
-                        QB.users.create(user, function (createErr, createUser) {
-                            if (createErr) {
-                                loginError(createErr);
-                            } else {
-                                QB.login(userRequiredParams, function (reloginErr, reloginUser) {
-                                    if (reloginErr) {
-                                        loginError(reloginErr);
-                                    } else {
-                                        loginSuccess(reloginUser);
-                                    }
-                                });
-                            }
-                        });
+
+        this.login = function() {
+            return new Promise(function (resolve, reject) {
+                QB.login(userRequiredParams, function (error, result) {
+                    if (error) {
+                        reject(error);
                     } else {
-                        /** Update info */
-                        if(loginUser.user_tags !== user.tag_list || loginUser.full_name !== user.full_name) {
-                            QB.users.update(loginUser.id, {
-                                'full_name': user.full_name,
-                                'tag_list': user.tag_list
-                            }, function(updateError, updateUser) {
-                                if(updateError) {
-                                    loginError(updateError);
-                                } else {
-                                    loginSuccess(updateUser);
-                                }
-                            });
-                        } else {
-                            loginSuccess(loginUser);
-                        }
+                        resolve(result);
                     }
                 });
-            }
-        });
-
-        function loginSuccess(userData){
-            app.user = userModule.addToCache(userData);
-            app.user.user_tags = userData.user_tags;
-            QB.chat.connect({userId: app.user.id, password: user.password}, function(err, roster){
-                if (err) {
-                    document.querySelector('.j-login__button').innerText = 'Login';
-                    console.error(err);
-                    reject(err);
-                } else {
-                    self.isLogin = true;
-                    resolve();
-                }
             });
+        };
+
+        this.userCreate = function(user) {
+            return new Promise(function (resolve, reject) {
+                QB.users.create(user, function (error, result) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        };
+
+        this.createSession = function() {
+            return new Promise(function(resolve, reject) {
+                QB.createSession(function(error, result) {
+                    if(error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        };
+
+        this.chatConnect = function() {
+            return new Promise(function(resolve, reject) {
+                QB.chat.connect({
+                    jid: QB.chat.helpers.getUserJid( app.user.id, app._config.credentials.appId ),
+                    password: userRequiredParams.password
+                }, function(error, result) {
+                    if(error) {
+                        reject(error);
+                    } else {
+                        resolve(result)
+                    }
+                });
+            });
+        };
+
+        this.connect = async function () {
+            self.stopReconnecting();
+            app.user = null;
+            /*app.init(app._config);*/
+
+            var user = localStorage.getItem('user');
+
+            var savedUser = JSON.parse(user);
+            app.room = savedUser.tag_list;
+
+            try {
+                var isLogin = await loginModule.login(savedUser);
+            }catch (e) {
+                app.init(app._config);
+                isLogin = await loginModule.login(savedUser);
+            }
+
+            listeners.setListeners();
+
+            if(!isLogin) {
+                router.navigate('/login');
+            }
+
+            return Promise.resolve();
+
+        };
+
+        this.reconnecting = function(interval) {
+            timer = setInterval(this.connect, interval);
+        };
+
+        this.stopReconnecting = function() {
+            clearInterval(timer);
         }
 
-        function loginError(error){
-            self.renderLoginPage();
-            console.error(error);
-            var message = Object.keys(error.detail).map(function (key) { 
-                return key + ' ' + error.detail[key].join('')
-            })
-            alert(message);
-            reject(error);
-        }
-    });
+    }
+
+}
+
+Login.prototype.init = async function() {
+    var self = this;
+
+    var user = localStorage.getItem('user');
+
+    if(!app.checkInternetConnection()){
+        return false;
+    }
+
+    if(user && !app.user){
+        var savedUser = JSON.parse(user);
+        app.room = savedUser.tag_list;
+        return await self.login(savedUser);
+    }
+
+    return Promise.resolve(false);
+
+};
+
+Login.prototype.login = async function (user) {
+    var self = this;
+
+    window.qbConnect = new self.qbConnect(user);
+
+    var session = await window.qbConnect.createSession();
+
+    app.token = session.token;
+
+    try {
+        var userData = await window.qbConnect.login();
+    }catch (e) {
+        await userModule.create(user);
+        userData = await window.qbConnect.login();
+    }
+
+    if(userData.user_tags !== user.tag_list || userData.full_name !== user.full_name) {
+        userData = await userModule.update(userData.id,{
+            'full_name': user.full_name,
+            'tag_list': user.tag_list
+        });
+    }
     
+    app.user = userModule.addToCache(userData);
+    app.user.user_tags = userData.user_tags;
+
+    await window.qbConnect.chatConnect().then(function () {
+        self.isLogin = true;
+    });
+
+    window.qbConnect.reconnecting(1800000);
+
+    return Promise.resolve(true);
+
 };
 
 Login.prototype.renderLoginPage = function(){
@@ -131,14 +183,18 @@ Login.prototype.setListeners = function(){
     loginForm.addEventListener('submit', function(e){
         e.preventDefault();
 
-        if(loginForm.hasAttribute('disabled') || !loginForm.userName.isValid || !loginForm.userLogin.isValid){
+        if(
+            !app.checkInternetConnection() ||
+            loginForm.hasAttribute('disabled') ||
+            !loginForm.userName.isValid ||
+            !loginForm.userLogin.isValid) {
             return false;
         } else {
             loginForm.setAttribute('disabled', true);
         }
 
-        var userName = loginForm.userName.value.trim(),
-            userLogin = loginForm.userLogin.value.trim();
+        var userName = loginForm.userName.value,
+            userLogin = loginForm.userLogin.value;
 
         var user = {
             login: userLogin,
@@ -161,40 +217,47 @@ Login.prototype.setListeners = function(){
     // add event listeners for each input;
     _.each(formInputs, function(i){
         i.addEventListener('focus', function(e){
-            var elem = e.currentTarget,
-                container = elem.parentElement;
-
-            if (!container.classList.contains('filled')) {
-                container.classList.add('filled');
+            if(e.target.isValid){
+                e.target.nextElementSibling.classList.remove('filled');
+            }else{
+                e.target.nextElementSibling.classList.add('filled');
             }
         });
 
         i.addEventListener('focusout', function(e){
-            var elem = e.currentTarget,
-                container = elem.parentElement;
-
-            if (!elem.value.length && container.classList.contains('filled')) {
-                container.classList.remove('filled');
+            var elem = e.currentTarget;
+            if (!elem.value.length || elem.isValid) {
+                elem.nextElementSibling.classList.remove('filled');
             }
         });
 
         i.addEventListener('input', function(e){
-            var userName = loginForm.userName.value.trim(),
-                userLogin = loginForm.userLogin.value.trim();
+            var userName = loginForm.userName.value,
+                userLogin = loginForm.userLogin.value;
 
-            loginForm.userName.isValid = 15 >= userName.length && userName.length >=3;
-            loginForm.userLogin.isValid = 15 >= userLogin.length && userLogin.length >= 3 && (userLogin.match(/^[a-zA-Z]{1}[a-zA-Z0-9]+$/)!=null);
+            loginForm.userName.isValid = 20 >= userName.length && userName.length >=3 &&
+                (userName.match(/^[a-zA-Z][a-zA-Z0-9 ]{1,18}[a-zA-Z0-9]$/)!=null);
+            loginForm.userLogin.isValid = 50 >= userLogin.length && userLogin.length >= 3 &&
+                (userLogin.match(/[@]/g)==null || userLogin.match(/[@]/g).length <= 1) &&
+                (userLogin.match(/^[a-zA-Z][a-zA-Z0-9@\-_.]{1,48}[a-zA-Z0-9]$/)!=null);
 
-            formInputs.forEach(function(e) {
-                var container = e.parentElement;
-                if(e.isValid){
-                    container.classList.remove('error');
-                }else{
-                    container.classList.add('error');
+            userName.split(" ").forEach(function (str) {
+                if(str.length < 1){
+                    loginForm.userName.isValid = false;
                 }
             });
 
-            loginBtn.removeAttribute('disabled');
+            if(e.target.isValid){
+                e.target.nextElementSibling.classList.remove('filled');
+            }else{
+                e.target.nextElementSibling.classList.add('filled');
+            }
+
+            if(loginForm.userName.isValid && loginForm.userLogin.isValid){
+                loginBtn.removeAttribute('disabled');
+            }else{
+                loginBtn.setAttribute('disabled', true);
+            }
 
         })
     });

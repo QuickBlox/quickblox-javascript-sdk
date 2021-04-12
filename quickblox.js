@@ -11436,6 +11436,7 @@ if (Utils.getEnv().browser) {
 
 function ChatProxy(service) {
     var self = this;
+    var originSendFunction;
 
     self.webrtcSignalingProcessor = null;
 
@@ -11445,7 +11446,7 @@ function ChatProxy(service) {
      */
     if (Utils.getEnv().browser) {
         // strophe js
-        self.connection = new Connection();
+        self.connection = Connection();
 
         /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
@@ -11456,6 +11457,14 @@ function ChatProxy(service) {
             while (self.connection.XHandlerReferences.length) {
                 self.connection.deleteHandler(self.connection.XHandlerReferences.pop());
             }
+        };
+
+        originSendFunction = self.connection.send;
+        self.connection.send = function (stanza) {
+            if (!self.connection.connected) {
+                throw new chatUtils.ChatNotConnectedError('Chat is not connected');
+            }
+            originSendFunction.call(self.connection, stanza);
         };
     } else {
         // nativescript-xmpp-client
@@ -11474,7 +11483,7 @@ function ChatProxy(service) {
         }
 
         // override 'send' function to add some logs
-        var originSendFunction = self.Client.send;
+        originSendFunction = self.Client.send;
 
         self.Client.send = function(stanza) {
             Utils.QBLog('[QBChat]', 'SENT:', stanza.toString());
@@ -12667,9 +12676,6 @@ ChatProxy.prototype = {
                 throw new Error('Invalid arguments provided. Either userId/jid (number/string) and callback or only callback should be provided.');
             }
         }
-        if (!this.isConnected) {
-            throw new Error('Ping attempt failed because chat is not connected');
-        }
 
         var iqParams = {
             from: this.helpers.getUserCurrentJid(),
@@ -12711,6 +12717,7 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
+            this.connection.reset();
         } else {
             this.Client.end();
         }
@@ -14011,8 +14018,34 @@ var MARKERS = {
     LAST: 'jabber:iq:last'
 };
 
+function ChatNotConnectedError(message, fileName, lineNumber) {
+    var instance = new Error(message, fileName, lineNumber);
+    instance.name = 'ChatNotConnectedError';
+    Object.setPrototypeOf(instance, Object.getPrototypeOf(this));
+    if (Error.captureStackTrace) {
+        Error.captureStackTrace(instance, ChatNotConnectedError);
+    }
+    return instance;
+}
+
+ChatNotConnectedError.prototype = Object.create(Error.prototype, {
+    constructor: {
+        value: Error,
+        enumerable: false,
+        writable: true,
+        configurable: true
+    }
+});
+
+if (Object.setPrototypeOf) {
+    Object.setPrototypeOf(ChatNotConnectedError, Error);
+} else {
+    ChatNotConnectedError.__proto__ = Error; // jshint ignore:line
+}
+
 var qbChatHelpers = {
     MARKERS: MARKERS,
+    ChatNotConnectedError: ChatNotConnectedError,
     /**
      * @param {params} this object may contains Jid or Id property
      * @return {string} jid of user
@@ -16939,15 +16972,7 @@ var Utils = require('../../qbUtils');
 var config = require('../../qbConfig');
 
 function WebRTCClient(service, connection) {
-    if (WebRTCClient.__instance) {
-        return WebRTCClient.__instance;
-    } else if (this === window) {
-        return new WebRTCClient();
-    }
 
-    WebRTCClient.__instance = this;
-
-    // Initialise all properties here
     this.connection = connection;
     this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
     this.signalingProvider = new WebRTCSignalingProvider(service, connection);
@@ -16958,7 +16983,7 @@ function WebRTCClient(service, connection) {
 
     this.sessions = {};
 
-    if (navigator.mediaDevices) {
+    if (navigator.mediaDevices && 'ondevicechange' in navigator.mediaDevices) {
         navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
     }
 
@@ -18201,7 +18226,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
      */
 
     var pcConfig = {
-        iceServers: _prepareIceServers(config.webrtc.iceServers)
+        iceServers: config.webrtc.iceServers,
+        offerExtmapAllowMixed: false
     };
 
     Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
@@ -18429,20 +18455,6 @@ function _prepareExtension(extension) {
     }
 
     return ext;
-}
-
-function _prepareIceServers(iceServers) {
-    var  iceServersCopy = JSON.parse(JSON.stringify(iceServers));
-
-    Object.keys(iceServersCopy).forEach(function(c, i, a) {
-        if(iceServersCopy[i].hasOwnProperty('url')) {
-            iceServersCopy[i].urls = iceServersCopy[i].url;
-        } else {
-            iceServersCopy[i].url = iceServersCopy[i].urls;
-        }
-    });
-
-    return iceServersCopy;
 }
 
 module.exports = WebRTCSession;
@@ -18957,8 +18969,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.13.2',
-  buildNumber: '1093',
+  version: '2.13.6',
+  buildNumber: '1099',
   creds: {
     appId: '',
     authKey: '',
@@ -18990,19 +19002,9 @@ var config = {
     statsReportTimeInterval: false,
     iceServers: [
       {
-        'url': 'stun:turn.quickblox.com',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turn.quickblox.com:3478?transport=udp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turn.quickblox.com:3478?transport=tcp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+        urls: ['turn:turn.quickblox.com', 'turns:turn.quickblox.com'],
+        username: 'quickblox',
+        credential: 'baccb97ba2d92d71e26eb9886da5f1e0'
       }
     ]
   },

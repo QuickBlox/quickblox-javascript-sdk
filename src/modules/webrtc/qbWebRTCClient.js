@@ -26,15 +26,7 @@ var Utils = require('../../qbUtils');
 var config = require('../../qbConfig');
 
 function WebRTCClient(service, connection) {
-    if (WebRTCClient.__instance) {
-        return WebRTCClient.__instance;
-    } else if (this === window) {
-        return new WebRTCClient();
-    }
 
-    WebRTCClient.__instance = this;
-
-    // Initialise all properties here
     this.connection = connection;
     this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
     this.signalingProvider = new WebRTCSignalingProvider(service, connection);
@@ -45,7 +37,7 @@ function WebRTCClient(service, connection) {
 
     this.sessions = {};
 
-    if (navigator.mediaDevices) {
+    if (navigator.mediaDevices && 'ondevicechange' in navigator.mediaDevices) {
         navigator.mediaDevices.ondevicechange = this._onDevicesChangeListener.bind(this);
     }
 

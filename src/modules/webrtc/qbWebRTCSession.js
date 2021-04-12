@@ -790,7 +790,8 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
      */
 
     var pcConfig = {
-        iceServers: _prepareIceServers(config.webrtc.iceServers)
+        iceServers: config.webrtc.iceServers,
+        offerExtmapAllowMixed: false
     };
 
     Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
@@ -1018,20 +1019,6 @@ function _prepareExtension(extension) {
     }
 
     return ext;
-}
-
-function _prepareIceServers(iceServers) {
-    var  iceServersCopy = JSON.parse(JSON.stringify(iceServers));
-
-    Object.keys(iceServersCopy).forEach(function(c, i, a) {
-        if(iceServersCopy[i].hasOwnProperty('url')) {
-            iceServersCopy[i].urls = iceServersCopy[i].url;
-        } else {
-            iceServersCopy[i].url = iceServersCopy[i].urls;
-        }
-    });
-
-    return iceServersCopy;
 }
 
 module.exports = WebRTCSession;

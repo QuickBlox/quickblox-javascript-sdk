@@ -26,15 +26,31 @@ Listeners.prototype.onMessageListener = function (userId, message) {
         msg = helpers.fillNewMessageParams(userId, message),
         dialog = dialogModule._cache[message.dialog_id];
 
+
+    if (userId === app.user.id && message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.LEAVE_DIALOG) {
+        delete dialogModule._cache[message.dialog_id];
+        delete dialogModule.selectedDialogIds[message.dialog_id];
+        var dialogElem = document.getElementById(message.dialog_id);
+        dialogElem.parentNode.removeChild(dialogElem);
+        if(message.dialog_id === dialogModule.dialogId) {
+            dialogModule.dialogId = null;
+            router.navigate('/dashboard');
+        }
+        return false;
+    }
+
+
     if (dialog) {
         dialogModule.sortedByLastMessage(message.dialog_id);
     }
 
-    if(userId === app.user.id){
+    if (dialog && dialog.messages.find(function(message){
+        if(message._id === msg._id) return true;
+    })) {
         return false;
-    } 
+    }
 
-    if(message.markable){
+    if(message.markable && userId !== app.user.id){
         messageModule.sendDeliveredStatus(msg._id, userId, msg.chat_dialog_id);
     }
 
@@ -46,37 +62,31 @@ Listeners.prototype.onMessageListener = function (userId, message) {
             return self.onNotificationMessage(userId, message);
         }
 
-        var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
-            tabType = activeTab.dataset.type,
-            dialogType = dialog.type === 1 ? 'public' : 'chat',
-            isActiveTab = tabType === dialogType;
+        dialogModule.renderDialog(dialog, true);
 
-        if(isActiveTab) {
-            dialogModule.renderDialog(dialog, true);
-        }
+        if(message.dialog_id === dialogModule.dialogId) {
+            messageModule.renderMessage(msg, true);
+        }else{
 
-        if(isActiveTab || message.dialog_id === dialogModule.dialogId ){
-            if (dialogModule.dialogId === msg.chat_dialog_id) {
-                messageModule.renderMessage(msg, true);
-            } else {
+            var dialogElem = document.getElementById(msg.chat_dialog_id),
+                counter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+            if(userId !== app.user.id){
                 dialog.unread_messages_count += 1;
-                var dialogElem = document.getElementById(msg.chat_dialog_id),
-                    counter = dialogElem.querySelector('.j-dialog_unread_counter');
+            }
+            counter.innerText = dialog.unread_messages_count;
 
+            if(dialog.unread_messages_count > 0) {
                 counter.classList.remove('hidden');
-                counter.innerText = dialog.unread_messages_count;
             }
         }
     } else {
         dialogModule.getDialogById(msg.chat_dialog_id).then(function(dialog){
             dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
 
-            var type = dialog.type === 1 ? 'public' : 'chat',
-                activeTab = document.querySelector('.j-sidebar__tab_link.active'),
-                cachedDialog = dialogModule._cache[dialog._id];
-            if (activeTab && type === activeTab.dataset.type) {
-                dialogModule.renderDialog(cachedDialog, true);
-            }
+            var cachedDialog = dialogModule._cache[dialog._id];
+            dialogModule.renderDialog(cachedDialog, true);
+
         }).catch(function(e){
             console.error(e);
         });
@@ -91,7 +101,7 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
         dialogId = message.dialog_id,
         occupantsIdsAdded = extension.new_occupants_ids && extension.new_occupants_ids.split(',');
 
-    if(message.extension && ['2','3'].indexOf(message.extension.notification_type) !== -1){
+    if(message.extension && ['2','3'].indexOf(message.extension.notification_type) !== -1) {
         if (message.extension.notification_type === '3') {
             dialogModule._cache[dialogId].users = dialogModule._cache[dialogId].users.filter(function(user){
                 return user !== userId;
@@ -108,24 +118,24 @@ Listeners.prototype.onNotificationMessage = function(userId, message){
         }
     }
 
-    var activeTab = document.querySelector('.j-sidebar__tab_link.active'),
-        tabType = activeTab.dataset.type,
-        dialogType = dialog.type === 1 ? 'public' : 'chat';
+    dialogModule.renderDialog(dialog, true);
 
-    if(tabType === dialogType){
-        dialogModule.renderDialog(dialog, true);
+    if (dialogModule.dialogId === msg.chat_dialog_id) {
+        messageModule.renderMessage(msg, true);
+    } else {
 
-        if (dialogModule.dialogId === msg.chat_dialog_id) {
-            messageModule.renderMessage(msg, true);
-        } else {
+        var dialogElem = document.getElementById(msg.chat_dialog_id),
+            counter = dialogElem.querySelector('.j-dialog_unread_counter');
+
+        if(userId !== app.user.id){
             dialog.unread_messages_count += 1;
-            var dialogElem = document.getElementById(msg.chat_dialog_id),
-                counter = dialogElem.querySelector('.j-dialog_unread_counter');
-
+        }
+        counter.innerText = dialog.unread_messages_count;
+        if(dialog.unread_messages_count > 0) {
             counter.classList.remove('hidden');
-            counter.innerText = dialog.unread_messages_count;
         }
     }
+
 };
 
 Listeners.prototype.onReconnectFailedListener = function() {
@@ -147,12 +157,7 @@ Listeners.prototype.onSystemMessageListener = function (message) {
         if (message.extension.dialog_id) {
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
-                var type = dialog.type === 1 ? 'public' : 'chat',
-                    activeTab = document.querySelector('.j-sidebar__tab_link.active');
-
-                if (activeTab && type === activeTab.dataset.type) {
-                    dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
-                }
+                dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
             }).catch(function(error){
                 console.error(error);
             });
@@ -162,11 +167,7 @@ Listeners.prototype.onSystemMessageListener = function (message) {
         if(!dialog){
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {
                 dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
-                var type = dialog.type === 1 ? 'public' : 'chat',
-                    activeTab = document.querySelector('.j-sidebar__tab_link.active');
-                if (activeTab && type === activeTab.dataset.type) {
-                    dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
-                }
+                dialogModule.renderDialog(dialogModule._cache[dialog._id], true);
             }).catch(function(error){
                 console.error(error);
             });
@@ -239,6 +240,30 @@ Listeners.prototype.setListeners = function () {
     // lost enternet connection.
     window.addEventListener('online', this.updateOnlineStatus);
     window.addEventListener('offline', this.updateOnlineStatus);
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === 'visible') {
+            try {
+                QB.chat.ping(
+                    QB.chat.helpers.getUserJid(app.user.id, app._config.credentials.appId),
+                    function (err) {
+                        if (err) {
+                            window.qbConnect.connect().then(async function () {
+                                await helpers.renderDashboard();
+                            });
+                        } else {
+                            // pong received from user
+                        }
+                    }
+                )
+            } catch (e) {
+                window.qbConnect.connect().then(async function () {
+                    await helpers.renderDashboard();
+                });
+            }
+        }
+    });
+
 };
 
 var listeners = new Listeners();

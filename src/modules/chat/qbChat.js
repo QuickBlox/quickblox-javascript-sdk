@@ -29,6 +29,7 @@ if (Utils.getEnv().browser) {
 
 function ChatProxy(service) {
     var self = this;
+    var originSendFunction;
 
     self.webrtcSignalingProcessor = null;
 
@@ -38,7 +39,7 @@ function ChatProxy(service) {
      */
     if (Utils.getEnv().browser) {
         // strophe js
-        self.connection = new Connection();
+        self.connection = Connection();
 
         /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
@@ -49,6 +50,14 @@ function ChatProxy(service) {
             while (self.connection.XHandlerReferences.length) {
                 self.connection.deleteHandler(self.connection.XHandlerReferences.pop());
             }
+        };
+
+        originSendFunction = self.connection.send;
+        self.connection.send = function (stanza) {
+            if (!self.connection.connected) {
+                throw new chatUtils.ChatNotConnectedError('Chat is not connected');
+            }
+            originSendFunction.call(self.connection, stanza);
         };
     } else {
         // nativescript-xmpp-client
@@ -67,7 +76,7 @@ function ChatProxy(service) {
         }
 
         // override 'send' function to add some logs
-        var originSendFunction = self.Client.send;
+        originSendFunction = self.Client.send;
 
         self.Client.send = function(stanza) {
             Utils.QBLog('[QBChat]', 'SENT:', stanza.toString());
@@ -1260,9 +1269,6 @@ ChatProxy.prototype = {
                 throw new Error('Invalid arguments provided. Either userId/jid (number/string) and callback or only callback should be provided.');
             }
         }
-        if (!this.isConnected) {
-            throw new Error('Ping attempt failed because chat is not connected');
-        }
 
         var iqParams = {
             from: this.helpers.getUserCurrentJid(),
@@ -1304,6 +1310,7 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
+            this.connection.reset();
         } else {
             this.Client.end();
         }

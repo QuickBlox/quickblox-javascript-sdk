@@ -18,13 +18,19 @@ $(function() {
 
 function configureAppAndLoadUser() {
     if(typeof QBCustomEndpoints !== "undefined"){
-        QBCONFIG.endpoints.api = QBCustomEndpoints.qbAPI;
-        QBCONFIG.endpoints.chat = QBCustomEndpoints.qbChat;
+        CONFIG.APP_CONFIG.endpoints.api = QBCustomEndpoints.qbAPI;
+        CONFIG.APP_CONFIG.endpoints.chat = QBCustomEndpoints.qbChat;
     }
-    console.info("api endpoint: ", QBCONFIG.endpoints.api);
-    console.info("chat endpoint: ", QBCONFIG.endpoints.chat);
+    console.info("api endpoint: ", CONFIG.APP_CONFIG.endpoints.api);
+    console.info("chat endpoint: ", CONFIG.APP_CONFIG.endpoints.chat);
 
-    QB.init(QBAppCreds.appId, QBAppCreds.authKey, QBAppCreds.authSecret, QBCONFIG);
+    QB.init(
+        CONFIG.CREDENTIALS.appId,
+        CONFIG.CREDENTIALS.authKey,
+        CONFIG.CREDENTIALS.authSecret,
+        CONFIG.CREDENTIALS.accountKey,
+        CONFIG.APP_CONFIG
+    );
 
     QB.createSession(function() {
 
@@ -47,14 +53,12 @@ function configureAppAndLoadUser() {
 
             currentUser = {
                 'login': userUid() + userName.replace(/\s/g, ''),
-                'password': 'webAppPass',
+                'password': 'quickblox',
                 'full_name': userName,
                 'tag_list': userTag
             };
 
-            QB.users.get({
-                'login': currentUser.login
-            }, function(error, user){
+            QB.users.get({ login: currentUser.login }, function(error, user) {
                 if (user) {
                     connectToChat();
                 } else if (error && error.code === 404) {

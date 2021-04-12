@@ -1,7 +1,7 @@
 # Overview 
 QuickBlox provides the Multiparty Video Conferencing solution which allows to setup video conference between 10-12 people. It's built on top of WebRTC SFU technologies.
 
-Multi-conference server is available only for Enterprise plans, with **additional fee**. Please refer to [https://quickblox.com/developers/EnterpriseFeatures] for more information and contacts.
+Multi-conference server is available only for Enterprise plans, with **additional fee**. Please refer to [https://docs.quickblox.com/docs/js-video-conference] for more information and contacts.
 
 # Features supported
 
@@ -12,4 +12,4 @@ Multi-conference server is available only for Enterprise plans, with **additiona
 * Switch video input device (camera)
 
 # Documentation
-Check 'docs' dir.
+https://docs.quickblox.com/docs/js-video-conference

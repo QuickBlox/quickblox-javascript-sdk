@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.13.3',
-  buildNumber: '1094',
+  version: '2.13.6',
+  buildNumber: '1099',
   creds: {
     appId: '',
     authKey: '',
@@ -45,19 +45,9 @@ var config = {
     statsReportTimeInterval: false,
     iceServers: [
       {
-        'url': 'stun:turn.quickblox.com',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turn.quickblox.com:3478?transport=udp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
-      },
-      {
-        'url': 'turn:turn.quickblox.com:3478?transport=tcp',
-        'username': 'quickblox',
-        'credential': 'baccb97ba2d92d71e26eb9886da5f1e0'
+        urls: ['turn:turn.quickblox.com', 'turns:turn.quickblox.com'],
+        username: 'quickblox',
+        credential: 'baccb97ba2d92d71e26eb9886da5f1e0'
       }
     ]
   },

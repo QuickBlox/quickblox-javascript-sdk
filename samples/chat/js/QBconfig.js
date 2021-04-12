@@ -3,11 +3,15 @@ var QBconfig = {
         appId: '',
         authKey: '',
         authSecret: '',
-        accountKey: ''
+        accountKey: '',
     },
     appConfig: {
         chatProtocol: {
             active: 2
+        },
+        endpoints: {
+            api: 'api.quickblox.com',
+            chat: 'chat.quickblox.com'
         },
         streamManagement: {
             enable: true
@@ -35,8 +39,8 @@ var CONSTANTS = {
     ATTACHMENT: {
         TYPE: 'image',
         BODY: '[attachment]',
-        MAXSIZE: 2 * 1000000, // set 2 megabytes,
-        MAXSIZEMESSAGE: 'Image is too large. Max size is 2 mb.'
+        MAXSIZE: 100000000, // set 100 megabytes,
+        MAXSIZEMESSAGE: 'The uploaded file exceeds maximum file size (100MB).'
     },
     NOTIFICATION_TYPES: {
         NEW_DIALOG: '1',

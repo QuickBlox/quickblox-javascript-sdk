@@ -1,38 +1,28 @@
-var DEMO_APPS = {
-  "qa": {
-    endpoints: {
-      api: "api.quickblox.com",
-      chat: "chat.quickblox.com"
-    },
-    credentials: {
-      'appId': 72448,
-      'authKey': 'f4HYBYdeqTZ7KNb',
-      'authSecret': 'ZC7dK39bOjVc-Z8'
-    },
-    demoChatDialogId: ""
+var creds = {
+  appId: 80472,
+  authKey: 'qVAGu7ndaCga5Sx',
+  authSecret: 'NZqrmTNgaxM7VSW',
+  accountKey: 'uK_8uinNyz8-npTNB6tx'
+};
+
+var config = {
+  debug: true,
+  endpoints: {
+    api: "api.quickblox.com",
+    chat: "chat.quickblox.com"
   },
-  "VideoRecordingDemoApp1": {
-    endpoints: {
-      api: "apirc.quickblox.com",
-      chat: "chatrc.quickblox.com"
-    },
-    credentials: {
-      'appId': 67897,
-      'authKey': 'JEMb6GKcrrzOBTP',
-      'authSecret': 'h2UxCPHf7Oqk8Pw'
-    },
-    demoChatDialogId: "5afa823c12685f101adaf628"
-  },
-  "VideoRecordingDemoApp2": {
-    endpoints: {
-      api: "apirc.quickblox.com",
-      chat: "chatrc.quickblox.com"
-    },
-    credentials: {
-      'appId': 67898,
-      'authKey': 'kAgbhA9Q99UtygB',
-      'authSecret': 'DxgzQyyOgaYaLJL'
-    },
-    demoChatDialogId: "5afa825512685f101adaf62a"
+  webrtc: {
+    answerTimeInterval: 60,
+    dialingTimeInterval: 5
   }
-}
+};
+
+var MESSAGES = {
+  no_server_error: 'The "server" query parameter is not set. You need to provide it in order to run the sample. Multi-conference server is available only for Enterprise plans. Please refer to https://docs.quickblox.com/docs/js-video-conference for more information and contacts.'
+};
+
+var CONFIG = {
+  CREDENTIALS: creds,
+  APP_CONFIG: config,
+  MESSAGES: MESSAGES
+};

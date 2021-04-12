@@ -16,7 +16,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://unpkg.com/quickblox@2.13.2/quickblox.min.js"></script>
+<script src="https://unpkg.com/quickblox@2.13.6/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -60,7 +60,7 @@ var QB2 = new QuickBlox();
 
 # Documentation
 
-You can look at it here https://quickblox.com/developers/Javascript
+You can look at it here https://docs.quickblox.com/docs/js-quick-start
 
 # Questions and feedback
 
