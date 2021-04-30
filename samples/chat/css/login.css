@@ -10,7 +10,7 @@
 .login__container {
     display: flex;
     height: 100%;
-    width: 343px;
+    max-width: 343px;
     flex-direction: column;
     padding-bottom: 13px;
     margin: 0 auto;
@@ -28,7 +28,7 @@
 }
 
 .login__logo {
-    display: block;
+    display: none;
     width: 100px;
     margin-left: 16px;
 }
@@ -64,7 +64,6 @@
     width: 184px;
     opacity: 0.5;
     color: #333333;
-    font-family: "Open Sans";
     font-size: 14px;
     line-height: 19px;
     display: inline-block;
@@ -73,11 +72,14 @@
 
 .login_form__row input {
     height: 44px;
-    width: 343px;
+    max-width: 343px;
     border-radius: 4px;
     background-color: #FFFFFF;
     box-shadow: 0 6px 11px 0 #D8E5FF;
     border: none;
+    width: 100%;
+    font-size: 16px;
+    font-family: Open Sans Regular;
 }
 
 .login_form__row.error input {
@@ -108,6 +110,7 @@
     text-align: left;
     padding: 16px 20px 0;
 }
+
 .login__footer:after {
     content: '';
     display: table;
@@ -162,7 +165,6 @@
     }
 
     .login__logo {
-        display: inline-block;
         vertical-align: middle;
         width: 36px;
     }
@@ -177,7 +179,6 @@
         height: 44px;
         width: 198px;
         color: #333333;
-        font-family: "Open Sans";
         font-size: 16px;
         line-height: 22px;
         text-align: center;
@@ -188,12 +189,18 @@
     }
 }
 
+@media screen and (min-height: 540px) {
+    .login__container {
+        height: inherit;
+        padding-top: 129px;
+    }
+}
+
 .use-alphanumeric-cha {
     display: none;
     height: 34px;
     width: 342px;
     color: #6B7992;
-    font-family: "Open Sans";
     font-size: 12px;
     line-height: 17px;
     margin-top: 10px;
@@ -204,7 +211,6 @@
     height: 34px;
     width: 342px;
     color: #6B7992;
-    font-family: "Open Sans";
     font-size: 12px;
     line-height: 17px;
     margin-top: 10px;
@@ -218,13 +224,11 @@
     height: 44px;
     width: 198px;
     color: #333333;
-    font-family: 'Open Sans';
     font-size: 16px;
     letter-spacing: 0;
     line-height: 22px;
     text-align: center;
-    margin: 0 auto;
-    margin-bottom: 25px;
+    margin: 0 auto 25px;
 }
 
 @media screen and (min-height: 400px) {

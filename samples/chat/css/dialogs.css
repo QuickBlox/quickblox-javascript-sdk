@@ -3,7 +3,6 @@
     height: 35px;
     background-color: #FFFFFF;
     color: #687A97;
-    font-family: "Open Sans";
     font-size: 12px;
     font-weight: 600;
     line-height: 12px;
@@ -13,12 +12,14 @@
 
 .j-update_dialog_form, .j-update_chat__title_button, .j-back_to_dialog, .j-update_dialog_link {
     display: none;
+    color: #3978FC;
 }
 
 .j-update_dialog_form.active, .j-update_chat__title_button.active, .j-back_to_dialog.active {
     display: block;
     margin-top: 4px;
     margin: 15px 0 0 12px;
+    color: #000;
 }
 
 .j-update_dialog_link.active {
@@ -28,14 +29,12 @@
 
 .j-update_dialog h5 {
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 12px;
     line-height: 17px;
     top: 29px;
     left: 16px;
     display: none;
     margin-left: 11px;
-    margin-top: -4px;
 }
 
 .j-update_dialog h5.active {
@@ -44,10 +43,9 @@
 
 .j-update_dialog h3 {
     position: absolute;
-    top: 13px;
-    right: 15px;
+    top: 19px;
+    right: 13px;
     color: #3978FC;
-    font-family: "Open Sans";
     font-size: 16px;
     font-weight: 600;
     line-height: 22px;
@@ -65,18 +63,18 @@
 }
 
 .j-update_dialog_btn, .j-create_dialog_btn, .j-forward_dialog_btn {
-     position: absolute;
-     top: 6px;
-     right: 2px;
-     color: #3978FC;
-     font-family: "Open Sans";
-     font-size: 15px;
-     height: 22px;
-     width: 67px;
-     font-weight: 600;
-     line-height: 22px;
-     text-align: right;
-     z-index: 2;
+    position: absolute;
+    top: 6px;
+    right: 2px;
+    color: #3978FC;
+    font-size: 16px;
+    height: 22px;
+    width: 67px;
+    font-weight: 600;
+    line-height: 22px;
+    text-align: right;
+    z-index: 2;
+    font-family: Open Sans Regular;
  }
 
 .j-forward_dialog_btn {
@@ -85,11 +83,15 @@
 
 .j-delete_dialog_btn {
     color: #3978FC;
-    font-family: "Open Sans";
     font-size: 15px;
     font-weight: 600;
     padding: 0;
-    margin: 15px 16px 0 0;
+    margin: 0px 16px 0 0;
+    font-family: Open Sans Regular;
+    position: absolute;
+    right: 2px;
+    line-height: 60px;
+    height: 40px;
 }
 
 .j-occupants_chat__user_list .container {
@@ -104,7 +106,6 @@
     background-color: #D9E3F7;
     padding: 2px 20px 2px 20px;
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 12px;
     line-height: 17px;
     text-align: center;
@@ -112,8 +113,8 @@
 
 .sidebar__dilog_list {
     flex: 1 1 100%;
-    overflow-y: auto;
     text-align: left;
+    overflow-y: scroll;
 }
 
 .sidebar__dilog_list.loading:after {
@@ -147,7 +148,7 @@
 
 
 .dialog__item_link {
-    padding: 16px 10px;
+    padding: 10px 16px 10px 7.3px;
     display: flex;
     flex-wrap: nowrap;
     text-decoration: none;
@@ -317,25 +318,28 @@
 .dialog__name {
     display: block;
     width: 100%;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     line-height: 18px;
-    color: #4A4A4A;
+    color: #000000;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     margin: 0 10px 6px 0;
+    letter-spacing: 0;
 }
 
 .dialog__last_message {
     display: block;
     width: 100%;
-    font-size: 13px;
-    line-height: 15px;
-    color: #778594;
+    font-size: 14px;
+    line-height: 17px;
+    color: #6C7A92;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    letter-spacing: normal;
+    margin-top: -2px;
 }
 
 .dialog__last_message.attachment {
@@ -382,7 +386,6 @@
 #is__typing {
     height: 38px;	width: 375px;
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 12px;
     font-style: italic;
     line-height: 17px;

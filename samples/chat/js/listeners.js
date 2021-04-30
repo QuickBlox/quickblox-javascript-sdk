@@ -16,8 +16,6 @@
  * - onDisconnectedListener
  * - onReconnectListener
  */
-
-
 function Listeners() {};
 
 Listeners.prototype.onMessageListener = function (userId, message) {
@@ -153,6 +151,7 @@ Listeners.prototype.onMessageTypingListener = function (isTyping, userId, dialog
 
 Listeners.prototype.onSystemMessageListener = function (message) {
     var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
+
     if (message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.NEW_DIALOG) {
         if (message.extension.dialog_id) {
             dialogModule.getDialogById(message.extension.dialog_id).then(function (dialog) {

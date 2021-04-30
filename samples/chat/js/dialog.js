@@ -2,6 +2,7 @@
 
 function Dialog() {
     this._cache = {};
+
     this.selectedDialogIds = [];
     this.dialogId = null;
     this.prevDialogId = null;
@@ -52,7 +53,7 @@ function Dialog() {
                                 self._cache[dialog._id] = helpers.compileDialogParams(dialog);
                             }
                             if (args !== undefined && args.selected !== undefined) {
-                                self.buildDialogItem(Object.assign({selected: args.selected}, self._cache[dialog._id]));
+                                self.buildDialogItem(Object.assign({selected: args.selected, isLastMessage:args.isLastMessage}, self._cache[dialog._id]));
                             } else {
                                 self.buildDialogItem(self._cache[dialog._id]);
                             }
@@ -419,17 +420,29 @@ Dialog.prototype.beforeCreateDialog = function () {
     }
 
     var
+        createDialog = document.querySelector('.j-create_dialog'),
         chatFilter = document.querySelector('.group_chat__filter'),
         link = document.querySelector('.j-create_dialog_link'),
         userList = document.querySelector('.group_chat__user_list'),
+        back = document.querySelector('.j-create_dialog .j-back_to_dialog'),
         form = document.querySelector('.j-create_dialog_form');
 
     if (chatFilter.classList.contains('active')) {
+        createDialog.classList.remove('step1');
+        createDialog.classList.remove('step2');
+        createDialog.classList.add('step2');
+        back.classList.remove('back_to_dashboard');
+        back.classList.add('back_to_create');
         chatFilter.classList.remove('active');
         userList.classList.remove('active');
         form.classList.add('active');
         link.classList.remove('active');
     } else {
+        createDialog.classList.remove('step1');
+        createDialog.classList.remove('step2');
+        createDialog.classList.add('step1');
+        back.classList.remove('back_to_create');
+        back.classList.add('back_to_dashboard');
         chatFilter.classList.add('active');
         userList.classList.add('active');
         form.classList.remove('active');
@@ -805,7 +818,7 @@ Dialog.prototype.initGettingDialogs = function (userListConteiner, userListFilte
                 element: userListConteiner
             },
             userListFilter: {
-                selector: '.group_chat__filter > input',
+                selector: '.input-group-search input',
                 element: userListFilter
             }
         };
@@ -842,6 +855,9 @@ Dialog.prototype.buildDialogItem = function (user) {
         userItem.selected = user.selected;
         user.event = {click: false};
     }
+
+    if(user.isLastMessage === undefined) user.isLastMessage = true;
+    userItem.isLastMessage = user.isLastMessage;
 
     var userTpl = helpers.fillTemplate('tpl_dialogItem', {user: userItem}),
         elem = helpers.toHtml(userTpl)[0];

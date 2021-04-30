@@ -8,10 +8,9 @@
 }
 
 .more {
-    height: 34px;
+    height: 36px;
     width: 28px;
-    right: 6px;
-    top: 7px;
+    right: 16px;
     position: absolute;
     padding-left: 18px;
     cursor: pointer;
@@ -156,7 +155,7 @@
     overflow: hidden;
     background-repeat: no-repeat;
     background-position: 50% 50%;
-    margin: 0 16px 0 0;
+    margin: 0 8px 0 0;
     position: relative;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -196,10 +195,9 @@
 }
 
 .user__avatar i {
-    font-family: "Open Sans";
     font-size: 16px !important;
     font-weight: 600;
-    line-height: 22px;
+    line-height: 40px;
 }
 
 /* DIALOG STYLES */
@@ -286,23 +284,20 @@
 
 .welcome__message {
     display: none;
-    justify-content: center;
-    align-items: center;
-    color: #778594;
+    color: #333333;
     user-select: none;
 }
 
 
 .dialog_name-or-al {
-display: none;
-height: 34px;
-width: 342px;
-color: #6B7992;
-font-family: "Open Sans";
-font-size: 12px;
-line-height: 17px;
-margin-top: 10px;
-padding: 0 10px;
+    display: none;
+    height: 34px;
+    width: 342px;
+    font-size: 12px;
+    line-height: 17px;
+    margin-top: 10px;
+    padding: 0 10px;
+    color: #99A9C6;
 }
 
 .dialog_name-or-al.filled {
@@ -333,7 +328,7 @@ END WELCOME MESSAGE
     flex: 1 1 100%;
     position: relative;
     overflow: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
     padding: 10px 14px 10px 12px;
     width: 100%;
 }
@@ -358,7 +353,6 @@ END WELCOME MESSAGE
 .message__wrap .m-notification_message {
     width: 100%;
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 12px;
     line-height: 17px;
     text-align: center;
@@ -390,7 +384,6 @@ END WELCOME MESSAGE
 .message__sender_name {
     flex: 1 0;
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 12px;
     font-weight: 600;
     line-height: 17px;
@@ -408,7 +401,7 @@ END WELCOME MESSAGE
 .message__text_wrap.you {
     border-radius: 22px 22px 0 22px;
     background-color: #3978FC;
-    box-shadow: 0 3px 48px 0 #D8E5FF;
+    box-shadow: 1px 4px 19px -2px var(--brand);
     overflow: hidden;
 }
 
@@ -417,10 +410,10 @@ END WELCOME MESSAGE
     white-space: pre-line;
     word-break: break-all;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 14px;
     line-height: 19px;
     padding: 12px 16px 13px 16px;
+    letter-spacing: 0;
 }
 
 .message__text.you {
@@ -520,7 +513,6 @@ END WELCOME MESSAGE
     width: 184px;
     opacity: 0.5;
     color: #333333;
-    font-family: "Open Sans";
     font-size: 12px;
     letter-spacing: 0;
     line-height: 17px;
@@ -533,14 +525,14 @@ END WELCOME MESSAGE
 .login__form .btn {
     border-radius: 4px;
     color: #FFFFFF;
-    font-family: "Open Sans";
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0;
     line-height: 22px;
     text-align: center;
     background-color: #3978FC;
     box-shadow: 3px 3px 3mm 4px rgba(57, 120, 252, 0.3);
+    font-family: Open Sans Regular;
 }
 
 
@@ -628,13 +620,12 @@ END WELCOME MESSAGE
 .back_to_dialog {
     width: 24px;
     height: 24px;
-    color: #778594;
     background: transparent;
     cursor: pointer;
     flex: 0 0 24px;
     padding: 0;
     margin: -5px -10px 0 12px;
-    color: #3978FC !important;
+    color: #3978FC;
 }
 
 .back_to_dialog:hover {
@@ -645,17 +636,14 @@ END WELCOME MESSAGE
 .update_chat__title_input {
     flex: 1 1 auto;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     margin-left: 11px;
     margin-top: 11px;
     height: 22px;
     width: 240px;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 16px;
-    font-weight: 600;
     line-height: 22px;
 }
 
@@ -753,25 +741,20 @@ END WELCOME MESSAGE
 
 .group_chat__filter {
     display: flex;
-    padding: 13px 8px;
-    padding-top: 7px;
 }
 
 .group_chat__filter > input {
     flex: 1 1 100%;
-    font-size: 16px;
-    line-height: 19px;
     border: none;
-    margin: 0 10px 0 0;
-    padding: 0 37px;
     color: #6C7A92;
-    font-family: "Open Sans";
     font-size: 14px;
     line-height: 19px;
+    box-shadow: 0 6px 11px 0 #D8E5FF;
+    width: 100%;
 }
 
 .user__item {
-    padding: 10px 0 10px 15px;
+    padding: 10px 0 10px 17px;
     display: flex;
     cursor: pointer;
     position: relative;
@@ -780,8 +763,8 @@ END WELCOME MESSAGE
 .j-create_dialog, .j-forward_dialog, .j-update_dialog, .j-delete_dialog {
     position: relative;
     padding: 0px;
-    height: 54px;
-    flex: 1 0 54px;
+    height: 60px;
+    flex: 1 0 60px;
     border-bottom: 1px solid #D9E3F7;
     z-index: 2;
     display: flex;
@@ -790,10 +773,10 @@ END WELCOME MESSAGE
 .j-delete_dialog {
     position: relative;
     padding: 0px;
-    height: 54px;
+    height: 60px;
     background: #fff;
     z-index: 2;
-    flex: 1 0 50px;
+    flex: 1 0 60px;
 }
 
 .j-forward_dialog h1 {
@@ -802,10 +785,9 @@ END WELCOME MESSAGE
 
 .j-create_dialog h3, .j-delete_dialog h3 {
     position: absolute;
-    top: 15px;
+    top: 19px;
     right: 13px;
     color: #3978FC;
-    font-family: "Open Sans";
     font-size: 16px;
     font-weight: 600;
     line-height: 22px;
@@ -826,15 +808,12 @@ END WELCOME MESSAGE
 }
 
 .j-create_dialog h5, .j-delete_dialog h5 {
-     /* position: absolute; */
      color: #6C7A92;
-     font-family: "Open Sans";
      font-size: 12px;
      line-height: 17px;
      top: 30px;
      left: 16px;
      margin-left: 11px;
-     margin-top: -4px;
  }
 
 .user__item:hover,
@@ -843,35 +822,14 @@ END WELCOME MESSAGE
 }
 
 .j-occupants_chat__user_list .user__item {
-    background-color:  #f5f4f2;
-}
-
-
-
-.user__item.selected .user__avatar,
-.user__item.disabled .user__avatar {
-    /*background-color: #28C849;
-    background-image: url('../img/ic_done.svg');*/
-}
-
-.user__item.disabled {
-    /* background-color: #ffffff; */
-}
-
-.user__item.disabled .user__avatar {
-    /* background-color: #a6a6a6; */
-}
-
-.user__item.selected i {
-    /* display: none; */
+    background-color:  var(--gray-light);
 }
 
 .user__name {
     font-weight: 500;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 16px;
-    line-height: 39px;
+    line-height: 40px;
     letter-spacing: 0;
 }
 
@@ -898,11 +856,29 @@ END WELCOME MESSAGE
     border: none;
     padding: 0 10px;
     height: 44px;
-    width: 368px;
+    width: 274px;
     border-radius: 4px;
     background-color: #FFFFFF;
     box-shadow: 0 6px 11px 0 #D8E5FF;
     margin-left: 6px;
+}
+
+@media screen and (min-width: 310px) {
+    .dialog_name {
+        width: 300px;
+    }
+}
+
+@media screen and (min-width: 350px) {
+    .dialog_name {
+        width: 340px;
+    }
+}
+
+@media screen and (min-width: 400px) {
+    .dialog_name {
+        width: 368px;
+    }
 }
 
 .dialog_name:disabled {
@@ -916,19 +892,10 @@ END WELCOME MESSAGE
     display: none;
 }
 
-.dialog__avatar .material-icons, .message__avatar .material-icons {
-    font-family: "Open Sans";
+.dialog__avatar .icons, .message__avatar .icons {
     font-size: 16px !important;
     font-weight: 600;
     line-height: 22px;
-}
-
-.menu {
-    height: 28px;
-    width: 28px;
-    margin-left: 18px;
-    cursor: pointer;
-    display: none;
 }
 
 #back_to_dashboard {
@@ -950,13 +917,14 @@ END WELCOME MESSAGE
     height: 152px;
     width: 146px;
     border-radius: 14px;
-    background-color: rgba(255, 255, 255);
+    background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 3px 48px 0 rgba(108, 122, 146, 0.6);
     position: absolute;
     z-index: 120;
     display: none;
-    margin-top: 40px;
-    margin-left: 11px;
+    margin-top: 2px;
+    margin-left: 15px;
+    backdrop-filter: blur(20px);
 }
 
 .menuList.active {
@@ -967,7 +935,6 @@ END WELCOME MESSAGE
     height: 19px;
     width: 120px;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 14px;
     line-height: 19px;
     margin-top: 15px;
@@ -980,14 +947,15 @@ END WELCOME MESSAGE
     height: 86px;
     width: 146px;
     border-radius: 14px;
-    background-color: rgba(255, 255, 255);
+    background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 3px 48px 0 rgba(108, 122, 146, 0.6);
     position: absolute;
     z-index: 120;
     display: none;
-    margin-top: 40px;
+    margin-top: 38px;
     margin-left: 11px;
-    right: 10px;
+    right: 1px;
+    backdrop-filter: blur(20px);
 }
 
 .moreList.active {
@@ -998,7 +966,6 @@ END WELCOME MESSAGE
     height: 19px;
     width: 120px;
     color: #000000;
-    font-family: "Open Sans";
     font-size: 14px;
     line-height: 19px;
     margin-top: 15px;
@@ -1038,7 +1005,7 @@ END WELCOME MESSAGE
     left: 0;
     height: 20px;
     width: 20px;
-    background-color: #eee;
+    background-color: var(--gray-light);
     border: 1px solid #6C7A92;
     border-radius: 4px;
     box-sizing: border-box;
@@ -1048,14 +1015,9 @@ END WELCOME MESSAGE
     border-radius: 4px;
 }
 
-/* On mouse-over, add a grey background color */
-.container:hover input ~ .checkmark {
-    /* background-color: #ccc; */
-}
-
 /* When the checkbox is checked, add a blue background */
 .container input:checked ~ .checkmark {
-    background-color: #2196F3;
+    background-color: #3978FC;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -1092,14 +1054,14 @@ END WELCOME MESSAGE
     transform: rotate(45deg);
 }
 
-.j-group_chat__user_list {
-    max-height: 500px;
-    background-color: rgb(240 242 244) !important;
-}
-
 .group_chat__filter, .group_chat__user_list, .j-create_dialog_form {
     display: none;
-    background-color: #fff;
+    background-color: #FFF;
+}
+
+.j-create_dialog_form {
+    display: none;
+    background-color: #F4F4F9;
 }
 
 .group_chat__filter.active, .group_chat__user_list.active, .j-create_dialog_form.active {

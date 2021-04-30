@@ -91,41 +91,48 @@
 
 <div id="header">
     <div class="dashboard_center">
-        <a href="https://quickblox.com/" class="login__logo">
-            <img style="width: 150px; margin-top: 11px;" src="./img/qb-logo.svg" alt="QuickBlox">
-        </a>
 
-        <div class="menu">
-            <img style="width: 28px; margin-top: 11px;" src="./img/Menu.svg" alt="Menu">
-            <div id="user-name"></div>
-        </div>
-        <ul class="menuList">
-            <li>Create new Chat</li>
-            <li>Delete Chats</li>
-            <li>Info</li>
-            <li>Logout</li>
-        </ul>
+        <div class="header-sidebar">
 
-        <div id="back_to_dashboard" onclick="app.backToDashboard()" class="back_to_dialog j-back_to_dialog" >
-            <i class="material-icons">arrow_back</i>
-        </div>
+            <a href="https://quickblox.com/" class="login__logo">
+                <img style="width: 150px; margin-top: 11px;" src="./img/qb-logo.svg" alt="QuickBlox">
+            </a>
 
-        <h1 id="dialogName"></h1>
+            <div class="menu">
+                <img style="" src="./img/Menu.svg" alt="Menu">
+                <div id="user-name"></div>
+            </div>
+            <ul class="menuList">
+                <li>Create new Chat</li>
+                <li>Delete Chats</li>
+                <li>Info</li>
+                <li>Logout</li>
+            </ul>
 
-        <div class="info">
-            <img style="width: 28px; margin-top: 10px; float: left; " src="./img/info.svg" alt="QuickBlox">
-            <h2>Info</h2>
         </div>
 
-        <div class="more" >
-            <li></li>
-            <li></li>
-            <li></li>
+        <div class="content">
+
+            <div id="back_to_dashboard" onclick="app.backToDashboard()" class="back_to_dialog j-back_to_dialog" >
+                <i class="material-icons">arrow_back</i>
+            </div>
+
+            <div id="dialogName"></div>
+
+            <div class="info">
+                <img style="width: 28px; margin-top: 10px; float: left; " src="./img/info.svg" alt="QuickBlox">
+                <h2>Info</h2>
+            </div>
+
+            <div class="more" >
+                <img style="width: 20px; margin-top: 13px; height: 20px;" src="./img/More.svg" alt="More">
+            </div>
+            <ul class="moreList">
+                <li>Chat info</li>
+                <li>Leave Chat</li>
+            </ul>
+
         </div>
-        <ul class="moreList">
-            <li>Chat info</li>
-            <li>Leave Chat</li>
-        </ul>
 
     </div>
 </div>
@@ -160,7 +167,7 @@
     <div class="login__wrapper">
         <div class="login__container">
 
-            <div id="please-enter-your-lo">Please enter your login and Display name</div>
+            <div id="please-enter-your-lo">Please enter your login and display name</div>
 
             <form name="loginForm" class="login__form">
                 <div class="login_form__row">
@@ -218,7 +225,7 @@
 </script>
 
 <script type="text/template" id="tpl_welcome">
-    <div class="content__inner j-content__inner" style="align-items: center; justify-content: center;">
+    <div class="content__inner j-content__inner welcome">
         <div class="welcome__message">
             <p>Please select a chat to start messaging</p>
         </div>
@@ -230,9 +237,9 @@
         <a class="dialog__item_link" href="#!/dialog/<%= dialog._id %>">
             <span class="dialog__avatar m-user__img_<%= dialog.color %> m-type_<%= dialog.type === 2 ? 'group' : 'chat' %>">
                 <% if(dialog.type === 2) { %>
-                    <i class="material-icons"><%- name.toUpperCase() %></i>
+                    <i class="icons"><%- name.toUpperCase() %></i>
                 <% } else { %>
-                    <i class="material-icons"><%- name.toUpperCase() %></i>
+                    <i class="icons"><%- name.toUpperCase() %></i>
                 <% } %>
             </span>
             <span class="dialog__info">
@@ -262,7 +269,7 @@
             </a>
             <a href="#" class="quit_fom_dialog_link j-quit_fom_dialog_link <% type === 1 ? print('hidden') : ''%>"
                data-dialog="<%- _id %>">
-                <i class="material-icons">delete</i>
+                <i class="icons">delete</i>
             </a>
         </div>
     </div>
@@ -294,13 +301,10 @@
 </script>
 
 <script type="text/template" id="tpl_UpdateDialogContainer">
-    <div style="width: 100%;" class="modal__inner sidebar__inner">
+    <div style="width: 100%;" class="modal__inner sidebar__inner editDialog">
         <div class="content__title j-content__title update_dialog__header j-update_dialog">
 
-            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                color: #000 !important;
-                /*margin-top: 20px;*/
-            "><i class="material-icons">arrow_back</i></div>
+            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" ><i class="material-icons">arrow_back</i></div>
 
             <div>
                 <h1 class="group_chat__title">
@@ -312,19 +316,17 @@
                         Public chat
                     <% } %>
                 </h1>
-                <h5 class="active" ><%- users.length %> members</h5>
+                <h5 class="active" ><%- users.length %> member<% users.length == 1 ? "" : print("s") %></h5>
                 <h5 class="selectedUserIds" ><span class="update__chat_counter j-update__chat_counter">0</span> users selected</h5>
             </div>
 
             <h3 class="j-update_dialog_link disabled active">Add occupants</h3>
 
-
-
             <form action="#" name="update_chat_name" style="display: none;" class="update_chat_name_form">
                 <input type="text" name="update_chat__title" class="update_chat__title_input j-update_chat__title_input"
                        value="<%- title %>" disabled>
                 <button type="button" class="update_chat__title_button j-update_chat__title_button">
-                    <i class="material-icons m-user_icon">create</i>
+                    <i class="icons m-user_icon">create</i>
                 </button>
             </form>
 
@@ -340,10 +342,19 @@
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
-            <div class="group_chat__filter">
-                <img style="position: absolute; left: 16px; width: 20px;" src="./img/Search.svg">
-                <input type="text" autocomplete="off" autocorrect="off" placeholder="Search"/>
-            </div>
+
+            <form class="group_chat__filter search">
+                <div class="form-group">
+                    <div class="input-group-reset input-group-search">
+                        <img class="ico ico-search" src="./img/Search.svg">
+                        <input id="searchUpdateChat" type="text" class="form-control" placeholder="Search" aria-label="Search">
+                        <button class="btn-reset" aria-label="Clear input button">
+                            <span class="ico ico-reset"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
             <p class="update__chat__description"><span class="update__chat_counter j-update__chat_counter">0</span>&nbsp;user
                 selected:</p>
             <div class="update_chat__user_list j-update_chat__user_list">
@@ -381,7 +392,7 @@
     <div class="message__wrap" id="<%= message.id %>" data-status="<%= message.status %>">
         <% if (window.app.user.id !== sender.id && dialogType !== 3) { %>
         <span class="message__avatar m-user__img_<%= sender ? sender.color : 'not_loaded' %>">
-                <i class="material-icons"><%- sender.name[0].toUpperCase() %></i>
+                <i class="icons"><%- sender.name[0].toUpperCase() %></i>
             </span>
         <% } %>
         <div class="message__content <%= dialogType === 3 ? 'type_chat' : '' %>
@@ -450,15 +461,12 @@
 <script type="text/template" id="tpl_newGroupChat">
     <div style="width: 100%; background-color: #FFFFFF;" class="modal__inner sidebar__inner">
         <div class="content__title j-content__title j-create_dialog">
-            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                color: #000 !important;
-                /*margin: 15px 0 0 12px;*/
-            ">
+            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" >
                 <i class="material-icons">arrow_back</i>
             </div>
             <div>
-                <h1 class="group_chat__title" style="margin-left: 11px;">New Chat</h1>
-                <h5 id="selectedUserIds" style="margin-left: 11px;">0 users selected</h5>
+                <h1 class="group_chat__title" >New Chat</h1>
+                <h5 id="selectedUserIds" >0 users selected</h5>
             </div>
 
             <h3 class="j-create_dialog_link disabled active">Create</h3>
@@ -466,16 +474,23 @@
         </div>
         <div class="notifications j-notifications hidden"></div>
         <div class="content__inner j-content__inner">
-            <div class="group_chat__filter active">
-                <img style="position: absolute; left: 16px; width: 20px;" src="./img/Search.svg">
-                <input type="text" autocomplete="off" autocorrect="off" placeholder="Search">
-            </div>
+            <form class="group_chat__filter active search">
+                <div class="form-group">
+                    <div class="input-group-reset input-group-search">
+                        <img class="ico ico-search" src="./img/Search.svg">
+                        <input id="searchCreateChat" type="text" class="form-control" placeholder="Search" aria-label="Search">
+                        <button class="btn-reset" aria-label="Clear input button">
+                            <span class="ico ico-reset"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
             <div class="group_chat__user_list active j-group_chat__user_list">
             </div>
             <form action="" name="create_dialog" class="dialog_form m-dialog_form_create j-create_dialog_form">
                 <h3 class="chat-name">Chat name</h3>
                 <input class="dialog_name" name="dialog_name" type="text" autocomplete="off"
-                       autocorrect="off" autocapitalize="off" placeholder="Add conversation name" disabled>
+                       autocorrect="off" autocapitalize="off"  disabled>
 
                 <div class="dialog_name-or-al filled">
                     Must be in a range from 3 to 20 characters.
@@ -493,10 +508,18 @@
 <script type="text/template" id="tpl_dialogItem">
     <div class="user__item <% user.selected ? print('disabled selected') : ''%>" id="<%= user._id %>">
             <span class="user__avatar m-user__img_<%= user.color %>">
-                <i class="material-icons m-user_icon"><%- (user.name !== null) ? user.name[0].toUpperCase() : '' %></i>
+                <i class="icons m-user_icon"><%- (user.name !== null) ? user.name[0].toUpperCase() : '' %></i>
             </span>
         <div class="user__details">
-            <p class="user__name"><%- user.name %></p>
+            <span class="dialog__info">
+                <span class="dialog__name" style="<% user.isLastMessage ? print('margin-bottom: 4px; margin-top: 2px;') : print('margin-bottom: 0px; margin-top: 0px; line-height: 40px;')%>"><%- user.name %></span>
+
+                <% if(user.isLastMessage){ %>
+                <span class="dialog__last_message j-dialog__last_message <%= user.attachment ? 'attachment' : ''%>"><%- user.last_message%></span>
+                <% } %>
+
+            </span>
+
             <label class="container">
 
                 <% if (user.selected) { %>
@@ -523,10 +546,10 @@
 <script type="text/template" id="tpl_newGroupChatUser">
     <div class="user__item <% user.selected ? print('disabled selected none') : ''%>" id="<%= user.id %>">
             <span class="user__avatar m-user__img_<%= user.color %>">
-                <i class="material-icons m-user_icon"><%- (user.name !== null) ? user.name[0].toUpperCase() : '' %></i>
+                <i class="icons m-user_icon"><%- (user.name !== null) ? user.name[0].toUpperCase() : '' %></i>
             </span>
         <div class="user__details">
-            <p class="user__name"><%- user.name %></p>
+            <p class="user__name"><%- user.name %> <span><%- (user.id === app.user.id) ? '(You)' : '' %></span></p>
             <label class="container">
 
                 <% if (user.selected) { %>
@@ -536,18 +559,7 @@
                 <% } %>
 
                 <span class="checkmark"></span>
-                <div onclick="this.parentElement.parentElement.parentElement.click();" style="
-                    box-sizing: border-box;
-                    height: 20px;
-                    width: 20px;
-                    border: 1px solid #6C7A92;
-                    border-radius: 4px;
-                    position: absolute;
-                    opacity: 0.1;
-                    background-color: #f5f8f8;
-                    left: 0;
-                    z-index: 10;
-                "></div>
+                <div class="list-checkbox" onclick="this.parentElement.parentElement.parentElement.click();"></div>
             </label>
         </div>
     </div>
@@ -636,15 +648,12 @@
     <div style="width: 100%;" class="modal__inner sidebar__inner">
         <div class="content__title j-content__title j-create_dialog">
 
-            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                color: #000 !important;
-                /*margin-top: 20px;*/
-            "><i class="material-icons">arrow_back</i></div>
+            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" ><i class="material-icons">arrow_back</i></div>
 
 
             <div>
                 <h1 class="group_chat__title">Message delivered to</h1>
-                <h5 class="active" ><%- message.delivered_ids.length %> members</h5>
+                <h5 class="active" ><%- message.delivered_ids.length %> member<% message.delivered_ids.length == 1 ? "" : print("s") %></h5>
             </div>
         </div>
         <div class="notifications j-notifications hidden"></div>
@@ -659,14 +668,11 @@
     <div style="width: 100%;" class="modal__inner sidebar__inner">
         <div class="content__title j-content__title j-create_dialog">
 
-            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                color: #000 !important;
-                /*margin-top: 20px;*/
-            "><i class="material-icons">arrow_back</i></div>
+            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" ><i class="material-icons">arrow_back</i></div>
 
             <div>
                 <h1 class="group_chat__title">Message viewed by</h1>
-                <h5 class="active" ><%- message.read_ids.length %> members</h5>
+                <h5 class="active" ><%- message.read_ids.length %> member<% message.read_ids.length == 1 ? "" : print("s") %></h5>
             </div>
         </div>
         <div class="notifications j-notifications hidden"></div>
@@ -682,16 +688,15 @@
         <div class="content__title j-content__title j-forward_dialog">
 
             <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                color: #000 !important;
-                margin-top: 13px;
+                margin-top: 18px;
             ">
                 <i class="material-icons">arrow_back</i>
             </div>
 
-            <h1 class="group_chat__title" style="margin-top: 13px;">Forward to</h1>
+            <h1 class="group_chat__title" style="margin-top: 19px;">Forward to</h1>
 
-            <form action="" name="forward_dialog" class="dialog_form m-dialog_form_create j-create_dialog_form active">
-                <button style="padding: 0; margin: 13px 16px 0 0;" class="btn m-create_dialog_btn j-forward_dialog_btn" type="submit" name="create_dialog_submit"
+            <form action="" name="forward_dialog" class="dialog_form m-dialog_form_create active">
+                <button style="padding: 0; margin: 17px 16px 0 0;" class="btn m-create_dialog_btn j-forward_dialog_btn" type="submit" name="create_dialog_submit"
                         disabled>Send
                 </button>
             </form>
@@ -709,10 +714,7 @@
     <div style="width: 100%;" class="modal__inner sidebar__inner">
         <div class="content__title j-content__title j-delete_dialog" style="display: flex;">
 
-            <div class="back_to_dashboard back_to_dialog j-back_to_dialog" style="
-                /*margin-top: 10px;*/
-                color: #000 !important;
-            ">
+            <div class="back_to_dashboard back_to_dialog j-back_to_dialog">
                 <i class="material-icons">arrow_back</i>
             </div>
 
@@ -721,7 +723,7 @@
                 <h5 id="selectedDialogIds">0 chats selected</h5>
             </div>
 
-            <form style="padding: 0; flex: 1; text-align: right;" action="" name="delete_dialog" class="dialog_form m-dialog_form_create j-create_dialog_form active">
+            <form style="padding: 0; flex: 1; text-align: right;" action="" name="delete_dialog" class="dialog_form m-dialog_form_create active">
                 <button class="btn m-create_dialog_btn j-delete_dialog_btn" type="submit" name="create_dialog_submit"
                         disabled>Delete
                 </button>

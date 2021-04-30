@@ -199,7 +199,7 @@ User.prototype.initGettingUsers = function (userListConteiner, userListFilter, p
                 element: userListConteiner
             },
             userListFilter: {
-                selector: '.group_chat__filter > input',
+                selector: '.input-group-search input',
                 element: userListFilter
             }
         };

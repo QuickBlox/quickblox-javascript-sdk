@@ -1,4 +1,5 @@
 'use strict';
+
 /*
  * Before start chatting you need to follow this steps:
  * 1. Initialize QB SDK ( QB.init() );
@@ -81,7 +82,7 @@ App.prototype.renderDashboard = function (activeTabName) {
 
 App.prototype.loadWelcomeTpl = function () {
 
-    document.querySelector('.login__logo').style.display = "none";
+    document.querySelector('.login__logo').classList.remove("show");
 
     var content = document.querySelector('.j-content'),
         welcomeTpl = helpers.fillTemplate('tpl_welcome');

@@ -12,8 +12,9 @@ router.on({
     },
     '/login': async function(){
 
+        document.querySelector('.login__logo').classList.remove("show");
+        document.querySelector('.login__logo').classList.add("show");
 
-        document.querySelector('.login__logo').style.display = "inline-block";
         document.querySelector('.info').style.display = "block";
         document.querySelector('.more').style.display = "none";
         document.querySelector('.menu').classList.remove("show");

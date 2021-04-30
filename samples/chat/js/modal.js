@@ -13,6 +13,9 @@ Modal.prototype.watch = function () {
         return null;
     }
 
+    app.modal.style.top = "50%";
+    app.modal.style.transform = "translate(-50%, -50%)";
+
     var
         imgPeview = app.modal.querySelector('.img_preview'),
         dialogForm = app.modal.querySelector('.dialog_form'),
@@ -46,6 +49,9 @@ Modal.prototype.watch = function () {
 
         if (modal.substrate.classList.contains('show') && (app.modal.clientHeight > document.documentElement.clientHeight || app.modal.clientHeight > 600)) {
             app.modal.style.maxHeight = document.documentElement.clientHeight - 20 + 'px';
+            if(document.documentElement.clientHeight > 664){
+                app.modal.style.maxHeight = '644px';
+            }
             if (imgPeview) {
                 imgPeview.style.maxHeight = document.documentElement.clientHeight - 140 + 'px';
             }
@@ -53,6 +59,12 @@ Modal.prototype.watch = function () {
             app.modal.style.maxHeight = 'none';
         }
 
+        let tmp = app.modal.style.maxHeight === "none" ? 600 : parseInt(app.modal.style.maxHeight);
+
+        if(modal.substrate.classList.contains('show') && !imgPeview && document.documentElement.clientHeight > tmp+260) {
+            app.modal.style.top = "130px";
+            app.modal.style.transform = "translate(-50%, 0%)";
+        }
 
         if(modalInner !== null){
             modalInner.style.maxHeight = app.modal.style.maxHeight;
@@ -110,8 +122,10 @@ Modal.prototype.watch = function () {
                 chatFilter.clientHeight -
                 contentTitle.clientHeight + 'px';
 
-            app.modal.querySelector('.dialog_form').style.minHeight = document.documentElement.clientHeight -
-                app.modal.querySelector('.content__title').clientHeight + 'px';
+            if(app.modal.querySelector('.dialog_form')) {
+                app.modal.querySelector('.dialog_form').style.minHeight = document.documentElement.clientHeight -
+                    app.modal.querySelector('.content__title').clientHeight + 'px';
+            }
         }
 
         if(updateUserList !== null ) {
@@ -165,7 +179,7 @@ Modal.prototype.setListeners = function () {
     });
 
     deleteChats.addEventListener('click', function (e) {
-       
+
         helpers.clearView(app.modal);
 
         app.modal.innerHTML = helpers.fillTemplate('tpl_deleteChats');
@@ -289,7 +303,8 @@ Modal.prototype.setListeners = function () {
             })[0],
            userListContainerSelector = FORWARD ? '.j-group_chat__dialog_list' : '.j-occupants_chat__user_list',
            params = FORWARD ? {
-               selected: false
+               selected: false,
+               isLastMessage: false
            } : {
                selected: true,
                filter: {
@@ -459,6 +474,7 @@ Modal.prototype.setListeners = function () {
                     popup.style[__[!isYouMessage]] = parseInt(popup.style[__[!isYouMessage]]) - popup.offsetWidth + 'px';
                 }
                 popup.style.top = y + 20 + 'px';
+                /*popup.style.top = message__wrap.offsetHeight + 'px';*/
                 return false;
                 // Do here stuff linked to "normal" touch move
 
@@ -491,6 +507,7 @@ Modal.prototype.setListeners = function () {
                 popup.style[__[!isYouMessage]] = parseInt(popup.style[__[!isYouMessage]]) - popup.offsetWidth + 'px';
             }
             popup.style.top = y + 20 + 'px';
+            /*popup.style.top = message__wrap.offsetHeight + 'px';*/
             return false;
         });
     }
@@ -509,6 +526,10 @@ Modal.prototype.setListeners = function () {
     helpers._( document ).on( "click", ".back_to_dashboard", function( _event, _element ) {
         modal.substrate.click();
         return false;
+    });
+
+    helpers._( document ).on( "click", ".back_to_create", function( _event, _element ) {
+        dialogModule.beforeCreateDialog();
     });
 
 
