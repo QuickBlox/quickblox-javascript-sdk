@@ -24,7 +24,7 @@
     "quickblox": "^2.12.2",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
-    "underscore": "^1.9.1",
+    "underscore": "^1.12.1",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
