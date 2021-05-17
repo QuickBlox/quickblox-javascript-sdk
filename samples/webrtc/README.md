@@ -9,27 +9,56 @@ The WebRTC VideoChat code sample allows you easily to add the video calling feat
 
 It is built on the top of the WebRTC technology.
 
-#Prepare your application for Javascript SDK
-Preparation includes the following steps:
+# Get application credentials
+[](#get-application-credentials)
 
-#Create QuickBlox account
-Register an application in Dashboard
-Integrate QuickBlox SDK into application
-Register a QuickBlox account
-https://quickblox.com/signup/
+QuickBlox application includes everything that brings messaging right
+into your application - chat, video calling, users, push notifications,
+etc. To create a QuickBlox application, follow the steps below:
 
-#Create application in the Admin panel
-https://admin.quickblox.com/apps/new
+1.  Register a new account following [this
+    link](https://admin.quickblox.com/signup). Type in your email and
+    password to sign in. You can also sign in with your Google or Github
+    accounts.
+2.  Create the app clicking **New app** button.
+3.  Configure the app. Type in the information about your organization
+    into corresponding fields and click **Add** button.
+4.  Go to **Dashboard =\> *YOUR\_APP* =\> Overview** section and copy
+    your **Application ID**, **Authorization Key**, **Authorization
+    Secret**, and **Account Key**.
+    
+    
+# Run video calling sample
+[](#video-chat-sample)
 
-# Credentials
+To run a code sample, follow the steps below:
 
-Welcome to QuickBlox [5 Minute Guide](https://quickblox.com/developers/5_Minute_Guide), where you can get your credentials in just 5 minutes!
+1.  Download the code sample.
+2.  [Get application credentials](#get-application-credentials) and get appId, authKey, authSecret and accountKey.
+               
+3.  Put these values in **config.js** file located at the root catalog
+    folder.
 
+    JavaScript
+    
+        const creds = {
+          appId: '',
+          authKey: '',
+          authSecret: '',
+          accountKey: ''
+        };
 
-# Sample description & setup guide.
+4.  Run the code sample by opening **index.html** file.
+
+To ensure that the code sample runs smoothly, run it using the https
+protocol or localhost. Our sample includes WebRTC
+`getUserMedia()` method requesting for webrtc permissions and this method
+does not work with HTTP protocol. For that reason, to run a webrtc
+sample, https protocol or the localhost must be used.
+
+# Sample description
 
 This Sample demonstrates how to work with [JavaScript VideoChat](https://quickblox.com/developers/Sample-webrtc-web) QuickBlox module.
-*this is original sample description & setup guide.
 
 The sample allows to:
 
@@ -42,18 +71,8 @@ The sample allows to:
 7. Screen sharing
 8. Switch video input device (camera) 
 
-# Browsers support of WebRTC
+# Browsers support
 
-Desktop:
-
-Chrome (latest)
-Firefox (latest)
-Opera (latest)
-Mobile:
-
-Android Browser (latest)
-Opera Mobile (latest)
-Chrome for Android (latest)
-Firefox for Android (latest)
-
-
+| Edge   | Firefox | Chrome | Safari | Opera | Node.js |
+|:----:|:-------:|:------:|:------:|:-----:|:-------:|
+| 14+  |  52+    | 50+    |  11.1+  |  36+  |    6+   |
