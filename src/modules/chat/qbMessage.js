@@ -127,7 +127,7 @@ MessageProxy.prototype = {
          * */
 
         if (params && params.chat_dialog_ids && Utils.isArray(params.chat_dialog_ids)) {
-            params.chat_dialog_ids = params.chat_dialog_ids.join(', ');
+            params.chat_dialog_ids = params.chat_dialog_ids.join(',');
         }
 
         this.service.ajax({
