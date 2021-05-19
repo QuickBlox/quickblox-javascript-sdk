@@ -32205,7 +32205,7 @@ http.METHODS = [
 	'UNSUBSCRIBE'
 ]
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/request":192,"./lib/response":193,"builtin-status-codes":42,"url":210,"xtend":234}],191:[function(require,module,exports){
+},{"./lib/request":192,"./lib/response":193,"builtin-status-codes":42,"url":210,"xtend":235}],191:[function(require,module,exports){
 (function (global){(function (){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableStream)
 
@@ -33357,6 +33357,401 @@ arguments[4][36][0].apply(exports,arguments)
               }
             };
 
+            /** Class: Strophe.SASLMechanism
+             *
+             *  Encapsulates an SASL authentication mechanism.
+             *
+             *  User code may override the priority for each mechanism or disable it completely.
+             *  See <priority> for information about changing priority and <test> for informatian on
+             *  how to disable a mechanism.
+             *
+             *  By default, all mechanisms are enabled and the priorities are
+             *
+             *      SCRAM-SHA-1 - 60
+             *      PLAIN       - 50
+             *      OAUTHBEARER - 40
+             *      X-OAUTH2    - 30
+             *      ANONYMOUS   - 20
+             *      EXTERNAL    - 10
+             *
+             *  See: Strophe.Connection.addSupportedSASLMechanisms
+             */
+            var SASLMechanism = /*#__PURE__*/function () {
+              /**
+               * PrivateConstructor: Strophe.SASLMechanism
+               * SASL auth mechanism abstraction.
+               *
+               *  Parameters:
+               *    (String) name - SASL Mechanism name.
+               *    (Boolean) isClientFirst - If client should send response first without challenge.
+               *    (Number) priority - Priority.
+               *
+               *  Returns:
+               *    A new Strophe.SASLMechanism object.
+               */
+              function SASLMechanism(name, isClientFirst, priority) {
+                _classCallCheck(this, SASLMechanism);
+
+                /** PrivateVariable: mechname
+                 *  Mechanism name.
+                 */
+                this.mechname = name;
+                /** PrivateVariable: isClientFirst
+                 *  If client sends response without initial server challenge.
+                 */
+
+                this.isClientFirst = isClientFirst;
+                /** Variable: priority
+                 *  Determines which <SASLMechanism> is chosen for authentication (Higher is better).
+                 *  Users may override this to prioritize mechanisms differently.
+                 *
+                 *  Example: (This will cause Strophe to choose the mechanism that the server sent first)
+                 *
+                 *  > Strophe.SASLPlain.priority = Strophe.SASLSHA1.priority;
+                 *
+                 *  See <SASL mechanisms> for a list of available mechanisms.
+                 *
+                 */
+
+                this.priority = priority;
+              }
+              /**
+               *  Function: test
+               *  Checks if mechanism able to run.
+               *  To disable a mechanism, make this return false;
+               *
+               *  To disable plain authentication run
+               *  > Strophe.SASLPlain.test = function() {
+               *  >   return false;
+               *  > }
+               *
+               *  See <SASL mechanisms> for a list of available mechanisms.
+               *
+               *  Parameters:
+               *    (Strophe.Connection) connection - Target Connection.
+               *
+               *  Returns:
+               *    (Boolean) If mechanism was able to run.
+               */
+
+
+              _createClass(SASLMechanism, [{
+                key: "test",
+                value: function test() {
+                  // eslint-disable-line class-methods-use-this
+                  return true;
+                }
+                /** PrivateFunction: onStart
+                 *  Called before starting mechanism on some connection.
+                 *
+                 *  Parameters:
+                 *    (Strophe.Connection) connection - Target Connection.
+                 */
+
+              }, {
+                key: "onStart",
+                value: function onStart(connection) {
+                  this._connection = connection;
+                }
+                /** PrivateFunction: onChallenge
+                 *  Called by protocol implementation on incoming challenge.
+                 *
+                 *  By deafult, if the client is expected to send data first (isClientFirst === true),
+                 *  this method is called with `challenge` as null on the first call,
+                 *  unless `clientChallenge` is overridden in the relevant subclass.
+                 *
+                 *  Parameters:
+                 *    (Strophe.Connection) connection - Target Connection.
+                 *    (String) challenge - current challenge to handle.
+                 *
+                 *  Returns:
+                 *    (String) Mechanism response.
+                 */
+
+              }, {
+                key: "onChallenge",
+                value: function onChallenge(connection, challenge) {
+                  // eslint-disable-line
+                  throw new Error("You should implement challenge handling!");
+                }
+                /** PrivateFunction: clientChallenge
+                 *  Called by the protocol implementation if the client is expected to send
+                 *  data first in the authentication exchange (i.e. isClientFirst === true).
+                 *
+                 *  Parameters:
+                 *    (Strophe.Connection) connection - Target Connection.
+                 *
+                 *  Returns:
+                 *    (String) Mechanism response.
+                 */
+
+              }, {
+                key: "clientChallenge",
+                value: function clientChallenge(connection) {
+                  if (!this.isClientFirst) {
+                    throw new Error("clientChallenge should not be called if isClientFirst is false!");
+                  }
+
+                  return this.onChallenge(connection);
+                }
+                /** PrivateFunction: onFailure
+                 *  Protocol informs mechanism implementation about SASL failure.
+                 */
+
+              }, {
+                key: "onFailure",
+                value: function onFailure() {
+                  this._connection = null;
+                }
+                /** PrivateFunction: onSuccess
+                 *  Protocol informs mechanism implementation about SASL success.
+                 */
+
+              }, {
+                key: "onSuccess",
+                value: function onSuccess() {
+                  this._connection = null;
+                }
+              }]);
+
+              return SASLMechanism;
+            }();
+
+            var SASLAnonymous = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLAnonymous, _SASLMechanism);
+
+              var _super = _createSuper(SASLAnonymous);
+
+              /** PrivateConstructor: SASLAnonymous
+               *  SASL ANONYMOUS authentication.
+               */
+              function SASLAnonymous() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'ANONYMOUS';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 20;
+
+                _classCallCheck(this, SASLAnonymous);
+
+                return _super.call(this, mechname, isClientFirst, priority);
+              }
+
+              _createClass(SASLAnonymous, [{
+                key: "test",
+                value: function test(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  return connection.authcid === null;
+                }
+              }]);
+
+              return SASLAnonymous;
+            }(SASLMechanism);
+
+            var SASLExternal = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLExternal, _SASLMechanism);
+
+              var _super = _createSuper(SASLExternal);
+
+              /** PrivateConstructor: SASLExternal
+               *  SASL EXTERNAL authentication.
+               *
+               *  The EXTERNAL mechanism allows a client to request the server to use
+               *  credentials established by means external to the mechanism to
+               *  authenticate the client. The external means may be, for instance,
+               *  TLS services.
+               */
+              function SASLExternal() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'EXTERNAL';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+
+                _classCallCheck(this, SASLExternal);
+
+                return _super.call(this, mechname, isClientFirst, priority);
+              }
+
+              _createClass(SASLExternal, [{
+                key: "onChallenge",
+                value: function onChallenge(connection) {
+                  // eslint-disable-line class-methods-use-this
+
+                  /** According to XEP-178, an authzid SHOULD NOT be presented when the
+                   * authcid contained or implied in the client certificate is the JID (i.e.
+                   * authzid) with which the user wants to log in as.
+                   *
+                   * To NOT send the authzid, the user should therefore set the authcid equal
+                   * to the JID when instantiating a new Strophe.Connection object.
+                   */
+                  return connection.authcid === connection.authzid ? '' : connection.authzid;
+                }
+              }]);
+
+              return SASLExternal;
+            }(SASLMechanism);
+
+            var utils = {
+              utf16to8: function utf16to8(str) {
+                var i, c;
+                var out = "";
+                var len = str.length;
+
+                for (i = 0; i < len; i++) {
+                  c = str.charCodeAt(i);
+
+                  if (c >= 0x0000 && c <= 0x007F) {
+                    out += str.charAt(i);
+                  } else if (c > 0x07FF) {
+                    out += String.fromCharCode(0xE0 | c >> 12 & 0x0F);
+                    out += String.fromCharCode(0x80 | c >> 6 & 0x3F);
+                    out += String.fromCharCode(0x80 | c >> 0 & 0x3F);
+                  } else {
+                    out += String.fromCharCode(0xC0 | c >> 6 & 0x1F);
+                    out += String.fromCharCode(0x80 | c >> 0 & 0x3F);
+                  }
+                }
+
+                return out;
+              },
+              addCookies: function addCookies(cookies) {
+                /* Parameters:
+                 *  (Object) cookies - either a map of cookie names
+                 *    to string values or to maps of cookie values.
+                 *
+                 * For example:
+                 * { "myCookie": "1234" }
+                 *
+                 * or:
+                 * { "myCookie": {
+                 *      "value": "1234",
+                 *      "domain": ".example.org",
+                 *      "path": "/",
+                 *      "expires": expirationDate
+                 *      }
+                 *  }
+                 *
+                 *  These values get passed to Strophe.Connection via
+                 *   options.cookies
+                 */
+                cookies = cookies || {};
+
+                for (var cookieName in cookies) {
+                  if (Object.prototype.hasOwnProperty.call(cookies, cookieName)) {
+                    var expires = '';
+                    var domain = '';
+                    var path = '';
+                    var cookieObj = cookies[cookieName];
+                    var isObj = _typeof(cookieObj) === "object";
+                    var cookieValue = escape(unescape(isObj ? cookieObj.value : cookieObj));
+
+                    if (isObj) {
+                      expires = cookieObj.expires ? ";expires=" + cookieObj.expires : '';
+                      domain = cookieObj.domain ? ";domain=" + cookieObj.domain : '';
+                      path = cookieObj.path ? ";path=" + cookieObj.path : '';
+                    }
+
+                    document.cookie = cookieName + '=' + cookieValue + expires + domain + path;
+                  }
+                }
+              }
+            };
+
+            var SASLOAuthBearer = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLOAuthBearer, _SASLMechanism);
+
+              var _super = _createSuper(SASLOAuthBearer);
+
+              /** PrivateConstructor: SASLOAuthBearer
+               *  SASL OAuth Bearer authentication.
+               */
+              function SASLOAuthBearer() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'OAUTHBEARER';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 40;
+
+                _classCallCheck(this, SASLOAuthBearer);
+
+                return _super.call(this, mechname, isClientFirst, priority);
+              }
+
+              _createClass(SASLOAuthBearer, [{
+                key: "test",
+                value: function test(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  return connection.pass !== null;
+                }
+              }, {
+                key: "onChallenge",
+                value: function onChallenge(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  var auth_str = 'n,';
+
+                  if (connection.authcid !== null) {
+                    auth_str = auth_str + 'a=' + connection.authzid;
+                  }
+
+                  auth_str = auth_str + ',';
+                  auth_str = auth_str + "\x01";
+                  auth_str = auth_str + 'auth=Bearer ';
+                  auth_str = auth_str + connection.pass;
+                  auth_str = auth_str + "\x01";
+                  auth_str = auth_str + "\x01";
+                  return utils.utf16to8(auth_str);
+                }
+              }]);
+
+              return SASLOAuthBearer;
+            }(SASLMechanism);
+
+            var SASLPlain = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLPlain, _SASLMechanism);
+
+              var _super = _createSuper(SASLPlain);
+
+              /** PrivateConstructor: SASLPlain
+               *  SASL PLAIN authentication.
+               */
+              function SASLPlain() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'PLAIN';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 50;
+
+                _classCallCheck(this, SASLPlain);
+
+                return _super.call(this, mechname, isClientFirst, priority);
+              }
+
+              _createClass(SASLPlain, [{
+                key: "test",
+                value: function test(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  return connection.authcid !== null;
+                }
+              }, {
+                key: "onChallenge",
+                value: function onChallenge(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  var authcid = connection.authcid,
+                      authzid = connection.authzid,
+                      domain = connection.domain,
+                      pass = connection.pass;
+
+                  if (!domain) {
+                    throw new Error("SASLPlain onChallenge: domain is not defined!");
+                  } // Only include authzid if it differs from authcid.
+                  // See: https://tools.ietf.org/html/rfc6120#section-6.3.8
+
+
+                  var auth_str = authzid !== "".concat(authcid, "@").concat(domain) ? authzid : '';
+                  auth_str = auth_str + "\0";
+                  auth_str = auth_str + authcid;
+                  auth_str = auth_str + "\0";
+                  auth_str = auth_str + pass;
+                  return utils.utf16to8(auth_str);
+                }
+              }]);
+
+              return SASLPlain;
+            }(SASLMechanism);
+
             /*
              * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
              * in FIPS PUB 180-1
@@ -33565,78 +33960,161 @@ arguments[4][36][0].apply(exports,arguments)
               }
             };
 
-            var utils = {
-              utf16to8: function utf16to8(str) {
-                var i, c;
-                var out = "";
-                var len = str.length;
+            var SASLSHA1 = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLSHA1, _SASLMechanism);
 
-                for (i = 0; i < len; i++) {
-                  c = str.charCodeAt(i);
+              var _super = _createSuper(SASLSHA1);
 
-                  if (c >= 0x0000 && c <= 0x007F) {
-                    out += str.charAt(i);
-                  } else if (c > 0x07FF) {
-                    out += String.fromCharCode(0xE0 | c >> 12 & 0x0F);
-                    out += String.fromCharCode(0x80 | c >> 6 & 0x3F);
-                    out += String.fromCharCode(0x80 | c >> 0 & 0x3F);
-                  } else {
-                    out += String.fromCharCode(0xC0 | c >> 6 & 0x1F);
-                    out += String.fromCharCode(0x80 | c >> 0 & 0x3F);
-                  }
+              /** PrivateConstructor: SASLSHA1
+               *  SASL SCRAM SHA 1 authentication.
+               */
+              function SASLSHA1() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'SCRAM-SHA-1';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
+
+                _classCallCheck(this, SASLSHA1);
+
+                return _super.call(this, mechname, isClientFirst, priority);
+              }
+
+              _createClass(SASLSHA1, [{
+                key: "test",
+                value: function test(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  return connection.authcid !== null;
                 }
+              }, {
+                key: "onChallenge",
+                value: function onChallenge(connection, challenge) {
+                  // eslint-disable-line class-methods-use-this
+                  var nonce, salt, iter, Hi, U, U_old, i, k;
+                  var responseText = "c=biws,";
+                  var authMessage = "".concat(connection._sasl_data["client-first-message-bare"], ",").concat(challenge, ",");
+                  var cnonce = connection._sasl_data.cnonce;
+                  var attribMatch = /([a-z]+)=([^,]+)(,|$)/;
 
-                return out;
-              },
-              addCookies: function addCookies(cookies) {
-                /* Parameters:
-                 *  (Object) cookies - either a map of cookie names
-                 *    to string values or to maps of cookie values.
-                 *
-                 * For example:
-                 * { "myCookie": "1234" }
-                 *
-                 * or:
-                 * { "myCookie": {
-                 *      "value": "1234",
-                 *      "domain": ".example.org",
-                 *      "path": "/",
-                 *      "expires": expirationDate
-                 *      }
-                 *  }
-                 *
-                 *  These values get passed to Strophe.Connection via
-                 *   options.cookies
-                 */
-                cookies = cookies || {};
+                  while (challenge.match(attribMatch)) {
+                    var matches = challenge.match(attribMatch);
+                    challenge = challenge.replace(matches[0], "");
 
-                for (var cookieName in cookies) {
-                  if (Object.prototype.hasOwnProperty.call(cookies, cookieName)) {
-                    var expires = '';
-                    var domain = '';
-                    var path = '';
-                    var cookieObj = cookies[cookieName];
-                    var isObj = _typeof(cookieObj) === "object";
-                    var cookieValue = escape(unescape(isObj ? cookieObj.value : cookieObj));
+                    switch (matches[1]) {
+                      case "r":
+                        nonce = matches[2];
+                        break;
 
-                    if (isObj) {
-                      expires = cookieObj.expires ? ";expires=" + cookieObj.expires : '';
-                      domain = cookieObj.domain ? ";domain=" + cookieObj.domain : '';
-                      path = cookieObj.path ? ";path=" + cookieObj.path : '';
+                      case "s":
+                        salt = matches[2];
+                        break;
+
+                      case "i":
+                        iter = matches[2];
+                        break;
+                    }
+                  }
+
+                  if (nonce.substr(0, cnonce.length) !== cnonce) {
+                    connection._sasl_data = {};
+                    return connection._sasl_failure_cb();
+                  }
+
+                  responseText += "r=" + nonce;
+                  authMessage += responseText;
+                  salt = atob(salt);
+                  salt += "\x00\x00\x00\x01";
+                  var pass = utils.utf16to8(connection.pass);
+                  Hi = U_old = SHA1.core_hmac_sha1(pass, salt);
+
+                  for (i = 1; i < iter; i++) {
+                    U = SHA1.core_hmac_sha1(pass, SHA1.binb2str(U_old));
+
+                    for (k = 0; k < 5; k++) {
+                      Hi[k] ^= U[k];
                     }
 
-                    document.cookie = cookieName + '=' + cookieValue + expires + domain + path;
+                    U_old = U;
                   }
+
+                  Hi = SHA1.binb2str(Hi);
+                  var clientKey = SHA1.core_hmac_sha1(Hi, "Client Key");
+                  var serverKey = SHA1.str_hmac_sha1(Hi, "Server Key");
+                  var clientSignature = SHA1.core_hmac_sha1(SHA1.str_sha1(SHA1.binb2str(clientKey)), authMessage);
+                  connection._sasl_data["server-signature"] = SHA1.b64_hmac_sha1(serverKey, authMessage);
+
+                  for (k = 0; k < 5; k++) {
+                    clientKey[k] ^= clientSignature[k];
+                  }
+
+                  responseText += ",p=" + btoa(SHA1.binb2str(clientKey));
+                  return responseText;
                 }
+              }, {
+                key: "clientChallenge",
+                value: function clientChallenge(connection, test_cnonce) {
+                  // eslint-disable-line class-methods-use-this
+                  var cnonce = test_cnonce || MD5.hexdigest("" + Math.random() * 1234567890);
+                  var auth_str = "n=" + utils.utf16to8(connection.authcid);
+                  auth_str += ",r=";
+                  auth_str += cnonce;
+                  connection._sasl_data.cnonce = cnonce;
+                  connection._sasl_data["client-first-message-bare"] = auth_str;
+                  auth_str = "n,," + auth_str;
+                  return auth_str;
+                }
+              }]);
+
+              return SASLSHA1;
+            }(SASLMechanism);
+
+            var SASLXOAuth2 = /*#__PURE__*/function (_SASLMechanism) {
+              _inherits(SASLXOAuth2, _SASLMechanism);
+
+              var _super = _createSuper(SASLXOAuth2);
+
+              /** PrivateConstructor: SASLXOAuth2
+               *  SASL X-OAuth2 authentication.
+               */
+              function SASLXOAuth2() {
+                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'X-OAUTH2';
+                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 30;
+
+                _classCallCheck(this, SASLXOAuth2);
+
+                return _super.call(this, mechname, isClientFirst, priority);
               }
-            };
+
+              _createClass(SASLXOAuth2, [{
+                key: "test",
+                value: function test(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  return connection.pass !== null;
+                }
+              }, {
+                key: "onChallenge",
+                value: function onChallenge(connection) {
+                  // eslint-disable-line class-methods-use-this
+                  var auth_str = "\0";
+
+                  if (connection.authcid !== null) {
+                    auth_str = auth_str + connection.authzid;
+                  }
+
+                  auth_str = auth_str + "\0";
+                  auth_str = auth_str + connection.pass;
+                  return utils.utf16to8(auth_str);
+                }
+              }]);
+
+              return SASLXOAuth2;
+            }(SASLMechanism);
 
             /**
              * Implementation of atob() according to the HTML and Infra specs, except that
              * instead of throwing INVALID_CHARACTER_ERR we return null.
              */
 
-            function atob(data) {
+            function atob$1(data) {
               // Web IDL requires DOMStrings to just be converted using ECMAScript
               // ToString, which in our case amounts to using a template literal.
               data = "".concat(data); // "Remove all ASCII whitespace from data."
@@ -33747,14 +34225,14 @@ arguments[4][36][0].apply(exports,arguments)
               return undefined;
             }
 
-            var atob_1 = atob;
+            var atob_1 = atob$1;
 
             /**
              * btoa() as defined by the HTML and Infra specs, which mostly just references
              * RFC 4648.
              */
 
-            function btoa(s) {
+            function btoa$1(s) {
               var i; // String conversion as required by Web IDL.
 
               s = "".concat(s); // "The btoa() method must throw an "InvalidCharacterError" DOMException if
@@ -33825,7 +34303,7 @@ arguments[4][36][0].apply(exports,arguments)
               return undefined;
             }
 
-            var btoa_1 = btoa;
+            var btoa_1 = btoa$1;
 
             var abab = {
               atob: atob_1,
@@ -33896,7 +34374,7 @@ arguments[4][36][0].apply(exports,arguments)
 
             var Strophe = {
               /** Constant: VERSION */
-              VERSION: "1.4.1",
+              VERSION: "1.4.2",
 
               /** Constants: XMPP Namespace Constants
                *  Common namespace constants from the XMPP RFCs and XEPs.
@@ -36748,7 +37226,7 @@ arguments[4][36][0].apply(exports,arguments)
                     });
 
                     if (this._sasl_mechanism.isClientFirst) {
-                      var response = this._sasl_mechanism.onChallenge(this, null);
+                      var response = this._sasl_mechanism.clientChallenge(this);
 
                       request_auth_exchange.t(abab.btoa(response));
                     }
@@ -37314,144 +37792,8 @@ arguments[4][36][0].apply(exports,arguments)
 
               return Connection;
             }();
-            /** Class: Strophe.SASLMechanism
-             *
-             *  Encapsulates an SASL authentication mechanism.
-             *
-             *  User code may override the priority for each mechanism or disable it completely.
-             *  See <priority> for information about changing priority and <test> for informatian on
-             *  how to disable a mechanism.
-             *
-             *  By default, all mechanisms are enabled and the priorities are
-             *
-             *      SCRAM-SHA-1 - 60
-             *      PLAIN       - 50
-             *      OAUTHBEARER - 40
-             *      X-OAUTH2    - 30
-             *      ANONYMOUS   - 20
-             *      EXTERNAL    - 10
-             *
-             *  See: Strophe.Connection.addSupportedSASLMechanisms
-             */
 
-
-            Strophe.SASLMechanism = /*#__PURE__*/function () {
-              /**
-               * PrivateConstructor: Strophe.SASLMechanism
-               * SASL auth mechanism abstraction.
-               *
-               *  Parameters:
-               *    (String) name - SASL Mechanism name.
-               *    (Boolean) isClientFirst - If client should send response first without challenge.
-               *    (Number) priority - Priority.
-               *
-               *  Returns:
-               *    A new Strophe.SASLMechanism object.
-               */
-              function SASLMechanism(name, isClientFirst, priority) {
-                _classCallCheck(this, SASLMechanism);
-
-                /** PrivateVariable: mechname
-                 *  Mechanism name.
-                 */
-                this.mechname = name;
-                /** PrivateVariable: isClientFirst
-                 *  If client sends response without initial server challenge.
-                 */
-
-                this.isClientFirst = isClientFirst;
-                /** Variable: priority
-                 *  Determines which <SASLMechanism> is chosen for authentication (Higher is better).
-                 *  Users may override this to prioritize mechanisms differently.
-                 *
-                 *  Example: (This will cause Strophe to choose the mechanism that the server sent first)
-                 *
-                 *  > Strophe.SASLPlain.priority = Strophe.SASLSHA1.priority;
-                 *
-                 *  See <SASL mechanisms> for a list of available mechanisms.
-                 *
-                 */
-
-                this.priority = priority;
-              }
-              /**
-               *  Function: test
-               *  Checks if mechanism able to run.
-               *  To disable a mechanism, make this return false;
-               *
-               *  To disable plain authentication run
-               *  > Strophe.SASLPlain.test = function() {
-               *  >   return false;
-               *  > }
-               *
-               *  See <SASL mechanisms> for a list of available mechanisms.
-               *
-               *  Parameters:
-               *    (Strophe.Connection) connection - Target Connection.
-               *
-               *  Returns:
-               *    (Boolean) If mechanism was able to run.
-               */
-
-
-              _createClass(SASLMechanism, [{
-                key: "test",
-                value: function test() {
-                  // eslint-disable-line class-methods-use-this
-                  return true;
-                }
-                /** PrivateFunction: onStart
-                 *  Called before starting mechanism on some connection.
-                 *
-                 *  Parameters:
-                 *    (Strophe.Connection) connection - Target Connection.
-                 */
-
-              }, {
-                key: "onStart",
-                value: function onStart(connection) {
-                  this._connection = connection;
-                }
-                /** PrivateFunction: onChallenge
-                 *  Called by protocol implementation on incoming challenge. If client is
-                 *  first (isClientFirst === true) challenge will be null on the first call.
-                 *
-                 *  Parameters:
-                 *    (Strophe.Connection) connection - Target Connection.
-                 *    (String) challenge - current challenge to handle.
-                 *
-                 *  Returns:
-                 *    (String) Mechanism response.
-                 */
-
-              }, {
-                key: "onChallenge",
-                value: function onChallenge(connection, challenge) {
-                  // eslint-disable-line
-                  throw new Error("You should implement challenge handling!");
-                }
-                /** PrivateFunction: onFailure
-                 *  Protocol informs mechanism implementation about SASL failure.
-                 */
-
-              }, {
-                key: "onFailure",
-                value: function onFailure() {
-                  this._connection = null;
-                }
-                /** PrivateFunction: onSuccess
-                 *  Protocol informs mechanism implementation about SASL success.
-                 */
-
-              }, {
-                key: "onSuccess",
-                value: function onSuccess() {
-                  this._connection = null;
-                }
-              }]);
-
-              return SASLMechanism;
-            }();
+            Strophe.SASLMechanism = SASLMechanism;
             /** Constants: SASL mechanisms
              *  Available authentication mechanisms
              *
@@ -37462,324 +37804,13 @@ arguments[4][36][0].apply(exports,arguments)
              *  Strophe.SASLExternal    - SASL EXTERNAL authentication
              *  Strophe.SASLXOAuth2     - SASL X-OAuth2 authentication
              */
-            // Building SASL callbacks
 
-
-            Strophe.SASLAnonymous = /*#__PURE__*/function (_Strophe$SASLMechanis) {
-              _inherits(SASLAnonymous, _Strophe$SASLMechanis);
-
-              var _super = _createSuper(SASLAnonymous);
-
-              /** PrivateConstructor: SASLAnonymous
-               *  SASL ANONYMOUS authentication.
-               */
-              function SASLAnonymous() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'ANONYMOUS';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 20;
-
-                _classCallCheck(this, SASLAnonymous);
-
-                return _super.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLAnonymous, [{
-                key: "test",
-                value: function test(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  return connection.authcid === null;
-                }
-              }]);
-
-              return SASLAnonymous;
-            }(Strophe.SASLMechanism);
-
-            Strophe.SASLPlain = /*#__PURE__*/function (_Strophe$SASLMechanis2) {
-              _inherits(SASLPlain, _Strophe$SASLMechanis2);
-
-              var _super2 = _createSuper(SASLPlain);
-
-              /** PrivateConstructor: SASLPlain
-               *  SASL PLAIN authentication.
-               */
-              function SASLPlain() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'PLAIN';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 50;
-
-                _classCallCheck(this, SASLPlain);
-
-                return _super2.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLPlain, [{
-                key: "test",
-                value: function test(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  return connection.authcid !== null;
-                }
-              }, {
-                key: "onChallenge",
-                value: function onChallenge(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  var authcid = connection.authcid,
-                      authzid = connection.authzid,
-                      domain = connection.domain,
-                      pass = connection.pass;
-
-                  if (!domain) {
-                    throw new Error("SASLPlain onChallenge: domain is not defined!");
-                  } // Only include authzid if it differs from authcid.
-                  // See: https://tools.ietf.org/html/rfc6120#section-6.3.8
-
-
-                  var auth_str = authzid !== "".concat(authcid, "@").concat(domain) ? authzid : '';
-                  auth_str = auth_str + "\0";
-                  auth_str = auth_str + authcid;
-                  auth_str = auth_str + "\0";
-                  auth_str = auth_str + pass;
-                  return utils.utf16to8(auth_str);
-                }
-              }]);
-
-              return SASLPlain;
-            }(Strophe.SASLMechanism);
-
-            Strophe.SASLSHA1 = /*#__PURE__*/function (_Strophe$SASLMechanis3) {
-              _inherits(SASLSHA1, _Strophe$SASLMechanis3);
-
-              var _super3 = _createSuper(SASLSHA1);
-
-              /** PrivateConstructor: SASLSHA1
-               *  SASL SCRAM SHA 1 authentication.
-               */
-              function SASLSHA1() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'SCRAM-SHA-1';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
-
-                _classCallCheck(this, SASLSHA1);
-
-                return _super3.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLSHA1, [{
-                key: "test",
-                value: function test(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  return connection.authcid !== null;
-                }
-              }, {
-                key: "onChallenge",
-                value: function onChallenge(connection, challenge, test_cnonce) {
-                  var cnonce = test_cnonce || MD5.hexdigest("" + Math.random() * 1234567890);
-                  var auth_str = "n=" + utils.utf16to8(connection.authcid);
-                  auth_str += ",r=";
-                  auth_str += cnonce;
-                  connection._sasl_data.cnonce = cnonce;
-                  connection._sasl_data["client-first-message-bare"] = auth_str;
-                  auth_str = "n,," + auth_str;
-
-                  this.onChallenge = function (connection, challenge) {
-                    var nonce, salt, iter, Hi, U, U_old, i, k;
-                    var responseText = "c=biws,";
-                    var authMessage = "".concat(connection._sasl_data["client-first-message-bare"], ",").concat(challenge, ",");
-                    var cnonce = connection._sasl_data.cnonce;
-                    var attribMatch = /([a-z]+)=([^,]+)(,|$)/;
-
-                    while (challenge.match(attribMatch)) {
-                      var matches = challenge.match(attribMatch);
-                      challenge = challenge.replace(matches[0], "");
-
-                      switch (matches[1]) {
-                        case "r":
-                          nonce = matches[2];
-                          break;
-
-                        case "s":
-                          salt = matches[2];
-                          break;
-
-                        case "i":
-                          iter = matches[2];
-                          break;
-                      }
-                    }
-
-                    if (nonce.substr(0, cnonce.length) !== cnonce) {
-                      connection._sasl_data = {};
-                      return connection._sasl_failure_cb();
-                    }
-
-                    responseText += "r=" + nonce;
-                    authMessage += responseText;
-                    salt = abab.atob(salt);
-                    salt += "\x00\x00\x00\x01";
-                    var pass = utils.utf16to8(connection.pass);
-                    Hi = U_old = SHA1.core_hmac_sha1(pass, salt);
-
-                    for (i = 1; i < iter; i++) {
-                      U = SHA1.core_hmac_sha1(pass, SHA1.binb2str(U_old));
-
-                      for (k = 0; k < 5; k++) {
-                        Hi[k] ^= U[k];
-                      }
-
-                      U_old = U;
-                    }
-
-                    Hi = SHA1.binb2str(Hi);
-                    var clientKey = SHA1.core_hmac_sha1(Hi, "Client Key");
-                    var serverKey = SHA1.str_hmac_sha1(Hi, "Server Key");
-                    var clientSignature = SHA1.core_hmac_sha1(SHA1.str_sha1(SHA1.binb2str(clientKey)), authMessage);
-                    connection._sasl_data["server-signature"] = SHA1.b64_hmac_sha1(serverKey, authMessage);
-
-                    for (k = 0; k < 5; k++) {
-                      clientKey[k] ^= clientSignature[k];
-                    }
-
-                    responseText += ",p=" + abab.btoa(SHA1.binb2str(clientKey));
-                    return responseText;
-                  };
-
-                  return auth_str;
-                }
-              }]);
-
-              return SASLSHA1;
-            }(Strophe.SASLMechanism);
-
-            Strophe.SASLOAuthBearer = /*#__PURE__*/function (_Strophe$SASLMechanis4) {
-              _inherits(SASLOAuthBearer, _Strophe$SASLMechanis4);
-
-              var _super4 = _createSuper(SASLOAuthBearer);
-
-              /** PrivateConstructor: SASLOAuthBearer
-               *  SASL OAuth Bearer authentication.
-               */
-              function SASLOAuthBearer() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'OAUTHBEARER';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 40;
-
-                _classCallCheck(this, SASLOAuthBearer);
-
-                return _super4.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLOAuthBearer, [{
-                key: "test",
-                value: function test(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  return connection.pass !== null;
-                }
-              }, {
-                key: "onChallenge",
-                value: function onChallenge(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  var auth_str = 'n,';
-
-                  if (connection.authcid !== null) {
-                    auth_str = auth_str + 'a=' + connection.authzid;
-                  }
-
-                  auth_str = auth_str + ',';
-                  auth_str = auth_str + "\x01";
-                  auth_str = auth_str + 'auth=Bearer ';
-                  auth_str = auth_str + connection.pass;
-                  auth_str = auth_str + "\x01";
-                  auth_str = auth_str + "\x01";
-                  return utils.utf16to8(auth_str);
-                }
-              }]);
-
-              return SASLOAuthBearer;
-            }(Strophe.SASLMechanism);
-
-            Strophe.SASLExternal = /*#__PURE__*/function (_Strophe$SASLMechanis5) {
-              _inherits(SASLExternal, _Strophe$SASLMechanis5);
-
-              var _super5 = _createSuper(SASLExternal);
-
-              /** PrivateConstructor: SASLExternal
-               *  SASL EXTERNAL authentication.
-               *
-               *  The EXTERNAL mechanism allows a client to request the server to use
-               *  credentials established by means external to the mechanism to
-               *  authenticate the client. The external means may be, for instance,
-               *  TLS services.
-               */
-              function SASLExternal() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'EXTERNAL';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
-
-                _classCallCheck(this, SASLExternal);
-
-                return _super5.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLExternal, [{
-                key: "onChallenge",
-                value: function onChallenge(connection) {
-                  // eslint-disable-line class-methods-use-this
-
-                  /** According to XEP-178, an authzid SHOULD NOT be presented when the
-                   * authcid contained or implied in the client certificate is the JID (i.e.
-                   * authzid) with which the user wants to log in as.
-                   *
-                   * To NOT send the authzid, the user should therefore set the authcid equal
-                   * to the JID when instantiating a new Strophe.Connection object.
-                   */
-                  return connection.authcid === connection.authzid ? '' : connection.authzid;
-                }
-              }]);
-
-              return SASLExternal;
-            }(Strophe.SASLMechanism);
-
-            Strophe.SASLXOAuth2 = /*#__PURE__*/function (_Strophe$SASLMechanis6) {
-              _inherits(SASLXOAuth2, _Strophe$SASLMechanis6);
-
-              var _super6 = _createSuper(SASLXOAuth2);
-
-              /** PrivateConstructor: SASLXOAuth2
-               *  SASL X-OAuth2 authentication.
-               */
-              function SASLXOAuth2() {
-                var mechname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'X-OAUTH2';
-                var isClientFirst = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                var priority = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 30;
-
-                _classCallCheck(this, SASLXOAuth2);
-
-                return _super6.call(this, mechname, isClientFirst, priority);
-              }
-
-              _createClass(SASLXOAuth2, [{
-                key: "test",
-                value: function test(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  return connection.pass !== null;
-                }
-              }, {
-                key: "onChallenge",
-                value: function onChallenge(connection) {
-                  // eslint-disable-line class-methods-use-this
-                  var auth_str = "\0";
-
-                  if (connection.authcid !== null) {
-                    auth_str = auth_str + connection.authzid;
-                  }
-
-                  auth_str = auth_str + "\0";
-                  auth_str = auth_str + connection.pass;
-                  return utils.utf16to8(auth_str);
-                }
-              }]);
-
-              return SASLXOAuth2;
-            }(Strophe.SASLMechanism);
+            Strophe.SASLAnonymous = SASLAnonymous;
+            Strophe.SASLPlain = SASLPlain;
+            Strophe.SASLSHA1 = SASLSHA1;
+            Strophe.SASLOAuthBearer = SASLOAuthBearer;
+            Strophe.SASLExternal = SASLExternal;
+            Strophe.SASLXOAuth2 = SASLXOAuth2;
             var core = {
               'Strophe': Strophe,
               '$build': $build,
@@ -43613,8 +43644,8 @@ function filterStats(result, track, outbound) {
 },{}],231:[function(require,module,exports){
 function DOMParser(options){
 	this.options = options ||{locator:{}};
-	
 }
+
 DOMParser.prototype.parseFromString = function(source,mimeType){
 	var options = this.options;
 	var sax =  new XMLReader();
@@ -43622,20 +43653,19 @@ DOMParser.prototype.parseFromString = function(source,mimeType){
 	var errorHandler = options.errorHandler;
 	var locator = options.locator;
 	var defaultNSMap = options.xmlns||{};
-	var entityMap = {'lt':'<','gt':'>','amp':'&','quot':'"','apos':"'"}
+	var isHTML = /\/x?html?$/.test(mimeType);//mimeType.toLowerCase().indexOf('html') > -1;
+  	var entityMap = isHTML?htmlEntity.entityMap:{'lt':'<','gt':'>','amp':'&','quot':'"','apos':"'"};
 	if(locator){
 		domBuilder.setDocumentLocator(locator)
 	}
-	
+
 	sax.errorHandler = buildErrorHandler(errorHandler,domBuilder,locator);
 	sax.domBuilder = options.domBuilder || domBuilder;
-	if(/\/x?html?$/.test(mimeType)){
-		entityMap.nbsp = '\xa0';
-		entityMap.copy = '\xa9';
+	if(isHTML){
 		defaultNSMap['']= 'http://www.w3.org/1999/xhtml';
 	}
 	defaultNSMap.xml = defaultNSMap.xml || 'http://www.w3.org/XML/1998/namespace';
-	if(source){
+	if(source && typeof source === 'string'){
 		sax.parse(source,defaultNSMap,entityMap);
 	}else{
 		sax.errorHandler.error("invalid doc source");
@@ -43671,8 +43701,8 @@ function buildErrorHandler(errorImpl,domBuilder,locator){
 /**
  * +ContentHandler+ErrorHandler
  * +LexicalHandler+EntityResolver2
- * -DeclHandler-DTDHandler 
- * 
+ * -DeclHandler-DTDHandler
+ *
  * DefaultHandler:EntityResolver, DTDHandler, ContentHandler, ErrorHandler
  * DefaultHandler2:DefaultHandler,LexicalHandler, DeclHandler, EntityResolver2
  * @link http://www.saxproject.org/apidoc/org/xml/sax/helpers/DefaultHandler.html
@@ -43687,7 +43717,7 @@ function position(locator,node){
 /**
  * @see org.xml.sax.ContentHandler#startDocument
  * @link http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html
- */ 
+ */
 DOMHandler.prototype = {
 	startDocument : function() {
     	this.doc = new DOMImplementation().createDocument(null, null, null);
@@ -43701,7 +43731,7 @@ DOMHandler.prototype = {
 	    var len = attrs.length;
 	    appendElement(this, el);
 	    this.currentElement = el;
-	    
+
 		this.locator && position(this.locator,el)
 	    for (var i = 0 ; i < len; i++) {
 	        var namespaceURI = attrs.getURI(i);
@@ -43764,7 +43794,7 @@ DOMHandler.prototype = {
 	    this.locator && position(this.locator,comm)
 	    appendElement(this, comm);
 	},
-	
+
 	startCDATA:function() {
 	    //used in characters() methods
 	    this.cdata = true;
@@ -43772,7 +43802,7 @@ DOMHandler.prototype = {
 	endCDATA:function() {
 	    this.cdata = false;
 	},
-	
+
 	startDTD:function(name, publicId, systemId) {
 		var impl = this.doc.implementation;
 	    if (impl && impl.createDocumentType) {
@@ -43792,8 +43822,7 @@ DOMHandler.prototype = {
 		console.error('[xmldom error]\t'+error,_locator(this.locator));
 	},
 	fatalError:function(error) {
-		console.error('[xmldom fatalError]\t'+error,_locator(this.locator));
-	    throw error;
+		throw new ParseError(error, this.locator);
 	}
 }
 function _locator(l){
@@ -43857,20 +43886,17 @@ function appendElement (hander,node) {
 }//appendChild and setAttributeNS are preformance key
 
 //if(typeof require == 'function'){
-	var XMLReader = require('./sax').XMLReader;
-	var DOMImplementation = exports.DOMImplementation = require('./dom').DOMImplementation;
-	exports.XMLSerializer = require('./dom').XMLSerializer ;
-	exports.DOMParser = DOMParser;
+var htmlEntity = require('./entities');
+var sax = require('./sax');
+var XMLReader = sax.XMLReader;
+var ParseError = sax.ParseError;
+var DOMImplementation = exports.DOMImplementation = require('./dom').DOMImplementation;
+exports.XMLSerializer = require('./dom').XMLSerializer ;
+exports.DOMParser = DOMParser;
+exports.__DOMHandler = DOMHandler;
 //}
 
-},{"./dom":232,"./sax":233}],232:[function(require,module,exports){
-/*
- * DOM Level 2
- * Object DOMException
- * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
- * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
- */
-
+},{"./dom":232,"./entities":233,"./sax":234}],232:[function(require,module,exports){
 function copy(src,dest){
 	for(var p in src){
 		dest[p] = src[p];
@@ -43882,10 +43908,6 @@ function copy(src,dest){
  */
 function _extends(Class,Super){
 	var pt = Class.prototype;
-	if(Object.create){
-		var ppt = Object.create(Super.prototype)
-		pt.__proto__ = ppt;
-	}
 	if(!(pt instanceof Super)){
 		function t(){};
 		t.prototype = Super.prototype;
@@ -43936,7 +43958,12 @@ var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= ((Exce
 var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= ((ExceptionMessage[14]="Invalid namespace"),14);
 var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= ((ExceptionMessage[15]="Invalid access"),15);
 
-
+/**
+ * DOM Level 2
+ * Object DOMException
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
+ */
 function DOMException(code, message) {
 	if(message instanceof Error){
 		var error = message;
@@ -44478,6 +44505,21 @@ Document.prototype = {
 		return rtv;
 	},
 	
+	getElementsByClassName: function(className) {
+		var pattern = new RegExp("(^|\\s)" + className + "(\\s|$)");
+		return new LiveNodeList(this, function(base) {
+			var ls = [];
+			_visitNode(base.documentElement, function(node) {
+				if(node !== base && node.nodeType == ELEMENT_NODE) {
+					if(pattern.test(node.getAttribute('class'))) {
+						ls.push(node);
+					}
+				}
+			});
+			return ls;
+		});
+	},
+	
 	//document factory method:
 	createElement :	function(tagName){
 		var node = new Element();
@@ -44782,7 +44824,7 @@ XMLSerializer.prototype.serializeToString = function(node,isHtml,nodeFilter){
 Node.prototype.toString = nodeSerializeToString;
 function nodeSerializeToString(isHtml,nodeFilter){
 	var buf = [];
-	var refNode = this.nodeType == 9?this.documentElement:this;
+	var refNode = this.nodeType == 9 && this.documentElement || this;
 	var prefix = refNode.prefix;
 	var uri = refNode.namespaceURI;
 	
@@ -44921,9 +44963,27 @@ function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
 		}
 		return;
 	case ATTRIBUTE_NODE:
-		return buf.push(' ',node.name,'="',node.value.replace(/[<&"]/g,_xmlEncoder),'"');
+		return buf.push(' ',node.name,'="',node.value.replace(/[&"]/g,_xmlEncoder),'"');
 	case TEXT_NODE:
-		return buf.push(node.data.replace(/[<&]/g,_xmlEncoder));
+		/**
+		 * The ampersand character (&) and the left angle bracket (<) must not appear in their literal form,
+		 * except when used as markup delimiters, or within a comment, a processing instruction, or a CDATA section.
+		 * If they are needed elsewhere, they must be escaped using either numeric character references or the strings
+		 * `&amp;` and `&lt;` respectively.
+		 * The right angle bracket (>) may be represented using the string " &gt; ", and must, for compatibility,
+		 * be escaped using either `&gt;` or a character reference when it appears in the string `]]>` in content,
+		 * when that string is not marking the end of a CDATA section.
+		 *
+		 * In the content of elements, character data is any string of characters
+		 * which does not contain the start-delimiter of any markup
+		 * and does not include the CDATA-section-close delimiter, `]]>`.
+		 *
+		 * @see https://www.w3.org/TR/xml/#NT-CharData
+		 */
+		return buf.push(node.data
+			.replace(/[<&]/g,_xmlEncoder)
+			.replace(/]]>/g, ']]&gt;')
+		);
 	case CDATA_SECTION_NODE:
 		return buf.push( '<![CDATA[',node.data,']]>');
 	case COMMENT_NODE:
@@ -44933,13 +44993,13 @@ function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
 		var sysid = node.systemId;
 		buf.push('<!DOCTYPE ',node.name);
 		if(pubid){
-			buf.push(' PUBLIC "',pubid);
+			buf.push(' PUBLIC ', pubid);
 			if (sysid && sysid!='.') {
-				buf.push( '" "',sysid);
+				buf.push(' ', sysid);
 			}
-			buf.push('">');
+			buf.push('>');
 		}else if(sysid && sysid!='.'){
-			buf.push(' SYSTEM "',sysid,'">');
+			buf.push(' SYSTEM ', sysid, '>');
 		}else{
 			var sub = node.internalSubset;
 			if(sub){
@@ -45105,11 +45165,258 @@ try{
 }
 
 //if(typeof require == 'function'){
+	exports.Node = Node;
+	exports.DOMException = DOMException;
 	exports.DOMImplementation = DOMImplementation;
 	exports.XMLSerializer = XMLSerializer;
 //}
 
 },{}],233:[function(require,module,exports){
+exports.entityMap = {
+       lt: '<',
+       gt: '>',
+       amp: '&',
+       quot: '"',
+       apos: "'",
+       Agrave: "À",
+       Aacute: "Á",
+       Acirc: "Â",
+       Atilde: "Ã",
+       Auml: "Ä",
+       Aring: "Å",
+       AElig: "Æ",
+       Ccedil: "Ç",
+       Egrave: "È",
+       Eacute: "É",
+       Ecirc: "Ê",
+       Euml: "Ë",
+       Igrave: "Ì",
+       Iacute: "Í",
+       Icirc: "Î",
+       Iuml: "Ï",
+       ETH: "Ð",
+       Ntilde: "Ñ",
+       Ograve: "Ò",
+       Oacute: "Ó",
+       Ocirc: "Ô",
+       Otilde: "Õ",
+       Ouml: "Ö",
+       Oslash: "Ø",
+       Ugrave: "Ù",
+       Uacute: "Ú",
+       Ucirc: "Û",
+       Uuml: "Ü",
+       Yacute: "Ý",
+       THORN: "Þ",
+       szlig: "ß",
+       agrave: "à",
+       aacute: "á",
+       acirc: "â",
+       atilde: "ã",
+       auml: "ä",
+       aring: "å",
+       aelig: "æ",
+       ccedil: "ç",
+       egrave: "è",
+       eacute: "é",
+       ecirc: "ê",
+       euml: "ë",
+       igrave: "ì",
+       iacute: "í",
+       icirc: "î",
+       iuml: "ï",
+       eth: "ð",
+       ntilde: "ñ",
+       ograve: "ò",
+       oacute: "ó",
+       ocirc: "ô",
+       otilde: "õ",
+       ouml: "ö",
+       oslash: "ø",
+       ugrave: "ù",
+       uacute: "ú",
+       ucirc: "û",
+       uuml: "ü",
+       yacute: "ý",
+       thorn: "þ",
+       yuml: "ÿ",
+       nbsp: "\u00a0",
+       iexcl: "¡",
+       cent: "¢",
+       pound: "£",
+       curren: "¤",
+       yen: "¥",
+       brvbar: "¦",
+       sect: "§",
+       uml: "¨",
+       copy: "©",
+       ordf: "ª",
+       laquo: "«",
+       not: "¬",
+       shy: "­­",
+       reg: "®",
+       macr: "¯",
+       deg: "°",
+       plusmn: "±",
+       sup2: "²",
+       sup3: "³",
+       acute: "´",
+       micro: "µ",
+       para: "¶",
+       middot: "·",
+       cedil: "¸",
+       sup1: "¹",
+       ordm: "º",
+       raquo: "»",
+       frac14: "¼",
+       frac12: "½",
+       frac34: "¾",
+       iquest: "¿",
+       times: "×",
+       divide: "÷",
+       forall: "∀",
+       part: "∂",
+       exist: "∃",
+       empty: "∅",
+       nabla: "∇",
+       isin: "∈",
+       notin: "∉",
+       ni: "∋",
+       prod: "∏",
+       sum: "∑",
+       minus: "−",
+       lowast: "∗",
+       radic: "√",
+       prop: "∝",
+       infin: "∞",
+       ang: "∠",
+       and: "∧",
+       or: "∨",
+       cap: "∩",
+       cup: "∪",
+       'int': "∫",
+       there4: "∴",
+       sim: "∼",
+       cong: "≅",
+       asymp: "≈",
+       ne: "≠",
+       equiv: "≡",
+       le: "≤",
+       ge: "≥",
+       sub: "⊂",
+       sup: "⊃",
+       nsub: "⊄",
+       sube: "⊆",
+       supe: "⊇",
+       oplus: "⊕",
+       otimes: "⊗",
+       perp: "⊥",
+       sdot: "⋅",
+       Alpha: "Α",
+       Beta: "Β",
+       Gamma: "Γ",
+       Delta: "Δ",
+       Epsilon: "Ε",
+       Zeta: "Ζ",
+       Eta: "Η",
+       Theta: "Θ",
+       Iota: "Ι",
+       Kappa: "Κ",
+       Lambda: "Λ",
+       Mu: "Μ",
+       Nu: "Ν",
+       Xi: "Ξ",
+       Omicron: "Ο",
+       Pi: "Π",
+       Rho: "Ρ",
+       Sigma: "Σ",
+       Tau: "Τ",
+       Upsilon: "Υ",
+       Phi: "Φ",
+       Chi: "Χ",
+       Psi: "Ψ",
+       Omega: "Ω",
+       alpha: "α",
+       beta: "β",
+       gamma: "γ",
+       delta: "δ",
+       epsilon: "ε",
+       zeta: "ζ",
+       eta: "η",
+       theta: "θ",
+       iota: "ι",
+       kappa: "κ",
+       lambda: "λ",
+       mu: "μ",
+       nu: "ν",
+       xi: "ξ",
+       omicron: "ο",
+       pi: "π",
+       rho: "ρ",
+       sigmaf: "ς",
+       sigma: "σ",
+       tau: "τ",
+       upsilon: "υ",
+       phi: "φ",
+       chi: "χ",
+       psi: "ψ",
+       omega: "ω",
+       thetasym: "ϑ",
+       upsih: "ϒ",
+       piv: "ϖ",
+       OElig: "Œ",
+       oelig: "œ",
+       Scaron: "Š",
+       scaron: "š",
+       Yuml: "Ÿ",
+       fnof: "ƒ",
+       circ: "ˆ",
+       tilde: "˜",
+       ensp: " ",
+       emsp: " ",
+       thinsp: " ",
+       zwnj: "‌",
+       zwj: "‍",
+       lrm: "‎",
+       rlm: "‏",
+       ndash: "–",
+       mdash: "—",
+       lsquo: "‘",
+       rsquo: "’",
+       sbquo: "‚",
+       ldquo: "“",
+       rdquo: "”",
+       bdquo: "„",
+       dagger: "†",
+       Dagger: "‡",
+       bull: "•",
+       hellip: "…",
+       permil: "‰",
+       prime: "′",
+       Prime: "″",
+       lsaquo: "‹",
+       rsaquo: "›",
+       oline: "‾",
+       euro: "€",
+       trade: "™",
+       larr: "←",
+       uarr: "↑",
+       rarr: "→",
+       darr: "↓",
+       harr: "↔",
+       crarr: "↵",
+       lceil: "⌈",
+       rceil: "⌉",
+       lfloor: "⌊",
+       rfloor: "⌋",
+       loz: "◊",
+       spades: "♠",
+       clubs: "♣",
+       hearts: "♥",
+       diams: "♦"
+};
+
+},{}],234:[function(require,module,exports){
 //[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 //[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 //[5]   	Name	   ::=   	NameStartChar (NameChar)*
@@ -45129,6 +45436,21 @@ var S_ATTR_NOQUOT_VALUE = 4;//attr value(no quot value only)
 var S_ATTR_END = 5;//attr value end and no space(quot end)
 var S_TAG_SPACE = 6;//(attr value end || tag end ) && (space offer)
 var S_TAG_CLOSE = 7;//closed el<el />
+
+/**
+ * Creates an error that will not be caught by XMLReader aka the SAX parser.
+ *
+ * @param {string} message
+ * @param {any?} locator Optional, can provide details about the location in the source
+ * @constructor
+ */
+function ParseError(message, locator) {
+	this.message = message
+	this.locator = locator
+	if(Error.captureStackTrace) Error.captureStackTrace(this, ParseError);
+}
+ParseError.prototype = new Error();
+ParseError.prototype.name = ParseError.name
 
 function XMLReader(){
 	
@@ -45238,7 +45560,7 @@ function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
 						}
 					}
 					if(!endMatch){
-		            	errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
+		            	errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName ); // No known test case
 					}
 		        }else{
 		        	parseStack.push(config)
@@ -45299,10 +45621,11 @@ function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
 				}
 			}
 		}catch(e){
+			if (e instanceof ParseError) {
+				throw e;
+			}
 			errorHandler.error('element parse error: '+e)
-			//errorHandler.error('element parse error: '+e);
 			end = -1;
-			//throw e;
 		}
 		if(end>start){
 			start = end;
@@ -45323,6 +45646,16 @@ function copyLocator(f,t){
  * @return end of the elementStartPart(end of elementEndPart for selfClosed el)
  */
 function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,errorHandler){
+
+	/**
+	 * @param {string} qname
+	 * @param {string} value
+	 * @param {number} startIndex
+	 */
+	function addAttribute(qname, value, startIndex) {
+		if (qname in el.attributeNames) errorHandler.fatalError('Attribute ' + qname + ' redefined')
+		el.addValue(qname, value, startIndex)
+	}
 	var attrName;
 	var value;
 	var p = ++start;
@@ -45338,7 +45671,7 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 				s = S_EQ;
 			}else{
 				//fatalError: equal must after attrName or space after attrName
-				throw new Error('attribute equal must after attrName');
+				throw new Error('attribute equal must after attrName'); // No known test case
 			}
 			break;
 		case '\'':
@@ -45353,7 +45686,7 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 				p = source.indexOf(c,start)
 				if(p>0){
 					value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
-					el.add(attrName,value,start-1);
+					addAttribute(attrName, value, start-1);
 					s = S_ATTR_END;
 				}else{
 					//fatalError: no end quot match
@@ -45362,14 +45695,14 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 			}else if(s == S_ATTR_NOQUOT_VALUE){
 				value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
 				//console.log(attrName,value,start,p)
-				el.add(attrName,value,start);
+				addAttribute(attrName, value, start);
 				//console.dir(el)
 				errorHandler.warning('attribute "'+attrName+'" missed start quot('+c+')!!');
 				start = p+1;
 				s = S_ATTR_END
 			}else{
 				//fatalError: no equal before
-				throw new Error('attribute value must after "="');
+				throw new Error('attribute value must after "="'); // No known test case
 			}
 			break;
 		case '/':
@@ -45387,11 +45720,10 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 				break;
 			//case S_EQ:
 			default:
-				throw new Error("attribute invalid close char('/')")
+				throw new Error("attribute invalid close char('/')") // No known test case
 			}
 			break;
 		case ''://end document
-			//throw new Error('unexpected end of input')
 			errorHandler.error('unexpected end of input');
 			if(s == S_TAG){
 				el.setTagName(source.slice(start,p));
@@ -45417,13 +45749,13 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 					value = attrName;
 				}
 				if(s == S_ATTR_NOQUOT_VALUE){
-					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
-					el.add(attrName,value.replace(/&#?\w+;/g,entityReplacer),start)
+					errorHandler.warning('attribute "'+value+'" missed quot(")!');
+					addAttribute(attrName, value.replace(/&#?\w+;/g,entityReplacer), start)
 				}else{
 					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !value.match(/^(?:disabled|checked|selected)$/i)){
 						errorHandler.warning('attribute "'+value+'" missed value!! "'+value+'" instead!!')
 					}
-					el.add(value,value,start)
+					addAttribute(value, value, start)
 				}
 				break;
 			case S_EQ:
@@ -45448,7 +45780,7 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 				case S_ATTR_NOQUOT_VALUE:
 					var value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
 					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
-					el.add(attrName,value,start)
+					addAttribute(attrName, value, start)
 				case S_ATTR_END:
 					s = S_TAG_SPACE;
 					break;
@@ -45471,7 +45803,7 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)){
 						errorHandler.warning('attribute "'+attrName+'" missed value!! "'+attrName+'" instead2!!')
 					}
-					el.add(attrName,attrName,start);
+					addAttribute(attrName, attrName, start);
 					start = p;
 					s = S_ATTR;
 					break;
@@ -45643,11 +45975,18 @@ function parseDCC(source,start,domBuilder,errorHandler){//sure start with '<!'
 		var len = matchs.length;
 		if(len>1 && /!doctype/i.test(matchs[0][0])){
 			var name = matchs[1][0];
-			var pubid = len>3 && /^public$/i.test(matchs[2][0]) && matchs[3][0]
-			var sysid = len>4 && matchs[4][0];
+			var pubid = false;
+			var sysid = false;
+			if(len>3){
+				if(/^public$/i.test(matchs[2][0])){
+					pubid = matchs[3][0];
+					sysid = len>4 && matchs[4][0];
+				}else if(/^system$/i.test(matchs[2][0])){
+					sysid = matchs[3][0];
+				}
+			}
 			var lastMatch = matchs[len-1]
-			domBuilder.startDTD(name,pubid && pubid.replace(/^(['"])(.*?)\1$/,'$2'),
-					sysid && sysid.replace(/^(['"])(.*?)\1$/,'$2'));
+			domBuilder.startDTD(name, pubid, sysid);
 			domBuilder.endDTD();
 			
 			return lastMatch.index+lastMatch[0].length
@@ -45673,11 +46012,8 @@ function parseInstruction(source,start,domBuilder){
 	return -1;
 }
 
-/**
- * @param source
- */
-function ElementAttributes(source){
-	
+function ElementAttributes(){
+	this.attributeNames = {}
 }
 ElementAttributes.prototype = {
 	setTagName:function(tagName){
@@ -45686,10 +46022,11 @@ ElementAttributes.prototype = {
 		}
 		this.tagName = tagName
 	},
-	add:function(qName,value,offset){
+	addValue:function(qName, value, offset) {
 		if(!tagNamePattern.test(qName)){
 			throw new Error('invalid attribute:'+qName)
 		}
+		this.attributeNames[qName] = this.length;
 		this[this.length++] = {qName:qName,value:value,offset:offset}
 	},
 	length:0,
@@ -45712,23 +46049,6 @@ ElementAttributes.prototype = {
 
 
 
-
-function _set_proto_(thiz,parent){
-	thiz.__proto__ = parent;
-	return thiz;
-}
-if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
-	_set_proto_ = function(thiz,parent){
-		function p(){};
-		p.prototype = parent;
-		p = new p();
-		for(parent in thiz){
-			p[parent] = thiz[parent];
-		}
-		return p;
-	}
-}
-
 function split(source,start){
 	var match;
 	var buf = [];
@@ -45742,9 +46062,9 @@ function split(source,start){
 }
 
 exports.XMLReader = XMLReader;
+exports.ParseError = ParseError;
 
-
-},{}],234:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -45765,7 +46085,7 @@ function extend() {
     return target
 }
 
-},{}],235:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 'use strict';
 
 /** JSHint inline rules */
@@ -46583,6 +46903,7 @@ ChatProxy.prototype = {
 
                         self.isConnected = false;
                         self._isConnecting = false;
+                        self.connection.reset();
 
                         // reconnect to chat and enable check connection
                         self._establishConnection(params);
@@ -47078,7 +47399,6 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
-            this.connection.reset();
         } else {
             this.Client.end();
         }
@@ -48359,7 +48679,7 @@ Helpers.prototype = {
  * */
 module.exports = ChatProxy;
 
-},{"../../plugins/streamManagement":252,"../../qbConfig":253,"../../qbStrophe":256,"../../qbUtils":257,"./qbChatHelpers":236,"nativescript-xmpp-client":undefined,"node-xmpp-client":105}],236:[function(require,module,exports){
+},{"../../plugins/streamManagement":253,"../../qbConfig":254,"../../qbStrophe":257,"../../qbUtils":258,"./qbChatHelpers":237,"nativescript-xmpp-client":undefined,"node-xmpp-client":105}],237:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../qbUtils');
@@ -48680,7 +49000,7 @@ var qbChatHelpers = {
 
 module.exports = qbChatHelpers;
 
-},{"../../qbConfig":253,"../../qbUtils":257}],237:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258}],238:[function(require,module,exports){
 'use strict';
 
 var config = require('../../qbConfig'),
@@ -48802,7 +49122,7 @@ DialogProxy.prototype = {
 
 module.exports = DialogProxy;
 
-},{"../../qbConfig":253,"../../qbUtils":257}],238:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258}],239:[function(require,module,exports){
 'use strict';
 
 var config = require('../../qbConfig'),
@@ -48944,7 +49264,7 @@ MessageProxy.prototype = {
 
 module.exports = MessageProxy;
 
-},{"../../qbConfig":253,"../../qbUtils":257}],239:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258}],240:[function(require,module,exports){
 'use strict';
 
 var Utils = require('../qbUtils');
@@ -49169,7 +49489,7 @@ function isFunction(func) {
   return !!(func && func.constructor && func.call && func.apply);
 }
 
-},{"../qbConfig":253,"../qbUtils":257}],240:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258}],241:[function(require,module,exports){
 'use strict';
 
 var config = require('../qbConfig'),
@@ -49320,7 +49640,7 @@ function signMessage(message, secret) {
     return cryptoSessionMsg;
 }
 
-},{"../qbConfig":253,"../qbUtils":257,"crypto-js/hmac-sha1":45,"crypto-js/hmac-sha256":46}],241:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258,"crypto-js/hmac-sha1":45,"crypto-js/hmac-sha256":46}],242:[function(require,module,exports){
 'use strict';
 
 /*
@@ -49715,7 +50035,7 @@ parseUri.options = {
     }
 };
 
-},{"../qbConfig":253,"../qbUtils":257}],242:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258}],243:[function(require,module,exports){
 'use strict';
 
 var config = require('../qbConfig');
@@ -50098,7 +50418,7 @@ DataProxy.prototype = {
 
 module.exports = DataProxy;
 
-},{"../qbConfig":253,"../qbUtils":257}],243:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258}],244:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -50333,7 +50653,7 @@ EventsProxy.prototype = {
 module.exports = PushNotificationsProxy;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"../qbConfig":253,"../qbUtils":257,"buffer":41}],244:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258,"buffer":41}],245:[function(require,module,exports){
 'use strict';
 
 /*
@@ -50646,7 +50966,7 @@ function generateOrder(obj) {
     return [obj.sort, type, obj.field].join(' ');
 }
 
-},{"../qbConfig":253,"../qbUtils":257}],245:[function(require,module,exports){
+},{"../qbConfig":254,"../qbUtils":258}],246:[function(require,module,exports){
 'use strict';
 
 /** JSHint inline rules (TODO: loopfunc will delete) */
@@ -50786,13 +51106,12 @@ RTCPeerConnection.prototype.getRemoteSDP = function(){
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
     var self = this;
-    var ffVersion = Helpers.getVersionFirefox();
 
     var modifiedSDP;
-    if (ffVersion !== null && (ffVersion === 56 || ffVersion === 57) && !self.delegate.bandwidth) {
-        modifiedSDP = _modifySDPforFixIssueFFAndFreezes(remoteSessionDescription);
-    } else {
+    if (self.delegate.bandwidth) {
         modifiedSDP = setMediaBitrate(remoteSessionDescription, 'video', self.delegate.bandwidth);
+    } else {
+        modifiedSDP = remoteSessionDescription;
     }
     var sessionDescription = new RTCSessionDescription({sdp: modifiedSDP, type: type});
     function successCallback(sessionDescription) {
@@ -50827,7 +51146,13 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
         // http://www.w3.org/TR/webrtc/#h-offer-answer-options
 
         self.createOffer().then(function(offer) {
-            offer.sdp = setMediaBitrate(offer.sdp, 'video', self.delegate.bandwidth);
+            if (self.delegate.bandwidth) {
+                offer.sdp = setMediaBitrate(
+                    offer.sdp,
+                    'video',
+                    self.delegate.bandwidth
+                );
+            }
             successCallback(offer);
         }).catch(function(reason) {
             errorCallback(reason);
@@ -50835,7 +51160,13 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
 
     } else {
         self.createAnswer().then(function(answer) {
-            answer.sdp = setMediaBitrate(answer.sdp, 'video', self.delegate.bandwidth);
+            if (self.delegate.bandwidth) {
+                answer.sdp = setMediaBitrate(
+                    answer.sdp,
+                    'video',
+                    self.delegate.bandwidth
+                );
+            }
             successCallback(answer);
         }).catch(function(reason) {
             errorCallback(reason);
@@ -50843,17 +51174,6 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
     }
 
     function successCallback(desc) {
-        /**
-         * It's to fixed issue
-         * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
-         * callType === 2 is audio only
-         */
-        var ffVersion = Helpers.getVersionFirefox();
-
-        if (ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
-            desc.sdp = _modifySDPforFixIssue(desc.sdp);
-        }
-
         self.setLocalDescription(desc).then(function() {
             callback(null);
         }).catch(function(error) {
@@ -51256,14 +51576,6 @@ function _modifySDPforFixIssue(sdp) {
     return transform.write(parsedSDP);
 }
 
-/**
- * It's functions to fixed issue
- * https://blog.mozilla.org/webrtc/when-your-video-freezes/
- */
-function _modifySDPforFixIssueFFAndFreezes(sdp) {
-    return setMediaBitrate(sdp, 'video', 12288);
-}
-
 function setMediaBitrate(sdp, media, bitrate) {
     if (!bitrate) {
         var modifiedSDP = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
@@ -51306,7 +51618,7 @@ function setMediaBitrate(sdp, media, bitrate) {
 
 module.exports = RTCPeerConnection;
 
-},{"../../qbConfig":253,"./qbWebRTCHelpers":247,"sdp-transform":170}],246:[function(require,module,exports){
+},{"../../qbConfig":254,"./qbWebRTCHelpers":248,"sdp-transform":170}],247:[function(require,module,exports){
 'use strict';
 
 /**
@@ -51674,7 +51986,7 @@ function getOpponentsIdNASessions(sessions) {
     return opponents;
 }
 
-},{"../../qbConfig":253,"../../qbUtils":257,"./qbRTCPeerConnection":245,"./qbWebRTCHelpers":247,"./qbWebRTCSession":248,"./qbWebRTCSignalingConstants":249,"./qbWebRTCSignalingProcessor":250,"./qbWebRTCSignalingProvider":251}],247:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258,"./qbRTCPeerConnection":246,"./qbWebRTCHelpers":248,"./qbWebRTCSession":249,"./qbWebRTCSignalingConstants":250,"./qbWebRTCSignalingProcessor":251,"./qbWebRTCSignalingProvider":252}],248:[function(require,module,exports){
 'use strict';
 
 /**
@@ -51796,7 +52108,7 @@ WebRTCHelpers.CallType = {
 
 module.exports = WebRTCHelpers;
 
-},{"../../qbConfig":253}],248:[function(require,module,exports){
+},{"../../qbConfig":254}],249:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52822,7 +53134,7 @@ function _prepareExtension(extension) {
 
 module.exports = WebRTCSession;
 
-},{"../../qbConfig":253,"../../qbUtils":257,"./qbRTCPeerConnection":245,"./qbWebRTCHelpers":247,"./qbWebRTCSignalingConstants":249}],249:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258,"./qbRTCPeerConnection":246,"./qbWebRTCHelpers":248,"./qbWebRTCSignalingConstants":250}],250:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52845,7 +53157,7 @@ WebRTCSignalingConstants.SignalingType = {
 
 module.exports = WebRTCSignalingConstants;
 
-},{}],250:[function(require,module,exports){
+},{}],251:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52998,7 +53310,7 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
 
 module.exports = WebRTCSignalingProcessor;
 
-},{"./qbWebRTCSignalingConstants":249,"strophe.js":206}],251:[function(require,module,exports){
+},{"./qbWebRTCSignalingConstants":250,"strophe.js":206}],252:[function(require,module,exports){
 'use strict';
 
 /** JSHint inline rules */
@@ -53101,7 +53413,7 @@ WebRTCSignalingProvider.prototype._JStoXML = function(title, obj, msg) {
 
 module.exports = WebRTCSignalingProvider;
 
-},{"../../qbConfig":253,"../../qbUtils":257,"./qbWebRTCHelpers":247,"./qbWebRTCSignalingConstants":249,"strophe.js":206}],252:[function(require,module,exports){
+},{"../../qbConfig":254,"../../qbUtils":258,"./qbWebRTCHelpers":248,"./qbWebRTCSignalingConstants":250,"strophe.js":206}],253:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53317,7 +53629,7 @@ StreamManagement.prototype._increaseReceivedStanzasCounter = function(){
 
 module.exports = StreamManagement;
 
-},{"../modules/chat/qbChatHelpers":236,"../qbUtils":257}],253:[function(require,module,exports){
+},{"../modules/chat/qbChatHelpers":237,"../qbUtils":258}],254:[function(require,module,exports){
 'use strict';
 
 /*
@@ -53332,8 +53644,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.13.6',
-  buildNumber: '1098',
+  version: '2.13.7',
+  buildNumber: '1100',
   creds: {
     appId: '',
     authKey: '',
@@ -53365,7 +53677,7 @@ var config = {
     statsReportTimeInterval: false,
     iceServers: [
       {
-        urls: ['turn:turn.quickblox.com', 'turns:turn.quickblox.com'],
+        urls: 'turn:turn.quickblox.com',
         username: 'quickblox',
         credential: 'baccb97ba2d92d71e26eb9886da5f1e0'
       }
@@ -53427,7 +53739,7 @@ config.set = function(options) {
 
 module.exports = config;
 
-},{}],254:[function(require,module,exports){
+},{}],255:[function(require,module,exports){
 'use strict';
 
 /*
@@ -53651,7 +53963,7 @@ QB.QuickBlox = QuickBlox;
 
 module.exports = QB;
 
-},{"./modules/chat/qbChat":235,"./modules/chat/qbDialog":237,"./modules/chat/qbMessage":238,"./modules/qbAddressBook":239,"./modules/qbAuth":240,"./modules/qbContent":241,"./modules/qbData":242,"./modules/qbPushNotifications":243,"./modules/qbUsers":244,"./modules/webrtc/qbWebRTCClient":246,"./qbConfig":253,"./qbProxy":255,"./qbUtils":257,"webrtc-adapter":216}],255:[function(require,module,exports){
+},{"./modules/chat/qbChat":236,"./modules/chat/qbDialog":238,"./modules/chat/qbMessage":239,"./modules/qbAddressBook":240,"./modules/qbAuth":241,"./modules/qbContent":242,"./modules/qbData":243,"./modules/qbPushNotifications":244,"./modules/qbUsers":245,"./modules/webrtc/qbWebRTCClient":247,"./qbConfig":254,"./qbProxy":256,"./qbUtils":258,"webrtc-adapter":216}],256:[function(require,module,exports){
 'use strict';
 
 var config = require('./qbConfig');
@@ -53906,7 +54218,7 @@ ServiceProxy.prototype = {
 
 module.exports = ServiceProxy;
 
-},{"./qbConfig":253,"./qbUtils":257,"form-data":75,"node-fetch":99}],256:[function(require,module,exports){
+},{"./qbConfig":254,"./qbUtils":258,"form-data":75,"node-fetch":99}],257:[function(require,module,exports){
 'use strict';
 /** JSHint inline rules */
 /* globals Strophe */
@@ -53955,7 +54267,7 @@ function Connection() {
 
 module.exports = Connection;
 
-},{"./qbConfig":253,"./qbUtils":257,"strophe.js":206}],257:[function(require,module,exports){
+},{"./qbConfig":254,"./qbUtils":258,"strophe.js":206}],258:[function(require,module,exports){
 (function (global){(function (){
 /* eslint no-console: 2 */
 
@@ -54281,5 +54593,5 @@ var Utils = {
 module.exports = Utils;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./qbConfig":253,"fs":26,"os":133}]},{},[254])(254)
+},{"./qbConfig":254,"fs":26,"os":133}]},{},[255])(255)
 });

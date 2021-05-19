@@ -815,6 +815,7 @@ ChatProxy.prototype = {
 
                         self.isConnected = false;
                         self._isConnecting = false;
+                        self.connection.reset();
 
                         // reconnect to chat and enable check connection
                         self._establishConnection(params);
@@ -1310,7 +1311,6 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
-            this.connection.reset();
         } else {
             this.Client.end();
         }

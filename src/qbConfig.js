@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.13.6',
-  buildNumber: '1098',
+  version: '2.13.7',
+  buildNumber: '1100',
   creds: {
     appId: '',
     authKey: '',
@@ -45,7 +45,7 @@ var config = {
     statsReportTimeInterval: false,
     iceServers: [
       {
-        urls: ['turn:turn.quickblox.com', 'turns:turn.quickblox.com'],
+        urls: 'turn:turn.quickblox.com',
         username: 'quickblox',
         credential: 'baccb97ba2d92d71e26eb9886da5f1e0'
       }

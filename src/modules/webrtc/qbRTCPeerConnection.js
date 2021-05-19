@@ -137,13 +137,12 @@ RTCPeerConnection.prototype.getRemoteSDP = function(){
 
 RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
     var self = this;
-    var ffVersion = Helpers.getVersionFirefox();
 
     var modifiedSDP;
-    if (ffVersion !== null && (ffVersion === 56 || ffVersion === 57) && !self.delegate.bandwidth) {
-        modifiedSDP = _modifySDPforFixIssueFFAndFreezes(remoteSessionDescription);
-    } else {
+    if (self.delegate.bandwidth) {
         modifiedSDP = setMediaBitrate(remoteSessionDescription, 'video', self.delegate.bandwidth);
+    } else {
+        modifiedSDP = remoteSessionDescription;
     }
     var sessionDescription = new RTCSessionDescription({sdp: modifiedSDP, type: type});
     function successCallback(sessionDescription) {
@@ -178,7 +177,13 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
         // http://www.w3.org/TR/webrtc/#h-offer-answer-options
 
         self.createOffer().then(function(offer) {
-            offer.sdp = setMediaBitrate(offer.sdp, 'video', self.delegate.bandwidth);
+            if (self.delegate.bandwidth) {
+                offer.sdp = setMediaBitrate(
+                    offer.sdp,
+                    'video',
+                    self.delegate.bandwidth
+                );
+            }
             successCallback(offer);
         }).catch(function(reason) {
             errorCallback(reason);
@@ -186,7 +191,13 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
 
     } else {
         self.createAnswer().then(function(answer) {
-            answer.sdp = setMediaBitrate(answer.sdp, 'video', self.delegate.bandwidth);
+            if (self.delegate.bandwidth) {
+                answer.sdp = setMediaBitrate(
+                    answer.sdp,
+                    'video',
+                    self.delegate.bandwidth
+                );
+            }
             successCallback(answer);
         }).catch(function(reason) {
             errorCallback(reason);
@@ -194,17 +205,6 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
     }
 
     function successCallback(desc) {
-        /**
-         * It's to fixed issue
-         * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
-         * callType === 2 is audio only
-         */
-        var ffVersion = Helpers.getVersionFirefox();
-
-        if (ffVersion !== null && ffVersion < 55 && callType === 2 && self.type === 'offer') {
-            desc.sdp = _modifySDPforFixIssue(desc.sdp);
-        }
-
         self.setLocalDescription(desc).then(function() {
             callback(null);
         }).catch(function(error) {
@@ -605,14 +605,6 @@ function _modifySDPforFixIssue(sdp) {
     });
 
     return transform.write(parsedSDP);
-}
-
-/**
- * It's functions to fixed issue
- * https://blog.mozilla.org/webrtc/when-your-video-freezes/
- */
-function _modifySDPforFixIssueFFAndFreezes(sdp) {
-    return setMediaBitrate(sdp, 'video', 12288);
 }
 
 function setMediaBitrate(sdp, media, bitrate) {
