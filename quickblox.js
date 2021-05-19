@@ -49252,7 +49252,7 @@ MessageProxy.prototype = {
          * */
 
         if (params && params.chat_dialog_ids && Utils.isArray(params.chat_dialog_ids)) {
-            params.chat_dialog_ids = params.chat_dialog_ids.join(', ');
+            params.chat_dialog_ids = params.chat_dialog_ids.join();
         }
 
         this.service.ajax({
@@ -53644,8 +53644,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.13.7',
-  buildNumber: '1100',
+  version: '2.13.8',
+  buildNumber: '1101',
   creds: {
     appId: '',
     authKey: '',
