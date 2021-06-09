@@ -183,6 +183,14 @@ WebRTCClient.prototype.getNewSessionsCount = function (exceptId) {
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
     var userInfo = extension.userInfo || {};
 
+    var currentUserID = Helpers.getIdFromNode(this.connection.jid);
+    if (userID === currentUserID && !extension.opponentsIDs.includes(currentUserID)) {
+        Helpers.trace(
+            'Ignore "onCall" signal from current user.' +
+            ' userID:' + userID + ', sessionID: ' + sessionID
+        );
+        return;
+    }
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
     var otherActiveSessions = this.isExistNewOrActiveSessionExceptSessionID(sessionID);

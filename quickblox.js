@@ -51804,6 +51804,14 @@ WebRTCClient.prototype.getNewSessionsCount = function (exceptId) {
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
     var userInfo = extension.userInfo || {};
 
+    var currentUserID = Helpers.getIdFromNode(this.connection.jid);
+    if (userID === currentUserID && !extension.opponentsIDs.includes(currentUserID)) {
+        Helpers.trace(
+            'Ignore "onCall" signal from current user.' +
+            ' userID:' + userID + ', sessionID: ' + sessionID
+        );
+        return;
+    }
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
     var otherActiveSessions = this.isExistNewOrActiveSessionExceptSessionID(sessionID);
@@ -53644,8 +53652,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.13.8',
-  buildNumber: '1101',
+  version: '2.13.9',
+  buildNumber: '1102',
   creds: {
     appId: '',
     authKey: '',
