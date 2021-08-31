@@ -51141,48 +51141,31 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
 
     self.state = RTCPeerConnection.State.CONNECTING;
 
+    /**
+     * @param {RTCSessionDescriptionInit} description
+     */
+     function successCallback(description) {
+        var modifiedDescription = _removeExtmapMixedFromSDP(description);
+        if (self.delegate.bandwidth) {
+            modifiedDescription.sdp = setMediaBitrate(
+                modifiedDescription.sdp,
+                'video',
+                self.delegate.bandwidth
+            );
+        }
+        self.setLocalDescription(modifiedDescription)
+            .then(function() {
+                callback(null);
+            })
+            .catch(function(error) {
+                callback(error);
+            });
+    }
+
     if (self.type === 'offer') {
-        // Additional parameters for SDP Constraints
-        // http://www.w3.org/TR/webrtc/#h-offer-answer-options
-
-        self.createOffer().then(function(offer) {
-            if (self.delegate.bandwidth) {
-                offer.sdp = setMediaBitrate(
-                    offer.sdp,
-                    'video',
-                    self.delegate.bandwidth
-                );
-            }
-            successCallback(offer);
-        }).catch(function(reason) {
-            errorCallback(reason);
-        });
-
+        self.createOffer().then(successCallback).catch(callback);
     } else {
-        self.createAnswer().then(function(answer) {
-            if (self.delegate.bandwidth) {
-                answer.sdp = setMediaBitrate(
-                    answer.sdp,
-                    'video',
-                    self.delegate.bandwidth
-                );
-            }
-            successCallback(answer);
-        }).catch(function(reason) {
-            errorCallback(reason);
-        });
-    }
-
-    function successCallback(desc) {
-        self.setLocalDescription(desc).then(function() {
-            callback(null);
-        }).catch(function(error) {
-            errorCallback(error);
-        });
-    }
-
-    function errorCallback(error) {
-        callback(error);
+        self.createAnswer().then(successCallback).catch(callback);
     }
 };
 
@@ -51561,19 +51544,21 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
 }
 
 /**
- * It's functions to fixed issue
- * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
+ * This is to fix error on legacy WebRTC implementations
+ * @param {RTCSessionDescriptionInit} description
  */
-function _modifySDPforFixIssue(sdp) {
-    var parsedSDP = transform.parse(sdp);
-
-    parsedSDP.groups = parsedSDP.groups ? parsedSDP.groups : [];
-    parsedSDP.groups.push({
-        mids: 'sdparta_0',
-        type: 'BUNDLE'
-    });
-
-    return transform.write(parsedSDP);
+function _removeExtmapMixedFromSDP(description) {
+    if (description &&
+        description.sdp &&
+        description.sdp.indexOf('\na=extmap-allow-mixed') !== -1) {
+        description.sdp = description.sdp
+            .split('\n')
+            .filter(function (line) {
+                return line.trim() !== 'a=extmap-allow-mixed';
+            })
+            .join('\n');
+    }
+    return description;
 }
 
 function setMediaBitrate(sdp, media, bitrate) {
@@ -52762,14 +52747,17 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 
     if(peerConnection){
         peerConnection._clearDialingTimer();
-
-        peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
-            if(error){
-                Helpers.traceError("'setRemoteSessionDescription' error: " + error);
-            }else{
-                Helpers.trace("'setRemoteSessionDescription' success");
-            }
-        });
+        if (peerConnection.signalingState !== 'stable') {
+            peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
+                if(error){
+                    Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+                }else{
+                    Helpers.trace("'setRemoteSessionDescription' success");
+                }
+            });
+        } else {
+            Helpers.traceError("Ignore 'onAccept', PeerConnection is already in 'stable' state");
+        }
     }else{
         Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");
     }
@@ -52910,7 +52898,6 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
 
     var pcConfig = {
         iceServers: config.webrtc.iceServers,
-        offerExtmapAllowMixed: false
     };
 
     Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
@@ -53652,8 +53639,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.13.9',
-  buildNumber: '1102',
+  version: '2.13.10',
+  buildNumber: '1104',
   creds: {
     appId: '',
     authKey: '',

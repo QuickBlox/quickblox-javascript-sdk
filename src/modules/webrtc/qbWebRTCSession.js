@@ -643,14 +643,17 @@ WebRTCSession.prototype.processOnAccept = function(userID, extension) {
 
     if(peerConnection){
         peerConnection._clearDialingTimer();
-
-        peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
-            if(error){
-                Helpers.traceError("'setRemoteSessionDescription' error: " + error);
-            }else{
-                Helpers.trace("'setRemoteSessionDescription' success");
-            }
-        });
+        if (peerConnection.signalingState !== 'stable') {
+            peerConnection.setRemoteSessionDescription('answer', extension.sdp, function(error){
+                if(error){
+                    Helpers.traceError("'setRemoteSessionDescription' error: " + error);
+                }else{
+                    Helpers.trace("'setRemoteSessionDescription' success");
+                }
+            });
+        } else {
+            Helpers.traceError("Ignore 'onAccept', PeerConnection is already in 'stable' state");
+        }
     }else{
         Helpers.traceError("Ignore 'OnAccept', there is no information about peer connection by some reason.");
     }
@@ -791,7 +794,6 @@ WebRTCSession.prototype._createPeer = function(userID, peerConnectionType) {
 
     var pcConfig = {
         iceServers: config.webrtc.iceServers,
-        offerExtmapAllowMixed: false
     };
 
     Helpers.trace("_createPeer, iceServers: " + JSON.stringify(pcConfig));
