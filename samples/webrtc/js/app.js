@@ -464,26 +464,24 @@
                         }
 
                         // Call to users
-                        //
-                        var pushRecipients = [];
                         app.currentSession.call({}, function() {
                             if (!window.navigator.onLine) {
                                 app.currentSession.stop({});
                                 app.helpers.stateBoard.update({'title': 'connect_error', 'isError': 'qb-error'});
                             } else {
+                                sendPushNotification();
                                 var compiled = _.template( $('#callee_video').html() );
 
                                 app.helpers.stateBoard.update({'title': 'calling'});
 
                                 document.getElementById(sounds.call).play();
 
-                                Object.keys(app.callees).forEach(function(id, i, arr) {
+                                Object.keys(app.callees).forEach(function (id) {
                                     videoElems += compiled({
                                         'userID': id,
                                         'name': app.callees[id],
                                         'state': 'connecting'
                                     });
-                                    pushRecipients.push(id);
                                 });
 
                                 $('.j-callees').append(videoElems);
@@ -493,31 +491,6 @@
                                 app.helpers.setFooterPosition();
                             }
                         });
-
-                        // and also send push notification about incoming call
-                        // (corrently only iOS/Android users will receive it)
-                        //
-                        var params = {
-                          notification_type: 'push',
-                          user: {ids: pushRecipients},
-                          environment: 'development', // environment, can be 'production' as well.
-                          message: QB.pushnotifications.base64Encode(JSON.stringify({
-                              "message": app.caller.full_name + " is calling you",
-                              "ios_voip": "1",
-                              "VOIPCall":"1"
-                          }))
-                        };
-                        //
-                        QB.pushnotifications.events.create(params, function(err, response) {
-                          if (err) {
-                            console.log(err);
-                          } else {
-                            // success
-                            console.log("Push Notification is sent.");
-                          }
-                        });
-
-
                     }
                 });
             }
@@ -1247,6 +1220,52 @@
             };
 
             app.currentSession.switchMediaTracks(deviceIds, callback);
+        }
+
+        function sendPushNotification() {
+            // and also send push notification about incoming call
+            // (currently only iOS/Android users will receive it)
+            var users = [app.caller].concat(app.users);
+            var opponentsIDsNumbers = app.currentSession
+                .opponentsIDs
+                .map(Number);
+            var opponentsIDs = [app.currentSession.initiatorID].concat(opponentsIDsNumbers);
+            var contactIdentifier = opponentsIDs
+                .map(function (userId) {
+                    var user = users.find(function (usr) {
+                        return usr.id === userId
+                    });
+                    return user ? user.full_name : undefined;
+                })
+                .filter(Boolean)
+                .join();
+            var pushPayload = {
+                message: app.caller.full_name + " is calling you",
+                ios_voip: 1,
+                VOIPCall: 1,
+                sessionID: app.currentSession.ID,
+                opponentsIDs: opponentsIDs.join(),
+                contactIdentifier: contactIdentifier,
+                conferenceType: app.currentSession.callType.toString(),
+                timestamp: Date.now().toString()
+            };
+            var params = {
+                notification_type: 'push',
+                user: {ids: opponentsIDsNumbers},
+                environment: 'development', // environment, can be 'production' as well.
+                message: QB.pushnotifications.base64Encode(
+                    JSON.stringify(pushPayload)
+                )
+            };
+            //
+            QB.pushnotifications.events.create(params, function (error) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    // success
+                    console.log("Push Notification is sent.");
+                }
+            });
         }
     });
 }(window, window.QB, window.app, window.CONFIG,  jQuery, Backbone));
