@@ -1,7 +1,7 @@
 var QBApp = {
-    appId: 48856,
-    authKey: 'j-VdGKXC6AucLQw',
-    authSecret: 'JcUa5b66MGuZJZj'
+    appId: '',
+    authKey: '',
+    authSecret: ''
 };
 
 var config = {

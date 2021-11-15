@@ -1,8 +1,8 @@
 var creds = {
-  appId: 80472,
-  authKey: 'qVAGu7ndaCga5Sx',
-  authSecret: 'NZqrmTNgaxM7VSW',
-  accountKey: 'uK_8uinNyz8-npTNB6tx'
+  appId: '',
+  authKey: '',
+  authSecret: '',
+  accountKey: ''
 };
 
 var config = {

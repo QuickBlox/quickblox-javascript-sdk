@@ -1,9 +1,9 @@
 'use strict';
 
 var QB_CREDS = {
-  appId: 72448,
-  authKey: 'f4HYBYdeqTZ7KNb',
-  authSecret: 'ZC7dK39bOjVc-Z8'
+  appId: '',
+  authKey: '',
+  authSecret: ''
 };
 
 var QB_CONFIG = {

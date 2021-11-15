@@ -19,14 +19,14 @@ const RiveScript = require('rivescript');
 // new user for you chat bot. Then put here user's ID, password, login and full name.
 //
 const CONFIG = {
-    "appId": "13318",
-    "authKey": "WzrAY7vrGmbgFfP",
-    "authSecret": "xS2uerEveGHmEun",
+    "appId": "",
+    "authKey": "",
+    "authSecret": "",
     "user": {
-        "id": "2740296",
-        "login": "qbot",
-        "password": "mehdoh00",
-        "fullname": "qbot"
+        "id": "",
+        "login": "",
+        "password": "",
+        "fullname": ""
     }
 };
 

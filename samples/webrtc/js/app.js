@@ -845,6 +845,14 @@
                 document.querySelector('.j-caller__ctrl').removeAttribute('hidden');
             }
 
+            if(call.callTimer) {
+                $('#timer').addClass('invisible');
+                clearInterval(call.callTimer);
+                call.callTimer = null;
+                call.callTime = 0;
+                app.helpers.network = {};
+            }
+
         };
 
         QB.webrtc.onUserNotAnswerListener = function onUserNotAnswerListener(session, userId) {

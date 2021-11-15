@@ -3,9 +3,7 @@ var QBconfig = {
         appId: '',
         authKey: '',
         authSecret: '',
-        accountKey: '',
-        apiDomain: 'https://api.quickblox.com',
-        chatDomain: 'chat.quickblox.com'
+        accountKey: ''
     },
     appConfig: {
         chatProtocol: {
