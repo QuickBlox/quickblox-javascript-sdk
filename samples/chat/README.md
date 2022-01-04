@@ -3,6 +3,20 @@ QuickBlox JS Sample Chat
 
 This is a code sample for [QuickBlox](http://quickblox.com/) platform. It is a great way for developers using QuickBlox platform to learn how to integrate private and group chat, add text and image attachments sending into your application.
 
+# Features
+* Log in/log out
+* Send and receive message/attachment
+* Create and leave a 1-to-1 and group chat
+* Create a public chat
+* Display users who have received/read the message
+* Mark messages as read/delivered
+* Send typing indicators
+* List and delete chats
+* Display chat history
+* Display a list with chat participants
+* Send/receive push notifications
+* Subscribe/unsubscribe device to push notifications
+
 # Get application credentials
 [](#get-application-credentials)
 

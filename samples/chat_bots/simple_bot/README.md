@@ -1,6 +1,6 @@
 ## **Overview**
 
-Bots are third-party applications that run inside QuickBlox platform. Bots have almost the same qualities as humans: they have profile photos, names, they can send messages and upload files, and they can be added to and removed from private group chats. Chatbots are controlled programmatically via [QuickBlox Javascript/Node.js SDK](https://docs.quickblox.com/docs/js-quick-start).
+Bots are third-party applications that run inside QuickBlox platform.  Chatbots are controlled programmatically via [QuickBlox Javascript/Node.js SDK](https://docs.quickblox.com/docs/js-quick-start).
 
 ## **How To Build Chatbots**
 

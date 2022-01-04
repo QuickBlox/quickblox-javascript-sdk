@@ -9,6 +9,19 @@ The WebRTC VideoChat code sample allows you easily to add the video calling feat
 
 It is built on the top of the WebRTC technology.
 
+# Features
+* Log in/log out
+* Make and receive 1-to-1 and group audio call
+* Make and receive 1-to-1 and group video call
+* Search for users to make a call with
+* Mute/unmute the microphone
+* Display the list of call participants and their statuses
+* Share a screen
+* Switch camera
+* See call timer
+* Mirror local video
+* Change settings (media, answer time interval, etc.)
+
 # Get application credentials
 [](#get-application-credentials)
 
