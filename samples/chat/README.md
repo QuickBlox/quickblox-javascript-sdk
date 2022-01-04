@@ -14,8 +14,6 @@ This is a code sample for [QuickBlox](http://quickblox.com/) platform. It is a g
 * List and delete chats
 * Display chat history
 * Display a list with chat participants
-* Send/receive push notifications
-* Subscribe/unsubscribe device to push notifications
 
 # Get application credentials
 [](#get-application-credentials)

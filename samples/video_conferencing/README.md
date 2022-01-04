@@ -8,17 +8,13 @@ Multi-conference server is available only for Enterprise plans, with **additiona
 * Log in/log out
 * Create a conference room
 * Leave a conference room
-* Add a new member to a conference room
+* Join a conference room
 * Participate in a conference call
-* Participate in a stream as a streamer/watcher
 * Send and receive text messages and attachments
 * Enable/disable audio stream from an opponent
-* Switch camera
 * Enable/disable camera
 * Mute/unmute the microphone
-* Display the number of chat members
 * Share a screen
-* Set media settings
 * Mirror local video
 
 # Documentation
