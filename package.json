@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.13.10",
+  "version": "2.13.11",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "license": "(Apache-2.0)",
@@ -76,6 +76,7 @@
     }
   },
   "scripts": {
+    "dev": "NODE_ENV=develop gulp watch",
     "setDependencies": "npm i && npm i -g gulp-cli && npm install rimraf -g && npm install -g jasmine",
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "build": "cross-env NODE_ENV=production npm run lint && gulp build && gulp minify",

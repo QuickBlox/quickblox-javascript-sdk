@@ -72,18 +72,6 @@
             }
 
         })(console);
-
-
-        var lastFired = new Date().getTime();
-        setInterval(async function() {
-            now = new Date().getTime();
-            if(now - lastFired > 4000) {//if it's been more than 5 seconds
-                lastFired = now;
-                await window.qbConnect.connect();
-                await helpers.renderDashboard();
-            }
-            lastFired = now;
-        }, 400);
     </script>
 
 </head>

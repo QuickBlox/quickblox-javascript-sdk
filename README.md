@@ -16,7 +16,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://unpkg.com/quickblox/quickblox.min.js"></script>
+<script src="https://unpkg.com/quickblox@2.13.11/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -40,10 +40,10 @@ npm install quickblox --save
 And you're ready to go:
 
 ```javascript
-var QB = require('quickblox');
+var QB = require("quickblox");
 
 // OR to create many QB instances
-var QuickBlox = require('quickblox').QuickBlox;
+var QuickBlox = require("quickblox").QuickBlox;
 var QB1 = new QuickBlox();
 var QB2 = new QuickBlox();
 ```
@@ -54,9 +54,9 @@ var QB2 = new QuickBlox();
 
 # Browsers support
 
-| Edge   | Firefox | Chrome | Safari | Opera | Node.js |
-|:----:|:-------:|:------:|:------:|:-----:|:-------:|
-| 14+  |  52+    | 50+    |  11.1+  |  36+  |    6+   |
+| Edge | Firefox | Chrome | Safari | Opera | Node.js |
+| :--: | :-----: | :----: | :----: | :---: | :-----: |
+| 14+  |   52+   |  50+   | 11.1+  |  36+  |   6+    |
 
 # Documentation
 
@@ -69,7 +69,9 @@ Please raise questions, requests for help etc. via https://stackoverflow.com/que
 Feedback and suggestions for improvement always welcome :)
 
 # How to contribute
+
 See more information at [contributing.md](https://github.com/QuickBlox/quickblox-javascript-sdk/blob/gh-pages/.github/CONTRIBUTING.md)
 
 # License
+
 Apache 2.0

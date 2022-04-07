@@ -768,7 +768,7 @@ ChatProxy.prototype = {
                     case Strophe.Status.AUTHFAIL:
                         self.isConnected = false;
                         self._isConnecting = false;
-                        
+
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed', 'QBChat');
                         
                         if (isInitialConnect) {
@@ -1112,10 +1112,12 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if(Utils.getEnv().browser){
-            self.connection.send(stanza);
-        } else {
-            self.Client.send(stanza);
+        if (self.connection.connected) {
+            if(Utils.getEnv().browser){
+                self.connection.send(stanza);
+            } else {
+                self.Client.send(stanza);
+            }
         }
     },
 
@@ -1139,10 +1141,12 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if(Utils.getEnv().browser){
-            self.connection.send(stanza);
-        } else {
-            self.Client.send(stanza);
+        if (self.connection.connected) {
+            if(Utils.getEnv().browser){
+                self.connection.send(stanza);
+            } else {
+                self.Client.send(stanza);
+            }
         }
     },
 
