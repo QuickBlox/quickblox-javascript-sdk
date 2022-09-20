@@ -53770,8 +53770,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.14.0',
-  buildNumber: '1135',
+  version: '2.14.1',
+  buildNumber: '1136',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -53779,7 +53779,7 @@ var config = {
     'accountKey': ''
   },
   endpoints: {
-    api: 'apistage6.quickblox.com/',
+    api: 'api.quickblox.com',
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
   },
