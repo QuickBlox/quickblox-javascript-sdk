@@ -12,16 +12,16 @@
  */
 
 var config = {
-  version: '2.13.11',
-  buildNumber: '1105',
+  version: '2.14.0',
+  buildNumber: '1135',
   creds: {
-    appId: '',
-    authKey: '',
-    authSecret: '',
-    accountKey: ''
+    'appId': 0,
+    'authKey': '',
+    'authSecret': '',
+    'accountKey': ''
   },
   endpoints: {
-    api: 'api.quickblox.com',
+    api: 'apistage6.quickblox.com/',
     chat: 'chat.quickblox.com',
     muc: 'muc.chat.quickblox.com'
   },
@@ -35,6 +35,7 @@ var config = {
     active: 2
   },
   pingTimeout: 30,
+  pingLocalhostTimeInterval: 5,
   chatReconnectionTimeInterval: 5,
   webrtc: {
     answerTimeInterval: 60,
@@ -45,7 +46,7 @@ var config = {
     statsReportTimeInterval: false,
     iceServers: [
       {
-        urls: 'turn:turn.quickblox.com',
+        urls: ['turn:turn.quickblox.com', 'stun:turn.quickblox.com'],
         username: 'quickblox',
         credential: 'baccb97ba2d92d71e26eb9886da5f1e0'
       }
@@ -72,10 +73,12 @@ var config = {
   },
   timeout: null,
   debug: {
-    mode: 0,
+    mode: 1,
     file: null
   },
-  addISOTime: false
+  addISOTime: false,
+  qbTokenExpirationDate: null,
+  liveSessionInterval: 120,
 };
 
 config.set = function(options) {
@@ -103,6 +106,25 @@ config.set = function(options) {
       config.webrtc.iceServers = options[key];
     }
   });
+};
+
+/*
+* 17.08.22 artan: waiting for backend fix, look at tasks:
+* [CROS-815] - Update sessionExpirationDate on each request
+* [SR-1322] - Set param Access-Control-Expose-Headerson server side
+ */
+config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasToken = false) {
+  var connectionTimeLag = 1; // minute
+  var newDate = new Date(tokenExpirationDate);
+  newDate.setMinutes ( newDate.getMinutes() - connectionTimeLag);
+  // TODO: need to check in [CROS-815]
+  if (!headerHasToken) {
+    console.log('in date: ', newDate);
+    newDate.setMinutes ( newDate.getMinutes() + config.liveSessionInterval );
+    console.log('out date: ', newDate);
+  }
+  config.qbTokenExpirationDate = newDate;
+  console.log('updateSessionExpirationDate ... Set value: ', tokenExpirationDate);
 };
 
 module.exports = config;

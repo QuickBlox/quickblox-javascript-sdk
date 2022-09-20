@@ -95,6 +95,9 @@ function ChatProxy(service) {
     this._isLogout = false;
 
     this._checkConnectionTimer = undefined;
+    // this._checkConnectionPingTimer = undefined; //artan: 13/09/2022 at 16:30
+    this._checkExpiredSessionTimer = undefined;
+    this._sessionHasExpired = false;
     this._pings = {};
     //
     this.helpers = new Helpers();
@@ -149,6 +152,7 @@ function ChatProxy(service) {
      * - onLastUserActivityListener (userId, seconds)
      * - onDisconnectedListener
      * - onReconnectListener
+     * - onSessionExpiredListener
      */
 
     /**
@@ -776,6 +780,7 @@ ChatProxy.prototype = {
                         }
                         
                         if(!self.isConnected && typeof self.onReconnectFailedListener === 'function'){
+                            // TODO: investigate problem reconnect field
                             Utils.safeCallbackCall(self.onReconnectFailedListener, err);
                         }
                         
@@ -796,7 +801,50 @@ ChatProxy.prototype = {
                         self.connection.XAddTrackedHandler(self._onIQ, null, 'iq');
                         self.connection.XAddTrackedHandler(self._onSystemMessageListener, null, 'message', 'headline');
                         self.connection.XAddTrackedHandler(self._onMessageErrorListener, null, 'message', 'error');
-                    
+
+                        // var noTimerId = typeof self._checkConnectionPingTimer === 'undefined';  //artan: 13/09/2022 at 16:30
+                        // noTimerId = config.pingLocalhostTimeInterval === 0 ? false : noTimerId;
+                        // if (noTimerId) {
+                        //     Utils.QBLog('[QBChat]', 'Init ping to localhost at ', Utils.getCurrentTime());
+                        //     self._checkConnectionPingTimer = setInterval(function() {
+                        //         self._ping(userJid,
+                        //             function(error) {
+                        //                 if (error) {
+                        //                     Utils.QBLog('[QBChat]',
+                        //                         'Local Ping: ',
+                        //                         'failed, at ', Utils.getCurrentTime(),
+                        //                         ' error: ', error);
+                        //                 } else {
+                        //                     Utils.QBLog('[QBChat]',
+                        //                         'Local Ping: ',
+                        //                         'ok, at ', Utils.getCurrentTime());
+                        //                 }
+                        //             });
+                        //     }, config.pingLocalhostTimeInterval * 1000);
+                        // }
+
+                        if (typeof self.onSessionExpiredListener === 'function') {
+                            var noExpiredSessionTimerId = typeof self._checkExpiredSessionTimer === 'undefined';
+                            if (noExpiredSessionTimerId) {
+                                Utils.QBLog('[QBChat]', 'Init timer for check session expired at ', ((new Date()).toTimeString().split(' ')[0]));
+                                self._checkExpiredSessionTimer = setInterval(function() {
+                                    var timeNow = new Date();
+                                    if (typeof config.qbTokenExpirationDate !== 'undefined') {
+                                        var timeLag = Math.round((timeNow.getTime() - config.qbTokenExpirationDate.getTime()) / (1000 * 60));
+                                        //artan 25-08-2022
+                                        // TODO: need to delete in task [CROS-815]
+                                        console.log('timeLag: ', timeLag);
+                                        if (timeLag >= 0) {
+                                            self._sessionHasExpired = true;
+                                            Utils.safeCallbackCall(self.onSessionExpiredListener, null);
+                                        }
+                                    }
+                                    // TODO: in task [CROS-815], may by need to change 5 * 1000 to config.liveSessionInterval * 1000
+                                }, 5 * 1000);
+
+                            }
+                        }
+
                         self._postConnectActions(function(roster) {
                             callback(null, roster);
                         }, isInitialConnect);
@@ -917,10 +965,13 @@ ChatProxy.prototype = {
     _postConnectActions: function(callback, isInitialConnect) {
         Utils.QBLog('[QBChat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
-        var self = this,
-            xmppClient = Utils.getEnv().browser ? self.connection : self.Client,
-            presence = Utils.getEnv().browser ? $pres() : chatUtils.createStanza(XMPP.Stanza, null, 'presence');
-                
+        var self = this;
+        var isBrowser = Utils.getEnv().browser;
+        var xmppClient = isBrowser ? self.connection : self.Client;
+        var presence = isBrowser ?
+            $pres() :
+            chatUtils.createStanza(XMPP.Stanza, null, 'presence');
+
         if (config.streamManagement.enable && config.chatProtocol.active === 2) {
             self.streamManagement.enable(self.connection, null);
             self.streamManagement.sentMessageCallback = self._sentMessageCallback;
@@ -930,6 +981,7 @@ ChatProxy.prototype = {
         
         self.isConnected = true;
         self._isConnecting = false;
+        self._sessionHasExpired = false;
 
         self._enableCarbons();
 
@@ -958,16 +1010,21 @@ ChatProxy.prototype = {
     },
 
     _establishConnection: function(params) {
+        //  TODO: must to call if only qbTokenExpirationDate is not expried
         var self = this;
-        
+        Utils.QBLog('[QBChat]', '_establishConnection called');
         if (self._isLogout || self._checkConnectionTimer) {
+            Utils.QBLog('[QBChat]', '_establishConnection return');
             return;
         }
 
         var _connect = function() {
-            if (!self.isConnected && !self._isConnecting) {
+            Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection ');
+            if (!self.isConnected && !self._isConnecting && !self._sessionHasExpired) {
+                Utils.QBLog('[QBChat]', 'call connect() again in _establishConnection ');
                 self.connect(params);
             } else {
+                Utils.QBLog('[QBChat]', 'stop timer in _establishConnection ');
                 clearInterval(self._checkConnectionTimer);
                 self._checkConnectionTimer = undefined;
             }
@@ -975,6 +1032,8 @@ ChatProxy.prototype = {
 
         _connect();
 
+
+        // TODO: investigate problem with interval connection
         self._checkConnectionTimer = setInterval(function() {
             _connect();
         }, config.chatReconnectionTimeInterval * 1000);
@@ -988,6 +1047,7 @@ ChatProxy.prototype = {
      * @returns {String} messageId - The current message id (was generated by SDK)
      * */
     send: function(jid_or_user_id, message) {
+        Utils.QBLog('[QBChat]', 'Call send ' + JSON.stringify(message));
         var self = this,
             builder = Utils.getEnv().browser ? $msg : XMPP.Stanza;
 
@@ -1050,6 +1110,7 @@ ChatProxy.prototype = {
      * @returns {String} messageId - The current message id (was generated by SDK)
      * */
     sendSystemMessage: function(jid_or_user_id, message) {
+        Utils.QBLog('[QBChat]', 'Call sendSystemMessage ' + JSON.stringify(message));
         var self = this,
             builder = Utils.getEnv().browser ? $msg : XMPP.Stanza,
             paramsCreateMsg = {
@@ -1098,6 +1159,7 @@ ChatProxy.prototype = {
      * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * */
     sendIsTypingStatus: function(jid_or_user_id) {
+        Utils.QBLog('[QBChat]', 'Call sendIsTypingStatus ');
         var self = this,
             stanzaParams = {
                 from: self.helpers.getUserCurrentJid(),
@@ -1127,6 +1189,7 @@ ChatProxy.prototype = {
      * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * */
     sendIsStopTypingStatus: function(jid_or_user_id) {
+        Utils.QBLog('[QBChat]', 'Call sendIsStopTypingStatus ');
         var self = this,
             stanzaParams = {
                 from: self.helpers.getUserCurrentJid(),
@@ -1159,6 +1222,7 @@ ChatProxy.prototype = {
      * @param {Number} params.dialogId - The dialog id
      * */
     sendDeliveredStatus: function(params) {
+        Utils.QBLog('[QBChat]', 'Call sendDeliveredStatus ');
         var self = this,
             stanzaParams = {
                 type: 'chat',
@@ -1195,6 +1259,7 @@ ChatProxy.prototype = {
      * @param {Number} params.dialogId - The dialog id
      * */
     sendReadStatus: function(params) {
+        Utils.QBLog('[QBChat]', 'Call sendReadStatus ' + JSON.stringify(params));
         var self = this,
             stanzaParams = {
                 type: 'chat',
@@ -1228,6 +1293,7 @@ ChatProxy.prototype = {
      * @param {(Number|String)} jid_or_user_id - The user id or jid, that the last activity we want to know
      * */
     getLastUserActivity: function(jid_or_user_id) {
+        Utils.QBLog('[QBChat]', 'Call getLastUserActivity ');
         var iqParams,
             builder,
             iq;
@@ -1254,7 +1320,47 @@ ChatProxy.prototype = {
         }
     },
 
+    _ping: function(jid_or_user_id, callback){
+        var self = this;
+        var id = this.helpers.getUniqueId('ping');
+        var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
+        var to;
+        var _callback;
+        var stanza;
+
+        //to = config.endpoints.chat;
+        to = 'http://localhost';
+        _callback = callback;
+
+
+        var iqParams = {
+            from: this.helpers.getUserCurrentJid(),
+            id: id,
+            to: to,
+            type: 'get'
+        };
+        stanza = chatUtils.createStanza(builder, iqParams, 'iq');
+        stanza.c('ping', { xmlns: "urn:xmpp:ping" });
+
+        var noAnswer = function () {
+            _callback('No answer');
+            self._pings[id] = undefined;
+            delete self._pings[id];
+        };
+        if (Utils.getEnv().browser) {
+            this.connection.send(stanza);
+        } else {
+            this.Client.send(stanza);
+        }
+        this._pings[id] = {
+            callback: _callback,
+            interval: setTimeout(noAnswer, config.pingTimeout * 1000)
+        };
+        return id;
+    },
+
     ping: function (jid_or_user_id, callback) {
+        Utils.QBLog('[QBChat]', 'Call ping ');
         var self = this;
         var id = this.helpers.getUniqueId('ping');
         var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
@@ -1306,8 +1412,11 @@ ChatProxy.prototype = {
      * @memberof QB.chat
      * */
     disconnect: function() {
+        Utils.QBLog('[QBChat]', 'Call disconnect ');
         clearInterval(this._checkConnectionTimer);
+        clearInterval(this._checkExpiredSessionTimer);
         this._checkConnectionTimer = undefined;
+        this._checkExpiredSessionTimer = undefined;
         this.muc.joinedRooms = {};
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');

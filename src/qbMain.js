@@ -28,12 +28,24 @@ QuickBlox.prototype = {
     _getOS: Utils.getOS.bind(Utils),
 
     /**
+     * Init QuickBlox SDK with User Account data for start session with token.
      * @memberof QB
-     * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.
-     * @param {String | Number} authKeyOrAppId - Authorization key or Application ID. You need to set up Application ID if you use session token as appIdOrToken parameter.
-     * @param {String} authSecret - Authorization secret key (from your admin panel).
+     * @param {Number} appId - Application ID (from your admin panel).
+     * @param {String | Number} accountKey - Account key (from your admin panel).
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
+    initWithAppId: function(appId, accountKey, configMap) {
+        if (typeof appId !== 'number') {
+            throw new Error('Type of appId must be a number');
+        }
+        if (appId === '' || appId === undefined || appId === null ||
+            accountKey === '' || accountKey === undefined || accountKey === null) {
+            throw new Error('Cannot init QuickBlox without app credentials (app ID, auth key)');
+        } else {
+            this.init('', appId, null, accountKey, configMap);
+        }
+    },
+
     init: function(appIdOrToken, authKeyOrAppId, authSecret, accountKey, configMap) {
         if (typeof accountKey === 'string' && accountKey.length) {
             if (configMap && typeof configMap === 'object') {
@@ -146,6 +158,37 @@ QuickBlox.prototype = {
          * @param {Object} session - Contains of session object
          * */
         this.auth.getSession(callback);
+    },
+
+    /**
+     * Set up user session token to current session and return it
+     * @memberof QB
+     * @param {String} token - a User Session Token
+     * @param {getSessionCallback} callback - The getSessionCallback function.
+     * @callback getSessionCallback
+     * @param {Object} error - The error object
+     * @param {Object} session - Contains of session object
+     * */
+    startSessionWithToken: function(token, callback) {
+        if (token === undefined) throw new Error('Cannot start session with undefined token');
+        else if (token === '') throw new Error('Cannot start session with empty string token');
+        else if (token === null) throw new Error('Cannot start session with null value token');
+        else if (typeof callback !== 'function') throw new Error('Cannot start session without callback function');
+        else {
+            try {
+                this.service.setSession({token: token});
+            } catch (err) {
+                callback(err, null);
+            }
+            if (typeof callback === 'function') {
+                try{
+                    this.auth.getSession(callback);
+                }
+                catch(er){
+                    callback(er, null);
+                }
+            }
+        }
     },
 
     /**

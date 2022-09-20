@@ -140,6 +140,15 @@ ServiceProxy.prototype = {
             .then(function(response) {
                 qbResponse = response;
 
+                if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
+                    // TODO: need to check in [CROS-815]
+                    var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
+                    var headerHasToken  = !(qbTokenExpirationDate === null ||
+                        typeof qbTokenExpirationDate === 'undefined');
+                    qbTokenExpirationDate  = (headerHasToken) ? qbTokenExpirationDate : new Date();
+                    self.qbInst.config.updateSessionExpirationDate(qbTokenExpirationDate, headerHasToken);
+                }
+
                 if (qbDataType === 'text') {
                     return response.text();
                 } else {
@@ -155,6 +164,8 @@ ServiceProxy.prototype = {
             }).then(function(body) {
             _requestCallback(null, qbResponse, body);
         }, function(error) {
+                // TODO: review in [CROS-815]
+            console.log('Error: ', error);
             _requestCallback(error);
         });
 

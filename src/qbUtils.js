@@ -147,6 +147,10 @@ var Utils = {
             '000000'.substr(0, 6 - increment.length) + increment;
     },
 
+    getCurrentTime: function() {
+      return ((new Date()).toTimeString().split(' ')[0]);
+    },
+
     injectISOTimes: function(data) {
         if (data.created_at) {
             if (typeof data.created_at === 'number') data.iso_created_at = new Date(data.created_at * 1000).toISOString();
