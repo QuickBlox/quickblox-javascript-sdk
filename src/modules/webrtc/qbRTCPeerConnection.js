@@ -1,9 +1,5 @@
 'use strict';
 
-/** JSHint inline rules (TODO: loopfunc will delete) */
-/* jshint loopfunc: true */
-/* globals MediaStream */
-
 /**
  * QuickBlox JavaScript SDK
  * WebRTC Module (WebRTC peer connection model)
@@ -13,13 +9,16 @@
 var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
-var transform = require('sdp-transform');
+/**
+ * @param {RTCConfiguration} [config]
+ */
+var qbRTCPeerConnection = function qbRTCPeerConnection(config) {
+    this._pc = new window.RTCPeerConnection(config);
+    this.remoteStream = undefined;
+    this.preferredCodec = 'VP8';
+};
 
-var RTCPeerConnection = window.RTCPeerConnection;
-var RTCSessionDescription = window.RTCSessionDescription;
-var RTCIceCandidate = window.RTCIceCandidate;
-
-RTCPeerConnection.State = {
+qbRTCPeerConnection.State = {
     NEW: 1,
     CONNECTING: 2,
     CHECKING: 3,
@@ -30,100 +29,84 @@ RTCPeerConnection.State = {
     COMPLETED: 8
 };
 
-RTCPeerConnection.prototype._init = function(delegate, userID, sessionID, type) {
-    Helpers.trace('RTCPeerConnection init. userID: ' + userID + ', sessionID: ' + sessionID + ', type: ' + type);
+qbRTCPeerConnection.prototype._init = function (delegate, userID, sessionID, polite) {
+    Helpers.trace('RTCPeerConnection init.',
+        'userID: ', userID,
+        ', sessionID: ', sessionID,
+        ', polite: ', polite
+    );
 
     this.delegate = delegate;
-
+    this.localIceCandidates = [];
+    this.remoteIceCandidates = [];
+    /** @type {RTCSessionDescriptionInit|undefined} */
+    this.remoteSDP = undefined;
     this.sessionID = sessionID;
+    this.polite = polite;
     this.userID = userID;
-    this.type = type;
-    this.remoteSDP = null;
-    this.ice = [];
+    this._reconnecting = false;
 
-    this.state = RTCPeerConnection.State.NEW;
+    this.state = qbRTCPeerConnection.State.NEW;
 
-    this.onicecandidate = this.onIceCandidateCallback.bind(this);
-    this.onsignalingstatechange = this.onSignalingStateCallback.bind(this);
-    this.oniceconnectionstatechange = this.onIceConnectionStateCallback.bind(this);
+    this._pc.onicecandidate = this.onIceCandidateCallback.bind(this);
+    this._pc.onsignalingstatechange = this.onSignalingStateCallback.bind(this);
+    this._pc.oniceconnectionstatechange = this.onIceConnectionStateCallback.bind(this);
+    this._pc.ontrack = this.onTrackCallback.bind(this);
 
-    if (Helpers.getVersionSafari() >= 11) {
-        this.remoteStream = new MediaStream();
-        this.ontrack = this.onAddRemoteMediaCallback.bind(this);
-        this.onStatusClosedChecker = undefined;
-    } else {
-        this.remoteStream = null;
-        this.onaddstream = this.onAddRemoteMediaCallback.bind(this);
-    }
-
-    /** We use this timer interval to dial a user - produce the call requests each N seconds. */
+    /**
+     * We use this timer to dial a user -
+     * produce the call requests each N seconds.
+     */
     this.dialingTimer = null;
+    /** We use this timer to wait for answer from callee */
     this.answerTimeInterval = 0;
     this.statsReportTimer = null;
 
-    this.iceCandidates = [];
 };
 
-RTCPeerConnection.prototype.release = function(){
-
-    var self = this;
-
+qbRTCPeerConnection.prototype.release = function () {
     this._clearDialingTimer();
     this._clearStatsReportTimer();
 
-    if (this.connectionState !== 'closed') {
+    this._pc.close();
+    this.state = qbRTCPeerConnection.State.CLOSED;
 
-        var streams = {
-            "LocalStreams" : self.getLocalStreams(),
-            "RemoteStreams" : (self.getRemoteStreams())
-                .concat([this.remoteStream])
-                .concat([this.stream])
-        };
-
-        if(this.remoteStreams && this.remoteStreams.length>0) {
-            streams.RemoteStreams = streams.RemoteStreams.concat(this.remoteStreams);
-        }
-
-        Object.keys(streams).forEach(function (key) {
-            streams[key].forEach(function (stream,index,array) {
-                if(stream && stream.getTracks) {
-                    stream.getTracks().forEach(function (track) {
-                        if (key === "RemoteStreams") {
-                            track.stop();
-                        }
-                        if (self.removeTrack) {
-                            var tmp = self.getSenders().find(function (sender) {
-                                return sender.track == track;
-                            });
-                            if (tmp !== undefined) {
-                                self.removeTrack(tmp);
-                            }
-                        }
-                    });
-                }
-                if(self.removeStream && typeof stream === "object" && stream instanceof MediaStream){
-                    self.removeStream(stream);
-                }else {
-                    array[index] = null;
-                }
-            });
-        });
-
-        this.close();
-        if (navigator.userAgent.indexOf("Edge") > -1) {
-            this.connectionState = 'closed';
-            this.iceConnectionState = 'closed';
-        }
-
-    }
-
-    // TODO: 'closed' state doesn't fires on Safari 11 and Edge (do it manually)
-    if (Helpers.getVersionSafari() >= 11 || navigator.userAgent.indexOf("Edge") > -1) {
-        this.onIceConnectionStateCallback();
+    this._pc.onicecandidate = null;
+    this._pc.onsignalingstatechange = null;
+    this._pc.oniceconnectionstatechange = null;
+    this._pc.ontrack = null;
+    if (navigator.userAgent.includes("Edge")) {
+        this.connectionState = 'closed';
+        this.iceConnectionState = 'closed';
     }
 };
 
-RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
+qbRTCPeerConnection.prototype.negotiate = function () {
+    var self = this;
+    return this.setLocalSessionDescription({
+        type: 'offer',
+        options: { iceRestart: true }
+    }, function (error) {
+        if (error) {
+            return Helpers.traceError("Error in 'negotiate': " + error);
+        }
+        var description = self._pc.localDescription.toJSON();
+        self.delegate.update({
+            reason: 'reconnect',
+            sessionDescription: {
+                offerId: self.offerId,
+                sdp: description.sdp,
+                type: description.type
+            }
+        }, self.userID);
+    });
+};
+
+/**
+ * Save remote SDP for future use
+ * @param {RTCSessionDescriptionInit} newSDP 
+ */
+qbRTCPeerConnection.prototype.setRemoteSDP = function (newSDP) {
     if (!newSDP) {
         throw new Error("sdp string can't be empty.");
     } else {
@@ -131,52 +114,75 @@ RTCPeerConnection.prototype.updateRemoteSDP = function(newSDP){
     }
 };
 
-RTCPeerConnection.prototype.getRemoteSDP = function(){
+/**
+ * Returns SDP if it was set previously
+ * @returns {RTCSessionDescriptionInit|undefined}
+ */
+qbRTCPeerConnection.prototype.getRemoteSDP = function () {
     return this.remoteSDP;
 };
 
-RTCPeerConnection.prototype.setRemoteSessionDescription = function(type, remoteSessionDescription, callback) {
+/**
+ * Create offer or answer SDP and set as local description
+ * @param {Object} params
+ * @param {'answer'|'offer'} params.type 
+ * @param {RTCOfferOptions} [params.options] 
+ * @param {Function} callback 
+ */
+qbRTCPeerConnection.prototype.setLocalSessionDescription = function (params, callback) {
     var self = this;
 
-    var modifiedSDP;
-    if (self.delegate.bandwidth) {
-        modifiedSDP = setMediaBitrate(remoteSessionDescription, 'video', self.delegate.bandwidth);
-    } else {
-        modifiedSDP = remoteSessionDescription;
+    self.state = qbRTCPeerConnection.State.CONNECTING;
+
+    var supportsSetCodecPreferences = window.RTCRtpTransceiver &&
+      'setCodecPreferences' in window.RTCRtpTransceiver.prototype &&
+      Boolean(Helpers.getVersionSafari());
+
+    if (supportsSetCodecPreferences) {
+        self._pc.getTransceivers().forEach(function (transceiver) {
+            var kind = transceiver.sender.track.kind;
+            var sendCodecs = window.RTCRtpSender.getCapabilities(kind).codecs;
+            var recvCodecs = window.RTCRtpReceiver.getCapabilities(kind).codecs;
+            if (kind === 'video') {
+                var preferredCodecSendIndex = sendCodecs.findIndex(function(codec) {
+                    return codec
+                        .mimeType
+                        .toLowerCase()
+                        .includes(self.preferredCodec.toLowerCase());
+                    });
+                if (preferredCodecSendIndex !== -1) {
+                    var arrayWithPreferredSendCodec = sendCodecs.splice(
+                        preferredCodecSendIndex,
+                        1
+                    );
+                    sendCodecs.unshift(arrayWithPreferredSendCodec[0]);
+                }
+                var preferredCodecRecvIndex = recvCodecs.findIndex(function(codec) {
+                    return codec
+                        .mimeType
+                        .toLowerCase()
+                        .includes(self.preferredCodec.toLowerCase());
+                    });
+                if (preferredCodecRecvIndex !== -1) {
+                    var arrayWithPreferredRecvCodec = recvCodecs.splice(
+                        preferredCodecRecvIndex,
+                        1
+                    );
+                    recvCodecs.unshift(arrayWithPreferredRecvCodec[0]);
+                }
+                transceiver.setCodecPreferences(sendCodecs.concat(recvCodecs));
+            }
+        });
     }
-    var sessionDescription = new RTCSessionDescription({sdp: modifiedSDP, type: type});
-    function successCallback(sessionDescription) {
-        if(self.ice.length>0) {
-            self.addCandidates();
-        }
-        callback(null);
-    }
 
-    function errorCallback(error) {
-        callback(error);
-    }
-
-    self.setRemoteDescription(sessionDescription).then(successCallback, errorCallback);
-};
-
-RTCPeerConnection.prototype.addLocalStream = function(localStream){
-    if (localStream) {
-        this.addStream(localStream);
-    } else {
-        throw new Error("'RTCPeerConnection.addStream' error: stream is 'null'.");
-    }
-};
-
-RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType, callback) {
-    var self = this;
-
-    self.state = RTCPeerConnection.State.CONNECTING;
-
-    /**
-     * @param {RTCSessionDescriptionInit} description
-     */
-     function successCallback(description) {
+    /** @param {RTCSessionDescriptionInit} description */
+    function successCallback(description) {
         var modifiedDescription = _removeExtmapMixedFromSDP(description);
+        modifiedDescription.sdp = setPreferredCodec(
+            modifiedDescription.sdp,
+            'video',
+            self.preferredCodec
+        );
         if (self.delegate.bandwidth) {
             modifiedDescription.sdp = setMediaBitrate(
                 modifiedDescription.sdp,
@@ -184,201 +190,234 @@ RTCPeerConnection.prototype.getAndSetLocalSessionDescription = function(callType
                 self.delegate.bandwidth
             );
         }
-        self.setLocalDescription(modifiedDescription)
-            .then(function() {
+        self._pc.setLocalDescription(modifiedDescription)
+            .then(function () {
                 callback(null);
-            })
-            .catch(function(error) {
+            }).
+            catch(function (error) {
+                Helpers.traceError(
+                    "Error in 'setLocalSessionDescription': " + error
+                );
                 callback(error);
             });
     }
 
-    if (self.type === 'offer') {
-        self.createOffer().then(successCallback).catch(callback);
+    if (params.type === 'answer') {
+        this._pc.createAnswer(params.options)
+            .then(successCallback)
+            .catch(callback);
     } else {
-        self.createAnswer().then(successCallback).catch(callback);
+        this._pc.createOffer(params.options)
+            .then(successCallback)
+            .catch(callback);
     }
 };
 
-RTCPeerConnection.prototype._addIceCandidate = function(iceCandidates) {
-    this.addIceCandidate(
-        new RTCIceCandidate({
-            sdpMLineIndex: iceCandidates.sdpMLineIndex,
-            sdpMid: iceCandidates.sdpMid,
-            candidate: iceCandidates.candidate
-        }),
-        function() {},
-        function(error){
-            Helpers.traceError("Error on 'addIceCandidate': " + error);
-        }
-    );
+/**
+ * @param {RTCSessionDescriptionInit} description 
+ * @param {Function} callback 
+ * @returns {void}
+ */
+qbRTCPeerConnection.prototype.setRemoteSessionDescription = function (
+    description,
+    callback
+) {
+    var modifiedSDP = this.delegate.bandwidth ? {
+        type: description.type,
+        sdp: setMediaBitrate(description.sdp, 'video', this.delegate.bandwidth)
+    } : description;
+
+    this._pc.setRemoteDescription(modifiedSDP)
+        .then(function () { callback(); })
+        .catch(function (error) {
+            Helpers.traceError(
+                "Error in 'setRemoteSessionDescription': " + error
+            );
+            callback(error);
+        });
 };
 
-RTCPeerConnection.prototype.addCandidates = function(iceCandidates) {
+/**
+ * @param {MediaStream} stream
+ */
+qbRTCPeerConnection.prototype.addLocalStream = function (stream) {
+    if (!stream) {
+        throw new Error("'qbRTCPeerConnection.addLocalStream' error: stream is not defined");
+    }
+    var self = this;
+    stream.getTracks().forEach(function (track) {
+        self._pc.addTrack(track, stream);
+    });
+};
+
+/**
+ * @param {RTCIceCandidateInit} iceCandidate 
+ * @returns {Promise<void>}
+ */
+qbRTCPeerConnection.prototype._addIceCandidate = function (iceCandidate) {
+    return this._pc.addIceCandidate(iceCandidate).catch(function (error) {
+        Helpers.traceError("Error on 'addIceCandidate': " + error);
+    });
+};
+
+/**
+ * @param {Array<RTCIceCandidateInit>} iceCandidates 
+ */
+qbRTCPeerConnection.prototype.addCandidates = function (iceCandidates) {
     var self = this;
 
-    if(iceCandidates && iceCandidates.length > 0){
-        iceCandidates = iceCandidates.filter(iceCandidate => self.ice.indexOf(iceCandidate) === -1);
-        self.ice = self.ice.concat(iceCandidates);
-    }
+    iceCandidates.forEach(function (candidate) {
+        self.remoteIceCandidates.push(candidate);
+    });
 
-    if(self.remoteDescription && self.remoteDescription.type){
-        self.ice.forEach(function (tmp, i) {
-            self._addIceCandidate(tmp);
-            delete self.ice[i];
+    if (this._pc.remoteDescription) {
+        self.remoteIceCandidates.forEach(function (candidate) {
+            self._addIceCandidate(candidate);
         });
     }
 };
 
-RTCPeerConnection.prototype.toString = function sessionToString() {
-    return 'sessionID: ' + this.sessionID + ', userID:  ' + this.userID + ', type: ' + this.type + ', state: ' + this.state;
+qbRTCPeerConnection.prototype.toString = function sessionToString() {
+    return (
+        'sessionID: ' + this.sessionID +
+        ', userID:  ' + this.userID +
+        ', state: ' + this.state
+    );
 };
 
 /**
  * CALLBACKS
  */
-RTCPeerConnection.prototype.onSignalingStateCallback = function() {
-    if (this.signalingState === 'stable' && this.iceCandidates.length > 0){
-        this.delegate.processIceCandidates(this, this.iceCandidates);
-        this.iceCandidates.length = 0;
+qbRTCPeerConnection.prototype.onSignalingStateCallback = function () {
+    if (this._pc.signalingState === 'stable' && this.localIceCandidates.length > 0) {
+        this.delegate.processIceCandidates(this, this.localIceCandidates);
+        while (this.localIceCandidates.length) {
+            this.localIceCandidates.pop();
+        }
     }
 };
 
-RTCPeerConnection.prototype.onIceCandidateCallback = function(event) {
-    var candidate = event.candidate;
-
-    if (candidate) {
-        /**
-         * collecting internally the ice candidates
-         * will send a bit later
-         */
-        var ICECandidate = {
-            sdpMLineIndex: candidate.sdpMLineIndex,
-            sdpMid: candidate.sdpMid,
-            candidate: candidate.candidate
+/**
+ * @param {RTCPeerConnectionIceEvent} event 
+ */
+qbRTCPeerConnection.prototype.onIceCandidateCallback = function (event) {
+    if (event.candidate) {
+        var candidate = {
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex
         };
-
-        if (this.signalingState === 'stable') {
-            this.delegate.processIceCandidates(this, [ICECandidate]);
+        if (this._pc.signalingState === 'stable') {
+            this.delegate.processIceCandidates(this, [candidate]);
         } else {
-            this.iceCandidates.push(ICECandidate);
+            // collecting internally the ice candidates
+            // will send a bit later
+            this.localIceCandidates.push(candidate);
         }
     }
 };
 
-/** handler of remote media stream */
-RTCPeerConnection.prototype.onAddRemoteMediaCallback = function(event) {
-    var self = this;
-
-    if (typeof self.delegate._onRemoteStreamListener === 'function') {
-        if (event.type === 'addstream') {
-            self.remoteStream = event.stream;
-        } else {
-            self.remoteStream.addTrack(event.track);
-        }
-
-        if (((self.delegate.callType == 1) && self.remoteStream.getVideoTracks().length) ||
-            ((self.delegate.callType == 2) && self.remoteStream.getAudioTracks().length)) {
-            this.delegate._onRemoteStreamListener(self.userID, self.remoteStream);
-        }
-
-        self._getStatsWrap();
+/**
+ * Handler of remote media track event
+ * @param {RTCTrackEvent} event
+ */
+qbRTCPeerConnection.prototype.onTrackCallback = function (event) {
+    this.remoteStream = event.streams[0];
+    if (typeof this.delegate._onRemoteStreamListener === 'function' &&
+        ['connected', 'completed'].includes(this._pc.iceConnectionState)) {
+        this.delegate._onRemoteStreamListener(this.userID, this.remoteStream);
     }
+    this._getStatsWrap();
 };
 
-RTCPeerConnection.prototype.onIceConnectionStateCallback = function() {
-    Helpers.trace("onIceConnectionStateCallback: " + this.iceConnectionState);
-    var self = this;
-    /**
-     * read more about all states:
-     * http://w3c.github.io/webrtc-pc/#idl-def-RTCIceConnectionState
-     * 'disconnected' happens in a case when a user has killed an application (for example, on iOS/Android via task manager).
-     * So we should notify our user about it.
-     */
-    if (typeof this.delegate._onSessionConnectionStateChangedListener === 'function'){
-        var connectionState = null;
+qbRTCPeerConnection.prototype.onIceConnectionStateCallback = function () {
+    Helpers.trace("onIceConnectionStateCallback: " + this._pc.iceConnectionState);
+    var connectionState = null;
 
-        if (Helpers.getVersionSafari() >= 11) {
-            clearTimeout(this.onStatusClosedChecker);
-        }
+    switch (this._pc.iceConnectionState) {
+        case 'checking':
+            this.state = qbRTCPeerConnection.State.CHECKING;
+            connectionState = Helpers.SessionConnectionState.CONNECTING;
+            break;
 
-        switch (this.iceConnectionState) {
-            case 'checking':
-                this.state = RTCPeerConnection.State.CHECKING;
-                connectionState = Helpers.SessionConnectionState.CONNECTING;
-                break;
+        case 'connected':
+            if (this._reconnecting) {
+                this.delegate._stopReconnectTimer(this.userID);
+            }
+            this.state = qbRTCPeerConnection.State.CONNECTED;
+            connectionState = Helpers.SessionConnectionState.CONNECTED;
+            break;
 
-            case 'connected':
-                this._clearWaitingReconnectTimer();
-                this.state = RTCPeerConnection.State.CONNECTED;
-                connectionState = Helpers.SessionConnectionState.CONNECTED;
-                break;
+        case 'completed':
+            if (this._reconnecting) {
+                this.delegate._stopReconnectTimer(this.userID);
+            }
+            this.state = qbRTCPeerConnection.State.COMPLETED;
+            connectionState = Helpers.SessionConnectionState.COMPLETED;
+            break;
 
-            case 'completed':
-                this._clearWaitingReconnectTimer();
-                this.state = RTCPeerConnection.State.COMPLETED;
-                connectionState = Helpers.SessionConnectionState.COMPLETED;
-                break;
+        case 'failed':
+            this.delegate._startReconnectTimer(this.userID);
+            this.state = qbRTCPeerConnection.State.FAILED;
+            connectionState = Helpers.SessionConnectionState.FAILED;
+            break;
 
-            case 'failed':
-                this.state = RTCPeerConnection.State.FAILED;
-                connectionState = Helpers.SessionConnectionState.FAILED;
-                break;
+        case 'disconnected':
+            this.delegate._startReconnectTimer(this.userID);
+            this.state = qbRTCPeerConnection.State.DISCONNECTED;
+            connectionState = Helpers.SessionConnectionState.DISCONNECTED;
+            break;
 
-            case 'disconnected':
-                this._startWaitingReconnectTimer();
-                this.state = RTCPeerConnection.State.DISCONNECTED;
-                connectionState = Helpers.SessionConnectionState.DISCONNECTED;
+        // TODO: this state doesn't fires on Safari 11
+        case 'closed':
+            this.delegate._stopReconnectTimer(this.userID);
+            this.state = qbRTCPeerConnection.State.CLOSED;
+            connectionState = Helpers.SessionConnectionState.CLOSED;
+            break;
 
-                // repeat to call onIceConnectionStateCallback to get status "closed"
-                if (Helpers.getVersionSafari() >= 11) {
-                    this.onStatusClosedChecker = setTimeout(function() {
-                        self.onIceConnectionStateCallback();
-                    }, 500);
-                }
-                break;
+        default:
+            break;
+    }
 
-            // TODO: this state doesn't fires on Safari 11
-            case 'closed':
-                this._clearWaitingReconnectTimer();
-                this.state = RTCPeerConnection.State.CLOSED;
-                connectionState = Helpers.SessionConnectionState.CLOSED;
-                break;
+    if (typeof this.delegate
+        ._onSessionConnectionStateChangedListener === 'function' &&
+        connectionState) {
+        this.delegate._onSessionConnectionStateChangedListener(
+            this.userID,
+            connectionState
+        );
+    }
 
-            default:
-                break;
-        }
-
-        if (connectionState) {
-            self.delegate._onSessionConnectionStateChangedListener(this.userID, connectionState);
-        }
+    if (this._pc.iceConnectionState === 'connected' &&
+        typeof this.delegate._onRemoteStreamListener === 'function') {
+        this.delegate._onRemoteStreamListener(this.userID, this.remoteStream);
     }
 };
 
 /**
  * PRIVATE
  */
-RTCPeerConnection.prototype._clearStatsReportTimer = function(){
-    if (this.statsReportTimer){
+qbRTCPeerConnection.prototype._clearStatsReportTimer = function () {
+    if (this.statsReportTimer) {
         clearInterval(this.statsReportTimer);
         this.statsReportTimer = null;
     }
 };
 
-RTCPeerConnection.prototype._getStatsWrap = function() {
+qbRTCPeerConnection.prototype._getStatsWrap = function () {
     var self = this,
         statsReportInterval,
         lastResult;
 
-    if (config.webrtc && config.webrtc.statsReportTimeInterval) {
+    if (config.webrtc && config.webrtc.statsReportTimeInterval && !self.statsReportTimer) {
         if (isNaN(+config.webrtc.statsReportTimeInterval)) {
             Helpers.traceError('statsReportTimeInterval (' + config.webrtc.statsReportTimeInterval + ') must be integer.');
             return;
         }
         statsReportInterval = config.webrtc.statsReportTimeInterval * 1000;
 
-        var _statsReportCallback = function() {
-            _getStats(self, lastResult, function(results, lastResults) {
+        var _statsReportCallback = function () {
+            _getStats(self._pc, lastResult, function (results, lastResults) {
                 lastResult = lastResults;
                 self.delegate._onCallStatsReport(self.userID, results, null);
             }, function errorLog(err) {
@@ -392,35 +431,8 @@ RTCPeerConnection.prototype._getStatsWrap = function() {
     }
 };
 
-RTCPeerConnection.prototype._clearWaitingReconnectTimer = function() {
-    if(this.waitingReconnectTimeoutCallback){
-        Helpers.trace('_clearWaitingReconnectTimer');
-        clearTimeout(this.waitingReconnectTimeoutCallback);
-        this.waitingReconnectTimeoutCallback = null;
-    }
-};
-
-RTCPeerConnection.prototype._startWaitingReconnectTimer = function() {
-    var self = this,
-        timeout = config.webrtc.disconnectTimeInterval * 1000,
-        waitingReconnectTimeoutCallback = function() {
-            Helpers.trace('waitingReconnectTimeoutCallback');
-
-            clearTimeout(self.waitingReconnectTimeoutCallback);
-
-            self.release();
-
-            self.delegate._closeSessionIfAllConnectionsClosed();
-        };
-
-    Helpers.trace('_startWaitingReconnectTimer, timeout: ' + timeout);
-    if (!self.waitingReconnectTimeoutCallback) {
-        self.waitingReconnectTimeoutCallback = setTimeout(waitingReconnectTimeoutCallback, timeout);
-    }
-};
-
-RTCPeerConnection.prototype._clearDialingTimer = function(){
-    if(this.dialingTimer){
+qbRTCPeerConnection.prototype._clearDialingTimer = function () {
+    if (this.dialingTimer) {
         Helpers.trace('_clearDialingTimer');
 
         clearInterval(this.dialingTimer);
@@ -429,34 +441,36 @@ RTCPeerConnection.prototype._clearDialingTimer = function(){
     }
 };
 
-RTCPeerConnection.prototype._startDialingTimer = function(extension, withOnNotAnswerCallback){
+qbRTCPeerConnection.prototype._startDialingTimer = function (extension) {
     var self = this;
-    var dialingTimeInterval = config.webrtc.dialingTimeInterval*1000;
+    var dialingTimeInterval = config.webrtc.dialingTimeInterval * 1000;
 
     Helpers.trace('_startDialingTimer, dialingTimeInterval: ' + dialingTimeInterval);
 
-    var _dialingCallback = function(extension, withOnNotAnswerCallback, skipIncrement){
-        if(!skipIncrement){
-            self.answerTimeInterval += config.webrtc.dialingTimeInterval*1000;
+    var _dialingCallback = function (extension, skipIncrement) {
+        if (!skipIncrement) {
+            self.answerTimeInterval += dialingTimeInterval;
         }
 
         Helpers.trace('_dialingCallback, answerTimeInterval: ' + self.answerTimeInterval);
 
-        if(self.answerTimeInterval >= config.webrtc.answerTimeInterval*1000){
+        if (self.answerTimeInterval >= config.webrtc.answerTimeInterval * 1000) {
             self._clearDialingTimer();
-
-            if(withOnNotAnswerCallback){
-                self.delegate.processOnNotAnswer(self);
-            }
-        }else{
+            self.delegate.processOnNotAnswer(self);
+        } else {
             self.delegate.processCall(self, extension);
         }
     };
 
-    self.dialingTimer = setInterval(_dialingCallback, dialingTimeInterval, extension, withOnNotAnswerCallback, false);
+    self.dialingTimer = setInterval(
+        _dialingCallback,
+        dialingTimeInterval,
+        extension,
+        false
+    );
 
     // call for the 1st time
-    _dialingCallback(extension, withOnNotAnswerCallback, true);
+    _dialingCallback(extension, true);
 };
 
 /**
@@ -484,8 +498,8 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
         statistic.local.video.frameWidth = localVideoSettings && localVideoSettings.width;
     }
 
-    peer.getStats(null).then(function(results) {
-        results.forEach(function(result) {
+    peer.getStats(null).then(function (results) {
+        results.forEach(function (result) {
             var item;
 
             if (result.bytesReceived && result.type === 'inbound-rtp') {
@@ -574,6 +588,125 @@ function _getStats(peer, lastResults, successCallback, errorCallback) {
     }
 }
 
+// Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
+// and, if specified, contains |substr| (case-insensitive search).
+function findLineInRange(
+  sdpLines,
+  startLine,
+  endLine,
+  prefix,
+  substr,
+  direction
+) {
+  if (direction === undefined) {
+    direction = 'asc';
+  }
+
+  direction = direction || 'asc';
+
+  if (direction === 'asc') {
+    // Search beginning to end
+    var realEndLine = endLine !== -1 ? endLine : sdpLines.length;
+    for (var i = startLine; i < realEndLine; ++i) {
+      if (sdpLines[i].indexOf(prefix) === 0) {
+        if (!substr ||
+            sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+          return i;
+        }
+      }
+    }
+  } else {
+    // Search end to beginning
+    var realStartLine = startLine !== -1 ? startLine : sdpLines.length-1;
+    for (var j = realStartLine; j >= 0; --j) {
+      if (sdpLines[j].indexOf(prefix) === 0) {
+        if (!substr ||
+            sdpLines[j].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+          return j;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Gets the codec payload type from an a=rtpmap:X line.
+ * @param {string} sdpLine
+ * @returns {string|null}
+ */
+function getCodecPayloadTypeFromLine(sdpLine) {
+  var pattern = new RegExp('a=rtpmap:(\\d+) [a-zA-Z0-9-]+\\/\\d+');
+  var result = sdpLine.match(pattern);
+  return (result && result.length === 2) ? result[1] : null;
+}
+
+/**
+ * Returns a new m= line with the specified codec as the first one.
+ * @param {string} mLine
+ * @param {string} payload
+ * @returns {string}
+ */
+function setDefaultCodec(mLine, payload) {
+  var elements = mLine.split(' ');
+
+  // Just copy the first three parameters; codec order starts on fourth.
+  var newLine = elements.slice(0, 3);
+
+  // Put target payload first and copy in the rest.
+  newLine.push(payload);
+  for (var i = 3; i < elements.length; i++) {
+    if (elements[i] !== payload) {
+      newLine.push(elements[i]);
+    }
+  }
+  return newLine.join(' ');
+}
+
+/**
+ * Mangles SDP to put preferred codec at the beginning
+ * @param {string} sdp
+ * @param {'audio'|'video'} type
+ * @param {string} codec VP9, VP8, H264, opus etc.
+ * @returns {string}
+ */
+function setPreferredCodec(sdp, type, codec) {
+    if (!codec) {
+      return sdp;
+    }
+
+    var sdpLines = sdp.split('\r\n');
+
+    // Search for m line.
+    var mLineIndex = findLineInRange(sdpLines, 0, -1, 'm=', type);
+    if (mLineIndex === null) {
+      return sdp;
+    }
+  
+    // If the codec is available, set it as the default in m line.
+    var payload = null;
+    // Iterate through rtpmap enumerations to find all matching codec entries
+    for (var i = sdpLines.length-1; i >= 0 ; --i) {
+      // Finds first match in rtpmap
+      var index = findLineInRange(sdpLines, i, 0, 'a=rtpmap', codec, 'desc');
+      if (index !== null) {
+        // Skip all of the entries between i and index match
+        i = index;
+        payload = getCodecPayloadTypeFromLine(sdpLines[index]);
+        if (payload) {
+          // Move codec to top
+          sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
+        }
+      } else {
+        // No match means we can break the loop
+        break;
+      }
+    }
+
+    sdp = sdpLines.join('\r\n');
+    return sdp;
+}
+
 /**
  * This is to fix error on legacy WebRTC implementations
  * @param {RTCSessionDescriptionInit} description
@@ -592,19 +725,26 @@ function _removeExtmapMixedFromSDP(description) {
     return description;
 }
 
+/**
+ * @param {string} sdp 
+ * @param {'audio'|'video'} media 
+ * @param {number} [bitrate] 
+ * @returns {string}
+ */
 function setMediaBitrate(sdp, media, bitrate) {
     if (!bitrate) {
-        var modifiedSDP = sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
-        return modifiedSDP;
+        return sdp
+            .replace(/b=AS:.*\r\n/, '')
+            .replace(/b=TIAS:.*\r\n/, '');
     }
 
     var lines = sdp.split('\n'),
         line = -1,
         modifier = Helpers.getVersionFirefox() ? 'TIAS' : 'AS',
-        amount = Helpers.getVersionFirefox() ? bitrate*1024 : bitrate;
+        amount = Helpers.getVersionFirefox() ? bitrate * 1024 : bitrate;
 
     for (var i = 0; i < lines.length; i++) {
-        if (lines[i].indexOf("m="+media) === 0) {
+        if (lines[i].indexOf("m=" + media) === 0) {
             line = i;
             break;
         }
@@ -616,20 +756,20 @@ function setMediaBitrate(sdp, media, bitrate) {
 
     line++;
 
-    while(lines[line].indexOf('i=') === 0 || lines[line].indexOf('c=') === 0) {
+    while (lines[line].indexOf('i=') === 0 || lines[line].indexOf('c=') === 0) {
         line++;
     }
 
     if (lines[line].indexOf('b') === 0) {
-        lines[line] = 'b='+modifier+':'+amount;
+        lines[line] = 'b=' + modifier + ':' + amount;
         return lines.join('\n');
     }
 
     var newLines = lines.slice(0, line);
-    newLines.push('b='+modifier+':'+amount);
+    newLines.push('b=' + modifier + ':' + amount);
     newLines = newLines.concat(lines.slice(line, lines.length));
 
     return newLines.join('\n');
 }
 
-module.exports = RTCPeerConnection;
+module.exports = qbRTCPeerConnection;

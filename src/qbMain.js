@@ -28,24 +28,12 @@ QuickBlox.prototype = {
     _getOS: Utils.getOS.bind(Utils),
 
     /**
-     * Init QuickBlox SDK with User Account data for start session with token.
      * @memberof QB
-     * @param {Number} appId - Application ID (from your admin panel).
-     * @param {String | Number} accountKey - Account key (from your admin panel).
+     * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.
+     * @param {String | Number} authKeyOrAppId - Authorization key or Application ID. You need to set up Application ID if you use session token as appIdOrToken parameter.
+     * @param {String} authSecret - Authorization secret key (from your admin panel).
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
-    initWithAppId: function(appId, accountKey, configMap) {
-        if (typeof appId !== 'number') {
-            throw new Error('Type of appId must be a number');
-        }
-        if (appId === '' || appId === undefined || appId === null ||
-            accountKey === '' || accountKey === undefined || accountKey === null) {
-            throw new Error('Cannot init QuickBlox without app credentials (app ID, auth key)');
-        } else {
-            this.init('', appId, null, accountKey, configMap);
-        }
-    },
-
     init: function(appIdOrToken, authKeyOrAppId, authSecret, accountKey, configMap) {
         if (typeof accountKey === 'string' && accountKey.length) {
             if (configMap && typeof configMap === 'object') {
@@ -93,8 +81,7 @@ QuickBlox.prototype = {
             /** add WebRTC API if API is avaible */
             if( Utils.isWebRTCAvailble() ) {
                 var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
-                this.webrtc = new WebRTCClient(this.service, this.chat.connection);
-                this.chat.webrtcSignalingProcessor = this.webrtc.signalingProcessor;
+                this.webrtc = new WebRTCClient(this.service, this.chat);
             } else {
                 this.webrtc = false;
             }
@@ -146,6 +133,26 @@ QuickBlox.prototype = {
     },
 
     /**
+     * Init QuickBlox SDK with User Account data for start session with token.
+     * @memberof QB
+     * @param {Number} appId - Application ID (from your admin panel).
+     * @param {String | Number} accountKey - Account key (from your admin panel).
+     * @param {Object} configMap - Settings object for QuickBlox SDK.
+     */
+    initWithAppId: function(appId, accountKey, configMap) {
+        //добавить проверку типа параметров
+        if (typeof appId !== 'number') {
+            throw new Error('Type of appId must be a number');
+        }
+        if (appId === '' || appId === undefined || appId === null ||
+            accountKey === '' || accountKey === undefined || accountKey === null) {
+            throw new Error('Cannot init QuickBlox without app credentials (app ID, auth key)');
+        } else {
+            this.init('', appId, null, accountKey, configMap);
+        }
+    },
+
+    /**
      * Return current session
      * @memberof QB
      * @param {getSessionCallback} callback - The getSessionCallback function.
@@ -183,6 +190,9 @@ QuickBlox.prototype = {
             if (typeof callback === 'function') {
                 try{
                     this.auth.getSession(callback);
+                    // TODO: pay attention on it, if we decide to remove application_id from QB.init:
+                    // artan 06-09-2022
+                    // should set  value application_id from session model into config.creds.appId
                 }
                 catch(er){
                     callback(er, null);

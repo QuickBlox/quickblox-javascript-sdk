@@ -87,7 +87,7 @@ function ChatProxy(service) {
     }
 
     this.service = service;
-        
+
     // Check the chat connection (return true/false)
     this.isConnected = false;
     // Check the chat connecting state (return true/false)
@@ -95,7 +95,9 @@ function ChatProxy(service) {
     this._isLogout = false;
 
     this._checkConnectionTimer = undefined;
-    // this._checkConnectionPingTimer = undefined; //artan: 13/09/2022 at 16:30
+    this._checkConnectionPingTimer = undefined;
+    this._localPingFaildCounter = 0;
+    this._onlineStatus = true;
     this._checkExpiredSessionTimer = undefined;
     this._sessionHasExpired = false;
     this._pings = {};
@@ -741,7 +743,10 @@ ChatProxy.prototype = {
 
         /** Connect for browser env. */
         if (Utils.getEnv().browser) {
+            Utils.QBLog('[QBChat]', '!!---Browser env - connected--!!');
+
             self.connection.connect(userJid, params.password, function(status) {
+                Utils.QBLog('[QBChat]', 'self.connection.connect called with status '+ status);
                 switch (status) {
                     case Strophe.Status.ERROR:
                         self.isConnected = false;
@@ -772,7 +777,7 @@ ChatProxy.prototype = {
                     case Strophe.Status.AUTHFAIL:
                         self.isConnected = false;
                         self._isConnecting = false;
-
+                        
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed', 'QBChat');
                         
                         if (isInitialConnect) {
@@ -780,7 +785,6 @@ ChatProxy.prototype = {
                         }
                         
                         if(!self.isConnected && typeof self.onReconnectFailedListener === 'function'){
-                            // TODO: investigate problem reconnect field
                             Utils.safeCallbackCall(self.onReconnectFailedListener, err);
                         }
                         
@@ -802,26 +806,54 @@ ChatProxy.prototype = {
                         self.connection.XAddTrackedHandler(self._onSystemMessageListener, null, 'message', 'headline');
                         self.connection.XAddTrackedHandler(self._onMessageErrorListener, null, 'message', 'error');
 
-                        // var noTimerId = typeof self._checkConnectionPingTimer === 'undefined';  //artan: 13/09/2022 at 16:30
-                        // noTimerId = config.pingLocalhostTimeInterval === 0 ? false : noTimerId;
-                        // if (noTimerId) {
-                        //     Utils.QBLog('[QBChat]', 'Init ping to localhost at ', Utils.getCurrentTime());
-                        //     self._checkConnectionPingTimer = setInterval(function() {
-                        //         self._ping(userJid,
-                        //             function(error) {
-                        //                 if (error) {
-                        //                     Utils.QBLog('[QBChat]',
-                        //                         'Local Ping: ',
-                        //                         'failed, at ', Utils.getCurrentTime(),
-                        //                         ' error: ', error);
-                        //                 } else {
-                        //                     Utils.QBLog('[QBChat]',
-                        //                         'Local Ping: ',
-                        //                         'ok, at ', Utils.getCurrentTime());
-                        //                 }
-                        //             });
-                        //     }, config.pingLocalhostTimeInterval * 1000);
-                        // }
+                        var noTimerId = typeof self._checkConnectionPingTimer === 'undefined';
+                        noTimerId = config.pingLocalhostTimeInterval === 0 ? false : noTimerId;
+
+                        if (noTimerId) {
+                            Utils.QBLog('[QBChat]', 'Init ping to localhost at ', Utils.getCurrentTime());
+                            self._checkConnectionPingTimer = setInterval(function() {
+                                try {
+                                    self.pinglocalhost(function (error) {
+                                        if (error) {
+                                            Utils.QBLog('[QBChat]',
+                                                'Local Ping: ',
+                                                'failed, at ', Utils.getCurrentTime(),
+                                                '_localPingFaildCounter: ', self._localPingFaildCounter,
+                                                ' error: ', error);
+                                            self._localPingFaildCounter += 1;
+                                            if (self._localPingFaildCounter > 6) {
+                                                // TODO: check in [CROS-823]
+                                                self.isOnline(function () {
+                                                    Utils.QBLog('[QBChat]',
+                                                        'Local Ping: ',
+                                                        'connection failed, at ', Utils.getCurrentTime());
+                                                }, function () {
+                                                    console.log("call _establishConnection ....");
+
+                                                    self.isConnected = false;
+                                                    self._isConnecting = false;
+                                                    self._localPingFaildCounter = 0;
+                                                    self._establishConnection(params);
+                                                });
+
+                                            }
+                                        } else {
+                                            Utils.QBLog('[QBChat]',
+                                                'Local Ping: ',
+                                                'ok, at ', Utils.getCurrentTime(),
+                                                '_localPingFaildCounter: ', self._localPingFaildCounter);
+                                            self._localPingFaildCounter = 0;
+                                        }
+                                    });
+                                }
+                                catch (err) {
+                                    Utils.QBLog('[QBChat]',
+                                        'Local Ping: ',
+                                        'Exception, at ', Utils.getCurrentTime(),
+                                        ', detail info: ', err);
+                                }
+                            }, config.pingLocalhostTimeInterval * 1000);
+                        }
 
                         if (typeof self.onSessionExpiredListener === 'function') {
                             var noExpiredSessionTimerId = typeof self._checkExpiredSessionTimer === 'undefined';
@@ -832,14 +864,14 @@ ChatProxy.prototype = {
                                     if (typeof config.qbTokenExpirationDate !== 'undefined') {
                                         var timeLag = Math.round((timeNow.getTime() - config.qbTokenExpirationDate.getTime()) / (1000 * 60));
                                         //artan 25-08-2022
-                                        // TODO: need to delete in task [CROS-815]
+                                        // TODO: need to delete in task [CROS-823]
                                         console.log('timeLag: ', timeLag);
                                         if (timeLag >= 0) {
                                             self._sessionHasExpired = true;
                                             Utils.safeCallbackCall(self.onSessionExpiredListener, null);
                                         }
                                     }
-                                    // TODO: in task [CROS-815], may by need to change 5 * 1000 to config.liveSessionInterval * 1000
+                                    // TODO: in task [CROS-823], may by need to change 5 * 1000 to config.liveSessionInterval * 1000
                                 }, 5 * 1000);
 
                             }
@@ -878,6 +910,7 @@ ChatProxy.prototype = {
 
         /** connect for node */
         if(!Utils.getEnv().browser) {
+            Utils.QBLog('[QBChat]', '!!--call branch code connect for node--!!');
             // Remove all connection handlers exist from a previous connection
             self.Client.removeAllListeners();
 
@@ -978,7 +1011,7 @@ ChatProxy.prototype = {
         }
 
         self.helpers.setUserCurrentJid(self.helpers.userCurrentJid(xmppClient));
-        
+
         self.isConnected = true;
         self._isConnecting = false;
         self._sessionHasExpired = false;
@@ -1010,7 +1043,6 @@ ChatProxy.prototype = {
     },
 
     _establishConnection: function(params) {
-        //  TODO: must to call if only qbTokenExpirationDate is not expried
         var self = this;
         Utils.QBLog('[QBChat]', '_establishConnection called');
         if (self._isLogout || self._checkConnectionTimer) {
@@ -1032,11 +1064,25 @@ ChatProxy.prototype = {
 
         _connect();
 
-
-        // TODO: investigate problem with interval connection
         self._checkConnectionTimer = setInterval(function() {
+            Utils.QBLog('[QBChat]', 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = '+config.chatReconnectionTimeInterval);
             _connect();
         }, config.chatReconnectionTimeInterval * 1000);
+    },
+
+    reconnect: function () {
+        Utils.QBLog('[QBChat]', 'Call reconnect ');
+        clearInterval(this._checkConnectionTimer);
+        this._checkConnectionTimer = undefined;
+        this.muc.joinedRooms = {};
+        this.helpers.setUserCurrentJid('');
+
+        if (Utils.getEnv().browser) {
+            this.connection.flush();
+            this.connection.disconnect();
+        } else {
+            this.Client.end();
+        }
     },
 
     /**
@@ -1174,12 +1220,10 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if (self.connection.connected) {
-            if(Utils.getEnv().browser){
-                self.connection.send(stanza);
-            } else {
-                self.Client.send(stanza);
-            }
+        if(Utils.getEnv().browser){
+            self.connection.send(stanza);
+        } else {
+            self.Client.send(stanza);
         }
     },
 
@@ -1204,12 +1248,10 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if (self.connection.connected) {
-            if(Utils.getEnv().browser){
-                self.connection.send(stanza);
-            } else {
-                self.Client.send(stanza);
-            }
+        if(Utils.getEnv().browser){
+            self.connection.send(stanza);
+        } else {
+            self.Client.send(stanza);
         }
     },
 
@@ -1320,7 +1362,8 @@ ChatProxy.prototype = {
         }
     },
 
-    _ping: function(jid_or_user_id, callback){
+    pinglocalhost: function(callback){
+        Utils.QBLog('[QBChat]', 'ping localhost');
         var self = this;
         var id = this.helpers.getUniqueId('ping');
         var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
@@ -1332,7 +1375,6 @@ ChatProxy.prototype = {
         to = 'http://localhost';
         _callback = callback;
 
-
         var iqParams = {
             from: this.helpers.getUserCurrentJid(),
             id: id,
@@ -1343,7 +1385,7 @@ ChatProxy.prototype = {
         stanza.c('ping', { xmlns: "urn:xmpp:ping" });
 
         var noAnswer = function () {
-            _callback('No answer');
+            _callback('Local ping No answer');
             self._pings[id] = undefined;
             delete self._pings[id];
         };
@@ -1357,6 +1399,21 @@ ChatProxy.prototype = {
             interval: setTimeout(noAnswer, config.pingTimeout * 1000)
         };
         return id;
+    },
+
+    isOnline: function(no, yes) {
+        const server = 'chat.quickblox.com';
+        try {
+            this.ping(server, (error) => {
+                if (error) {
+                    no();
+                } else {
+                    yes();
+                }
+            });
+        } catch (err) {
+            no();
+        }
     },
 
     ping: function (jid_or_user_id, callback) {
@@ -1424,6 +1481,11 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect();
+            if (this._checkConnectionPingTimer !== undefined) {
+                Utils.QBLog('[QBChat]', 'Stop ping to localhost.');
+                clearInterval(this._checkConnectionPingTimer);
+                this._checkConnectionPingTimer = undefined;
+            }
         } else {
             this.Client.end();
         }
@@ -1536,7 +1598,6 @@ RosterProxy.prototype = {
 
         function _callbackWrap(stanza) {
             var items = _getItems(stanza);
-            /** TODO */
             for (var i = 0, len = items.length; i < len; i++) {
                 var userId = self.helpers.getIdFromNode( chatUtils.getAttr(items[i], 'jid') ),
                     ask = chatUtils.getAttr(items[i], 'ask'),

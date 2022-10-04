@@ -9,12 +9,11 @@ require('strophe.js');
 
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
-function WebRTCSignalingProcessor(service, delegate, connection) {
+function WebRTCSignalingProcessor(service, delegate) {
     var self = this;
 
     self.service = service;
     self.delegate = delegate;
-    self.connection = connection;
 
     this._onMessage = function(from, extraParams, delay, userId) {
 
@@ -66,84 +65,90 @@ function WebRTCSignalingProcessor(service, delegate, connection) {
         }
     };
 
+    /**
+     * Convert XML into JS object
+     * @param {Element} extraParams 
+     * @returns {Object}
+     */
     this._getExtension = function(extraParams) {
         if (!extraParams) {
-            return null;
+            return {};
         }
 
-        var extension = {}, iceCandidates = [], opponents = [],
-            candidate, opponent, items, childrenNodes;
+        var extension = {},
+            iceCandidates = [],
+            opponents = [];
 
-        for (var i = 0, len = extraParams.childNodes.length; i < len; i++) {
-            if (extraParams.childNodes[i].tagName === 'iceCandidates') {
-
+        extraParams.childNodes.forEach(function (childNode) {
+            if (childNode.nodeName === 'iceCandidates') {
                 /** iceCandidates */
-                items = extraParams.childNodes[i].childNodes;
-
-                for (var j = 0, len2 = items.length; j < len2; j++) {
-                    candidate = {};
-                    childrenNodes = items[j].childNodes;
-
-                    for (var k = 0, len3 = childrenNodes.length; k < len3; k++) {
-                        candidate[childrenNodes[k].tagName] = childrenNodes[k].textContent;
-                    }
-
+                childNode.childNodes.forEach(function (candidateNode) {
+                    var candidate = {};
+                    candidateNode.childNodes.forEach(function (node) {
+                        candidate[node.nodeName] = node.textContent;
+                    });
                     iceCandidates.push(candidate);
-                }
+                });
 
-            } else if (extraParams.childNodes[i].tagName === 'opponentsIDs') {
+            } else if (childNode.nodeName === 'opponentsIDs') {
                 /** opponentsIDs */
-                items = extraParams.childNodes[i].childNodes;
-
-                for (var v = 0, len2v = items.length; v < len2v; v++) {
-                    opponent = items[v].textContent;
-                    opponents.push(parseInt(opponent));
-                }
+                childNode.childNodes.forEach(function (opponentNode) {
+                    var opponentId = opponentNode.textContent;
+                    opponents.push(parseInt(opponentId));
+                });
             } else {
-                if (extraParams.childNodes[i].childNodes.length > 1) {
-                    var nodeTextContentSize = extraParams.childNodes[i].textContent.length;
-
-                    if (nodeTextContentSize > 4096) {
-                        var wholeNodeContent = "";
-
-                        for (var t=0; t<extraParams.childNodes[i].childNodes.length; ++t) {
-                            wholeNodeContent += extraParams.childNodes[i].childNodes[t].textContent;
-                        }
-                        extension[extraParams.childNodes[i].tagName] = wholeNodeContent;
-                    } else {
-                        extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
-                    }
+                if (childNode.childNodes.length > 1) {
+                    extension = self._XMLtoJS(
+                        extension,
+                        childNode.nodeName,
+                        childNode
+                    );
                 } else {
-                    if (extraParams.childNodes[i].tagName === 'userInfo') {
-                        extension = self._XMLtoJS(extension, extraParams.childNodes[i].tagName, extraParams.childNodes[i]);
+                    if (childNode.nodeName === 'userInfo') {
+                        extension = self._XMLtoJS(
+                            extension,
+                            childNode.nodeName,
+                            childNode
+                        );
                     } else {
-                        extension[extraParams.childNodes[i].tagName] = extraParams.childNodes[i].textContent;
+                        extension[childNode.nodeName] = childNode.textContent;
                     }
                 }
             }
-        }
-        if (iceCandidates.length > 0){
+        });
+
+        if (iceCandidates.length > 0) {
             extension.iceCandidates = iceCandidates;
         }
-        if (opponents.length > 0){
+        if (opponents.length > 0) {
             extension.opponentsIDs = opponents;
         }
 
         return extension;
     };
 
-    // TODO: the magic
-    this._XMLtoJS = function(extension, title, obj) {
+    /**
+     * 
+     * @param {Object} extension 
+     * @param {string} title 
+     * @param {Element} element 
+     * @returns {Object}
+     */
+    this._XMLtoJS = function(extension, title, element) {
         var self = this;
         extension[title] = {};
 
-        for (var i = 0, len = obj.childNodes.length; i < len; i++) {
-            if (obj.childNodes[i].childNodes.length > 1) {
-                extension[title] = self._XMLtoJS(extension[title], obj.childNodes[i].tagName, obj.childNodes[i]);
+        element.childNodes.forEach(function (childNode) {
+            if (childNode.childNodes.length > 1) {
+                extension[title] = self._XMLtoJS(
+                    extension[title],
+                    childNode.nodeName,
+                    childNode
+                );
             } else {
-                extension[title][obj.childNodes[i].tagName] = obj.childNodes[i].textContent;
+                extension[title][childNode.nodeName] = childNode.textContent;
             }
-        }
+        });
         return extension;
     };
 }

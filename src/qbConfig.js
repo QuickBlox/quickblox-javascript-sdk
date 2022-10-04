@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.14.1',
-  buildNumber: '1136',
+  version: '2.15.0',
+  buildNumber: '1137',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -73,7 +73,7 @@ var config = {
   },
   timeout: null,
   debug: {
-    mode: 1,
+    mode: 0,
     file: null
   },
   addISOTime: false,
@@ -108,23 +108,22 @@ config.set = function(options) {
   });
 };
 
-/*
-* 17.08.22 artan: waiting for backend fix, look at tasks:
-* [CROS-815] - Update sessionExpirationDate on each request
-* [SR-1322] - Set param Access-Control-Expose-Headerson server side
- */
 config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasToken = false) {
   var connectionTimeLag = 1; // minute
-  var newDate = new Date(tokenExpirationDate);
-  newDate.setMinutes ( newDate.getMinutes() - connectionTimeLag);
-  // TODO: need to check in [CROS-815]
-  if (!headerHasToken) {
-    console.log('in date: ', newDate);
+  var newDate;
+  if (headerHasToken) {
+    var d = tokenExpirationDate.replaceAll('-','/');
+    newDate = new Date(d);
+    newDate.setMinutes ( newDate.getMinutes() - connectionTimeLag);
+  }
+  else {
+    newDate = new Date(tokenExpirationDate);
+    newDate.setMinutes ( newDate.getMinutes() - connectionTimeLag);
     newDate.setMinutes ( newDate.getMinutes() + config.liveSessionInterval );
-    console.log('out date: ', newDate);
   }
   config.qbTokenExpirationDate = newDate;
-  console.log('updateSessionExpirationDate ... Set value: ', tokenExpirationDate);
+  console.log('updateSessionExpirationDate ... Set value: ', config.qbTokenExpirationDate);
 };
+
 
 module.exports = config;

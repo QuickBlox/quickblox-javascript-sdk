@@ -25,11 +25,18 @@ var SignalingConstants = require('./qbWebRTCSignalingConstants');
 var Utils = require('../../qbUtils');
 var config = require('../../qbConfig');
 
-function WebRTCClient(service, connection) {
+var LiveSessionStates = [
+    WebRTCSession.State.NEW,
+    WebRTCSession.State.CONNECTING,
+    WebRTCSession.State.ACTIVE
+];
 
-    this.connection = connection;
-    this.signalingProcessor = new WebRTCSignalingProcessor(service, this, connection);
-    this.signalingProvider = new WebRTCSignalingProvider(service, connection);
+function WebRTCClient(service, chat) {
+
+    this.chat = chat;
+    this.signalingProcessor = new WebRTCSignalingProcessor(service, this);
+    this.signalingProvider = new WebRTCSignalingProvider(service, chat);
+    chat.webrtcSignalingProcessor = this.signalingProcessor;
 
     this.SessionConnectionState = Helpers.SessionConnectionState;
     this.CallType = Helpers.CallType;
@@ -83,15 +90,15 @@ WebRTCClient.prototype.sessions = {};
 
 /**
  * Creates the new session.
- * @param  {array} opponentsIDs      - Opponents IDs
- * @param  {number} ct               - Call type
+ * @param  {Array<number>} opponentsIDs      - Opponents IDs
+ * @param  {1|2} ct               - Call type
  * @param  {number} [cID=yourUserId] - Initiator ID
  * @param  {object} [opts]
  * @param  {number} [opts.bandwidth=0] - Bandwidth limit (kbps)
  */
 WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) {
     var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
-        callerID = cID || Helpers.getIdFromNode(this.connection.jid),
+        callerID = cID || Helpers.getIdFromNode(this.chat.connection.jid),
         bandwidth = opts && opts.bandwidth && (!isNaN(opts.bandwidth)) ? +opts.bandwidth : 0,
         isIdentifyOpponents = false,
         callType = ct || 2;
@@ -99,6 +106,16 @@ WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) 
     if (!opponentsIDs) {
         throw new Error('Can\'t create a session without the opponentsIDs.');
     }
+    if (!Array.isArray(opponentsIDs)) {
+        throw new Error('"opponentsIDs" should be Array of numbers');
+    }
+    opponentsIDs.forEach(function (id) {
+        var value = parseInt(id);
+        if (isNaN(value)) {
+            throw new Error('"opponentsIDs" should be Array of numbers');
+        }
+        id = value;
+    });
 
     isIdentifyOpponents = isOpponentsEqual(opponentsIdNASessions, opponentsIDs);
 
@@ -116,12 +133,13 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
         opIDs: opponentsIDs,
         callType: callType,
         signalingProvider: this.signalingProvider,
-        currentUserID: Helpers.getIdFromNode(this.connection.jid),
+        currentUserID: Helpers.getIdFromNode(this.chat.connection.jid),
         bandwidth: bandwidth
     });
 
     /** set callbacks */
     newSession.onUserNotAnswerListener = this.onUserNotAnswerListener;
+    newSession.onReconnectListener = this.onReconnectListener;
     newSession.onRemoteStreamListener = this.onRemoteStreamListener;
     newSession.onSessionConnectionStateChangedListener = this.onSessionConnectionStateChangedListener;
     newSession.onSessionCloseListener = this.onSessionCloseListener;
@@ -145,17 +163,14 @@ WebRTCClient.prototype.clearSession = function(sessionId) {
  * @param {string} session ID
  * @returns {boolean} if active or new session exist
  */
-WebRTCClient.prototype.isExistNewOrActiveSessionExceptSessionID = function(sessionID) {
+WebRTCClient.prototype.isExistLiveSessionExceptSessionID = function(sessionID) {
     var exist = false;
     var sessions = this.sessions;
 
     if (Object.keys(sessions).length > 0) {
         exist = Object.keys(sessions).some(function (key) {
             var session = sessions[key];
-            var sessionActive = (
-                session.state === WebRTCSession.State.NEW ||
-                session.state === WebRTCSession.State.ACTIVE
-            );
+            var sessionActive = LiveSessionStates.includes(session.state);
             return sessionActive && session.ID !== sessionID;
         });
     }
@@ -183,7 +198,7 @@ WebRTCClient.prototype.getNewSessionsCount = function (exceptId) {
 WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) {
     var userInfo = extension.userInfo || {};
 
-    var currentUserID = Helpers.getIdFromNode(this.connection.jid);
+    var currentUserID = Helpers.getIdFromNode(this.chat.connection.jid);
     if (userID === currentUserID && !extension.opponentsIDs.includes(currentUserID)) {
         Helpers.trace(
             'Ignore "onCall" signal from current user.' +
@@ -193,7 +208,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
     }
     Helpers.trace("onCall. UserID:" + userID + ". SessionID: " + sessionID);
 
-    var otherActiveSessions = this.isExistNewOrActiveSessionExceptSessionID(sessionID);
+    var otherActiveSessions = this.isExistLiveSessionExceptSessionID(sessionID);
     var newSessionsCount = this.getNewSessionsCount(sessionID);
     if (otherActiveSessions && !this.sessions[sessionID]) {
         newSessionsCount++;
@@ -207,7 +222,7 @@ WebRTCClient.prototype._onCallListener = function(userID, sessionID, extension) 
     if (reject) {
         Helpers.trace('User with id ' + userID + ' is busy at the moment.');
 
-        delete extension.sdp;
+        delete extension.sessionDescription;
         delete extension.platform;
         extension.sessionID = sessionID;
 
@@ -244,7 +259,8 @@ WebRTCClient.prototype._onAcceptListener = function(userID, sessionID, extension
     Helpers.trace("onAccept. UserID:" + userID + ". SessionID: " + sessionID);
 
     if (session) {
-        if (session.state === WebRTCSession.State.ACTIVE) {
+        if (session.state === WebRTCSession.State.CONNECTING ||
+            session.state === WebRTCSession.State.ACTIVE) {
             if (typeof this.onAcceptCallListener === 'function') {
                 Utils.safeCallbackCall(this.onAcceptCallListener, session, userID, userInfo);
             }
@@ -287,7 +303,7 @@ WebRTCClient.prototype._onStopListener = function(userID, sessionID, extension) 
     var session = this.sessions[sessionID],
         userInfo = extension.userInfo || {};
 
-    if (session && (session.state === WebRTCSession.State.ACTIVE || session.state === WebRTCSession.State.NEW)) {
+    if (session && LiveSessionStates.includes(session.state)) {
         if (typeof this.onStopCallListener === 'function') {
             Utils.safeCallbackCall(this.onStopCallListener, session, userID, userInfo);
         }
@@ -309,7 +325,8 @@ WebRTCClient.prototype._onIceCandidatesListener = function(userID, sessionID, ex
     Helpers.trace("onIceCandidates. UserID:" + userID + ". SessionID: " + sessionID + ". ICE candidates count: " + extension.iceCandidates.length);
 
     if (session) {
-        if (session.state === WebRTCSession.State.ACTIVE) {
+        if (session.state === WebRTCSession.State.CONNECTING ||
+            session.state === WebRTCSession.State.ACTIVE) {
             session.processOnIceCandidates(userID, extension);
         } else {
             Helpers.traceWarning('Ignore \'OnIceCandidates\', the session ( ' + sessionID + ' ) has invalid state.');
@@ -325,8 +342,13 @@ WebRTCClient.prototype._onUpdateListener = function(userID, sessionID, extension
 
     Helpers.trace("onUpdate. UserID:" + userID + ". SessionID: " + sessionID + ". Extension: " + JSON.stringify(userInfo));
 
-    if (typeof this.onUpdateCallListener === 'function') {
-        Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, userInfo);
+    if (session) {
+        if (extension.reason) {
+            session.processOnUpdate(userID, extension);
+        }
+        if (typeof this.onUpdateCallListener === 'function') {
+            Utils.safeCallbackCall(this.onUpdateCallListener, session, userID, userInfo);
+        }
     }
 };
 

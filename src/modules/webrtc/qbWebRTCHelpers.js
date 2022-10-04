@@ -7,9 +7,7 @@
 
 var config = require('../../qbConfig');
 
-var WebRTCHelpers = {};
-
-WebRTCHelpers = {
+var WebRTCHelpers = {
     getUserJid: function(id, appId) {
         return id + '-' + appId + '@' + config.endpoints.chat;
     },
@@ -42,22 +40,36 @@ WebRTCHelpers = {
         return arr.slice(1,5).join('-');
     },
 
-    // Convert Data URI to Blob
-    dataURItoBlob: function(dataURI, contentType) {
-        var arr = [],
-            binary = window.atob(dataURI.split(',')[1]);
-
-        for (var i = 0, len = binary.length; i < len; i++) {
-            arr.push(binary.charCodeAt(i));
+    isIOS: function() {
+        if (!window || !window.navigator || !window.navigator.userAgent) {
+            return false;
         }
-
-        return new Blob([new Uint8Array(arr)], {type: contentType});
+        var ua = window.navigator.userAgent;
+        return Boolean(ua.match(/iP(ad|hone)/i));
     },
 
-    /**
-     * It's functions to fixed issue
-     * https://bugzilla.mozilla.org/show_bug.cgi?id=1377434
-     */
+    isIOSSafari: function() {
+        if (!window || !window.navigator || !window.navigator.userAgent) {
+            return false;
+        }
+        var ua = window.navigator.userAgent;
+        var iOS = Boolean(ua.match(/iP(ad|hone)/i));
+        var isWebkit = Boolean(ua.match(/WebKit/i));
+        var isChrome = Boolean(ua.match(/CriOS/i));
+        return iOS && isWebkit && !isChrome;
+    },
+
+    isIOSChrome: function() {
+        if (!window || !window.navigator || !window.navigator.userAgent) {
+            return false;
+        }
+        var ua = window.navigator.userAgent;
+        var iOS = Boolean(ua.match(/iP(ad|hone)/i));
+        var isWebkit = Boolean(ua.match(/WebKit/i));
+        var isChrome = Boolean(ua.match(/CriOS/i));
+        return iOS && !isWebkit && isChrome;
+    },
+
     getVersionFirefox: function() {
         var ua = navigator ? navigator.userAgent : false;
         var version;
@@ -91,30 +103,42 @@ WebRTCHelpers = {
         }
 
         return version;
-    }
-};
+    },
 
-/**
- * [SessionConnectionState]
- * @type {Object}
- */
-WebRTCHelpers.SessionConnectionState = {
-    UNDEFINED: 0,
-    CONNECTING: 1,
-    CONNECTED: 2,
-    FAILED: 3,
-    DISCONNECTED: 4,
-    CLOSED: 5,
-    COMPLETED: 6
-};
+    /**
+     * Return a Promise that  resolves after `timeout` milliseconds.
+     * @param {number} [timeout=0]
+     * @returns {Promise<void>}
+     */
+    delay: function(timeout) {
+        timeout = typeof timeout === 'number' && timeout > 0 ? timeout : 0;
+        return new Promise(function (resolve) {
+            setTimeout(resolve, timeout);
+        });
+    },
 
-/**
- * [CallType]
- * @type {Object}
- */
-WebRTCHelpers.CallType = {
-    VIDEO: 1,
-    AUDIO: 2
+    /**
+     * [SessionConnectionState]
+     * @enum {number}
+     */
+    SessionConnectionState: {
+        UNDEFINED: 0,
+        CONNECTING: 1,
+        CONNECTED: 2,
+        FAILED: 3,
+        DISCONNECTED: 4,
+        CLOSED: 5,
+        COMPLETED: 6
+    },
+
+    /**
+     * [CallType]
+     * @enum {number}
+     */
+    CallType: {
+        VIDEO: 1,
+        AUDIO: 2
+    },
 };
 
 module.exports = WebRTCHelpers;

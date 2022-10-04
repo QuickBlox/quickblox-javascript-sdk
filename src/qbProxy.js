@@ -141,7 +141,6 @@ ServiceProxy.prototype = {
                 qbResponse = response;
 
                 if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
-                    // TODO: need to check in [CROS-815]
                     var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
                     var headerHasToken  = !(qbTokenExpirationDate === null ||
                         typeof qbTokenExpirationDate === 'undefined');
@@ -164,8 +163,6 @@ ServiceProxy.prototype = {
             }).then(function(body) {
             _requestCallback(null, qbResponse, body);
         }, function(error) {
-                // TODO: review in [CROS-815]
-            console.log('Error: ', error);
             _requestCallback(error);
         });
 
