@@ -822,20 +822,10 @@ ChatProxy.prototype = {
                                                 ' error: ', error);
                                             self._localPingFaildCounter += 1;
                                             if (self._localPingFaildCounter > 6) {
-                                                // TODO: check in [CROS-823]
-                                                self.isOnline(function () {
-                                                    Utils.QBLog('[QBChat]',
-                                                        'Local Ping: ',
-                                                        'connection failed, at ', Utils.getCurrentTime());
-                                                }, function () {
-                                                    console.log("call _establishConnection ....");
-
-                                                    self.isConnected = false;
-                                                    self._isConnecting = false;
-                                                    self._localPingFaildCounter = 0;
-                                                    self._establishConnection(params);
-                                                });
-
+                                                self.isConnected = false;
+                                                self._isConnecting = false;
+                                                self._localPingFaildCounter = 0;
+                                                self._establishConnection(params);
                                             }
                                         } else {
                                             Utils.QBLog('[QBChat]',
@@ -863,9 +853,6 @@ ChatProxy.prototype = {
                                     var timeNow = new Date();
                                     if (typeof config.qbTokenExpirationDate !== 'undefined') {
                                         var timeLag = Math.round((timeNow.getTime() - config.qbTokenExpirationDate.getTime()) / (1000 * 60));
-                                        //artan 25-08-2022
-                                        // TODO: need to delete in task [CROS-823]
-                                        console.log('timeLag: ', timeLag);
                                         if (timeLag >= 0) {
                                             self._sessionHasExpired = true;
                                             Utils.safeCallbackCall(self.onSessionExpiredListener, null);
@@ -1402,6 +1389,7 @@ ChatProxy.prototype = {
     },
 
     isOnline: function(no, yes) {
+        //
         const server = 'chat.quickblox.com';
         try {
             this.ping(server, (error) => {
@@ -1415,6 +1403,77 @@ ChatProxy.prototype = {
             no();
         }
     },
+    /*
+    isOnlineAction0: function(no, yes) {
+        const host = 'chat.quickblox.com';
+        try {
+            this.ping(host, function (error) {
+                console.log('isOnlineAction0 call ping');
+                if (error) {
+                    console.log('call isOnlineAction0, ping - Failed, ', error);
+                    no();
+                } else {
+                    console.log('call isOnlineAction0, ping - OK');
+                    yes();
+                }
+            });
+        } catch (err) {
+            console.log('call isOnlineAction0, Exception isOnlineAction0 function, ', err);
+            no();
+        }
+    },
+
+    isOnlineAction1: function(no, yes) {
+        try {
+            var jid = this.helpers.getUserCurrentJid();
+            console.log('JID: ', jid);
+            this.ping(
+                jid,
+                function (err) {
+                    console.log('isOnlineAction1 call ping');
+                    if (err) {
+                        console.log('isOnlineAction1 call ping');
+                        no();
+                    }
+                    else {
+                        console.log('call isOnlineAction1, ping - OK');
+                        yes();
+                    }
+                }
+            );
+        } catch (e) {
+            console.log('call isOnlineAction1, Exception isOnlineAction1 function, ', e);
+            no();
+        }
+    },
+
+    isOnlineAction2: function(no, yes) {
+        var params = {
+            order: {
+                field: 'created_at',
+                sort: 'asc'
+            },
+            page: 1,
+            per_page: 10
+        };
+
+        try {
+            qbMain.users.listUsers(params, function(error, result){
+                if (error) {
+                    console.log('isOnlineAction2 call ping');
+                    no();
+                }
+                else {
+                    console.log('call isOnlineAction2, ping - OK');
+                    yes();
+                }
+            });
+        } catch(e) {
+            console.log('call isOnlineAction2, Exception isOnlineAction2 function, ', e);
+            no();
+        }
+    },
+    */
 
     ping: function (jid_or_user_id, callback) {
         Utils.QBLog('[QBChat]', 'Call ping ');

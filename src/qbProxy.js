@@ -146,6 +146,8 @@ ServiceProxy.prototype = {
                         typeof qbTokenExpirationDate === 'undefined');
                     qbTokenExpirationDate  = (headerHasToken) ? qbTokenExpirationDate : new Date();
                     self.qbInst.config.updateSessionExpirationDate(qbTokenExpirationDate, headerHasToken);
+                    Utils.QBLog('[Request][ajax]','header has token:',headerHasToken );
+                    Utils.QBLog('[Request][ajax]','updateSessionExpirationDate ... Set value: ', self.qbInst.config.qbTokenExpirationDate );
                 }
 
                 if (qbDataType === 'text') {

@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.15.0',
-  buildNumber: '1137',
+  version: '2.15.1',
+  buildNumber: '1139',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -122,7 +122,6 @@ config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasTok
     newDate.setMinutes ( newDate.getMinutes() + config.liveSessionInterval );
   }
   config.qbTokenExpirationDate = newDate;
-  console.log('updateSessionExpirationDate ... Set value: ', config.qbTokenExpirationDate);
 };
 
 
