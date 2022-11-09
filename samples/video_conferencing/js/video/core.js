@@ -21,7 +21,8 @@ function initialise() {
     }]
   };
   client = new QBVideoConferencingClient(config);
-
+  console.log('QB version: ', QB.version, '  ', QB.buildNumber);
+  console.log('Videoconference client is : ', client);
   // for Mic level feature only
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   window.audioContext = new AudioContext();
@@ -278,6 +279,7 @@ function clickAudio() {
 }
 
 function clickVideo() {
+  console.log('call clickVideo....');
   isAudioCallOnly = false;
   clickJoinOrLeaveConference();
 }

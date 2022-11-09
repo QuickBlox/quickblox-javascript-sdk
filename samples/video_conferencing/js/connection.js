@@ -3,6 +3,7 @@
 
 var currentUser;
 
+
 $(function() {
     var usersDetails = getUserNameAndGroupFromStorage();
     if(usersDetails && usersDetails.length > 0){
@@ -32,8 +33,7 @@ function configureAppAndLoadUser() {
         CONFIG.APP_CONFIG
     );
 
-    QB.createSession(function() {
-
+    QB.createSession(function(err, res) {
         $('#loginForm').modal('show');
         $('#loginForm .progress').hide();
 
@@ -58,28 +58,34 @@ function configureAppAndLoadUser() {
                 'tag_list': userTag
             };
 
-            QB.users.get({ login: currentUser.login }, function(error, user) {
+            var params = { login: userName, password: "quickblox" };
+
+            QB.login(params, function (error, user) {
                 if (user) {
-                    connectToChat();
-                } else if (error && error.code === 404) {
-                    QB.users.create(currentUser, function(error, user) {
-                        if (user) {
-                            connectToChat();
-                        } else {
+                    connectToChat(user);
+                    saveUserNameAndGroupToStorage(userName, userTag);
+
+                    $('#inputUserName').val('');
+                    $('#inputGroupName').val('');
+                } else {
+                    createUser(params).then(
+                        function() {
+                            QB.login(params, function (e, newUser) {
+                                connectToChat(newUser);
+                                saveUserNameAndGroupToStorage(userName, userTag);
+
+                                $('#inputUserName').val('');
+                                $('#inputGroupName').val('');
+                            });
+                        }
+                    ).catch(
+                        function(error){
                             loginError(error);
                         }
-                    });
-                } else {
-                    loginError(error);
+                    );
                 }
-
-                saveUserNameAndGroupToStorage(userName, userTag);
-
-                $('#inputUserName').val('');
-                $('#inputGroupName').val('');
             });
         });
-
 
         // can provide username & usergroup via query string for autologin
         //
@@ -88,73 +94,25 @@ function configureAppAndLoadUser() {
         console.info("username: " + username + ", usergroup: " + usergroup);
         //
         if(username && usergroup){
-          $('#inputUserName').val(username);
-          $('#inputGroupName').val(usergroup);
+            $('#inputUserName').val(username);
+            $('#inputGroupName').val(usergroup);
 
-          $('.login-button').trigger("click");
-        }
-
-    });
-}
-
-function connectToChat() {
-    $('#loginFormContainer').hide();
-    $('#loginForm .progress').show();
-
-    QB.login({
-        login: currentUser.login,
-        password: currentUser.password
-    }, function(error, user) {
-        if (user) {
-            currentUser.id = user.id;
-            updateUser(user);
-            mergeUsers([{
-                user: user
-            }]);
-
-            QB.chat.connect({
-                userId: currentUser.id,
-                password: currentUser.password
-            }, function(err, roster) {
-                if (err) {
-                    console.error("connect to chat error: ", err);
-                } else {
-                    $('#loginForm').modal('hide');
-                    $('.current-user-login').text('Logged as: ' + currentUser.full_name + "(" + currentUser.id + ")");
-
-                    // retrieve dialogs' list
-                    retrieveChatDialogs();
-                    onUpdateChatDialogs();
-                    // setup message listeners
-                    setupAllListeners();
-                    // setup scroll events handler
-                    setupMsgScrollHandler();
-
-                    setupStreamManagementListeners();
-                }
-            });
-        } else {
-            loginError(error);
+            $('.login-button').trigger("click");
         }
     });
 }
 
-function setupAllListeners() {
-    QB.chat.onMessageListener = onMessage;
-    QB.chat.onSystemMessageListener = onSystemMessageListener;
-    QB.chat.onDeliveredStatusListener = onDeliveredStatusListener;
-    QB.chat.onReadStatusListener = onReadStatusListener;
-
-    setupIsTypingHandler();
-}
-// reconnection listeners
-function onDisconnectedListener() {
-    console.log("onDisconnectedListener");
-}
-
-function onReconnectListener() {
-    console.log("onReconnectListener");
-}
+function createUser(user) {
+    return new Promise(function (resolve, reject) {
+        QB.users.create(user, function (error, result) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+};
 
 function updateUser(resUser) {
     var params = {};
@@ -178,6 +136,61 @@ function updateUser(resUser) {
             }
         });
     }
+}
+
+function connectToChat(user) {
+    $('#loginFormContainer').hide();
+    $('#loginForm .progress').show();
+
+    if (user) {
+        currentUser.id = user.id;
+        updateUser(user);
+        mergeUsers([{
+            user: user
+        }]);
+
+        QB.chat.connect({
+            userId: currentUser.id,
+            password: currentUser.password
+        }, function(err, roster) {
+            if (err) {
+                console.error("connect to chat error: ", err);
+            } else {
+                $('#loginForm').modal('hide');
+                $('.current-user-login').text('Logged as: ' + currentUser.full_name + "(" + currentUser.id + ")");
+
+                // retrieve dialogs' list
+                retrieveChatDialogs();
+                onUpdateChatDialogs();
+                // setup message listeners
+                setupAllListeners();
+                // setup scroll events handler
+                setupMsgScrollHandler();
+
+                setupStreamManagementListeners();
+            }
+        });
+    } else {
+        loginError(error);
+    }
+}
+
+function setupAllListeners() {
+    QB.chat.onMessageListener = onMessage;
+    QB.chat.onSystemMessageListener = onSystemMessageListener;
+    QB.chat.onDeliveredStatusListener = onDeliveredStatusListener;
+    QB.chat.onReadStatusListener = onReadStatusListener;
+
+    setupIsTypingHandler();
+}
+
+// reconnection listeners
+function onDisconnectedListener() {
+    console.log("onDisconnectedListener");
+}
+
+function onReconnectListener() {
+    console.log("onReconnectListener");
 }
 
 function onUpdateChatDialogs() {

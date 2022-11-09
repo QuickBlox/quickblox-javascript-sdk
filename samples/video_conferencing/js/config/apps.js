@@ -1,12 +1,12 @@
 var creds = {
-  appId: '',
-  authKey: '',
-  authSecret: '',
-  accountKey: ''
+  'appId': 0,
+  'authKey': '',
+  'authSecret': '',
+  'accountKey': ''
 };
 
 var config = {
-  debug: true,
+  debug: false,
   endpoints: {
     api: "api.quickblox.com",
     chat: "chat.quickblox.com"

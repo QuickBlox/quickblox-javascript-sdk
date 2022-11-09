@@ -1,6 +1,6 @@
 // Sample version
 //
-var SAMPLE_VER = 78;
+var SAMPLE_VER = '1.0.1';
 $('.j-version').text('v.' + SAMPLE_VER);
 
 // WebRTC server endpoint
