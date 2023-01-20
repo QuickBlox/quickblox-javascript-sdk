@@ -5,6 +5,10 @@
  * WebRTC Module (WebRTC client)
  */
 
+/**
+ * @namespace QB.webrtc
+ */
+
 /*
  * User's callbacks (listener-functions):
  * - onCallListener(session, extension)
@@ -51,10 +55,12 @@ function WebRTCClient(service, chat) {
 }
 
 /**
- * [Return data or all active devices]
- * @param  {String} spec [specify what type of devices you wnat to get.
- *                         Possible values: audioinput, audiooutput, videoinput]
- * @returns {Array}       [array of devices]
+ * Return data or all active devices.
+ * @function getMediaDevices
+ * @memberof QB.webrtc
+ * @param  {String} spec - Specify what type of devices you wnat to get.
+ *                         Possible values: audioinput, audiooutput, videoinput.
+ * @returns {Array} Array of devices.
  */
 WebRTCClient.prototype.getMediaDevices = function(spec) {
     var specDevices = [],
@@ -84,17 +90,22 @@ WebRTCClient.prototype.getMediaDevices = function(spec) {
 
 /**
  * A map with all sessions the user had/have.
- * @type {Object.<string, Object>}
+ * @member {Object.<string, Object>} sessions
+ * @memberof QB.webrtc
  */
 WebRTCClient.prototype.sessions = {};
 
 /**
- * Creates the new session.
- * @param  {Array<number>} opponentsIDs      - Opponents IDs
- * @param  {1|2} ct               - Call type
- * @param  {number} [cID=yourUserId] - Initiator ID
+ * Creates the new session({@link https://docs.quickblox.com/docs/js-video-calling#create-session read more}).
+ * @function createNewSession
+ * @memberof QB.webrtc
+ * @param  {Array<number>} opponentsIDs - Opponents IDs.
+ * @param  {1|2} ct - Call type.
+ * @param  {number} [cID=yourUserId] - Initiator ID.
  * @param  {object} [opts]
- * @param  {number} [opts.bandwidth=0] - Bandwidth limit (kbps)
+ * @param  {number} [opts.bandwidth=0] - Bandwidth limit (kbps).
+ * 
+ * @returns {WebRTCSession} 
  */
 WebRTCClient.prototype.createNewSession = function(opponentsIDs, ct, cID, opts) {
     var opponentsIdNASessions = getOpponentsIdNASessions(this.sessions),
@@ -150,8 +161,10 @@ WebRTCClient.prototype._createAndStoreSession = function(sessionID, callerID, op
 };
 
 /**
- * Deletes a session
- * @param {string} Session ID
+ * Deletes a session.
+ * @function clearSession
+ * @memberof QB.webrtc
+ * @param {string} sessionId - Session id.
  *
  */
 WebRTCClient.prototype.clearSession = function(sessionId) {
@@ -159,9 +172,9 @@ WebRTCClient.prototype.clearSession = function(sessionId) {
 };
 
 /**
- * Check all session and find session with status 'NEW' or 'ACTIVE' which ID != provided
- * @param {string} session ID
- * @returns {boolean} if active or new session exist
+ * Check all session and find session with status 'NEW' or 'ACTIVE' which ID != provided.
+ * @param {string} sessionID - Session id.
+ * @returns {boolean} True if active or new session exist.
  */
 WebRTCClient.prototype.isExistLiveSessionExceptSessionID = function(sessionID) {
     var exist = false;

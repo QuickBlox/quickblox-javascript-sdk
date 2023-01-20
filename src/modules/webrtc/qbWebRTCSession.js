@@ -16,10 +16,14 @@
  */
 
 /**
+ * @namespace QB.webrtc.WebRTCSession
+ */
+
+/**
  * @typedef {Object} MediaParams
  * @property {boolean | MediaTrackConstraints} [params.audio]
  * @property {boolean | MediaTrackConstraints} [params.video]
- * @property {string} [params.elemId] Id of HTMLVideoElement
+ * @property {string} [params.elemId] - Id of HTMLVideoElement.
  * @property {Object} [params.options]
  * @property {boolean} [params.options.muted]
  * @property {boolean} [params.options.mirror]
@@ -52,16 +56,16 @@ var ReconnectionState = {
 
 
 /**
- * QuickBlox WebRTC session
+ * QuickBlox WebRTC session.
  * @param {Object} params
- * @param {1|2} params.callType Type of a call  
+ * @param {1|2} params.callType - Type of a call 
  * 1 - VIDEO  
  * 2 - AUDIO  
- * @param {Array<number>} params.opIDs An array with opponents
- * @param {number} params.currentUserID Current user ID
- * @param {number} params.initiatorID Call initiator ID
- * @param {string} [params.sessionID] Session identifier (optional)
- * @param {number} [params.bandwidth] Bandwidth limit
+ * @param {Array<number>} params.opIDs - An array with opponents.
+ * @param {number} params.currentUserID - Current user ID.
+ * @param {number} params.initiatorID - Call initiator ID.
+ * @param {string} [params.sessionID] - Session identifier (optional).
+ * @param {number} [params.bandwidth] - Bandwidth limit.
  */
 function WebRTCSession(params) {
     this.ID = params.sessionID ? params.sessionID : generateUUID();
@@ -70,13 +74,13 @@ function WebRTCSession(params) {
     this.initiatorID = parseInt(params.initiatorID);
     this.opponentsIDs = params.opIDs;
     this.callType = parseInt(params.callType);
-    /** @type {{[userId: number]: qbRTCPeerConnection}} */
+    /*** @type {{[userId: number]: qbRTCPeerConnection}} */
     this.peerConnections = {};
-    /** @type {MediaParams} */
+    /*** @type {MediaParams} */
     this.mediaParams = null;
-    /** @type {{[userID: number]: number | undefined}} */
+    /*** @type {{[userID: number]: number | undefined}} */
     this.iceConnectTimers = {};
-    /** @type {{[userID: number]: number | undefined}} */
+    /*** @type {{[userID: number]: number | undefined}} */
     this.reconnectTimers = {};
 
     this.signalingProvider = params.signalingProvider;
@@ -85,7 +89,7 @@ function WebRTCSession(params) {
 
     this.bandwidth = params.bandwidth;
 
-    /**
+    /***
      * We use this timeout to fix next issue:
      * "From Android/iOS make a call to Web and kill the Android/iOS app instantly. Web accept/reject popup will be still visible.
      * We need a way to hide it if sach situation happened."
@@ -94,14 +98,16 @@ function WebRTCSession(params) {
 
     this.startCallTime = 0;
     this.acceptCallTime = 0;
-    /** @type {MediaStream | undefined} */
+    /*** @type {MediaStream | undefined} */
     this.localStream = undefined;
 }
 
 /**
- * Get the user media stream
- * @param {MediaParams} params media stream constraints and additional options
- * @param {Function} callback callback to get a result of the function
+ * Get the user media stream({@link https://docs.quickblox.com/docs/js-video-calling#access-local-media-stream read more}).
+ * @function getUserMedia
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {MediaParams} params - Media stream constraints and additional options.
+ * @param {Function} callback - Callback to get a result of the function.
  */
 WebRTCSession.prototype.getUserMedia = function (params, callback) {
     if (!navigator.mediaDevices.getUserMedia) {
@@ -135,8 +141,10 @@ WebRTCSession.prototype.getUserMedia = function (params, callback) {
 };
 
 /**
- * Get the state of connection
- * @param {number} The User Id
+ * Get the state of connection.
+ * @function connectionStateForUser
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {number} userID
  */
 WebRTCSession.prototype.connectionStateForUser = function (userID) {
     var peerConnection = this.peerConnections[userID];
@@ -144,12 +152,14 @@ WebRTCSession.prototype.connectionStateForUser = function (userID) {
 };
 
 /**
- * Attach media stream to audio/video element
- * @param {string} elementId The Id of an ellement to attach a stream
- * @param {MediaStream} stream The stream to attach
- * @param {Object} [options] The additional options
- * @param {boolean} [options.muted] Whether video element should be muted
- * @param {boolean} [options.mirror] Whether video should be "mirrored"
+ * Attach media stream to audio/video element({@link https://docs.quickblox.com/docs/js-video-calling#attach-local-media-stream read more}).
+ * @function attachMediaStream
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {string} elementId - The Id of an ellement to attach a stream.
+ * @param {MediaStream} stream - The stream to attach.
+ * @param {Object} [options] - The additional options.
+ * @param {boolean} [options.muted] - Whether video element should be muted.
+ * @param {boolean} [options.mirror] - Whether video should be "mirrored".
  */
 WebRTCSession.prototype.attachMediaStream = function (elementId, stream, options) {
     var elem = document.getElementById(elementId);
@@ -184,8 +194,10 @@ WebRTCSession.prototype.attachMediaStream = function (elementId, stream, options
 };
 
 /**
- * Detach media stream from audio/video element
- * @param {string} elementId The Id of an element to detach a stream
+ * Detach media stream from audio/video element.
+ * @function detachMediaStream
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {string} elementId - The Id of an element to detach a stream.
  */
 WebRTCSession.prototype.detachMediaStream = function (elementId) {
     var elem = document.getElementById(elementId);
@@ -209,11 +221,13 @@ WebRTCSession.prototype.detachMediaStream = function (elementId) {
 };
 
 /**
- * Switch media tracks in audio/video HTML's element and replace its in peers.
- * @param {Object} deviceIds - the object with deviceIds of plugged devices
- * @param {string} [deviceIds.audio] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput')
- * @param {string} [deviceIds.video] - the deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput')
- * @param {Function} callback - the callback to get a result of the function
+ * Switch media tracks in audio/video HTML's element and replace its in peers({@link https://docs.quickblox.com/docs/js-video-calling-advanced#switch-camera read more}).
+ * @function switchMediaTracks
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} deviceIds - An object with deviceIds of plugged devices.
+ * @param {string} [deviceIds.audio] - The deviceId, it can be gotten from QB.webrtc.getMediaDevices('audioinput').
+ * @param {string} [deviceIds.video] - The deviceId, it can be gotten from QB.webrtc.getMediaDevices('videoinput').
+ * @param {Function} callback - The callback to get a result of the function.
  */
 WebRTCSession.prototype.switchMediaTracks = function (deviceIds, callback) {
     if (!navigator.mediaDevices.getUserMedia) {
@@ -269,7 +283,7 @@ WebRTCSession.prototype._replaceTracks = function (stream) {
         this.attachMediaStream(elemId, stream, ops);
     }
 
-    /** @param {RTCPeerConnection} peer */
+    /*** @param {RTCPeerConnection} peer */
     function _replaceTracksForPeer(peer) {
         return Promise.all(peer.getSenders().map(function (sender) {
             return sender.replaceTrack(newStreamTracks.find(function (track) {
@@ -286,8 +300,10 @@ WebRTCSession.prototype._replaceTracks = function (stream) {
 };
 
 /**
- * Initiate a call
- * @param {Object} [extension] [custom parametrs]
+ * Initiate a call({@link https://docs.quickblox.com/docs/js-video-calling#make-a-call read more}).
+ * @function call
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} [extension] - A map with a custom parametrs .
  * @param {Function} [callback]
  */
 WebRTCSession.prototype.call = function (extension, callback) {
@@ -331,8 +347,10 @@ WebRTCSession.prototype._callInternal = function (userID, extension) {
 };
 
 /**
- * Accept a call
- * @param {Object} extension A map with custom parameters
+ * Accept a call({@link https://docs.quickblox.com/docs/js-video-calling#accept-a-call read more}).
+ * @function accept
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} extension - A map with custom parameters.
  */
 WebRTCSession.prototype.accept = function (extension) {
     var self = this,
@@ -429,8 +447,10 @@ WebRTCSession.prototype._acceptInternal = function (userID, extension) {
 };
 
 /**
- * Reject a call
- * @param {Object} A map with custom parameters
+ * Reject a call({@link https://docs.quickblox.com/docs/js-video-calling#reject-a-call read more}).
+ * @function reject
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} extension - A map with custom parameters.
  */
 WebRTCSession.prototype.reject = function (extension) {
     var self = this,
@@ -460,8 +480,10 @@ WebRTCSession.prototype.reject = function (extension) {
 };
 
 /**
- * Stop a call
- * @param {Object} A map with custom parameters
+ * Stop a call({@link https://docs.quickblox.com/docs/js-video-calling#end-a-call read more}).
+ * @function stop
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} extension - A map with custom parameters.
  */
 WebRTCSession.prototype.stop = function (extension) {
     var self = this,
@@ -493,8 +515,10 @@ WebRTCSession.prototype.stop = function (extension) {
 };
 
 /**
- * [function close connection with user]
- * @param  {Number} userId [id of user]
+ * Close connection with a user.
+ * @function closeConnection
+ * @memberof QB.webrtc.WebRTCSession
+ * @param  {Number} userId - Id of a user.
  */
 WebRTCSession.prototype.closeConnection = function (userId) {
     var self = this,
@@ -516,8 +540,10 @@ WebRTCSession.prototype.closeConnection = function (userId) {
 
 
 /**
- * Update a call
- * @param {Object} extension A map with custom parameters
+ * Update a call.
+ * @function update
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {Object} extension - A map with custom parameters.
  * @param {number} [userID]
  */
 WebRTCSession.prototype.update = function (extension, userID) {
@@ -555,16 +581,20 @@ WebRTCSession.prototype.update = function (extension, userID) {
 };
 
 /**
- * Mutes the stream
- * @param {string} what to mute: 'audio' or 'video'
+ * Mutes the stream({@link https://docs.quickblox.com/docs/js-video-calling-advanced#mute-audio read more}).
+ * @function mute
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {string} type - 'audio' or 'video'
  */
 WebRTCSession.prototype.mute = function (type) {
     this._muteStream(0, type);
 };
 
 /**
- * Unmutes the stream
- * @param {string} what to unmute: 'audio' or 'video'
+ * Unmutes the stream({@link https://docs.quickblox.com/docs/js-video-calling-advanced#mute-audio read more}).
+ * @function unmute
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {string} type - 'audio' or 'video'
  */
 WebRTCSession.prototype.unmute = function (type) {
     this._muteStream(1, type);
@@ -746,7 +776,7 @@ WebRTCSession.prototype._processReconnectOffer = function (userID, SRD) {
 
 /**
  * @param {number} userID
- * @param {RTCSessionDescriptionInit & { offerId: string }} SRD
+ * @param {RTCSessionDescriptionInit} SRD
  */
 WebRTCSession.prototype._processReconnectAnswer = function (userID, SRD) {
     var peer = this.peerConnections[userID];

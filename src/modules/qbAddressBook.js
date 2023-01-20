@@ -16,7 +16,7 @@ AddressBook.prototype = {
    * The method is used to create, update and delete contacts in address book.<br />
    * If contact doesn't exist in address book then it will be created. If contacts exists then it will be updated.
    * If pass 'destroy: 1' then the contact will be removed.<br />
-   * {@link https://quickblox.com/developers/AddressBook Found more here}. <br />
+   * {@link https://docs.quickblox.com/docs/js-address-book#upload-address-book Found more here}. <br />
    * The method accepts 2 or 3 parameters.
    * @memberof QB.addressbook
    * @param {Object[]} list - A list of contacts to create / update / delete.
@@ -25,7 +25,7 @@ AddressBook.prototype = {
    * If not - it means a user has one global address book across all his devices.
    * @param {number} [options.force] - Defines force rewrite mode.
    * If set 1 then all previous contacts for device context will be replaced by new ones.
-   * @param {Function} callback - The savedAddressBookCallback function
+   * @param {Function} callback - The savedAddressBookCallback function.
    *
    * @example
    *  var people = [{
@@ -103,7 +103,7 @@ AddressBook.prototype = {
   },
 
   /**
-   * Retrive all contacts from address book.
+   * Retrive all contacts from address book({@link https://docs.quickblox.com/docs/js-address-book#retrieve-address-book read more}).
    * The method accepts 1 or 2 parameters.
    * @memberof QB.addressbook
    * @param {string|function} udidOrCallback - You could pass udid of address book or
@@ -166,7 +166,7 @@ AddressBook.prototype = {
   },
 
   /**
-   * Retrieve QuickBlox users that have phone numbers from your address book.
+   * Retrieve QuickBlox users that have phone numbers from your address book({@link https://docs.quickblox.com/docs/js-address-book#retrieve-registered-users read more}).
    * The methods accepts 1 or 2 parameters.
    * @memberof QB.addressbook
    * @param {boolean|function} udidOrCallback - You can pass isCompact parameter or callback object. If isCompact is passed then only user's id and phone fields will be returned from server. Otherwise - all standard user's fields will be returned.

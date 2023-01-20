@@ -13,13 +13,13 @@ function DataProxy(service){
 
 DataProxy.prototype = {
     /**
-     * Create new custom object ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Create_object read more})
+     * Create new custom object({@link https://docs.quickblox.com/docs/js-custom-objects#create-records read more}).
      * 
      * @memberof QB.data
      * 
-     * @param {string} className - A class name to which a new object belongs
-     * @param {object} data - Object of parameters (custom fields' names and their values)
-     * @param {createDataCallback} callback - The createDataCallback function
+     * @param {string} className - A class name to which a new object belongs.
+     * @param {object} data - Object of parameters (custom fields' names and their values).
+     * @param {createDataCallback} callback - The createDataCallback function.
      * 
      * @example
      * var data = {
@@ -43,10 +43,10 @@ DataProxy.prototype = {
      */
     create: function(className, data, callback) {
         /**
-         * Callback for QB.data.create(className, data, callback)
+         * Callback for QB.data.create(className, data, callback).
          * @callback createDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - An object
+         * @param {object} error - The error object.
+         * @param {object} response - An object.
          */
         var ajaxParams = {
             'type': 'POST',
@@ -66,16 +66,16 @@ DataProxy.prototype = {
     },
 
     /**
-     * Search for records of particular class ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects read more})
+     * Search for records of particular class({@link https://docs.quickblox.com/docs/js-custom-objects#retrieve-records read more}).
      * 
      * @memberof QB.data
      * 
-     * @param {string} className - A class name to which a new record belongs
-     * @param {(object|string[])} filters - Search records with field which contains exactly specified value or by array of records' ids to retrieve
-     * @param {number} [filters.skip=0] - Skip N records in search results. Useful for pagination. Default (if not specified) - 0
-     * @param {number} [filters.limit=100] - Limit search results to N records. Useful for pagination. Default and max values - 100. If limit is equal to -1 only last record will be returned
-     * @param {string} [filters.*] - {@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects See more filters' parameters}
-     * @param {listOfDataCallback} callback - The listOfDataCallback function
+     * @param {string} className - A class name to which a new record belongs.
+     * @param {(object|string[])} filters - Search records with field which contains exactly specified value or by array of records' ids to retrieve.
+     * @param {number} [filters.skip=0] - Skip N records in search results. Useful for pagination. Default (if not specified) - 0.
+     * @param {number} [filters.limit=100] - Limit search results to N records. Useful for pagination. Default and max values - 100. If limit is equal to -1 only last record will be returned.
+     * @param {string} [filters.*] - {@link https://docs.quickblox.com/docs/js-custom-objects#search-operators See more filters' parameters}.
+     * @param {listOfDataCallback} callback - The listOfDataCallback function.
      * @example
      * var filter = {
      *     'skip': 0,
@@ -99,10 +99,10 @@ DataProxy.prototype = {
      */
     list: function(className, filters, callback) {
         /**
-         * Callback for QB.data.list(className, filters, callback)
+         * Callback for QB.data.list(className, filters, callback).
          * @callback listOfDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - Object with Array of files
+         * @param {object} error - The error object.
+         * @param {object} response - Object with Array of files.
          */
 
         // make filters an optional parameter
@@ -120,12 +120,12 @@ DataProxy.prototype = {
     },
 
     /**
-     * Update record by ID of particular class. ({@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Retrieve_objects Read more})
+     * Update record by ID of particular class({@link https://docs.quickblox.com/docs/js-custom-objects#update-records Read more}).
      * @memberof QB.data
-     * @param {string} className - A class name of record
-     * @param {object} data - Object of parameters
-     * @param {string} data._id - An ID of record to update
-     * @param {updateDataCallback} callback - The updateDataCallback function
+     * @param {string} className - A class name of record.
+     * @param {object} data - Object of parameters.
+     * @param {string} data._id - An ID of record to update.
+     * @param {updateDataCallback} callback - The updateDataCallback function.
      * @example
      * QB.data.update('GameOfThrones', {
      *     '_id': '53aaa06f535c12cea9007496',
@@ -142,10 +142,10 @@ DataProxy.prototype = {
      */
     update: function(className, data, callback) {
         /**
-         * Callback for QB.data.update(className, data, callback)
+         * Callback for QB.data.update(className, data, callback).
          * @callback updateDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - An object
+         * @param {object} error - The error object.
+         * @param {object} response - An object.
          */
         this.service.ajax({
             'url': Utils.getUrl(config.urls.data, className + '/' + data._id),
@@ -163,14 +163,13 @@ DataProxy.prototype = {
     },
 
     /**
-     * Delete record / records by ID, IDs or criteria (filters) of particular class. <br />
-     * Check out {@link https://docsdev.quickblox.com/rest_api/CustomObjects_API.html#Delete_object official documentaion} to get detailed information.
+     * Delete record/records by ID, IDs or criteria (filters) of particular class({@link https://docs.quickblox.com/docs/js-custom-objects#delete-records read more}).
      * 
      * @memberof QB.data
      * 
-     * @param {string} className - A class name of record
-     * @param {(string|array|object)} requestedData - An ID of record or an array of record's ids or object of criteria rules to delete
-     * @param {deletedDataCallback} callback - The deletedDataCallback function
+     * @param {string} className - A class name of record.
+     * @param {(string|array|object)} requestedData - An ID of record or an array of record's ids or object of criteria rules to delete.
+     * @param {deletedDataCallback} callback - The deletedDataCallback function.
      * 
      * @example
      * var className = 'Movie';
@@ -206,12 +205,12 @@ DataProxy.prototype = {
      */
     delete: function(className, requestedData, callback) {
         /**
-         * Callback for QB.data.delete(className, requestedData, callback)
+         * Callback for QB.data.delete(className, requestedData, callback).
          * @callback deletedDataCallback
-         * @param {object} error - The error object
+         * @param {object} error - The error object.
          * @param {object|null} response
          * @param {array} response.deleted - Array of ids of deleted records. If you delete BY CRITERIA this property will be null.
-         * @param {number} response.deletedCount - count of deleted records.
+         * @param {number} response.deletedCount - Count of deleted records.
          */
         var typesData = {
             id: 1,
@@ -276,21 +275,21 @@ DataProxy.prototype = {
     },
 
     /**
-     * Upload file to file field ({@link https://quickblox.com/developers/Custom_Objects#Upload.2FUpdate_file read more})
+     * Upload file to file field({@link https://docs.quickblox.com/docs/js-custom-objects#files read more}).
      * @memberof QB.data
-     * @param {string} className - A class name to which a new object belongs
-     * @param {object} params - Object of parameters
-     * @param {string} [params.field_name] - The file's field name
-     * @param {string} [params.name] - The file's name
-     * @param {object} [params.file] - File object
-     * @param {uploadFileToDataCallback} callback - The uploadFileToDataCallback function
+     * @param {string} className - A class name to which a new object belongs.
+     * @param {object} params - Object of parameters.
+     * @param {string} [params.field_name] - The file's field name.
+     * @param {string} [params.name] - The file's name.
+     * @param {object} [params.file] - File object.
+     * @param {uploadFileToDataCallback} callback - The uploadFileToDataCallback function.
      */
     uploadFile: function(className, params, callback) {
         /**
-         * Callback for QB.data.uploadFile(className, params, callback)
+         * Callback for QB.data.uploadFile(className, params, callback).
          * @callback uploadFileToDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - The file object
+         * @param {object} error - The error object.
+         * @param {object} response - The file object.
          */
         var data = {
                 field_name: params.field_name,
@@ -316,20 +315,20 @@ DataProxy.prototype = {
     },
 
     /**
-     * Download file from file field by ID ({@link https://quickblox.com/developers/Custom_Objects#Download_file read more})
+     * Download file from file field by ID({@link https://docs.quickblox.com/docs/js-custom-objects#download-file read more}).
      * @memberof QB.data
-     * @param {string} className - A class name of record
-     * @param {object} params - Object of parameters
-     * @param {string} params.field_name - The file's field name
-     * @param {string} params.id - The record's ID
-     * @param {downloadFileFromDataCallback} callback - The downloadFileFromDataCallback function
+     * @param {string} className - A class name of record.
+     * @param {object} params - Object of parameters.
+     * @param {string} params.field_name - The file's field name.
+     * @param {string} params.id - The record's ID.
+     * @param {downloadFileFromDataCallback} callback - The downloadFileFromDataCallback function.
      */
     downloadFile: function(className, params, callback) {
         /**
-         * Callback for QB.data.downloadFile(className, params, callback)
+         * Callback for QB.data.downloadFile(className, params, callback).
          * @callback downloadFileFromDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - The file object
+         * @param {object} error - The error object.
+         * @param {object} response - The file object.
          */
         var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
         result += '?field_name=' + params.field_name + '&token=' + this.service.getSession().token;
@@ -337,12 +336,12 @@ DataProxy.prototype = {
     },
 
     /**
-     * Return file's URL from file field by ID
+     * Return file's URL from file field by ID.
      * @memberof QB.data
-     * @param {string} className - A class name of record
-     * @param {object} params - Object of parameters
-     * @param {string} params.field_name - The file's field name
-     * @param {string} params.id - The record's ID
+     * @param {string} className - A class name of record.
+     * @param {object} params - Object of parameters.
+     * @param {string} params.field_name - The file's field name.
+     * @param {string} params.id - The record's ID.
      */
     fileUrl: function(className, params) {
         var result = Utils.getUrl(config.urls.data, className + '/' + params.id + '/file');
@@ -351,20 +350,20 @@ DataProxy.prototype = {
     },
 
     /**
-     * Delete file from file field by ID ({@link https://quickblox.com/developers/Custom_Objects#Delete_file read more})
+     * Delete file from file field by ID({@link https://docs.quickblox.com/docs/js-custom-objects#delete-file read more}).
      * @memberof QB.data
-     * @param {string} className - A class name of record
-     * @param {object} params - Object of parameters
-     * @param {string} params.field_name - The file's field name
-     * @param {string} params.id - The record's ID
-     * @param {deleteFileFromDataCallback} callback - The deleteFileFromDataCallback function
+     * @param {string} className - A class name of record.
+     * @param {object} params - Object of parameters.
+     * @param {string} params.field_name - The file's field name.
+     * @param {string} params.id - The record's ID.
+     * @param {deleteFileFromDataCallback} callback - The deleteFileFromDataCallback function.
      */
     deleteFile: function(className, params, callback) {
         /**
-         * Callback for QB.data.deleteFile(className, params, callback)
+         * Callback for QB.data.deleteFile(className, params, callback).
          * @callback deleteFileFromDataCallback
-         * @param {object} error - The error object
-         * @param {object} response - Empty body
+         * @param {object} error - The error object.
+         * @param {object} response - Empty body.
          */
         this.service.ajax({url: Utils.getUrl(config.urls.data, className + '/' + params.id + '/file'), data: {field_name: params.field_name},
             dataType: 'text', type: 'DELETE'}, function(err, result) {

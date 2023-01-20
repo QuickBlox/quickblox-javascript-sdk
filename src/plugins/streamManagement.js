@@ -45,7 +45,7 @@ function StreamManagement(options) {
 
     this._intervalId = null;
     
-    this._timeInterval = 2000;
+    this._timeInterval = Utils.getTimeIntervalForCallBackMessage();
 
     this.sentMessageCallback = null;
 
@@ -214,14 +214,17 @@ StreamManagement.prototype.getClientSentStanzasCounter = function(){
 };
 
 StreamManagement.prototype._checkCounterOnIncomeStanza = function (count){
-    if (this._stanzasQueue.length) {
-        if (this._stanzasQueue[0].expect !== count){
-            this.sentMessageCallback(this._stanzasQueue[0].message);
-        } else {
-            this.sentMessageCallback(null, this._stanzasQueue[0].message);
+    var updatedStanzasQueue = [];
+
+    if(this._stanzasQueue.length){
+        for(var i = 0; i < this._stanzasQueue.length; i++){
+            if(this._stanzasQueue[i].expect == count){
+                this.sentMessageCallback(null, this._stanzasQueue[i].message);
+            } else {
+                updatedStanzasQueue.push(this._stanzasQueue[i]);
+            }
         }
-    
-        this._stanzasQueue.shift();
+        this._stanzasQueue = updatedStanzasQueue;
     }
 };
 

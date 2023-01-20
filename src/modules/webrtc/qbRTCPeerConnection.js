@@ -10,6 +10,12 @@ var config = require('../../qbConfig');
 var Helpers = require('./qbWebRTCHelpers');
 
 /**
+ * @namespace QB.webrtc.RTCPeerConnection
+ */
+
+/**
+ * @function qbRTCPeerConnection
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {RTCConfiguration} [config]
  */
 var qbRTCPeerConnection = function qbRTCPeerConnection(config) {
@@ -103,7 +109,9 @@ qbRTCPeerConnection.prototype.negotiate = function () {
 };
 
 /**
- * Save remote SDP for future use
+ * Save remote SDP for future use.
+ * @function setRemoteSDP
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {RTCSessionDescriptionInit} newSDP 
  */
 qbRTCPeerConnection.prototype.setRemoteSDP = function (newSDP) {
@@ -115,7 +123,9 @@ qbRTCPeerConnection.prototype.setRemoteSDP = function (newSDP) {
 };
 
 /**
- * Returns SDP if it was set previously
+ * Returns SDP if it was set previously.
+ * @function getRemoteSDP
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @returns {RTCSessionDescriptionInit|undefined}
  */
 qbRTCPeerConnection.prototype.getRemoteSDP = function () {
@@ -123,7 +133,9 @@ qbRTCPeerConnection.prototype.getRemoteSDP = function () {
 };
 
 /**
- * Create offer or answer SDP and set as local description
+ * Create offer or answer SDP and set as local description.
+ * @function setLocalSessionDescription
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {Object} params
  * @param {'answer'|'offer'} params.type 
  * @param {RTCOfferOptions} [params.options] 
@@ -175,7 +187,9 @@ qbRTCPeerConnection.prototype.setLocalSessionDescription = function (params, cal
         });
     }
 
-    /** @param {RTCSessionDescriptionInit} description */
+    /** 
+     * @param {RTCSessionDescriptionInit} description 
+     */
     function successCallback(description) {
         var modifiedDescription = _removeExtmapMixedFromSDP(description);
         modifiedDescription.sdp = setPreferredCodec(
@@ -214,6 +228,9 @@ qbRTCPeerConnection.prototype.setLocalSessionDescription = function (params, cal
 };
 
 /**
+ * Set remote session description.
+ * @function setRemoteSessionDescription
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {RTCSessionDescriptionInit} description 
  * @param {Function} callback 
  * @returns {void}
@@ -238,6 +255,9 @@ qbRTCPeerConnection.prototype.setRemoteSessionDescription = function (
 };
 
 /**
+ * Add local stream.
+ * @function addLocalStream
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {MediaStream} stream
  */
 qbRTCPeerConnection.prototype.addLocalStream = function (stream) {
@@ -251,6 +271,9 @@ qbRTCPeerConnection.prototype.addLocalStream = function (stream) {
 };
 
 /**
+ * Add ice candidate.
+ * @function _addIceCandidate
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {RTCIceCandidateInit} iceCandidate 
  * @returns {Promise<void>}
  */
@@ -261,6 +284,9 @@ qbRTCPeerConnection.prototype._addIceCandidate = function (iceCandidate) {
 };
 
 /**
+ * Add ice candidates.
+ * @function addCandidates
+ * @memberOf QB.webrtc.RTCPeerConnection
  * @param {Array<RTCIceCandidateInit>} iceCandidates 
  */
 qbRTCPeerConnection.prototype.addCandidates = function (iceCandidates) {

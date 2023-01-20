@@ -14,7 +14,7 @@ function DialogProxy(service) {
  **/
 DialogProxy.prototype = {
     /**
-     * Retrieve list of dialogs. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_list_of_dialogs More info.}
+     * Retrieve list of dialogs({@link https://docs.quickblox.com/docs/js-chat-dialogs#retrieve-list-of-dialogs read more}).
      * @memberof QB.chat.dialog
      * @param {Object} params - Some filters to get only chat dialogs you need.
      * @param {listDialogCallback} callback - The callback function.
@@ -22,8 +22,8 @@ DialogProxy.prototype = {
     list: function(params, callback) {
         /**
          * Callback for QB.chat.dialog.list().
-         * @param {Object} error - The error object
-         * @param {Object} resDialogs - the dialog list
+         * @param {Object} error - The error object.
+         * @param {Object} resDialogs - the dialog list.
          * @callback listDialogCallback
          * */
 
@@ -39,7 +39,7 @@ DialogProxy.prototype = {
     },
 
     /**
-     * Create new dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
+     * Create new dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#create-dialog read more}).
      * @memberof QB.chat.dialog
      * @param {Object} params - Object of parameters.
      * @param {createDialogCallback} callback - The callback function.
@@ -47,8 +47,8 @@ DialogProxy.prototype = {
     create: function(params, callback) {
         /**
          * Callback for QB.chat.dialog.create().
-         * @param {Object} error - The error object
-         * @param {Object} createdDialog - the dialog object
+         * @param {Object} error - The error object.
+         * @param {Object} createdDialog - the dialog object.
          * @callback createDialogCallback
          * */
 
@@ -64,7 +64,7 @@ DialogProxy.prototype = {
     },
 
     /**
-     * Update group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Update_group_dialog More info.}
+     * Update group dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#update-dialog read more}).
      * @memberof QB.chat.dialog
      * @param {String} id - The dialog ID.
      * @param {Object} params - Object of parameters.
@@ -73,8 +73,8 @@ DialogProxy.prototype = {
     update: function(id, params, callback) {
         /**
          * Callback for QB.chat.dialog.update()
-         * @param {Object} error - The error object
-         * @param {Object} res - the dialog object
+         * @param {Object} error - The error object.
+         * @param {Object} res - the dialog object.
          * @callback updateDialogCallback
          * */
 
@@ -88,7 +88,7 @@ DialogProxy.prototype = {
     },
 
     /**
-     * Delete a dialog or dialogs. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_dialog More info.}
+     * Delete a dialog or dialogs({@link https://docs.quickblox.com/docs/js-chat-dialogs#delete-dialog read more}).
      * @memberof QB.chat.dialog
      * @param {Array} id - The dialog IDs array.
      * @param {Object | function} params_or_callback - Object of parameters or callback function.
@@ -96,8 +96,8 @@ DialogProxy.prototype = {
      * */
     delete: function(id, params_or_callback, callback) {
         /**
-         * Callback for QB.chat.dialog.delete()
-         * @param {Object} error - The error object
+         * Callback for QB.chat.dialog.delete().
+         * @param {Object} error - The error object.
          * @callback deleteDialogCallback
          * */
 

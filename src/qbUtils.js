@@ -320,8 +320,12 @@ var Utils = {
             merged.push(newItem);
         }
         return merged;
-    }
+    },
 
+    getTimeIntervalForCallBackMessage: function() {
+        const timeInterval = typeof config.callBackInterval === 'undefined' ? 2 : config.callBackInterval;
+        return timeInterval *  1000;
+    }
 };
 
 module.exports = Utils;

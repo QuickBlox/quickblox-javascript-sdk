@@ -29,6 +29,7 @@ QuickBlox.prototype = {
 
     /**
      * @memberof QB
+     * Initialize QuickBlox SDK({@link https://docs.quickblox.com/docs/js-setup#initialize-quickblox-sdk read more})
      * @param {Number | String} appIdOrToken - Application ID (from your admin panel) or Session Token.
      * @param {String | Number} authKeyOrAppId - Authorization key or Application ID. You need to set up Application ID if you use session token as appIdOrToken parameter.
      * @param {String} authSecret - Authorization secret key (from your admin panel).
@@ -133,7 +134,7 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Init QuickBlox SDK with User Account data for start session with token.
+     * Init QuickBlox SDK with User Account data to start session with token({@link https://docs.quickblox.com/docs/js-setup#initialize-quickblox-sdk-without-authorization-key-and-secret read more}).
      * @memberof QB
      * @param {Number} appId - Application ID (from your admin panel).
      * @param {String | Number} accountKey - Account key (from your admin panel).
@@ -153,28 +154,28 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Return current session
+     * Return current session({@link https://docs.quickblox.com/docs/js-authentication#get-session read more}).
      * @memberof QB
      * @param {getSessionCallback} callback - The getSessionCallback function.
      * */
     getSession: function(callback) {
         /**
-         * This callback return session object.
+         * This callback return session object..
          * @callback getSessionCallback
-         * @param {Object} error - The error object
-         * @param {Object} session - Contains of session object
+         * @param {Object} error - The error object.
+         * @param {Object} session - Contains of session object.
          * */
         this.auth.getSession(callback);
     },
 
     /**
-     * Set up user session token to current session and return it
+     * Set up user session token to current session and return it({@link https://docs.quickblox.com/docs/js-authentication#set-existing-session read more}).
      * @memberof QB
-     * @param {String} token - a User Session Token
+     * @param {String} token - A User Session Token.
      * @param {getSessionCallback} callback - The getSessionCallback function.
      * @callback getSessionCallback
-     * @param {Object} error - The error object
-     * @param {Object} session - Contains of session object
+     * @param {Object} error - The error object.
+     * @param {Object} session - Contains of session object.
      * */
     startSessionWithToken: function(token, callback) {
         if (token === undefined) throw new Error('Cannot start session with undefined token');
@@ -202,23 +203,23 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Creat new session. {@link https://quickblox.com/developers/Javascript#Authorization More info}
+     * Create new session({@link https://docs.quickblox.com/docs/js-authentication#create-session read more}).
      * @memberof QB
      * @param {String} appIdOrToken Should be applecationID or QBtoken.
-     * @param {createSessionCallback} callback -
+     * @param {createSessionCallback} callback
      * */
     createSession: function(params, callback) {
         /**
          * This callback return session object.
          * @callback createSession
-         * @param {Object} error - The error object
-         * @param {Object} session - Contains of session object
+         * @param {Object} error - The error object.
+         * @param {Object} session - Contains of session object.
          * */
         this.auth.createSession(params, callback);
     },
 
     /**
-     * Destroy current session.  {@link https://quickblox.com/developers/Authentication_and_Authorization#API_Session_Destroy More info}
+     * Destroy current session({@link https://docs.quickblox.com/docs/js-authentication#destroy-session-token read more}).
      * @memberof QB
      * @param {destroySessionCallback} callback - The destroySessionCallback function.
      * */
@@ -233,7 +234,7 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Login to QuickBlox application. {@link https://quickblox.com/developers/Javascript#Authorization More info}
+     * Login to QuickBlox application({@link https://docs.quickblox.com/docs/js-authentication#log-in-user read more}).
      * @memberof QB
      * @param {Object} params - Params object for login into the session.
      * @param {loginCallback} callback - The loginCallback function.
@@ -249,7 +250,7 @@ QuickBlox.prototype = {
     },
 
     /**
-     * Remove user from current session, but doesn't destroy it.
+     * Remove user from current session, but doesn't destroy it({@link https://docs.quickblox.com/docs/js-authentication#log-out-user read more}).
      * @memberof QB
      * @param {logoutCallback} callback - The logoutCallback function.
      * */
