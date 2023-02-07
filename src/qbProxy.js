@@ -139,7 +139,7 @@ ServiceProxy.prototype = {
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
                 qbResponse = response;
-
+                console.log('qbProxy fetch then 1');
                 if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
                     var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
                     var headerHasToken  = !(qbTokenExpirationDate === null ||
@@ -163,8 +163,15 @@ ServiceProxy.prototype = {
 
                 return ' ';
             }).then(function(body) {
+            //console.log('HTTP status code: ', qbResponse.headers.status);
+            //console.log('HTTP response: ', qbResponse);
+            console.log('qbProxy fetch then 2');
+            console.log('HTTP body: ', qbResponse);
             _requestCallback(null, qbResponse, body);
         }, function(error) {
+            _requestCallback(error);
+        }).catch((error) => {
+            console.log('qbProxy fetch ... catch, error: ', error);
             _requestCallback(error);
         });
 

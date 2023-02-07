@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.15.2',
-  buildNumber: '1144',
+  version: '2.15.3',
+  buildNumber: '1149',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -79,7 +79,6 @@ var config = {
   addISOTime: false,
   qbTokenExpirationDate: null,
   liveSessionInterval: 120,
-  callBackInterval: 30,
 };
 
 config.set = function(options) {
