@@ -53555,8 +53555,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.15.3',
-  buildNumber: '1148',
+  version: '2.15.4',
+  buildNumber: '1149',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -53709,7 +53709,7 @@ QuickBlox.prototype = {
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, accountKey, configMap) {
-        console.log('current platform: ', Utils.getEnv());
+        Utils.QBLog('current platform:',Utils.getEnv());
         if (typeof accountKey === 'string' && accountKey.length) {
             if (configMap && typeof configMap === 'object') {
                 config.set(configMap);
@@ -54091,7 +54091,6 @@ ServiceProxy.prototype = {
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
                 qbResponse = response;
-                console.log('qbProxy fetch then 1');
                 if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
                     var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
                     var headerHasToken  = !(qbTokenExpirationDate === null ||
@@ -54115,10 +54114,6 @@ ServiceProxy.prototype = {
 
                 return ' ';
             }).then(function(body) {
-            //console.log('HTTP status code: ', qbResponse.headers.status);
-            //console.log('HTTP response: ', qbResponse);
-            console.log('qbProxy fetch then 2');
-            console.log('HTTP body: ', qbResponse);
             _requestCallback(null, qbResponse, body);
         }, function(error) {
             _requestCallback(error);
