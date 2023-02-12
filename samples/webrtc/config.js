@@ -16,10 +16,10 @@
 
     /** Test server / app by defaults */
     const creds = {
-        'appId': '',
-        'authKey': '',
-        'authSecret': '',
-        'accountKey': ''
+        'appId': 'XXXX',
+        'authKey': '7CDFmAV5W7',
+        'authSecret': 'DcF2ROTJd-hk',
+        'accountKey': 'KsJmJHMV-F11T6Z3g'
     };
 
     const config = {

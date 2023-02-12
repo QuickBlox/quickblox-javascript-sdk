@@ -1,0 +1,4 @@
+djangovenv*
+static
+*__pycache__*
+*.pyc

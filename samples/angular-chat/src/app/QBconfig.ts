@@ -1,9 +1,9 @@
 export const QBconfig = {
   credentials: {
-    appId: '',
-    authKey: '',
-    authSecret: '',
-    accountKey: ''
+    appId: 'YOUR_APP_ID',
+    authKey: 'YOUR_AUTH_KEY',
+    authSecret: 'DcFckTJd-hk',
+    accountKey: 'Ks9sNV-F11T6Z3g'
   },
   appConfig: {
     chatProtocol: {
