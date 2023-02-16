@@ -820,11 +820,11 @@ ChatProxy.prototype = {
                                                 'failed, at ', Utils.getCurrentTime(),
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter,
                                                 ' error: ', error);
-                                            self._localPingFaildCounter += 1;
+                                            self._chatPingFailedCounter += 1;
                                             if (self._chatPingFailedCounter > 6) {
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
-                                                self._localPingFaildCounter = 0;
+                                                self._chatPingFailedCounter = 0;
                                                 self._establishConnection(params);
                                             }
                                         } else {
@@ -832,7 +832,7 @@ ChatProxy.prototype = {
                                                 'Chat Ping: ',
                                                 'ok, at ', Utils.getCurrentTime(),
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter);
-                                            self._localPingFaildCounter = 0;
+                                            self._chatPingFailedCounter = 0;
                                         }
                                     });
                                 } catch (err) {
@@ -1454,7 +1454,7 @@ ChatProxy.prototype = {
             this.connection.flush();
             this.connection.disconnect();
             if (this._checkConnectionPingTimer !== undefined) {
-                Utils.QBLog('[QBChat]', 'Stop ping to localhost.');
+                Utils.QBLog('[QBChat]', 'Stop ping');
                 clearInterval(this._checkConnectionPingTimer);
                 this._checkConnectionPingTimer = undefined;
             }

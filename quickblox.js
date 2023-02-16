@@ -46157,11 +46157,11 @@ ChatProxy.prototype = {
                                                 'failed, at ', Utils.getCurrentTime(),
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter,
                                                 ' error: ', error);
-                                            self._localPingFaildCounter += 1;
+                                            self._chatPingFailedCounter += 1;
                                             if (self._chatPingFailedCounter > 6) {
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
-                                                self._localPingFaildCounter = 0;
+                                                self._chatPingFailedCounter = 0;
                                                 self._establishConnection(params);
                                             }
                                         } else {
@@ -46169,7 +46169,7 @@ ChatProxy.prototype = {
                                                 'Chat Ping: ',
                                                 'ok, at ', Utils.getCurrentTime(),
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter);
-                                            self._localPingFaildCounter = 0;
+                                            self._chatPingFailedCounter = 0;
                                         }
                                     });
                                 } catch (err) {
@@ -46791,7 +46791,7 @@ ChatProxy.prototype = {
             this.connection.flush();
             this.connection.disconnect();
             if (this._checkConnectionPingTimer !== undefined) {
-                Utils.QBLog('[QBChat]', 'Stop ping to localhost.');
+                Utils.QBLog('[QBChat]', 'Stop ping');
                 clearInterval(this._checkConnectionPingTimer);
                 this._checkConnectionPingTimer = undefined;
             }
@@ -53555,8 +53555,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.15.4',
-  buildNumber: '1149',
+  version: '2.15.5',
+  buildNumber: '1152',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -53577,9 +53577,9 @@ var config = {
     websocket: 'wss://chat.quickblox.com:5291',
     active: 2
   },
-  pingTimeout: 30,
+  pingTimeout: 1,
   pingLocalhostTimeInterval: 5,
-  chatReconnectionTimeInterval: 5,
+  chatReconnectionTimeInterval: 3,
   webrtc: {
     answerTimeInterval: 60,
     autoReject: true,
@@ -53622,6 +53622,7 @@ var config = {
   addISOTime: false,
   qbTokenExpirationDate: null,
   liveSessionInterval: 120,
+  callBackInterval: 30,
 };
 
 config.set = function(options) {
@@ -53709,7 +53710,7 @@ QuickBlox.prototype = {
      * @param {Object} configMap - Settings object for QuickBlox SDK.
      */
     init: function(appIdOrToken, authKeyOrAppId, authSecret, accountKey, configMap) {
-        Utils.QBLog('current platform:',Utils.getEnv());
+        console.log('current platform: ', Utils.getEnv());
         if (typeof accountKey === 'string' && accountKey.length) {
             if (configMap && typeof configMap === 'object') {
                 config.set(configMap);
