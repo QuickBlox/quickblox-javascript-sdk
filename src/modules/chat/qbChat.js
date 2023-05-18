@@ -22,7 +22,7 @@ if (Utils.getEnv().browser) {
     Strophe.addNamespace('CHAT_STATES', chatUtils.MARKERS.STATES);
 } else if (Utils.getEnv().nativescript) {
     XMPP = require('nativescript-xmpp-client');
-} else if (Utils.getEnv().node)  {
+} else if (Utils.getEnv().node) {
     XMPP = require('node-xmpp-client');
 }
 
@@ -68,7 +68,7 @@ function ChatProxy(service) {
                 },
                 'autostart': false
             });
-        // node-xmpp-client
+            // node-xmpp-client
         } else if (Utils.getEnv().node) {
             self.Client = new XMPP({
                 'autostart': false
@@ -78,7 +78,7 @@ function ChatProxy(service) {
         // override 'send' function to add some logs
         originSendFunction = self.Client.send;
 
-        self.Client.send = function(stanza) {
+        self.Client.send = function (stanza) {
             Utils.QBLog('[QBChat]', 'SENT:', stanza.toString());
             originSendFunction.call(self.Client, stanza);
         };
@@ -96,7 +96,7 @@ function ChatProxy(service) {
 
     this._checkConnectionTimer = undefined;
     this._checkConnectionPingTimer = undefined;
-    this._localPingFaildCounter = 0;
+    this._chatPingFailedCounter = 0;
     this._onlineStatus = true;
     this._checkExpiredSessionTimer = undefined;
     this._sessionHasExpired = false;
@@ -118,10 +118,10 @@ function ChatProxy(service) {
     //
     this.chatUtils = chatUtils;
 
-    if (config.streamManagement.enable){
+    if (config.streamManagement.enable) {
         if (config.chatProtocol.active === 2) {
             this.streamManagement = new StreamManagement(config.streamManagement);
-            self._sentMessageCallback = function(messageLost, messageSent) {
+            self._sentMessageCallback = function (messageLost, messageSent) {
                 if (typeof self.onSentMessageCallback === 'function') {
                     if (messageSent) {
                         self.onSentMessageCallback(null, messageSent);
@@ -158,61 +158,61 @@ function ChatProxy(service) {
      */
 
     /**
-     * You need to set onMessageListener function, to get messages({@link https://docs.quickblox.com/docs/js-chat-messaging#subscribe-message-events read more}).
+     * You need to set onMessageListener function, to get messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_new_dialog More info.}
      * @function onMessageListener
      * @memberOf QB.chat
-     * @param {Number} userId - Sender id.
-     * @param {Object} message - The message model object.
+     * @param {Number} userId - Sender id
+     * @param {Object} message - The message model object
      **/
 
     /**
-     * Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat.
+     * Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Blocked_user_attempts_to_communicate_with_user More info.}
      * @function onMessageErrorListener
      * @memberOf QB.chat
-     * @param {Number} messageId - The message id.
-     * @param {Object} error - The error object.
+     * @param {Number} messageId - The message id
+     * @param {Object} error - The error object
      **/
 
     /**
-     * This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default({@link https://docs.quickblox.com/docs/js-chat-messaging#check-if-a-message-is-sent read more}).
+     * This feature defines an approach for ensuring is the message delivered to the server. This feature is unabled by default. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Sent_message More info.}
      * @function onSentMessageCallback
      * @memberOf QB.chat
-     * @param {Object} messageLost - The lost message model object (Fail).
-     * @param {Object} messageSent - The sent message model object (Success).
+     * @param {Object} messageLost - The lost message model object (Fail)
+     * @param {Object} messageSent - The sent message model object (Success)
      **/
 
     /**
-     * Show typing status in chat or groupchat({@link https://docs.quickblox.com/docs/js-chat-messaging#send-typing-indicators read more}).
+     * Show typing status in chat or groupchat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
      * @function onMessageTypingListener
      * @memberOf QB.chat
-     * @param {Boolean} isTyping - Typing Status (true - typing, false - stop typing).
-     * @param {Number} userId - Typing user id.
-     * @param {String} dialogId - The dialog id.
+     * @param {Boolean} isTyping - Typing Status (true - typing, false - stop typing)
+     * @param {Number} userId - Typing user id
+     * @param {String} dialogId - The dialog id
      **/
 
     /**
-     * Receive delivery confirmations({@link https://docs.quickblox.com/docs/js-chat-messaging#mark-message-as-delivered read more}).
+     * Receive delivery confirmations {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
      * @function onDeliveredStatusListener
      * @memberOf QB.chat
-     * @param {String} messageId - Delivered message id.
-     * @param {String} dialogId - The dialog id.
-     * @param {Number} userId - User id.
+     * @param {String} messageId - Delivered message id
+     * @param {String} dialogId - The dialog id
+     * @param {Number} userId - User id
      **/
 
     /**
-     * You can manage 'read' notifications in chat({@link https://docs.quickblox.com/docs/js-chat-messaging#mark-message-as-read read more}).
+     * You can manage 'read' notifications in chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
      * @function onReadStatusListener
      * @memberOf QB.chat
-     * @param {String} messageId - Read message id.
-     * @param {String} dialogId - The dialog id.
-     * @param {Number} userId - User Id.
+     * @param {String} messageId - Read message id
+     * @param {String} dialogId - The dialog id
+     * @param {Number} userId - User Id
      **/
 
     /**
-     * These messages work over separated channel and won't be mixed with the regular chat messages({@link https://docs.quickblox.com/docs/js-chat-messaging#send-system-messages read more}).
+     * These messages work over separated channel and won't be mixed with the regular chat messages. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
      * @function onSystemMessageListener
      * @memberOf QB.chat
-     * @param {Object} message - The system message model object. Always have type: 'headline'.
+     * @param {Object} message - The system message model object. Always have type: 'headline'
      **/
 
     /**
@@ -240,56 +240,56 @@ function ChatProxy(service) {
      **/
 
     /**
-     * Receive user status (online / offline)({@link https://docs.quickblox.com/docs/js-chat-contact-list#contact-list-updates read more}).
+     * Receive user status (online / offline). {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
      * @function onContactListListener
      * @memberOf QB.chat
-     * @param {Number} userId - The sender ID.
-     * @param {String} type - If user leave the chat, type will be 'unavailable'.
+     * @param {Number} userId - The sender ID
+     * @param {String} type - If user leave the chat, type will be 'unavailable'
      **/
 
     /**
-     * Receive subscription request({@link https://docs.quickblox.com/docs/js-chat-contact-list#add-user-to-your-contact-list read more}).
+     * Receive subscription request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
      * @function onSubscribeListener
      * @memberOf QB.chat
-     * @param {Number} userId - The sender ID.
+     * @param {Number} userId - The sender ID
      **/
 
     /**
-     * Receive confirm request({@link https://docs.quickblox.com/docs/js-chat-contact-list#confirm-the-contact-request read more}).
+     * Receive confirm request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
      * @function onConfirmSubscribeListener
      * @memberOf QB.chat
      * @param {Number} userId - The sender ID
      **/
 
     /**
-     * Receive reject request({@link https://docs.quickblox.com/docs/js-chat-contact-list#reject-the-contact-request read more}).
+     * Receive reject request. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Roster_callbacks More info.}
      * @function onRejectSubscribeListener
      * @memberOf QB.chat
      * @param {Number} userId - The sender ID
      **/
 
     /**
-     * Receive user's last activity (time ago).
+     * Receive user's last activity (time ago). {@link https://xmpp.org/extensions/xep-0012.html More info.}
      * @function onLastUserActivityListener
      * @memberOf QB.chat
-     * @param {Number} userId - The user's ID which last activity time we receive.
-     * @param {Number} seconds - Time ago (last activity in seconds or 0 if user online or undefined if user never registered in chat).
+     * @param {Number} userId - The user's ID which last activity time we receive
+     * @param {Number} seconds - Time ago (last activity in seconds or 0 if user online or undefined if user never registered in chat)
      */
 
     /**
-     * Run after disconnect from chat({@linkhttps://docs.quickblox.com/docs/js-chat-connection#disconnect-from-chat-server read more}).
+     * Run after disconnect from chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
      * @function onDisconnectedListener
      * @memberOf QB.chat
      **/
 
     /**
-     * By default Javascript SDK reconnects automatically when connection to server is lost({@link https://docs.quickblox.com/docs/js-chat-connection#reconnection read more}).
+     * By default Javascript SDK reconnects automatically when connection to server is lost. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection More info.}
      * @function onReconnectListener
      * @memberOf QB.chat
      **/
 
 
-    this._onMessage = function(stanza) {
+    this._onMessage = function (stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
             type = chatUtils.getAttr(stanza, 'type'),
@@ -329,16 +329,16 @@ function ChatProxy(service) {
         // ignore invite messages from MUC
         if (invite) return true;
 
-        if(extraParams) {
+        if (extraParams) {
             extraParamsParsed = chatUtils.parseExtraParams(extraParams);
 
-            if(extraParamsParsed.dialogId){
+            if (extraParamsParsed.dialogId) {
                 dialogId = extraParamsParsed.dialogId;
             }
         }
 
-        if(composing || paused){
-            if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)){
+        if (composing || paused) {
+            if (typeof self.onMessageTypingListener === 'function' && (type === 'chat' || type === 'groupchat' || !delay)) {
                 Utils.safeCallbackCall(self.onMessageTypingListener, !!composing, userId, dialogId);
             }
 
@@ -384,7 +384,7 @@ function ChatProxy(service) {
             message.markable = 1;
         }
 
-        if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')){
+        if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')) {
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
 
@@ -393,7 +393,7 @@ function ChatProxy(service) {
         return true;
     };
 
-    this._onPresence = function(stanza) {
+    this._onPresence = function (stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
             id = chatUtils.getAttr(stanza, 'id'),
@@ -402,22 +402,22 @@ function ChatProxy(service) {
             x = chatUtils.getElement(stanza, 'x'),
             xXMLNS, status, statusCode, dialogId, userId;
 
-        if(x){
+        if (x) {
             xXMLNS = chatUtils.getAttr(x, 'xmlns');
             status = chatUtils.getElement(x, 'status');
-            if(status){
+            if (status) {
                 statusCode = chatUtils.getAttr(status, 'code');
             }
         }
 
         // MUC presences go here
-        if(xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user"){
+        if (xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user") {
             dialogId = self.helpers.getDialogIdFromNode(from);
             userId = self.helpers.getUserIdFromRoomJid(from);
 
             // KICK from dialog event
-            if(status && statusCode == "301"){
-                if (typeof self.onKickOccupant === 'function'){
+            if (status && statusCode == "301") {
+                if (typeof self.onKickOccupant === 'function') {
                     var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
                     var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
                     Utils.safeCallbackCall(self.onKickOccupant,
@@ -430,17 +430,17 @@ function ChatProxy(service) {
                 return true;
 
                 // Occupants JOIN/LEAVE events
-            }else if(!status){
-                if(userId != currentUserId){
+            } else if (!status) {
+                if (userId != currentUserId) {
                     // Leave
-                    if(type && type === 'unavailable'){
-                        if (typeof self.onLeaveOccupant === 'function'){
+                    if (type && type === 'unavailable') {
+                        if (typeof self.onLeaveOccupant === 'function') {
                             Utils.safeCallbackCall(self.onLeaveOccupant, dialogId, parseInt(userId));
                         }
                         return true;
                         // Join
-                    }else{
-                        if(typeof self.onJoinOccupant === 'function'){
+                    } else {
+                        if (typeof self.onJoinOccupant === 'function') {
                             Utils.safeCallbackCall(self.onJoinOccupant, dialogId, parseInt(userId));
                         }
                         return true;
@@ -450,18 +450,18 @@ function ChatProxy(service) {
             }
         }
 
-        if(!Utils.getEnv().browser) {
+        if (!Utils.getEnv().browser) {
             /** MUC */
-            if(xXMLNS){
-                if(xXMLNS == "http://jabber.org/protocol/muc#user"){
+            if (xXMLNS) {
+                if (xXMLNS == "http://jabber.org/protocol/muc#user") {
                     /**
                      * if you make 'leave' from dialog
                      * stanza will be contains type="unavailable"
                      */
-                    if(type && type === 'unavailable'){
+                    if (type && type === 'unavailable') {
                         /** LEAVE from dialog */
-                        if(status && statusCode == "110"){
-                            if(typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
+                        if (status && statusCode == "110") {
+                            if (typeof self.nodeStanzasCallbacks['muc:leave'] === 'function') {
                                 Utils.safeCallbackCall(self.nodeStanzasCallbacks['muc:leave'], null);
                             }
                         }
@@ -470,8 +470,8 @@ function ChatProxy(service) {
                     }
 
                     /** JOIN to dialog success */
-                    if(id.endsWith(":join") && status && statusCode == "110"){
-                        if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                    if (id.endsWith(":join") && status && statusCode == "110") {
+                        if (typeof self.nodeStanzasCallbacks[id] === 'function') {
                             self.nodeStanzasCallbacks[id](stanza);
                         }
 
@@ -479,10 +479,10 @@ function ChatProxy(service) {
                     }
 
                     // an error
-                } else if(type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc"){
+                } else if (type && type === 'error' && xXMLNS == "http://jabber.org/protocol/muc") {
                     /** JOIN to dialog error */
-                    if(id.endsWith(":join")){
-                        if(typeof self.nodeStanzasCallbacks[id] === 'function') {
+                    if (id.endsWith(":join")) {
+                        if (typeof self.nodeStanzasCallbacks[id] === 'function') {
                             self.nodeStanzasCallbacks[id](stanza);
                         }
                     }
@@ -498,7 +498,7 @@ function ChatProxy(service) {
         userId = self.helpers.getIdFromNode(from);
 
         if (!type) {
-            if (typeof self.onContactListListener === 'function' && self.roster.contacts[userId] && self.roster.contacts[userId].subscription !== 'none'){
+            if (typeof self.onContactListListener === 'function' && self.roster.contacts[userId] && self.roster.contacts[userId].subscription !== 'none') {
                 Utils.safeCallbackCall(self.onContactListListener, userId);
             }
         } else {
@@ -532,7 +532,7 @@ function ChatProxy(service) {
                             ask: null
                         };
 
-                        if (typeof self.onConfirmSubscribeListener === 'function'){
+                        if (typeof self.onConfirmSubscribeListener === 'function') {
                             Utils.safeCallbackCall(self.onConfirmSubscribeListener, userId);
                         }
                     }
@@ -562,10 +562,10 @@ function ChatProxy(service) {
 
                     // send initial presence if one of client (instance) goes offline
                     if (userId === currentUserId) {
-                        if(Utils.getEnv().browser){
+                        if (Utils.getEnv().browser) {
                             self.connection.send($pres());
                         } else {
-                            self.Client.send(chatUtils.createStanza(XMPP.Stanza, null,'presence'));
+                            self.Client.send(chatUtils.createStanza(XMPP.Stanza, null, 'presence'));
                         }
                     }
 
@@ -578,7 +578,7 @@ function ChatProxy(service) {
         return true;
     };
 
-    this._onIQ = function(stanza) {
+    this._onIQ = function (stanza) {
         var stanzaId = chatUtils.getAttr(stanza, 'id');
         var isLastActivity = stanzaId.indexOf('lastActivity') > -1;
         var isPong = stanzaId.indexOf('ping') > -1;
@@ -607,7 +607,7 @@ function ChatProxy(service) {
                     type: 'result'
                 };
                 var pongStanza = chatUtils.createStanza(builder, pongParams, 'iq');
-                if(Utils.getEnv().browser) {
+                if (Utils.getEnv().browser) {
                     self.connection.send(pongStanza);
                 } else {
                     self.Client.send(pongStanza);
@@ -637,7 +637,7 @@ function ChatProxy(service) {
         return true;
     };
 
-    this._onSystemMessageListener = function(stanza) {
+    this._onSystemMessageListener = function (stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
             messageId = chatUtils.getAttr(stanza, 'id'),
@@ -658,7 +658,7 @@ function ChatProxy(service) {
             };
 
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
-        } else if(self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'WebRTCVideoChat'){
+        } else if (self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'WebRTCVideoChat') {
             self.webrtcSignalingProcessor._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
         }
 
@@ -669,7 +669,7 @@ function ChatProxy(service) {
         return true;
     };
 
-    this._onMessageErrorListener = function(stanza) {
+    this._onMessageErrorListener = function (stanza) {
         // <error code="503" type="cancel">
         //   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
         //   <text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" xml:lang="en">Service not available.</text>
@@ -695,20 +695,20 @@ function ChatProxy(service) {
 ChatProxy.prototype = {
 
     /**
-     * self.connection to the chat({@link https://docs.quickblox.com/docs/js-chat-connection#connect-to-chat-server read more})
+     * self.connection to the chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat More info.}
      * @memberof QB.chat
-     * @param {Object} params - Connect to the chat parameters.
-     * @param {Number} params.userId - Connect to the chat by user id (use instead params.email and params.jid).
-     * @param {String} params.jid - Connect to the chat by user jid (use instead params.userId and params.email).
-     * @param {String} params.email - Connect to the chat by user's email (use instead params.userId and params.jid).
-     * @param {String} params.password - The user's password or session token.
-     * @param {chatConnectCallback} callback - The chatConnectCallback callback.
+     * @param {Object} params - Connect to the chat parameters
+     * @param {Number} params.userId - Connect to the chat by user id (use instead params.email and params.jid)
+     * @param {String} params.jid - Connect to the chat by user jid (use instead params.userId and params.email)
+     * @param {String} params.email - Connect to the chat by user's email (use instead params.userId and params.jid)
+     * @param {String} params.password - The user's password or session token
+     * @param {chatConnectCallback} callback - The chatConnectCallback callback
      * */
-    connect: function(params, callback) {
+    connect: function (params, callback) {
         /**
          * This callback Returns error or contact list.
          * @callback chatConnectCallback
-         * @param {Object} error - The error object.
+         * @param {Object} error - The error object
          * @param {(Object|Boolean)} response - Object of subscribed users (roster) or empty body.
          * */
         Utils.QBLog('[QBChat]', 'Connect with parameters ' + JSON.stringify(params));
@@ -745,8 +745,8 @@ ChatProxy.prototype = {
         if (Utils.getEnv().browser) {
             Utils.QBLog('[QBChat]', '!!---Browser env - connected--!!');
 
-            self.connection.connect(userJid, params.password, function(status) {
-                Utils.QBLog('[QBChat]', 'self.connection.connect called with status '+ status);
+            self.connection.connect(userJid, params.password, function (status) {
+                Utils.QBLog('[QBChat]', 'self.connection.connect called with status ' + status);
                 switch (status) {
                     case Strophe.Status.ERROR:
                         self.isConnected = false;
@@ -762,13 +762,13 @@ ChatProxy.prototype = {
                     case Strophe.Status.CONNFAIL:
                         self.isConnected = false;
                         self._isConnecting = false;
-                        
+
                         err = Utils.getError(422, 'Status.CONNFAIL - The connection attempt failed', 'QBChat');
-                        
+
                         if (isInitialConnect) {
                             callback(err, null);
                         }
-                        
+
                         break;
                     case Strophe.Status.AUTHENTICATING:
                         Utils.QBLog('[QBChat]', 'Status.AUTHENTICATING');
@@ -777,28 +777,28 @@ ChatProxy.prototype = {
                     case Strophe.Status.AUTHFAIL:
                         self.isConnected = false;
                         self._isConnecting = false;
-                        
+
                         err = Utils.getError(401, 'Status.AUTHFAIL - The authentication attempt failed', 'QBChat');
-                        
+
                         if (isInitialConnect) {
                             callback(err, null);
                         }
-                        
-                        if(!self.isConnected && typeof self.onReconnectFailedListener === 'function'){
+
+                        if (!self.isConnected && typeof self.onReconnectFailedListener === 'function') {
                             Utils.safeCallbackCall(self.onReconnectFailedListener, err);
                         }
-                        
+
                         break;
                     case Strophe.Status.CONNECTING:
                         Utils.QBLog('[QBChat]', 'Status.CONNECTING', '(Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket' + ')'));
-            
+
                         break;
                     case Strophe.Status.CONNECTED:
                         // Remove any handlers that might exist from a previous connection via
                         // extension method added to the connection on initialization in qbMain.
                         // NOTE: streamManagement also adds handlers, so do this first.
                         self.connection.XDeleteHandlers();
-                        
+
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'chat');
                         self.connection.XAddTrackedHandler(self._onMessage, null, 'message', 'groupchat');
                         self.connection.XAddTrackedHandler(self._onPresence, null, 'presence');
@@ -810,35 +810,34 @@ ChatProxy.prototype = {
                         noTimerId = config.pingLocalhostTimeInterval === 0 ? false : noTimerId;
 
                         if (noTimerId) {
-                            Utils.QBLog('[QBChat]', 'Init ping to localhost at ', Utils.getCurrentTime());
-                            self._checkConnectionPingTimer = setInterval(function() {
+                            Utils.QBLog('[QBChat]', 'Init ping to chat at ', Utils.getCurrentTime());
+                            self._checkConnectionPingTimer = setInterval(function () {
                                 try {
-                                    self.pinglocalhost(function (error) {
+                                    self.pingchat(function (error) {
                                         if (error) {
                                             Utils.QBLog('[QBChat]',
-                                                'Local Ping: ',
+                                                'Chat Ping: ',
                                                 'failed, at ', Utils.getCurrentTime(),
-                                                '_localPingFaildCounter: ', self._localPingFaildCounter,
+                                                '_chatPingFailedCounter: ', self._chatPingFailedCounter,
                                                 ' error: ', error);
-                                            self._localPingFaildCounter += 1;
-                                            if (self._localPingFaildCounter > 6) {
+                                            self._chatPingFailedCounter += 1;
+                                            if (self._chatPingFailedCounter > 6) {
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
-                                                self._localPingFaildCounter = 0;
+                                                self._chatPingFailedCounter = 0;
                                                 self._establishConnection(params);
                                             }
                                         } else {
                                             Utils.QBLog('[QBChat]',
-                                                'Local Ping: ',
+                                                'Chat Ping: ',
                                                 'ok, at ', Utils.getCurrentTime(),
-                                                '_localPingFaildCounter: ', self._localPingFaildCounter);
-                                            self._localPingFaildCounter = 0;
+                                                '_chatPingFailedCounter: ', self._chatPingFailedCounter);
+                                            self._chatPingFailedCounter = 0;
                                         }
                                     });
-                                }
-                                catch (err) {
+                                } catch (err) {
                                     Utils.QBLog('[QBChat]',
-                                        'Local Ping: ',
+                                        'Chat Ping: ',
                                         'Exception, at ', Utils.getCurrentTime(),
                                         ', detail info: ', err);
                                 }
@@ -849,7 +848,7 @@ ChatProxy.prototype = {
                             var noExpiredSessionTimerId = typeof self._checkExpiredSessionTimer === 'undefined';
                             if (noExpiredSessionTimerId) {
                                 Utils.QBLog('[QBChat]', 'Init timer for check session expired at ', ((new Date()).toTimeString().split(' ')[0]));
-                                self._checkExpiredSessionTimer = setInterval(function() {
+                                self._checkExpiredSessionTimer = setInterval(function () {
                                     var timeNow = new Date();
                                     if (typeof config.qbTokenExpirationDate !== 'undefined') {
                                         var timeLag = Math.round((timeNow.getTime() - config.qbTokenExpirationDate.getTime()) / (1000 * 60));
@@ -864,7 +863,7 @@ ChatProxy.prototype = {
                             }
                         }
 
-                        self._postConnectActions(function(roster) {
+                        self._postConnectActions(function (roster) {
                             callback(null, roster);
                         }, isInitialConnect);
 
@@ -876,7 +875,7 @@ ChatProxy.prototype = {
                         Utils.QBLog('[QBChat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
 
                         // fire 'onDisconnectedListener' only once
-                        if (self.isConnected && typeof self.onDisconnectedListener === 'function'){
+                        if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
                             Utils.safeCallbackCall(self.onDisconnectedListener);
                         }
 
@@ -896,26 +895,26 @@ ChatProxy.prototype = {
         }
 
         /** connect for node */
-        if(!Utils.getEnv().browser) {
+        if (!Utils.getEnv().browser) {
             Utils.QBLog('[QBChat]', '!!--call branch code connect for node--!!');
             // Remove all connection handlers exist from a previous connection
             self.Client.removeAllListeners();
 
-            self.Client.on('connect', function() {
+            self.Client.on('connect', function () {
                 Utils.QBLog('[QBChat]', 'Status.CONNECTING', '(Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket' + ')'));
             });
 
-            self.Client.on('auth', function() {
+            self.Client.on('auth', function () {
                 Utils.QBLog('[QBChat]', 'Status.AUTHENTICATING');
             });
-                    
-            self.Client.on('online', function() {
-                self._postConnectActions(function(roster) {
+
+            self.Client.on('online', function () {
+                self._postConnectActions(function (roster) {
                     callback(null, roster);
                 }, isInitialConnect);
             });
-    
-            self.Client.on('stanza', function(stanza) {
+
+            self.Client.on('stanza', function (stanza) {
                 Utils.QBLog('[QBChat] RECV:', stanza.toString());
                 /**
                  * Detect typeof incoming stanza
@@ -925,35 +924,35 @@ ChatProxy.prototype = {
                     self._onPresence(stanza);
                 } else if (stanza.is('iq')) {
                     self._onIQ(stanza);
-                } else if(stanza.is('message')) {
+                } else if (stanza.is('message')) {
                     if (stanza.attrs.type === 'headline') {
                         self._onSystemMessageListener(stanza);
-                    } else if(stanza.attrs.type === 'error') {
+                    } else if (stanza.attrs.type === 'error') {
                         self._onMessageErrorListener(stanza);
                     } else {
                         self._onMessage(stanza);
                     }
                 }
             });
-            
-            self.Client.on('disconnect', function() {
+
+            self.Client.on('disconnect', function () {
                 Utils.QBLog('[QBChat]', 'Status.DISCONNECTED - ' + chatUtils.getLocalTime());
 
                 if (typeof self.onDisconnectedListener === 'function') {
                     Utils.safeCallbackCall(self.onDisconnectedListener);
                 }
-                
+
                 self.isConnected = false;
                 self._isConnecting = false;
 
                 // reconnect to chat and enable check connection
                 self._establishConnection(params);
             });
-            
-            self.Client.on('error', function() {
+
+            self.Client.on('error', function () {
                 Utils.QBLog('[QBChat]', 'Status.ERROR - ' + chatUtils.getLocalTime());
                 err = Utils.getError(422, 'Status.ERROR - An error has occurred', 'QBChat');
-    
+
                 if (isInitialConnect) {
                     callback(err, null);
                 }
@@ -962,8 +961,8 @@ ChatProxy.prototype = {
                 self._isConnecting = false;
             });
 
-            self.Client.on('end', function() {
-                self.Client.removeAllListeners();                
+            self.Client.on('end', function () {
+                self.Client.removeAllListeners();
             });
 
             self.Client.options.jid = userJid;
@@ -974,7 +973,7 @@ ChatProxy.prototype = {
 
     /**
      * Actions after the connection is established
-     * 
+     *
      * - enable stream management (the configuration setting);
      * - save user's JID;
      * - enable carbons;
@@ -982,7 +981,7 @@ ChatProxy.prototype = {
      * - recover the joined rooms and fire 'onReconnectListener' (if the reconnect);
      * - send initial presence to the chat server.
      */
-    _postConnectActions: function(callback, isInitialConnect) {
+    _postConnectActions: function (callback, isInitialConnect) {
         Utils.QBLog('[QBChat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
 
         var self = this;
@@ -1006,7 +1005,7 @@ ChatProxy.prototype = {
         self._enableCarbons();
 
         if (isInitialConnect) {
-            self.roster.get(function(contacts) {
+            self.roster.get(function (contacts) {
                 xmppClient.send(presence);
 
                 self.roster.contacts = contacts;
@@ -1014,7 +1013,7 @@ ChatProxy.prototype = {
             });
         } else {
             var rooms = Object.keys(self.muc.joinedRooms);
-            
+
             xmppClient.send(presence);
 
             Utils.QBLog('[QBChat]', 'Re-joining ' + rooms.length + " rooms...");
@@ -1029,7 +1028,7 @@ ChatProxy.prototype = {
         }
     },
 
-    _establishConnection: function(params) {
+    _establishConnection: function (params) {
         var self = this;
         Utils.QBLog('[QBChat]', '_establishConnection called');
         if (self._isLogout || self._checkConnectionTimer) {
@@ -1037,7 +1036,7 @@ ChatProxy.prototype = {
             return;
         }
 
-        var _connect = function() {
+        var _connect = function () {
             Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection ');
             if (!self.isConnected && !self._isConnecting && !self._sessionHasExpired) {
                 Utils.QBLog('[QBChat]', 'call connect() again in _establishConnection ');
@@ -1051,8 +1050,8 @@ ChatProxy.prototype = {
 
         _connect();
 
-        self._checkConnectionTimer = setInterval(function() {
-            Utils.QBLog('[QBChat]', 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = '+config.chatReconnectionTimeInterval);
+        self._checkConnectionTimer = setInterval(function () {
+            Utils.QBLog('[QBChat]', 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = ' + config.chatReconnectionTimeInterval);
             _connect();
         }, config.chatReconnectionTimeInterval * 1000);
     },
@@ -1073,13 +1072,13 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send message to 1 to 1 or group dialog({@link https://docs.quickblox.com/docs/js-chat-messaging#send-text-message read more}).
+     * Send message to 1 to 1 or group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_dialog More info.}
      * @memberof QB.chat
-     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and room jid for group chat.
+     * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * @param {Object} message - The message object.
-     * @returns {String} messageId - The current message id (was generated by SDK).
+     * @returns {String} messageId - The current message id (was generated by SDK)
      * */
-    send: function(jid_or_user_id, message) {
+    send: function (jid_or_user_id, message) {
         Utils.QBLog('[QBChat]', 'Call send ' + JSON.stringify(message));
         var self = this,
             builder = Utils.getEnv().browser ? $msg : XMPP.Stanza;
@@ -1113,8 +1112,8 @@ ChatProxy.prototype = {
             stanza = chatUtils.filledExtraParams(stanza, message.extension);
         }
 
-        if(Utils.getEnv().browser) {
-            if(config.streamManagement.enable){
+        if (Utils.getEnv().browser) {
+            if (config.streamManagement.enable) {
                 message.id = paramsCreateMsg.id;
                 message.jid_or_user_id = jid_or_user_id;
                 self.connection.send(stanza, message);
@@ -1122,7 +1121,7 @@ ChatProxy.prototype = {
                 self.connection.send(stanza);
             }
         } else {
-            if(config.streamManagement.enable){
+            if (config.streamManagement.enable) {
                 message.id = paramsCreateMsg.id;
                 message.jid_or_user_id = jid_or_user_id;
                 self.Client.send(stanza, message);
@@ -1136,13 +1135,13 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send system message (system notification) to 1 to 1 or group dialog({@link https://docs.quickblox.com/docs/js-chat-messaging#send-system-messages read more}).
+     * Send system message (system notification) to 1 to 1 or group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#System_notifications More info.}
      * @memberof QB.chat
-     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and room jid for group chat.
+     * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * @param {Object} message - The message object.
-     * @returns {String} messageId - The current message id (was generated by SDK).
+     * @returns {String} messageId - The current message id (was generated by SDK)
      * */
-    sendSystemMessage: function(jid_or_user_id, message) {
+    sendSystemMessage: function (jid_or_user_id, message) {
         Utils.QBLog('[QBChat]', 'Call sendSystemMessage ' + JSON.stringify(message));
         var self = this,
             builder = Utils.getEnv().browser ? $msg : XMPP.Stanza,
@@ -1160,7 +1159,7 @@ ChatProxy.prototype = {
             }).t(message.body).up();
         }
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             // custom parameters
             if (message.extension) {
                 stanza.c('extraParams', {
@@ -1173,7 +1172,7 @@ ChatProxy.prototype = {
             self.connection.send(stanza);
         } else {
             if (message.extension) {
-                stanza.c('extraParams',  {
+                stanza.c('extraParams', {
                     xmlns: chatUtils.MARKERS.CLIENT
                 }).c('moduleIdentifier').t('SystemNotifications');
 
@@ -1187,11 +1186,11 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send is typing status({@link https://docs.quickblox.com/docs/js-chat-messaging#send-typing-indicators read more}).
+     * Send is typing status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
      * @memberof QB.chat
-     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and room jid for group chat.
+     * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * */
-    sendIsTypingStatus: function(jid_or_user_id) {
+    sendIsTypingStatus: function (jid_or_user_id) {
         Utils.QBLog('[QBChat]', 'Call sendIsTypingStatus ');
         var self = this,
             stanzaParams = {
@@ -1207,7 +1206,7 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if(Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             self.connection.send(stanza);
         } else {
             self.Client.send(stanza);
@@ -1215,11 +1214,11 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send is stop typing status({@link https://docs.quickblox.com/docs/js-chat-messaging#send-typing-indicators read more}).
+     * Send is stop typing status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Typing_status More info.}
      * @memberof QB.chat
-     * @param {String | Number} jid_or_user_id - Use opponent id for 1 to 1 chat, and room jid for group chat.
+     * @param {String | Number} jid_or_user_id - Use opponent id or jid for 1 to 1 chat, and room jid for group chat.
      * */
-    sendIsStopTypingStatus: function(jid_or_user_id) {
+    sendIsStopTypingStatus: function (jid_or_user_id) {
         Utils.QBLog('[QBChat]', 'Call sendIsStopTypingStatus ');
         var self = this,
             stanzaParams = {
@@ -1235,7 +1234,7 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.STATES
         });
 
-        if(Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             self.connection.send(stanza);
         } else {
             self.Client.send(stanza);
@@ -1243,14 +1242,14 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send is delivered status({@link https://docs.quickblox.com/docs/js-chat-messaging#mark-message-as-delivered read more}).
+     * Send is delivered status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delivered_status More info.}
      * @memberof QB.chats
-     * @param {Object} params - Object of parameters.
-     * @param {Number} params.userId - The receiver id.
-     * @param {Number} params.messageId - The delivered message id.
-     * @param {Number} params.dialogId - The dialog id.
+     * @param {Object} params - Object of parameters
+     * @param {Number} params.userId - The receiver id
+     * @param {Number} params.messageId - The delivered message id
+     * @param {Number} params.dialogId - The dialog id
      * */
-    sendDeliveredStatus: function(params) {
+    sendDeliveredStatus: function (params) {
         Utils.QBLog('[QBChat]', 'Call sendDeliveredStatus ');
         var self = this,
             stanzaParams = {
@@ -1272,7 +1271,7 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.CLIENT
         }).c('dialog_id').t(params.dialogId);
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             self.connection.send(stanza);
         } else {
             self.Client.send(stanza);
@@ -1280,14 +1279,14 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send is read status({@link https://docs.quickblox.com/docs/js-chat-messaging#mark-message-as-read read more}).
+     * Send is read status. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Read_status More info.}
      * @memberof QB.chat
-     * @param {Object} params - Object of parameters.
-     * @param {Number} params.userId - The receiver id.
-     * @param {Number} params.messageId - The delivered message id.
-     * @param {Number} params.dialogId - The dialog id.
+     * @param {Object} params - Object of parameters
+     * @param {Number} params.userId - The receiver id
+     * @param {Number} params.messageId - The delivered message id
+     * @param {Number} params.dialogId - The dialog id
      * */
-    sendReadStatus: function(params) {
+    sendReadStatus: function (params) {
         Utils.QBLog('[QBChat]', 'Call sendReadStatus ' + JSON.stringify(params));
         var self = this,
             stanzaParams = {
@@ -1309,7 +1308,7 @@ ChatProxy.prototype = {
             xmlns: chatUtils.MARKERS.CLIENT
         }).c('dialog_id').t(params.dialogId);
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             self.connection.send(stanza);
         } else {
             self.Client.send(stanza);
@@ -1317,11 +1316,11 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Send query to get last user activity by QB.chat.onLastUserActivityListener(userId, seconds)({@link https://xmpp.org/extensions/xep-0012.html read more}).
+     * Send query to get last user activity by QB.chat.onLastUserActivityListener(userId, seconds). {@link https://xmpp.org/extensions/xep-0012.html More info.}
      * @memberof QB.chat
-     * @param {(Number|String)} jid_or_user_id - The user id or jid, that the last activity we want to know.
+     * @param {(Number|String)} jid_or_user_id - The user id or jid, that the last activity we want to know
      * */
-    getLastUserActivity: function(jid_or_user_id) {
+    getLastUserActivity: function (jid_or_user_id) {
         Utils.QBLog('[QBChat]', 'Call getLastUserActivity ');
         var iqParams,
             builder,
@@ -1349,8 +1348,8 @@ ChatProxy.prototype = {
         }
     },
 
-    pinglocalhost: function(callback){
-        Utils.QBLog('[QBChat]', 'ping localhost');
+    pingchat: function (callback) {
+        Utils.QBLog('[QBChat]', 'ping chat');
         var self = this;
         var id = this.helpers.getUniqueId('ping');
         var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
@@ -1359,7 +1358,8 @@ ChatProxy.prototype = {
         var stanza;
 
         //to = config.endpoints.chat;
-        to = 'http://localhost';
+        //to = 'http://localhost';
+        to = config.endpoints.chat? config.endpoints.chat : 'chat.quickblox.com';
         _callback = callback;
 
         var iqParams = {
@@ -1369,10 +1369,10 @@ ChatProxy.prototype = {
             type: 'get'
         };
         stanza = chatUtils.createStanza(builder, iqParams, 'iq');
-        stanza.c('ping', { xmlns: "urn:xmpp:ping" });
+        stanza.c('ping', {xmlns: "urn:xmpp:ping"});
 
         var noAnswer = function () {
-            _callback('Local ping No answer');
+            _callback('Chat ping No answer');
             self._pings[id] = undefined;
             delete self._pings[id];
         };
@@ -1397,7 +1397,7 @@ ChatProxy.prototype = {
         var _callback;
         var stanza;
         if ((typeof jid_or_user_id === 'string' ||
-            typeof jid_or_user_id === 'number') &&
+                typeof jid_or_user_id === 'number') &&
             typeof callback === 'function') {
             to = this.helpers.jidOrUserId(jid_or_user_id);
             _callback = callback;
@@ -1417,7 +1417,7 @@ ChatProxy.prototype = {
             type: 'get'
         };
         stanza = chatUtils.createStanza(builder, iqParams, 'iq');
-        stanza.c('ping', { xmlns: "urn:xmpp:ping" });
+        stanza.c('ping', {xmlns: "urn:xmpp:ping"});
 
         var noAnswer = function () {
             _callback('No answer');
@@ -1437,10 +1437,10 @@ ChatProxy.prototype = {
     },
 
     /**
-     * Disconnect from the Chat({@link https://docs.quickblox.com/docs/js-chat-connection#disconnect-from-chat-server read more}).
+     * Logout from the Chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Logout_from_Chat More info.}
      * @memberof QB.chat
      * */
-    disconnect: function() {
+    disconnect: function () {
         Utils.QBLog('[QBChat]', 'Call disconnect ');
         clearInterval(this._checkConnectionTimer);
         clearInterval(this._checkExpiredSessionTimer);
@@ -1454,7 +1454,7 @@ ChatProxy.prototype = {
             this.connection.flush();
             this.connection.disconnect();
             if (this._checkConnectionPingTimer !== undefined) {
-                Utils.QBLog('[QBChat]', 'Stop ping to localhost.');
+                Utils.QBLog('[QBChat]', 'Stop ping');
                 clearInterval(this._checkConnectionPingTimer);
                 this._checkConnectionPingTimer = undefined;
             }
@@ -1463,10 +1463,10 @@ ChatProxy.prototype = {
         }
     },
 
-    addListener: function(params, callback) {
+    addListener: function (params, callback) {
         Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
 
-        if(!Utils.getEnv().browser) {
+        if (!Utils.getEnv().browser) {
             throw new Error(unsupportedError);
         }
 
@@ -1479,10 +1479,10 @@ ChatProxy.prototype = {
         }
     },
 
-    deleteListener: function(ref) {
+    deleteListener: function (ref) {
         Utils.QBLog('[Deprecated!]', 'Avoid using it, this feature will be removed in future version.');
 
-        if(!Utils.getEnv().browser) {
+        if (!Utils.getEnv().browser) {
             throw new Error(unsupportedError);
         }
 
@@ -1492,7 +1492,7 @@ ChatProxy.prototype = {
     /**
      * Carbons XEP [http://xmpp.org/extensions/xep-0280.html]
      */
-    _enableCarbons: function(cb) {
+    _enableCarbons: function (cb) {
         var self = this,
             carbonParams = {
                 type: 'set',
@@ -1538,11 +1538,11 @@ function RosterProxy(options) {
 RosterProxy.prototype = {
 
     /**
-     * Receive contact list({@link https://docs.quickblox.com/docs/js-chat-contact-list#access-contact-list read more}).
+     * Receive contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Contact_List More info.}
      * @memberof QB.chat.roster
      * @param {getRosterCallback} callback - The callback function.
      * */
-    get: function(callback) {
+    get: function (callback) {
         /**
          * This callback Return contact list.
          * @callback getRosterCallback
@@ -1561,7 +1561,7 @@ RosterProxy.prototype = {
         var iq = chatUtils.createStanza(builder, iqParams, 'iq');
 
         function _getItems(stanza) {
-            if(Utils.getEnv().browser) {
+            if (Utils.getEnv().browser) {
                 return stanza.getElementsByTagName('item');
             } else {
                 return stanza.getChild('query').children;
@@ -1571,7 +1571,7 @@ RosterProxy.prototype = {
         function _callbackWrap(stanza) {
             var items = _getItems(stanza);
             for (var i = 0, len = items.length; i < len; i++) {
-                var userId = self.helpers.getIdFromNode( chatUtils.getAttr(items[i], 'jid') ),
+                var userId = self.helpers.getIdFromNode(chatUtils.getAttr(items[i], 'jid')),
                     ask = chatUtils.getAttr(items[i], 'ask'),
                     subscription = chatUtils.getAttr(items[i], 'subscription');
 
@@ -1588,7 +1588,7 @@ RosterProxy.prototype = {
             xmlns: chatUtils.MARKERS.ROSTER
         });
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             self.connection.sendIQ(iq, _callbackWrap);
         } else {
             self.nodeStanzasCallbacks[iqParams.id] = _callbackWrap;
@@ -1597,12 +1597,12 @@ RosterProxy.prototype = {
     },
 
     /**
-     * Add users to contact list({@link https://docs.quickblox.com/docs/js-chat-contact-list#add-user-to-your-contact-list read more}).
+     * Add users to contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Add_users More info.}
      * @memberof QB.chat.roster
      * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
      * @param {addRosterCallback} callback - The callback function.
      * */
-    add: function(jidOrUserId, callback) {
+    add: function (jidOrUserId, callback) {
 
         /**
          * Callback for QB.chat.roster.add(). Run without parameters.
@@ -1628,12 +1628,12 @@ RosterProxy.prototype = {
     },
 
     /**
-     * Confirm subscription with some user({@link https://docs.quickblox.com/docs/js-chat-contact-list#confirm-the-contact-request read more}).
+     * Confirm subscription with some user. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Confirm_subscription_request More info.}
      * @memberof QB.chat.roster
      * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
      * @param {confirmRosterCallback} callback - The callback function.
      * */
-    confirm: function(jidOrUserId, callback) {
+    confirm: function (jidOrUserId, callback) {
 
         /**
          * Callback for QB.chat.roster.confirm(). Run without parameters.
@@ -1665,12 +1665,12 @@ RosterProxy.prototype = {
     },
 
     /**
-     * Reject subscription with some user({@link https://docs.quickblox.com/docs/js-chat-contact-list#reject-the-contact-request read more}).
+     * Reject subscription with some user. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reject_subscription_request More info.}
      * @memberof QB.chat.roster
      * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
      * @param {rejectRosterCallback} callback - The callback function.
      * */
-    reject: function(jidOrUserId, callback) {
+    reject: function (jidOrUserId, callback) {
 
         /**
          * Callback for QB.chat.roster.reject(). Run without parameters.
@@ -1697,12 +1697,12 @@ RosterProxy.prototype = {
 
 
     /**
-     * Remove subscription with some user from your contact list({@link https://docs.quickblox.com/docs/js-chat-contact-list#remove-user-from-the-contact-list read more}).
+     * Remove subscription with some user from your contact list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Remove_users More info.}
      * @memberof QB.chat.roster
      * @param {String | Number} jidOrUserId - Use opponent id for 1 to 1 chat, and jid for group chat.
      * @param {removeRosterCallback} callback - The callback function.
      * */
-    remove: function(jidOrUserId, callback) {
+    remove: function (jidOrUserId, callback) {
 
         /**
          * Callback for QB.chat.roster.remove(). Run without parameters.
@@ -1736,7 +1736,7 @@ RosterProxy.prototype = {
             subscription: 'remove'
         });
 
-        if(Utils.getEnv().browser) {
+        if (Utils.getEnv().browser) {
             self.connection.sendIQ(iq, _callbackWrap);
         } else {
             self.nodeStanzasCallbacks[iqParams.id] = _callbackWrap;
@@ -1744,7 +1744,7 @@ RosterProxy.prototype = {
         }
     },
 
-    _sendSubscriptionPresence: function(params) {
+    _sendSubscriptionPresence: function (params) {
         var builder = Utils.getEnv().browser ? $pres : XMPP.Stanza,
             presParams = {
                 to: params.jid,
@@ -1753,7 +1753,7 @@ RosterProxy.prototype = {
 
         var pres = chatUtils.createStanza(builder, presParams, 'presence');
 
-        if (Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             this.connection.send(pres);
         } else {
             this.Client.send(pres);
@@ -1784,16 +1784,16 @@ function MucProxy(options) {
 MucProxy.prototype = {
 
     /**
-     * Join to the group dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#join-dialog read more}).
+     * Join to the group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
      * @memberof QB.chat.muc
      * @param {String} dialogIdOrJid - Use dialog jid or dialog id to join to this dialog.
      * @param {joinMacCallback} callback - The callback function.
      * */
-    join: function(dialogIdOrJid, callback) {
+    join: function (dialogIdOrJid, callback) {
         /**
          * Callback for QB.chat.muc.join().
-         * @param {Object} error - Returns error object or null.
-         * @param {Object} responce - Returns responce.
+         * @param {Object} error - Returns error object or null
+         * @param {Object} responce - Returns responce
          * @callback joinMacCallback
          * */
         var self = this,
@@ -1812,7 +1812,7 @@ MucProxy.prototype = {
 
         pres.c('x', {
             xmlns: chatUtils.MARKERS.MUC
-        }).c('history', { maxstanzas: 0 });
+        }).c('history', {maxstanzas: 0});
 
         this.joinedRooms[dialogJid] = true;
 
@@ -1820,7 +1820,7 @@ MucProxy.prototype = {
             var id = chatUtils.getAttr(stanza, 'id');
             var from = chatUtils.getAttr(stanza, 'from');
             var dialogId = self.helpers.getDialogIdFromNode(from);
-            
+
             var x = chatUtils.getElement(stanza, 'x');
             var xXMLNS = chatUtils.getAttr(x, 'xmlns');
             var status = chatUtils.getElement(x, 'status');
@@ -1831,18 +1831,18 @@ MucProxy.prototype = {
                 return true;
             }
 
-            if(status && statusCode == '110') {
+            if (status && statusCode == '110') {
                 Utils.safeCallbackCall(callback, null, {
                     dialogId: dialogId
                 });
             } else {
                 var type = chatUtils.getAttr(stanza, 'type');
 
-                if(type && type === 'error' && xXMLNS == 'http://jabber.org/protocol/muc' && id.endsWith(':join')) {
+                if (type && type === 'error' && xXMLNS == 'http://jabber.org/protocol/muc' && id.endsWith(':join')) {
                     var errorEl = chatUtils.getElement(stanza, 'error');
                     var code = chatUtils.getAttr(errorEl, 'code');
                     var errorMessage = chatUtils.getElementText(errorEl, 'text');
-    
+
                     Utils.safeCallbackCall(callback, {
                         code: code || 500,
                         message: errorMessage || 'Unknown issue'
@@ -1869,12 +1869,12 @@ MucProxy.prototype = {
     },
 
     /**
-     * Leave group chat dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#leave-dialog read more}).
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
      * @memberof QB.chat.muc
-     * @param {String} dialogJid - Use dialog jid to leave to this dialog.
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
      * @param {leaveMacCallback} callback - The callback function.
      * */
-    leave: function(jid, callback) {
+    leave: function (jid, callback) {
         /**
          * Callback for QB.chat.muc.leave().
          * run without parameters;
@@ -1903,7 +1903,7 @@ MucProxy.prototype = {
             self.connection.send(pres);
         } else {
             /** The answer don't contain id */
-            if(typeof callback === 'function') {
+            if (typeof callback === 'function') {
                 self.nodeStanzasCallbacks['muc:leave'] = callback;
             }
 
@@ -1912,15 +1912,15 @@ MucProxy.prototype = {
     },
 
     /**
-     * Leave group chat dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#retrieve-online-users read more}).
+     * Leave group chat dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_group_dialog More info.}
      * @memberof QB.chat.muc
-     * @param {String} dialogJid - Use dialog jid to get a list of online usersr in this dialog.
+     * @param {String} dialogJid - Use dialog jid to join to this dialog.
      * @param {listOnlineUsersMacCallback} callback - The callback function.
      * */
-    listOnlineUsers: function(dialogJID, callback) {
+    listOnlineUsers: function (dialogJID, callback) {
         /**
          * Callback for QB.chat.muc.leave().
-         * @param {Object} Users - List of online users.
+         * @param {Object} Users - list of online users
          * @callback listOnlineUsersMacCallback
          * */
 
@@ -1942,12 +1942,12 @@ MucProxy.prototype = {
         function _getUsers(stanza) {
             var stanzaId = stanza.attrs.id;
 
-            if(self.nodeStanzasCallbacks[stanzaId]) {
+            if (self.nodeStanzasCallbacks[stanzaId]) {
                 var users = [],
                     items = stanza.getChild('query').getChildElements('item'),
                     userId;
 
-                for(var i = 0, len = items.length; i < len; i++) {
+                for (var i = 0, len = items.length; i < len; i++) {
                     userId = self.helpers.getUserIdFromRoomJid(items[i].attrs.jid);
                     users.push(parseInt(userId));
                 }
@@ -1957,7 +1957,7 @@ MucProxy.prototype = {
         }
 
         if (Utils.getEnv().browser) {
-            self.connection.sendIQ(iq, function(stanza) {
+            self.connection.sendIQ(iq, function (stanza) {
                 var items = stanza.getElementsByTagName('item'),
                     userId;
 
@@ -1995,15 +1995,15 @@ function PrivacyListProxy(options) {
  **/
 PrivacyListProxy.prototype = {
     /**
-     * Create a privacy list({@link https://docs.quickblox.com/docs/js-chat-privacy-list#create-privacy-list read more}).
+     * Create a privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Create_a_privacy_list_or_edit_existing_list More info.}
      * @memberof QB.chat.privacylist
-     * @param {Object} list - Privacy list object.
+     * @param {Object} list - privacy list object.
      * @param {createPrivacylistCallback} callback - The callback function.
      * */
-    create: function(list, callback) {
+    create: function (list, callback) {
         /**
          * Callback for QB.chat.privacylist.create().
-         * @param {Object} error - The error object.
+         * @param {Object} error - The error object
          * @callback createPrivacylistCallback
          * */
         var self = this,
@@ -2041,8 +2041,8 @@ PrivacyListProxy.prototype = {
             name: list.name
         });
 
-        function createPrivacyItem(iq, params){
-            if(Utils.getEnv().browser) {
+        function createPrivacyItem(iq, params) {
+            if (Utils.getEnv().browser) {
                 iq.c('item', {
                     type: 'jid',
                     value: params.jidOrMuc,
@@ -2072,7 +2072,7 @@ PrivacyListProxy.prototype = {
         }
 
         function createPrivacyItemMutal(iq, params) {
-            if(Utils.getEnv().browser) {
+            if (Utils.getEnv().browser) {
                 iq.c('item', {
                     type: 'jid',
                     value: params.jidOrMuc,
@@ -2101,39 +2101,39 @@ PrivacyListProxy.prototype = {
             userJid = self.helpers.jidOrUserId(parseInt(userId, 10));
             userMuc = self.helpers.getUserNickWithMucDomain(userId);
 
-            if(mutualBlock && userAction === 'deny'){
+            if (mutualBlock && userAction === 'deny') {
                 iq = createPrivacyItemMutal(iq, {
-                    order: j+1,
+                    order: j + 1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItemMutal(iq, {
-                    order: j+2,
+                    order: j + 2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 }).up().up();
             } else {
                 iq = createPrivacyItem(iq, {
-                    order: j+1,
+                    order: j + 1,
                     jidOrMuc: userJid,
                     userAction: userAction
                 });
                 iq = createPrivacyItem(iq, {
-                    order: j+2,
+                    order: j + 2,
                     jidOrMuc: userMuc,
                     userAction: userAction
                 });
             }
         }
 
-        if(Utils.getEnv().browser) {
-            self.connection.sendIQ(iq, function(stanzaResult) {
+        if (Utils.getEnv().browser) {
+            self.connection.sendIQ(iq, function (stanzaResult) {
                 callback(null);
-            }, function(stanzaError){
-                if(stanzaError){
+            }, function (stanzaError) {
+                if (stanzaError) {
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
-                }else{
+                } else {
                     callback(Utils.getError(408));
                 }
             });
@@ -2141,7 +2141,7 @@ PrivacyListProxy.prototype = {
             self.Client.send(iq);
 
             self.nodeStanzasCallbacks[iqParams.id] = function (stanza) {
-                if(!stanza.getChildElements('error').length){
+                if (!stanza.getChildElements('error').length) {
                     callback(null);
                 } else {
                     callback(Utils.getError(408));
@@ -2151,16 +2151,16 @@ PrivacyListProxy.prototype = {
     },
 
     /**
-     * Get the privacy list({@link https://docs.quickblox.com/docs/js-chat-privacy-list#retrieve-privacy-list-by-name read more}).
+     * Get the privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_a_privacy_list More info.}
      * @memberof QB.chat.privacylist
      * @param {String} name - The name of the list.
      * @param {getListPrivacylistCallback} callback - The callback function.
      * */
-    getList: function(name, callback) {
+    getList: function (name, callback) {
         /**
          * Callback for QB.chat.privacylist.getList().
-         * @param {Object} error - The error object.
-         * @param {Object} response - The privacy list object.
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
          * @callback getListPrivacylistCallback
          * */
 
@@ -2183,11 +2183,11 @@ PrivacyListProxy.prototype = {
             name: name
         });
 
-        if(Utils.getEnv().browser) {
-            self.connection.sendIQ(iq, function(stanzaResult) {
+        if (Utils.getEnv().browser) {
+            self.connection.sendIQ(iq, function (stanzaResult) {
                 items = stanzaResult.getElementsByTagName('item');
 
-                for (var i = 0, len = items.length; i < len; i=i+2) {
+                for (var i = 0, len = items.length; i < len; i = i + 2) {
                     userJid = items[i].getAttribute('value');
                     userId = self.helpers.getIdFromNode(userJid);
                     usersList.push({
@@ -2200,22 +2200,22 @@ PrivacyListProxy.prototype = {
                     items: usersList
                 };
                 callback(null, list);
-            }, function(stanzaError){
-                if(stanzaError){
+            }, function (stanzaError) {
+                if (stanzaError) {
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject, null);
-                }else{
+                } else {
                     callback(Utils.getError(408), null);
                 }
             });
         } else {
-            self.nodeStanzasCallbacks[iqParams.id] = function(stanza){
+            self.nodeStanzasCallbacks[iqParams.id] = function (stanza) {
                 var stanzaQuery = stanza.getChild('query'),
                     list = stanzaQuery ? stanzaQuery.getChild('list') : null,
                     items = list ? list.getChildElements('item') : null,
                     userJid, userId, usersList = [];
 
-                for (var i = 0, len = items.length; i < len; i=i+2) {
+                for (var i = 0, len = items.length; i < len; i = i + 2) {
                     userJid = items[i].attrs.value;
                     userId = self.helpers.getIdFromNode(userJid);
                     usersList.push({
@@ -2238,22 +2238,22 @@ PrivacyListProxy.prototype = {
     },
 
     /**
-     * Update the privacy list({@link https://docs.quickblox.com/docs/js-chat-privacy-list#update-privacy-list read more}).
+     * Update the privacy list.
      * @memberof QB.chat.privacylist
      * @param {String} name - The name of the list.
      * @param {updatePrivacylistCallback} callback - The callback function.
      * */
-    update: function(listWithUpdates, callback) {
+    update: function (listWithUpdates, callback) {
         /**
          * Callback for QB.chat.privacylist.update().
-         * @param {Object} error - The error object.
-         * @param {Object} response - The privacy list object.
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object
          * @callback updatePrivacylistCallback
          * */
 
         var self = this;
 
-        self.getList(listWithUpdates.name, function(error, existentList) {
+        self.getList(listWithUpdates.name, function (error, existentList) {
             if (error) {
                 callback(error, null);
             } else {
@@ -2261,10 +2261,10 @@ PrivacyListProxy.prototype = {
                 updatedList.items = Utils.MergeArrayOfObjects(existentList.items, listWithUpdates.items);
                 updatedList.name = listWithUpdates.name;
 
-                self.create(updatedList, function(err, result) {
+                self.create(updatedList, function (err, result) {
                     if (error) {
                         callback(err, null);
-                    }else{
+                    } else {
                         callback(null, result);
                     }
                 });
@@ -2273,16 +2273,16 @@ PrivacyListProxy.prototype = {
     },
 
     /**
-     * Get names of privacy lists({@link https://docs.quickblox.com/docs/js-chat-privacy-list#retrieve-privacy-lists read more}).
+     * Get names of privacy lists. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Retrieve_privacy_lists_names More info.}
      * Run without parameters
      * @memberof QB.chat.privacylist
      * @param {getNamesPrivacylistCallback} callback - The callback function.
      * */
-    getNames: function(callback) {
+    getNames: function (callback) {
         /**
          * Callback for QB.chat.privacylist.getNames().
-         * @param {Object} error - The error object.
-         * @param {Object} response - The privacy list object (var names = response.names;).
+         * @param {Object} error - The error object
+         * @param {Object} response - The privacy list object (var names = response.names;)
          * @callback getNamesPrivacylistCallback
          * */
 
@@ -2294,12 +2294,12 @@ PrivacyListProxy.prototype = {
                 'id': chatUtils.getUniqueId('getNames')
             };
 
-        if(Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             });
 
-            self.connection.sendIQ(iq, function(stanzaResult) {
+            self.connection.sendIQ(iq, function (stanzaResult) {
                 var allNames = [], namesList = {},
                     defaultList = stanzaResult.getElementsByTagName('default'),
                     activeList = stanzaResult.getElementsByTagName('active'),
@@ -2319,11 +2319,11 @@ PrivacyListProxy.prototype = {
                 };
 
                 callback(null, namesList);
-            }, function(stanzaError){
-                if(stanzaError){
+            }, function (stanzaError) {
+                if (stanzaError) {
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject, null);
-                }else{
+                } else {
                     callback(Utils.getError(408), null);
                 }
             });
@@ -2334,8 +2334,8 @@ PrivacyListProxy.prototype = {
                 xmlns: chatUtils.MARKERS.PRIVACY
             });
 
-            self.nodeStanzasCallbacks[iq.attrs.id] = function(stanza){
-                if(stanza.attrs.type !== 'error'){
+            self.nodeStanzasCallbacks[iq.attrs.id] = function (stanza) {
+                if (stanza.attrs.type !== 'error') {
 
                     var allNames = [], namesList = {},
                         query = stanza.getChild('query'),
@@ -2367,15 +2367,15 @@ PrivacyListProxy.prototype = {
     },
 
     /**
-     * Delete privacy list({@link https://docs.quickblox.com/docs/js-chat-privacy-list#remove-privacy-list read more}).
+     * Delete privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Delete_existing_privacy_list More info.}
      * @param {String} name - The name of privacy list.
      * @memberof QB.chat.privacylist
      * @param {deletePrivacylistCallback} callback - The callback function.
      * */
-    delete: function(name, callback) {
+    delete: function (name, callback) {
         /**
          * Callback for QB.chat.privacylist.delete().
-         * @param {Object} error - The error object.
+         * @param {Object} error - The error object
          * @callback deletePrivacylistCallback
          * */
 
@@ -2386,20 +2386,20 @@ PrivacyListProxy.prototype = {
                 'id': chatUtils.getUniqueId('remove')
             };
 
-        if(Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             }).c('list', {
                 name: name ? name : ''
             });
 
-            this.connection.sendIQ(iq, function(stanzaResult) {
+            this.connection.sendIQ(iq, function (stanzaResult) {
                 callback(null);
-            }, function(stanzaError){
-                if(stanzaError){
+            }, function (stanzaError) {
+                if (stanzaError) {
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
-                }else{
+                } else {
                     callback(Utils.getError(408));
                 }
             });
@@ -2413,8 +2413,8 @@ PrivacyListProxy.prototype = {
                 name: name ? name : ''
             });
 
-            this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
-                if(!stanza.getChildElements('error').length){
+            this.nodeStanzasCallbacks[stanzaParams.id] = function (stanza) {
+                if (!stanza.getChildElements('error').length) {
                     callback(null);
                 } else {
                     callback(Utils.getError(408));
@@ -2427,15 +2427,15 @@ PrivacyListProxy.prototype = {
     },
 
     /**
-     * Set as default privacy list({@link https://docs.quickblox.com/docs/js-chat-privacy-list#activate-privacy-list read more}).
+     * Set as default privacy list. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Activate_a_privacy_list More info.}
      * @param {String} name - The name of privacy list.
      * @memberof QB.chat.privacylist
      * @param {setAsDefaultPrivacylistCallback} callback - The callback function.
      * */
-    setAsDefault: function(name, callback) {
+    setAsDefault: function (name, callback) {
         /**
          * Callback for QB.chat.privacylist.setAsDefault().
-         * @param {Object} error - The error object.
+         * @param {Object} error - The error object
          * @callback setAsDefaultPrivacylistCallback
          * */
 
@@ -2447,18 +2447,18 @@ PrivacyListProxy.prototype = {
                 'id': chatUtils.getUniqueId('default')
             };
 
-        if(Utils.getEnv().browser){
+        if (Utils.getEnv().browser) {
             iq = $iq(stanzaParams).c('query', {
                 xmlns: Strophe.NS.PRIVACY_LIST
             }).c('default', name && name.length > 0 ? {name: name} : {});
 
-            this.connection.sendIQ(iq, function(stanzaResult) {
+            this.connection.sendIQ(iq, function (stanzaResult) {
                 setAsActive(self); //Activate list after setting it as default.
-            }, function(stanzaError){
-                if(stanzaError){
+            }, function (stanzaError) {
+                if (stanzaError) {
                     var errorObject = chatUtils.getErrorFromXMLNode(stanzaError);
                     callback(errorObject);
-                }else{
+                } else {
                     callback(Utils.getError(408));
                 }
             });
@@ -2469,8 +2469,8 @@ PrivacyListProxy.prototype = {
                 xmlns: chatUtils.MARKERS.PRIVACY
             }).c('default', name && name.length > 0 ? {name: name} : {});
 
-            this.nodeStanzasCallbacks[stanzaParams.id] = function(stanza){
-                if(!stanza.getChildElements('error').length){
+            this.nodeStanzasCallbacks[stanzaParams.id] = function (stanza) {
+                if (!stanza.getChildElements('error').length) {
                     setAsActive(self); //Activate list after setting it as default.
                 } else {
                     callback(Utils.getError(408));
@@ -2480,27 +2480,27 @@ PrivacyListProxy.prototype = {
         }
 
         /**
-        * Set as active privacy list after setting as default.
-        * @param {PrivacyListProxy} self - Privacy list.
-        * */
+         * Set as active privacy list after setting as default.
+         * @param {PrivacyListProxy Object} self - The name of privacy list.
+         * */
         function setAsActive(self) {
             var setAsActiveIq,
-            setAsActiveStanzaParams = {
-                'from': self.connection ? self.connection.jid : self.Client.jid.user,
-                'type': 'set',
-                'id': chatUtils.getUniqueId('active1')
-            };
-            if(Utils.getEnv().browser){
+                setAsActiveStanzaParams = {
+                    'from': self.connection ? self.connection.jid : self.Client.jid.user,
+                    'type': 'set',
+                    'id': chatUtils.getUniqueId('active1')
+                };
+            if (Utils.getEnv().browser) {
                 setAsActiveIq = $iq(setAsActiveStanzaParams).c('query', {
                     xmlns: Strophe.NS.PRIVACY_LIST
                 }).c('active', name && name.length > 0 ? {name: name} : {});
-                self.connection.sendIQ(setAsActiveIq, function(setAsActiveStanzaResult) {
+                self.connection.sendIQ(setAsActiveIq, function (setAsActiveStanzaResult) {
                     callback(null);
-                }, function(setAsActiveStanzaError){
-                    if(setAsActiveStanzaError){
+                }, function (setAsActiveStanzaError) {
+                    if (setAsActiveStanzaError) {
                         var setAsActiveErrorObject = chatUtils.getErrorFromXMLNode(setAsActiveStanzaError);
                         callback(setAsActiveErrorObject);
-                    }else{
+                    } else {
                         callback(Utils.getError(408));
                     }
                 });
@@ -2509,8 +2509,8 @@ PrivacyListProxy.prototype = {
                 setAsActiveIq.c('query', {
                     xmlns: chatUtils.MARKERS.PRIVACY
                 }).c('active', name && name.length > 0 ? {name: name} : {});
-                self.nodeStanzasCallbacks[setAsActiveStanzaParams.id] = function(setAsActistanza){
-                    if(!setAsActistanza.getChildElements('error').length){
+                self.nodeStanzasCallbacks[setAsActiveStanzaParams.id] = function (setAsActistanza) {
+                    if (!setAsActistanza.getChildElements('error').length) {
                         callback(null);
                     } else {
                         callback(Utils.getError(408));
@@ -2528,6 +2528,7 @@ PrivacyListProxy.prototype = {
 function Helpers() {
     this._userCurrentJid = '';
 }
+
 /**
  * @namespace QB.chat.helpers
  * */
@@ -2536,7 +2537,7 @@ Helpers.prototype = {
     /**
      * Get unique id.
      * @memberof QB.chat.helpers
-     * @param {String | Number} suffix - Not required parameter.
+     * @param {String | Number} suffix - not required parameter.
      * @returns {String} - UniqueId.
      * */
     getUniqueId: chatUtils.getUniqueId,
@@ -2547,7 +2548,7 @@ Helpers.prototype = {
      * @param {String | Number} jid_or_user_id - Jid or user id.
      * @returns {String} - jid.
      * */
-    jidOrUserId: function(jid_or_user_id) {
+    jidOrUserId: function (jid_or_user_id) {
         var jid;
         if (typeof jid_or_user_id === 'string') {
             jid = jid_or_user_id;
@@ -2565,7 +2566,7 @@ Helpers.prototype = {
      * @param {String | Number} jid_or_user_id - Jid or user id.
      * @returns {String} - jid.
      * */
-    typeChat: function(jid_or_user_id) {
+    typeChat: function (jid_or_user_id) {
         var chatType;
         if (typeof jid_or_user_id === 'string') {
             chatType = jid_or_user_id.indexOf("muc") > -1 ? 'groupchat' : 'chat';
@@ -2582,12 +2583,12 @@ Helpers.prototype = {
      * @memberof QB.chat.helpers
      * @param {Array} occupantsIds - Array of user ids.
      * @param {Number} UserId - Jid or user id.
-     * @returns {Number} - Recipient id.
+     * @returns {Number} recipient - recipient id.
      * */
-    getRecipientId: function(occupantsIds, UserId) {
+    getRecipientId: function (occupantsIds, UserId) {
         var recipient = null;
-        occupantsIds.forEach(function(item) {
-            if(item != UserId){
+        occupantsIds.forEach(function (item) {
+            if (item != UserId) {
                 recipient = item;
             }
         });
@@ -2601,8 +2602,8 @@ Helpers.prototype = {
      * @param {Number} appId - The application id.
      * @returns {String} jid - The user jid.
      * */
-    getUserJid: function(userId, appId) {
-        if(!appId){
+    getUserJid: function (userId, appId) {
+        if (!appId) {
             return userId + '-' + config.creds.appId + '@' + config.endpoints.chat;
         }
         return userId + '-' + appId + '@' + config.endpoints.chat;
@@ -2614,7 +2615,7 @@ Helpers.prototype = {
      * @param {Number} UserId - The user id.
      * @returns {String} mucDomainWithNick - The mac domain with he nick.
      * */
-    getUserNickWithMucDomain: function(userId) {
+    getUserNickWithMucDomain: function (userId) {
         return config.endpoints.muc + '/' + userId;
     },
 
@@ -2624,7 +2625,7 @@ Helpers.prototype = {
      * @param {String} jid - The user jid.
      * @returns {Number} id - The user id.
      * */
-    getIdFromNode: function(jid) {
+    getIdFromNode: function (jid) {
         return (jid.indexOf('@') < 0) ? null : parseInt(jid.split('@')[0].split('-')[0]);
     },
 
@@ -2634,7 +2635,7 @@ Helpers.prototype = {
      * @param {String} jid - The dialog jid.
      * @returns {String} dialogId - The dialog id.
      * */
-    getDialogIdFromNode: function(jid) {
+    getDialogIdFromNode: function (jid) {
         if (jid.indexOf('@') < 0) return null;
         return jid.split('@')[0].split('_')[1];
     },
@@ -2645,7 +2646,7 @@ Helpers.prototype = {
      * @param {String} dialogId - The dialog id.
      * @returns {String} jid - The dialog jid.
      * */
-    getRoomJidFromDialogId: function(dialogId) {
+    getRoomJidFromDialogId: function (dialogId) {
         return config.creds.appId + '_' + dialogId + '@' + config.endpoints.muc;
     },
 
@@ -2656,7 +2657,7 @@ Helpers.prototype = {
      * @param {String} userJid - user's jid.
      * @returns {String} jid - dialog's full jid.
      * */
-    getRoomJid: function(jid) {
+    getRoomJid: function (jid) {
         return jid + '/' + this.getIdFromNode(this._userCurrentJid);
     },
 
@@ -2666,7 +2667,7 @@ Helpers.prototype = {
      * @param {String} jid - dialog's full jid.
      * @returns {String} user_id - User Id.
      * */
-    getIdFromResource: function(jid) {
+    getIdFromResource: function (jid) {
         var s = jid.split('/');
         if (s.length < 2) return null;
         s.splice(0, 1);
@@ -2679,7 +2680,7 @@ Helpers.prototype = {
      * @param {String} jid - dialog's full jid.
      * @returns {String} room_jid - dialog's bare jid.
      * */
-    getRoomJidFromRoomFullJid: function(jid) {
+    getRoomJidFromRoomFullJid: function (jid) {
         var s = jid.split('/');
         if (s.length < 2) return null;
         return s[0];
@@ -2690,7 +2691,7 @@ Helpers.prototype = {
      * @memberof QB.chat.helpers
      * @returns {String} BsonObjectId - The bson object id.
      **/
-    getBsonObjectId: function() {
+    getBsonObjectId: function () {
         return Utils.getBsonObjectId();
     },
 
@@ -2700,17 +2701,17 @@ Helpers.prototype = {
      * @param {String} jid - resourse jid.
      * @returns {String} userId - The user id.
      * */
-    getUserIdFromRoomJid: function(jid) {
+    getUserIdFromRoomJid: function (jid) {
         var arrayElements = jid.toString().split('/');
-        if(arrayElements.length === 0){
+        if (arrayElements.length === 0) {
             return null;
         }
-        return arrayElements[arrayElements.length-1];
+        return arrayElements[arrayElements.length - 1];
     },
 
-    userCurrentJid: function(client){
+    userCurrentJid: function (client) {
         try {
-            if (client instanceof Strophe.Connection){
+            if (client instanceof Strophe.Connection) {
                 return client.jid;
             } else {
                 return client.jid.user + '@' + client.jid._domain + '/' + client.jid._resource;
@@ -2720,15 +2721,15 @@ Helpers.prototype = {
         }
     },
 
-    getUserCurrentJid: function() {
+    getUserCurrentJid: function () {
         return this._userCurrentJid;
     },
 
-    setUserCurrentJid: function(jid) {
+    setUserCurrentJid: function (jid) {
         this._userCurrentJid = jid;
     },
 
-    getDialogJid: function(identifier) {
+    getDialogJid: function (identifier) {
         return identifier.indexOf('@') > 0 ? identifier : this.getRoomJidFromDialogId(identifier);
     }
 };
