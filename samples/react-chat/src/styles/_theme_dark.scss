@@ -1,0 +1,33 @@
+@import "theme_colors_scheme";
+// https://sass-lang.com/documentation/breaking-changes/css-vars
+
+html[data-theme="dark"]{
+  --primary: #{$primary-500};
+  --color-background: #{$secondary-900};
+  --color-background-modal: #{$secondary-200};
+  --color-background-overlay: #{$secondary-900};
+  --color-divider: #{$secondary-400};
+  --color-font: #{$primary-a-100};
+  --color-icon: #{$primary-500};
+
+
+  --color-background-info: #{$primary-500};
+  --tertiary-elements: #{$background-overlay-dark};
+  --main-elements: #{$primary-300};
+  --secondary-elements: #{$primary-a-100};
+  --input-elements: #{$secondary-200};
+  --disabled-elements: #{$secondary-300};
+  --field-border: #{$secondary-200};
+  --main-text: #{$primary-a-100};
+  --secondary-text: #{$secondary-200};
+  --caption: #{$secondary-100};
+  --main-background: #{$secondary-500};
+  --secondary-background: #{$secondary-800};
+  --incoming-background: #{$secondary-400};
+  --outgoing-background: #{$primary-500};
+  --dropdown-background: #{$secondary-400};
+  --chat-input: #{$secondary-800};
+  --divider: #{$secondary-400};
+  --error: #{$error-300};
+  --hightlight: #{$highlight};
+}
