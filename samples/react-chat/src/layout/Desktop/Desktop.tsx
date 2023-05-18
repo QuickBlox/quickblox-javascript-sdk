@@ -5,7 +5,7 @@ import {BaseViewModel, DesktopLayout, DialogEntity, DialogEventInfo, DialogInfor
   NotificationTypes,
   Pagination,
   stringifyError,
-  SubscribeToDialogEventsUseCase, useDialogsViewModel, useEventMessagesRepository, useQbDataContext } from 'artan-react-ui-sample';
+  SubscribeToDialogEventsUseCase, useDialogsViewModel, useEventMessagesRepository, useQbDataContext } from 'quickblox-react-ui-kit';
 
 function Desktop() {
   console.log('create Desktop');
