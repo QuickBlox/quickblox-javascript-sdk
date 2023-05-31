@@ -1,6 +1,6 @@
 export const QBConfig = {
   credentials: {
-    appId: 0,
+    appId: -1,
     accountKey: '',
     authKey: '',
     authSecret: '',
