@@ -204,21 +204,6 @@ function App() {
                     logoutUIKitHandler();
                     console.log('OnSessionExpiredListener ... end');
                 })
-                ////
-
-                ///
-                // QB.chat.onSessionExpiredListener = (error: any) => {
-                //     if (error) {
-                //         console.log('onSessionExprideListener - error: ',  error);
-                //     } else {
-                //         console.log('onSessionExprideListener - Ok');
-                //         console.log('call  QB.chat.onSessionExpiredListener  ... start');
-                //         logoutUIKitHandler();
-                //         console.log(' QB.chat.onSessionExpiredListener  ... end');
-                //     }
-                // };
-
-                ///
 
                 setAuthorized(true);
                 document.documentElement.setAttribute('data-theme', theme);
@@ -326,7 +311,8 @@ function App() {
                                           clickHandler = { logoutUIKitHandler }
                                       />
                                   </div>
-                                  <QuickBloxUIKitDesktopLayout theme={new CustomTheme()}  />
+                                  {/*<QuickBloxUIKitDesktopLayout theme={new CustomTheme()}  />*/}
+                                  <QuickBloxUIKitDesktopLayout   />
                               </div>
                           </div>
                           :
