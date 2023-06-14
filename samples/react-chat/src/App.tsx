@@ -200,23 +200,23 @@ function App() {
                 });
                 console.log('set subscribeOnSessionExpiredListener');
                 currentContext.storage.REMOTE_DATA_SOURCE.subscribeOnSessionExpiredListener(() => {
-                    console.log('call OnSessionExpiredListener ... start');
+                    console.timeLog('call OnSessionExpiredListener ... start')
                     logoutUIKitHandler();
                     console.log('OnSessionExpiredListener ... end');
                 })
                 ////
 
                 ///
-                QB.chat.onSessionExpiredListener = (error: any) => {
-                    if (error) {
-                        console.log('onSessionExprideListener - error: ',  error);
-                    } else {
-                        console.log('onSessionExprideListener - Ok');
-                        console.log('call  QB.chat.onSessionExpiredListener  ... start');
-                        logoutUIKitHandler();
-                        console.log(' QB.chat.onSessionExpiredListener  ... end');
-                    }
-                };
+                // QB.chat.onSessionExpiredListener = (error: any) => {
+                //     if (error) {
+                //         console.log('onSessionExprideListener - error: ',  error);
+                //     } else {
+                //         console.log('onSessionExprideListener - Ok');
+                //         console.log('call  QB.chat.onSessionExpiredListener  ... start');
+                //         logoutUIKitHandler();
+                //         console.log(' QB.chat.onSessionExpiredListener  ... end');
+                //     }
+                // };
 
                 ///
 
@@ -247,9 +247,21 @@ function App() {
                 authKeyOrAppId: QBConfig.credentials.authKey,
                 authSecret: QBConfig.credentials.authSecret,
                 accountKey: QBConfig.credentials.accountKey,
+                config: QBConfig.appConfig,
             }
         );
         remoteDataSource.setInitSDKSuccessed();
+
+        QB.chat.onSessionExpiredListener = (error: any) => {
+            if (error) {
+                console.log('onSessionExprideListener - error: ',  error);
+            } else {
+                console.log('onSessionExprideListener - Ok');
+                console.log('call  QB.chat.onSessionExpiredListener  ... start');
+                logoutUIKitHandler();
+                console.log(' QB.chat.onSessionExpiredListener  ... end');
+            }
+        };
 
     };
 
