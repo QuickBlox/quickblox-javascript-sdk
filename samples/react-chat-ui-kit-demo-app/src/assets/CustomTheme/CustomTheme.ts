@@ -1,4 +1,4 @@
-import {DefaultTheme} from "artan-react-ui-sample";
+import {DefaultTheme} from "quickblox-react-ui-kit";
 
 export default class CustomTheme extends DefaultTheme {
     divider = (): string => '#E7EFFF';
