@@ -1,0 +1,33 @@
+@import "theme_colors_scheme";
+
+:root{
+  --primary: #{$primary-500};
+  --color-background: #{$primary-a-100};
+  --color-background-modal: #{$primary-100};
+  --color-background-overlay: #{$secondary-900};
+  --color-divider: #{$primary-50};
+  --color-font: #{$secondary-900};
+  --color-icon: #{$primary-500};
+
+  --color-background-info:#{$primary-100};
+  --tertiary-elements: #{$secondary-300};
+  --main-elements: #{$primary-500};
+  --secondary-elements: #{$secondary-500};
+  --input-elements: #{$secondary-500};
+  --disabled-elements: #{$secondary-100};
+  --field-border: #{$secondary-200};
+  --main-text: #{$secondary-900};
+  --secondary-text: #{$secondary-300};
+  --caption: #{$secondary-200};
+  --main-background: #{$primary-a-100};
+  --secondary-background: #{$primary-a-100}; // #{$primary-50};
+  --secondary-background-modal: #{$background-overlay-light};
+  --incoming-background: #{$secondary-50};
+  --outgoing-background: #{$primary-50};
+  --dropdown-background: #{$primary-a-100};
+  --chat-input: #{$primary-a-200};
+  --divider: #{$primary-50};
+  --error: #{$error-500};
+  --hightlight: #{$highlight};
+
+}
