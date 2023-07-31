@@ -1,9 +1,9 @@
 export const QBConfig = {
   credentials: {
     appId: -1,
+    accountKey: '',
     authKey: '',
     authSecret: '',
-    accountKey: '',
     sessionToken: '',
   },
   appConfig: {

@@ -2,13 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {prepareSDK,  createUserAction, logout, createUserSession, connectToChatServer,
     UserCreationStatus, UserData} from './QBHeplers';
 import {
-    AuthorizationData,
     LoginData,
     MainButton,
-    qbDataContext,
+    useQbUIKitDataContext,
     QuickBloxUIKitDesktopLayout,
     QuickBloxUIKitProvider,
-    TypeButton,
+    TypeButton, QBDataContextType,
 } from 'quickblox-react-ui-kit';
 import './App.scss';
 import {QBConfig} from "./QBconfig";
@@ -18,7 +17,7 @@ import SignIn from "./SignIn/SignIn";
 import SignUp from "./SignUp/SignUp";
 
 function App() {
-    const qbUIKitContext = React.useContext(qbDataContext);
+    const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
 
     const [isUserAuthorized, setUserAuthorized] = React.useState(false);
     const [isSDKInitialized, setSDKInitialized] = React.useState(false);

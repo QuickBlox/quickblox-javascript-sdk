@@ -4,8 +4,9 @@ import React, { useEffect } from 'react';
 import * as QB from "quickblox/quickblox";
 import {
   QuickBloxUIKitProvider,
-  qbDataContext,
-  QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData, QBDataContextType,
+  QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData,
+  QBDataContextType,
+  useQbUIKitDataContext
 } from 'quickblox-react-ui-kit';
 import { QBConfig } from './QBconfig';
 import './App.css';
@@ -17,7 +18,7 @@ function App() {
     password: '',
   };
 
-  const qbUIKitContext: QBDataContextType = React.useContext(qbDataContext);
+  const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
 
   const [isUserAuthorized, setUserAuthorized] = React.useState(false);
   const [isSDKInitialized, setSDKInitialized] = React.useState(false);
