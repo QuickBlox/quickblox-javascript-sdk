@@ -10,11 +10,12 @@ import {
 } from 'quickblox-react-ui-kit';
 import { QBConfig } from './QBconfig';
 import './App.css';
+
 function App() {
 
   const currentUser: LoginData = {
-    login: '',
-    password: '',
+    login: 'artimed',
+    password: 'quickblox',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
