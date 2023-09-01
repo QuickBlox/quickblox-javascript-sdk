@@ -22,6 +22,7 @@
   },
   "include": [
     "src",
-    "node_modules/artan-react-ui-sample/global.d.ts"
+    ,
+    "node_modules/quickblox-react-ui-kit/global.d.ts"
   ]
 }
