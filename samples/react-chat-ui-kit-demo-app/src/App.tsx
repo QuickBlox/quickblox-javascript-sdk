@@ -148,6 +148,7 @@ function App() {
               login: currentUser.login,
               password: currentUser.password,
           }}
+          qbConfig={{...QBConfig}} // NEW !!!
       >
           <div className="App">
 

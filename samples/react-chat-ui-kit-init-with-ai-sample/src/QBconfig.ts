@@ -1,9 +1,9 @@
 export const QBConfig = {
     credentials: {
         appId: -1,
-        accountKey: '',
         authKey: '',
         authSecret: '',
+        accountKey: '',
         sessionToken: '',
     },
     configAIApi: {
@@ -12,8 +12,8 @@ export const QBConfig = {
             useDefault: true,
             proxyConfig: {
                 api: 'v1/chat/completions',
-                servername: 'http://localhost',
-                port: '3001',
+                servername: 'https://api.openai.com/',
+                port: '',
                 sessionToken: '',
             },
         },
@@ -31,38 +31,45 @@ export const QBConfig = {
             ],
             proxyConfig: {
                 api: 'v1/chat/completions',
-                servername: 'http://localhost',
-                port: '3001',
+                servername: 'https://api.openai.com/',
+                port: '',
                 sessionToken: '',
             },
         },
         AIRephraseWidgetConfig: {
             apiKey: '',
             useDefault: true,
+            defaultTone: 'Professional',
             proxyConfig: {
                 api: 'v1/chat/completions',
-                servername: 'http://localhost',
-                port: '3001',
+                servername: 'https://api.openai.com/',
+                port: '',
                 sessionToken: '',
             },
         },
     },
     appConfig: {
+        maxFileSize: 10 * 1024 * 1024,
+        sessionTimeOut: 122,
         chatProtocol: {
-            Active: 2,
+            active: 2,
         },
-        debug: false,
+        debug: true,
         endpoints: {
-            apiEndpoint: 'https://api.quickblox.com',
-            chatEndpoint: 'chat.quickblox.com',
+            api: 'api.quickblox.com',
+            chat: 'chat.quickblox.com',
         },
         on: {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
             async sessionExpired(handleResponse: any, retry: any) {
-                console.log(`Test sessionExpired… ${handleResponse} ${retry}`);
-            }
+                console.log(
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    `QBconfig sessionExpired handle: ${handleResponse} ${retry}`,
+                );
+            },
         },
         streamManagement: {
-            Enable: true,
+            enable: true,
         },
     },
 };

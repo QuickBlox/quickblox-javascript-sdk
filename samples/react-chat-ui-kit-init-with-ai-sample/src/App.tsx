@@ -14,8 +14,8 @@ import './App.css';
 function App() {
 
   const currentUser: LoginData = {
-    login: 'artimed',
-    password: 'quickblox',
+    login: '',
+    password: '',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -94,7 +94,7 @@ function App() {
             loginData={{
               login: currentUser.login,
               password: currentUser.password,
-            }}
+            }} qbConfig={{... QBConfig}}
         >
           <div className="App">
             {

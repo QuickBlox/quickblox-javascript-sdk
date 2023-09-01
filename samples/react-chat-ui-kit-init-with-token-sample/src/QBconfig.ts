@@ -1,10 +1,52 @@
 export const QBConfig = {
     credentials: {
         appId: -1,
-        accountKey: '',
         authKey: '',
         authSecret: '',
+        accountKey: '',
         sessionToken: '',
+    },
+    configAIApi: {
+        AIAnswerAssistWidgetConfig: {
+            apiKey: '',
+            useDefault: true,
+            proxyConfig: {
+                api: 'v1/chat/completions',
+                servername: 'https://api.openai.com/',
+                port: '',
+                sessionToken: '',
+            },
+        },
+        AITranslateWidgetConfig: {
+            apiKey: '',
+            useDefault: true,
+            defaultLanguage: 'English',
+            languages: [
+                'English',
+                'Spanish',
+                'French',
+                'Portuguese',
+                'German',
+                'Ukrainian',
+            ],
+            proxyConfig: {
+                api: 'v1/chat/completions',
+                servername: 'https://api.openai.com/',
+                port: '',
+                sessionToken: '',
+            },
+        },
+        AIRephraseWidgetConfig: {
+            apiKey: '',
+            useDefault: true,
+            defaultTone: 'Professional',
+            proxyConfig: {
+                api: 'v1/chat/completions',
+                servername: 'https://api.openai.com/',
+                port: '',
+                sessionToken: '',
+            },
+        },
     },
     appConfig: {
         chatProtocol: {
