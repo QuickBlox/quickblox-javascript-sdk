@@ -25,7 +25,7 @@ This is a code sample for [QuickBlox](http://quickblox.com/) platform. It is a g
 The minimum requirements for QuickBlox UIKit for React sample are:
 
 - JS QuickBlox SDK v2.15.5
-- QuickBlox React UIKit library v0.2.2
+- QuickBlox React UIKit library v0.2.3
 - React JS v.18.0
 - TypeScript v.4.9.3
 

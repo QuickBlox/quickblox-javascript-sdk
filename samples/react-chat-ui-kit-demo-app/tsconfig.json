@@ -22,7 +22,6 @@
   },
   "include": [
     "src",
-    ,
     "node_modules/quickblox-react-ui-kit/global.d.ts"
   ]
 }
