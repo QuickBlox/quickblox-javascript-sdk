@@ -96,7 +96,7 @@ var qbChatHelpers = {
         if(typeof stanza.querySelector === 'function') {
             el = stanza.querySelector(elName);
         } else if(typeof stanza.getChild === 'function'){
-            el = stanza.getChild(elName);
+            el = stanza.getChild(elName) || stanza.children.find(child => typeof child.getChild === 'function' && this.getElement(child, elName));
         } else {
             throw ERR_UNKNOWN_INTERFACE;
         }
@@ -124,7 +124,7 @@ var qbChatHelpers = {
             el = stanza.querySelector(elName);
             txt = el ? el.textContent : null;
         } else if(typeof stanza.getChildText === 'function') {
-            txt = stanza.getChildText(elName);
+            txt = stanza.getChildText(elName) || stanza.children.find(child => typeof child.getChildText === 'function' && this.getElementText(child, elName));
         } else {
             throw ERR_UNKNOWN_INTERFACE;
         }

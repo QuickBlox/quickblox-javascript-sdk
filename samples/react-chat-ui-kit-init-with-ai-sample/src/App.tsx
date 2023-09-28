@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 
 // @ts-ignore
-import * as QB from "quickblox/quickblox";
+import QB from "quickblox/quickblox";
 import {
   QuickBloxUIKitProvider,
   QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData,
   QBDataContextType,
   useQbUIKitDataContext
 } from 'quickblox-react-ui-kit';
-import { QBConfig } from './QBconfig';
+import { QBConfig as QBConf } from './QBconfig';
 import './App.css';
+import useMyAIAssistAnswer from "./useMyAIAssistAnswer";
 
 function App() {
 
   const currentUser: LoginData = {
-    login: '',
-    password: '',
+    login: 'artik',
+    password: 'quickblox',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -34,11 +35,11 @@ function App() {
       }
     }
 
-    const APPLICATION_ID = QBConfig.credentials.appId;
-    const AUTH_KEY = QBConfig.credentials.authKey;
-    const AUTH_SECRET = QBConfig.credentials.authSecret;
-    const ACCOUNT_KEY = QBConfig.credentials.accountKey;
-    const CONFIG = QBConfig.appConfig;
+    const APPLICATION_ID = QBConf.credentials.appId;
+    const AUTH_KEY = QBConf.credentials.authKey;
+    const AUTH_SECRET = QBConf.credentials.authSecret;
+    const ACCOUNT_KEY = QBConf.credentials.accountKey;
+    const CONFIG = QBConf.appConfig;
 
     QB.init(APPLICATION_ID, AUTH_KEY, AUTH_SECRET, ACCOUNT_KEY, CONFIG);
 
@@ -80,22 +81,22 @@ function App() {
     }
   }, []);
 
-    // const { proxyConfig } = QBConfig.configAIApi.AIAnswerAssistWidgetConfig;
-    //
-    // const defaultAIAnswer = UseDefaultAIAssistAnswerWidget({
-    //     ...proxyConfig,
-    // });
+    const { proxyConfig } = QBConf.configAIApi.AIAnswerAssistWidgetConfig;
+
+    const defaultAIAnswer = useMyAIAssistAnswer({
+        ...proxyConfig,
+    });
 
   return (
       <div>
         <QuickBloxUIKitProvider
             maxFileSize={100 * 1000000}
-            accountData={{ ...QBConfig.credentials }}
+            accountData={{ ...QBConf.credentials }}
             loginData={{
               login: currentUser.login,
               password: currentUser.password,
             }}
-            qbConfig={{... QBConfig}}
+            qbConfig={{... QBConf}}
         >
           <div className="App">
             {
@@ -103,10 +104,11 @@ function App() {
               isSDKInitialized && isUserAuthorized
                   ?
                   <QuickBloxUIKitDesktopLayout
-                      // AIAssist={{
-                      //     enabled: true,
-                      //     default: true,
-                      // }}
+                      AIAssist={{
+                          enabled: true,
+                          default: true,
+                          AIWidget: defaultAIAnswer
+                      }}
                   />
                   :
                   <div>wait while SDK is initializing...</div>

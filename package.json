@@ -1,9 +1,10 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.15.5",
+  "version": "2.16.0",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
+  "types": "quickblox.d.ts",
   "license": "(Apache-2.0)",
   "keywords": [
     "quickblox",
@@ -56,7 +57,7 @@
     "jaguarjs-jsdoc": "^1.0.1",
     "jasmine": "^3.6.3",
     "jasmine-console-reporter": "^3.1.0",
-    "jsdoc": "^3.5.5",
+    "jsdoc": "^4.0.0",
     "jshint": "^2.9.6",
     "jshint-stylish": "^2.2.1",
     "vinyl-source-stream": "^2.0.0"
@@ -82,7 +83,7 @@
     "build": "cross-env NODE_ENV=production npm run lint && gulp build && gulp minify",
     "buildNotMinified": "npm run lint && gulp build",
     "generateBuildVersion": "gulp generate-build_version",
-    "docs": "rimraf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
+    "docs": "rm -rf docs && mkdir docs && jsdoc -c ./jsdoc.conf.json",
     "test": "jasmine"
   }
 }

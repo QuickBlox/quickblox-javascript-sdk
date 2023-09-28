@@ -1,9 +1,9 @@
 var QBconfig = {
     credentials: {
-        appId: '',
-        authKey: '',
-        authSecret: '',
-        accountKey: ''
+        'appId': -1,
+        'authKey': '',
+        'authSecret': '',
+        'accountKey': ''
     },
     appConfig: {
         chatProtocol: {
@@ -16,18 +16,16 @@ var QBconfig = {
         streamManagement: {
             enable: true
         },
-        debug: {
-            mode: 1,
-            file: null
-        }
-    }
+        debug: true,
+        callBackInterval: 30,
+    },
 };
 
 var appConfig = {
     dilogsPerRequers: 15,
     messagesPerRequest: 50,
     usersPerRequest: 15,
-    typingTimeout: 3 // 3 seconds
+    typingTimeout: 3, // 3 seconds
 };
 
 var CONSTANTS = {

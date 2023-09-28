@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="join__row">
-                        <button type="submit" class="join__btn">Login</button>
+                        <button type="submit" class="join__btn" disabled>Login</button>
                     </div>
                 </div>
             </form>
@@ -172,17 +172,17 @@
 </div>
 
 <!-- SOUNDS -->
-<audio id="endCallSignal" preload="auto">
+<audio id="endCallSignal">
     <source src="audio/end_of_call.ogg" type="audio/ogg"/>
     <source src="audio/end_of_call.mp3" type="audio/mp3"/>
 </audio>
 
-<audio id="callingSignal" loop preload="auto">
+<audio id="callingSignal" loop>
     <source src="audio/calling.ogg" type="audio/ogg"/>
     <source src="audio/calling.mp3" type="audio/mp3"/>
 </audio>
 
-<audio id="ringtoneSignal" loop preload="auto">
+<audio id="ringtoneSignal" loop>
     <source src="audio/ringtone.ogg" type="audio/ogg"/>
     <source src="audio/ringtone.mp3" type="audio/mp3"/>
 </audio>
@@ -263,7 +263,13 @@
             </div>
 
             <div class="qb-video">
-                <video id="main_video" class="frames__main_v qb-video_source" autoplay playsinline></video>
+                <video
+                    autoplay
+                    class="frames__main_v qb-video_source"
+                    id="main_video"
+                    muted
+                    playsinline
+                />
             </div>
         </div>
 
@@ -292,7 +298,6 @@
                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                             <g transform="translate(-290.000000, -80.000000)">
                                 <g transform="translate(288.000000, 78.000000)">
-                                    <path d="M0 0L24 0 24 24 0 24 0 0Z"/>
                                     <path class="svg_icon"
                                           d="M21 6.5L17 10.5 17 7C17 6.45 16.55 6 16 6L9.82 6 21 17.18 21 6.5 21 6.5ZM3.27 2L2 3.27 4.73 6 4 6C3.45 6 3 6.45 3 7L3 17C3 17.55 3.45 18 4 18L16 18C16.21 18 16.39 17.92 16.54 17.82L19.73 21 21 19.73 3.27 2 3.27 2Z"/>
                                 </g>
@@ -307,7 +312,8 @@
                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                             <g transform="translate(-290.000000, -80.000000)">
                                 <g transform="translate(288.000000, 78.000000)">
-                                    <path d="M21.22 18.02l2 2H24v-2h-2.78zm.77-2l.01-10a2 2 0 0 0-2-2H7.22l5.23 5.23c.18-.04.36-.07.55-.1V7.02l4 3.73-1.58 1.47 5.54 5.54c.61-.33 1.03-.99 1.03-1.74zM2.39 1.73L1.11 3l1.54 1.54c-.4.36-.65.89-.65 1.48v10a2 2 0 0 0 2 2H0v2h18.13l2.71 2.71 1.27-1.27L2.39 1.73zM7 15.02c.31-1.48.92-2.95 2.07-4.06l1.59 1.59c-1.54.38-2.7 1.18-3.66 2.47z"
+                                    <path class="svg_icon"
+                                          d="M21.22 18.02l2 2H24v-2h-2.78zm.77-2l.01-10a2 2 0 0 0-2-2H7.22l5.23 5.23c.18-.04.36-.07.55-.1V7.02l4 3.73-1.58 1.47 5.54 5.54c.61-.33 1.03-.99 1.03-1.74zM2.39 1.73L1.11 3l1.54 1.54c-.4.36-.65.89-.65 1.48v10a2 2 0 0 0 2 2H0v2h18.13l2.71 2.71 1.27-1.27L2.39 1.73zM7 15.02c.31-1.48.92-2.95 2.07-4.06l1.59 1.59c-1.54.38-2.7 1.18-3.66 2.47z"
                                           fill="#626262"/>
                                 </g>
                             </g>
@@ -411,7 +417,7 @@
 
 <script type="text/template" id="user_tpl">
     <div class="users__item">
-        <button class="users__user j-user" data-id="<%= id %>" data-login="<%= login %>" data-name="<%= full_name %>">
+        <button class="users__user j-user <%= callees_status %>" data-id="<%= id %>" data-login="<%= login %>" data-name="<%= full_name %>">
             <i class="user__icon"></i>
             <span class="user__name"><%= full_name %></span>
             <i class="users__btn_remove j-user-remove"></i>
@@ -453,7 +459,7 @@
 <script src="https://unpkg.com/media-recorder-js@2.0.0/qbMediaRecorder.js"></script>
 
 <!-- QB -->
-<script src="../../quickblox.min.js"></script>
+<script src="../../quickblox.js"></script>
 <!-- app -->
 <script src="config.js"></script>
 <script src="js/helpers.js"></script>

@@ -16,19 +16,21 @@
 
     /** Test server / app by defaults */
     const creds = {
-        'appId': '',
+        'appId': -1,
         'authKey': '',
         'authSecret': '',
         'accountKey': ''
     };
 
     const config = {
-        debug: true,
+        debug: false,
+        pingTimeout: 5,
+        pingLocalhostTimeInterval: 5,
         webrtc: {
-            answerTimeInterval: 60,
+            answerTimeInterval: 30,
             dialingTimeInterval: 5,
-            disconnectTimeInterval: 35,
-            statsReportTimeInterval: 5
+            disconnectTimeInterval: 30,
+            statsReportTimeInterval: false
         }
     };
 

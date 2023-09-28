@@ -199,6 +199,13 @@ Listeners.prototype.onSentMessageCallback = function (messageLost, messageSent) 
         data.status = 'not ' + data.status;
     }
 
+    if (messageSent) {
+        console.log('Message SENT with ID: ' + message.id);
+    }
+    if (messageLost) {
+        console.log('Message LOST with ID: ' + message.id);
+    }
+
     messageModule.setMessageStatus(data);
 };
 

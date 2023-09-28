@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 // @ts-ignore
-import * as QB from "quickblox/quickblox";
+import QB from "quickblox/quickblox";
 import {
   QuickBloxUIKitProvider,
   QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData,
@@ -13,8 +13,8 @@ import './App.css';
 function App() {
 
   const currentUser: LoginData = {
-    login: '',
-    password: '',
+    login: 'anruaav2',
+    password: 'quickblox',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();

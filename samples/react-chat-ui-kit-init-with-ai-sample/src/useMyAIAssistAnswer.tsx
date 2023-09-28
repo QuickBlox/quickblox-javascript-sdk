@@ -7,7 +7,7 @@ interface MessageWidgetProps {
     port: string;
     sessionToken: string;
 }
-export default function UseDefaultAIAssistAnswerWidget({
+export default function useMyAIAssistAnswer({
                                                            servername,
                                                            api,
                                                            port,

@@ -1,4 +1,4 @@
-export const QBConfig = {
+export const QBConfig: QBConfig = {
     credentials: {
         appId: -1,
         accountKey: '',
@@ -49,21 +49,27 @@ export const QBConfig = {
         },
     },
     appConfig: {
+        maxFileSize: 10 * 1024 * 1024,
+        sessionTimeOut: 122,
         chatProtocol: {
-            Active: 2,
+            active: 2,
         },
-        debug: false,
+        debug: true,
         endpoints: {
-            apiEndpoint: 'https://api.quickblox.com',
-            chatEndpoint: 'chat.quickblox.com',
+            api: 'api.quickblox.com',
+            chat: 'chat.quickblox.com',
         },
-        on: {
-            async sessionExpired(handleResponse: any, retry: any) {
-                console.log(`Test sessionExpired… ${handleResponse} ${retry}`);
-            }
-        },
+        // on: {
+        //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
+        //     async sessionExpired(handleResponse: any, retry: any) {
+        //         console.log(
+        //             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        //             `QBconfig sessionExpired handle: ${handleResponse} ${retry}`,
+        //         );
+        //     },
+        // },
         streamManagement: {
-            Enable: true,
+            enable: true,
         },
     },
 };

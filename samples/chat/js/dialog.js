@@ -910,7 +910,7 @@ Dialog.prototype.setListeners = function () {
     helpers._(document).on("input", ".dialog_name", function (_event, _element) {
         var dialogName = _element.value.trim();
         document.forms.create_dialog.dialog_name.isValid = 20 >= dialogName.length && dialogName.length >=3;
-        if(document.forms.create_dialog.dialog_name.isValid){
+        if(document.forms.create_dialog.dialog_name.isNotValid){
             _element.nextElementSibling.classList.remove('filled');
             document.querySelector('.j-create_dialog_btn').removeAttribute('disabled');
         }else{

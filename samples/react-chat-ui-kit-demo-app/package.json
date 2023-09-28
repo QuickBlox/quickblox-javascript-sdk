@@ -1,6 +1,6 @@
 {
   "name": "react-chat",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.0",
@@ -13,7 +13,7 @@
     "@types/react-dom": "^18.2.4",
     "quickblox-react-ui-kit": "^0.2.3",
     "node-sass": "^8.0.0",
-    "quickblox": "^2.15.5",
+    "quickblox": "^2.16.0",
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.4.3",

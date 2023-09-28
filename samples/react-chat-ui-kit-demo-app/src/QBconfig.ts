@@ -1,4 +1,4 @@
-export const QBConfig = {
+export const QBConfig: QBConfig = {
     credentials: {
         appId: -1,
         accountKey: '',
@@ -59,15 +59,15 @@ export const QBConfig = {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
         },
-        on: {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
-            async sessionExpired(handleResponse: any, retry: any) {
-                console.log(
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    `QBconfig sessionExpired handle: ${handleResponse} ${retry}`,
-                );
-            },
-        },
+        // on: {
+        //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
+        //     async sessionExpired(handleResponse: any, retry: any) {
+        //         console.log(
+        //             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        //             `QBconfig sessionExpired handle: ${handleResponse} ${retry}`,
+        //         );
+        //     },
+        // },
         streamManagement: {
             enable: true,
         },

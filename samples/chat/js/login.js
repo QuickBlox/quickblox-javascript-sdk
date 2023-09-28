@@ -186,8 +186,8 @@ Login.prototype.setListeners = function(){
         if(
             !app.checkInternetConnection() ||
             loginForm.hasAttribute('disabled') ||
-            !loginForm.userName.isValid ||
-            !loginForm.userLogin.isValid) {
+            !loginForm.userName.isNotValid ||
+            !loginForm.userLogin.isNotValid) {
             return false;
         } else {
             loginForm.setAttribute('disabled', true);
@@ -235,15 +235,15 @@ Login.prototype.setListeners = function(){
             var userName = loginForm.userName.value,
                 userLogin = loginForm.userLogin.value;
 
-            loginForm.userName.isValid = 20 >= userName.length && userName.length >=3 &&
+            loginForm.userName.isNotValid = 20 >= userName.length && userName.length >=3 &&
                 (userName.match(/^[a-zA-Z][a-zA-Z0-9 ]{1,18}[a-zA-Z0-9]$/)!=null);
-            loginForm.userLogin.isValid = 50 >= userLogin.length && userLogin.length >= 3 &&
+            loginForm.userLogin.isNotValid = 50 >= userLogin.length && userLogin.length >= 3 &&
                 (userLogin.match(/[@]/g)==null || userLogin.match(/[@]/g).length <= 1) &&
                 (userLogin.match(/^[a-zA-Z][a-zA-Z0-9@\-_.]{1,48}[a-zA-Z0-9]$/)!=null);
 
             userName.split(" ").forEach(function (str) {
                 if(str.length < 1){
-                    loginForm.userName.isValid = false;
+                    loginForm.userName.isNotValid = false;
                 }
             });
 
@@ -253,7 +253,7 @@ Login.prototype.setListeners = function(){
                 e.target.nextElementSibling.classList.add('filled');
             }
 
-            if(loginForm.userName.isValid && loginForm.userLogin.isValid){
+            if(loginForm.userName.isNotValid && loginForm.userLogin.isNotValid){
                 loginBtn.removeAttribute('disabled');
             }else{
                 loginBtn.setAttribute('disabled', true);

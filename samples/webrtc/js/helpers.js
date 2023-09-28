@@ -105,7 +105,9 @@
               $video.parents('.j-callee').addClass('wait');
           } else if(action === 'clear') {
               /** detachMediaStream take videoElementId */
-              app.currentSession.detachMediaStream('remote_video_' + userId);
+              if (app.currentSession && app.currentSession.detachMediaStream) {
+                  app.currentSession.detachMediaStream('remote_video_' + userId);
+              }
               $video.parents('.j-callee').removeClass('wait');
           }
         }
@@ -203,6 +205,7 @@
                     reject(err);
                 } else {
                     _.each(result.items, function(item) {
+                        item.user.callees_status = app.callees.hasOwnProperty(item.user.id) ? 'active' : '';
                         users.push(item.user);
                         if( item.user.id !== app.caller.id ) {
                             usersHTML += tpl(item.user);

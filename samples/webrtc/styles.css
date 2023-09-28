@@ -286,6 +286,10 @@ b {
     outline: none;
     transition: all .4s ease;
 }
+.join__btn:disabled {
+    cursor: no-drop;
+    background-color: #99A9C6;
+}
     .join__input {
         padding: 0 0 0 15px;
         border: solid 1px #d3d3d3;

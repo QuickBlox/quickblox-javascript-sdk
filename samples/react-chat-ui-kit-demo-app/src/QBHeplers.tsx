@@ -1,7 +1,6 @@
 import {AuthorizationData, LoginData, stringifyError} from "quickblox-react-ui-kit";
-// @ts-ignore
-import * as QB from "quickblox/quickblox";
-import {QBConfig} from "./QBconfig";
+import QB from "quickblox/quickblox";
+import {QBConfig as QBConf} from "./QBconfig";
 
 export type UserData = {
     login: string;
@@ -33,11 +32,11 @@ export const prepareSDK = async (): Promise<void> => {
         }
     }
 
-    const APPLICATION_ID = QBConfig.credentials.appId;
-    const AUTH_KEY = QBConfig.credentials.authKey;
-    const AUTH_SECRET = QBConfig.credentials.authSecret;
-    const ACCOUNT_KEY = QBConfig.credentials.accountKey;
-    const CONFIG = QBConfig.appConfig;
+    const APPLICATION_ID = QBConf.credentials.appId;
+    const AUTH_KEY = QBConf.credentials.authKey;
+    const AUTH_SECRET = QBConf.credentials.authSecret;
+    const ACCOUNT_KEY = QBConf.credentials.accountKey;
+    const CONFIG = QBConf.appConfig ;
 
     QB.init(APPLICATION_ID, AUTH_KEY, AUTH_SECRET, ACCOUNT_KEY, CONFIG);
 

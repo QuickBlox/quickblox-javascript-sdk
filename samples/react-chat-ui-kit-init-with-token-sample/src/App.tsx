@@ -1,21 +1,21 @@
 import React, {useEffect, useState} from 'react';
 
 // @ts-ignore
-import * as QB from "quickblox/quickblox";
+import QB from "quickblox/quickblox";
 import {
   QuickBloxUIKitProvider,
   QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData,
   QBDataContextType,
   useQbUIKitDataContext
 } from 'quickblox-react-ui-kit';
-import { QBConfig } from './QBconfig';
+import {QBConfig as QBConf} from './QBconfig';
 import './App.css';
 
 function App() {
 
   const currentUser: LoginData = {
-    login: 'YOUR_USER_1',
-    password: 'YOU_PASSWORD',
+    login: 'artik1',
+    password: 'quickblox',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -28,18 +28,18 @@ function App() {
         const QuickBlox = require('quickblox/quickblox.min').QuickBlox;
         const QBOther = new QuickBlox();
 
-        const APPLICATION_ID = QBConfig.credentials.appId;
-        const AUTH_KEY = QBConfig.credentials.authKey;
-        const AUTH_SECRET = QBConfig.credentials.authSecret;
-        const ACCOUNT_KEY = QBConfig.credentials.accountKey;
-        const CONFIG = QBConfig.appConfig;
+        const APPLICATION_ID = QBConf.credentials.appId;
+        const AUTH_KEY = QBConf.credentials.authKey;
+        const AUTH_SECRET = QBConf.credentials.authSecret;
+        const ACCOUNT_KEY = QBConf.credentials.accountKey;
+        const CONFIG = QBConf.appConfig;
 
         QBOther.init(APPLICATION_ID, AUTH_KEY, AUTH_SECRET, ACCOUNT_KEY, CONFIG);
 
 
         const userRequiredParams = {
-            'login': 'YOU_USER_2',
-            'password': 'YOU_PASSWORD'
+            'login': 'anruaav2',
+            'password': 'quickblox'
         };
 
         return new Promise(function(resolve, reject) {
@@ -78,11 +78,11 @@ function App() {
             }
             //
             const sessionToken = token;
-            const APPLICATION_ID = QBConfig.credentials.appId;
+            const APPLICATION_ID = QBConf.credentials.appId;
             // const AUTH_KEY = QBConfig.credentials.authKey;
             // const AUTH_SECRET = QBConfig.credentials.authSecret;
-            const ACCOUNT_KEY = QBConfig.credentials.accountKey;
-            const CONFIG = QBConfig.appConfig;
+            const ACCOUNT_KEY = QBConf.credentials.accountKey;
+            const CONFIG = QBConf.appConfig;
 
             QB.initWithAppId(APPLICATION_ID, ACCOUNT_KEY, CONFIG);
             console.log('QB version: ', QB.version, 'QB build: ', QB.buildNumber);
@@ -123,12 +123,12 @@ function App() {
       <div>
         <QuickBloxUIKitProvider
             maxFileSize={100 * 1000000}
-            accountData={{ ...QBConfig.credentials }}
+            accountData={{ ...QBConf.credentials }}
             loginData={{
               login: currentUser.login,
               password: currentUser.password,
             }}
-            qbConfig={{... QBConfig}}
+            qbConfig={{... QBConf}}
         >
           <div className="App">
             {
