@@ -109,7 +109,8 @@ function App() {
 
     const handleError = (error: any): void => {
         console.log('error:', JSON.stringify(error));
-        setErrorMessage(error.message.errors[0]);
+        const errorToShow = error.message.errors[0] || 'Unexpected error';
+        setErrorMessage(errorToShow );
         setUserAuthorized(false);
         navigate('/sign-in');
     };
