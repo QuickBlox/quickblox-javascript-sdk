@@ -393,11 +393,10 @@ interface QBDataModule {
     }>
   ): void;
   update<
-    D extends { _id: string } & Dictionary<unknown>,
     T extends QBCustomObject
   >(
     className: string,
-    data: D,
+    data: { _id: string } & Dictionary<unknown>,
     callback: QBCallback<T>
   ): void;
   fileUrl(
@@ -595,6 +594,7 @@ export declare interface QBWebRTCModule {
     userInfo: Dictionary<unknown>
   ) => void;
   onUserNotAnswerListener?: (session: QBWebRTCSession, userId: number) => void;
+  onReconnectListener?: (session: QBWebRTCSession, userId: number, state: unknown) => void;
 }
 
 export declare type QBLoginParams =
@@ -641,6 +641,8 @@ export class QuickBlox {
     accountKey: string,
     config?: QBConfig
   ): void;
+
+  initWithAppId(appId: number, accountKey: string, config?: QBConfig):void;
 
   login(params: QBLoginParams, callback: QBCallback<QBUser>): void;
 

@@ -1,4 +1,4 @@
-export const QBConfig: QBConfig = {
+export const QBConfig = {
     credentials: {
         appId: -1,
         accountKey: '',

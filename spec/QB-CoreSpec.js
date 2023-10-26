@@ -6,6 +6,7 @@ var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
 var QuickBlox = isNodeEnv ? require('../src/qbMain') : window.QB;
 var QB;
+var QBtmp;
 
 var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
 var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
@@ -17,13 +18,32 @@ describe('QB init tests', function () {
     QB = new QuickBlox.QuickBlox();
   });
 
-  it('can init SDK with session token and appId (without accountKey)', function () {
+  it('1. can init SDK with session token and appId (without accountKey)', function () {
     QB.init('56655ac9a0eb476d92002b66', CREDS.appId);
 
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
   });
 
-  it('can init SDK with appId, authKey, authSecret, accountKey, config', function () {
+  ///
+  it('2. can init SDK with appId, accountKey, config ', function () {
+    QB.initWithAppId(CREDS.appId, CREDS.accountKey, CONFIG);
+
+    expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
+    expect(QB.service.qbInst.config.creds.accountKey).toEqual(CREDS.accountKey);
+    expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
+  });
+
+  it('2.1. can init SDK with wrong type of appId', function () {
+    expect( function(){
+      QB.initWithAppId(CREDS.appId.toString(), CREDS.accountKey, CONFIG);
+    } ).toThrow(new Error('Type of appId must be a number'));
+
+
+  });
+
+  ///
+
+  it('3. can init SDK with appId, authKey, authSecret, accountKey, config', function () {
     QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CREDS.accountKey, CONFIG);
 
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
@@ -33,7 +53,7 @@ describe('QB init tests', function () {
     expect(QB.service.qbInst.config.debug).toEqual(CONFIG.debug);
   });
 
-  it('can init SDK with appId, authKey, authSecret, config (without accountKey)', function () {
+  it('4. can init SDK with appId, authKey, authSecret, config (without accountKey)', function () {
     QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, undefined, CONFIG);
 
     expect(QB.service.qbInst.config.creds.appId).toEqual(CREDS.appId);
@@ -59,6 +79,7 @@ describe('Ping tests', function () {
       userId: QBUser1.id,
       password: QBUser1.password
     };
+    console.log('Test SDK.... call QB-CoreSpec.js 62 line QB.chat.connect');
     QB.chat.connect(chatConnectParams, function(err) {
       if (err) {
         done.fail('Connection to chat error: ' + JSON.stringify(err));
@@ -79,7 +100,7 @@ describe('Ping tests', function () {
       } else {
         done();
       }
-    })
+    });
   });
 
   it('should ping logged-in user and respond with pong', function (done) {
@@ -101,14 +122,14 @@ describe('Ping tests', function () {
 
 });
 
-describe('Session API', function () {
+describe('1. Session API', function () {
 
   beforeAll(function () {
     QB = new QuickBlox.QuickBlox();
     QB.init(CREDS.appId, CREDS.authKey, CREDS.authSecret, CREDS.accountKey, CONFIG);
   });
 
-  it('can create a session', function (done) {
+  it('can create an App session', function (done) {
     QB.createSession(function (err, session) {
       if (err) {
         done.fail('Create a session error: ' + JSON.stringify(err));
@@ -228,3 +249,133 @@ describe('Session API', function () {
     expect(QB.service.qbInst.config.chatProtocol.websocket).toEqual('wss://chat.quickblox.com:5291');
   });
 });
+
+describe('2. Session API. Init with User Session token tests', function () {
+
+  beforeAll(function () {
+    QB = new QuickBlox.QuickBlox();
+    QB.initWithAppId(CREDS.appId, CREDS.accountKey, CONFIG);
+  });
+
+  // afterAll(function () {
+  //   QB.chat.disconnect();
+  //   QB.destroySession(function (err, result) {
+  //
+  //   });
+  // });
+
+  it(`0.0. get session token for tests token value is ${CREDS.sessionToken}`, function () {
+    //
+    //
+    QBtmp = new QuickBlox.QuickBlox();
+    QBtmp.init(
+        CREDS.appId,
+        CREDS.authKey,
+        CREDS.authSecret,
+        CREDS.accountKey,
+        CONFIG
+    );
+    //get the user session token
+    QBtmp.createSession(QBUser1, function (err, session) {
+      if (err) {
+        done.fail("Create a User session error: " + JSON.stringify(err));
+      } else {
+        expect(session).not.toBeNull();
+        expect(session.application_id).toEqual(CREDS.appId);
+        expect(session.user_id).toEqual(QBUser1.id);
+        expect(session.token).not.toBeUndefined();
+      }
+    });
+    //
+    //
+  });
+
+  it('1.1. can not call startSessionWithToken without callback function', function () {
+    expect( function(){
+      QB.startSessionWithToken('56655ac9a0eb476d92002b66' , null);
+    } ).toThrow(new Error('Cannot start session without callback function'));
+
+  });
+
+  it('1.2. can not call startSessionWithToken with null value for session token', function () {
+    expect( function(){
+      QB.startSessionWithToken(null, function (err, session){});
+    } ).toThrow(new Error('Cannot start session with null value token'));
+
+  });
+
+  it('1.3. can not call startSessionWithToken with empty string value for session token', function () {
+    expect( function(){
+      QB.startSessionWithToken('', function (err, session){});
+    } ).toThrow(new Error('Cannot start session with empty string token'));
+
+  });
+
+  it(`2.can start a session with token from user session`, function () {
+    //
+    //
+    QBtmp = new QuickBlox.QuickBlox();
+    QBtmp.init(
+        CREDS.appId,
+        CREDS.authKey,
+        CREDS.authSecret,
+        CREDS.accountKey,
+        CONFIG
+    );
+    //get the user session token
+    QBtmp.createSession(QBUser1, function (err, usrSession) {
+      if (err) {
+        done.fail("Create a User session error: " + JSON.stringify(err));
+      } else {
+        expect(usrSession).not.toBeNull();
+        expect(usrSession.application_id).toEqual(CREDS.appId);
+        expect(usrSession.user_id).toEqual(QBUser1.id);
+        expect(usrSession.token).not.toBeUndefined();
+        //
+        QB.startSessionWithToken(usrSession.token, function (err, openSession) {
+          if (err) {
+            done.fail('Start a session with token error: ' + JSON.stringify(err));
+          } else {
+            expect(openSession).not.toBeNull();
+            expect(openSession.application_id).toEqual(CREDS.appId);
+            expect(openSession.user_id).toEqual(QBUser1.id);
+            expect(openSession.token).not.toBeUndefined();
+            //connect to chat
+            var chatConnectParams = {
+              userId: QBUser1.id,
+              password: openSession.token
+            };
+            console.log('Test SDK.... call QB-CoreSpec.js 296 line QB.chat.connect');
+            QB.chat.connect(chatConnectParams, function(err) {
+              if (err) {
+                done.fail('Connection to chat error: ' + JSON.stringify(err));
+              } else {
+                done('Test SDK.... call QB-CoreSpec.js 410 line QB.chat.connect');
+              }
+            });
+            //
+          }
+        });
+
+        //
+        done();
+      }
+    });
+    //
+    //
+  });
+
+  xit('3. can destroy a session', function (done) {
+    QB.destroySession(function (err, result) {
+      if (err) {
+        done.fail("Destroy session error: " + JSON.stringify(err));
+      } else {
+        expect(QB.service.qbInst.session).toBeNull();
+
+        done();
+      }
+    });
+  }, REST_REQUESTS_TIMEOUT);
+
+});
+

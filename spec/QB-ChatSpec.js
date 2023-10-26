@@ -56,6 +56,7 @@ describe('Chat API', function() {
                     'userId': QBUser2.id,
                     'password': QBUser2.password
                 };
+                console.log('Test SDK.... call QB-ChatSpec.js line 59 QB.chat.connect');
                 QB_RECEIVER.chat.connect(connectToChatParams, function(err) {
                     expect(err).toBeNull();
                     done();
@@ -868,6 +869,7 @@ describe('Chat API', function() {
     describe('Real-time: ', function() {
 
         beforeAll(function(done) {
+            console.log('Test SDK.... call QB-ChatSpec.js line 871 QB.chat.connect');
             QB_SENDER.chat.connect({
                 'userId': QBUser1.id,
                 'password': QBUser1.password
@@ -875,6 +877,7 @@ describe('Chat API', function() {
                 expect(err).toBeNull();
                 console.info("CONNECTED with User1");
 
+                console.log('Test SDK.... call QB-ChatSpec.js line 878 QB.chat.connect');
                 QB_RECEIVER.chat.connect({
                     'userId': QBUser2.id,
                     'password': QBUser2.password

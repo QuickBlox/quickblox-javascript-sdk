@@ -85,6 +85,7 @@ describe('Helpers', function() {
   });
 
   it('can get roomJid from jid', function(done) {
+    console.log('Test SDK.... call QB-HelpersSpec.js QB.chat.connect');
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if (err) {
         done.fail('Connection to chat error: ' + JSON.stringify(err));

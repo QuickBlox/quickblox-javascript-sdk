@@ -29,6 +29,7 @@ describe('Stream Managment', function() {
             expect(err).toBeNull();
             expect(res).toBeDefined();
 
+            console.log('Test SDK.... call QB-StreamMangagment.js QB.chat.connect');
             QB_SENDER.chat.connect({
                 'userId': QBUser1.id,
                 'password': QBUser1.password

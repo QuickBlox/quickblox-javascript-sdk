@@ -22,6 +22,7 @@ describe('WebRTC API', function() {
       CONFIG
     );
 
+    console.log('Test SDK.... call QB-WebRTCSpec.js QB.chat.connect');
     QB.chat.connect({userId: QBUser1.id, password: QBUser1.password}, function(err, roster) {
       if(err){
         done.fail("Chat login error: " + JSON.stringify(err));
