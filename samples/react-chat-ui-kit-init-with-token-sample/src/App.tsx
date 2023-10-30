@@ -14,8 +14,8 @@ import './App.css';
 function App() {
 
   const currentUser: LoginData = {
-    login: 'artik1',
-    password: 'quickblox',
+    login: 'USER1',
+    password: 'YOU_USER1_PASSWORD',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -38,8 +38,8 @@ function App() {
 
 
         const userRequiredParams = {
-            'login': 'anruaav2',
-            'password': 'quickblox'
+            'login': 'USER2_FOR_WORK',
+            'password': 'YOU_USER2_PASSWORD'
         };
 
         return new Promise(function(resolve, reject) {
