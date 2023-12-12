@@ -11,7 +11,7 @@
     "@types/node": "^16.18.28",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
-    "quickblox-react-ui-kit": "^0.2.7-stable",
+    "quickblox-react-ui-kit": "^0.2.7-release-final",
     "node-sass": "^8.0.0",
     "quickblox": "^2.16.1",
     "react": "^17.0.0 || ^18.0.0",
