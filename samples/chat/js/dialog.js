@@ -53,7 +53,7 @@ function Dialog() {
                                 self._cache[dialog._id] = helpers.compileDialogParams(dialog);
                             }
                             if (args !== undefined && args.selected !== undefined) {
-                                self.buildDialogItem(Object.assign({selected: args.selected, isLastMessage:args.isLastMessage}, self._cache[dialog._id]));
+                                self.buildDialogItem(Object.assign({ selected: args.selected, isLastMessage: args.isLastMessage }, self._cache[dialog._id]));
                             } else {
                                 self.buildDialogItem(self._cache[dialog._id]);
                             }
@@ -94,7 +94,7 @@ Dialog.prototype.init = function () {
     });
 };
 
-Dialog.prototype.loadDialogs = function (f, ) {
+Dialog.prototype.loadDialogs = function (f,) {
     var self = this,
         filter = f ? f : {
             limit: self.limit,
@@ -158,11 +158,11 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
     var nameIcon = dialog.name.match(/, .*?./);
     nameIcon = dialog.name[0] + (nameIcon !== null ? nameIcon[0][2] : '');
 
-    var template = helpers.fillTemplate('tpl_userConversations', {dialog: dialog, name: nameIcon});
+    var template = helpers.fillTemplate('tpl_userConversations', { dialog: dialog, name: nameIcon });
     elem = helpers.toHtml(template)[0];
 
 
-    if(self.dialogsListContainer.firstElementChild) {
+    if (self.dialogsListContainer.firstElementChild) {
         console.log(self.dialogsListContainer.firstElementChild.id);
     }
 
@@ -414,7 +414,7 @@ Dialog.prototype.beforeCreateDialog = function () {
 
     if (type !== 3) {
         this.params.name = name;
-    }else{
+    } else {
         this.createDialog();
         return false;
     }
@@ -461,7 +461,7 @@ Dialog.prototype.createDialog = function () {
         params = this.params;
 
     if (type !== 3 && name) {
-        params.name = this.params.name =  name;
+        params.name = this.params.name = name;
     }
 
     if (!app.checkInternetConnection()) {
@@ -479,7 +479,7 @@ Dialog.prototype.createDialog = function () {
                 id = createdDialog._id,
                 occupants = createdDialog.occupants_ids,
                 typeChat = (createdDialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) ? ' the group' : '',
-                message_body = (app.user.name || app.user.login) + ' created'+typeChat+' chat "'+createdDialog.name+'"',
+                message_body = (app.user.name || app.user.login) + ' created' + typeChat + ' chat "' + createdDialog.name + '"',
                 systemMessage = {
                     extension: {
                         notification_type: 1,
@@ -542,7 +542,7 @@ Dialog.prototype.getDialogById = function (id) {
         if (!app.checkInternetConnection()) {
             return false;
         }
-        QB.chat.dialog.list({"_id": id}, function (err, res) {
+        QB.chat.dialog.list({ "_id": id }, function (err, res) {
             if (err) {
                 console.error(err);
                 reject(err);
@@ -644,13 +644,13 @@ Dialog.prototype.updateDialog = function (updates) {
             updatedMsg.extension.dialog_name = updates.title;
             updatedMsg.body = app.user.name + ' changed the conversation name to "' + updates.title + '".';
         }
-    }else if (updates.delete) {
+    } else if (updates.delete) {
 
         toUpdateParams.pull_all = {
             occupants_ids: [app.user.id]
         };
 
-    }else if (updates.userList) {
+    } else if (updates.userList) {
         newUsers = updates.userList.filter(function (occupantId) {
             return dialog.users.indexOf(occupantId) === -1;
         });
@@ -789,10 +789,10 @@ Dialog.prototype.quitFromTheDialog = async function (dialogId) {
             delete self._cache[dialogId];
             delete dialogModule.selectedDialogIds[dialogId];
             var dialogElem = document.getElementById(dialogId);
-            if(dialogElem !== null) {
+            if (dialogElem !== null) {
                 dialogElem.parentNode.removeChild(dialogElem);
             }
-            if(dialogId === self.dialogId) {
+            if (dialogId === self.dialogId) {
                 self.dialogId = null;
             }
         }
@@ -839,10 +839,10 @@ Dialog.prototype.initGettingDialogs = function (userListConteiner, userListFilte
     });
 
     self.userListConteiner &&
-    self.userListConteiner.addEventListener('scroll', this.scrollHandler);
+        self.userListConteiner.addEventListener('scroll', this.scrollHandler);
 
     self.userListFilter &&
-    self.userListFilter.addEventListener('input', self.filter);
+        self.userListFilter.addEventListener('input', self.filter);
 
     return this.getDialogs(params);
 };
@@ -853,13 +853,13 @@ Dialog.prototype.buildDialogItem = function (user) {
 
     if (user.selected !== undefined) {
         userItem.selected = user.selected;
-        user.event = {click: false};
+        user.event = { click: false };
     }
 
-    if(user.isLastMessage === undefined) user.isLastMessage = true;
+    if (user.isLastMessage === undefined) user.isLastMessage = true;
     userItem.isLastMessage = user.isLastMessage;
 
-    var userTpl = helpers.fillTemplate('tpl_dialogItem', {user: userItem}),
+    var userTpl = helpers.fillTemplate('tpl_dialogItem', { user: userItem }),
         elem = helpers.toHtml(userTpl)[0];
 
     elem.addEventListener('click', function () {
@@ -883,7 +883,7 @@ Dialog.prototype.buildDialogItem = function (user) {
             self.selectedDialogIds.push(elem.id);
         }
 
-        if(document.querySelector('#selectedDialogIds')) {
+        if (document.querySelector('#selectedDialogIds')) {
             document.querySelector('#selectedDialogIds').innerHTML = self.selectedDialogIds.length === 1 ?
                 self.selectedDialogIds.length + ' chat selected' :
                 self.selectedDialogIds.length + ' chats selected';
@@ -909,11 +909,11 @@ Dialog.prototype.setListeners = function () {
 
     helpers._(document).on("input", ".dialog_name", function (_event, _element) {
         var dialogName = _element.value.trim();
-        document.forms.create_dialog.dialog_name.isValid = 20 >= dialogName.length && dialogName.length >=3;
-        if(document.forms.create_dialog.dialog_name.isNotValid){
+        document.forms.create_dialog.dialog_name.isValid = 20 >= dialogName.length && dialogName.length >= 3;
+        if (document.forms.create_dialog.dialog_name.isValid) {
             _element.nextElementSibling.classList.remove('filled');
             document.querySelector('.j-create_dialog_btn').removeAttribute('disabled');
-        }else{
+        } else {
             _element.nextElementSibling.classList.add('filled');
             document.querySelector('.j-create_dialog_btn').setAttribute('disabled', true);
         }
