@@ -57,6 +57,7 @@ export const QBConfig = {
         debug: true,
         enableForwarding: true,
         enableReplying: true,
+        regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',

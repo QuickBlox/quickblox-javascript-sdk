@@ -13,8 +13,8 @@ import './App.css';
 function App() {
 
   const currentUser: LoginData = {
-    login: 'anruaav2',
-    password: 'quickblox',
+    login: '',
+    password: '',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -102,6 +102,7 @@ function App() {
               isSDKInitialized && isUserAuthorized
                   ?
                   <QuickBloxUIKitDesktopLayout
+                      uikitHeightOffset={"32px"}
                       // AIAssist={{
                       //     enabled: true,
                       //     default: true,

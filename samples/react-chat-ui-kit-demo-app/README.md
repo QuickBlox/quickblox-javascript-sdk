@@ -10,7 +10,7 @@
       + [2.1 Get application credentials](#21-get-application-credentials)
       + [2.2 Set application credentials](#22-set-application-credentials)
       + [2.3 Run the application](#23-run-the-application)
-- [Documentation and video guides](#documentation)
+- [Documentation](#documentation)
 - [License](#license)
 
 # About
@@ -25,7 +25,7 @@ This is a code sample for [QuickBlox](http://quickblox.com/) platform. It is a g
 The minimum requirements for QuickBlox UIKit for React sample are:
 
 - JS QuickBlox SDK v2.15.5
-- QuickBlox React UIKit library v0.2.4
+- QuickBlox React UIKit library v0.2.8
 - React JS v.18.0
 - TypeScript v.4.9.3
 
@@ -110,10 +110,10 @@ Before run a code sample:
 
 Run `npm start` for a dev server. Navigate to `http://localhost:3000/`. The app will automatically reload if you change any of the source files.
 
-# Documentation and video guides
+# Documentation
 [](#documentation)
 Sample documentation is available [here](https://docs.quickblox.com/docs/react-uikit).
-Video guide "How to use AI Assistant" is available [here](https://youtu.be/BneMtDagOy4)
+
 # License
 [](#license)
 MIT License [here](https://github.com/QuickBlox/react-ui-kit/blob/main/LICENSE.md).

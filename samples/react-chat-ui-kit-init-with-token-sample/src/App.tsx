@@ -135,7 +135,7 @@ function App() {
               // React states indicating the ability to render UI
               isSDKInitialized && isUserAuthorized
                   ?
-                  <QuickBloxUIKitDesktopLayout />
+                  <QuickBloxUIKitDesktopLayout uikitHeightOffset={"32px"} />
                   :
                   <div>wait while SDK is initializing...</div>
             }

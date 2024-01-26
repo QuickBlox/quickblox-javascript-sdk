@@ -56,9 +56,9 @@ const Auth = ({children} : AuthProps) => {
             </div>
             <div className="login__footer">
                 <div className="footer__logo_wrap">
-                    <p>Sample React Chat UIKit DemoApp  v1.0.13</p>
+                    <p>Sample React Chat UIKit DemoApp  v1.0.14</p>
                     <br />
-                    <p>React Chat UIKit v0.2.7</p>
+                    <p>React Chat UIKit v0.2.8</p>
                     <br />
                     <p><Copyright /></p>
                 </div>

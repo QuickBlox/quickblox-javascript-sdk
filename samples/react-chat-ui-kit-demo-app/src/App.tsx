@@ -185,7 +185,7 @@ function App() {
                                       />
                                   </div>
                                   {/*<QuickBloxUIKitDesktopLayout theme={new CustomTheme()}  />*/}
-                                  <QuickBloxUIKitDesktopLayout />
+                                  <QuickBloxUIKitDesktopLayout uikitHeightOffset={"32px"} />
                               </div>
                           </div>
                           :

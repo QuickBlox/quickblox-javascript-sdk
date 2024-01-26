@@ -123,10 +123,16 @@ export const QBConfig = {
         debug: true,
         enableForwarding: true,
         enableReplying: true,
+        regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
         },
+        // bot server endpoints:
+        // endpoints: {
+        //     api: 'apitest.quickblox.com',
+        //     chat: 'chattest.quickblox.com',
+        // },
         // on: {
         //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
         //     async sessionExpired(handleResponse: any, retry: any) {
