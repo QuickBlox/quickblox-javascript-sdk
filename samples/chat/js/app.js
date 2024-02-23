@@ -41,6 +41,7 @@ App.prototype.init = function (config) {
     // Step 1. QB SDK initialization.
     QB = _.clone(qbConnectService.qb);
     QB.init(config.credentials.appId, config.credentials.authKey, config.credentials.authSecret, config.appConfig);
+    console.log('QB version: ', QB.version, ' build number: ', QB.buildNumber, ' sample version: 1.0.0');
 };
 
 App.prototype.renderDashboard = function (activeTabName) {
