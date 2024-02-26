@@ -1,6 +1,8 @@
 ;(function(window) {
     'use strict';
 
+    const ENVIRONMENT = 'development'; // 'development' | 'production'
+
     const MESSAGES = {
         'login': 'Login as any user on this computer and another user on another computer.',
         'create_session': 'Creating a session...',
@@ -85,6 +87,7 @@
     window.CONFIG = {
         'CREDENTIALS': creds,
         'APP_CONFIG': config,
-        'MESSAGES': MESSAGES
+        'MESSAGES': MESSAGES,
+        'ENVIRONMENT': ENVIRONMENT,
     };
 }(window));

@@ -1341,7 +1341,7 @@
             var params = {
                 notification_type: 'push',
                 user: {ids: opponentsIDsNumbers},
-                environment: 'development', // environment, can be 'production' as well.
+                environment: CONFIG.ENVIRONMENT, // environment, can be 'production' as well.
                 message: QB.pushnotifications.base64Encode(
                     JSON.stringify(pushPayload)
                 )
