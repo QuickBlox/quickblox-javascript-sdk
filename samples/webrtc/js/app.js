@@ -190,6 +190,9 @@
         /* Insert info about creds and endpoints */
         let configTxt = 'Uses: ' + JSON.stringify(CONFIG.CREDENTIALS) + ',';
         configTxt += ' endpoints: ' + (CONFIG.APP_CONFIG.endpoints ? JSON.stringify(CONFIG.APP_CONFIG.endpoints) : 'test server');
+        if (CONFIG.ENVIRONMENT=== 'production') {
+            configTxt = 'You in production mode.';
+        }
         $('.j-config').text(configTxt);
 
         var statesPeerConn = _.invert(QB.webrtc.PeerConnectionState);
