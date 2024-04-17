@@ -1893,18 +1893,51 @@ MucProxy.prototype = {
 
         delete this.joinedRooms[jid];
 
+        function handleLeaveAnswer(stanza) {
+            var id = chatUtils.getAttr(stanza, 'id');
+            var from = chatUtils.getAttr(stanza, 'from');
+            var dialogId = self.helpers.getDialogIdFromNode(from);
+
+            var x = chatUtils.getElement(stanza, 'x');
+            var xXMLNS = chatUtils.getAttr(x, 'xmlns');
+            var status = chatUtils.getElement(x, 'status');
+            var statusCode = chatUtils.getAttr(status, 'code');
+
+            if (status && statusCode == '110') {
+                Utils.safeCallbackCall(callback, null, {
+                    dialogId: dialogId
+                });
+            } else {
+                var type = chatUtils.getAttr(stanza, 'type');
+
+                if (type && type === 'error' && xXMLNS == 'http://jabber.org/protocol/muc' && id.endsWith(':join')) {
+                    var errorEl = chatUtils.getElement(stanza, 'error');
+                    var code = chatUtils.getAttr(errorEl, 'code');
+                    var errorMessage = chatUtils.getElementText(errorEl, 'text');
+
+                    Utils.safeCallbackCall(callback, {
+                        code: code || 500,
+                        message: errorMessage || 'Unknown issue'
+                    }, {
+                        dialogId: dialogId
+                    });
+                }
+            }
+        }
+
         if (Utils.getEnv().browser) {
             var roomJid = self.helpers.getRoomJid(jid);
 
             if (typeof callback === 'function') {
-                self.connection.XAddTrackedHandler(callback, null, 'presence', presParams.type, null, roomJid);
+                self.connection.XAddTrackedHandler(handleLeaveAnswer, null, 'presence', presParams.type, null, roomJid);
+
             }
 
             self.connection.send(pres);
         } else {
             /** The answer don't contain id */
             if (typeof callback === 'function') {
-                self.nodeStanzasCallbacks['muc:leave'] = callback;
+                self.nodeStanzasCallbacks['muc:leave'] = handleLeaveAnswer;
             }
 
             self.Client.send(pres);
