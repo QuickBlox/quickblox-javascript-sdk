@@ -4,6 +4,7 @@ import qbLogoGray from "../../assets/img/qblogo-grey.svg";
 import {Grid, Typography} from "@mui/material";
 import Link from "@mui/material/Link";
 import {UserData} from '../../QBHeplers';
+import packageJson from '../../../package.json';
 
 export type FunctionTypeLoginDataToVoid = (data: UserData) => void;
 
@@ -52,13 +53,13 @@ const Auth = ({children} : AuthProps) => {
                     </a>
                     <h1>QB UIKit React Sample</h1>
                 </div>
-                    {children ?? children}
+                {children ?? children}
             </div>
             <div className="login__footer">
                 <div className="footer__logo_wrap">
-                    <p>Sample React Chat UIKit DemoApp  v1.0.14</p>
+                    <p>Sample React Chat UIKit DemoApp  v.{packageJson.version}</p>
                     <br />
-                    <p>React Chat UIKit v0.2.8</p>
+                    <p>React Chat UIKit v.{packageJson.dependencies["quickblox-react-ui-kit"]}</p>
                     <br />
                     <p><Copyright /></p>
                 </div>

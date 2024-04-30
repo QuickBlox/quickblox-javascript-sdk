@@ -10,8 +10,12 @@
 }
 
 body{
+  font-family: 'Roboto';
   justify-content: center;
   align-content: center;
   width: 100%;
   max-width: 100%;
+  //to hide the scrollbars if DialogInfo clicked
+  overflow: hidden !important;
+  scrollbar-width: none !important;
 }

@@ -1,5 +1,5 @@
 import {AuthorizationData, LoginData, stringifyError} from "quickblox-react-ui-kit";
-import QB from "quickblox/quickblox";
+import QB, {QBUser} from "quickblox/quickblox";
 import {QBConfig as QBConf} from "./QBconfig";
 
 export type UserData = {
@@ -42,7 +42,7 @@ export const prepareSDK = async (): Promise<void> => {
 
 };
 
-export const createUser = (user: QBUser): Promise<QBUser> => {
+export const createUser = (user: QBUserExtended): Promise<QBUser> => {
     const QBLib = (window as any).QB;
     return new Promise((resolve, reject) => {
         const userLoginData = {
@@ -110,7 +110,7 @@ export const connectToChatServer = async (paramsConnect: ParamsConnect, userLogi
     });
 };
 
-export const canLogin = async (user: QBUser) => {
+export const canLogin = async (user: QBUserExtended) => {
     const QBLib = (window as any).QB;
     return new Promise((resolve, reject) => {
         QBLib.login(user, (loginErr: any, loginRes: any) => {
@@ -128,8 +128,8 @@ export const logout = () => {
     QBLib.chat.disconnect();
     QBLib.destroySession(() => null);
 }
-
-const isUserExist = async (user: QBUser): Promise<boolean> => {
+export type QBUserExtended = QBUser & {password?: string};
+const isUserExist = async (user: QBUserExtended): Promise<boolean> => {
     let userExists = true;
     await canLogin(user).catch(() => {
         userExists = false;
@@ -137,7 +137,7 @@ const isUserExist = async (user: QBUser): Promise<boolean> => {
     return userExists;
 }
 
-export  const qbDefaultUser: QBUser = {
+export  const qbDefaultUser: QBUserExtended = {
     id: 0,
     full_name: '',
     email: '',
@@ -161,7 +161,7 @@ export  const qbDefaultUser: QBUser = {
 export const createUserAction = async (data: UserData): Promise<UserCreationStatus> => {
     let resultCreateUserAction: UserCreationStatus  = UserCreationStatus.UserCreated;
     createAppSession().then(async () => {
-        const user: QBUser = qbDefaultUser;
+        const user: QBUserExtended = qbDefaultUser;
         user.login = data.login;
         user.full_name = data.fullName || '';
         user.password = data.password;

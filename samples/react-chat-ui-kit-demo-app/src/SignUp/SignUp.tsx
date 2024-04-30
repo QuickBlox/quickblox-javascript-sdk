@@ -25,9 +25,10 @@ import {UserData} from "../QBHeplers";
 type SignUpProps = {
     signUpHandler?: FunctionTypeLoginDataToVoid;
     errorMessage?: string;
+    isOnline: boolean;
 };
 
-const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage}: SignUpProps) => {
+const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage, isOnline}: SignUpProps) => {
     document.title = 'Login';
     const [userName, setUserName] = useState('');
     const [fullName, setFullName] = useState('');
@@ -177,7 +178,7 @@ const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage}: SignUpProp
                             fullWidth
                             variant="contained"
                             sx={{mt: 3, mb: 2}}
-                            disabled={!validInputValues}
+                            disabled={!validInputValues || !isOnline}
                         >
                             Sign Up
                         </Button>
@@ -190,14 +191,14 @@ const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage}: SignUpProp
                                 {"Sign In"}
                             </RouterLink>
                         </Grid>
-                        {errorMessage
+                        {errorMessage || !isOnline
                             ?
                             <Grid container
                                   direction="row"
                                   justifyContent="center"
                                   alignItems="center"
                             >
-                                <Alert severity="error">{errorMessage}</Alert>
+                                <Alert severity="error">{!isOnline ? 'No connection.' : errorMessage}</Alert>
                             </Grid>
                             :
                             null

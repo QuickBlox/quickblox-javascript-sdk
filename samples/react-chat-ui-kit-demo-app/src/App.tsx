@@ -19,6 +19,38 @@ import SignUp from "./SignUp/SignUp";
 function App() {
     const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
 
+    const [isOnline, setIsOnline] = useState<boolean>(
+        navigator.onLine
+    );
+
+    qbUIKitContext.storage.CONNECTION_REPOSITORY.subscribe((status) => {
+        console.log(`Connection status: ${status ? 'CONNECTED' : 'DISCONNECTED'}`);
+        if (status) {setIsOnline(true);}
+        else {
+            setIsOnline(false);
+            setErrorMessage('Error! No Connection.');
+        }
+    });
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isOnline) {
+            setErrorMessage('');
+        }
+    }, [isOnline]);
+
     const [isUserAuthorized, setUserAuthorized] = React.useState(false);
     const [isSDKInitialized, setSDKInitialized] = React.useState(false);
 
@@ -34,46 +66,59 @@ function App() {
     const navigate = useNavigate();
 
     const loginHandler = async (data: any): Promise<void> => {
-        setErrorMessage('');
-        const loginData: LoginData = {
-            login: data.login,
-            password: data.password
+        if (isOnline) {
+            setErrorMessage('');
+            const loginData: LoginData = {
+                login: data.login,
+                password: data.password
+            }
+            setCurrentUser(loginData);
+            setTheme(data.nameTheme);
+            await loginAction(loginData);
+            document.documentElement.setAttribute('data-theme', data.nameTheme);
+        } else {
+            setErrorMessage('Error! No connection.')
         }
-        setCurrentUser(loginData);
-        setTheme(data.nameTheme);
-        await loginAction(loginData);
     };
 
     const createUserHandler = async (data: UserData): Promise<void> => {
-        setErrorMessage('');
+        if (isOnline) {
+            setErrorMessage('');
 
-        const resultCreateUser = await createUserAction(data);
+            const resultCreateUser = await createUserAction(data);
 
-        logout();
-        switch (resultCreateUser) {
-            case UserCreationStatus.UserCreated:
-                setUserAuthorized(false);
-                navigate('/sign-in');
-                break;
-            case UserCreationStatus.UserExists:
-                setErrorMessage('User already exists');
-                setUserAuthorized(false);
-                navigate('/sign-up');
-                break;
-            default:
-                setErrorMessage('Auth Fail');
-                setUserAuthorized(false);
-                navigate('/sign-up');
-                break;
+            logout();
+            switch (resultCreateUser) {
+                case UserCreationStatus.UserCreated:
+                    setUserAuthorized(false);
+                    navigate('/sign-in');
+                    break;
+                case UserCreationStatus.UserExists:
+                    setErrorMessage('User already exists');
+                    setUserAuthorized(false);
+                    navigate('/sign-up');
+                    break;
+                default:
+                    setErrorMessage('Auth Fail');
+                    setUserAuthorized(false);
+                    navigate('/sign-up');
+                    break;
+            }
+        } else  {
+            setErrorMessage('Error! No connection.');
         }
     };
 
     const logoutUIKitHandler = async () => {
-        qbUIKitContext.release();
-        setCurrentUser({login: '', password: ''});
-        setUserAuthorized(false);
-        document.documentElement.setAttribute('data-theme', 'light');
-        navigate('/sign-in');
+        if (isOnline) {
+            qbUIKitContext.release();
+            setCurrentUser({login: '', password: ''});
+            setUserAuthorized(false);
+            document.documentElement.setAttribute('data-theme', 'light');
+            navigate('/sign-in');
+        } else {
+            setErrorMessage('Error! No connection.')
+        }
     }
 
     const loginAction = async (loginData: LoginData): Promise<void> => {
@@ -149,16 +194,15 @@ function App() {
               login: currentUser.login,
               password: currentUser.password,
           }}
-          qbConfig={{...QBConfig}} // NEW !!!
+          qbConfig={{...QBConfig}}
       >
-          <div className="App">
+          <div>
 
               <Routes>
                   <Route
                       path="/" element={
                       isUserAuthorized
                           ?
-                          <div>
                               <div>
                                   <div className="main-buttons-wrapper">
                                       <MainButton
@@ -185,13 +229,12 @@ function App() {
                                       />
                                   </div>
                                   {/*<QuickBloxUIKitDesktopLayout theme={new CustomTheme()}  />*/}
-                                  <QuickBloxUIKitDesktopLayout uikitHeightOffset={"32px"} />
+                                  <QuickBloxUIKitDesktopLayout uikitHeightOffset="32px"/>
                               </div>
-                          </div>
                           :
-                          <Auth children={<SignIn signInHandler={loginHandler} errorMessage={errorMessage}/>} />} />
-                  <Route path="/sign-in" element={<Auth children={<SignIn signInHandler={loginHandler} errorMessage={errorMessage}/>} />}/>
-                  <Route path="/sign-up" element={<Auth children={<SignUp signUpHandler={createUserHandler} errorMessage={errorMessage} />} />}/>
+                          <Auth children={<SignIn signInHandler={loginHandler} errorMessage={errorMessage} isOnline={isOnline}/>} />} />
+                  <Route path="/sign-in" element={<Auth children={<SignIn signInHandler={loginHandler} errorMessage={errorMessage} isOnline={isOnline}/>} />}/>
+                  <Route path="/sign-up" element={<Auth children={<SignUp signUpHandler={createUserHandler} errorMessage={errorMessage} isOnline={isOnline} />} />}/>
               </Routes>
           </div>
       </QuickBloxUIKitProvider>
