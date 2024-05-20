@@ -413,6 +413,35 @@ export declare type GetMessagesResult = {
   limit: number
   skip: number
 }
+export class AIRole {
+    public static readonly user = "user";
+    public static readonly assistant = "assistant"
+}
+
+export interface AIChatMessage {
+    role: AIRole;
+    message: string;
+}
+
+export interface AIAnswerResponse {
+    answer: string;
+}
+
+export declare type AIChatHistory = AIChatMessage[] | null | undefined;
+
+interface QBAIModule{
+    //QB.ai.answerAssist
+    answerAssist(smartChatAssistantId: string,
+                 message: string,
+                 history :AIChatHistory,
+                 callback: QBCallback<AIAnswerResponse>): void
+    //QB.ai.translate
+    translate(smartChatAssistantId: string,
+                 message: string,
+                 languageCode: string,
+                 callback: QBCallback<AIAnswerResponse>): void
+
+}
 
 interface QBChatModule {
   isConnected: boolean
@@ -549,7 +578,7 @@ interface QBChatModule {
   /** Send is delivered status. */
   sendDeliveredStatus(params: QBMessageStatusParams): void
   ping(jidOrUserId: string | number, callback: QBCallback<any>): string
-  ping(callback: QBCallback<any>): string
+  pingchat(callback: QBCallback<any>): string
 
   dialog: {
     /**
@@ -750,6 +779,7 @@ interface QBChatModule {
     /** Get user jid from current user. */
     getUserCurrentJid(): string
   }
+
 }
 
 export declare interface QBDataFile {
@@ -1517,6 +1547,8 @@ export class QuickBlox {
   buildNumber: string
 
   chat: QBChatModule
+
+  ai: QBAIModule
 
   content: QBContentModule
 

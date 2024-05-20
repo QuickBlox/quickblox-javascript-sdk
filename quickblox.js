@@ -47342,9 +47342,7 @@ MucProxy.prototype = {
                     Utils.safeCallbackCall(callback, {
                         code: code || 500,
                         message: errorMessage || 'Unknown issue'
-                    }, {
-                        dialogId: dialogId
-                    });
+                    }, null);
                 }
             }
         }
@@ -48195,7 +48193,7 @@ Helpers.prototype = {
  * */
 module.exports = ChatProxy;
 
-},{"../../plugins/streamManagement":251,"../../qbConfig":252,"../../qbStrophe":255,"../../qbUtils":256,"./qbChatHelpers":235,"nativescript-xmpp-client":undefined,"node-xmpp-client":111}],235:[function(require,module,exports){
+},{"../../plugins/streamManagement":252,"../../qbConfig":253,"../../qbStrophe":256,"../../qbUtils":257,"./qbChatHelpers":235,"nativescript-xmpp-client":undefined,"node-xmpp-client":111}],235:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../qbUtils');
@@ -48516,7 +48514,7 @@ var qbChatHelpers = {
 
 module.exports = qbChatHelpers;
 
-},{"../../qbConfig":252,"../../qbUtils":256}],236:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257}],236:[function(require,module,exports){
 'use strict';
 
 var config = require('../../qbConfig'),
@@ -48638,7 +48636,7 @@ DialogProxy.prototype = {
 
 module.exports = DialogProxy;
 
-},{"../../qbConfig":252,"../../qbUtils":256}],237:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257}],237:[function(require,module,exports){
 'use strict';
 
 var config = require('../../qbConfig'),
@@ -48780,7 +48778,143 @@ MessageProxy.prototype = {
 
 module.exports = MessageProxy;
 
-},{"../../qbConfig":252,"../../qbUtils":256}],238:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257}],238:[function(require,module,exports){
+'use strict';
+
+var Utils = require('../qbUtils');
+
+var AI_API_URL = 'ai/ai_extensions';
+
+function AIProxy(service) {
+    this.service = service;
+}
+
+/**
+ * @namespace QB.ai
+ **/
+AIProxy.prototype = {
+    /**
+     * Provides answer assistant functionality that helps users effortlessly send various answers considering({@link https://docs.quickblox.com/docs/js-sdk-ai-features#ai-assist-answer read more}).
+     * @memberof QB.ai
+     * @param {String} smartChatAssistantId - Smart Chat Assistant id.
+     * @param {String} message - Message you want to get answer for.
+     * @param {Object[]} history - Conversation history. Used to add context.
+     * @param {answerAssistCallback} callback - The callback function.
+     * @example
+     *  var history = [
+     *                     {role: "user", message: "Hello"},
+     *                     {role: "assistant", message: "Hi"}
+     *                ];
+     *  var messageToAssist = 'Where is my order?';
+     *  QB.ai.answerAssist(smartChatAssistantId, messageToAssist, history, callback);
+     *  // or third parameters can be null
+     *  QB.ai.answerAssist(smartChatAssistantId, messageToAssist, null, callback);
+     * */
+    answerAssist: function(smartChatAssistantId, message, history, callback) {
+        /**
+         * Callback for QB.ai.answerAssist().
+         * @param {Object} error - The error object.
+         * @param {Object} response - The server response object.
+         * @param {String} [response.answer] - assist answer for message
+         * @callback answerAssistCallback
+         * */
+        if (!callback || typeof callback !== 'function') {
+            throw new Error('Callback function is required and must be a function');
+        }
+        function validateHistory(history) {
+            var AIRole = {
+                user: 'user',
+                assistant: 'assistant'
+            };
+            if (history !== null && history !== undefined) {
+                if (!Array.isArray(history)) {
+                    throw new Error('History must be an array');
+                }
+                for (var i = 0; i < history.length; i++) {
+                    var item = history[i];
+                    if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+                        throw new Error('Each element of history must be an object');
+                    }
+                    if (!('role' in item) || !('message' in item)) {
+                        throw new Error('Each element of history must have an role and message fields');
+                    }
+                    if (!(item.role === AIRole.user || item.role === AIRole.assistant)) {
+                        throw new Error('Invalid role in history item');
+                    }
+                    if (typeof item.message !== 'string') {
+                        throw new Error('Message of history item must be a string');
+                    }
+                }
+            }
+            return true;
+        }
+        if (!validateHistory(history)) {
+            return;
+        }
+
+        var data = history ? {
+            smart_chat_assistant_id: smartChatAssistantId,
+            message: message,
+            history: history,
+        }:{
+            smart_chat_assistant_id: smartChatAssistantId,
+            message: message,
+        };
+        var attrAjax = {
+            'type': 'POST',
+            'url': Utils.formatUrl(AI_API_URL + '/ai_answer_assist'),
+            'data': data,
+            'contentType': 'application/json; charset=utf-8',
+            'isNeedStringify': true
+        };
+        this.service.ajax(attrAjax, callback);
+    },
+
+    /**
+     * Offers translation functionality that helps users easily translate text messages in chat({@link https://docs.quickblox.com/docs/js-sdk-ai-features#ai-translate read more}).
+     * @memberof QB.ai
+     * @param {String} smartChatAssistantId - Smart Chat Assistant id.
+     * @param {String} text - Text to translate.
+     * @param {String} languageCode - Translation language code. All list see on page: {@link https://docs.quickblox.com/docs/js-sdk-ai-features#ai-translate }
+     * @param {translateCallback} callback - The callback function.
+     *
+     * */
+
+    translate: function(smartChatAssistantId, text, languageCode, callback) {
+        /**
+         * Callback for QB.ai.translate().
+         * @param {Object} error - The error object.
+         * @param {Object} response - The server response object.
+         * @param {String} [response.answer] - translated message
+         * @callback translateCallback
+         * @example
+         *  var textToTranslate = 'Hola!';
+         *  var languageCode = 'en';
+         *  QB.ai.translate(smartChatAssistantId, textToTranslate, languageCode, callback);
+         * */
+        if (!callback || typeof callback !== 'function') {
+            throw new Error('Callback function is required and must be a function');
+        }
+        var data =  {
+            smart_chat_assistant_id: smartChatAssistantId,
+            text: text,
+            to_language: languageCode || 'en',
+        };
+        var attrAjax = {
+            'type': 'POST',
+            'url': Utils.formatUrl(AI_API_URL + '/ai_translate'),
+            'data': data,
+        };
+
+        this.service.ajax(attrAjax, callback);
+    },
+
+
+};
+
+module.exports = AIProxy;
+
+},{"../qbUtils":257}],239:[function(require,module,exports){
 'use strict';
 
 var Utils = require('../qbUtils');
@@ -49005,7 +49139,7 @@ function isFunction(func) {
   return !!(func && func.constructor && func.call && func.apply);
 }
 
-},{"../qbConfig":252,"../qbUtils":256}],239:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257}],240:[function(require,module,exports){
 'use strict';
 
 var config = require('../qbConfig'),
@@ -49156,7 +49290,7 @@ function signMessage(message, secret) {
     return cryptoSessionMsg;
 }
 
-},{"../qbConfig":252,"../qbUtils":256,"crypto-js/hmac-sha1":51,"crypto-js/hmac-sha256":52}],240:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257,"crypto-js/hmac-sha1":51,"crypto-js/hmac-sha256":52}],241:[function(require,module,exports){
 'use strict';
 
 /*
@@ -49551,7 +49685,7 @@ parseUri.options = {
     }
 };
 
-},{"../qbConfig":252,"../qbUtils":256}],241:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257}],242:[function(require,module,exports){
 'use strict';
 
 var config = require('../qbConfig');
@@ -49933,7 +50067,7 @@ DataProxy.prototype = {
 
 module.exports = DataProxy;
 
-},{"../qbConfig":252,"../qbUtils":256}],242:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257}],243:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -50172,7 +50306,7 @@ EventsProxy.prototype = {
 module.exports = PushNotificationsProxy;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"../qbConfig":252,"../qbUtils":256,"buffer":47}],243:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257,"buffer":47}],244:[function(require,module,exports){
 'use strict';
 
 /*
@@ -50485,7 +50619,7 @@ function generateOrder(obj) {
     return [obj.sort, type, obj.field].join(' ');
 }
 
-},{"../qbConfig":252,"../qbUtils":256}],244:[function(require,module,exports){
+},{"../qbConfig":253,"../qbUtils":257}],245:[function(require,module,exports){
 'use strict';
 
 /**
@@ -51288,7 +51422,7 @@ function setMediaBitrate(sdp, media, bitrate) {
 
 module.exports = qbRTCPeerConnection;
 
-},{"../../qbConfig":252,"./qbWebRTCHelpers":246}],245:[function(require,module,exports){
+},{"../../qbConfig":253,"./qbWebRTCHelpers":247}],246:[function(require,module,exports){
 'use strict';
 
 /**
@@ -51699,7 +51833,7 @@ function getOpponentsIdNASessions(sessions) {
     return opponents;
 }
 
-},{"../../qbConfig":252,"../../qbUtils":256,"./qbRTCPeerConnection":244,"./qbWebRTCHelpers":246,"./qbWebRTCSession":247,"./qbWebRTCSignalingConstants":248,"./qbWebRTCSignalingProcessor":249,"./qbWebRTCSignalingProvider":250}],246:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257,"./qbRTCPeerConnection":245,"./qbWebRTCHelpers":247,"./qbWebRTCSession":248,"./qbWebRTCSignalingConstants":249,"./qbWebRTCSignalingProcessor":250,"./qbWebRTCSignalingProvider":251}],247:[function(require,module,exports){
 'use strict';
 
 /**
@@ -51845,7 +51979,7 @@ var WebRTCHelpers = {
 
 module.exports = WebRTCHelpers;
 
-},{"../../qbConfig":252}],247:[function(require,module,exports){
+},{"../../qbConfig":253}],248:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53135,7 +53269,7 @@ function _prepareExtension(extension) {
 
 module.exports = WebRTCSession;
 
-},{"../../qbConfig":252,"../../qbUtils":256,"./qbRTCPeerConnection":244,"./qbWebRTCHelpers":246,"./qbWebRTCSignalingConstants":248}],248:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257,"./qbRTCPeerConnection":245,"./qbWebRTCHelpers":247,"./qbWebRTCSignalingConstants":249}],249:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53158,7 +53292,7 @@ WebRTCSignalingConstants.SignalingType = {
 
 module.exports = WebRTCSignalingConstants;
 
-},{}],249:[function(require,module,exports){
+},{}],250:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53316,7 +53450,7 @@ function WebRTCSignalingProcessor(service, delegate) {
 
 module.exports = WebRTCSignalingProcessor;
 
-},{"./qbWebRTCSignalingConstants":248,"strophe.js":208}],250:[function(require,module,exports){
+},{"./qbWebRTCSignalingConstants":249,"strophe.js":208}],251:[function(require,module,exports){
 'use strict';
 
 /** JSHint inline rules */
@@ -53423,7 +53557,7 @@ WebRTCSignalingProvider.prototype._JStoXML = function (title, obj, msg) {
 
 module.exports = WebRTCSignalingProvider;
 
-},{"../../qbConfig":252,"../../qbUtils":256,"./qbWebRTCHelpers":246,"./qbWebRTCSignalingConstants":248,"strophe.js":208}],251:[function(require,module,exports){
+},{"../../qbConfig":253,"../../qbUtils":257,"./qbWebRTCHelpers":247,"./qbWebRTCSignalingConstants":249,"strophe.js":208}],252:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53660,7 +53794,7 @@ StreamManagement.prototype._increaseReceivedStanzasCounter = function(){
 
 module.exports = StreamManagement;
 
-},{"../modules/chat/qbChatHelpers":235,"../qbUtils":256}],252:[function(require,module,exports){
+},{"../modules/chat/qbChatHelpers":235,"../qbUtils":257}],253:[function(require,module,exports){
 'use strict';
 
 /*
@@ -53675,8 +53809,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.16.4',
-  buildNumber: '1159',
+  version: '2.17.0',
+  buildNumber: '1160',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -53791,7 +53925,7 @@ config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasTok
 
 module.exports = config;
 
-},{}],253:[function(require,module,exports){
+},{}],254:[function(require,module,exports){
 'use strict';
 
 /*
@@ -53802,6 +53936,7 @@ module.exports = config;
  */
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+const MessageProxy = require("./modules/chat/qbMessage");
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -53857,7 +53992,8 @@ QuickBlox.prototype = {
             AddressBook = require('./modules/qbAddressBook'),
             Chat = require('./modules/chat/qbChat'),
             DialogProxy = require('./modules/chat/qbDialog'),
-            MessageProxy = require('./modules/chat/qbMessage');
+            MessageProxy = require('./modules/chat/qbMessage'),
+            AIProxy = require('./modules/qbAI');
 
         this.service = new Proxy();
         this.auth = new Auth(this.service);
@@ -53869,6 +54005,7 @@ QuickBlox.prototype = {
         this.chat = new Chat(this.service);
         this.chat.dialog = new DialogProxy(this.service);
         this.chat.message = new MessageProxy(this.service);
+        this.ai = new AIProxy(this.service);
 
         if (Utils.getEnv().browser) {
             /** add adapter.js*/
@@ -54070,7 +54207,7 @@ QB.QuickBlox = QuickBlox;
 
 module.exports = QB;
 
-},{"./modules/chat/qbChat":234,"./modules/chat/qbDialog":236,"./modules/chat/qbMessage":237,"./modules/qbAddressBook":238,"./modules/qbAuth":239,"./modules/qbContent":240,"./modules/qbData":241,"./modules/qbPushNotifications":242,"./modules/qbUsers":243,"./modules/webrtc/qbWebRTCClient":245,"./qbConfig":252,"./qbProxy":254,"./qbUtils":256,"webrtc-adapter":218}],254:[function(require,module,exports){
+},{"./modules/chat/qbChat":234,"./modules/chat/qbDialog":236,"./modules/chat/qbMessage":237,"./modules/qbAI":238,"./modules/qbAddressBook":239,"./modules/qbAuth":240,"./modules/qbContent":241,"./modules/qbData":242,"./modules/qbPushNotifications":243,"./modules/qbUsers":244,"./modules/webrtc/qbWebRTCClient":246,"./qbConfig":253,"./qbProxy":255,"./qbUtils":257,"webrtc-adapter":218}],255:[function(require,module,exports){
 'use strict';
 
 var config = require('./qbConfig');
@@ -54208,7 +54345,39 @@ ServiceProxy.prototype = {
         if (config.timeout) {
             qbRequest.timeout = config.timeout;
         }
+        //browser only version
+        // fetch(qbUrl, qbRequest)
+        //     .then(function(response){
+        //         qbResponse = response;
+        //         if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
+        //             var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
+        //             var headerHasToken  = !(qbTokenExpirationDate === null ||
+        //                 typeof qbTokenExpirationDate === 'undefined');
+        //             qbTokenExpirationDate  = headerHasToken ? qbTokenExpirationDate : new Date();
+        //             self.qbInst.config.updateSessionExpirationDate(qbTokenExpirationDate, headerHasToken);
+        //             console.log('[Request][fetch]','header has token:',headerHasToken );
+        //             console.log('[Request][fetch]','updateSessionExpirationDate ... Set value: ', self.qbInst.config.qbTokenExpirationDate );
+        //         }
+        //         if (qbDataType === 'text') {
+        //             return response.text();
+        //         } else {
+        //             return response.json();
+        //         }
+        //     }).catch((error) => {
+        //     console.log('fetch Error: ', error);
+        //     qbResponse = {
+        //         status: 200
+        //     };
+        //     console.log('reason: ', error);
+        //     return ' ';
+        // }).then(function(body){
+        //     _requestCallback(null, qbResponse, body);
+        // }).catch((error) => {
+        //     console.log('Fetch error: ', error);
+        //     _requestCallback(error);
+        // });
 
+        // original version
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
                 qbResponse = response;
@@ -54337,7 +54506,7 @@ ServiceProxy.prototype = {
 
 module.exports = ServiceProxy;
 
-},{"./qbConfig":252,"./qbUtils":256,"form-data":81,"node-fetch":105}],255:[function(require,module,exports){
+},{"./qbConfig":253,"./qbUtils":257,"form-data":81,"node-fetch":105}],256:[function(require,module,exports){
 'use strict';
 /** JSHint inline rules */
 /* globals Strophe */
@@ -54386,7 +54555,7 @@ function Connection() {
 
 module.exports = Connection;
 
-},{"./qbConfig":252,"./qbUtils":256,"strophe.js":208}],256:[function(require,module,exports){
+},{"./qbConfig":253,"./qbUtils":257,"strophe.js":208}],257:[function(require,module,exports){
 (function (global){(function (){
 /* eslint no-console: 2 */
 
@@ -54513,6 +54682,11 @@ var Utils = {
     getUrl: function(base, id) {
         var resource = id ? '/' + id : '';
         return 'https://' + config.endpoints.api + '/' + base + resource + config.urls.type;
+    },
+
+    formatUrl: function(base, id) {
+        var resource = id ? '/' + id : '';
+        return 'https://' + config.endpoints.api + '/' + base + resource;
     },
 
     isArray: function(arg) {
@@ -54721,5 +54895,5 @@ var Utils = {
 module.exports = Utils;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./qbConfig":252,"fs":32,"os":139}]},{},[253])(253)
+},{"./qbConfig":253,"fs":32,"os":139}]},{},[254])(254)
 });

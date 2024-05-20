@@ -125,6 +125,11 @@ var Utils = {
         return 'https://' + config.endpoints.api + '/' + base + resource + config.urls.type;
     },
 
+    formatUrl: function(base, id) {
+        var resource = id ? '/' + id : '';
+        return 'https://' + config.endpoints.api + '/' + base + resource;
+    },
+
     isArray: function(arg) {
         return Object.prototype.toString.call(arg) === '[object Array]';
     },

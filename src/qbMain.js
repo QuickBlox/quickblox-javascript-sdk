@@ -8,6 +8,7 @@
  */
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
+const MessageProxy = require("./modules/chat/qbMessage");
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -63,7 +64,8 @@ QuickBlox.prototype = {
             AddressBook = require('./modules/qbAddressBook'),
             Chat = require('./modules/chat/qbChat'),
             DialogProxy = require('./modules/chat/qbDialog'),
-            MessageProxy = require('./modules/chat/qbMessage');
+            MessageProxy = require('./modules/chat/qbMessage'),
+            AIProxy = require('./modules/qbAI');
 
         this.service = new Proxy();
         this.auth = new Auth(this.service);
@@ -75,6 +77,7 @@ QuickBlox.prototype = {
         this.chat = new Chat(this.service);
         this.chat.dialog = new DialogProxy(this.service);
         this.chat.message = new MessageProxy(this.service);
+        this.ai = new AIProxy(this.service);
 
         if (Utils.getEnv().browser) {
             /** add adapter.js*/

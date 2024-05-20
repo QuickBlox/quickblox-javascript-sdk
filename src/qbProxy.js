@@ -135,7 +135,39 @@ ServiceProxy.prototype = {
         if (config.timeout) {
             qbRequest.timeout = config.timeout;
         }
+        //browser only version
+        // fetch(qbUrl, qbRequest)
+        //     .then(function(response){
+        //         qbResponse = response;
+        //         if (qbRequest.method === 'GET' || qbRequest.method === 'POST'){
+        //             var qbTokenExpirationDate = qbResponse.headers.get('qb-token-expirationdate');
+        //             var headerHasToken  = !(qbTokenExpirationDate === null ||
+        //                 typeof qbTokenExpirationDate === 'undefined');
+        //             qbTokenExpirationDate  = headerHasToken ? qbTokenExpirationDate : new Date();
+        //             self.qbInst.config.updateSessionExpirationDate(qbTokenExpirationDate, headerHasToken);
+        //             console.log('[Request][fetch]','header has token:',headerHasToken );
+        //             console.log('[Request][fetch]','updateSessionExpirationDate ... Set value: ', self.qbInst.config.qbTokenExpirationDate );
+        //         }
+        //         if (qbDataType === 'text') {
+        //             return response.text();
+        //         } else {
+        //             return response.json();
+        //         }
+        //     }).catch((error) => {
+        //     console.log('fetch Error: ', error);
+        //     qbResponse = {
+        //         status: 200
+        //     };
+        //     console.log('reason: ', error);
+        //     return ' ';
+        // }).then(function(body){
+        //     _requestCallback(null, qbResponse, body);
+        // }).catch((error) => {
+        //     console.log('Fetch error: ', error);
+        //     _requestCallback(error);
+        // });
 
+        // original version
         qbFetch(qbUrl, qbRequest)
             .then(function(response) {
                 qbResponse = response;

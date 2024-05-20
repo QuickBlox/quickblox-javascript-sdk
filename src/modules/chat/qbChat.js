@@ -1918,9 +1918,7 @@ MucProxy.prototype = {
                     Utils.safeCallbackCall(callback, {
                         code: code || 500,
                         message: errorMessage || 'Unknown issue'
-                    }, {
-                        dialogId: dialogId
-                    });
+                    }, null);
                 }
             }
         }
