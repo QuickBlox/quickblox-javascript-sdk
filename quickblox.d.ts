@@ -369,29 +369,33 @@ export declare interface QBMessageStatusParams {
 }
 
 export declare interface QBChatNewMessage {
-  type: 'chat' | 'groupchat'
-  body: string
-  extension: {
-    attachments?: ChatMessageAttachment[]
-    save_to_history: 0 | 1
-    dialog_id: QBChatDialog['_id']
-  }
-  markable: 0 | 1
+    type: 'chat' | 'groupchat'
+    body?: string
+    extension: {
+        attachments?: ChatMessageAttachment[]
+        save_to_history: 0 | 1
+        dialog_id: QBChatDialog['_id']
+        [custom_field_N: string]: any
+    }
+    markable: 0 | 1
 }
 
 export declare interface QBChatXMPPMessage {
-  id: string
-  dialog_id: QBChatDialog['_id']
-  recipient_id: null
-  type: 'chat' | 'groupchat'
-  body: string
-  delay: null
-  markable: 0 | 1
-  extension: {
-    attachments?: ChatMessageAttachment[]
-    date_sent: string
-    [custom_field_N: string]: any
-  }
+    id: string
+    dialog_id: QBChatDialog['_id']
+    recipient_id: QBUser['id'] | null
+    type: 'chat' | 'groupchat'
+    body: string | null
+    delay: null
+    markable: 0 | 1
+    extension: {
+        dialog_id: QBChatDialog['_id']
+        message_id: QBChatMessage['_id']
+        date_sent: string
+        save_to_history: string
+        attachments?: ChatMessageAttachment[]
+        [custom_field_N: string]: string | ChatMessageAttachment[]
+    }
 }
 
 export declare interface QBSystemMessage {
@@ -578,6 +582,7 @@ interface QBChatModule {
   /** Send is delivered status. */
   sendDeliveredStatus(params: QBMessageStatusParams): void
   ping(jidOrUserId: string | number, callback: QBCallback<any>): string
+  ping(callback: QBCallback<any>): string
   pingchat(callback: QBCallback<any>): string
 
   dialog: {
@@ -711,7 +716,7 @@ interface QBChatModule {
      * Leave group chat dialog
      * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#retrieve-online-users)).
      */
-    listOnlineUsers(dialogJid: string, callback: QBCallback<any>): void
+    listOnlineUsers(dialogJid: string, callback: (userIds: Array<QBUser['id']>) => void): void
   }
 
   roster: {
