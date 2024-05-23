@@ -10,6 +10,7 @@ export const QBConfig = {
         AIAnswerAssistWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,
@@ -22,6 +23,7 @@ export const QBConfig = {
         AITranslateWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,
@@ -41,6 +43,7 @@ export const QBConfig = {
         AIRephraseWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,

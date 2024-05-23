@@ -65,6 +65,7 @@ export const createUser = (user: QBUserExtended): Promise<QBUser> => {
 };
 
 export const createUserSession = async (loginData: LoginData): Promise<ParamsConnect> => {
+    // @ts-ignore
     return new Promise((resolve, reject) => {
         QB.createSession(loginData, async (errorCreateSession: any, session: any) => {
             if (errorCreateSession) {
@@ -93,6 +94,7 @@ export const createAppSession = ():Promise<any> => {
 };
 
 export const connectToChatServer = async (paramsConnect: ParamsConnect, userLogin: string): Promise<AuthorizationData> => {
+    // @ts-ignore
     return new Promise((resolve, reject) => {
         QB.chat.connect(paramsConnect, async (errorConnect: any, resultConnect: any) => {
             if (errorConnect) {

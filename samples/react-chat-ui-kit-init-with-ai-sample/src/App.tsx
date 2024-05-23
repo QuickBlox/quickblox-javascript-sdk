@@ -82,9 +82,10 @@ function App() {
   }, []);
 
     const { proxyConfig } = QBConf.configAIApi.AIAnswerAssistWidgetConfig;
+    const {sessionToken} =  QBConf.credentials;
 
     const defaultAIAnswer = useMyAIAssistAnswer({
-        ...proxyConfig,
+        ...proxyConfig,sessionToken
     });
 
   return (

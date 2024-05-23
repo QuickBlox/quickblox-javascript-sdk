@@ -1,4 +1,6 @@
-export const QBConfig = {
+import {QBUIKitConfig} from "quickblox-react-ui-kit/dist/CommonTypes/CommonTypes";
+
+export const QBConfig: QBUIKitConfig = {
     credentials: {
         appId: -1,
         accountKey: '',
@@ -10,6 +12,7 @@ export const QBConfig = {
         AIAnswerAssistWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,
@@ -22,6 +25,7 @@ export const QBConfig = {
         AITranslateWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,
@@ -41,6 +45,7 @@ export const QBConfig = {
         AIRephraseWidgetConfig: {
             organizationName: 'Quickblox',
             openAIModel: 'gpt-3.5-turbo',
+            smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
             useDefault: true,
@@ -128,6 +133,11 @@ export const QBConfig = {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
         },
+        // bot server endpoints:
+        // endpoints: {
+        //     api: 'apitest.quickblox.com',
+        //     chat: 'chattest.quickblox.com',
+        // },
         // on: {
         //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
         //     async sessionExpired(handleResponse: any, retry: any) {

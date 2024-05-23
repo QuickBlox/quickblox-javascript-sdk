@@ -1,6 +1,6 @@
 {
   "name": "react-chat-ui-kit-example",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -10,8 +10,8 @@
     "@types/node": "^16.18.37",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
-    "quickblox-react-ui-kit": "^0.2.8",
-    "quickblox": "^2.16.1",
+    "quickblox-react-ui-kit": "^0.4.0",
+    "quickblox": "^2.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
