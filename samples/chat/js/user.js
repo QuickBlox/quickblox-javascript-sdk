@@ -236,13 +236,15 @@ User.prototype.addToCache = function(user) {
             name: user.full_name || user.login || 'Unknown user (' + id + ')',
             id: id,
             color: _.random(1, 10),
-            last_request_at: user.last_request_at
+            last_request_at: user.last_request_at,
+            custom_data: user.custom_data
         };
     }else if(self._cache[id].name !== user.full_name ){
         self._cache[id].name = user.full_name;
     }
 
     self._cache[id].last_request_at = user.last_request_at;
+    self._cache[id].custom_data = user.custom_data;
     return self._cache[id];
 };
 

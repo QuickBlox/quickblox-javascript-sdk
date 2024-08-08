@@ -42,7 +42,7 @@ ServiceProxy.prototype = {
     handleResponse: function(error, response, next, retry) {
         // can add middleware here...
         if (error) {
-            const errorMsg = JSON.stringify(error.message).toLowerCase();
+            const errorMsg = error.message ? JSON.stringify(error.message).toLowerCase() : '';
             if (typeof config.on.sessionExpired === 'function' &&
                 error.code === 401 &&
                 errorMsg.indexOf('session does not exist') > -1) {

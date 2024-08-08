@@ -154,6 +154,7 @@ Modal.prototype.setListeners = function () {
         moreList = document.querySelector('.moreList'),
         chatInfo = document.querySelector('.moreList li:nth-child(1)'),
         leaveChat = document.querySelector('.moreList li:nth-child(2)'),
+        backToChat = document.querySelector('.moreList li:nth-child(3)'),
 
         info = document.querySelector('.info'),
         params = app._config;
@@ -243,8 +244,14 @@ Modal.prototype.setListeners = function () {
     });
 
     leaveChat.addEventListener('click', function (e) {
-        dialogModule.quitFromTheDialog(dialogModule.dialogId).then(function () {
+        dialogModule.leaveFromTheDialog(dialogModule.dialogId).then(function () {
             router.navigate('/dashboard');
+        });
+    });
+
+    backToChat.addEventListener('click', function (e) {
+        dialogModule.backToTheDialog(dialogModule.dialogId).then(function () {
+             router.navigate('/dashboard');
         });
     });
 

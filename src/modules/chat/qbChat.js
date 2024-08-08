@@ -39,7 +39,7 @@ function ChatProxy(service) {
      */
     if (Utils.getEnv().browser) {
         // strophe js
-        self.connection = Connection();
+        self.connection = Connection(self.onLogListener);
 
         /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
@@ -155,6 +155,7 @@ function ChatProxy(service) {
      * - onDisconnectedListener
      * - onReconnectListener
      * - onSessionExpiredListener
+     * - onLogListener
      */
 
     /**
@@ -285,6 +286,12 @@ function ChatProxy(service) {
     /**
      * By default Javascript SDK reconnects automatically when connection to server is lost. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Reconnection More info.}
      * @function onReconnectListener
+     * @memberOf QB.chat
+     **/
+
+    /**
+     * Run after disconnect from chat to log result
+     * @function onLogListener
      * @memberOf QB.chat
      **/
 
@@ -744,7 +751,7 @@ ChatProxy.prototype = {
         /** Connect for browser env. */
         if (Utils.getEnv().browser) {
             Utils.QBLog('[QBChat]', '!!---Browser env - connected--!!');
-
+            let disconnectCondition = '';
             self.connection.connect(userJid, params.password, function (status) {
                 Utils.QBLog('[QBChat]', 'self.connection.connect called with status ' + status);
                 switch (status) {
@@ -873,7 +880,14 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.DISCONNECTED:
                         Utils.QBLog('[QBChat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
-
+                        //
+                        Utils.QBLog('[QBChat]', 'DISCONNECTED CONDITION: ' + disconnectCondition);
+                        //
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' + ' Status.DISCONNECTED at ' +
+                                chatUtils.getLocalTime()+ ' DISCONNECTED CONDITION: ' + disconnectCondition);
+                        }
                         // fire 'onDisconnectedListener' only once
                         if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
                             Utils.safeCallbackCall(self.onDisconnectedListener);
@@ -892,6 +906,28 @@ ChatProxy.prototype = {
                         break;
                 }
             });
+            // connection error handler
+            self.connection.xmlInput = function (data) {
+                try {
+                    let parser = new DOMParser();
+                    let xmlDoc = parser.parseFromString(data, 'text/xml');
+
+                    let errorElem = xmlDoc.getElementsByTagName('error');
+                    if (errorElem.length > 0) {
+                        let conditionElem = errorElem[0].getElementsByTagName('condition');
+                        if (conditionElem.length > 0) {
+                            disconnectCondition = conditionElem[0].textContent;
+                            console.log('Disconnect condition:', disconnectCondition);
+                            if (typeof self.onLogListener === 'function') {
+                                Utils.safeCallbackCall(self.onLogListener,
+                                    '[QBChat]' +  ' DISCONNECTED CONDITION: ' + disconnectCondition);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing XML input:', e);
+                }
+            };
         }
 
         /** connect for node */
@@ -1031,20 +1067,45 @@ ChatProxy.prototype = {
     _establishConnection: function (params) {
         var self = this;
         Utils.QBLog('[QBChat]', '_establishConnection called');
+        if (typeof self.onLogListener === 'function') {
+            Utils.safeCallbackCall(self.onLogListener,
+                '[QBChat]' + '_establishConnection called');
+        }
         if (self._isLogout || self._checkConnectionTimer) {
             Utils.QBLog('[QBChat]', '_establishConnection return');
+            if (typeof self.onLogListener === 'function') {
+                Utils.safeCallbackCall(self.onLogListener,
+                    '[QBChat]' + ' _establishConnection return with self._isLogout: '+
+                    self._isLogout+' and self._checkConnectionTimer ' +self._checkConnectionTimer?'set up':'undefined');
+            }
             return;
         }
 
         var _connect = function () {
             Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection ');
+            if (typeof self.onLogListener === 'function') {
+                Utils.safeCallbackCall(self.onLogListener,
+                    '[QBChat]' + ' call _connect() in _establishConnection ');
+            }
             if (!self.isConnected && !self._isConnecting && !self._sessionHasExpired) {
-                Utils.QBLog('[QBChat]', 'call connect() again in _establishConnection ');
+                Utils.QBLog('[QBChat]', ' start execute connect() in _establishConnection ');
+                if (typeof self.onLogListener === 'function') {
+                    Utils.safeCallbackCall(self.onLogListener,
+                        '[QBChat]' + ' with statuses (!self.isConnected && !self._isConnecting && !self._sessionHasExpired):  '+' self.isConnected: '+self.isConnected+' self._isConnecting: '+self._isConnecting+' self._sessionHasExpired: '+self._sessionHasExpired);
+                }
                 self.connect(params);
+                if (typeof self.onLogListener === 'function') {
+                    Utils.safeCallbackCall(self.onLogListener,
+                        '[QBChat]' + 'call _connect() in _establishConnection is executed');
+                }
             } else {
                 Utils.QBLog('[QBChat]', 'stop timer in _establishConnection ');
                 clearInterval(self._checkConnectionTimer);
                 self._checkConnectionTimer = undefined;
+                if (typeof self.onLogListener === 'function') {
+                    Utils.safeCallbackCall(self.onLogListener,
+                        '[QBChat]' + 'stop timer in _establishConnection ');
+                }
             }
         };
 
@@ -1052,6 +1113,10 @@ ChatProxy.prototype = {
 
         self._checkConnectionTimer = setInterval(function () {
             Utils.QBLog('[QBChat]', 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = ' + config.chatReconnectionTimeInterval);
+            if (typeof self.onLogListener === 'function') {
+                Utils.safeCallbackCall(self.onLogListener,
+                    '[QBChat]' + 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = ' + config.chatReconnectionTimeInterval);
+            }
             _connect();
         }, config.chatReconnectionTimeInterval * 1000);
     },

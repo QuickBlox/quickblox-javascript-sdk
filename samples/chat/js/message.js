@@ -183,12 +183,13 @@ Message.prototype.sendMessage = function(dialogId, msg) {
 
 Message.prototype._getMessages = function (params) {
     var self = this;
+
     params = params || {
         chat_dialog_id: dialogId,
         sort_desc: 'date_sent',
         limit: self.limit,
         skip: dialogModule._cache[dialogId].messages.length,
-        mark_as_read: 0
+        mark_as_read: 0,
     };
 
     return new Promise(function (resolve, reject) {
@@ -203,15 +204,30 @@ Message.prototype._getMessages = function (params) {
 
 Message.prototype.getMessages = function (dialogId) {
     if(!navigator.onLine) return false;
-
-    var self = this,
-        params = {
+    const userId = app.user.id;
+    const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
+    let leavedDialogs = {};
+    if (user_custom_data["leaved_dialogs"]) {
+        leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
+    }
+    const unixTimestamp = leavedDialogs[dialogId] || -1;
+    var self = this;
+    var    params = (unixTimestamp > 0) ? {
             chat_dialog_id: dialogId,
             sort_desc: 'date_sent',
             limit: self.limit,
             skip: dialogModule._cache[dialogId].messages.length,
-            mark_as_read: 0
-        };
+            mark_as_read: 0,
+            date_sent: {
+                lte: unixTimestamp
+            }
+        } : {
+        chat_dialog_id: dialogId,
+        sort_desc: 'date_sent',
+        limit: self.limit,
+        skip: dialogModule._cache[dialogId].messages.length,
+        mark_as_read: 0,
+    };
 
     self.container.classList.add('loading');
 

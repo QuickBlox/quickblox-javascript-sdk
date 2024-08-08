@@ -140,7 +140,7 @@ router.on({
 
            if (dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
                document.querySelector('.moreList li:first-child').style.display = "block";
-               document.querySelector('.moreList').style.height = '86px';
+               document.querySelector('.moreList').style.height = '106px';
            }else{
                document.querySelector('.moreList li:first-child').style.display = "none";
                document.querySelector('.moreList').style.height = '50px';

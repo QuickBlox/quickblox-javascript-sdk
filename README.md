@@ -16,7 +16,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://unpkg.com/quickblox@2.17.1/quickblox.min.js"></script>
+<script src="https://unpkg.com/quickblox@2.18.0/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -74,4 +74,4 @@ See more information at [contributing.md](https://github.com/QuickBlox/quickblox
 
 # License
 
-Apache 2.0
+QuickBlox SDK License Agreement. Please see the LICENSE.txt file distributed with the SDK.

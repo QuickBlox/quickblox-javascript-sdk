@@ -240,24 +240,34 @@ Dialog.prototype.replaceDialogLink = function (elem) {
 };
 
 Dialog.prototype.joinToDialog = function (id) {
-    var self = this,
-        jidOrUserId = ((typeof self._cache[id].jidOrUserId == "number") ? String(self._cache[id].jidOrUserId) : self._cache[id].jidOrUserId);
+    const userId = app.user.id;
+    const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
+    let leavedDialogs = {};
+    if (user_custom_data["leaved_dialogs"]) {
+        leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
+    }
+    const unixTimestamp = leavedDialogs[id] || -1;
+    if (unixTimestamp < 0)
+    {
+        var self = this,
+            jidOrUserId = ((typeof self._cache[id].jidOrUserId == "number") ? String(self._cache[id].jidOrUserId) : self._cache[id].jidOrUserId);
 
-    return new Promise(function (resolve, reject) {
-        QB.chat.muc.join(jidOrUserId, function (resultStanza) {
+        return new Promise(function (resolve, reject) {
+            QB.chat.muc.join(jidOrUserId, function (resultStanza) {
 
-            for (var i = 0; i < resultStanza.childNodes.length; i++) {
-                var elItem = resultStanza.childNodes.item(i);
-                if (elItem.tagName === 'error') {
-                    self._cache[id].joined = false;
-                    return reject();
+                for (var i = 0; i < resultStanza.childNodes.length; i++) {
+                    var elItem = resultStanza.childNodes.item(i);
+                    if (elItem.tagName === 'error') {
+                        self._cache[id].joined = false;
+                        return reject();
+                    }
                 }
-            }
 
-            self._cache[id].joined = true;
-            resolve();
+                self._cache[id].joined = true;
+                resolve();
+            });
         });
-    });
+    }
 };
 
 Dialog.prototype.renderMessages = function (dialogId) {
@@ -798,6 +808,116 @@ Dialog.prototype.quitFromTheDialog = async function (dialogId) {
         }
 
     });
+
+};
+
+Dialog.prototype.leaveFromTheDialog = async function (dialogId) {
+
+    var self = this,
+        dialog = self._cache[dialogId];
+
+    return new Promise(function (resolve, reject) {
+        switch (dialog.type) {
+            case CONSTANTS.DIALOG_TYPES.PUBLICCHAT:
+                alert('you can\'t remove this dialog');
+                break;
+            case CONSTANTS.DIALOG_TYPES.CHAT:
+            case CONSTANTS.DIALOG_TYPES.GROUPCHAT:
+
+                var DIALOG_JID = QB.chat.helpers.getRoomJidFromDialogId(dialogId);
+                console.log('Dialog JID:', DIALOG_JID);
+
+                QB.chat.muc.leave(DIALOG_JID, function (err) {
+                    if (err) {
+                        if (err.children.item(0).children.item(1).getAttribute('code').includes('110')){
+                            console.log('ERROR Handler: Successfully left group chat');
+                            resolve();
+                        } else {
+                            console.error('ERROR leaving group chat:', error);
+                            reject(error);
+                        }
+                    } else {
+                        console.log('jid: ',DIALOG_JID);
+                        console.log('Successfully left group chat: ',dialogId);
+
+                        {
+                            var userId = app.user.id;
+                            //
+                            const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
+                            let leavedDialogs = {};
+                            if (user_custom_data["leaved_dialogs"]) {
+                                leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
+                            }
+                            const date = new Date();
+                            const unixTimestamp = Math.floor(date.getTime() / 1000);
+                            leavedDialogs[dialogId] = unixTimestamp;
+                            const jsonString = JSON.stringify(leavedDialogs);
+
+                            var
+                                custom_data = JSON.stringify({
+                                    "leaved_dialogs": jsonString
+                                }),
+
+                                updatedUserProfile = {
+                                    tag_list: 'lived',
+                                    custom_data
+                                };
+
+                            QB.users.update(userId, updatedUserProfile, function (err, dialog) {
+                                if (err) {
+                                    console.error('Error update dialog leaved_dialogs list in user: ',err);
+                                } else {
+
+                                    userModule._cache[userId].custom_data = custom_data;
+                                }
+                            });
+                        }
+                        resolve();
+                    }
+                });
+                break;
+        }
+    });
+
+};
+Dialog.prototype.backToTheDialog = async function (dialogId) {
+
+    var userId = app.user.id;
+
+    const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
+    let leavedDialogs = {};
+    if (user_custom_data["leaved_dialogs"]) {
+        leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
+    }
+    delete leavedDialogs[dialogId];
+
+
+    const jsonString = JSON.stringify(leavedDialogs);
+
+    var
+        custom_data = JSON.stringify({
+            "leaved_dialogs": jsonString
+        }),
+
+        updatedUserProfile = {
+            tag_list: 'lived',
+            custom_data
+        };
+
+    QB.users.update(userId, updatedUserProfile, function (err, dialog) {
+        if (err) {
+            console.error('Error update dialog leaved_dialogs list in user: ',err);
+        } else {
+
+            userModule._cache[userId].custom_data = custom_data;
+            //
+            this.joinToDialog(dialogId).then(function () {
+
+            });
+            //
+        }
+    });
+
 
 };
 

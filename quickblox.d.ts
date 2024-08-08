@@ -523,6 +523,7 @@ interface QBChatModule {
   onReconnectListener?: () => void
   onReconnectFailedListener?: (error: any) => void
   onSessionExpiredListener?: (error?: QBError) => void
+  onLogListener?: (logLine: string) => void
   /**
    * Receive reject request
    * ([read more](https://docs.quickblox.com/docs/js-chat-contact-list#reject-the-contact-request)).
