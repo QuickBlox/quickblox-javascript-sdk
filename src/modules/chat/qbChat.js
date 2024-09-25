@@ -39,7 +39,7 @@ function ChatProxy(service) {
      */
     if (Utils.getEnv().browser) {
         // strophe js
-        self.connection = Connection(self.onLogListener);
+        self.connection = Connection(self._OnLogListener.bind(this));
 
         /** Add extension methods to track handlers for removal on reconnect */
         self.connection.XHandlerReferences = [];
@@ -295,7 +295,6 @@ function ChatProxy(service) {
      * @memberOf QB.chat
      **/
 
-
     this._onMessage = function (stanza) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
@@ -418,12 +417,12 @@ function ChatProxy(service) {
         }
 
         // MUC presences go here
-        if (xXMLNS && xXMLNS == "http://jabber.org/protocol/muc#user") {
+        if (xXMLNS && xXMLNS == 'http://jabber.org/protocol/muc#user') {
             dialogId = self.helpers.getDialogIdFromNode(from);
             userId = self.helpers.getUserIdFromRoomJid(from);
 
             // KICK from dialog event
-            if (status && statusCode == "301") {
+            if (status && statusCode == '301') {
                 if (typeof self.onKickOccupant === 'function') {
                     var actorElement = chatUtils.getElement(chatUtils.getElement(x, 'item'), 'actor');
                     var initiatorUserJid = chatUtils.getAttr(actorElement, 'jid');
@@ -701,6 +700,13 @@ function ChatProxy(service) {
  ----------------------------------------------------------------------------- */
 ChatProxy.prototype = {
 
+    _OnLogListener: function (message) {
+        var self = this;
+        if (typeof self.onLogListener === 'function') {
+            Utils.safeCallbackCall(self.onLogListener, message);
+        }
+    },
+
     /**
      * self.connection to the chat. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Login_to_Chat More info.}
      * @memberof QB.chat
@@ -751,11 +757,21 @@ ChatProxy.prototype = {
         /** Connect for browser env. */
         if (Utils.getEnv().browser) {
             Utils.QBLog('[QBChat]', '!!---Browser env - connected--!!');
-            let disconnectCondition = '';
-            self.connection.connect(userJid, params.password, function (status) {
+
+            self.connection.connect(userJid, params.password, function (status, condition, elem) {
                 Utils.QBLog('[QBChat]', 'self.connection.connect called with status ' + status);
+                Utils.QBLog('[QBChat]', 'self.connection.connect called with condition ' + condition);
+                Utils.QBLog('[QBChat]', 'self.connection.connect called with elem ' + elem);
                 switch (status) {
                     case Strophe.Status.ERROR:
+                        Utils.QBLog('[QBChat]', 'Status.ERROR at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'ERROR CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.ERROR at ' +
+                                chatUtils.getLocalTime()+ ' ERROR CONDITION: ' + condition);
+                        }
                         self.isConnected = false;
                         self._isConnecting = false;
 
@@ -767,6 +783,14 @@ ChatProxy.prototype = {
 
                         break;
                     case Strophe.Status.CONNFAIL:
+                        Utils.QBLog('[QBChat]', 'Status.CONNFAIL at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'CONNFAIL CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' + '[SDK v'+config.version+']' +' Status.CONNFAIL at ' +
+                                chatUtils.getLocalTime()+ ' CONNFAIL CONDITION: ' + condition);
+                        }
                         self.isConnected = false;
                         self._isConnecting = false;
 
@@ -778,10 +802,24 @@ ChatProxy.prototype = {
 
                         break;
                     case Strophe.Status.AUTHENTICATING:
-                        Utils.QBLog('[QBChat]', 'Status.AUTHENTICATING');
+                        Utils.QBLog('[QBChat]', 'Status.AUTHENTICATING at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'AUTHENTICATING CONDITION: ' + condition);
 
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.AUTHENTICATING at ' +
+                                chatUtils.getLocalTime()+ ' AUTHENTICATING CONDITION: ' + condition);
+                        }
                         break;
                     case Strophe.Status.AUTHFAIL:
+                        Utils.QBLog('[QBChat]', 'Status.AUTHFAIL at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'AUTHFAIL CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.AUTHFAIL at ' +
+                                chatUtils.getLocalTime()+ ' AUTHFAIL CONDITION: ' + condition);
+                        }
                         self.isConnected = false;
                         self._isConnecting = false;
 
@@ -798,9 +836,24 @@ ChatProxy.prototype = {
                         break;
                     case Strophe.Status.CONNECTING:
                         Utils.QBLog('[QBChat]', 'Status.CONNECTING', '(Chat Protocol - ' + (config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket' + ')'));
+                        Utils.QBLog('[QBChat]', 'Status.CONNECTING at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'CONNECTING CONDITION: ' + condition);
 
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.CONNECTING at ' + '(Chat Protocol - ' + config.chatProtocol.active === 1 ? 'BOSH' : 'WebSocket' + ')'+
+                                    chatUtils.getLocalTime()+ ' CONNECTING CONDITION: ' + condition);
+                        }
                         break;
                     case Strophe.Status.CONNECTED:
+                        Utils.QBLog('[QBChat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'CONNECTED CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.CONNECTED at ' +
+                                chatUtils.getLocalTime()+ ' CONNECTED CONDITION: ' + condition);
+                        }
                         // Remove any handlers that might exist from a previous connection via
                         // extension method added to the connection on initialization in qbMain.
                         // NOTE: streamManagement also adds handlers, so do this first.
@@ -832,7 +885,7 @@ ChatProxy.prototype = {
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
                                                 self._chatPingFailedCounter = 0;
-                                                self._establishConnection(params);
+                                                self._establishConnection(params,'CONNECTED have SDK ping failed');
                                             }
                                         } else {
                                             Utils.QBLog('[QBChat]',
@@ -876,17 +929,23 @@ ChatProxy.prototype = {
 
                         break;
                     case Strophe.Status.DISCONNECTING:
-                        Utils.QBLog('[QBChat]', 'Status.DISCONNECTING');
+                        Utils.QBLog('[QBChat]', 'Status.DISCONNECTING at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'DISCONNECTING CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' + '[SDK v'+config.version+']' +' Status.DISCONNECTING at ' +
+                                chatUtils.getLocalTime()+ ' DISCONNECTING CONDITION: ' + condition);
+                        }
                         break;
                     case Strophe.Status.DISCONNECTED:
                         Utils.QBLog('[QBChat]', 'Status.DISCONNECTED at ' + chatUtils.getLocalTime());
-                        //
-                        Utils.QBLog('[QBChat]', 'DISCONNECTED CONDITION: ' + disconnectCondition);
-                        //
+                        Utils.QBLog('[QBChat]', 'DISCONNECTED CONDITION: ' + condition);
+
                         if (typeof self.onLogListener === 'function') {
                             Utils.safeCallbackCall(self.onLogListener,
-                                '[QBChat]' + ' Status.DISCONNECTED at ' +
-                                chatUtils.getLocalTime()+ ' DISCONNECTED CONDITION: ' + disconnectCondition);
+                                '[QBChat]' + '[SDK v'+config.version+']' +' Status.DISCONNECTED at ' +
+                                chatUtils.getLocalTime()+ ' DISCONNECTED CONDITION: ' + condition);
                         }
                         // fire 'onDisconnectedListener' only once
                         if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
@@ -898,36 +957,72 @@ ChatProxy.prototype = {
                         self.connection.reset();
 
                         // reconnect to chat and enable check connection
-                        self._establishConnection(params);
+                        self._establishConnection(params,'DISCONNECTED');
 
                         break;
                     case Strophe.Status.ATTACHED:
-                        Utils.QBLog('[QBChat]', 'Status.ATTACHED');
+                        Utils.QBLog('[QBChat]', 'Status.ATTACHED at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'ATTACHED CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.ATTACHED at ' +
+                                chatUtils.getLocalTime()+ ' ATTACHED CONDITION: ' + condition);
+                        }
+                        break;
+                    case Strophe.Status.REDIRECT:
+                        Utils.QBLog('[QBChat]', 'Status.REDIRECT at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'REDIRECT CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.REDIRECT at ' +
+                                chatUtils.getLocalTime()+ ' REDIRECT CONDITION: ' + condition);
+                        }
+                        break;
+                    case Strophe.Status.CONNTIMEOUT:
+                        Utils.QBLog('[QBChat]', 'Status.CONNTIMEOUT at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'CONNTIMEOUT CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.CONNTIMEOUT at ' +
+                                chatUtils.getLocalTime()+ ' CONNTIMEOUT CONDITION: ' + condition);
+                        }
+                        break;
+                    case Strophe.Status.BINDREQUIRED:
+                        Utils.QBLog('[QBChat]', 'Status.BINDREQUIRED at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'BINDREQUIRED CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status.BINDREQUIRED at ' +
+                                chatUtils.getLocalTime()+ ' BINDREQUIRED CONDITION: ' + condition);
+                        }
+                        break;
+                    case Strophe.Status.ATTACHFAIL:
+                        Utils.QBLog('[QBChat]', 'Status.ATTACHFAIL at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'ATTACHFAIL CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' + '[SDK v'+config.version+']' +' Status.ATTACHFAIL at ' +
+                                chatUtils.getLocalTime()+ ' ATTACHFAIL CONDITION: ' + condition);
+                        }
+                        break;
+
+                    default:
+                        Utils.QBLog('[QBChat]', 'Status is unknown at ' + chatUtils.getLocalTime());
+                        Utils.QBLog('[QBChat]', 'unknown CONDITION: ' + condition);
+
+                        if (typeof self.onLogListener === 'function') {
+                            Utils.safeCallbackCall(self.onLogListener,
+                                '[QBChat]' +'[SDK v'+config.version+']' + ' Status is unknown at ' +
+                                chatUtils.getLocalTime()+ ' unknown CONDITION: ' + condition);
+                        }
                         break;
                 }
             });
-            // connection error handler
-            self.connection.xmlInput = function (data) {
-                try {
-                    let parser = new DOMParser();
-                    let xmlDoc = parser.parseFromString(data, 'text/xml');
-
-                    let errorElem = xmlDoc.getElementsByTagName('error');
-                    if (errorElem.length > 0) {
-                        let conditionElem = errorElem[0].getElementsByTagName('condition');
-                        if (conditionElem.length > 0) {
-                            disconnectCondition = conditionElem[0].textContent;
-                            console.log('Disconnect condition:', disconnectCondition);
-                            if (typeof self.onLogListener === 'function') {
-                                Utils.safeCallbackCall(self.onLogListener,
-                                    '[QBChat]' +  ' DISCONNECTED CONDITION: ' + disconnectCondition);
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error parsing XML input:', e);
-                }
-            };
         }
 
         /** connect for node */
@@ -982,7 +1077,7 @@ ChatProxy.prototype = {
                 self._isConnecting = false;
 
                 // reconnect to chat and enable check connection
-                self._establishConnection(params);
+                self._establishConnection(params,'NODE:DISCONNECTED');
             });
 
             self.Client.on('error', function () {
@@ -1064,39 +1159,39 @@ ChatProxy.prototype = {
         }
     },
 
-    _establishConnection: function (params) {
+    _establishConnection: function (params, description) {
         var self = this;
-        Utils.QBLog('[QBChat]', '_establishConnection called');
+        Utils.QBLog('[QBChat]', '_establishConnection called in ' + description);
         if (typeof self.onLogListener === 'function') {
             Utils.safeCallbackCall(self.onLogListener,
-                '[QBChat]' + '_establishConnection called');
+                '[QBChat]' + '_establishConnection called in ' + description);
         }
         if (self._isLogout || self._checkConnectionTimer) {
             Utils.QBLog('[QBChat]', '_establishConnection return');
             if (typeof self.onLogListener === 'function') {
                 Utils.safeCallbackCall(self.onLogListener,
-                    '[QBChat]' + ' _establishConnection return with self._isLogout: '+
-                    self._isLogout+' and self._checkConnectionTimer ' +self._checkConnectionTimer?'set up':'undefined');
+                    '[QBChat]' + 'BREAK _establishConnection RETURN with self._isLogout: '+
+                    self._isLogout?self._isLogout:'undefined'+' and self._checkConnectionTimer ' +self._checkConnectionTimer?self._checkConnectionTimer:'undefined');
             }
             return;
         }
 
         var _connect = function () {
-            Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection ');
+            Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection in '+description);
             if (typeof self.onLogListener === 'function') {
                 Utils.safeCallbackCall(self.onLogListener,
-                    '[QBChat]' + ' call _connect() in _establishConnection ');
+                    '[QBChat]' + ' call _connect() in _establishConnection in '+description);
             }
             if (!self.isConnected && !self._isConnecting && !self._sessionHasExpired) {
-                Utils.QBLog('[QBChat]', ' start execute connect() in _establishConnection ');
+                Utils.QBLog('[QBChat]', ' start EXECUTE connect() in _establishConnection ');
                 if (typeof self.onLogListener === 'function') {
                     Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + ' with statuses (!self.isConnected && !self._isConnecting && !self._sessionHasExpired):  '+' self.isConnected: '+self.isConnected+' self._isConnecting: '+self._isConnecting+' self._sessionHasExpired: '+self._sessionHasExpired);
+                        '[QBChat]' + ' start EXECUTE connect() in _establishConnection  in '+description+' self.isConnected: '+self.isConnected+' self._isConnecting: '+self._isConnecting+' self._sessionHasExpired: '+self._sessionHasExpired);
                 }
                 self.connect(params);
                 if (typeof self.onLogListener === 'function') {
                     Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + 'call _connect() in _establishConnection is executed');
+                        '[QBChat]' + 'call _connect() in _establishConnection in '+description+' is executed');
                 }
             } else {
                 Utils.QBLog('[QBChat]', 'stop timer in _establishConnection ');
@@ -1104,7 +1199,7 @@ ChatProxy.prototype = {
                 self._checkConnectionTimer = undefined;
                 if (typeof self.onLogListener === 'function') {
                     Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + 'stop timer in _establishConnection ');
+                        '[QBChat]' + 'stop timer in _establishConnection in '+description);
                 }
             }
         };
@@ -1123,6 +1218,11 @@ ChatProxy.prototype = {
 
     reconnect: function () {
         Utils.QBLog('[QBChat]', 'Call reconnect ');
+        if (typeof this.onLogListener === 'function') {
+            Utils.safeCallbackCall(this.onLogListener,
+                '[QBChat]' +'[SDK v'+config.version+']' + ' Call reconnect ' +
+                chatUtils.getLocalTime());
+        }
         clearInterval(this._checkConnectionTimer);
         this._checkConnectionTimer = undefined;
         this.muc.joinedRooms = {};
@@ -1130,7 +1230,7 @@ ChatProxy.prototype = {
 
         if (Utils.getEnv().browser) {
             this.connection.flush();
-            this.connection.disconnect();
+            this.connection.disconnect('call Qb.chat.reconnect');//artik should be added reasone = 'reconnect from SDK'
         } else {
             this.Client.end();
         }
@@ -1507,6 +1607,11 @@ ChatProxy.prototype = {
      * */
     disconnect: function () {
         Utils.QBLog('[QBChat]', 'Call disconnect ');
+        if (typeof this.onLogListener === 'function') {
+            Utils.safeCallbackCall(this.onLogListener,
+                '[QBChat]' +'[SDK v'+config.version+']' + ' Call disconnect ' +
+                chatUtils.getLocalTime());
+        }
         clearInterval(this._checkConnectionTimer);
         clearInterval(this._checkExpiredSessionTimer);
         this._checkConnectionTimer = undefined;
@@ -1517,7 +1622,7 @@ ChatProxy.prototype = {
 
         if (Utils.getEnv().browser) {
             this.connection.flush();
-            this.connection.disconnect();
+            this.connection.disconnect('call QB.chat.disconnect');//artik should add reason = 'disconnect from SDK'
             if (this._checkConnectionPingTimer !== undefined) {
                 Utils.QBLog('[QBChat]', 'Stop ping');
                 clearInterval(this._checkConnectionPingTimer);

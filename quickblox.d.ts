@@ -140,6 +140,9 @@ export declare interface QBConfig {
       retry: (session: QBSession) => void,
     ) => void
   }
+  pingTimeout?: number
+  pingLocalhostTimeInterval?: number
+  chatReconnectionTimeInterval?: number
 }
 
 export declare interface QBError {

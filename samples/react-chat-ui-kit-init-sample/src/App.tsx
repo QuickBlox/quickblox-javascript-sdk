@@ -102,7 +102,6 @@ function App() {
               isSDKInitialized && isUserAuthorized
                   ?
                   <QuickBloxUIKitDesktopLayout
-                      uikitHeightOffset={"32px"}
                       // AIAssist={{
                       //     enabled: true,
                       //     default: true,

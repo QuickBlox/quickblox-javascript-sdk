@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.18.0",
+  "version": "2.19.2",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "types": "quickblox.d.ts",
@@ -44,7 +44,7 @@
     "node-fetch": "^1.7.3",
     "node-xmpp-client": "^3.0.0",
     "sdp-transform": "^2.3.0",
-    "strophe.js": "^1.4.0",
+    "strophe.js": "2.0.0",
     "webrtc-adapter": "^7.7.1"
   },
   "devDependencies": {

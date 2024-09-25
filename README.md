@@ -1,6 +1,5 @@
 # QuickBlox JavaScript SDK
 
-[![travis-ci](https://api.travis-ci.org/QuickBlox/quickblox-javascript-sdk.svg?branch=gh-pages)](https://travis-ci.org/QuickBlox/quickblox-javascript-sdk)
 [![Code Climate](https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk/badges/gpa.svg)](https://codeclimate.com/github/QuickBlox/quickblox-javascript-sdk)
 [![npm](https://img.shields.io/npm/v/quickblox.svg)](https://www.npmjs.com/package/quickblox)
 [![npm](https://img.shields.io/npm/dm/quickblox.svg)](https://www.npmjs.com/package/quickblox)
@@ -16,7 +15,7 @@ Check out our [API Reference](https://quickblox.github.io/quickblox-javascript-s
 ## Dependencies for browser
 
 ```html
-<script src="https://unpkg.com/quickblox@2.18.0/quickblox.min.js"></script>
+<script src="https://unpkg.com/quickblox@2.19.0/quickblox.min.js"></script>
 ```
 
 ## Bower and RequireJS
@@ -74,4 +73,6 @@ See more information at [contributing.md](https://github.com/QuickBlox/quickblox
 
 # License
 
-QuickBlox SDK License Agreement. Please see the LICENSE.txt file distributed with the SDK.
+QuickBlox SDK License Agreement. Please see the LICENSE.md file distributed with the SDK.
+All samples and examples provided within this SDK are distributed under the MIT License. 
+The text of the MIT License is included within each sample.
