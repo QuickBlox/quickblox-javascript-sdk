@@ -3,20 +3,20 @@ import React, { useEffect } from 'react';
 // @ts-ignore
 import QB from "quickblox/quickblox";
 import {
-  QuickBloxUIKitProvider,
-  QuickBloxUIKitDesktopLayout, LoginData, AuthorizationData,
+  QuickBloxUIKitProvider, LoginData, AuthorizationData,
   QBDataContextType,
   useQbUIKitDataContext
 } from 'quickblox-react-ui-kit';
 import { QBConfig as QBConf } from './QBconfig';
 import './App.css';
 import useMyAIAssistAnswer from "./useMyAIAssistAnswer";
+import MyUIKitDesktopLayout from "./MyUIKitDesktopLayout";
 
 function App() {
 
   const currentUser: LoginData = {
-    login: 'artik',
-    password: 'quickblox',
+    login: 'YOUR_LOGIN',
+    password: 'YOUR_PASSWORD',
   };
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
@@ -104,7 +104,7 @@ function App() {
               // React states indicating the ability to render UI
               isSDKInitialized && isUserAuthorized
                   ?
-                  <QuickBloxUIKitDesktopLayout
+                  <MyUIKitDesktopLayout
                       uikitHeightOffset={"32px"}
                       AIAssist={{
                           enabled: true,
@@ -112,6 +112,9 @@ function App() {
                           AIWidget: defaultAIAnswer
                       }}
                   />
+                  // <QuickBloxUIKitDesktopLayout
+                  //     uikitHeightOffset="56px"
+                  // />
                   :
                   <div>wait while SDK is initializing...</div>
             }
