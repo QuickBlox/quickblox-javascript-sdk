@@ -197,7 +197,6 @@ function App() {
           qbConfig={{...QBConfig}}
       >
           <div>
-
               <Routes>
                   <Route
                       path="/" element={
@@ -208,7 +207,6 @@ function App() {
                                       <MainButton
                                           typeButton={TypeButton.outlined}
                                           title="Light Theme"
-                                          styleBox={{width: "200px", height: "20px"}}
                                           clickHandler = {() => {
                                               document.documentElement.setAttribute('data-theme', 'light');
                                           }}
@@ -216,7 +214,6 @@ function App() {
                                       <MainButton
                                           typeButton={TypeButton.defaultDisabled}
                                           title="Dark Theme"
-                                          styleBox={{width: "200px", height: "20px"}}
                                           clickHandler = {() => {
                                               document.documentElement.setAttribute('data-theme', 'dark');
                                           }}
@@ -224,7 +221,6 @@ function App() {
                                       <MainButton
                                           typeButton={TypeButton.danger}
                                           title="Log Out"
-                                          styleBox={{width: "200px", height: "20px"}}
                                           clickHandler = { logoutUIKitHandler }
                                       />
                                   </div>

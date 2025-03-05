@@ -1,10 +1,10 @@
 import React from 'react';
-import './Auth.scss';
 import qbLogoGray from "../../assets/img/qblogo-grey.svg";
-import {Grid, Typography} from "@mui/material";
-import Link from "@mui/material/Link";
+import qbLogo from "../../assets/img/qb_logo.svg";
 import {UserData} from '../../QBHeplers';
 import packageJson from '../../../package.json';
+import './Auth.scss';
+
 
 export type FunctionTypeLoginDataToVoid = (data: UserData) => void;
 
@@ -28,43 +28,36 @@ interface AuthProps {
 
 function Copyright(props: any) {
     return (
-        <Typography variant="body2" color="text.secondary" align="center" {...props}>
-            {'Copyright © '}
-            <Link color="inherit" href="https://quickblox.com/">
-                QuickBlox <img alt="QuickBlox" src={qbLogoGray} />
-            </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-        </Typography>
+            <span>
+                 {'Copyright © '}
+                <a href="https://quickblox.com/">
+                    QuickBlox
+                    <img alt="QuickBlox" src={qbLogoGray} />
+                </a>{' '}
+                {new Date().getFullYear()}
+                {'.'}
+            </span>
     );
 }
 
 const Auth = ({children} : AuthProps) => {
     return (
-        <Grid container
-              direction="column"
-              justifyContent="center"
-              alignItems="center"
-        >
-            <div className="login__inner">
-                <div className="login__top">
-                    <a className="login__logo" href="https://quickblox.com/">
-                        <img alt="QuickBlox" src="https://quickblox.com/wp-content/themes/QuickbloxTheme2021/img/header-logo.svg" />
-                    </a>
-                    <h1>QB UIKit React Sample</h1>
-                </div>
-                {children ?? children}
-            </div>
-            <div className="login__footer">
-                <div className="footer__logo_wrap">
-                    <p>Sample React Chat UIKit DemoApp  v.{packageJson.version}</p>
-                    <br />
-                    <p>React Chat UIKit v.{packageJson.dependencies["quickblox-react-ui-kit"]}</p>
-                    <br />
-                    <p><Copyright /></p>
-                </div>
-            </div>
-        </Grid>
+        <div className="auth">
+            <header>
+                <img className="signup-logo-blue" alt="QuickBlox"
+                     src={qbLogo}/>
+            </header>
+            {children ?? children}
+            <footer>
+                <span>Sample React Chat UIKit DemoApp v.{packageJson.version}</span>
+                <br/>
+                <span>React Chat UIKit v.{packageJson.dependencies["quickblox-react-ui-kit"]}</span>
+                <br/>
+                <span>React v.{packageJson.dependencies["react"]}</span>
+                <br/>
+                <span><Copyright/></span>
+            </footer>
+        </div>
     );
 }
 

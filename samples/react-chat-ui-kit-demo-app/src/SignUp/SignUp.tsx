@@ -1,26 +1,15 @@
-import './SignUp.scss';
 import React, {useEffect, useState} from "react";
-import {Link as RouterLink} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {
-    Alert,
-    Avatar,
-    Box,
-    Button,
-    CssBaseline,
-    Grid,
-    Paper,
-    TextField,
-    Typography
-} from "@mui/material";
-import AppRegistrationOutlinedIcon from '@mui/icons-material/AppRegistrationOutlined';
-import {
-    fullNameValidate,
     FunctionTypeLoginDataToVoid, messageValidatorFullName,
     messageValidatorUserName, messageValidatorUserPassword,
     nicknameValidate,
+    fullNameValidate,
     passwordValidate
 } from "../layout/Auth/Auth";
 import {UserData} from "../QBHeplers";
+import {Button, TextField} from "quickblox-react-ui-kit";
+import './SignUp.scss';
 
 type SignUpProps = {
     signUpHandler?: FunctionTypeLoginDataToVoid;
@@ -43,7 +32,7 @@ const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage, isOnline}: 
     );
 
 
-    useEffect( ()=> {
+    useEffect(() => {
         setValidInputValues(
             !validValue.userName.isNotValid && validValue.userName.isTouched
             &&
@@ -68,145 +57,113 @@ const SignUp: React.FC<SignUpProps> = ({signUpHandler, errorMessage, isOnline}: 
     };
 
     return (
-        <Grid container component="main">
-            <CssBaseline/>
-            <Grid item xs={12} sm={12} md={12} component={Paper} elevation={6} square>
-                <Box
-                    sx={{
-                        my: 2,
-                        mx: 8,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Avatar sx={{m: 1, bgcolor: 'secondary.main'}}>
-                        <AppRegistrationOutlinedIcon/>
-                    </Avatar>
-                    <Typography component="h1" variant="h5">
-                        Member sign in
-                    </Typography>
-                    <Box component="form" onSubmit={submitForm} sx={{mt: 1}}>
+        <div className="container">
+            <div className="login-form">
+                <div className="login-form-title">
+                    <h3>QB UIKit React Sample</h3>
+                    <h2>Sign up</h2>
+                    <p>Already have an account?
+                        <Link to='/sign-in'>
+                            {" Sign In"}
+                        </Link>
+                    </p>
+                </div>
+                <form onSubmit={submitForm}>
+                    <div className="login-form-content">
                         <TextField
-                            size='small'
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="userName"
-                            label="User Name"
-                            name="userName"
-                            value={userName}
+                            type="text"
                             onChange={(e) => {
-                                setUserName(e.target.value);
+                                setUserName(e);
                                 const validValueUserName = {...validValue.userName};
-                                validValueUserName.isNotValid = !nicknameValidate(e.target.value);
+                                validValueUserName.isNotValid = !nicknameValidate(e);
                                 setValidValue({...validValue, userName: validValueUserName})
                             }}
                             onFocus={() => setValidValue({
                                 ...validValue,
                                 userName: {...validValue.userName, isTouched: true}
                             })}
-                            autoComplete="off"
-                            helperText={
-                                validValue.userName.isTouched && validValue.userName.isNotValid
-                                    ?
-                                    messageValidatorUserName
-                                    :
-                                    null
-                            }
+                            value={userName}
+                            placeholder="User name"
+                            id="userName"
                         />
+                        {
+                            validValue.userName.isTouched && validValue.userName.isNotValid
+                                ?
+                                <p className="error">{messageValidatorUserName}</p>
+                                :
+                                null
+                        }
+
                         <TextField
-                            size='small'
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="fullName"
-                            label="Full Name"
-                            name="fullName"
-                            value={fullName}
+                            type="text"
                             onChange={(e) => {
-                                setFullName(e.target.value);
+                                setFullName(e);
                                 const validValueFullName = {...validValue.fullName};
-                                validValueFullName.isNotValid = !fullNameValidate(e.target.value);
+                                validValueFullName.isNotValid = !fullNameValidate(e);
                                 setValidValue({...validValue, fullName: validValueFullName})
                             }}
                             onFocus={() => setValidValue({
                                 ...validValue,
                                 fullName: {...validValue.fullName, isTouched: true}
                             })}
-                            autoComplete="off"
-                            helperText={
-                                validValue.fullName.isTouched && validValue.fullName.isNotValid
-                                    ?
-                                    messageValidatorFullName
-                                    :
-                                    null
-                            }
+                            value={fullName}
+                            placeholder="Full Name"
+                            id="fullName"
                         />
+                        {
+                            validValue.fullName.isTouched && validValue.fullName.isNotValid
+                                ?
+                                <p className="error">{messageValidatorFullName}</p>
+                                :
+                                null
+                        }
+
                         <TextField
-                            value={userPassword}
+                            type="password"
                             onChange={(e) => {
-                                setUserPassword(e.target.value);
+                                setUserPassword(e);
                                 const validValueUserPassword = {...validValue.userPassword};
-                                validValueUserPassword.isNotValid = !passwordValidate(e.target.value);
+                                validValueUserPassword.isNotValid = !passwordValidate(e);
                                 setValidValue({...validValue, userPassword: validValueUserPassword})
                             }}
                             onFocus={() => setValidValue({
                                 ...validValue,
                                 userPassword: {...validValue.userPassword, isTouched: true}
                             })}
-                            size='small'
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="userPassword"
-                            label="Password"
-                            type="password"
+                            value={userPassword}
+                            placeholder="Password"
                             id="userPassword"
-                            autoComplete="off"
-                            helperText={
-                                validValue.userPassword.isTouched && validValue.userPassword.isNotValid
-                                    ?
-                                    messageValidatorUserPassword
-                                    :
-                                    null
-                            }
                         />
+
+                        {
+                            validValue.userPassword.isTouched && validValue.userPassword.isNotValid
+                                ?
+                                <p className="error">{messageValidatorUserPassword}</p>
+                                :
+                                null
+                        }
+
+                    </div>
+                    <div className="login-form-btn">
                         <Button
-                            size='small'
+                            title="Sign Up"
                             type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{mt: 3, mb: 2}}
-                            disabled={!validInputValues || !isOnline}
-                        >
+                            disabled={!validInputValues || !isOnline}>
                             Sign Up
                         </Button>
-                        <Grid container
-                              direction="row"
-                              justifyContent="center"
-                              alignItems="center"
-                        >
-                            <RouterLink to='/sign-in'>
-                                {"Sign In"}
-                            </RouterLink>
-                        </Grid>
                         {errorMessage || !isOnline
                             ?
-                            <Grid container
-                                  direction="row"
-                                  justifyContent="center"
-                                  alignItems="center"
-                            >
-                                <Alert severity="error">{!isOnline ? 'No connection.' : errorMessage}</Alert>
-                            </Grid>
+                            <p className="error">
+                                {errorMessage}
+                            </p>
+
                             :
                             null
                         }
-                    </Box>
-                </Box>
-            </Grid>
-        </Grid>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }
 

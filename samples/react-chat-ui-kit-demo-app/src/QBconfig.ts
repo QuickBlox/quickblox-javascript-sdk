@@ -128,7 +128,8 @@ export const QBConfig: QBUIKitConfig = {
         debug: true,
         enableForwarding: true,
         enableReplying: true,
-        regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
+        // regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
+        regexUserName: '',
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
