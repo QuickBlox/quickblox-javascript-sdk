@@ -3,32 +3,35 @@
   "version": "0.1.1",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.37",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "quickblox-react-ui-kit": "^0.4.5",
-    "quickblox": "^2.19.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.2.0",
+    "@testing-library/user-event": "14.6.1",
+    "@types/jest": "29.5.1",
+    "@types/node": "20.17.19",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "quickblox": "2.19.2",
+    "quickblox-react-ui-kit": "0.5.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router-dom": "6.29.0",
+    "web-vitals": "2.1.4"
+  },
+  "devDependencies": {
+    "@svgr/webpack": "8.1.0",
+    "@types/react-router-dom": "5.3.3",
+    "css-loader": "6.11.0",
+    "html-webpack-plugin": "5.6.3",
+    "style-loader": "3.3.4",
+    "ts-loader": "9.4.2",
+    "typescript": "5.7.3",
+    "webpack": "5.82.1",
+    "webpack-cli": "5.1.1",
+    "webpack-dev-server": "4.11.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "start": "webpack serve --mode development --open",
+    "build": "webpack --mode production"
   },
   "browserslist": {
     "production": [

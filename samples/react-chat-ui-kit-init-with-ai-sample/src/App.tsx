@@ -3,9 +3,10 @@ import React, { useEffect } from 'react';
 // @ts-ignore
 import QB from "quickblox/quickblox";
 import {
-  QuickBloxUIKitProvider, LoginData, AuthorizationData,
-  QBDataContextType,
-  useQbUIKitDataContext
+    QuickBloxUIKitProvider,
+    LoginData, AuthorizationData,
+    QBDataContextType,
+    useQbUIKitDataContext,
 } from 'quickblox-react-ui-kit';
 import { QBConfig as QBConf } from './QBconfig';
 import './App.css';
@@ -15,9 +16,19 @@ import MyUIKitDesktopLayout from "./MyUIKitDesktopLayout";
 function App() {
 
   const currentUser: LoginData = {
-    login: 'YOUR_LOGIN',
-    password: 'YOUR_PASSWORD',
+    login: '',
+    password: '',
   };
+
+    // check if we have installed SDK
+    if ((window as any).QB === undefined) {
+        if (QB !== undefined) {
+            (window as any).QB = QB;
+        } else {
+            let QBLib = require('quickblox/quickblox.min');
+            (window as any).QB = QBLib;
+        }
+    }
 
   const qbUIKitContext: QBDataContextType = useQbUIKitDataContext();
 
@@ -25,15 +36,6 @@ function App() {
   const [isSDKInitialized, setSDKInitialized] = React.useState(false);
 
   const prepareSDK = async (): Promise<void> => {
-    // check if we have installed SDK
-    if ((window as any).QB === undefined) {
-      if (QB !== undefined) {
-        (window as any).QB = QB;
-      } else {
-        let QBLib = require('quickblox/quickblox.min');
-        (window as any).QB = QBLib;
-      }
-    }
 
     const APPLICATION_ID = QBConf.credentials.appId;
     const AUTH_KEY = QBConf.credentials.authKey;

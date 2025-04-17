@@ -1,5 +1,5 @@
-@import "styles/_theme_colors_scheme.scss";
-@import "styles/_variables.scss";
+@use "styles/_theme_colors_scheme.scss";
+@use "styles/_variables.scss";
 
 .main-buttons-wrapper {
   margin: 10px;

@@ -1,3 +1,4 @@
+// @ts-ignore
 import {QBUIKitConfig} from "quickblox-react-ui-kit/dist/CommonTypes/CommonTypes";
 
 export const QBConfig: QBUIKitConfig = {
@@ -125,11 +126,13 @@ export const QBConfig: QBUIKitConfig = {
         chatProtocol: {
             active: 2,
         },
+        pingLocalhostTimeInterval: 0,
+        chatReconnectionTimeInterval: 3,
         debug: true,
         enableForwarding: true,
         enableReplying: true,
-        // regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
-        regexUserName: '',
+        showPublicDialogsInList: false,
+        allowPublicDialogCreation: false,
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',

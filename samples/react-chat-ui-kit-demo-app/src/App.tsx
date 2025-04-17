@@ -128,14 +128,15 @@ function App() {
                     .then( async resultUserSession => {
                         await connectToChatServer(
                             resultUserSession,
-                            currentUser.login)
+                            loginData.login)
                                 .then( async authData => {
                                     await qbUIKitContext.authorize(authData);
-                                    qbUIKitContext.setSubscribeOnSessionExpiredListener(() => {
-                                        console.timeLog('call OnSessionExpiredListener ... start')
-                                        logoutUIKitHandler();
-                                        console.log('OnSessionExpiredListener ... end');
-                                    });
+                                    // broken from v0.5.0-beta.13
+                                    // qbUIKitContext.setSubscribeOnSessionExpiredListener(() => {
+                                    //     console.timeLog('call OnSessionExpiredListener ... start')
+                                    //     logoutUIKitHandler();
+                                    //     console.log('OnSessionExpiredListener ... end');
+                                    // });
                                     setSDKInitialized(true);
                                     setUserAuthorized(true);
                                     document.documentElement.setAttribute('data-theme', theme);

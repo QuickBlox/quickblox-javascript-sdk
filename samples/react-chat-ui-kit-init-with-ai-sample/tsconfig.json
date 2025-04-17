@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "declaration": true,
+    "target": "ES2022",
     "lib": [
+      "es2022",
       "dom",
       "dom.iterable",
       "esnext"
@@ -14,14 +18,16 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "types": ["@types/node", "@types/react", "@storybook/react"]
   },
   "include": [
     "src",
-    "node_modules/quickblox-react-ui-kit/global.d.ts",
-  ]
+    "global.d.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

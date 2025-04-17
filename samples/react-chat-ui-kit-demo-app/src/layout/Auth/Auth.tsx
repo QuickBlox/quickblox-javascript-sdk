@@ -1,6 +1,6 @@
 import React from 'react';
-import qbLogoGray from "../../assets/img/qblogo-grey.svg";
-import qbLogo from "../../assets/img/qb_logo.svg";
+import qbLogoGray from '../../assets/img/qblogo-grey.svg?url';
+import qbLogo from '../../assets/img/qb_logo.svg?url';
 import {UserData} from '../../QBHeplers';
 import packageJson from '../../../package.json';
 import './Auth.scss';

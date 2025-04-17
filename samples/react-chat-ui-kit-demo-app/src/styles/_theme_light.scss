@@ -1,17 +1,22 @@
-@import "theme_colors_scheme";
+@use 'theme_colors_scheme' as *;
 
-:root{
+:root {
   --primary: #{$primary-500};
   --color-background: #{$primary-a-100};
-  --color-background-modal: #{$primary-100};
+  --color-background-modal: #{$background-overlay-light};
   --color-background-overlay: #{$secondary-900};
   --color-divider: #{$primary-50};
   --color-font: #{$secondary-900};
   --color-icon: #{$primary-500};
+  --color-media-icon: #{$primary-a-100};
+  --color-default-hover: #{$primary-700};
+  --color-default-active: #{$primary-900};
 
-  --color-background-info:#{$primary-100};
+  --color-background-info: #{$primary-100};
+  --color-border-active: #{$primary-200};
   --tertiary-elements: #{$secondary-300};
   --main-elements: #{$primary-500};
+  --toast-color: #{$secondary-800};
   --secondary-elements: #{$secondary-500};
   --input-elements: #{$secondary-500};
   --disabled-elements: #{$secondary-100};
@@ -25,9 +30,10 @@
   --incoming-background: #{$secondary-50};
   --outgoing-background: #{$primary-50};
   --dropdown-background: #{$primary-a-100};
-  --chat-input: #{$primary-a-200};
+  --chat-input: #{$secondary-50};
   --divider: #{$primary-50};
   --error: #{$error-500};
+  --error-secondary: #{$error-200};
   --hightlight: #{$highlight};
-
+  --system: #{$primary-a-100};
 }
