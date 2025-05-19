@@ -172,6 +172,7 @@ ContentProxy.prototype = {
                 });
 
                 data.file = file;
+                data.name = name;
                 uploadParams.data = data;
 
                 // Upload the file to Amazon S3
@@ -212,12 +213,19 @@ ContentProxy.prototype = {
          * @param {object} error - The error object.
          * @param {object} response - The empty object.
          */
+        var data = Object.assign({}, params.data);
+        var file = {
+            data: params.data.file,
+            name: params.data.name || params.data.file.name,
+        };
+        data.file = file;
         var uploadParams = {
             type: 'POST',
             dataType: 'text',
             contentType: false,
             url: params.url,
-            data: params.data
+            data,
+            fileToCustomObject: true,
         };
 
         this.service.ajax(uploadParams, function(err, xmlDoc) {

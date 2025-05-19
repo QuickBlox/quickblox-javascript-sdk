@@ -249,13 +249,21 @@ export declare interface ChatMessageAttachment {
   type: string
   /** Link to a file in Internet. */
   url?: string
-  /** UID of file from `QB.content.createAndUpload` */
-  uid?: string
   /** Name of attachment. */
   name?: string
   /** Size of attachment. */
-  size?: number
-  [key: string]: QBCustomField
+  size?: string | number
+  /** Content-Type of attachment. */
+  'content-type'?: string
+  /* Width of Image/Video. Useful for Image/Video type attachments */
+  width?: string | number
+  /* Height of Image/Video. Useful for Image/Video type attachments */
+  height?: string | number
+  /* Duration of Video. Useful for Video type attachments */
+  duration?: string | number
+  /* Custom parameters. Useful for storing metadata of attachment */
+  data?: string
+  [key: string]: string | undefined
 }
 
 declare enum QBChatDialogType {
@@ -307,6 +315,7 @@ export declare interface QBChatDialog {
   last_message_id: string | null
   /** Number of unread messages in this dialog for a current user. */
   unread_messages_count: number | null
+  is_join_required: number | undefined |null
   /**
    * - Information about class and fields in Custom Objects.
    * - Any dialog can be extended using Custom Objects to store additional parameters.
@@ -580,8 +589,7 @@ interface QBChatModule {
    */
   sendSystemMessage(
     jidOrUserId: QBUser['id'] | string,
-    // TODO: change type
-    message: { extension: QBSystemMessage['extension'] },
+    message: Partial<Omit<QBSystemMessage, 'userId'>>,
   ): string
   /** Send is delivered status. */
   sendDeliveredStatus(params: QBMessageStatusParams): void
@@ -823,9 +831,9 @@ export declare interface QBBlobCreate extends QBBlob {
 }
 export declare interface QBBlobCreateUploadParams {
   name: string
-  file: File
+  file: File | Blob | Buffer
   type: string
-  size: number
+  size: number | string
   public?: boolean // optional, "false" by default
 }
 interface QBContentModule {
@@ -893,7 +901,11 @@ interface QBContentModule {
   upload(
     params: {
       url: string
-      data: Dictionary<any>
+      data: {
+        name?: string
+        file: File | Blob | Buffer
+        key: string
+      }
     },
     callback: QBCallback<any>,
   ): void
@@ -955,7 +967,7 @@ interface QBDataModule {
     callback: QBCallback<T>,
   ): void
   /**
-   * Delete record/records by ID, IDs or criteria (filters) of particular class
+   * Delete record/records by ID, IDs
    * ([read more](https://docs.quickblox.com/docs/js-custom-objects#delete-records)).
    */
   delete(
@@ -964,13 +976,13 @@ interface QBDataModule {
     callback: QBCallback<QBDataDeletedResponse>,
   ): void
   /**
-   * Delete record/records by ID, IDs or criteria (filters) of particular class
+   * Delete records by criteria (filters) of particular class
    * ([read more](https://docs.quickblox.com/docs/js-custom-objects#delete-records)).
    */
   delete(
     className: string,
     criteria: Dictionary<any>,
-    callback: QBCallback<{ total_deleted: number }>,
+    callback: QBCallback<{ deleted: null; deletedCount: number }>,
   ): void
   /**
    * Delete file from file field by ID
@@ -1031,7 +1043,7 @@ interface QBDataModule {
    */
   uploadFile(
     className: string,
-    params: { id: string; field_name: string; file: File; name: string },
+    params: { id: string; field_name: string; file: File | Blob | Buffer; name: string },
     callback: QBCallback<QBDataFile>,
   ): void
 }
@@ -1044,14 +1056,9 @@ export declare type ListUserParams = {
 }
 
 export declare type GetUserParams =
-  | { login: string }
   | { full_name: string; page?: number; per_page?: number }
-  | { facebook_id: string }
-  | { phone: string }
-  | { email: string }
   | { tags: string | string[]; page?: number; per_page?: number }
   | Omit<ListUserParams, 'filter'>
-  | { external: string }
 
 interface QBUsersModule {
   /**
@@ -1071,11 +1078,31 @@ interface QBUsersModule {
    * Remove a user from the app, by user's external id that represents the user in an external user registry.
    * ([read more](https://docs.quickblox.com/docs/js-users#delete-user)).
    */
-  delete(params: { external: number }, callback: QBCallback<any>): void
+  delete(params: { external: string | number }, callback: QBCallback<any>): void
   /**
    * Retrieve the user by id.
    */
   get(userId: QBUser['id'], callback: QBCallback<QBUser>): void
+  /**
+   * Retrieve the user by login.
+   */
+  get(params: { login: string }, callback: QBCallback<QBUser>): void
+  /**
+   * Retrieve the user by phone.
+   */
+  get(params: { phone: string }, callback: QBCallback<QBUser>): void
+  /**
+   * Retrieve the user by email.
+   */
+  get(params: { email: string }, callback: QBCallback<QBUser>): void
+  /**
+   * Retrieve the user by facebook_id.
+   */
+  get(params: { facebook_id: string }, callback: QBCallback<QBUser>): void
+  /**
+   * Retrieve the user by external user id.
+   */
+  get(params: { external: string | number }, callback: QBCallback<QBUser>): void
   /**
    * Retrieve a specific users.
    */

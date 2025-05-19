@@ -182,7 +182,23 @@ qbRTCPeerConnection.prototype.setLocalSessionDescription = function (params, cal
                     );
                     recvCodecs.unshift(arrayWithPreferredRecvCodec[0]);
                 }
-                transceiver.setCodecPreferences(sendCodecs.concat(recvCodecs));
+                // transceiver.setCodecPreferences(sendCodecs);
+                // transceiver.setCodecPreferences(recvCodecs);
+                //new code: without  H264
+                var filteredSendCodecs = sendCodecs.filter(function(codec) {
+                    return !codec.mimeType.toLowerCase().includes('h264');
+                });
+
+                var filteredRecvCodecs = recvCodecs.filter(function(codec) {
+                    return !codec.mimeType.toLowerCase().includes('h264');
+                });
+
+                var codecs = filteredSendCodecs.concat(filteredRecvCodecs);
+
+                // set up prefer codecs
+                transceiver.setCodecPreferences(codecs);
+                // original code
+                // transceiver.setCodecPreferences(sendCodecs.concat(recvCodecs));
             }
         });
     }

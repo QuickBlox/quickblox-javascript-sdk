@@ -50,7 +50,9 @@ MessageProxy.prototype = {
         this.service.ajax({
             url: Utils.getUrl(MESSAGES_API_URL),
             type: 'POST',
-            data: params
+            contentType: 'application/json; charset=utf-8',
+            isNeedStringify: true,
+            data: params,
         }, callback);
     },
 
