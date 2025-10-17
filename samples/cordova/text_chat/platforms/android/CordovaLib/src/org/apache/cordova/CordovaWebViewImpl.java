@@ -18,6 +18,8 @@
 */
 package org.apache.cordova;
 
+import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -33,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Main class for interacting with a Cordova webview. Manages plugins, events, and a CordovaWebViewEngine.
+ * Main class for interacting with a Cordova WebView. Manages plugins, events, and a CordovaWebViewEngine.
  * Class uses two-phase initialization. You must call init() before calling any other methods.
  */
 public class CordovaWebViewImpl implements CordovaWebView {
@@ -91,6 +94,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
     }
 
+    @SuppressLint("Assert")
     @Override
     public void init(CordovaInterface cordova, List<PluginEntry> pluginEntries, CordovaPreferences preferences) {
         if (this.cordova != null) {
@@ -111,9 +115,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // This isn't enforced by the compiler, so assert here.
         assert engine.getView() instanceof CordovaWebViewEngine.EngineView;
 
-        pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
+        pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid", true);
         pluginManager.init();
-
     }
 
     @Override
@@ -146,11 +149,12 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Timeout error method
         final Runnable loadError = new Runnable() {
+            @Override
             public void run() {
                 stopLoading();
                 LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
 
-                // Handle other errors by passing them to the webview in JS
+                // Handle other errors by passing them to the WebView in JS
                 JSONObject data = new JSONObject();
                 try {
                     data.put("errorCode", -6);
@@ -165,6 +169,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Timeout timer method
         final Runnable timeoutCheck = new Runnable() {
+            @Override
             public void run() {
                 try {
                     synchronized (this) {
@@ -174,22 +179,29 @@ public class CordovaWebViewImpl implements CordovaWebView {
                     e.printStackTrace();
                 }
 
-                // If timeout, then stop loading and handle error
-                if (loadUrlTimeout == currentLoadUrlTimeout) {
+                // If timeout, then stop loading and handle error (if activity still exists)
+                if (loadUrlTimeout == currentLoadUrlTimeout && cordova.getActivity() != null) {
                     cordova.getActivity().runOnUiThread(loadError);
+                } else if (cordova.getActivity() == null) {
+                    LOG.d(TAG, "Cordova activity does not exist.");
                 }
             }
         };
 
-        final boolean _recreatePlugins = recreatePlugins;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (loadUrlTimeoutValue > 0) {
-                    cordova.getThreadPool().execute(timeoutCheck);
+        if (cordova.getActivity() != null) {
+            final boolean _recreatePlugins = recreatePlugins;
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (loadUrlTimeoutValue > 0) {
+                        cordova.getThreadPool().execute(timeoutCheck);
+                    }
+                    engine.loadUrl(url, _recreatePlugins);
                 }
-                engine.loadUrl(url, _recreatePlugins);
-            }
-        });
+            });
+        } else {
+            LOG.d(TAG, "Cordova activity does not exist.");
+        }
     }
 
 
@@ -207,36 +219,74 @@ public class CordovaWebViewImpl implements CordovaWebView {
             engine.clearHistory();
         }
 
-        // If loading into our webview
+        // If loading into our WebView
         if (!openExternal) {
-            // Make sure url is in whitelist
+            // Make sure url is in allow list
             if (pluginManager.shouldAllowNavigation(url)) {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);
+                return;
             } else {
-                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> whitelist. URL=" + url);
+                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> allow list. URL=" + url);
+                return;
             }
         }
         if (!pluginManager.shouldOpenExternalUrl(url)) {
-            LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> whitelist. URL=" + url);
+            LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> allow list. URL=" + url);
             return;
         }
+
+        Intent intent = null;
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            Uri uri = Uri.parse(url);
-            // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
-            // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
-            if ("file".equals(uri.getScheme())) {
-                intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+            if (url.startsWith("intent://")) {
+                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             } else {
-                intent.setData(uri);
+                intent = new Intent(Intent.ACTION_VIEW);
+                // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                Uri uri = Uri.parse(url);
+                // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
+                // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
+                if ("file".equals(uri.getScheme())) {
+                    intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+                } else {
+                    intent.setData(uri);
+                }
             }
-            cordova.getActivity().startActivity(intent);
-        } catch (android.content.ActivityNotFoundException e) {
-            LOG.e(TAG, "Error loading url " + url, e);
+            if (cordova.getActivity() != null) {
+                cordova.getActivity().startActivity(intent);
+            } else {
+                LOG.d(TAG, "Cordova activity does not exist.");
+            }
+        } catch (URISyntaxException e) {
+            LOG.e(TAG, "Error parsing url " + url, e);
+        } catch (ActivityNotFoundException e) {
+            if (url.startsWith("intent://") && intent != null && intent.getStringExtra("browser_fallback_url") != null) {
+                showWebPage(intent.getStringExtra("browser_fallback_url"), openExternal, clearHistory, params);
+            } else {
+                LOG.e(TAG, "Error loading url " + url, e);
+            }
+        }
+    }
+
+    private static class WrapperView extends FrameLayout {
+
+        private final CordovaWebViewEngine engine;
+
+        public WrapperView(Context context, CordovaWebViewEngine engine) {
+            super(context);
+            this.engine = engine;
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            boolean ret = engine.getView().dispatchKeyEvent(event);
+            if (!ret) {
+                // If the engine didn't handle the event, handle it normally.
+                ret = super.dispatchKeyEvent(event);
+            }
+            return ret;
         }
     }
 
@@ -251,13 +301,16 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
 
+        WrapperView wrapperView = new WrapperView(getContext(), engine);
+        wrapperView.addView(view);
+
         // Store the view and its callback for later (to kill it properly)
-        mCustomView = view;
+        mCustomView = wrapperView;
         mCustomViewCallback = callback;
 
         // Add the custom view to its container.
         ViewGroup parent = (ViewGroup) engine.getView().getParent();
-        parent.addView(view, new FrameLayout.LayoutParams(
+        parent.addView(wrapperView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER));
@@ -288,6 +341,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Show the content view.
         engine.getView().setVisibility(View.VISIBLE);
+        engine.getView().requestFocus();
     }
 
     @Override
@@ -433,7 +487,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // If app doesn't want to run in background
         if (!keepRunning) {
-            // Pause JavaScript timers. This affects all webviews within the app!
+            // Pause JavaScript timers. This affects all WebViews within the app!
             engine.setPaused(true);
         }
     }
@@ -443,7 +497,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
 
-        // Resume JavaScript timers. This affects all webviews within the app!
+        // Resume JavaScript timers. This affects all WebViews within the app!
         engine.setPaused(false);
         this.pluginManager.onResume(keepRunning);
 
@@ -483,7 +537,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // We should use a blank data: url instead so it's more obvious
         this.loadUrl("about:blank");
 
-        // TODO: Should not destroy webview until after about:blank is done loading.
+        // TODO: Should not destroy WebView until after about:blank is done loading.
         engine.destroy();
         hideCustomView();
     }
@@ -528,14 +582,20 @@ public class CordovaWebViewImpl implements CordovaWebView {
             // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
             if (engine.getView().getVisibility() != View.VISIBLE) {
                 Thread t = new Thread(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             Thread.sleep(2000);
-                            cordova.getActivity().runOnUiThread(new Runnable() {
-                                public void run() {
-                                    pluginManager.postMessage("spinner", "stop");
-                                }
-                            });
+                            if (cordova.getActivity() != null) {
+                                cordova.getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pluginManager.postMessage("spinner", "stop");
+                                    }
+                                });
+                            } else {
+                                LOG.d(TAG, "Cordova activity does not exist.");
+                            }
                         } catch (InterruptedException e) {
                         }
                     }

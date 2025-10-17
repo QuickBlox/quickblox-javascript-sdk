@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.quickblox.videowebrtc" version="1.0.0"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+    <name>VideoWebRTC</name>
+    <description>QuickBlox WebRTC Video Chat Sample</description>
+    <author email="support@quickblox.com" href="https://quickblox.com">
+        QuickBlox Team
+    </author>
+
+    <content src="index.html" />
+
+    <allow-navigation href="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <access origin="*" />
+
+    <!-- Для Android -->
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest" xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+            <uses-feature android:name="android.hardware.camera" android:required="false" />
+            <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+            <uses-feature android:name="android.hardware.microphone" android:required="false" />
+        </config-file>
+    </platform>
+
+    <!-- Настройки -->
+    <preference name="MediaPlaybackRequiresUserAction" value="false" />
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
+    <preference name="AllowInlineMediaPlayback" value="true" />
+    <preference name="InAppBrowserStorageEnabled" value="true" />
+    <preference name="EnableViewportScale" value="true" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    <preference name="FadeSplashScreenDuration" value="300" />
+    <preference name="SplashScreenDelay" value="1000" />
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
+    <!-- !!! -->
+    <!-- УСТАНАВЛИВАЕМ максимально совместимую версию target SDK -->
+    <preference name="android-targetSdkVersion" value="33" />
+    <preference name="android-compileSdkVersion" value="33" />
+    <preference name="android-minSdkVersion" value="24" />
+
+    <!-- Плагины -->
+    <plugin name="cordova-plugin-console" spec="1.1.0" />
+    <plugin name="cordova-custom-config" spec="5.1.1" />
+    <plugin name="cordova-plugin-android-permissions" spec="1.1.0" />
+    <plugin name="cordova-plugin-file" spec="6.0.2" />
+    <plugin name="cordova-plugin-media-capture" spec="3.0.3" />
+    <plugin name="cordova-plugin-websocket" spec="0.12.2" />
+    <plugin name="cordova-plugin-iosrtc" spec="git+https://github.com/BasqueVoIPMafia/cordova-plugin-iosrtc.git" />
+
+</widget>

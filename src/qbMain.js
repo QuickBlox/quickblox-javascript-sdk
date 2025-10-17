@@ -9,6 +9,10 @@
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
 const MessageProxy = require("./modules/chat/qbMessage");
+const Chat = require("./modules/chat/qbChat");
+const DialogProxy = require("./modules/chat/qbDialog");
+const WebRTCClient = require("./modules/webrtc/qbWebRTCClient");
+const PushNotifications = require("./modules/qbPushNotifications");
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -93,6 +97,10 @@ QuickBlox.prototype = {
         } else {
             this.webrtc = false;
         }
+        this._initReady = Promise.resolve();
+        var initBlockOnSettings = (typeof config.initBlockOnSettings === 'boolean') ? config.initBlockOnSettings : true;
+        var initBlockDurationMs = (typeof config.initBlockDurationMs === 'number') ? config.initBlockDurationMs : 3000;
+
 
         // Initialization by outside token
         if (typeof appIdOrToken === 'string' && (!authKeyOrAppId || typeof authKeyOrAppId === 'number') && !authSecret) {
@@ -120,21 +128,148 @@ QuickBlox.prototype = {
                 config.urls.account,
                 config.urls.type
             ].join('');
+
+            // generic function to capture (extract) listeners
+            var preserveListeners = function (obj) {
+                var map = {};
+                if (!obj) return map;
+                Object.keys(obj).forEach(function (k) {
+                    if (/^on[A-Z]/.test(k) && typeof obj[k] === 'function') {
+                        map[k] = obj[k];
+                    }
+                });
+                return map;
+            };
+
+            // restore
+            var reassignListeners = function (target, map) {
+                if (!target || !map) return;
+                Object.keys(map).forEach(function (k) {
+                    target[k] = map[k];
+                });
+            };
+
             // account settings
-            this.service.ajax({
-                url: accountSettingsUrl
-            }, function (err, response) {
-                if (!err && typeof response === 'object') {
-                    var update = {
-                        endpoints: {
-                            api: response.api_endpoint.replace(/^https?:\/\//, ''),
-                            chat: response.chat_endpoint
+            var self = this;
+            //
+            this._initReady = new Promise(function(resolve) {
+                self.service.ajax({ url: accountSettingsUrl }, function (err, response) {
+                    // resolve in any case (so legacy clients won’t hang)
+                    if (!err && typeof response === 'object') {
+                        // 1) apply endpoints
+                        var update = {
+                            endpoints: {
+                                api:  response.api_endpoint.replace(/^https?:\/\//, ''),
+                                chat: response.chat_endpoint
+                            }
+                        };
+                        config.set(update);
+
+                        // 2) preserve ALL previously assigned listeners (dynamically)
+                        var savedChatListeners   = preserveListeners(self.chat);
+                        var savedWebRTCListeners = preserveListeners(self.webrtc);
+
+                        // 3) re-create dependent components for the new endpoints
+                        self.pushnotifications = new PushNotifications(self.service);
+                        self.chat = new Chat(self.service);
+                        self.chat.dialog = new DialogProxy(self.service);
+                        self.chat.message = new MessageProxy(self.service);
+
+                        if (Utils.getEnv().browser) {
+                            require('webrtc-adapter');
+                            if (Utils.isWebRTCAvailble()) {
+                                var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+                                self.webrtc = new WebRTCClient(self.service, self.chat);
+                            } else {
+                                self.webrtc = false;
+                            }
+                        } else {
+                            self.webrtc = false;
                         }
-                    };
-                    config.set(update);
-                }
+
+                        // 4) reattach listeners to the new instances
+                        reassignListeners(self.chat,   savedChatListeners);
+                        reassignListeners(self.webrtc, savedWebRTCListeners);
+                    }
+
+                    resolve(); // init completed (with or without migration)
+                });
             });
+            //
+            // previous version with callback
+            // this.service.ajax({
+            //     url: accountSettingsUrl
+            // }, function (err, response) {
+            //     if (!err && typeof response === 'object') {
+            //         var update = {
+            //             endpoints: {
+            //                 api: response.api_endpoint.replace(/^https?:\/\//, ''),
+            //                 chat: response.chat_endpoint
+            //             }
+            //         };
+            //         config.set(update);
+            //         //
+            //         self.pushnotifications = new PushNotifications(self.service);
+            //         self.chat = new Chat(self.service);
+            //         self.chat.dialog = new DialogProxy(self.service);
+            //         self.chat.message = new MessageProxy(self.service);
+            //         //
+            //         if (Utils.getEnv().browser) {
+            //             /** add adapter.js*/
+            //             require('webrtc-adapter');
+            //
+            //             /** add WebRTC API if API is avaible */
+            //             if( Utils.isWebRTCAvailble() ) {
+            //                 var WebRTCClient = require('./modules/webrtc/qbWebRTCClient');
+            //                 self.webrtc = new WebRTCClient(self.service, self.chat);
+            //             } else {
+            //                 self.webrtc = false;
+            //             }
+            //         } else {
+            //             self.webrtc = false;
+            //         }
+            //         //
+            //     }
+            // });
+            //
         }
+        //
+        // --- artificial sync delay to increase the chance account_settings completes before legacy code continues
+        // enabled only when shouldGetSettings && config.initBlockOnSettings !== false
+        if (shouldGetSettings && initBlockOnSettings) {
+            try {
+                var __qb_init_block_until__ = Date.now() + initBlockDurationMs;
+                while (Date.now() < __qb_init_block_until__) {
+                    // intentional busy-wait (do not remove)
+                }
+            } catch (_) { /* never throw from here */ }
+        }
+        //
+
+    },
+
+    /**
+     * Wait until SDK async initialization finishes (if any).
+     * It resolves after internal tasks like fetching `account_settings`,
+     * rebinding endpoints, and re-instantiating dependent modules are completed.
+     * If no async work was scheduled during `QB.init(...)`, it resolves immediately.
+     *
+     * @memberof QB
+     * @returns {Promise<void>} A promise that resolves when initialization is complete.
+     *
+     * @example
+     * QB.init(appId, authKey, authSecret, accountKey, config);
+     * QB.ready().then(function () {
+     *   // Safe point: endpoints are updated, chat/webrtc are re-created, listeners preserved.
+     *   QB.startSession({ login: 'john', password: 'secret' }, function (err, res) {
+     *     if (!err) {
+     *       QB.chat.connect({ userId: res.user.id, password: res.session.token }, function(){});
+     *     }
+     *   });
+     * });
+     */
+    ready: function() {
+        return this._initReady || Promise.resolve();
     },
 
     /**

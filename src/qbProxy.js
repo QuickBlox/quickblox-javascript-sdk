@@ -276,13 +276,58 @@ ServiceProxy.prototype = {
 
                 self.handleResponse(null, body, callback, retry);
             }
+            // if (self._fetchingSettings) {
+            //     self._fetchingSettings = false;
+            //     while (self._queue.length) {
+            //         var args = self._queue.shift();
+            //         self.ajax.apply(self, args);
+            //     }
+            // }
+            //
             if (self._fetchingSettings) {
                 self._fetchingSettings = false;
+
+                var sharedApiHost  =  'api.quickblox.com';
+                var sharedChatHost = 'chat.quickblox.com';
+
+                sharedApiHost  = sharedApiHost.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+                sharedChatHost = sharedChatHost.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+
+                var RE_SHARED_API  = new RegExp('^https?://' + sharedApiHost.replace(/\./g, '\\.') + '(?=[:/]|$)', 'i');
+                var RE_SHARED_CHAT = new RegExp('^https?://' + sharedChatHost.replace(/\./g, '\\.') + '(?=[:/]|$)', 'i');
+
+                var newApiHost  = (self.qbInst.config.endpoints.api  || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+                var newChatHost = (self.qbInst.config.endpoints.chat || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+                var NEW_API_URL  = 'https://' + newApiHost;
+                var NEW_CHAT_URL = 'https://' + newChatHost;
+
                 while (self._queue.length) {
-                    var args = self._queue.shift();
+                    var args = self._queue.shift();   // [params, callback]
+                    var p = args && args[0];
+
+                    if (p && typeof p.url === 'string') {
+                        var url = p.url;
+                        var changed = false;
+
+                        if (RE_SHARED_API.test(url)) {
+                            url = url.replace(RE_SHARED_API, NEW_API_URL);
+                            changed = true;
+                        }
+                        if (RE_SHARED_CHAT.test(url)) {
+                            url = url.replace(RE_SHARED_CHAT, NEW_CHAT_URL);
+                            changed = true;
+                        }
+
+                        if (changed) {
+                            p.url = url;
+                        }
+                    }
+
                     self.ajax.apply(self, args);
                 }
             }
+
+            //
         }
 
         function retry(session) {

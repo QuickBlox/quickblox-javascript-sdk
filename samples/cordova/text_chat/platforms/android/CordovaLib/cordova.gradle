@@ -18,7 +18,7 @@
 */
 
 import java.util.regex.Pattern
-import groovy.swing.SwingBuilder
+import io.github.g00fy2.versioncompare.Version
 
 String doEnsureValueExists(filePath, props, key) {
     if (props.get(key) == null) {
@@ -29,68 +29,69 @@ String doEnsureValueExists(filePath, props, key) {
 
 String doGetProjectTarget() {
     def props = new Properties()
-    file('project.properties').withReader { reader ->
+    def propertiesFile = 'project.properties';
+    if(!(file(propertiesFile).exists())) {
+      propertiesFile = '../project.properties';
+    }
+    file(propertiesFile).withReader { reader ->
         props.load(reader)
     }
     return doEnsureValueExists('project.properties', props, 'target')
 }
 
-String[] getAvailableBuildTools() {
-    def buildToolsDir = new File(getAndroidSdkDir(), "build-tools")
-    buildToolsDir.list()
-        .findAll { it ==~ /[0-9.]+/ }
-        .sort { a, b -> compareVersions(b, a) }
+Boolean isVersionValid(version) {
+    return !(new Version(version)).isEqual('0.0.0')
 }
 
-String doFindLatestInstalledBuildTools(String minBuildToolsVersion) {
-    def availableBuildToolsVersions
+Boolean isVersionGreaterThanEqual(versionX, versionY) {
+    return (new Version(versionX)) >= (new Version(versionY))
+}
+
+String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
+    def buildToolsDirContents
     try {
-        availableBuildToolsVersions = getAvailableBuildTools()
+        def buildToolsDir = new File(getAndroidSdkDir(), "build-tools")
+        buildToolsDirContents = buildToolsDir.list()
     } catch (e) {
         println "An exception occurred while trying to find the Android build tools."
         throw e
     }
-    if (availableBuildToolsVersions.length > 0) {
-        def highestBuildToolsVersion = availableBuildToolsVersions[0]
-        if (compareVersions(highestBuildToolsVersion, minBuildToolsVersion) < 0) {
-            throw new RuntimeException(
-                "No usable Android build tools found. Highest installed version is " +
-                highestBuildToolsVersion + "; minimum version required is " +
-                minBuildToolsVersion + ".")
-        }
-        highestBuildToolsVersion
-    } else {
-        throw new RuntimeException(
-            "No installed build tools found. Install the Android build tools version " +
-            minBuildToolsVersion + " or higher.")
+
+    def minBuildToolsVersion = new Version(minBuildToolsVersionString)
+    def maxVersion = new Version((minBuildToolsVersion.getMajor() + 1) + ".0.0")
+
+    def highestBuildToolsVersion = buildToolsDirContents
+        .collect { new Version(it) }
+        // Invalid inputs will be handled as 0.0.0
+        .findAll { it.isHigherThan('0.0.0') && it.isLowerThan(maxVersion) }
+        .max()
+
+    if (highestBuildToolsVersion == null) {
+        throw new RuntimeException("""
+            No installed build tools found. Please install the Android build tools
+            version ${minBuildToolsVersionString}.
+        """.replaceAll(/\s+/, ' ').trim())
     }
-}
 
-// Return the first non-zero result of subtracting version list elements
-// pairwise. If they are all identical, return the difference in length of
-// the two lists.
-int compareVersionList(Collection aParts, Collection bParts) {
-    def pairs = ([aParts, bParts]).transpose()
-    pairs.findResult(aParts.size()-bParts.size()) {it[0] - it[1] != 0 ? it[0] - it[1] : null}
-}
+    if (highestBuildToolsVersion.isLowerThan(minBuildToolsVersionString)) {
+        throw new RuntimeException("""
+            No usable Android build tools found. Highest ${minBuildToolsVersion.getMajor()}.x installed version is
+            ${highestBuildToolsVersion.getOriginalString()}; Recommended version
+            is ${minBuildToolsVersionString}.
+        """.replaceAll(/\s+/, ' ').trim())
+    }
 
-// Compare two version strings, such as "19.0.0" and "18.1.1.0". If all matched
-// elements are identical, the longer version is the largest by this method.
-// Examples:
-//   "19.0.0" > "19"
-//   "19.0.1" > "19.0.0"
-//   "19.1.0" > "19.0.1"
-//   "19" > "18.999.999"
-int compareVersions(String a, String b) {
-    def aParts = a.tokenize('.').collect {it.toInteger()}
-    def bParts = b.tokenize('.').collect {it.toInteger()}
-    compareVersionList(aParts, bParts)
+    highestBuildToolsVersion.getOriginalString()
 }
 
 String getAndroidSdkDir() {
     def rootDir = project.rootDir
     def androidSdkDir = null
     String envVar = System.getenv("ANDROID_HOME")
+    if (envVar == null) {
+        envVar = System.getenv("ANDROID_SDK_ROOT")
+    }
+
     def localProperties = new File(rootDir, 'local.properties')
     String systemProperty = System.getProperty("android.home")
     if (envVar != null) {
@@ -128,40 +129,8 @@ def doExtractIntFromManifest(name) {
     return new BigInteger(matcher.group(1))
 }
 
-def doExtractStringFromManifest(name) {
-    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
-    def pattern = Pattern.compile(name + "=\"(\\S+)\"")
-    def matcher = pattern.matcher(manifestFile.getText())
-    matcher.find()
-    return matcher.group(1)
-}
-
-def doPromptForPassword(msg) {
-    if (System.console() == null) {
-        def ret = null
-        new SwingBuilder().edt {
-            dialog(modal: true, title: 'Enter password', alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true) {
-                vbox {
-                    label(text: msg)
-                    def input = passwordField()
-                    button(defaultButton: true, text: 'OK', actionPerformed: {
-                        ret = input.password;
-                        dispose();
-                    })
-                }
-            }
-        }
-        if (!ret) {
-            throw new GradleException('User canceled build')
-        }
-        return new String(ret)
-    } else {
-        return System.console().readPassword('\n' + msg);
-    }
-}
-
 def doGetConfigXml() {
-    def xml = file("res/xml/config.xml").getText()
+    def xml = file("src/main/res/xml/config.xml").getText()
     // Disable namespace awareness since Cordova doesn't use them properly
     return new XmlParser(false, false).parseText(xml)
 }
@@ -180,15 +149,84 @@ def doGetConfigPreference(name, defaultValue) {
     return ret
 }
 
+def doApplyCordovaConfigCustomization() {
+    // Apply user override properties that comes from the "--gradleArg=-P" parameters
+    if (project.hasProperty('cdvMinSdkVersion')) {
+        cordovaConfig.MIN_SDK_VERSION = Integer.parseInt('' + cdvMinSdkVersion)
+    }
+    if (project.hasProperty('cdvSdkVersion')) {
+        cordovaConfig.SDK_VERSION = Integer.parseInt('' + cdvSdkVersion)
+    }
+    if (project.hasProperty('cdvCompileSdkVersion')) {
+        cordovaConfig.COMPILE_SDK_VERSION = Integer.parseInt('' + cdvCompileSdkVersion)
+    }
+    if (project.hasProperty('cdvMaxSdkVersion')) {
+        cordovaConfig.MAX_SDK_VERSION = Integer.parseInt('' + cdvMaxSdkVersion)
+    }
+    if (project.hasProperty('cdvBuildToolsVersion')) {
+        cordovaConfig.BUILD_TOOLS_VERSION = cdvBuildToolsVersion
+    }
+    if (project.hasProperty('cdvAndroidXAppCompatVersion')) {
+        cordovaConfig.ANDROIDX_APP_COMPAT_VERSION = cdvAndroidXAppCompatVersion
+    }
+    if (project.hasProperty('cdvAndroidXWebKitVersion')) {
+        cordovaConfig.ANDROIDX_WEBKIT_VERSION = cdvAndroidXWebKitVersion
+    }
+
+    if (!cordovaConfig.BUILD_TOOLS_VERSION) {
+        cordovaConfig.BUILD_TOOLS_VERSION = doFindLatestInstalledBuildTools(
+            cordovaConfig.MIN_BUILD_TOOLS_VERSION
+        )
+    }
+
+    // Ensure the configured build tools version is at least our declared minimum
+    def buildToolsVersion = new Version(cordovaConfig.BUILD_TOOLS_VERSION)
+    if (buildToolsVersion.isLowerThan(cordovaConfig.MIN_BUILD_TOOLS_VERSION)) {
+        throw new RuntimeException("""
+            Expected Android Build Tools version >= ${cordovaConfig.MIN_BUILD_TOOLS_VERSION},
+            but got Android Build Tools version ${cordovaConfig.BUILD_TOOLS_VERSION}. Please use version ${cordovaConfig.MIN_BUILD_TOOLS_VERSION} or later.
+        """.replaceAll(/\s+/, ' ').trim())
+    }
+}
+
+def doVerifyCordovaConfigForBuild() {
+    if (cordovaConfig.COMPILE_SDK_VERSION < cordovaConfig.SDK_VERSION) {
+        println "The \"compileSdkVersion\" (${cordovaConfig.COMPILE_SDK_VERSION}) should be greater than or equal to the the \"targetSdkVersion\" (${cordovaConfig.SDK_VERSION})."
+    }
+}
+
 // Properties exported here are visible to all plugins.
 ext {
+    def defaultsFilePath = './cdv-gradle-config-defaults.json'
+    def projectConfigFilePath = "$rootDir/cdv-gradle-config.json"
+    def targetConfigFilePath = null
+
+    /**
+     * Check if the project config file path exists. This file will exist if coming from CLI project.
+     * If this file does not exist, falls back onto the default file.
+     * This scenario can occur if building the framework's AAR package for publishing.
+     */
+    if(file(projectConfigFilePath).exists()) {
+        targetConfigFilePath = projectConfigFilePath
+    } else {
+        targetConfigFilePath = defaultsFilePath
+    }
+
+    def jsonFile = new File(targetConfigFilePath)
+    cordovaConfig = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+
+    if (cordovaConfig.COMPILE_SDK_VERSION == null) {
+        cordovaConfig.COMPILE_SDK_VERSION = cordovaConfig.SDK_VERSION
+    }
+
+    // Apply Gradle Properties
+    doApplyCordovaConfigCustomization()
+
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
     privateHelpers = {}
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
-    privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools('19.1.0') }
+    privateHelpers.applyCordovaConfigCustomization = { doApplyCordovaConfigCustomization() }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
-    privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
-    privateHelpers.promptForPassword = { msg -> doPromptForPassword(msg) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }
 
     // These helpers can be used by plugins / projects and will not change.
@@ -197,5 +235,17 @@ ext {
     cdvHelpers.getConfigXml = { doGetConfigXml() }
     // Returns the value for the desired <preference>. Added in 4.1.0.
     cdvHelpers.getConfigPreference = { name, defaultValue -> doGetConfigPreference(name, defaultValue) }
+    // Display warnings if any cordova config is not proper for build.
+    cdvHelpers.verifyCordovaConfigForBuild = { doVerifyCordovaConfigForBuild() }
 }
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'io.github.g00fy2:versioncompare:1.4.1@jar'
+    }
+}

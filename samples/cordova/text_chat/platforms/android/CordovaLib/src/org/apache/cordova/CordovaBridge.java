@@ -18,6 +18,8 @@
 */
 package org.apache.cordova;
 
+import android.annotation.SuppressLint;
+
 import java.security.SecureRandom;
 
 import org.json.JSONArray;
@@ -110,6 +112,8 @@ public class CordovaBridge {
     }
 
     /** Called by cordova.js to initialize the bridge. */
+    //On old Androids SecureRandom isn't really secure, this is the least of your problems if
+    //you're running Android 4.3 and below in 2017
     int generateBridgeSecret() {
         SecureRandom randGen = new SecureRandom();
         expectedBridgeSecret = randGen.nextInt(Integer.MAX_VALUE);
@@ -122,7 +126,7 @@ public class CordovaBridge {
     }
 
     public String promptOnJsPrompt(String origin, String message, String defaultValue) {
-        if (defaultValue != null && defaultValue.length() > 3 && defaultValue.startsWith("gap:")) {
+        if (defaultValue != null && defaultValue.startsWith("gap:")) {
             JSONArray array;
             try {
                 array = new JSONArray(defaultValue.substring(4));

@@ -1,12 +1,10 @@
 // @ts-ignore
-import {QBUIKitConfig} from "quickblox-react-ui-kit/dist/CommonTypes/CommonTypes";
-
 export const QBConfig: QBUIKitConfig = {
     credentials: {
-        appId: 75949,
-        accountKey: 'uK_8uinNyz8-npTNB6tx',
-        authKey: 'DdS7zxMEm5Q7DaS',
-        authSecret: 'g88RhdOjnDOqFkv',
+        appId: -1,
+        accountKey: '',
+        authKey: '',
+        authSecret: '',
         sessionToken: '',
     },
     configAIApi: {
@@ -129,6 +127,7 @@ export const QBConfig: QBUIKitConfig = {
         pingLocalhostTimeInterval: 0,
         chatReconnectionTimeInterval: 3,
         debug: true,
+        pingDebug: true,
         enableForwarding: true,
         enableReplying: true,
         showPublicDialogsInList: false,
@@ -137,11 +136,6 @@ export const QBConfig: QBUIKitConfig = {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
         },
-        // bot server endpoints:
-        // endpoints: {
-        //     api: 'apitest.quickblox.com',
-        //     chat: 'chattest.quickblox.com',
-        // },
         // on: {
         //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
         //     async sessionExpired(handleResponse: any, retry: any) {

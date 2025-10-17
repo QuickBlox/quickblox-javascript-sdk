@@ -16,35 +16,47 @@
    under the License.
 */
 
-
-
 buildscript {
-    repositories {
-        mavenCentral()
-    }
+    apply from: 'cordova.gradle'
+    apply from: 'repositories.gradle'
+
+    repositories repos
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        // Android Gradle Plugin (AGP) Build Tools
+        classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
     }
 
+    cdvHelpers.verifyCordovaConfigForBuild()
+}
+
+allprojects {
+    def hasRepositoriesGradle = file('repositories.gradle').exists()
+    if (hasRepositoriesGradle) {
+        apply from: 'repositories.gradle'
+    } else {
+        apply from: "${project.rootDir}/repositories.gradle"
+    }
+
+    repositories repos
 }
 
 apply plugin: 'com.android.library'
 
-ext {
-    apply from: 'cordova.gradle'
-    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
-    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
-}
-
 android {
-    compileSdkVersion cdvCompileSdkVersion
-    buildToolsVersion cdvBuildToolsVersion
-    publishNonDefault true
+    namespace 'org.apache.cordova'
+
+    compileSdkVersion cordovaConfig.COMPILE_SDK_VERSION
+    buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
+        sourceCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_SOURCE_COMPATIBILITY)
+        targetCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_TARGET_COMPATIBILITY)
+    }
+
+    // For the Android Cordova Lib, we allow changing the minSdkVersion, but it is at the users own risk
+    defaultConfig {
+        minSdkVersion cordovaConfig.MIN_SDK_VERSION
     }
 
     sourceSets {
@@ -58,4 +70,33 @@ android {
             assets.srcDirs = ['assets']
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+dependencies {
+    api "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
+    implementation "androidx.webkit:webkit:${cordovaConfig.ANDROIDX_WEBKIT_VERSION}"
+    implementation "androidx.core:core-splashscreen:${cordovaConfig.ANDROIDX_CORE_SPLASHSCREEN_VERSION}"
+}
+
+/**
+ * In a project created though CLI, the `cordova-publish.gradle` file is not copied to the `framework` dir.
+ * App development (CLI) projects can not and should not publish our framework.
+ * In this case, there is no need for the gradle build process to know about the publish process.
+ */
+def cordovaPublishGradle = './cordova-publish.gradle'
+if(file(cordovaPublishGradle).exists()) {
+    apply from: cordovaPublishGradle
 }

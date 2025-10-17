@@ -141,8 +141,13 @@ export declare interface QBConfig {
     ) => void
   }
   pingTimeout?: number
+  pingDebug?: boolean
   pingLocalhostTimeInterval?: number
   chatReconnectionTimeInterval?: number
+  /** If true, QB.init will do a short synchronous block after starting account_settings. Default: true. */
+  initBlockOnSettings?: boolean
+  /** Busy-wait duration in ms used when initBlockOnSettings=true. Default: 3000. */
+  initBlockDurationMs?: number
 }
 
 export declare interface QBError {
@@ -1635,6 +1640,13 @@ export class QuickBlox {
     accountKey: string,
     config?: QBConfig,
   ): void
+
+  /**
+     * Resolves when internal async initialization (e.g., fetching `account_settings`
+     * and rebinding endpoints) is finished. If no async work was scheduled during
+     * `init`, it resolves immediately.
+  */
+  ready(): Promise<void>
 
   /**
    * Init QuickBlox SDK with User Account data to start session with token

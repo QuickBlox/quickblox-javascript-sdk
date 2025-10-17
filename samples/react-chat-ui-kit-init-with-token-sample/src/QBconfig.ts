@@ -124,9 +124,12 @@ export const QBConfig = {
             active: 2,
         },
         debug: true,
+        pingDebug: true,
         enableForwarding: true,
         enableReplying: true,
         regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
+        showPublicDialogsInList: false,
+        allowPublicDialogCreation: false,
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',

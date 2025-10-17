@@ -20,7 +20,7 @@ cordova.define("cordova-plugin-websocket.websocket", function(require, exports, 
 /**
  * Cordova WebSocket Plugin for Android
  * @author KNOWLEDGECODE <knowledgecode@gmail.com>
- * @version 0.12.0
+ * @version 0.12.2
  */
 (function (window) {
     'use strict';
@@ -265,6 +265,10 @@ cordova.define("cordova-plugin-websocket.websocket", function(require, exports, 
     WebSocketPrototype.prototype.constructor = WebSocketPrototype;
     WebSocket.prototype = new WebSocketPrototype();
     WebSocket.prototype.constructor = WebSocket;
+    WebSocket.CONNECTING = 0;
+    WebSocket.OPEN = 1;
+    WebSocket.CLOSING = 2;
+    WebSocket.CLOSED = 3;
     WebSocket.pluginOptions = {};
     module.exports = WebSocket;
     window.addEventListener('message', taskQueue.listener, true);

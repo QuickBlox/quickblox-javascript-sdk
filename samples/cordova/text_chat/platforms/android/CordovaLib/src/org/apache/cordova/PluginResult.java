@@ -82,7 +82,7 @@ public class PluginResult {
         this.messageType = binaryString ? MESSAGE_TYPE_BINARYSTRING : MESSAGE_TYPE_ARRAYBUFFER;
         this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
     }
-    
+
     // The keepCallback and status of multipartMessages are ignored.
     public PluginResult(Status status, List<PluginResult> multipartMessages) {
         this.status = status.ordinal();
@@ -118,8 +118,7 @@ public class PluginResult {
     }
 
     /**
-     * If messageType == MESSAGE_TYPE_STRING, then returns the message string.
-     * Otherwise, returns null.
+     * @return message string when messageType is MESSAGE_TYPE_STRING otherwise null.
      */
     public String getStrMessage() {
         return strMessage;

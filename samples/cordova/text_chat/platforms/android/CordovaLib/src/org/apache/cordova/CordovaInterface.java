@@ -18,10 +18,10 @@
 */
 package org.apache.cordova;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
-import org.apache.cordova.CordovaPlugin;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.concurrent.ExecutorService;
 
@@ -51,10 +51,19 @@ public interface CordovaInterface {
     /**
      * Get the Android activity.
      *
+     * <p>If a custom engine lives outside of the Activity's lifecycle the return value
+     * may be null.</p>
+     *
      * @return the Activity
      */
-    public abstract Activity getActivity();
-    
+    public abstract AppCompatActivity getActivity();
+
+    /**
+     * Get the Android context.
+     *
+     * @return the Context
+     */
+    public Context getContext();
 
     /**
      * Called when a message is sent to plugin.
@@ -64,9 +73,9 @@ public interface CordovaInterface {
      * @return              Object or null
      */
     public Object onMessage(String id, Object data);
-    
+
     /**
-     * Returns a shared thread pool that can be used for background tasks.
+     * @return a shared thread pool that can be used for background tasks.
      */
     public ExecutorService getThreadPool();
 
@@ -81,7 +90,9 @@ public interface CordovaInterface {
     public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions);
 
     /**
-     * Check for a permission.  Returns true if the permission is granted, false otherwise.
+     * Check for a permission.
+     *
+     * @return true if the permission is granted, false otherwise.
      */
     public boolean hasPermission(String permission);
 

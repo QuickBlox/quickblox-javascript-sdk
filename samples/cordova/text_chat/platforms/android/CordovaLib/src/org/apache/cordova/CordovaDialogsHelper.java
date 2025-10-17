@@ -43,18 +43,21 @@ public class CordovaDialogsHelper {
         dlg.setCancelable(true);
         dlg.setPositiveButton(android.R.string.ok,
                 new AlertDialog.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         result.gotResult(true, null);
                     }
                 });
         dlg.setOnCancelListener(
                 new DialogInterface.OnCancelListener() {
+                    @Override
                     public void onCancel(DialogInterface dialog) {
                         result.gotResult(false, null);
                     }
                 });
         dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
             //DO NOTHING
+            @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK)
                 {
@@ -75,24 +78,28 @@ public class CordovaDialogsHelper {
         dlg.setCancelable(true);
         dlg.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         result.gotResult(true, null);
                     }
                 });
         dlg.setNegativeButton(android.R.string.cancel,
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         result.gotResult(false, null);
                     }
                 });
         dlg.setOnCancelListener(
                 new DialogInterface.OnCancelListener() {
+                    @Override
                     public void onCancel(DialogInterface dialog) {
                         result.gotResult(false, null);
                     }
                 });
         dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
             //DO NOTHING
+            @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK)
                 {
@@ -111,8 +118,8 @@ public class CordovaDialogsHelper {
      * If the client returns true, WebView will assume that the client will
      * handle the prompt dialog and call the appropriate JsPromptResult method.
      *
-     * Since we are hacking prompts for our own purposes, we should not be using them for
-     * this purpose, perhaps we should hack console.log to do this instead!
+     * <p>Since we are hacking prompts for our own purposes, we should not be using them for
+     * this purpose, perhaps we should hack console.log to do this instead!</p>
      */
     public void showPrompt(String message, String defaultValue, final Result result) {
         // Returning false would also show a dialog, but the default one shows the origin (ugly).
@@ -126,6 +133,7 @@ public class CordovaDialogsHelper {
         dlg.setCancelable(false);
         dlg.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String userText = input.getText().toString();
                         result.gotResult(true, userText);
@@ -133,6 +141,7 @@ public class CordovaDialogsHelper {
                 });
         dlg.setNegativeButton(android.R.string.cancel,
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         result.gotResult(false, null);
                     }

@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.20.0',
-  buildNumber: '1165',
+  version: '2.21.0',
+  buildNumber: '1167',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -35,6 +35,9 @@ var config = {
     active: 2
   },
   pingTimeout: 1,
+  pingDebug: false,
+  initBlockOnSettings: false,
+  initBlockDurationMs: 3000,
   pingLocalhostTimeInterval: 5,
   chatReconnectionTimeInterval: 3,
   webrtc: {

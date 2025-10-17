@@ -1,5 +1,4 @@
-import {QBUIKitConfig} from "quickblox-react-ui-kit/dist/CommonTypes/CommonTypes";
-
+// @ts-ignore
 export const QBConfig: QBUIKitConfig = {
     credentials: {
         appId: -1,
@@ -126,18 +125,16 @@ export const QBConfig: QBUIKitConfig = {
             active: 2,
         },
         debug: true,
+        pingDebug: true,
         enableForwarding: true,
         enableReplying: true,
         regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
+        showPublicDialogsInList: false,
+        allowPublicDialogCreation: false,
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',
         },
-        // bot server endpoints:
-        // endpoints: {
-        //     api: 'apitest.quickblox.com',
-        //     chat: 'chattest.quickblox.com',
-        // },
         // on: {
         //     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/require-await
         //     async sessionExpired(handleResponse: any, retry: any) {

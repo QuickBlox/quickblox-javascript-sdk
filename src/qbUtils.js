@@ -171,9 +171,68 @@ var Utils = {
     },
 
     QBLog: function(){
+        var argsArr = Array.prototype.slice.call(arguments);
+
+        function containsPing(x) {
+            var needle = 'ping';
+
+            try {
+                if (x == null) return false;
+
+                if (typeof x === 'string') {
+                    return x.toLowerCase().indexOf(needle) !== -1;
+                }
+
+                if (typeof x === 'number' || typeof x === 'boolean') {
+                    return false;
+                }
+
+                if (typeof x === 'object') {
+                    //DELETE XEP-0198 SM packages from log:
+                    // <r xmlns="urn:xmpp:sm:3"/> and <a xmlns="urn:xmpp:sm:3" h="..."/>
+                    if (typeof x.outerHTML === 'string') {
+                        var oh = x.outerHTML.replace(/\s+/g, ' ').toLowerCase();
+                        if (
+                            oh.indexOf('urn:xmpp:sm:3') !== -1 &&
+                            (/^<\s*r\b/.test(oh) || /^<\s*a\b/.test(oh))
+                        ) {
+                            return true;
+                        }
+                    }
+
+                    var candidates = [
+                        x.textContent,
+                        x.innerHTML,
+                        x.outerHTML,
+                        x.nodeName,
+                        x.tagName,
+                        x.id
+                    ];
+
+                    for (var j = 0; j < candidates.length; j++) {
+                        var s = candidates[j];
+                        if (typeof s === 'string' && s.toLowerCase().indexOf(needle) !== -1) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (_) {}
+
+            return false;
+        }
+
+
+        let shouldSuppressPing1 =
+            config && config.pingDebug === false;
+        let shouldSuppressPing2 =argsArr.some(containsPing);
+
+        let shouldSuppressPing = shouldSuppressPing1 && shouldSuppressPing2;
+
         if (this.loggers) {
             for (var i=0; i<this.loggers.length; ++i) {
-                this.loggers[i](arguments);
+                if (!shouldSuppressPing) {
+                   this.loggers[i](arguments);
+                }
             }
 
             return;
@@ -254,7 +313,12 @@ var Utils = {
 
         if(this.loggers){
             for(var j=0;j<this.loggers.length;++j){
-                this.loggers[j](arguments);
+                // this.loggers[j](arguments);
+                //
+                if (!shouldSuppressPing) {
+                    this.loggers[j](arguments);
+                }
+                //
             }
         }
     },
