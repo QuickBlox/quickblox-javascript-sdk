@@ -54154,9 +54154,14 @@ WebRTCSession.prototype._createPeer = function (userId, polite) {
 
     this.startCallTime = new Date();
 
-    var pcConfig = {
-        iceServers: config.webrtc.iceServers,
-    };
+    // var pcConfig = {
+    //     iceServers: config.webrtc.iceServers,
+    // };
+    const base = { iceServers: config.webrtc.iceServers };
+    const extra = (typeof config.webrtc.iceTransportPolicy === 'undefined') ? {}
+        : { iceTransportPolicy: config.webrtc.iceTransportPolicy };
+
+    const pcConfig = Object.assign({}, base, extra);
 
     Helpers.trace("_createPeer configuration: " + JSON.stringify(pcConfig));
 
@@ -54321,9 +54326,14 @@ WebRTCSession.prototype._reconnect = function (peerConnection, negotiate) {
 
     peerConnection.release();
 
-    var pcConfig = {
-        iceServers: config.webrtc.iceServers,
-    };
+    // var pcConfig = {
+    //     iceServers: config.webrtc.iceServers,
+    // };
+    const base = { iceServers: config.webrtc.iceServers };
+    const extra = (typeof config.webrtc.iceTransportPolicy === 'undefined') ? {}
+        : { iceTransportPolicy: config.webrtc.iceTransportPolicy };
+
+    const pcConfig = Object.assign({}, base, extra);
 
     Helpers.trace("_reconnect peer configuration: " + JSON.stringify(pcConfig));
 
@@ -54571,7 +54581,26 @@ module.exports = WebRTCSignalingConstants;
  * WebRTC Module (WebRTC signaling provider)
  */
 
-require('strophe.js');
+// require('strophe.js');
+// Try to load the UMD build that works with Node/CommonJS
+var __stropheMod;
+try {
+    __stropheMod = require('strophe.js/dist/strophe.umd.js');
+} catch (e) {
+    // Fallback: load default entry if the path above is not available
+    __stropheMod = require('strophe.js');
+}
+
+// Normalize possible export shapes
+// Strophe can be exported as { Strophe }, default, or the module itself
+var Strophe =
+    (__stropheMod && (__stropheMod.Strophe || __stropheMod.default || __stropheMod)) || undefined;
+
+// Basic guard: make sure the Connection class exists
+if (!Strophe || !Strophe.Connection) {
+    throw new Error('[QBChat] Strophe import failed: Connection class not found');
+}
+// ---------------------------------------------------------------------------
 
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
 
@@ -54721,7 +54750,7 @@ function WebRTCSignalingProcessor(service, delegate) {
 
 module.exports = WebRTCSignalingProcessor;
 
-},{"./qbWebRTCSignalingConstants":251,"strophe.js":211}],253:[function(require,module,exports){
+},{"./qbWebRTCSignalingConstants":251,"strophe.js":211,"strophe.js/dist/strophe.umd.js":211}],253:[function(require,module,exports){
 'use strict';
 
 /** JSHint inline rules */
@@ -54732,7 +54761,26 @@ module.exports = WebRTCSignalingProcessor;
  * WebRTC Module (WebRTC signaling processor)
  */
 
-require('strophe.js');
+// require('strophe.js');
+// Try to load the UMD build that works with Node/CommonJS
+var __stropheMod;
+try {
+    __stropheMod = require('strophe.js/dist/strophe.umd.js');
+} catch (e) {
+    // Fallback: load default entry if the path above is not available
+    __stropheMod = require('strophe.js');
+}
+
+// Normalize possible export shapes
+// Strophe can be exported as { Strophe }, default, or the module itself
+var Strophe =
+    (__stropheMod && (__stropheMod.Strophe || __stropheMod.default || __stropheMod)) || undefined;
+
+// Basic guard: make sure the Connection class exists
+if (!Strophe || !Strophe.Connection) {
+    throw new Error('[QBChat] Strophe import failed: Connection class not found');
+}
+// ---------------------------------------------------------------------------
 
 var Helpers = require('./qbWebRTCHelpers');
 var SignalingConstants = require('./qbWebRTCSignalingConstants');
@@ -54828,7 +54876,7 @@ WebRTCSignalingProvider.prototype._JStoXML = function (title, obj, msg) {
 
 module.exports = WebRTCSignalingProvider;
 
-},{"../../qbConfig":255,"../../qbUtils":259,"./qbWebRTCHelpers":249,"./qbWebRTCSignalingConstants":251,"strophe.js":211}],254:[function(require,module,exports){
+},{"../../qbConfig":255,"../../qbUtils":259,"./qbWebRTCHelpers":249,"./qbWebRTCSignalingConstants":251,"strophe.js":211,"strophe.js/dist/strophe.umd.js":211}],254:[function(require,module,exports){
 'use strict';
 
 /**
@@ -55080,8 +55128,8 @@ module.exports = StreamManagement;
  */
 
 var config = {
-  version: '2.21.0',
-  buildNumber: '1167',
+  version: '2.21.3',
+  buildNumber: '1169',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -55115,6 +55163,12 @@ var config = {
     dialingTimeInterval: 5,
     disconnectTimeInterval: 30,
     statsReportTimeInterval: false,
+    /**
+     * ICE transport policy.
+     * If undefined -> do not pass this option into RTCPeerConnection.
+     * Allowed values when set: "all" | "relay".
+     */
+    iceTransportPolicy: undefined,
     iceServers: [
       {
         urls: ['turn:turn.quickblox.com', 'stun:turn.quickblox.com'],
@@ -55153,32 +55207,48 @@ var config = {
   callBackInterval: 30,
 };
 
-config.set = function(options) {
-  if (typeof options.endpoints === 'object' && options.endpoints.chat) {
-    config.endpoints.muc = 'muc.'+options.endpoints.chat;
-    config.chatProtocol.bosh = 'https://'+options.endpoints.chat+':5281';
-    config.chatProtocol.websocket = 'wss://'+options.endpoints.chat+':5291';
-  }
-
-  Object.keys(options).forEach(function(key) {
-    if(key !== 'set' && config.hasOwnProperty(key)) {
-      if(typeof options[key] !== 'object') {
-        config[key] = options[key];
-      } else {
-        Object.keys(options[key]).forEach(function(nextkey) {
-          if(config[key].hasOwnProperty(nextkey)){
-            config[key][nextkey] = options[key][nextkey];
-          }
-        });
-      }
+config.set = function (options) {
+    // Update chat endpoints (same behavior as before)
+    if (typeof options.endpoints === 'object' && options.endpoints.chat) {
+        config.endpoints.muc = 'muc.' + options.endpoints.chat;
+        config.chatProtocol.bosh = 'https://' + options.endpoints.chat + ':5281';
+        config.chatProtocol.websocket = 'wss://' + options.endpoints.chat + ':5291';
     }
 
-    // backward compatibility: for config.iceServers
-    if(key === 'iceServers') {
-      config.webrtc.iceServers = options[key];
-    }
-  });
+    // Shallow merge: copy only known keys; skip undefined values
+    Object.keys(options).forEach(function (key) {
+        if (key !== 'set' && Object.prototype.hasOwnProperty.call(config, key)) {
+            if (typeof options[key] !== 'object' || options[key] === null) {
+                // Primitive or null: assign as is
+                if (typeof options[key] !== 'undefined') {
+                    config[key] = options[key];
+                }
+            } else {
+                // Object: copy only known subkeys; skip undefined values
+                Object.keys(options[key]).forEach(function (nextkey) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(config[key], nextkey) &&
+                        typeof options[key][nextkey] !== 'undefined'
+                    ) {
+                        config[key][nextkey] = options[key][nextkey];
+                    }
+                });
+            }
+        }
+
+        // Backward compatibility: allow top-level iceServers
+        if (key === 'iceServers' && typeof options[key] !== 'undefined') {
+            config.webrtc.iceServers = options[key];
+        }
+
+        // Backward compatibility: allow top-level iceTransportPolicy
+        if (key === 'iceTransportPolicy' && typeof options[key] !== 'undefined') {
+            // Allowed values when set: "all" | "relay"
+            config.webrtc.iceTransportPolicy = options[key];
+        }
+    });
 };
+
 
 config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasToken = false) {
   var connectionTimeLag = 1; // minute
@@ -55210,11 +55280,11 @@ module.exports = config;
  */
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-const MessageProxy = require("./modules/chat/qbMessage");
-const Chat = require("./modules/chat/qbChat");
-const DialogProxy = require("./modules/chat/qbDialog");
-const WebRTCClient = require("./modules/webrtc/qbWebRTCClient");
-const PushNotifications = require("./modules/qbPushNotifications");
+// const MessageProxy = require("./modules/chat/qbMessage");
+// const Chat = require("./modules/chat/qbChat");
+// const DialogProxy = require("./modules/chat/qbDialog");
+// const WebRTCClient = require("./modules/webrtc/qbWebRTCClient");
+// const PushNotifications = require("./modules/qbPushNotifications");
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}
@@ -55970,11 +56040,35 @@ module.exports = ServiceProxy;
  * Strophe Connection Object
  */
 
-require('strophe.js');
+// require('strophe.js');
+
+// ---- Strophe import (UMD-first with safe fallback) -------------------------
+// Try to load the UMD build that works with Node/CommonJS
+var __stropheMod;
+try {
+    __stropheMod = require('strophe.js/dist/strophe.umd.js');
+} catch (e) {
+    // Fallback: load default entry if the path above is not available
+    __stropheMod = require('strophe.js');
+}
+
+// Normalize possible export shapes
+// Strophe can be exported as { Strophe }, default, or the module itself
+var Strophe =
+    (__stropheMod && (__stropheMod.Strophe || __stropheMod.default || __stropheMod)) || undefined;
+
+// Basic guard: make sure the Connection class exists
+if (!Strophe || !Strophe.Connection) {
+    throw new Error('[QBChat] Strophe import failed: Connection class not found');
+}
+// ---------------------------------------------------------------------------
 
 var config = require('./qbConfig');
 var chatPRTCL = config.chatProtocol;
 var Utils = require('./qbUtils');
+
+
+
 
 function Connection(onLogListenerCallback) {
     var protocol = chatPRTCL.active === 1 ? chatPRTCL.bosh : chatPRTCL.websocket;
@@ -56039,7 +56133,7 @@ function Connection(onLogListenerCallback) {
 
 module.exports = Connection;
 
-},{"./qbConfig":255,"./qbUtils":259,"strophe.js":211}],259:[function(require,module,exports){
+},{"./qbConfig":255,"./qbUtils":259,"strophe.js":211,"strophe.js/dist/strophe.umd.js":211}],259:[function(require,module,exports){
 (function (global){(function (){
 /* eslint no-console: 2 */
 

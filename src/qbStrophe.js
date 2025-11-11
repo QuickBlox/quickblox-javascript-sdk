@@ -7,11 +7,35 @@
  * Strophe Connection Object
  */
 
-require('strophe.js');
+// require('strophe.js');
+
+// ---- Strophe import (UMD-first with safe fallback) -------------------------
+// Try to load the UMD build that works with Node/CommonJS
+var __stropheMod;
+try {
+    __stropheMod = require('strophe.js/dist/strophe.umd.js');
+} catch (e) {
+    // Fallback: load default entry if the path above is not available
+    __stropheMod = require('strophe.js');
+}
+
+// Normalize possible export shapes
+// Strophe can be exported as { Strophe }, default, or the module itself
+var Strophe =
+    (__stropheMod && (__stropheMod.Strophe || __stropheMod.default || __stropheMod)) || undefined;
+
+// Basic guard: make sure the Connection class exists
+if (!Strophe || !Strophe.Connection) {
+    throw new Error('[QBChat] Strophe import failed: Connection class not found');
+}
+// ---------------------------------------------------------------------------
 
 var config = require('./qbConfig');
 var chatPRTCL = config.chatProtocol;
 var Utils = require('./qbUtils');
+
+
+
 
 function Connection(onLogListenerCallback) {
     var protocol = chatPRTCL.active === 1 ? chatPRTCL.bosh : chatPRTCL.websocket;

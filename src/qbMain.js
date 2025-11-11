@@ -8,11 +8,11 @@
  */
 var config = require('./qbConfig');
 var Utils = require('./qbUtils');
-const MessageProxy = require("./modules/chat/qbMessage");
-const Chat = require("./modules/chat/qbChat");
-const DialogProxy = require("./modules/chat/qbDialog");
-const WebRTCClient = require("./modules/webrtc/qbWebRTCClient");
-const PushNotifications = require("./modules/qbPushNotifications");
+// const MessageProxy = require("./modules/chat/qbMessage");
+// const Chat = require("./modules/chat/qbChat");
+// const DialogProxy = require("./modules/chat/qbDialog");
+// const WebRTCClient = require("./modules/webrtc/qbWebRTCClient");
+// const PushNotifications = require("./modules/qbPushNotifications");
 
 // Actual QuickBlox API starts here
 function QuickBlox() {}

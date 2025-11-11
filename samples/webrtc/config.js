@@ -37,7 +37,7 @@
             answerTimeInterval: 30,
             dialingTimeInterval: 5,
             disconnectTimeInterval: 30,
-            statsReportTimeInterval: false
+            statsReportTimeInterval: 5
         }
     };
 

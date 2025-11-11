@@ -798,20 +798,116 @@
             console.log('onReconnectFailedListener.');
         };
 
+        // QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
+        //     console.group('onCallStatsReport');
+        //     console.log('userId: ', userId);
+        //     console.log('session: ', session);
+        //     console.log('stats: ', stats);
+        //     console.groupEnd();
+        //
+        //     if (stats.remote.video.bitrate) {
+        //         $('#bitrate_' + userId).text('video bitrate: ' + stats.remote.video.bitrate);
+        //     } else if (stats.remote.audio.bitrate) {
+        //         $('#bitrate_' + userId).text('audio bitrate: ' + stats.remote.audio.bitrate);
+        //     }
+        //     QB.chat.ping(console.log);
+        // };
         QB.webrtc.onCallStatsReport = function onCallStatsReport(session, userId, stats, error) {
+            // ---- helpers --------------------------------------------------------------
+            // Safe list of keys
+            function keys(obj) {
+                return obj && typeof obj === 'object' ? Object.keys(obj) : [];
+            }
+            // Recursively collect "dot paths" of all keys
+            function collectKeys(obj, prefix) {
+                if (!obj || typeof obj !== 'object') return [];
+                const out = [];
+                for (const k of Object.keys(obj)) {
+                    const path = prefix ? prefix + '.' + k : k;
+                    out.push(path);
+                    out.push.apply(out, collectKeys(obj[k], path));
+                }
+                return out;
+            }
+            // Safe read with fallback
+            function get(obj, path, fallback) {
+                try {
+                    return path.split('.').reduce((a, p) => (a == null ? a : a[p]), obj) ?? fallback;
+                } catch (_) {
+                    return fallback;
+                }
+            }
+            // ---------------------------------------------------------------------------
+
             console.group('onCallStatsReport');
-            console.log('userId: ', userId);
-            console.log('session: ', session);
-            console.log('stats: ', stats);
+
+            console.log('userId:', userId);
+            console.log('session:', session);
+
+            // Top-level keys
+            console.log('stats keys:', keys(stats));
+
+            // Common nested blocks (print keys if present)
+            console.log('remote keys:', keys(get(stats, 'remote', null)));
+            console.log('remote.audio keys:', keys(get(stats, 'remote.audio', null)));
+            console.log('remote.video keys:', keys(get(stats, 'remote.video', null)));
+            console.log('local keys:', keys(get(stats, 'local', null)));
+            console.log('transport keys:', keys(get(stats, 'transport', null)));
+
+            // Full recursive key list (dot paths)
+            const allKeyPaths = collectKeys(stats, '');
+            console.log('ALL KEY PATHS:', allKeyPaths);
+
+            // Compact snapshot of frequently used fields
+            const summary = {
+                remote: {
+                    audio: {
+                        bitrate: get(stats, 'remote.audio.bitrate', null),
+                        jitter: get(stats, 'remote.audio.jitter', null),
+                        packetsLost: get(stats, 'remote.audio.packetsLost', null),
+                        packetsReceived: get(stats, 'remote.audio.packetsReceived', null),
+                        framesPerSecond: get(stats, 'remote.audio.framesPerSecond', null),
+                    },
+                    video: {
+                        bitrate: get(stats, 'remote.video.bitrate', null),
+                        jitter: get(stats, 'remote.video.jitter', null),
+                        packetsLost: get(stats, 'remote.video.packetsLost', null),
+                        packetsReceived: get(stats, 'remote.video.packetsReceived', null),
+                        framesPerSecond: get(stats, 'remote.video.framesPerSecond', null),
+                        frameWidth: get(stats, 'remote.video.frameWidth', null),
+                        frameHeight: get(stats, 'remote.video.frameHeight', null),
+                    },
+                },
+                transport: {
+                    rtt: get(stats, 'transport.rtt', get(stats, 'rtt', null)),
+                    availableOutgoingBitrate: get(stats, 'transport.availableOutgoingBitrate', null),
+                    availableIncomingBitrate: get(stats, 'transport.availableIncomingBitrate', null),
+                },
+            };
+            console.log('summary:', summary);
+
+            // Raw stats (keep as before)
+            console.log('raw stats:', stats);
+
+            if (error) {
+                console.log('error:', error);
+            }
+
             console.groupEnd();
 
-            if (stats.remote.video.bitrate) {
-                $('#bitrate_' + userId).text('video bitrate: ' + stats.remote.video.bitrate);
-            } else if (stats.remote.audio.bitrate) {
-                $('#bitrate_' + userId).text('audio bitrate: ' + stats.remote.audio.bitrate);
+            // Keep previous UI updates
+            const vBitrate = get(stats, 'remote.video.bitrate', null);
+            const aBitrate = get(stats, 'remote.audio.bitrate', null);
+            if (vBitrate != null) {
+                $('#bitrate_' + userId).text('video bitrate: ' + vBitrate);
+            } else if (aBitrate != null) {
+                $('#bitrate_' + userId).text('audio bitrate: ' + aBitrate);
             }
+
+            // Keep ping as before
             QB.chat.ping(console.log);
         };
+
 
         QB.webrtc.onSessionCloseListener = function onSessionCloseListener(session){
             console.log('onSessionCloseListener: ', session);

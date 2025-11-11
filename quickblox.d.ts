@@ -115,7 +115,13 @@ export declare interface QBConfig {
      * Allows access to the statistical information about peer connection state (connected, failed, disconnected, etc).
      * Set the number of seconds for the statistical information to be received.
      */
-    statsReportTimeInterval?: boolean
+    statsReportTimeInterval?: boolean | number
+    /**
+     * Transport policy for ICE candidate gathering.
+     * Mirrors RTCPeerConnection. Allowed: "all" | "relay".
+     * When "relay", only TURN-relayed candidates will be used.
+     */
+    iceTransportPolicy?: 'all' | 'relay'
     /**
      * You can customize a list of ICE servers. By default,
      * WebRTC module will use internal ICE servers that are usually enough,
@@ -268,7 +274,7 @@ export declare interface ChatMessageAttachment {
   duration?: string | number
   /* Custom parameters. Useful for storing metadata of attachment */
   data?: string
-  [key: string]: string | undefined
+  [key: string]: string | number | undefined
 }
 
 declare enum QBChatDialogType {
@@ -411,7 +417,7 @@ export declare interface QBChatXMPPMessage {
         date_sent: string
         save_to_history: string
         attachments?: ChatMessageAttachment[]
-        [custom_field_N: string]: string | ChatMessageAttachment[]
+        [custom_field_N: string]: string
     }
 }
 
@@ -1326,6 +1332,7 @@ export declare interface QBWebRTCModule {
     session: QBWebRTCSession,
     userId: QBUser['id'],
     stats: any,
+    error?: unknown,
   ) => void
   onRejectCallListener?: (
     session: QBWebRTCSession,

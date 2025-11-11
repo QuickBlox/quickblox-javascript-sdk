@@ -901,9 +901,14 @@ WebRTCSession.prototype._createPeer = function (userId, polite) {
 
     this.startCallTime = new Date();
 
-    var pcConfig = {
-        iceServers: config.webrtc.iceServers,
-    };
+    // var pcConfig = {
+    //     iceServers: config.webrtc.iceServers,
+    // };
+    const base = { iceServers: config.webrtc.iceServers };
+    const extra = (typeof config.webrtc.iceTransportPolicy === 'undefined') ? {}
+        : { iceTransportPolicy: config.webrtc.iceTransportPolicy };
+
+    const pcConfig = Object.assign({}, base, extra);
 
     Helpers.trace("_createPeer configuration: " + JSON.stringify(pcConfig));
 
@@ -1068,9 +1073,14 @@ WebRTCSession.prototype._reconnect = function (peerConnection, negotiate) {
 
     peerConnection.release();
 
-    var pcConfig = {
-        iceServers: config.webrtc.iceServers,
-    };
+    // var pcConfig = {
+    //     iceServers: config.webrtc.iceServers,
+    // };
+    const base = { iceServers: config.webrtc.iceServers };
+    const extra = (typeof config.webrtc.iceTransportPolicy === 'undefined') ? {}
+        : { iceTransportPolicy: config.webrtc.iceTransportPolicy };
+
+    const pcConfig = Object.assign({}, base, extra);
 
     Helpers.trace("_reconnect peer configuration: " + JSON.stringify(pcConfig));
 

@@ -12,8 +12,8 @@
  */
 
 var config = {
-  version: '2.21.0',
-  buildNumber: '1167',
+  version: '2.21.3',
+  buildNumber: '1169',
   creds: {
     'appId': 0,
     'authKey': '',
@@ -47,6 +47,12 @@ var config = {
     dialingTimeInterval: 5,
     disconnectTimeInterval: 30,
     statsReportTimeInterval: false,
+    /**
+     * ICE transport policy.
+     * If undefined -> do not pass this option into RTCPeerConnection.
+     * Allowed values when set: "all" | "relay".
+     */
+    iceTransportPolicy: undefined,
     iceServers: [
       {
         urls: ['turn:turn.quickblox.com', 'stun:turn.quickblox.com'],
@@ -85,32 +91,48 @@ var config = {
   callBackInterval: 30,
 };
 
-config.set = function(options) {
-  if (typeof options.endpoints === 'object' && options.endpoints.chat) {
-    config.endpoints.muc = 'muc.'+options.endpoints.chat;
-    config.chatProtocol.bosh = 'https://'+options.endpoints.chat+':5281';
-    config.chatProtocol.websocket = 'wss://'+options.endpoints.chat+':5291';
-  }
-
-  Object.keys(options).forEach(function(key) {
-    if(key !== 'set' && config.hasOwnProperty(key)) {
-      if(typeof options[key] !== 'object') {
-        config[key] = options[key];
-      } else {
-        Object.keys(options[key]).forEach(function(nextkey) {
-          if(config[key].hasOwnProperty(nextkey)){
-            config[key][nextkey] = options[key][nextkey];
-          }
-        });
-      }
+config.set = function (options) {
+    // Update chat endpoints (same behavior as before)
+    if (typeof options.endpoints === 'object' && options.endpoints.chat) {
+        config.endpoints.muc = 'muc.' + options.endpoints.chat;
+        config.chatProtocol.bosh = 'https://' + options.endpoints.chat + ':5281';
+        config.chatProtocol.websocket = 'wss://' + options.endpoints.chat + ':5291';
     }
 
-    // backward compatibility: for config.iceServers
-    if(key === 'iceServers') {
-      config.webrtc.iceServers = options[key];
-    }
-  });
+    // Shallow merge: copy only known keys; skip undefined values
+    Object.keys(options).forEach(function (key) {
+        if (key !== 'set' && Object.prototype.hasOwnProperty.call(config, key)) {
+            if (typeof options[key] !== 'object' || options[key] === null) {
+                // Primitive or null: assign as is
+                if (typeof options[key] !== 'undefined') {
+                    config[key] = options[key];
+                }
+            } else {
+                // Object: copy only known subkeys; skip undefined values
+                Object.keys(options[key]).forEach(function (nextkey) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(config[key], nextkey) &&
+                        typeof options[key][nextkey] !== 'undefined'
+                    ) {
+                        config[key][nextkey] = options[key][nextkey];
+                    }
+                });
+            }
+        }
+
+        // Backward compatibility: allow top-level iceServers
+        if (key === 'iceServers' && typeof options[key] !== 'undefined') {
+            config.webrtc.iceServers = options[key];
+        }
+
+        // Backward compatibility: allow top-level iceTransportPolicy
+        if (key === 'iceTransportPolicy' && typeof options[key] !== 'undefined') {
+            // Allowed values when set: "all" | "relay"
+            config.webrtc.iceTransportPolicy = options[key];
+        }
+    });
 };
+
 
 config.updateSessionExpirationDate = function (tokenExpirationDate, headerHasToken = false) {
   var connectionTimeLag = 1; // minute
