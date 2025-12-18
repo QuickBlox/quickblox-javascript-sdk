@@ -882,6 +882,9 @@ ChatProxy.prototype = {
                                                 ' error: ', error);
                                             self._chatPingFailedCounter += 1;
                                             if (self._chatPingFailedCounter > 6) {
+                                                if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
+                                                    Utils.safeCallbackCall(self.onDisconnectedListener);
+                                                }
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
                                                 self._chatPingFailedCounter = 0;
@@ -1235,6 +1238,7 @@ ChatProxy.prototype = {
             this.Client.end();
         }
     },
+
 
     /**
      * Send message to 1 to 1 or group dialog. {@link https://quickblox.com/developers/Web_XMPP_Chat_Sample#Chat_in_dialog More info.}

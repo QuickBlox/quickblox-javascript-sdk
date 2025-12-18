@@ -10,7 +10,7 @@
     "@types/node": "20.17.19",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
-    "quickblox": "2.21.3",
+    "quickblox": "2.21.4",
     "quickblox-react-ui-kit": "0.5.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
