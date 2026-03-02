@@ -116,8 +116,19 @@ Dialog.prototype.loadDialogs = function (f,) {
 
             var dialogs = resDialogs.items;
 
+            //Detect left group dialogs from user's leavedDialogs
+            var leavedDialogs = helpers.extractLeavedDialogs(
+                userModule._cache[app.user.id] && userModule._cache[app.user.id].custom_data
+            );
+
             _.each(dialogs, function (dialog) {
                 self._cache[dialog._id] = helpers.compileDialogParams(dialog);
+
+                // Restore left flag for previously left group dialogs
+                if (leavedDialogs[dialog._id] && dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+                    self._cache[dialog._id].left = true;
+                }
+
                 self.renderDialog(self._cache[dialog._id]);
             });
 
@@ -144,6 +155,11 @@ Dialog.prototype.renderDialog = function (dialog, setAsFirst) {
     if (!self._cache[id]) {
         self._cache[id] = helpers.compileDialogParams(dialog);
         dialog = self._cache[id];
+    }
+
+    //Do not render left group dialogs
+    if (dialog.left && dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+        return null;
     }
 
     if (elem) {
@@ -240,21 +256,14 @@ Dialog.prototype.replaceDialogLink = function (elem) {
 };
 
 Dialog.prototype.joinToDialog = function (id) {
-    const userId = app.user.id;
-    // TODO: need to remove this code after userModule will be fixed
-    // const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
-    // let leavedDialogs = {};
-    // if (user_custom_data["leaved_dialogs"]) {
-    //     leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
-    // }
-    // const unixTimestamp = leavedDialogs[id] || -1;
-    let rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
-    let leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
-    const unixTimestamp = leavedDialogs[id] || -1;
-    if (unixTimestamp < 0)
-    {
-        var self = this,
-            jidOrUserId = ((typeof self._cache[id].jidOrUserId == "number") ? String(self._cache[id].jidOrUserId) : self._cache[id].jidOrUserId);
+    var self = this;
+    var userId = app.user.id;
+    var rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
+    var leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
+    var unixTimestamp = leavedDialogs[id] || -1;
+
+    if (unixTimestamp < 0) {
+        var jidOrUserId = ((typeof self._cache[id].jidOrUserId == "number") ? String(self._cache[id].jidOrUserId) : self._cache[id].jidOrUserId);
 
         return new Promise(function (resolve, reject) {
             QB.chat.muc.join(jidOrUserId, function (resultStanza) {
@@ -272,6 +281,9 @@ Dialog.prototype.joinToDialog = function (id) {
             });
         });
     }
+
+    // Dialog is in leavedDialogs — do not join, resolve immediately
+    return Promise.resolve();
 };
 
 Dialog.prototype.renderMessages = function (dialogId) {
@@ -815,8 +827,7 @@ Dialog.prototype.quitFromTheDialog = async function (dialogId) {
 
 };
 
-Dialog.prototype.leaveFromTheDialog = async function (dialogId) {
-
+Dialog.prototype.leaveFromTheDialog = function (dialogId) {
     var self = this,
         dialog = self._cache[dialogId];
 
@@ -831,103 +842,117 @@ Dialog.prototype.leaveFromTheDialog = async function (dialogId) {
                 var DIALOG_JID = QB.chat.helpers.getRoomJidFromDialogId(dialogId);
                 console.log('Dialog JID:', DIALOG_JID);
 
-                QB.chat.muc.leave(DIALOG_JID, function (err) {
+                QB.chat.muc.leave(DIALOG_JID, function (err, result) {
                     if (err) {
-                        if (err.children.item(0).children.item(1).getAttribute('code').includes('110')){
-                            console.log('ERROR Handler: Successfully left group chat');
-                            resolve();
-                        } else {
-                            console.error('ERROR leaving group chat:', error);
-                            reject(error);
-                        }
-                    } else {
-                        console.log('jid: ',DIALOG_JID);
-                        console.log('Successfully left group chat: ',dialogId);
-
-                        {
-                            var userId = app.user.id;
-                            // TODO: need to remove this code after userModule will be tested
-                            // const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
-                            // let leavedDialogs = {};
-                            // if (user_custom_data["leaved_dialogs"]) {
-                            //     leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
-                            // }
-                            let rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
-                            let leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
-                            const date = new Date();
-                            const unixTimestamp = Math.floor(date.getTime() / 1000);
-                            leavedDialogs[dialogId] = unixTimestamp;
-                            const jsonString = JSON.stringify(leavedDialogs);
-
-                            var
-                                custom_data = JSON.stringify({
-                                    "leaved_dialogs": jsonString
-                                }),
-
-                                updatedUserProfile = {
-                                    tag_list: 'lived',
-                                    custom_data
-                                };
-
-                            QB.users.update(userId, updatedUserProfile, function (err, dialog) {
-                                if (err) {
-                                    console.error('Error update dialog leaved_dialogs list in user: ',err);
-                                } else {
-
-                                    userModule._cache[userId].custom_data = custom_data;
-                                }
-                            });
-                        }
-                        resolve();
+                        console.error('Error leaving group chat:', err);
+                        reject(err);
+                        return;
                     }
+
+                    console.log('Successfully left group chat:', dialogId);
+
+                    // Mark dialog as not joined
+                    self._cache[dialogId].joined = false;
+
+                    // For group chats: hide from UI and mark as left
+                    if (dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+                        self._cache[dialogId].left = true;
+
+                        var dialogElem = document.getElementById(dialogId);
+                        if (dialogElem) {
+                            dialogElem.style.display = 'none';
+                            dialogElem.classList.add('leaved');
+                        }
+
+                        if (dialogId === self.dialogId) {
+                            self.dialogId = null;
+                        }
+                    }
+
+                    // Record leave timestamp in user's custom_data
+                    var userId = app.user.id;
+                    var rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
+                    var leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
+                    var unixTimestamp = Math.floor(Date.now() / 1000);
+                    leavedDialogs[dialogId] = unixTimestamp;
+                    var jsonString = JSON.stringify(leavedDialogs);
+
+                    var custom_data = JSON.stringify({
+                        "leaved_dialogs": jsonString
+                    });
+                    var updatedUserProfile = {
+                        tag_list: 'lived',
+                        custom_data: custom_data
+                    };
+
+                    QB.users.update(userId, updatedUserProfile, function (updateErr) {
+                        if (updateErr) {
+                            console.error('Error update dialog leaved_dialogs list in user: ', updateErr);
+                        } else {
+                            userModule._cache[userId].custom_data = custom_data;
+                        }
+                    });
+
+                    resolve();
                 });
                 break;
         }
     });
-
 };
-Dialog.prototype.backToTheDialog = async function (dialogId) {
-
+Dialog.prototype.backToTheDialog = function (dialogId) {
+    var self = this;
     var userId = app.user.id;
-    // TODO: need to remove this code after userModule will be tested
-    // const user_custom_data = userModule._cache[userId].custom_data? JSON.parse(userModule._cache[userId].custom_data): {};
-    // let leavedDialogs = {};
-    // if (user_custom_data["leaved_dialogs"]) {
-    //     leavedDialogs = JSON.parse(user_custom_data["leaved_dialogs"]);
-    // }
-    // delete leavedDialogs[dialogId];
-    let rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
-    let leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
+
+    var rawCustomData = userModule._cache[userId] && userModule._cache[userId].custom_data;
+    var leavedDialogs = helpers.extractLeavedDialogs(rawCustomData);
     delete leavedDialogs[dialogId];
 
+    var jsonString = JSON.stringify(leavedDialogs);
+    var custom_data = JSON.stringify({
+        "leaved_dialogs": jsonString
+    });
+    var updatedUserProfile = {
+        tag_list: 'lived',
+        custom_data: custom_data
+    };
 
-    const jsonString = JSON.stringify(leavedDialogs);
-
-    var
-        custom_data = JSON.stringify({
-            "leaved_dialogs": jsonString
-        }),
-
-        updatedUserProfile = {
-            tag_list: 'lived',
-            custom_data
-        };
-
-    QB.users.update(userId, updatedUserProfile, function (err, dialog) {
-        if (err) {
-            console.error('Error update dialog leaved_dialogs list in user: ',err);
-        } else {
+    return new Promise(function (resolve, reject) {
+        QB.users.update(userId, updatedUserProfile, function (err, result) {
+            if (err) {
+                console.error('Error update dialog leaved_dialogs list in user: ', err);
+                reject(err);
+                return;
+            }
 
             userModule._cache[userId].custom_data = custom_data;
-            //
-            this.joinToDialog(dialogId).then(function () {
 
+            // Restore dialog state for group chats
+            if (self._cache[dialogId]) {
+                self._cache[dialogId].joined = false;
+
+                if (self._cache[dialogId].type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+                    self._cache[dialogId].left = false;
+
+                    // Show dialog back in UI
+                    var dialogElem = document.getElementById(dialogId);
+                    if (dialogElem) {
+                        dialogElem.style.display = '';
+                        dialogElem.classList.remove('leaved');
+                    }
+                }
+            }
+
+            // Rejoin MUC room
+            self.joinToDialog(dialogId).then(function () {
+                console.log('Successfully rejoined dialog:', dialogId);
+                resolve();
+            }).catch(function (joinErr) {
+                console.error('Error rejoining dialog:', joinErr);
+                // Still resolve — user profile was updated successfully
+                resolve();
             });
-            //
-        }
+        });
     });
-
-
 };
 
 Dialog.prototype.sortedByLastMessage = function (dialogId) {

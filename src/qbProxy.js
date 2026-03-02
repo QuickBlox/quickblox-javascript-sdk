@@ -132,6 +132,13 @@ ServiceProxy.prototype = {
             }
         }
 
+        // Support custom headers (e.g., for Authorization: ApiKey)
+        if (params.headers) {
+            Object.keys(params.headers).forEach(function(key) {
+                qbRequest.headers[key] = params.headers[key];
+            });
+        }
+
         if (config.timeout) {
             qbRequest.timeout = config.timeout;
         }

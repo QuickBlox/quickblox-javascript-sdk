@@ -37,6 +37,10 @@ Listeners.prototype.onMessageListener = function (userId, message) {
         return false;
     }
 
+    // Ignore messages for left group dialogs
+    if (dialog && dialog.left && dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+        return false;
+    }
 
     if (dialog) {
         dialogModule.sortedByLastMessage(message.dialog_id);
@@ -150,7 +154,13 @@ Listeners.prototype.onMessageTypingListener = function (isTyping, userId, dialog
 };
 
 Listeners.prototype.onSystemMessageListener = function (message) {
-    var dialog = dialogModule._cache[message.dialog_id || message.extension.dialog_id];
+    var dialogId = message.dialog_id || message.extension.dialog_id;
+    var dialog = dialogModule._cache[dialogId];
+
+    // Ignore system messages for left group dialogs
+    if (dialog && dialog.left && dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+        return false;
+    }
 
     if (message.extension && message.extension.notification_type === CONSTANTS.NOTIFICATION_TYPES.NEW_DIALOG) {
         if (message.extension.dialog_id) {

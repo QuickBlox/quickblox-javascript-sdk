@@ -2,9 +2,9 @@
 export const QBConfig: QBUIKitConfig = {
     credentials: {
         appId: -1,
-        accountKey: '',
         authKey: '',
         authSecret: '',
+        accountKey: '',
         sessionToken: '',
     },
     configAIApi: {

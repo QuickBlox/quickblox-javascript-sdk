@@ -881,7 +881,7 @@ ChatProxy.prototype = {
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter,
                                                 ' error: ', error);
                                             self._chatPingFailedCounter += 1;
-                                            if (self._chatPingFailedCounter > 6) {
+                                            if (self._chatPingFailedCounter >= config.chatPingMissLimit) {
                                                 if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
                                                     Utils.safeCallbackCall(self.onDisconnectedListener);
                                                 }

@@ -130,6 +130,21 @@ Message.prototype.submitSendMessage = function (dialogId) {
     // Don't send empty message
     if (!msg.body) return false;
 
+    // For group chats, ensure user is in MUC room before sending
+    if (dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT && !dialog.joined) {
+        console.warn('Cannot send message: not joined to MUC room. Attempting to rejoin...');
+        var pendingMsg = msg;
+        dialogModule.joinToDialog(dialogId).then(function () {
+            document.querySelector('.attachments_preview').innerHTML = '';
+            document.querySelector('.attachments_preview').style.display = 'none';
+            document.querySelector('.send_message .send_btn').style.top = '10px';
+            self.sendMessage(dialogId, pendingMsg);
+        }).catch(function (err) {
+            console.error('Failed to rejoin dialog, message not sent:', err);
+        });
+        return false;
+    }
+
     document.querySelector('.attachments_preview').innerHTML = '';
     document.querySelector('.attachments_preview').style.display = 'none';
     document.querySelector('.send_message .send_btn').style.top = '10px';

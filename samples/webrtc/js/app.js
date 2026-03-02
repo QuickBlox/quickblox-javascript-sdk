@@ -654,30 +654,26 @@
                 runScreenSharing = function(){
                     navigator.mediaDevices.getDisplayMedia({
                         video: true,
-                    }).then(stream => {
+                    }).then(function(stream) {
                         var videoTrack = stream.getVideoTracks()[0];
                         videoTrack.onended = stopScreenSharing;
-                        switchMediaTrack(videoTrack);
+                        return app.currentSession.replaceVideoTrack(videoTrack);
+                    }).then(function() {
                         $btn.addClass('active');
+                    }).catch(function(error) {
+                        console.error('Screen sharing error:', error);
                     });
                 },
                 stopScreenSharing = function(){
                     navigator.mediaDevices.getUserMedia({
                         video: true,
-                    }).then(stream => {
-                        switchMediaTrack(stream.getVideoTracks()[0]);
+                    }).then(function(stream) {
+                        return app.currentSession.replaceVideoTrack(stream.getVideoTracks()[0]);
+                    }).then(function() {
                         $btn.removeClass('active');
+                    }).catch(function(error) {
+                        console.error('Stop screen sharing error:', error);
                     });
-                },
-                switchMediaTrack = function (track) {
-                    app.currentSession.localStream.getVideoTracks()[0].stop();
-                    var stream = app.currentSession.localStream.clone();
-                    stream.removeTrack(stream.getVideoTracks()[0]);
-                    stream.addTrack(track);
-                    app.currentSession.localStream.getAudioTracks()[0].stop();
-                    app.currentSession._replaceTracks(stream);
-                    app.currentSession.localStream = stream;
-                    return true;
                 };
 
             if(isActive) {

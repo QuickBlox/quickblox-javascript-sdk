@@ -1,5 +1,4 @@
 var QBconfig = {
-
     credentials: {
         'appId': -1,
         'authKey': '',

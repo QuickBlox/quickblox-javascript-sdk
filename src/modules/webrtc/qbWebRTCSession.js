@@ -199,22 +199,20 @@ WebRTCSession.prototype.attachMediaStream = function (elementId, stream, options
  * @memberof QB.webrtc.WebRTCSession
  * @param {string} elementId - The Id of an element to detach a stream.
  */
-WebRTCSession.prototype.detachMediaStream = function (elementId) {
+WebRTCSession.prototype.detachMediaStream = function (elementId, options) {
     var elem = document.getElementById(elementId);
 
     if (elem && elem instanceof HTMLMediaElement) {
         elem.pause();
 
-        if (elem.srcObject && typeof elem.srcObject === 'object') {
+        if (options && options.stopTracks && elem.srcObject && typeof elem.srcObject === 'object') {
             elem.srcObject.getTracks().forEach(function (track) {
                 track.stop();
                 track.enabled = false;
             });
-            elem.srcObject = null;
-        } else {
-            elem.src = '';
         }
 
+        elem.srcObject = null;
         elem.removeAttribute("src");
         elem.removeAttribute("srcObject");
     }
@@ -252,44 +250,109 @@ WebRTCSession.prototype.switchMediaTracks = function (deviceIds, callback) {
         audio: self.mediaParams.audio || false,
         video: self.mediaParams.video || false
     }).then(function (stream) {
-        self._replaceTracks(stream);
-        callback(null, stream);
+        return self._replaceTracks(stream).then(function () {
+            callback(null, stream);
+        });
     }).catch(function (error) {
         callback(error, null);
     });
 };
 
+/**
+ * Replace video track in local stream and all peer connections.
+ * Recommended method for screen sharing implementation.
+ * @function replaceVideoTrack
+ * @memberof QB.webrtc.WebRTCSession
+ * @param {MediaStreamTrack} newVideoTrack - The new video track to replace the current one.
+ * @returns {Promise} Resolves when all peer connections have been updated.
+ * @example
+ *  // Start screen sharing:
+ *  navigator.mediaDevices.getDisplayMedia({ video: true }).then(function(stream) {
+ *      var screenTrack = stream.getVideoTracks()[0];
+ *      screenTrack.onended = function() { stopScreenSharing(); };
+ *      session.replaceVideoTrack(screenTrack).then(function() {
+ *          console.log('Screen sharing started');
+ *      });
+ *  });
+ *
+ *  // Stop screen sharing (return to camera):
+ *  navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+ *      session.replaceVideoTrack(stream.getVideoTracks()[0]).then(function() {
+ *          console.log('Camera restored');
+ *      });
+ *  });
+ */
+WebRTCSession.prototype.replaceVideoTrack = function (newVideoTrack) {
+    var localStream = this.localStream;
+    var elemId = this.mediaParams.elemId;
+
+    // Replace video track in localStream
+    var currentVideoTrack = localStream.getVideoTracks()[0];
+    if (currentVideoTrack) {
+        currentVideoTrack.stop();
+        localStream.removeTrack(currentVideoTrack);
+    }
+    localStream.addTrack(newVideoTrack);
+
+    // Update video element (without stopping tracks)
+    if (elemId) {
+        var elem = document.getElementById(elemId);
+        if (elem && elem instanceof HTMLMediaElement) {
+            elem.srcObject = localStream;
+        }
+    }
+
+    // Replace video track in all peer connections
+    function _replaceForPeer(peer) {
+        var videoSender = peer.getSenders().find(function (s) {
+            return s.track && s.track.kind === 'video';
+        });
+        return videoSender ? videoSender.replaceTrack(newVideoTrack) : Promise.resolve();
+    }
+
+    return Promise.all(Object
+        .values(this.peerConnections)
+        .map(function (pc) { return pc._pc; })
+        .map(_replaceForPeer)
+    );
+};
+
 WebRTCSession.prototype._replaceTracks = function (stream) {
     var localStream = this.localStream;
     var elemId = this.mediaParams.elemId;
-    var ops = this.mediaParams.options;
-    var currentStreamTracks = localStream.getTracks();
     var newStreamTracks = stream.getTracks();
 
-    this.detachMediaStream(elemId);
-
+    // Replace tracks in localStream (without detaching/stopping)
     newStreamTracks.forEach(function (newTrack) {
-        const currentTrack = currentStreamTracks.find(function (track) {
+        var currentTrack = localStream.getTracks().find(function (track) {
             return track.kind === newTrack.kind;
         });
         if (currentTrack) {
             currentTrack.stop();
             localStream.removeTrack(currentTrack);
-            localStream.addTrack(newTrack);
         }
+        localStream.addTrack(newTrack);
     });
 
+    // Update video element (rebind localStream, no track stopping)
     if (elemId) {
-        this.attachMediaStream(elemId, stream, ops);
+        var elem = document.getElementById(elemId);
+        if (elem && elem instanceof HTMLMediaElement) {
+            elem.srcObject = localStream;
+        }
     }
 
-    /*** @param {RTCPeerConnection} peer */
+    // Replace tracks in all peer connections
     function _replaceTracksForPeer(peer) {
-        return Promise.all(peer.getSenders().map(function (sender) {
-            return sender.replaceTrack(newStreamTracks.find(function (track) {
-                return track.kind === sender.track.kind;
-            }));
-        }));
+        return Promise.all(peer.getSenders()
+            .filter(function (sender) { return sender.track !== null; })
+            .map(function (sender) {
+                var newTrack = newStreamTracks.find(function (track) {
+                    return track.kind === sender.track.kind;
+                });
+                return newTrack ? sender.replaceTrack(newTrack) : Promise.resolve();
+            })
+        );
     }
 
     return Promise.all(Object

@@ -146,10 +146,39 @@ export declare interface QBConfig {
       retry: (session: QBSession) => void,
     ) => void
   }
+  /**
+   * Ping request timeout in seconds.
+   * Used by ping() / pingchat(): if no pong response is received within this time,
+    * the SDK treats the ping as failed and calls the callback with "No answer".
+   */
   pingTimeout?: number
+
+  /**
+     * Enables additional ping-related debug logging.
+     * When true, the SDK may output extra logs for chat ping / connectivity checks.
+   */
   pingDebug?: boolean
+
+  /**
+     * Chat ping interval in seconds.
+     * Used after a successful chat connection: the SDK sends periodic XMPP pings and
+     * tracks consecutive misses to decide when to re-establish the connection.
+     * Set to 0 to disable periodic chat pinging.
+  */
   pingLocalhostTimeInterval?: number
+
+  /**
+     * Reconnect retry interval in seconds.
+     * Used by internal reconnection loop (_establishConnection): defines how often
+     * the SDK retries connect() after a disconnect or when connection is considered unhealthy.
+  */
   chatReconnectionTimeInterval?: number
+
+  /**
+   * Number of consecutive missed chat pings before SDK treats connection as unhealthy
+   * and starts reconnection (or connection re-establish) logic.
+   */
+  chatPingMissLimit?: number
   /** If true, QB.init will do a short synchronous block after starting account_settings. Default: true. */
   initBlockOnSettings?: boolean
   /** Busy-wait duration in ms used when initBlockOnSettings=true. Default: 3000. */
@@ -417,7 +446,7 @@ export declare interface QBChatXMPPMessage {
         date_sent: string
         save_to_history: string
         attachments?: ChatMessageAttachment[]
-        [custom_field_N: string]: string
+        [custom_field_N: string]: any
     }
 }
 
@@ -456,6 +485,37 @@ export interface AIAnswerResponse {
 
 export declare type AIChatHistory = AIChatMessage[] | null | undefined;
 
+// AI Gateway types
+export interface AIGatewayTextContent {
+    type: 'text';
+    text: string;
+}
+
+export interface AIGatewayImageContent {
+    type: 'image_url';
+    image_url: {
+        url: string;
+    };
+}
+
+export type AIGatewayContentItem = AIGatewayTextContent | AIGatewayImageContent;
+
+export type AIGatewayRole = 'user' | 'assistant' | 'developer';
+
+export interface AIGatewayMessage {
+    role: AIGatewayRole;
+    content: AIGatewayContentItem[] | string;
+}
+
+export interface AIGatewayOptions {
+    apiKey?: string;
+}
+
+// AI Summarize response
+export interface AISummarizeResponse {
+    summary: string;
+}
+
 interface QBAIModule{
     //QB.ai.answerAssist
     answerAssist(smartChatAssistantId: string,
@@ -467,6 +527,21 @@ interface QBAIModule{
                  message: string,
                  languageCode: string,
                  callback: QBCallback<AIAnswerResponse>): void
+
+    //QB.ai.gateway
+    gateway(smartChatAssistantId: string,
+            messages: AIGatewayMessage[],
+            callback: QBCallback<AIAnswerResponse>): void
+
+    gateway(smartChatAssistantId: string,
+            messages: AIGatewayMessage[],
+            options: AIGatewayOptions,
+            callback: QBCallback<AIAnswerResponse>): void
+
+    //QB.ai.summarize
+    summarize(smartChatAssistantId: string,
+              dialogId: string,
+              callback: QBCallback<AISummarizeResponse>): void
 
 }
 
@@ -1269,8 +1344,18 @@ export declare interface QBWebRTCSession {
     deviceIds: { audio?: { exact: string }; video?: { exact: string } },
     callback: QBCallback<MediaStream>,
   ): void
-  /** Add tracks from provided stream to local stream (and replace in peers) */
-  _replaceTracks(stream: MediaStream): void
+  /**
+   * Replace video track in local stream and all peer connections.
+   * Recommended method for screen sharing implementation.
+   * @param newVideoTrack - The new video track to replace the current one.
+   * @returns Promise that resolves when all peer connections have been updated.
+   */
+  replaceVideoTrack(newVideoTrack: MediaStreamTrack): Promise<void[]>
+  /**
+   * @deprecated Use {@link replaceVideoTrack} for screen sharing instead.
+   * Add tracks from provided stream to local stream (and replace in peers).
+   */
+  _replaceTracks(stream: MediaStream): Promise<void[]>
 }
 
 export declare interface QBWebRTCModule {

@@ -104,6 +104,11 @@ Helpers.prototype.renderDashboard = async function () {
 
     dialogs = dialogs.reverse();
 
+    // Detect left group dialogs
+    var leavedDialogs = helpers.extractLeavedDialogs(
+        userModule._cache[app.user.id] && userModule._cache[app.user.id].custom_data
+    );
+
     _.each(dialogs, function (dialog) {
 
         var tplDateMessage = {};
@@ -116,6 +121,11 @@ Helpers.prototype.renderDashboard = async function () {
 
         dialogModule._cache[dialog._id] = helpers.compileDialogParams(dialog);
         dialogModule._cache[dialog._id].tplDateMessage = tplDateMessage;
+
+        // Restore left flag for previously left group dialogs
+        if (leavedDialogs[dialog._id] && dialog.type === CONSTANTS.DIALOG_TYPES.GROUPCHAT) {
+            dialogModule._cache[dialog._id].left = true;
+        }
 
         var elem = document.getElementById(dialog._id);
         if(elem) {
