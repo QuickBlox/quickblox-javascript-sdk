@@ -1,15 +1,13 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
 
 module.exports = {
     mode: 'development',
     entry: './src/index.tsx',
     output: {
-        filename: '[name].js', // Отключаем хеширование
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
-        assetModuleFilename: '[name][ext]', // Оригинальные имена файлов
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
@@ -31,26 +29,6 @@ module.exports = {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
-            {
-                test: /\.s[ac]ss$/i,
-                use: ['style-loader', 'css-loader', 'sass-loader'],
-            },
-            {
-                test: /\.svg$/i, // Все SVG → импортируются как React-компоненты
-                use: [
-                    {
-                        loader: '@svgr/webpack',
-                        options: {
-                            icon: true,
-                            esModule: true,
-                        },
-                    },
-                ],
-            },
-            {
-                test: /\.(png|jpg|jpeg|gif)$/i, // Поддержка изображений
-                type: 'asset/resource',
-            },
         ],
     },
     plugins: [
@@ -65,7 +43,7 @@ module.exports = {
         historyApiFallback: true,
         hot: true,
         open: true,
-        port: 3000,
+        port: 3002,
         static: {
             directory: path.join(__dirname, 'public'),
             watch: {

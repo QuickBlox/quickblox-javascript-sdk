@@ -112,6 +112,99 @@ describe('Chat API', function() {
             }, REST_REQUESTS_TIMEOUT);
         });
 
+        // ==================is_join_required VALIDATION (CREATE)==================
+
+        describe('is_join_required validation (create):', function() {
+
+            it('should ignore is_join_required with invalid value (2) in create', function(done) {
+                var params = {
+                    occupants_ids: [QBUser2.id],
+                    name: 'test_invalid_joinreq_2',
+                    type: 2,
+                    is_join_required: 2
+                };
+
+                QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).not.toBeNull();
+                    expect(res._id).not.toBeNull();
+
+                    done();
+                });
+            }, REST_REQUESTS_TIMEOUT);
+
+            it('should ignore is_join_required with invalid value (string) in create', function(done) {
+                var params = {
+                    occupants_ids: [QBUser2.id],
+                    name: 'test_invalid_joinreq_str',
+                    type: 2,
+                    is_join_required: 'yes'
+                };
+
+                QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).not.toBeNull();
+                    expect(res._id).not.toBeNull();
+
+                    done();
+                });
+            }, REST_REQUESTS_TIMEOUT);
+
+            it('should ignore is_join_required with invalid value (-1) in create', function(done) {
+                var params = {
+                    occupants_ids: [QBUser2.id],
+                    name: 'test_invalid_joinreq_neg',
+                    type: 2,
+                    is_join_required: -1
+                };
+
+                QB_SENDER.chat.dialog.create(params, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).not.toBeNull();
+                    expect(res._id).not.toBeNull();
+
+                    done();
+                });
+            }, REST_REQUESTS_TIMEOUT);
+
+        });
+
+        // ==================is_join_required VALIDATION (UPDATE)=================
+
+        describe('is_join_required validation (update):', function() {
+
+            it('should ignore is_join_required in update (value 1)', function(done) {
+                var toUpdate = {
+                    name: 'test_update_joinreq_ignored',
+                    is_join_required: 1
+                };
+
+                QB_SENDER.chat.dialog.update(dialogId4Private, toUpdate, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).not.toBeNull();
+                    expect(res.name).toEqual(toUpdate.name);
+
+                    done();
+                });
+            }, REST_REQUESTS_TIMEOUT);
+
+            it('should ignore is_join_required in update (value 0)', function(done) {
+                var toUpdate = {
+                    name: 'test_update_joinreq_ignored_0',
+                    is_join_required: 0
+                };
+
+                QB_SENDER.chat.dialog.update(dialogId4Private, toUpdate, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).not.toBeNull();
+                    expect(res.name).toEqual(toUpdate.name);
+
+                    done();
+                });
+            }, REST_REQUESTS_TIMEOUT);
+
+        });
+
         // =========================CREATE GROUP DIALOG=============================
 
         describe('Create Group Dialog:', function() {

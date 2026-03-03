@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBlox JS SDK — Quickstart</title>
+    <style>
+        body { font-family: monospace; max-width: 800px; margin: 20px auto; background: #1e1e1e; color: #d4d4d4; }
+        h1 { color: #569cd6; }
+        p { color: #888; line-height: 1.5; margin-bottom: 4px; }
+        ol { color: #9cdcfe; margin-top: 0; line-height: 1.8; }
+        #log { white-space: pre-wrap; line-height: 1.6; }
+        .ok { color: #6a9955; }
+        .err { color: #f44747; }
+        .info { color: #dcdcaa; }
+        .data { color: #9cdcfe; }
+        button { padding: 10px 24px; font-size: 16px; cursor: pointer; margin: 10px 4px; }
+    </style>
+</head>
+<body>
+    <h1>QuickBlox JS SDK — Quickstart</h1>
+    <p>
+        Complete SDK workflow in a single click. Press <b>Run</b> to execute all 8 steps:
+    </p>
+    <ol>
+        <li>Initialize SDK with app credentials</li>
+        <li>Create application session (get auth token)</li>
+        <li>Login user (authenticate with login/password)</li>
+        <li>Connect to chat server (XMPP over WebSocket)</li>
+        <li>Retrieve dialog list (up to 10, sorted by last message)</li>
+        <li>Retrieve last 5 messages from the first dialog</li>
+        <li>Send a test message to the first dialog</li>
+        <li>Disconnect from chat</li>
+    </ol>
+    <button onclick="runQuickstart()">Run</button>
+    <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+    <div id="log"></div>
+
+    <!-- Load SDK from CDN (as recommended in documentation) -->
+    <script src="https://unpkg.com/quickblox/quickblox.min.js"></script>
+    <script>
+    /**
+     * QuickBlox JS SDK — Quickstart
+     *
+     * Complete SDK workflow in a single method (runQuickstart):
+     *   1. Initialize SDK with app credentials
+     *   2. Create application session (get auth token)
+     *   3. Login user (authenticate with login/password)
+     *   4. Connect to chat server (XMPP over WebSocket)
+     *   5. Retrieve dialog list (up to 10, sorted by last message)
+     *   6. Retrieve last 5 messages from the first dialog
+     *   7. Send a test message to the first dialog
+     *   8. Disconnect from chat
+     */
+
+    // ============ CREDENTIALS ============
+    var CREDS = {
+        appId: 0,                       // Your Application ID from Dashboard → Overview
+        authKey: 'YOUR_AUTH_KEY',       // Your Auth Key from Dashboard → Overview
+        authSecret: 'YOUR_AUTH_SECRET', // Your Auth Secret from Dashboard → Overview
+        accountKey: 'YOUR_ACCOUNT_KEY'  // Your Account Key from Dashboard → Account Settings
+    };
+    var USER = {
+        login: 'YOUR_USER_LOGIN',       // Test user login (create in Dashboard → Users)
+        password: 'YOUR_USER_PASSWORD'  // Test user password
+    };
+    // =====================================
+
+    function log(text, cls) {
+        var el = document.getElementById('log');
+        el.innerHTML += '<span class="' + (cls || '') + '">' + text + '</span>\n';
+        el.scrollTop = el.scrollHeight;
+    }
+
+    // Format any error to a readable string (SDK errors can be plain objects,
+    // Error instances, or XML stanzas — JSON.stringify often returns "{}")
+    function formatError(err) {
+        if (!err) return 'Unknown error';
+        if (typeof err === 'string') return err;
+        if (err.message) return err.message;
+        if (err.detail) return JSON.stringify(err.detail);
+        if (err.code) return 'Code ' + err.code + ': ' + (err.info || JSON.stringify(err));
+        var str = JSON.stringify(err);
+        return str === '{}' ? String(err) : str;
+    }
+
+    async function runQuickstart() {
+        try {
+            // ───── 1. INITIALIZE SDK ─────
+            // QB.init(appId, authKey, authSecret, accountKey, config)
+            // config is optional; here we set endpoints and chat protocol
+            QB.init(
+                CREDS.appId,
+                CREDS.authKey,
+                CREDS.authSecret,
+                CREDS.accountKey,
+                {
+                    debug: true,
+                    endpoints: {
+                        api: 'api.quickblox.com',
+                        chat: 'chat.quickblox.com'
+                    },
+                    chatProtocol: { active: 2 }  // XMPP over WebSocket
+                }
+            );
+            log('1. SDK initialized (v' + QB.version + ', build ' + QB.buildNumber + ')', 'ok');
+
+            // ───── 2. CREATE SESSION ─────
+            // QB.createSession(callback) — creates an application session
+            // Returns a session object containing the auth token
+            var session = await new Promise(function(resolve, reject) {
+                QB.createSession(function(err, result) {
+                    err ? reject(err) : resolve(result);
+                });
+            });
+            log('2. Session created, token: ' + session.token.substring(0, 20) + '...', 'ok');
+
+            // ───── 3. LOGIN USER ─────
+            // QB.login({ login, password }, callback) — authenticates the user, upgrades the session
+            // Returns a user object with id, full_name, login, etc.
+            var user = await new Promise(function(resolve, reject) {
+                QB.login(USER, function(err, result) {
+                    err ? reject(err) : resolve(result);
+                });
+            });
+            log('3. Logged in as: ' + user.login + ' (id: ' + user.id + ')', 'ok');
+
+            // ───── 4. CONNECT TO CHAT (XMPP) ─────
+            // QB.chat.connect({ userId, password }, callback)
+            //   userId  — numeric user ID
+            //   password — user password (or session token)
+            // After connecting you can send/receive real-time messages
+            await new Promise(function(resolve, reject) {
+                QB.chat.connect({ userId: user.id, password: USER.password }, function(err, roster) {
+                    err ? reject(err) : resolve(roster);
+                });
+            });
+            log('4. Connected to chat (XMPP)', 'ok');
+
+            // ───── 5. RETRIEVE DIALOG LIST ─────
+            // QB.chat.dialog.list(params, callback)
+            //   params: { limit, skip, sort_desc, sort_asc, ... }
+            //   Returns { items: [...], total_entries, skip, limit }
+            var dialogsResult = await new Promise(function(resolve, reject) {
+                QB.chat.dialog.list(
+                    { limit: 10, sort_desc: 'last_message_date_sent' },
+                    function(err, result) {
+                        err ? reject(err) : resolve(result);
+                    }
+                );
+            });
+            var dialogs = dialogsResult.items;
+            log('5. Dialogs loaded: ' + dialogs.length + ' of ' + dialogsResult.total_entries, 'ok');
+
+            // Print dialog list
+            dialogs.forEach(function(d, i) {
+                var type = d.type === 1 ? 'PUBLIC' : d.type === 2 ? 'GROUP' : d.type === 3 ? 'PRIVATE' : '?';
+                log('   [' + i + '] ' + type + ' "' + (d.name || 'no name') + '"  id=' + d._id, 'data');
+            });
+
+            if (dialogs.length === 0) {
+                log('   No dialogs found. Create a dialog in Dashboard or Chat sample first.', 'info');
+                disconnectChat();
+                return;
+            }
+
+            // ───── 6. RETRIEVE MESSAGES FROM FIRST DIALOG ─────
+            // QB.chat.message.list(params, callback)
+            //   params: { chat_dialog_id, limit, skip, sort_desc, mark_as_read }
+            //   Returns { items: [...], limit, skip }
+            var firstDialog = dialogs[0];
+            log('6. Loading messages for dialog: "' + (firstDialog.name || firstDialog._id) + '"', 'info');
+
+            var messagesResult = await new Promise(function(resolve, reject) {
+                QB.chat.message.list(
+                    {
+                        chat_dialog_id: firstDialog._id,
+                        limit: 5,
+                        sort_desc: 'date_sent',
+                        mark_as_read: 0           // do not mark as read
+                    },
+                    function(err, result) {
+                        err ? reject(err) : resolve(result);
+                    }
+                );
+            });
+
+            var messages = messagesResult.items;
+            log('   Messages loaded: ' + messages.length, 'ok');
+            messages.reverse().forEach(function(m) {
+                var time = new Date(m.date_sent * 1000).toLocaleTimeString();
+                var body = m.message || m.body || '[attachment]';
+                log('   ' + time + '  sender=' + m.sender_id + ': ' + body, 'data');
+            });
+
+            // ───── 7. SEND MESSAGE ─────
+            // QB.chat.send(jidOrUserId, messageObject) — send via XMPP
+            //   For PRIVATE (type=3) — pass opponent user id (number)
+            //   For GROUP  (type=2) — pass room JID
+            //   messageObject: { type, body, extension: { save_to_history, dialog_id } }
+            //   type: 'chat' (1-to-1) or 'groupchat' (group)
+
+            var isGroup = firstDialog.type === 2;
+            var recipientId = isGroup
+                ? QB.chat.helpers.getRoomJidFromDialogId(firstDialog._id)
+                : firstDialog.occupants_ids.find(function(id) { return id !== user.id; }) || user.id;
+            var msgType = isGroup ? 'groupchat' : 'chat';
+
+            // For group chats you must join the MUC room before sending
+            if (isGroup) {
+                await new Promise(function(resolve) {
+                    QB.chat.muc.join(
+                        QB.chat.helpers.getRoomJidFromDialogId(firstDialog._id),
+                        function() {
+                            // muc.join callback may receive a stanza that looks like an error
+                            // but actually indicates success (presence with status code 110).
+                            // We resolve unconditionally — the join has been sent.
+                            resolve();
+                        }
+                    );
+                });
+                log('   Joined MUC room', 'info');
+            }
+
+            var messageId = QB.chat.send(recipientId, {
+                type: msgType,
+                body: 'Test from SDK quickstart (' + new Date().toLocaleTimeString() + ')',
+                extension: {
+                    save_to_history: 1,            // persist in chat history
+                    dialog_id: firstDialog._id
+                }
+            });
+            log('7. Message sent, id: ' + messageId, 'ok');
+
+            // ───── 8. DISCONNECT ─────
+            disconnectChat();
+
+        } catch (err) {
+            log('ERROR: ' + formatError(err), 'err');
+            console.error(err);
+        }
+    }
+
+    function disconnectChat() {
+        QB.chat.disconnect();
+        log('8. Disconnected from chat', 'ok');
+        log('--- Done ---', 'info');
+    }
+    </script>
+</body>
+</html>

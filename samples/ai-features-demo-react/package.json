@@ -1,25 +1,17 @@
 {
-  "name": "react-chat-ui-kit-example",
-  "version": "0.1.1",
+  "name": "ai-features-demo-react",
+  "version": "1.0.0",
   "private": true,
+  "description": "QuickBlox AI Features Demo - React 19 + TypeScript",
   "dependencies": {
-    "@testing-library/jest-dom": "6.6.3",
-    "@testing-library/react": "16.2.0",
-    "@testing-library/user-event": "14.6.1",
-    "@types/jest": "29.5.1",
     "@types/node": "20.17.19",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "quickblox": "2.22.0",
-    "quickblox-react-ui-kit": "0.5.2",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-router-dom": "6.29.0",
-    "web-vitals": "2.1.4"
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
-    "@svgr/webpack": "8.1.0",
-    "@types/react-router-dom": "5.3.3",
     "css-loader": "6.11.0",
     "html-webpack-plugin": "5.6.3",
     "style-loader": "3.3.4",
@@ -44,8 +36,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "overrides": {
-    "quickblox": "$quickblox"
   }
 }

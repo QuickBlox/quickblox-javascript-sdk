@@ -89,6 +89,9 @@ module.exports = {
             React: 'react',
         }),
     ],
+    watchOptions: {
+        poll: 1000,
+    },
     devServer: {
         historyApiFallback: true,
         hot: true,
@@ -97,6 +100,10 @@ module.exports = {
         static: {
             directory: path.join(__dirname, 'public'),
             publicPath: '/',
+            watch: {
+                usePolling: true,
+                interval: 1000,
+            },
         },
         server: 'https',
     },

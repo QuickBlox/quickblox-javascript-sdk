@@ -8,7 +8,7 @@
     "@types/node": "^20.11.27",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "quickblox": "2.22.0",
+    "quickblox": "2.23.0",
     "quickblox-react-ui-kit": "0.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -36,7 +36,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "scripts": {
-    "start": "webpack serve --mode development",
+    "start": "CHOKIDAR_USEPOLLING=true webpack serve --mode development",
     "build": "webpack --mode production"
   },
   "eslintConfig": {
@@ -60,5 +60,11 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.3"
+  },
+  "overrides": {
+    "quickblox": "$quickblox"
   }
 }

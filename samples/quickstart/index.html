@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBlox JS SDK — Quickstart Examples</title>
+    <style>
+        body { font-family: monospace; max-width: 720px; margin: 30px auto; background: #1e1e1e; color: #d4d4d4; line-height: 1.7; padding: 0 20px; }
+        h1 { color: #569cd6; }
+        h2 { color: #dcdcaa; margin-top: 32px; }
+        a { color: #4ec9b0; }
+        code { background: #2d2d2d; padding: 2px 6px; border-radius: 3px; color: #ce9178; }
+        pre { background: #2d2d2d; padding: 12px 16px; border-radius: 6px; overflow-x: auto; color: #d4d4d4; }
+        ol { padding-left: 20px; }
+        li { margin-bottom: 6px; }
+        .card { background: #252526; border: 1px solid #333; border-radius: 8px; padding: 16px 20px; margin: 12px 0; }
+        .card h3 { color: #569cd6; margin: 0 0 8px 0; }
+        .card p { margin: 4px 0; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h1>QuickBlox JS SDK — Quickstart Examples</h1>
+
+    <div class="card">
+        <h3><a href="basic.html">basic.html</a> — Standard Init</h3>
+        <p>Full SDK workflow: init with credentials → create session → login → connect to chat → load dialogs → load messages → send message → disconnect.</p>
+    </div>
+
+    <div class="card">
+        <h3><a href="token-based.html">token-based.html</a> — Token-based Init</h3>
+        <p>Two independent SDK instances. Instance A creates a session and gets a token. Instance B initializes with that token only (no authKey/authSecret) — simulates backend→frontend token handoff.</p>
+    </div>
+
+    <h2>How to run</h2>
+    <ol>
+        <li>Open <code>basic.html</code> or <code>token-based.html</code> in a text editor</li>
+        <li>Fill in the <code>CREDS</code> object with your QuickBlox app credentials:
+<pre>var CREDS = {
+    appId: 12345,                  // Dashboard → Overview
+    authKey: 'your_auth_key',      // Dashboard → Overview
+    authSecret: 'your_auth_secret',// Dashboard → Overview
+    accountKey: 'your_account_key' // Dashboard → Account Settings
+};</pre>
+        </li>
+        <li>Fill in the <code>USER</code> object with a test user (create one in Dashboard → Users):
+<pre>var USER = { login: 'testuser', password: 'testpassword' };</pre>
+        </li>
+        <li>Save the file</li>
+        <li>Open the file in a browser (Chrome, Firefox, Edge)</li>
+        <li>Open the browser Developer Console (<code>F12</code> → Console tab) to see the full SDK debug log</li>
+        <li>Click the <b>Run</b> button and watch the output</li>
+    </ol>
+
+    <h2>What you need</h2>
+    <ol>
+        <li>A QuickBlox account — <a href="https://admin.quickblox.com">admin.quickblox.com</a></li>
+        <li>An application created in the Dashboard</li>
+        <li>At least one user created in Dashboard → Users</li>
+        <li>At least one dialog (chat) — create via Dashboard or the <a href="../chat/index.html">Chat sample</a></li>
+    </ol>
+</body>
+</html>

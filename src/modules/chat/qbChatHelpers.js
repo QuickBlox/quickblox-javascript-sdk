@@ -287,6 +287,14 @@ var qbChatHelpers = {
             delete extension.moduleIdentifier;
         }
 
+        if (extension.date_sent) {
+            var parsedDateSent = Number(extension.date_sent);
+
+            if (Number.isFinite(parsedDateSent)) {
+                extension.date_sent = Math.trunc(parsedDateSent).toString();
+            }
+        }
+
         return {
             extension: extension,
             dialogId: dialogId

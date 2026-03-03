@@ -56,6 +56,14 @@ DialogProxy.prototype = {
             params.occupants_ids = params.occupants_ids.join(', ');
         }
 
+        if (params && params.is_join_required !== undefined && params.is_join_required !== null) {
+            if (params.is_join_required !== 0 && params.is_join_required !== 1) {
+                Utils.QBLog('[QBChat]', 'Warning: is_join_required must be 0 or 1, got: ' +
+                    params.is_join_required + '. Parameter ignored.');
+                delete params.is_join_required;
+            }
+        }
+
         this.service.ajax({
             url: Utils.getUrl(DIALOGS_API_URL),
             type: 'POST',
@@ -77,6 +85,11 @@ DialogProxy.prototype = {
          * @param {Object} res - the dialog object.
          * @callback updateDialogCallback
          * */
+
+        if (params && params.is_join_required !== undefined) {
+            Utils.QBLog('[QBChat]', 'Warning: is_join_required is not supported in dialog.update(). Parameter ignored.');
+            delete params.is_join_required;
+        }
 
         this.service.ajax({
             'url': Utils.getUrl(DIALOGS_API_URL, id),

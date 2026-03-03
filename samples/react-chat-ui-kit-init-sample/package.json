@@ -36,7 +36,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "scripts": {
-    "start": "webpack serve --mode development",
+    "start": "CHOKIDAR_USEPOLLING=true webpack serve --mode development",
     "build": "webpack --mode production"
   },
   "eslintConfig": {
@@ -60,5 +60,8 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "overrides": {
+    "quickblox": "$quickblox"
   }
 }

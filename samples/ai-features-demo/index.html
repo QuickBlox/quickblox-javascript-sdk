@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBlox AI Features Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h4>QuickBlox AI Features Demo</h4>
+        <p class="grey-text">All AI methods: gateway, summarize, translate, answerAssist</p>
+
+        <!-- Configuration Section -->
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Configuration</span>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="appId" type="text" value="">
+                        <label for="appId">App ID</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="authKey" type="text" value="">
+                        <label for="authKey">Auth Key</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="authSecret" type="text" value="">
+                        <label for="authSecret">Auth Secret</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="accountKey" type="text" value="">
+                        <label for="accountKey">Account Key</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input id="userLogin" type="text" value="">
+                        <label for="userLogin">User Login</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input id="userPassword" type="password" value="">
+                        <label for="userPassword">User Password</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="assistantId" type="text" value="">
+                        <label for="assistantId">Smart Chat Assistant ID</label>
+                    </div>
+                </div>
+                <button class="btn waves-effect waves-light" id="initBtn">
+                    Initialize & Login
+                </button>
+                <button class="btn waves-effect waves-light red" id="logoutBtn" style="display:none; margin-left:10px;">
+                    Logout
+                </button>
+                <span id="status" class="grey-text"></span>
+            </div>
+        </div>
+
+        <!-- AI Features Tabs -->
+        <div class="card" id="aiSection" style="display:none;">
+            <div class="card-content">
+                <ul class="tabs">
+                    <li class="tab col s3"><a class="active" href="#gatewayTab">Gateway</a></li>
+                    <li class="tab col s3"><a href="#summarizeTab">Summarize</a></li>
+                    <li class="tab col s3"><a href="#translateTab">Translate</a></li>
+                    <li class="tab col s3"><a href="#assistTab">Answer Assist</a></li>
+                </ul>
+            </div>
+
+            <!-- GATEWAY TAB (NEW) -->
+            <div id="gatewayTab" class="card-content">
+                <h5>QB.ai.gateway()</h5>
+                <p class="grey-text">Multimodal AI: text + images, OpenAI-compatible format</p>
+
+                <div class="row">
+                    <div class="col s12">
+                        <p><strong>Quick Tests:</strong></p>
+                        <button class="btn-small waves-effect" id="testTextBtn">Array Content</button>
+                        <button class="btn-small waves-effect" id="testStringBtn">String Content</button>
+                        <button class="btn-small waves-effect" id="testImageBtn">Image Recognition</button>
+                        <button class="btn-small waves-effect" id="testConversationBtn">Multi-turn</button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="row">
+                    <div class="input-field col s12">
+                        <textarea id="gatewayMessage" class="materialize-textarea">What is QuickBlox?</textarea>
+                        <label for="gatewayMessage">Custom Message</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-field col s8">
+                        <input id="imageUrl" type="text" placeholder="https://example.com/image.jpg">
+                        <label for="imageUrl">Image URL (optional)</label>
+                    </div>
+                    <div class="file-field input-field col s4">
+                        <div class="btn btn-small">
+                            <span>Upload</span>
+                            <input type="file" id="imageFile" accept="image/*">
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path" type="text" placeholder="or upload file" id="imageFileName">
+                        </div>
+                    </div>
+                </div>
+                <div id="imagePreview" style="display:none; margin-bottom:15px;">
+                    <img id="previewImg" style="max-width:200px; max-height:150px; border-radius:4px;">
+                    <a href="#" id="clearImageBtn" class="btn-flat btn-small red-text">Clear</a>
+                </div>
+
+                <button class="btn waves-effect waves-light" id="gatewayBtn">Send to Gateway</button>
+
+                <div class="response-section">
+                    <h6>Response:</h6>
+                    <pre id="gatewayResponse" class="response-box"></pre>
+                </div>
+            </div>
+
+            <!-- SUMMARIZE TAB (NEW) -->
+            <div id="summarizeTab" class="card-content">
+                <h5>QB.ai.summarize()</h5>
+                <p class="grey-text">Generate dialog summary (up to 1000 recent messages)</p>
+
+                <div class="row">
+                    <div class="input-field col s8">
+                        <input id="dialogId" type="text" placeholder="Enter Dialog ID">
+                        <label for="dialogId" class="active">Dialog ID</label>
+                    </div>
+                    <div class="col s4">
+                        <button class="btn waves-effect waves-light" id="loadDialogsBtn">
+                            Load My Dialogs
+                        </button>
+                    </div>
+                </div>
+
+                <div id="dialogList"></div>
+
+                <button class="btn waves-effect waves-light" id="summarizeBtn">
+                    Summarize Dialog
+                </button>
+
+                <div class="response-section">
+                    <h6>Summary:</h6>
+                    <pre id="summarizeResponse" class="response-box"></pre>
+                </div>
+            </div>
+
+            <!-- TRANSLATE TAB -->
+            <div id="translateTab" class="card-content">
+                <h5>QB.ai.translate()</h5>
+                <p class="grey-text">Translate text to selected language</p>
+
+                <div class="row">
+                    <div class="input-field col s8">
+                        <textarea id="translateText" class="materialize-textarea">Hello, how are you?</textarea>
+                        <label for="translateText">Text to translate</label>
+                    </div>
+                    <div class="input-field col s4">
+                        <select id="translateLang">
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="ru">Russian</option>
+                            <option value="uk">Ukrainian</option>
+                            <option value="ja">Japanese</option>
+                            <option value="zh-Hans">Chinese (Simplified)</option>
+                            <option value="ar">Arabic</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="it">Italian</option>
+                            <option value="ko">Korean</option>
+                            <option value="pl">Polish</option>
+                        </select>
+                        <label>Target Language</label>
+                    </div>
+                </div>
+                <button class="btn waves-effect waves-light" id="translateBtn">Translate</button>
+
+                <div class="response-section">
+                    <h6>Result:</h6>
+                    <pre id="translateResponse" class="response-box"></pre>
+                </div>
+            </div>
+
+            <!-- ANSWER ASSIST TAB -->
+            <div id="assistTab" class="card-content">
+                <h5>QB.ai.answerAssist()</h5>
+                <p class="grey-text">AI assistant with conversation history support</p>
+
+                <div class="row">
+                    <div class="input-field col s12">
+                        <textarea id="assistMessage" class="materialize-textarea">Where is my order?</textarea>
+                        <label for="assistMessage">Your message</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s12">
+                        <label>Chat History (optional)</label>
+                        <div id="historyContainer">
+                            <div class="history-item row">
+                                <div class="input-field col s3">
+                                    <select class="history-role browser-default">
+                                        <option value="user">user</option>
+                                        <option value="assistant">assistant</option>
+                                    </select>
+                                </div>
+                                <div class="input-field col s8">
+                                    <input type="text" class="history-message" value="Hello">
+                                </div>
+                                <div class="col s1">
+                                    <a href="#" class="btn-flat remove-history" onclick="this.parentElement.parentElement.remove(); return false;">
+                                        <i class="material-icons">close</i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" id="addHistoryBtn" class="btn-flat">+ Add history item</a>
+                    </div>
+                </div>
+
+                <button class="btn waves-effect waves-light" id="assistBtn">Send</button>
+                <button class="btn-flat waves-effect" id="clearHistoryBtn">Clear History</button>
+
+                <div class="response-section">
+                    <h6>Answer:</h6>
+                    <pre id="assistResponse" class="response-box"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Logs</span>
+                <button class="btn-flat right" id="clearLogsBtn">Clear</button>
+                <pre id="logs" class="logs-box"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../../quickblox.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

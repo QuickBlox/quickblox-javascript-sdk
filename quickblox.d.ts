@@ -516,6 +516,22 @@ export interface AISummarizeResponse {
     summary: string;
 }
 
+export declare type QBDialogCreateParams = Dictionary<any> & {
+    /**
+     * Whether join is required for group dialog (type=2 only):
+     * 0 – join not required (default)
+     * 1 – join required
+     *
+     * Optional: if not provided, server will use default behavior (0).
+     * Applies only to GROUP dialogs (type=2).
+     * Private dialogs (type=3) cannot have is_join_required=1.
+     * Public group dialogs (type=1) always have is_join_required=1.
+     *
+     * @see https://docs.quickblox.com/reference/create-dialog
+     */
+    is_join_required?: 0 | 1
+}
+
 interface QBAIModule{
     //QB.ai.answerAssist
     answerAssist(smartChatAssistantId: string,
@@ -688,7 +704,7 @@ interface QBChatModule {
      * Create new dialog
      * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#create-dialog)).
      */
-    create(params: Dictionary<any>, callback: QBCallback<QBChatDialog>): void
+    create(params: QBDialogCreateParams, callback: QBCallback<QBChatDialog>): void
     /**
      * Delete a dialog or dialogs
      * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#delete-dialog)).
@@ -697,7 +713,7 @@ interface QBChatModule {
       id: QBChatDialog['_id'] | Array<QBChatDialog['_id']>,
       params: { force: 1 },
       callback: QBCallback<any>,
-    )
+    ): void
     /**
      * Delete a dialog or dialogs
      * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#delete-dialog)).
@@ -705,7 +721,7 @@ interface QBChatModule {
     delete(
       id: QBChatDialog['_id'] | Array<QBChatDialog['_id']>,
       callback: QBCallback<any>,
-    )
+    ): void
     /**
      * Retrieve list of dialogs
      * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#retrieve-list-of-dialogs)).
@@ -1707,7 +1723,7 @@ export class QuickBlox {
   startSessionWithToken(
     token: string,
     callback: QBCallback<{ session: QBSession }>,
-  )
+  ): void
 
   /**
    * Destroy current session

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBlox JS SDK — Token-based Init Quickstart</title>
+    <style>
+        body { font-family: monospace; max-width: 800px; margin: 20px auto; background: #1e1e1e; color: #d4d4d4; }
+        h1 { color: #569cd6; font-size: 1.4em; }
+        p { color: #888; line-height: 1.5; margin-bottom: 4px; }
+        ol { color: #9cdcfe; margin-top: 0; line-height: 1.8; }
+        #log { white-space: pre-wrap; line-height: 1.6; }
+        .ok { color: #6a9955; }
+        .err { color: #f44747; }
+        .info { color: #dcdcaa; }
+        .data { color: #9cdcfe; }
+        .sep { color: #555; }
+        button { padding: 10px 24px; font-size: 16px; cursor: pointer; margin: 10px 4px; }
+    </style>
+</head>
+<body>
+    <h1>QuickBlox JS SDK — Token-based Init Quickstart</h1>
+    <p>
+        Demonstrates two independent SDK instances and session token sharing.
+        Press <b>Run</b> to execute all steps:
+    </p>
+    <ol>
+        <li>Create SDK instance A (via <code>new QB.QuickBlox()</code>)</li>
+        <li>Initialize instance A with app credentials (appId, authKey, authSecret)</li>
+        <li>Create session + login user on instance A (get session token)</li>
+        <li>Create SDK instance B (independent copy)</li>
+        <li>Initialize instance B with the token from instance A (no authKey/authSecret needed)</li>
+        <li>Use instance B: retrieve dialogs, load messages (proves token works)</li>
+        <li>Connect instance B to chat, send a test message</li>
+        <li>Disconnect both instances</li>
+    </ol>
+    <button onclick="runDemo()">Run</button>
+    <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+    <div id="log"></div>
+
+    <!-- Load SDK from CDN (as recommended in documentation) -->
+    <script src="https://unpkg.com/quickblox/quickblox.min.js"></script>
+    <script>
+    /**
+     * QuickBlox JS SDK — Token-based Init Quickstart
+     *
+     * Demonstrates two independent SDK instances and session token sharing:
+     *   1. Create SDK instance A (via new QB.QuickBlox())
+     *   2. Initialize instance A with app credentials (appId, authKey, authSecret)
+     *   3. Create session + login user on instance A (get session token)
+     *   4. Create SDK instance B (independent copy)
+     *   5. Initialize instance B with the token from A (no authKey/authSecret needed)
+     *   6. Use instance B: retrieve dialogs, load messages (proves token works)
+     *   7. Connect instance B to chat, send a test message
+     *   8. Disconnect both instances
+     *
+     * Use case: your backend creates a QB session and passes the token to the
+     * frontend. The frontend initializes the SDK with the token only — it never
+     * sees authKey or authSecret.
+     */
+
+    // ============ CREDENTIALS ============
+    var CREDS = {
+        appId: 0,                       // Your Application ID from Dashboard → Overview
+        authKey: 'YOUR_AUTH_KEY',       // Your Auth Key from Dashboard → Overview
+        authSecret: 'YOUR_AUTH_SECRET', // Your Auth Secret from Dashboard → Overview
+        accountKey: 'YOUR_ACCOUNT_KEY'  // Your Account Key from Dashboard → Account Settings
+    };
+    var USER = {
+        login: 'YOUR_USER_LOGIN',       // Test user login (create in Dashboard → Users)
+        password: 'YOUR_USER_PASSWORD'  // Test user password
+    };
+    // =====================================
+
+    function log(text, cls) {
+        var el = document.getElementById('log');
+        el.innerHTML += '<span class="' + (cls || '') + '">' + text + '</span>\n';
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function formatError(err) {
+        if (!err) return 'Unknown error';
+        if (typeof err === 'string') return err;
+        if (err.message) return err.message;
+        if (err.detail) return JSON.stringify(err.detail);
+        if (err.code) return 'Code ' + err.code + ': ' + (err.info || JSON.stringify(err));
+        var str = JSON.stringify(err);
+        return str === '{}' ? String(err) : str;
+    }
+
+    async function runDemo() {
+        try {
+            // ─────────────────────────────────────────────────
+            // PART 1: Instance A — full credentials (backend role)
+            // ─────────────────────────────────────────────────
+            log('═══ PART 1: Instance A (has full credentials) ═══', 'sep');
+
+            // ───── 1. CREATE SDK INSTANCE A ─────
+            // QB.QuickBlox is the constructor exposed on the default QB object.
+            // Calling new QB.QuickBlox() creates a completely independent SDK
+            // instance with its own session, config, and chat connection.
+            var QBa = new QB.QuickBlox();
+            log('1. Created SDK instance A (new QB.QuickBlox())', 'ok');
+
+            // ───── 2. INITIALIZE INSTANCE A WITH FULL CREDENTIALS ─────
+            // Standard init: appId, authKey, authSecret, accountKey, config
+            QBa.init(
+                CREDS.appId,
+                CREDS.authKey,
+                CREDS.authSecret,
+                CREDS.accountKey,
+                {
+                    debug: true,
+                    endpoints: {
+                        api: 'api.quickblox.com',
+                        chat: 'chat.quickblox.com'
+                    },
+                    chatProtocol: { active: 2 }
+                }
+            );
+            log('2. Instance A initialized with appId + authKey + authSecret', 'ok');
+
+            // ───── 3. CREATE SESSION + LOGIN ON INSTANCE A ─────
+            // createSession(userParams, callback) — creates a session AND logs in
+            // when user credentials are passed. Returns session with token.
+            var session = await new Promise(function(resolve, reject) {
+                QBa.createSession(USER, function(err, result) {
+                    err ? reject(err) : resolve(result);
+                });
+            });
+
+            var token = session.token;
+            var userId = session.user_id;
+            log('3. Instance A: session created + user logged in', 'ok');
+            log('   token:   ' + token.substring(0, 24) + '...', 'data');
+            log('   user_id: ' + userId, 'data');
+
+            // ─────────────────────────────────────────────────
+            // PART 2: Instance B — token only (frontend role)
+            // ─────────────────────────────────────────────────
+            log('', '');
+            log('═══ PART 2: Instance B (has token only, no secrets) ═══', 'sep');
+
+            // ───── 4. CREATE SDK INSTANCE B ─────
+            // Another independent instance — knows nothing about A
+            var QBb = new QB.QuickBlox();
+            log('4. Created SDK instance B (new QB.QuickBlox())', 'ok');
+
+            // ───── 5. INITIALIZE INSTANCE B WITH TOKEN ─────
+            // Token-based init: QB.init(token, appId, null, accountKey, config)
+            //   - First parameter is the session token (string) instead of appId (number)
+            //   - Second parameter is appId (number)
+            //   - Third parameter (authSecret) must be null/undefined
+            // The SDK detects this pattern and sets the token on its internal session.
+            QBb.init(
+                token,                         // session token from instance A
+                CREDS.appId,                   // appId (required for JID generation)
+                null,                          // no authSecret needed
+                CREDS.accountKey,
+                {
+                    debug: true,
+                    endpoints: {
+                        api: 'api.quickblox.com',
+                        chat: 'chat.quickblox.com'
+                    },
+                    chatProtocol: { active: 2 }
+                }
+            );
+            log('5. Instance B initialized with TOKEN (no authKey/authSecret)', 'ok');
+
+            // Verify the token was applied by checking the session
+            var verifiedSession = await new Promise(function(resolve, reject) {
+                QBb.startSessionWithToken(token, function(err, result) {
+                    err ? reject(err) : resolve(result);
+                });
+            });
+            log('   Session verified, user_id: ' + verifiedSession.session.user_id, 'data');
+
+            // ───── 6. USE INSTANCE B: DIALOGS + MESSAGES ─────
+            // All REST API calls work because the token is set
+            var dialogsResult = await new Promise(function(resolve, reject) {
+                QBb.chat.dialog.list(
+                    { limit: 10, sort_desc: 'last_message_date_sent' },
+                    function(err, result) {
+                        err ? reject(err) : resolve(result);
+                    }
+                );
+            });
+            var dialogs = dialogsResult.items;
+            log('6. Instance B: dialogs loaded: ' + dialogs.length + ' of ' + dialogsResult.total_entries, 'ok');
+
+            dialogs.forEach(function(d, i) {
+                var type = d.type === 1 ? 'PUBLIC' : d.type === 2 ? 'GROUP' : d.type === 3 ? 'PRIVATE' : '?';
+                log('   [' + i + '] ' + type + ' "' + (d.name || 'no name') + '"  id=' + d._id, 'data');
+            });
+
+            if (dialogs.length === 0) {
+                log('   No dialogs found. Create a dialog first.', 'info');
+                QBb.chat.disconnect();
+                log('8. Disconnected', 'ok');
+                return;
+            }
+
+            // Load messages from the first dialog
+            var firstDialog = dialogs[0];
+            var messagesResult = await new Promise(function(resolve, reject) {
+                QBb.chat.message.list(
+                    {
+                        chat_dialog_id: firstDialog._id,
+                        limit: 5,
+                        sort_desc: 'date_sent',
+                        mark_as_read: 0
+                    },
+                    function(err, result) {
+                        err ? reject(err) : resolve(result);
+                    }
+                );
+            });
+            var messages = messagesResult.items;
+            log('   Messages loaded: ' + messages.length + ' from "' + (firstDialog.name || firstDialog._id) + '"', 'ok');
+            messages.reverse().forEach(function(m) {
+                var time = new Date(m.date_sent * 1000).toLocaleTimeString();
+                var body = m.message || m.body || '[attachment]';
+                log('   ' + time + '  sender=' + m.sender_id + ': ' + body, 'data');
+            });
+
+            // ───── 7. CONNECT INSTANCE B TO CHAT + SEND MESSAGE ─────
+            // Chat connect works with token as password too
+            await new Promise(function(resolve, reject) {
+                QBb.chat.connect({ userId: userId, password: token }, function(err, roster) {
+                    err ? reject(err) : resolve(roster);
+                });
+            });
+            log('7. Instance B: connected to chat (XMPP) using token as password', 'ok');
+
+            // Send a test message
+            var isGroup = firstDialog.type === 2;
+            var recipientId = isGroup
+                ? QBb.chat.helpers.getRoomJidFromDialogId(firstDialog._id)
+                : firstDialog.occupants_ids.find(function(id) { return id !== userId; }) || userId;
+            var msgType = isGroup ? 'groupchat' : 'chat';
+
+            if (isGroup) {
+                await new Promise(function(resolve) {
+                    QBb.chat.muc.join(
+                        QBb.chat.helpers.getRoomJidFromDialogId(firstDialog._id),
+                        function() { resolve(); }
+                    );
+                });
+                log('   Joined MUC room', 'info');
+            }
+
+            var messageId = QBb.chat.send(recipientId, {
+                type: msgType,
+                body: 'Test from token-based instance (' + new Date().toLocaleTimeString() + ')',
+                extension: {
+                    save_to_history: 1,
+                    dialog_id: firstDialog._id
+                }
+            });
+            log('   Message sent, id: ' + messageId, 'ok');
+
+            // ───── 8. DISCONNECT ─────
+            QBb.chat.disconnect();
+            log('8. Disconnected', 'ok');
+            log('--- Done ---', 'info');
+
+        } catch (err) {
+            log('ERROR: ' + formatError(err), 'err');
+            console.error(err);
+        }
+    }
+    </script>
+</body>
+</html>
