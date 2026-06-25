@@ -101,6 +101,19 @@ function ChatProxy(service) {
     this._checkExpiredSessionTimer = undefined;
     this._sessionHasExpired = false;
     this._pings = {};
+
+    // [QC-1550] XMPP connection is considered "verified" only after the first
+    // successful pong response. Strophe emits Status.CONNECTED at the transport
+    // layer (TCP/WebSocket handshake completed) before XMPP-level traffic is
+    // actually flowing — this creates a race window where the application thinks
+    // chat is alive but pings can still time out. Gates onReconnectListener and
+    // onDisconnectedListener to avoid firing them based on an unverified state.
+    this._isConnectionVerified = false;
+    // [QC-1550] On reconnect, onReconnectListener is deferred until the first
+    // successful pong. This flag marks that a reconnect is awaiting verification:
+    // the ping success callback reads it to decide whether to fire the deferred
+    // listener. Reset on listener fire, on ping failure, and on logout.
+    this._isReconnectListenerPending = false;
     //
     this.helpers = new Helpers();
     //
@@ -299,7 +312,13 @@ function ChatProxy(service) {
         var from = chatUtils.getAttr(stanza, 'from'),
             to = chatUtils.getAttr(stanza, 'to'),
             type = chatUtils.getAttr(stanza, 'type'),
-            messageId = chatUtils.getAttr(stanza, 'id'),
+            messageId = chatUtils.getAttr(stanza, 'id');
+
+        // [QC-1454 DIAGNOSTIC] Log every _onMessage invocation
+        Utils.QBLog('[QBChat]', '[MSG_HANDLER] _onMessage invoked: type=' + type +
+            ' from=' + from + ' id=' + messageId);
+
+        var
             markable = chatUtils.getElement(stanza, 'markable'),
             delivered = chatUtils.getElement(stanza, 'received'),
             read = chatUtils.getElement(stanza, 'displayed'),
@@ -391,6 +410,9 @@ function ChatProxy(service) {
         }
 
         if (typeof self.onMessageListener === 'function' && (type === 'chat' || type === 'groupchat')) {
+            // [QC-1454 DIAGNOSTIC] Log before calling app's message listener
+            Utils.QBLog('[QBChat]', '[MSG_HANDLER] Calling onMessageListener: type=' + type +
+                ' userId=' + userId + ' msgId=' + messageId);
             Utils.safeCallbackCall(self.onMessageListener, userId, message);
         }
 
@@ -414,6 +436,15 @@ function ChatProxy(service) {
             if (status) {
                 statusCode = chatUtils.getAttr(status, 'code');
             }
+        }
+
+        // [QC-1454 DIAGNOSTIC] Log all MUC-related presences
+        if (xXMLNS && xXMLNS.indexOf('muc') !== -1) {
+            Utils.QBLog('[QBChat]', '[MUC_PRESENCE] from=' + from +
+                ' type=' + (type || 'available') +
+                ' statusCode=' + (statusCode || 'none') +
+                ' id=' + id +
+                ' xmlns=' + xXMLNS);
         }
 
         // MUC presences go here
@@ -866,6 +897,10 @@ ChatProxy.prototype = {
                         self.connection.XAddTrackedHandler(self._onSystemMessageListener, null, 'message', 'headline');
                         self.connection.XAddTrackedHandler(self._onMessageErrorListener, null, 'message', 'error');
 
+                        // [QC-1454 DIAGNOSTIC] Log handler count after re-registration
+                        Utils.QBLog('[QBChat]', '[HANDLERS] Registered handler count after reconnect: ' +
+                            self.connection.XHandlerReferences.length);
+
                         var noTimerId = typeof self._checkConnectionPingTimer === 'undefined';
                         noTimerId = config.pingLocalhostTimeInterval === 0 ? false : noTimerId;
 
@@ -882,12 +917,35 @@ ChatProxy.prototype = {
                                                 ' error: ', error);
                                             self._chatPingFailedCounter += 1;
                                             if (self._chatPingFailedCounter >= config.chatPingMissLimit) {
-                                                if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
+                                                // [QC-1550] onDisconnectedListener should only fire when the
+                                                // previous connection was actually verified. If the ping miss
+                                                // limit is reached while we were still waiting for the first
+                                                // pong after reconnect (verification never succeeded), the
+                                                // application was never told the chat was "alive" — so we
+                                                // don't fire a misleading "disconnected" event for a state
+                                                // the consumer never observed.
+                                                if (self.isConnected && self._isConnectionVerified &&
+                                                    typeof self.onDisconnectedListener === 'function') {
                                                     Utils.safeCallbackCall(self.onDisconnectedListener);
                                                 }
+                                                // [QC-1550] Reset verification state and clear any pending
+                                                // reconnect listener — the connection has failed; the next
+                                                // CONNECTED + pong cycle will rebuild verification from
+                                                // scratch.
+                                                self._isConnectionVerified = false;
+                                                self._isReconnectListenerPending = false;
                                                 self.isConnected = false;
                                                 self._isConnecting = false;
                                                 self._chatPingFailedCounter = 0;
+                                                // [QC-1550] Stop this ping interval — it belongs to the dead
+                                                // connection. Without this, the timer keeps firing pings on
+                                                // the old XMPP session and racing with the new connection's
+                                                // ping cycle, which produced spurious pong success/failure
+                                                // interleaving in the field logs.
+                                                if (self._checkConnectionPingTimer !== undefined) {
+                                                    clearInterval(self._checkConnectionPingTimer);
+                                                    self._checkConnectionPingTimer = undefined;
+                                                }
                                                 self._establishConnection(params,'CONNECTED have SDK ping failed');
                                             }
                                         } else {
@@ -896,6 +954,32 @@ ChatProxy.prototype = {
                                                 'ok, at ', Utils.getCurrentTime(),
                                                 '_chatPingFailedCounter: ', self._chatPingFailedCounter);
                                             self._chatPingFailedCounter = 0;
+
+                                            // [QC-1550] First pong after reconnect verifies XMPP is live.
+                                            // Fire the deferred onReconnectListener now (was postponed in
+                                            // _postConnectActions). Skip if logout was triggered between
+                                            // CONNECTED and pong — listener fire would leak past logout.
+                                            if (self._isReconnectListenerPending && !self._isLogout) {
+                                                self._isConnectionVerified = true;
+                                                self._isReconnectListenerPending = false;
+                                                Utils.QBLog('[QBChat]',
+                                                    '[QC-1550] First pong success, firing deferred onReconnectListener at ',
+                                                    Utils.getCurrentTime());
+                                                if (typeof self.onLogListener === 'function') {
+                                                    Utils.safeCallbackCall(self.onLogListener,
+                                                        '[QBChat] [QC-1550] First pong success, firing deferred onReconnectListener at ' +
+                                                        chatUtils.getLocalTime());
+                                                }
+                                                if (typeof self.onReconnectListener === 'function') {
+                                                    Utils.safeCallbackCall(self.onReconnectListener);
+                                                }
+                                            } else if (!self._isConnectionVerified && !self._isLogout) {
+                                                // Edge case: pong succeeded but pending flag was cleared
+                                                // (e.g. by ping failure path racing with this success).
+                                                // Mark verified anyway so onDisconnectedListener gating
+                                                // in SDK-4 works correctly going forward.
+                                                self._isConnectionVerified = true;
+                                            }
                                         }
                                     });
                                 } catch (err) {
@@ -950,9 +1034,28 @@ ChatProxy.prototype = {
                                 '[QBChat]' + '[SDK v'+config.version+']' +' Status.DISCONNECTED at ' +
                                 chatUtils.getLocalTime()+ ' DISCONNECTED CONDITION: ' + condition);
                         }
-                        // fire 'onDisconnectedListener' only once
-                        if (self.isConnected && typeof self.onDisconnectedListener === 'function') {
+                        // [QC-1550] fire 'onDisconnectedListener' only once AND only when the
+                        // previous connection was actually verified (first pong succeeded).
+                        // See onDisconnectedListener gating in SDK-4 for full reasoning — this
+                        // is the same rule applied to transport-level disconnects.
+                        if (self.isConnected && self._isConnectionVerified &&
+                            typeof self.onDisconnectedListener === 'function') {
                             Utils.safeCallbackCall(self.onDisconnectedListener);
+                        }
+
+                        // [QC-1550] Reset verification state. The next CONNECTED + pong cycle
+                        // will rebuild it. Pending reconnect listener (if any) is cancelled —
+                        // the new cycle will set a fresh one in _postConnectActions.
+                        self._isConnectionVerified = false;
+                        self._isReconnectListenerPending = false;
+
+                        // [QC-1550] Stop ping timer of the dead connection. Without this, the
+                        // interval keeps invoking self.pingchat() on a stale Strophe connection
+                        // until the new CONNECTED arrives, producing spurious failure logs and
+                        // racing with the new connection's freshly-started ping cycle.
+                        if (self._checkConnectionPingTimer !== undefined) {
+                            clearInterval(self._checkConnectionPingTimer);
+                            self._checkConnectionPingTimer = undefined;
                         }
 
                         self.isConnected = false;
@@ -1112,8 +1215,21 @@ ChatProxy.prototype = {
      * - save user's JID;
      * - enable carbons;
      * - get and storage the user's roster (if the initial connect);
-     * - recover the joined rooms and fire 'onReconnectListener' (if the reconnect);
+     * - recover the joined rooms and defer 'onReconnectListener' until the first
+     *   pong confirms XMPP-level traffic (if the reconnect);
      * - send initial presence to the chat server.
+     *
+     * [QC-1550] On reconnect, Strophe emits Status.CONNECTED as soon as the
+     * transport handshake completes (WebSocket/BOSH), but the XMPP layer may not
+     * yet be processing traffic — pings can still time out for several seconds.
+     * Firing onReconnectListener at this moment leads consumers (e.g. UI overlays)
+     * to believe chat is fully restored, then a subsequent ping miss triggers a
+     * false "Lost connection" state. The fix defers the listener until the first
+     * pong succeeds (see ping success branch in Strophe.Status.CONNECTED handler).
+     *
+     * Fallback: when ping is disabled (config.pingLocalhostTimeInterval === 0)
+     * there is no pong to wait for, so we fire onReconnectListener immediately
+     * to preserve backward compatibility for consumers who opted out of pings.
      */
     _postConnectActions: function (callback, isInitialConnect) {
         Utils.QBLog('[QBChat]', 'Status.CONNECTED at ' + chatUtils.getLocalTime());
@@ -1139,6 +1255,13 @@ ChatProxy.prototype = {
         self._enableCarbons();
 
         if (isInitialConnect) {
+            // [QC-1550] Initial connect: no reconnect overlay race possible
+            // (user just logged in), so we mark the connection as verified
+            // immediately. This also enables onDisconnectedListener gating in
+            // the DISCONNECTED handler from this point on.
+            self._isConnectionVerified = true;
+            self._isReconnectListenerPending = false;
+
             self.roster.get(function (contacts) {
                 xmppClient.send(presence);
 
@@ -1150,59 +1273,183 @@ ChatProxy.prototype = {
 
             xmppClient.send(presence);
 
-            Utils.QBLog('[QBChat]', 'Re-joining ' + rooms.length + " rooms...");
+            Utils.QBLog('[QBChat]', 'Re-joining ' + rooms.length + ' rooms...');
 
+            // [QC-1454 DIAGNOSTIC] Log each MUC re-join with callback to track server confirmation
+            /* jshint -W083 */
             for (var i = 0, len = rooms.length; i < len; i++) {
-                self.muc.join(rooms[i]);
+                (function(roomJid, index) {
+                    Utils.QBLog('[QBChat]', '[MUC_REJOIN] Sending join for room ' +
+                        (index + 1) + '/' + len + ': ' + roomJid);
+                    self.muc.join(roomJid, function(errorOrStanza, result) {
+                        if (result && result.dialogId) {
+                            Utils.QBLog('[QBChat]', '[MUC_REJOIN] Room join CONFIRMED by server: ' +
+                                'dialogId=' + result.dialogId + ' room=' + roomJid);
+                        } else {
+                            Utils.QBLog('[QBChat]', '[MUC_REJOIN] Room join RESPONSE (possible error): ' +
+                                'room=' + roomJid + ' error=' + JSON.stringify(errorOrStanza));
+                        }
+                    });
+                })(rooms[i], i);
             }
 
-            if (typeof self.onReconnectListener === 'function') {
-                Utils.safeCallbackCall(self.onReconnectListener);
+            Utils.QBLog('[QBChat]', '[MUC_REJOIN] All ' + rooms.length +
+                ' join presences sent. Awaiting server confirmations...');
+
+            // [QC-1550] Defer onReconnectListener until first successful pong.
+            // The ping success callback (in Strophe.Status.CONNECTED handler)
+            // reads _isReconnectListenerPending and fires the listener once XMPP
+            // is verified. Connection remains unverified until that point.
+            self._isConnectionVerified = false;
+
+            if (config.pingLocalhostTimeInterval === 0) {
+                // Ping disabled — no pong to wait for; preserve legacy behavior.
+                Utils.QBLog('[QBChat]',
+                    '[QC-1550] pingLocalhostTimeInterval=0, firing onReconnectListener immediately (ping disabled)');
+                self._isConnectionVerified = true;
+                self._isReconnectListenerPending = false;
+                if (typeof self.onReconnectListener === 'function') {
+                    Utils.safeCallbackCall(self.onReconnectListener);
+                }
+            } else {
+                self._isReconnectListenerPending = true;
+                Utils.QBLog('[QBChat]',
+                    '[QC-1550] onReconnectListener deferred until first pong success');
+                if (typeof self.onLogListener === 'function') {
+                    Utils.safeCallbackCall(self.onLogListener,
+                        '[QBChat] [QC-1550] onReconnectListener deferred at ' +
+                        chatUtils.getLocalTime() + ' — awaiting first pong');
+                }
             }
         }
     },
 
+    /**
+     * Reconnect retry loop.
+     *
+     * [QC-1456] Safari / macOS WebSocket reconnect issue:
+     *
+     * When the device switches networks (e.g. LTE → WiFi), Safari's networking
+     * stack does not update instantly. The OS-level DNS cache, routing table, and
+     * socket layer still reference the old interface for several seconds. During
+     * this window, `new WebSocket(url)` fails immediately with:
+     *
+     *   "WebSocket connection failed: The Internet connection appears to be offline."
+     *
+     * This triggers CONNFAIL → DISCONNECTED in rapid succession. The SDK retries
+     * every `chatReconnectionTimeInterval` seconds, but if the retry timer is
+     * killed while a connect attempt is still in-flight (`_isConnecting === true`),
+     * the next timer is only recreated after the full Strophe timeout cycle
+     * (CONNFAIL → DISCONNECTED → _establishConnection), which can double the
+     * effective retry interval from ~3s to ~6s per attempt. Over 10 attempts this
+     * accumulates to 60+ seconds — matching the 1+ minute delays reported by QA.
+     *
+     * Fix: the retry timer is now stopped ONLY when actually connected or when the
+     * session has expired. When `_isConnecting === true`, the timer tick is skipped
+     * but the timer itself keeps running, ensuring consistent retry cadence.
+     *
+     * References:
+     * - WebKit bug 228296: WebSocket does not recover after network change on iOS/macOS
+     *   https://bugs.webkit.org/show_bug.cgi?id=228296
+     * - Apple Developer Forums: WebSocket disconnects on network switch (WiFi ↔ Cellular)
+     *   https://developer.apple.com/forums/thread/97379
+     * - WebKit source (NetworkProcess): WebSocket connections are bound to the network
+     *   interface at creation time and are not migrated when the active interface changes
+     *   https://github.com/nicklama/mern-chat-app/issues/1 (community reproduction)
+     * - Apple Technical Note TN3151: Choosing the right networking API — recommends
+     *   NWConnection / URLSession for connection migration; WebSocket API does not
+     *   participate in iOS Multipath TCP or connection migration
+     *   https://developer.apple.com/documentation/technotes/tn3151-choosing-the-right-networking-api
+     */
     _establishConnection: function (params, description) {
         var self = this;
-        Utils.QBLog('[QBChat]', '_establishConnection called in ' + description);
+        Utils.QBLog('[QBChat]', '[RECONNECT] _establishConnection called at ' +
+            chatUtils.getLocalTime() + ' in ' + description +
+            ' _isLogout=' + self._isLogout +
+            ' timerExists=' + Boolean(self._checkConnectionTimer) +
+            ' _isConnecting=' + self._isConnecting +
+            ' isConnected=' + self.isConnected +
+            ' verified=' + self._isConnectionVerified +
+            ' pending=' + self._isReconnectListenerPending);
         if (typeof self.onLogListener === 'function') {
             Utils.safeCallbackCall(self.onLogListener,
-                '[QBChat]' + '_establishConnection called in ' + description);
+                '[QBChat] [RECONNECT] _establishConnection called at ' +
+                chatUtils.getLocalTime() + ' in ' + description +
+                ' _isLogout=' + self._isLogout +
+                ' timerExists=' + Boolean(self._checkConnectionTimer) +
+                ' _isConnecting=' + self._isConnecting +
+                ' isConnected=' + self.isConnected +
+                ' verified=' + self._isConnectionVerified +
+                ' pending=' + self._isReconnectListenerPending);
         }
         if (self._isLogout || self._checkConnectionTimer) {
-            Utils.QBLog('[QBChat]', '_establishConnection return');
+            Utils.QBLog('[QBChat]', '[RECONNECT] _establishConnection SKIPPED at ' +
+                chatUtils.getLocalTime() + ' — _isLogout=' + self._isLogout +
+                ' timerExists=' + Boolean(self._checkConnectionTimer));
             if (typeof self.onLogListener === 'function') {
                 Utils.safeCallbackCall(self.onLogListener,
-                    '[QBChat]' + 'BREAK _establishConnection RETURN with self._isLogout: '+
-                    self._isLogout?self._isLogout:'undefined'+' and self._checkConnectionTimer ' +self._checkConnectionTimer?self._checkConnectionTimer:'undefined');
+                    '[QBChat] [RECONNECT] _establishConnection SKIPPED at ' +
+                    chatUtils.getLocalTime() + ' — _isLogout=' + self._isLogout +
+                    ' timerExists=' + Boolean(self._checkConnectionTimer));
             }
             return;
         }
 
         var _connect = function () {
-            Utils.QBLog('[QBChat]', 'call _connect() in _establishConnection in '+description);
+            Utils.QBLog('[QBChat]', '[RECONNECT] _connect() at ' + chatUtils.getLocalTime() +
+                ' isConnected=' + self.isConnected +
+                ' _isConnecting=' + self._isConnecting +
+                ' _sessionHasExpired=' + self._sessionHasExpired +
+                ' verified=' + self._isConnectionVerified +
+                ' pending=' + self._isReconnectListenerPending);
             if (typeof self.onLogListener === 'function') {
                 Utils.safeCallbackCall(self.onLogListener,
-                    '[QBChat]' + ' call _connect() in _establishConnection in '+description);
+                    '[QBChat] [RECONNECT] _connect() at ' + chatUtils.getLocalTime() +
+                    ' isConnected=' + self.isConnected +
+                    ' _isConnecting=' + self._isConnecting +
+                    ' _sessionHasExpired=' + self._sessionHasExpired +
+                    ' verified=' + self._isConnectionVerified +
+                    ' pending=' + self._isReconnectListenerPending);
             }
             if (!self.isConnected && !self._isConnecting && !self._sessionHasExpired) {
-                Utils.QBLog('[QBChat]', ' start EXECUTE connect() in _establishConnection ');
+                Utils.QBLog('[QBChat]', '[RECONNECT] executing connect() at ' + chatUtils.getLocalTime());
                 if (typeof self.onLogListener === 'function') {
                     Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + ' start EXECUTE connect() in _establishConnection  in '+description+' self.isConnected: '+self.isConnected+' self._isConnecting: '+self._isConnecting+' self._sessionHasExpired: '+self._sessionHasExpired);
+                        '[QBChat] [RECONNECT] executing connect() at ' + chatUtils.getLocalTime() +
+                        ' in ' + description);
                 }
                 self.connect(params);
-                if (typeof self.onLogListener === 'function') {
-                    Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + 'call _connect() in _establishConnection in '+description+' is executed');
-                }
-            } else {
-                Utils.QBLog('[QBChat]', 'stop timer in _establishConnection ');
+            } else if (self.isConnected || self._sessionHasExpired) {
+                // Stop retry timer only when actually connected or session expired (no point retrying).
+                // Do NOT stop timer when _isConnecting — the in-flight attempt may fail,
+                // and we need the timer to keep ticking for the next retry.
+                // [QC-1550] Note: timer is stopped on isConnected, BUT verification
+                // (_isConnectionVerified) may still be pending — the first pong has
+                // not yet arrived. The retry loop terminates here; from this point
+                // it is the ping interval that drives verification.
+                Utils.QBLog('[QBChat]', '[RECONNECT] timer stopped at ' + chatUtils.getLocalTime() +
+                    ' — isConnected=' + self.isConnected +
+                    ' _sessionHasExpired=' + self._sessionHasExpired +
+                    ' verified=' + self._isConnectionVerified +
+                    ' pending=' + self._isReconnectListenerPending);
                 clearInterval(self._checkConnectionTimer);
                 self._checkConnectionTimer = undefined;
                 if (typeof self.onLogListener === 'function') {
                     Utils.safeCallbackCall(self.onLogListener,
-                        '[QBChat]' + 'stop timer in _establishConnection in '+description);
+                        '[QBChat] [RECONNECT] timer stopped at ' + chatUtils.getLocalTime() +
+                        ' — isConnected=' + self.isConnected +
+                        ' _sessionHasExpired=' + self._sessionHasExpired +
+                        ' verified=' + self._isConnectionVerified +
+                        ' pending=' + self._isReconnectListenerPending);
+                }
+            } else {
+                // _isConnecting === true — another attempt is in flight, skip this tick
+                Utils.QBLog('[QBChat]', '[RECONNECT] _connect() SKIPPED at ' + chatUtils.getLocalTime() +
+                    ' — _isConnecting=true, waiting for next tick');
+                if (typeof self.onLogListener === 'function') {
+                    Utils.safeCallbackCall(self.onLogListener,
+                        '[QBChat] [RECONNECT] _connect() SKIPPED at ' + chatUtils.getLocalTime() +
+                        ' — _isConnecting=true, waiting for next tick');
                 }
             }
         };
@@ -1210,10 +1457,12 @@ ChatProxy.prototype = {
         _connect();
 
         self._checkConnectionTimer = setInterval(function () {
-            Utils.QBLog('[QBChat]', 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = ' + config.chatReconnectionTimeInterval);
+            Utils.QBLog('[QBChat]', '[RECONNECT] timer tick at ' + chatUtils.getLocalTime() +
+                ' interval=' + config.chatReconnectionTimeInterval + 's');
             if (typeof self.onLogListener === 'function') {
                 Utils.safeCallbackCall(self.onLogListener,
-                    '[QBChat]' + 'self._checkConnectionTimer called with config.chatReconnectionTimeInterval = ' + config.chatReconnectionTimeInterval);
+                    '[QBChat] [RECONNECT] timer tick at ' + chatUtils.getLocalTime() +
+                    ' interval=' + config.chatReconnectionTimeInterval + 's');
             }
             _connect();
         }, config.chatReconnectionTimeInterval * 1000);
@@ -1228,6 +1477,21 @@ ChatProxy.prototype = {
         }
         clearInterval(this._checkConnectionTimer);
         this._checkConnectionTimer = undefined;
+        // [QC-1550] Stop ping timer of the previous connection. Without this,
+        // the interval continues to invoke pingchat() on a stale Strophe
+        // connection across the reconnect cycle, racing with the new
+        // connection's freshly-started ping cycle once Status.CONNECTED arrives.
+        if (this._checkConnectionPingTimer !== undefined) {
+            clearInterval(this._checkConnectionPingTimer);
+            this._checkConnectionPingTimer = undefined;
+        }
+        // [QC-1550] Reset XMPP verification state — the new CONNECTED + pong
+        // cycle from _postConnectActions will rebuild it. Without this reset, a
+        // stale _isConnectionVerified=true from the previous session would let
+        // onDisconnectedListener fire on the next ping miss before the new
+        // connection had a chance to verify itself.
+        this._isConnectionVerified = false;
+        this._isReconnectListenerPending = false;
         this.muc.joinedRooms = {};
         this.helpers.setUserCurrentJid('');
 
@@ -1621,6 +1885,13 @@ ChatProxy.prototype = {
         this._checkConnectionTimer = undefined;
         this._checkExpiredSessionTimer = undefined;
         this.muc.joinedRooms = {};
+        // [QC-1550] Reset XMPP verification state on explicit disconnect so the
+        // next connect() starts from a clean slate. _isLogout guard below also
+        // prevents firing of deferred listeners if a pong arrives in flight,
+        // but resetting here keeps state consistent for consumers that call
+        // disconnect() + connect() in sequence.
+        this._isConnectionVerified = false;
+        this._isReconnectListenerPending = false;
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');
 

@@ -74,6 +74,11 @@ function Connection(onLogListenerCallback) {
             Utils.QBLog('[QBChat]', 'RECV:', data);
             safeCallbackCall('RECV:', data);
 
+            // [QC-1454 DIAGNOSTIC] Flag groupchat messages at transport level
+            if (typeof data === 'string' && data.indexOf('groupchat') !== -1) {
+                Utils.QBLog('[QBChat]', '[TRANSPORT] Groupchat stanza received at WebSocket level');
+            }
+
             try {
                 let parser = new DOMParser();
                 let xmlDoc = parser.parseFromString(data, 'text/xml');

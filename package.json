@@ -1,7 +1,7 @@
 {
   "name": "quickblox",
   "description": "QuickBlox JavaScript SDK",
-  "version": "2.23.0",
+  "version": "2.23.1",
   "homepage": "https://quickblox.com/developers/Javascript",
   "main": "src/qbMain.js",
   "types": "quickblox.d.ts",
@@ -83,6 +83,9 @@
     "lint": "jshint src --reporter=node_modules/jshint-stylish",
     "test:node-regression": "node spec/phase-a-upgrade-check.js",
     "test:regression": "npm run test:node-regression && npm test",
+    "test:pr": "jasmine --config=spec/support/jasmine.pr.json",
+    "test:full": "jasmine --config=spec/support/jasmine.full.json",
+    "test:ci": "npm run lint && npm run test:node-regression && npm run test:pr",
     "build": "cross-env NODE_ENV=production npm run lint && gulp build && gulp minify",
     "buildNotMinified": "npm run lint && gulp build",
     "generateBuildVersion": "gulp generate-build_version",
