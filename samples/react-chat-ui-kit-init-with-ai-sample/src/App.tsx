@@ -7,11 +7,14 @@ import {
     LoginData, AuthorizationData,
     QBDataContextType,
     useQbUIKitDataContext,
+    DefaultConfigurations,
+    type EmojiPickerPlacement,
 } from 'quickblox-react-ui-kit';
 import { QBConfig as QBConf } from './QBconfig';
 import './App.css';
-import useMyAIAssistAnswer from "./useMyAIAssistAnswer";
 import MyUIKitDesktopLayout from "./MyUIKitDesktopLayout";
+
+let isAuthStarted = false;
 
 function App() {
 
@@ -48,8 +51,13 @@ function App() {
   };
 
   useEffect(() => {
-    if (!isSDKInitialized) {
-      prepareSDK().then(result => {
+    if (isAuthStarted || isSDKInitialized) {
+      return;
+    }
+
+    isAuthStarted = true;
+
+    prepareSDK().then(result => {
 
         QB.createSession(currentUser, async function (errorCreateSession: any, session: any) {
           if (errorCreateSession) {
@@ -80,15 +88,29 @@ function App() {
           e => {
             console.log('init SDK has error: ', e)
           });
-    }
   }, []);
 
-    const { proxyConfig } = QBConf.configAIApi.AIAnswerAssistWidgetConfig;
-    const {sessionToken} =  QBConf.credentials;
-
-    const defaultAIAnswer = useMyAIAssistAnswer({
-        ...proxyConfig,sessionToken
-    });
+    const defaultQBConfig = DefaultConfigurations.getDefaultQBConfig();
+    const qbConfig = {
+        ...defaultQBConfig,
+        ...QBConf,
+        credentials: {
+            ...defaultQBConfig.credentials,
+            ...QBConf.credentials,
+        },
+        appConfig: {
+            ...defaultQBConfig.appConfig,
+            ...QBConf.appConfig,
+            reactions: {
+                ...defaultQBConfig.appConfig.reactions,
+                ...QBConf.appConfig.reactions,
+                picker: {
+                    ...QBConf.appConfig.reactions.picker,
+                    placement: QBConf.appConfig.reactions.picker.placement as EmojiPickerPlacement,
+                },
+            },
+        },
+    };
 
   return (
       <div>
@@ -99,7 +121,7 @@ function App() {
               login: currentUser.login,
               password: currentUser.password,
             }}
-            qbConfig={{... QBConf}}
+            qbConfig={qbConfig}
         >
           <div className="App">
             {
@@ -108,11 +130,6 @@ function App() {
                   ?
                   <MyUIKitDesktopLayout
                       uikitHeightOffset={"32px"}
-                      AIAssist={{
-                          enabled: true,
-                          default: true,
-                          AIWidget: defaultAIAnswer
-                      }}
                   />
                   // <QuickBloxUIKitDesktopLayout
                   //     uikitHeightOffset="56px"

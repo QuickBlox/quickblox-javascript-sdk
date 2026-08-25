@@ -73,11 +73,10 @@ Helpers.prototype.renderLastMessages = async function () {
     }
 
     if(dialog.messages.length>0) {
-        var userIds = Array.from(dialog.messages, function (mes) {
-            if(mes) {
-                return mes.sender_id;
-            }
+        messages.items.forEach(function (item) {
+            helpers.copyUiKitFields(item, item);
         });
+        var userIds = helpers.collectSenderIds(dialog.messages);
         await userModule.getUsersByIds(userIds)
 
         messages.items = messages.items.reverse();
@@ -163,14 +162,16 @@ Helpers.prototype.compileDialogParams = function (dialog) {
         userModule.addToCache(user);
     }
 
+    var lastMessagePreview = self.getDialogLastMessagePreview(dialog.last_message);
+
     return {
         _id: dialog._id,
         name: dialog.name,
         type: dialog.type,
         color: dialog.color || getDialogColor() || _.random(1, 10),
-        last_message: dialog.last_message === CONSTANTS.ATTACHMENT.BODY ? 'Attachment' : dialog.last_message,
+        last_message: lastMessagePreview || dialog.last_message,
         messages: dialog.messages || [],
-        attachment: dialog.last_message === CONSTANTS.ATTACHMENT.BODY,
+        attachment: lastMessagePreview === 'Attachment',
         // last_message_date_sent comes in UNIX time.
         last_message_date_sent: dialog.last_message_date_sent ? dialog.last_message_date_sent * 1000 : dialog.updated_at,
         users: dialog.occupants_ids || [],
@@ -309,18 +310,21 @@ Helpers.prototype._ = function ( _sel_string ) {
 };
 
 Helpers.prototype.fillMessagePrams = function (message) {
-    var self = this,
-        selfDelevered = self.checkIsMessageDeliveredToMe(message),
+    var self = this;
+
+    message.attachments = message.attachments || [];
+    message.read_ids = message.read_ids || [];
+    message.delivered_ids = message.delivered_ids || [];
+    self.copyUiKitFields(message, message);
+
+    var selfDelevered = self.checkIsMessageDeliveredToMe(message),
         selfReaded = self.checkIsMessageReadedByMe(message);
 
     // date_sent comes in UNIX time.
     message.date_sent = self.getTime(message.date_sent * 1000);
 
-    if (message.attachments) {
-        var attachments = message.attachments;
-        for (var i = 0; i < attachments.length; i++) {
-            attachments[i].src = self.getSrcFromAttachmentId(attachments[i].id);
-        }
+    for (var i = 0; i < message.attachments.length; i++) {
+        message.attachments[i].src = self.getAttachmentSrc(message.attachments[i]);
     }
 
     if (message.message === CONSTANTS.ATTACHMENT.BODY) {
@@ -358,6 +362,10 @@ Helpers.prototype.fillMessageBody = function (str) {
         url,
         URL_REGEXP = /https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}|www\.[a-zA-Z0-9]\.[^\s\^\'\"\<\>\(\)]{2,}/g;
 
+    if (str == null) {
+        str = '';
+    }
+    str = String(str);
     str = self.escapeHTML(str);
 
     // parser of paragraphs
@@ -373,11 +381,444 @@ Helpers.prototype.fillMessageBody = function (str) {
 };
 
 Helpers.prototype.escapeHTML = function (str) {
-    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (str == null) {
+        return '';
+    }
+
+    return String(str).replace(/</g, "&lt;").replace(/>/g, "&gt;");
 };
 
 Helpers.prototype.getSrcFromAttachmentId = function (id) {
     return QB.content.publicUrl(id) + '.json?token=' + app.token;
+};
+
+Helpers.prototype.getMessageBody = function (message) {
+    if (!message) {
+        return '';
+    }
+
+    if (message.message != null && message.message !== '') {
+        return String(message.message);
+    }
+
+    if (message.body != null && message.body !== '') {
+        return String(message.body);
+    }
+
+    return '';
+};
+
+Helpers.prototype.parseUiKitOriginalMessages = function (raw, depth) {
+    var self = this,
+        maxDepth = CONSTANTS.UI_KIT.MAX_ORIGINAL_DEPTH,
+        parsed = [];
+
+    depth = depth || 0;
+
+    if (depth >= maxDepth || raw == null || raw === '') {
+        return [];
+    }
+
+    if (Array.isArray(raw)) {
+        parsed = raw;
+    } else if (typeof raw === 'string') {
+        try {
+            parsed = JSON.parse(raw);
+        } catch (e) {
+            return [];
+        }
+    } else {
+        return [];
+    }
+
+    if (!Array.isArray(parsed)) {
+        return [];
+    }
+
+    return parsed.filter(function (item) {
+        return item && typeof item === 'object';
+    }).map(function (item) {
+        item.original_messages = self.parseUiKitOriginalMessages(
+            item.qb_original_messages || item.original_messages,
+            depth + 1
+        );
+        item.attachments = item.attachments || [];
+
+        return item;
+    });
+};
+
+Helpers.prototype.isUiKitMediaBody = function (str) {
+    if (!str) {
+        return false;
+    }
+
+    str = String(str);
+
+    return str.indexOf(CONSTANTS.UI_KIT.MEDIA_PREFIX) !== -1 ||
+        str.indexOf(CONSTANTS.UI_KIT.ATTACHMENT_PREFIX) !== -1;
+};
+
+Helpers.prototype.isUiKitForwardOrReply = function (message) {
+    var action = message && message.qb_message_action,
+        originals = message && message.original_messages,
+        body = this.getMessageBody(message);
+
+    if (action === 'forward' || action === 'reply') {
+        return true;
+    }
+
+    if (originals && originals.length) {
+        return true;
+    }
+
+    return body.indexOf(CONSTANTS.UI_KIT.FORWARD_PREFIX) !== -1 ||
+        body.indexOf(CONSTANTS.UI_KIT.REPLY_PREFIX) !== -1;
+};
+
+Helpers.prototype.parseUiKitMediaBody = function (str) {
+    if (!this.isUiKitMediaBody(str)) {
+        return null;
+    }
+
+    var parts = String(str).split('|');
+
+    if (parts.length < 3) {
+        return null;
+    }
+
+    return {
+        name: parts[1] || '',
+        uid: parts[2] || '',
+        mime: parts[3] || ''
+    };
+};
+
+Helpers.prototype.getAttachmentUid = function (attachment) {
+    if (!attachment) {
+        return '';
+    }
+
+    return String(attachment.uid || attachment.id || '');
+};
+
+Helpers.prototype.getAttachmentSrc = function (attachment) {
+    var uid = this.getAttachmentUid(attachment);
+
+    if (!uid) {
+        return '';
+    }
+
+    return this.getSrcFromAttachmentId(uid);
+};
+
+Helpers.prototype.isImageAttachment = function (attachment) {
+    var type = attachment && attachment.type != null ? String(attachment.type).toLowerCase() : '',
+        contentType = attachment && (attachment['content-type'] || attachment.contentType),
+        name = attachment && attachment.name != null ? String(attachment.name) : '',
+        mime;
+
+    contentType = contentType != null ? String(contentType).toLowerCase() : '';
+    mime = contentType || type;
+
+    if (/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)) {
+        return true;
+    }
+
+    if (mime.indexOf('image/') === 0) {
+        return true;
+    }
+
+    if (contentType && contentType.indexOf('image/') !== 0) {
+        return false;
+    }
+
+    if (type === 'image' && name && /\.[a-z0-9]{2,5}$/i.test(name)) {
+        return false;
+    }
+
+    if (type === 'image' || !mime) {
+        return true;
+    }
+
+    return false;
+};
+
+Helpers.prototype.sanitizeUiKitServiceBody = function (str) {
+    var ui = CONSTANTS.UI_KIT;
+
+    if (str == null) {
+        return '';
+    }
+
+    str = String(str).trim();
+
+    if (!str) {
+        return '';
+    }
+
+    if (str === ui.FORWARD_PREFIX || str === ui.REPLY_PREFIX) {
+        return '';
+    }
+
+    if (this.isUiKitMediaBody(str)) {
+        return '';
+    }
+
+    if (str.indexOf(ui.FORWARD_PREFIX) !== -1) {
+        str = str.split(ui.FORWARD_PREFIX).join('').trim();
+    }
+
+    if (str.indexOf(ui.REPLY_PREFIX) !== -1) {
+        str = str.split(ui.REPLY_PREFIX).join('').trim();
+    }
+
+    return str;
+};
+
+Helpers.prototype.normalizeAttachments = function (attachments) {
+    var self = this,
+        result = [];
+
+    if (!attachments || !attachments.length) {
+        return result;
+    }
+
+    for (var i = 0; i < attachments.length; i++) {
+        var attachment = attachments[i],
+            uid = self.getAttachmentUid(attachment);
+
+        if (!uid) {
+            continue;
+        }
+
+        result.push({
+            id: uid,
+            uid: uid,
+            name: self.escapeHTML(attachment.name || 'File'),
+            type: attachment.type || '',
+            src: attachment.src || self.getAttachmentSrc(attachment),
+            isImage: self.isImageAttachment(attachment)
+        });
+    }
+
+    return result;
+};
+
+Helpers.prototype.attachmentsFromMediaBody = function (str) {
+    var media = this.parseUiKitMediaBody(str);
+
+    if (!media) {
+        return [];
+    }
+
+    if (media.uid) {
+        return this.normalizeAttachments([{
+            uid: media.uid,
+            name: media.name,
+            type: media.mime
+        }]);
+    }
+
+    return [{
+        id: '',
+        uid: '',
+        name: this.escapeHTML(media.name || 'File'),
+        type: media.mime || '',
+        src: '',
+        isImage: false
+    }];
+};
+
+Helpers.prototype.copyUiKitFields = function (message, source) {
+    source = source || {};
+    message.attachments = message.attachments || [];
+
+    if (source.qb_message_action) {
+        message.qb_message_action = source.qb_message_action;
+    }
+
+    if (source.origin_sender_name) {
+        message.origin_sender_name = source.origin_sender_name;
+    } else if (message.origin_sender_name == null) {
+        message.origin_sender_name = false;
+    }
+
+    message.original_messages = this.parseUiKitOriginalMessages(
+        source.qb_original_messages || message.qb_original_messages || message.original_messages
+    );
+
+    return message;
+};
+
+Helpers.prototype.collectSenderIds = function (messages) {
+    var ids = [];
+
+    function add(id) {
+        id = Number(id);
+
+        if (!id || ids.indexOf(id) !== -1) {
+            return;
+        }
+
+        ids.push(id);
+    }
+
+    function walk(list) {
+        if (!list || !list.length) {
+            return;
+        }
+
+        for (var i = 0; i < list.length; i++) {
+            if (!list[i]) {
+                continue;
+            }
+
+            add(list[i].sender_id);
+            walk(list[i].original_messages);
+        }
+    }
+
+    walk(messages);
+
+    return ids;
+};
+
+Helpers.prototype.getCachedUserName = function (userId) {
+    var user = userModule._cache[userId];
+
+    if (!user) {
+        return '';
+    }
+
+    return user.name || user.full_name || '';
+};
+
+Helpers.prototype.buildQuoteViewModel = function (original) {
+    var self = this,
+        senderId = original && original.sender_id,
+        senderName = self.getCachedUserName(senderId) ||
+            original.origin_sender_name ||
+            (senderId ? 'User ' + senderId : 'Unknown user'),
+        body = self.getMessageBody(original),
+        attachments = self.normalizeAttachments(original && original.attachments),
+        text = self.sanitizeUiKitServiceBody(body);
+
+    if (!attachments.length) {
+        attachments = self.attachmentsFromMediaBody(body);
+    }
+
+    if (!attachments.length && self.isUiKitMediaBody(body)) {
+        attachments = [{
+            id: '',
+            uid: '',
+            name: self.escapeHTML('File'),
+            type: '',
+            src: '',
+            isImage: false
+        }];
+    }
+
+    return {
+        sender_id: senderId || '',
+        sender_name: self.escapeHTML(senderName),
+        messageHtml: text ? self.fillMessageBody(text) : '',
+        attachments: attachments
+    };
+};
+
+Helpers.prototype.collectQuoteViewModels = function (originals, quotes) {
+    if (!originals || !originals.length) {
+        return quotes;
+    }
+
+    for (var i = 0; i < originals.length; i++) {
+        quotes.push(this.buildQuoteViewModel(originals[i]));
+
+        if (originals[i].original_messages && originals[i].original_messages.length) {
+            this.collectQuoteViewModels(originals[i].original_messages, quotes);
+        }
+    }
+
+    return quotes;
+};
+
+Helpers.prototype.buildMessageViewModel = function (message) {
+    var self = this,
+        body = self.getMessageBody(message),
+        quote = [],
+        attachments = self.normalizeAttachments(message.attachments),
+        displayText = self.sanitizeUiKitServiceBody(body),
+        banner = '';
+
+    if (!attachments.length) {
+        attachments = self.attachmentsFromMediaBody(body);
+    }
+
+    if (!attachments.length && self.isUiKitMediaBody(body)) {
+        attachments = [{
+            id: '',
+            uid: '',
+            name: self.escapeHTML('File'),
+            type: '',
+            src: '',
+            isImage: false
+        }];
+    }
+
+    if (self.isUiKitForwardOrReply(message)) {
+        var isReply = message.qb_message_action === 'reply' ||
+            body.indexOf(CONSTANTS.UI_KIT.REPLY_PREFIX) !== -1,
+            quoteName,
+            originName;
+
+        self.collectQuoteViewModels(message.original_messages, quote);
+        quoteName = quote[0] && quote[0].sender_name;
+        originName = message.origin_sender_name ? self.escapeHTML(message.origin_sender_name) : '';
+
+        if (isReply) {
+            banner = quoteName ? 'Replied to ' + quoteName :
+                (originName ? 'Replied to ' + originName : 'Replied message');
+        } else {
+            banner = originName ? 'Forwarded from ' + originName :
+                (quoteName ? 'Forwarded from ' + quoteName : 'Forwarded message');
+        }
+    } else if (message.origin_sender_name) {
+        banner = 'Forwarded from ' + self.escapeHTML(message.origin_sender_name);
+    }
+
+    return {
+        status: message.status,
+        id: message._id,
+        sender_id: message.sender_id,
+        date_sent: message.date_sent,
+        banner: banner,
+        quote: quote,
+        message: displayText ? self.fillMessageBody(displayText) : '',
+        attachments: attachments
+    };
+};
+
+Helpers.prototype.getDialogLastMessagePreview = function (text) {
+    if (text == null || text === '') {
+        return '';
+    }
+
+    text = String(text);
+
+    if (text.indexOf(CONSTANTS.UI_KIT.FORWARD_PREFIX) !== -1) {
+        return 'Forwarded message';
+    }
+
+    if (text.indexOf(CONSTANTS.UI_KIT.REPLY_PREFIX) !== -1) {
+        return 'Replied message';
+    }
+
+    if (this.isUiKitMediaBody(text) || text === CONSTANTS.ATTACHMENT.BODY) {
+        return 'Attachment';
+    }
+
+    return text;
 };
 
 Helpers.prototype.fillNewMessageParams = function (userId, msg) {
@@ -401,11 +842,13 @@ Helpers.prototype.fillNewMessageParams = function (userId, msg) {
         var attachments = msg.extension.attachments;
 
         for (var i = 0; i < attachments.length; i++) {
-            attachments[i].src = self.getSrcFromAttachmentId(attachments[i].id);
+            attachments[i].src = self.getAttachmentSrc(attachments[i]);
         }
 
         message.attachments = attachments;
     }
+
+    self.copyUiKitFields(message, msg.extension || {});
 
     if (message.message === CONSTANTS.ATTACHMENT.BODY) {
         message.message = '';

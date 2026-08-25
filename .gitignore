@@ -29,3 +29,5 @@ npm-debug.log.*
 
 # karma
 coverage
+# local test credentials (never commit)
+spec/config.local.js

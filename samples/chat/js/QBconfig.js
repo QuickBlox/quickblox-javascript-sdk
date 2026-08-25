@@ -41,6 +41,13 @@ var CONSTANTS = {
         MAXSIZE: 100000000, // set 100 megabytes,
         MAXSIZEMESSAGE: 'The uploaded file exceeds maximum file size (100MB).'
     },
+    UI_KIT: {
+        FORWARD_PREFIX: '[Forwarded_Message]',
+        REPLY_PREFIX: '[Replied_Message]',
+        ATTACHMENT_PREFIX: '[Attachment]',
+        MEDIA_PREFIX: 'MediaContentEntity',
+        MAX_ORIGINAL_DEPTH: 3
+    },
     NOTIFICATION_TYPES: {
         NEW_DIALOG: '1',
         UPDATE_DIALOG: '2',

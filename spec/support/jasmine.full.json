@@ -1,0 +1,25 @@
+{
+  "spec_dir": "spec",
+  "spec_files": [
+    "QB-ChatConnectionVerifiedSpec.js",
+    "QB-HelpersSpec.js",
+    "QB-AddressbookSpec.js",
+    "QB-ContentSpec.js",
+    "QB-DataSpec.js",
+    "QB-CoreSpec.js",
+    "QB-WebRTCSpec.js",
+    "QB-AISpec.js",
+    "QB-UsersSpec.js",
+    "QB-PushnotificationsSpec.js",
+    "QB-ChatSpec.js",
+    "QB-DialogSpec.js",
+    "QB-MessageSpec.js",
+    "QB-NoticeUnitSpec.js",
+    "QB-NoticeSpec.js"
+  ],
+  "helpers": [
+    "helpers/**/*.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}

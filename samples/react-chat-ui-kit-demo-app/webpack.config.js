@@ -105,6 +105,6 @@ module.exports = {
                 interval: 1000,
             },
         },
-        server: 'https',
+        server: 'http',
     },
 };

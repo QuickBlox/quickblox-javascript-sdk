@@ -4,8 +4,13 @@
     "QB-AISpec.js",
     "QB-HelpersSpec.js",
     "QB-CoreSpec.js",
+    "QB-DialogSpec.js",
+    "QB-MessageSpec.js",
     "QB-DataSpec.js",
-    "QB-WebRTCSpec.js"
+    "QB-WebRTCSpec.js",
+    "QB-WebRTCStatsSpec.js",
+    "QB-NoticeUnitSpec.js",
+    "QB-ChatConnectionVerifiedSpec.js"
   ],
   "helpers": [
     "helpers/**/*.js"

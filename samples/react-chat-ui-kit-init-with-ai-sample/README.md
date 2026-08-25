@@ -1,46 +1,119 @@
-# Getting Started with Create React App
+# React Chat UI Kit AI and reactions sample
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This Webpack sample shows how to initialize QuickBlox React UI Kit and
+customize message reactions from application code.
 
-## Available Scripts
+It uses a forked desktop layout (`MyUIKitDesktopLayout`) and a local
+`MyMessageItem` so the reaction picker can take React-only props that the
+stock `MessageItem` does not expose.
 
-In the project directory, you can run:
+## Requirements
 
-### `npm start`
+- Node.js 20 or newer
+- `quickblox@2.24.0-beta.1`
+- `quickblox-react-ui-kit@0.5.4-beta.2`
+- A QuickBlox application and an existing user
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Set the application credentials in `src/QBconfig.ts` and the sample user login
+and password in `src/App.tsx`. Do not commit real credentials.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Install and run
 
-### `npm test`
+```bash
+npm install
+npm start
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The application opens at `http://localhost:3059`.
 
-### `npm run build`
+Build the production bundle with:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm run build
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Two layers of reaction customization
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 1. Serializable options in `QBConfig`
 
-### `npm run eject`
+`src/QBconfig.ts` configures `QBConfig.appConfig.reactions`:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```typescript
+reactions: {
+    enable: true,
+    mode: ReactionMode.Full,
+    quickReactions: ['👍', '❤️', '😂', '😮', '😢', '🔥'],
+    picker: {
+        placement: 'bottom',
+        showSearch: true,
+        showClose: true,
+        title: 'Choose a reaction',
+        searchPlaceholder: 'Search emoji',
+    },
+},
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+`MyUIKitDesktopLayout` reads `reactionMode`, `reactionPickerData`, and
+`reactionPickerOptions` from `useQuickBloxUIKit` and passes them to
+`MyMessageItem`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+What these options do:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- `placement` — where the expanded selector opens (`top`, `bottom`, `auto`)
+- `showSearch` — show or hide the search field
+- `showClose` — show or hide the default close (`×`) control
+- `title` / `searchPlaceholder` — selector copy
+- `quickReactions` — glyphs in the quick row
 
-## Learn More
+The default emoji contract is provided by `quickblox-react-ui-kit`.
+`showClose` only toggles the built-in close button. The public API does not
+accept a custom close icon.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 2. React-only props on `MessageReactionPicker`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+`emojiSearchIcon` is a React element, so it cannot live in `QBConfig`.
+`src/MyMessageItem.tsx` passes it directly:
+
+```tsx
+<MessageReactionPicker
+    message={message}
+    reactionMode={reactionMode}
+    reactionPickerData={reactionPickerData}
+    onToggleReaction={onToggleReaction}
+    emojiPickerPlacement={reactionPickerOptions?.placement}
+    showEmojiSearch={reactionPickerOptions?.showSearch}
+    showEmojiSelectorClose={reactionPickerOptions?.showClose}
+    emojiSelectorTitle={reactionPickerOptions?.title}
+    emojiSearchPlaceholder={reactionPickerOptions?.searchPlaceholder}
+    emojiSearchIcon={<CustomEmojiSearchIcon />}
+/>
+```
+
+The custom item also renders two pickers, matching the stock pattern: an
+action picker (toggle + quick row + full selector) and an inline chip row
+under the bubble.
+
+`src/MyMessageItem.css` applies a modest teal tint to the reaction toggle,
+active chips, context-menu icon, selector title, close icon, and search
+icon. Layout and kit defaults are otherwise unchanged.
+
+## What this sample does not demonstrate
+
+The chip overflow control (`›`) calls `onOpenReactionsList`. The kit's
+reactions-list modal is not part of the public API, and this sample does not
+copy or deep-import it. The list callback is wired; a custom list UI is out
+of scope.
+
+Message-level AI widgets (translate / assist) are not rendered on
+`MyMessageItem`.
+
+## Manual check
+
+After signing in, open a dialog:
+
+1. Incoming and outgoing messages show reaction actions and context menus.
+2. The picker opens below the trigger, with the custom title, search field,
+   custom search icon, and the default close button. Toggle, chips, and
+   selector accents use a slightly cooler teal than the stock blue.
+3. Quick reactions add and remove a reaction; chips and counts update.
+4. Reply, Forward, Copy, Edit, and Delete still work on supported messages.

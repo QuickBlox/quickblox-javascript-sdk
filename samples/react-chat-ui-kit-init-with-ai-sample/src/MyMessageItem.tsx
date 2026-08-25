@@ -1,88 +1,215 @@
-import React, { ReactElement, RefObject, useReducer } from 'react';
+import React, { ReactElement, RefObject } from 'react';
 import {
-    AIMessageWidget,
-    AIAssist,
     Avatar,
-    MessageContextMenu, FunctionTypeMessageEntityToVoid,
+    Dropdown,
+    FunctionTypeMessageEntityToVoid,
     MessageDTOMapper,
-    AITranslate, getTimeShort24hFormat,
-    Loader, AttachmentBubble,
-    MessageEntity, Message, TextBubble, MessageSeparator,
+    getTimeShort24hFormat,
+    AttachmentBubble,
+    MessageEntity, Message, MessageReactionPicker, TextBubble, MessageSeparator,
+    ReactionMode, ReactionPickerData, ReactionsPickerOptions,
     UserSvg
 } from 'quickblox-react-ui-kit';
-import './MessageItem.scss';
+import './MyMessageItem.css';
 
-export type MessageItemProps = {
+export type MyMessageItemProps = {
     message: MessageEntity;
     avatar?: ReactElement;
     currentUserId?: number;
-    AITranslateWidget?: AIMessageWidget;
-    AIAssistWidget?: AIMessageWidget;
-    maxTokens: number;
-    defaultTranslationLanguage: string;
-    languagesForAITranslate: string[];
     enableForwarding: boolean;
     enableReplying: boolean;
+    enableCopying: boolean;
+    enableEditing: boolean;
+    enableDeleting: boolean;
     onReply: FunctionTypeMessageEntityToVoid;
     onForward: FunctionTypeMessageEntityToVoid;
-    // defaultGetSenderName: GetUserNameFct;
+    onCopy: FunctionTypeMessageEntityToVoid;
+    onEdit: FunctionTypeMessageEntityToVoid;
+    onDelete: FunctionTypeMessageEntityToVoid;
+    onToggleReaction: (message: MessageEntity, reactionName: string) => void;
+    onOpenReactionsList?: (message: MessageEntity) => void;
+    reactionMode: ReactionMode;
+    reactionPickerData: ReactionPickerData | null;
+    reactionPickerOptions?: ReactionsPickerOptions;
+    canDeleteAnyMessage?: boolean;
     listRef?: RefObject<HTMLDivElement>;
     messagesToView: MessageEntity[];
     onError: (messageError: string) => void;
     disableAction?: boolean;
 };
 
-interface MessageStates {
-    loading: boolean;
-    translatedText: string;
+function CustomEmojiSearchIcon() {
+    return (
+        <svg
+            aria-hidden="true"
+            focusable="false"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+        >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m16 16 5 5" />
+            <path d="M8.5 10.5h.01M13.5 10.5h.01M9 13.5c1.3 1 2.7 1 4 0" />
+        </svg>
+    );
 }
 
-type Action =
-    | { type: 'SET_LOADING'; id: string; payload: boolean }
-    | { type: 'SET_TRANSLATED_TEXT'; id: string; payload: string };
+function SampleMessageContextMenu({
+    enableReplying,
+    enableForwarding,
+    enableCopying,
+    enableEditing,
+    isOwnMessage,
+    canDeleteMessage,
+    onReply,
+    onForward,
+    onCopy,
+    onEdit,
+    onDelete,
+    disableActions = false,
+    canCopy = true,
+    canEdit = true,
+}: {
+    enableReplying: boolean;
+    enableForwarding: boolean;
+    enableCopying: boolean;
+    enableEditing: boolean;
+    isOwnMessage: boolean;
+    canDeleteMessage: boolean;
+    onReply: () => void;
+    onForward: () => void;
+    onCopy: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+    disableActions?: boolean;
+    canCopy?: boolean;
+    canEdit?: boolean;
+}) {
+    const options: Array<{ value: string; label: string; disabled: boolean }> = [];
 
-function reducer(
-    state: Record<string, MessageStates>,
-    action: Action,
-): Record<string, MessageStates> {
-    switch (action.type) {
-        case 'SET_LOADING':
-            return {
-                ...state,
-                [action.id]: { ...state[action.id], loading: action.payload },
-            };
-        case 'SET_TRANSLATED_TEXT':
-            return {
-                ...state,
-                [action.id]: { ...state[action.id], translatedText: action.payload },
-            };
-        default:
-            return state;
+    if (enableReplying) {
+        options.push({
+            value: 'Reply',
+            label: 'Reply',
+            disabled: disableActions,
+        });
     }
+
+    if (enableForwarding) {
+        options.push({
+            value: 'Forward',
+            label: 'Forward',
+            disabled: disableActions,
+        });
+    }
+
+    if (enableCopying && canCopy) {
+        options.push({
+            value: 'Copy',
+            label: 'Copy',
+            disabled: disableActions,
+        });
+    }
+
+    if (enableEditing && isOwnMessage && canEdit) {
+        options.push({
+            value: 'Edit',
+            label: 'Edit',
+            disabled: disableActions,
+        });
+    }
+
+    if (canDeleteMessage) {
+        options.push({
+            value: 'Delete',
+            label: 'Delete',
+            disabled: disableActions,
+        });
+    }
+
+    const handleSelect = (value: string) => {
+        if (disableActions) {
+            return;
+        }
+
+        if (value === 'Reply' && enableReplying) {
+            onReply();
+        }
+
+        if (value === 'Forward' && enableForwarding) {
+            onForward();
+        }
+
+        if (value === 'Copy' && enableCopying && canCopy) {
+            onCopy();
+        }
+
+        if (value === 'Edit' && enableEditing && isOwnMessage && canEdit) {
+            onEdit();
+        }
+
+        if (value === 'Delete' && canDeleteMessage) {
+            onDelete();
+        }
+    };
+
+    return (
+        <Dropdown
+            options={options}
+            disabled={disableActions}
+            onSelect={handleSelect}
+            className="message-context-menu-dropdown"
+        >
+            <div className="message-context-menu-actions">
+                <svg
+                    className="message-context-menu-actions__icon"
+                    aria-hidden="true"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                >
+                    <circle cx="10" cy="4" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="10" cy="16" r="1.5" />
+                </svg>
+            </div>
+        </Dropdown>
+    );
 }
 
-export default function MessageItem({
+export default function MyMessageItem({
                                         message,
                                         avatar,
                                         currentUserId,
                                         enableForwarding,
                                         enableReplying,
+                                        enableCopying,
+                                        enableEditing,
+                                        enableDeleting,
                                         onReply,
                                         onForward,
+                                        onCopy,
+                                        onEdit,
+                                        onDelete,
+                                        onToggleReaction,
+                                        onOpenReactionsList,
+                                        reactionMode,
+                                        reactionPickerData,
+                                        reactionPickerOptions,
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         listRef,
                                         messagesToView,
-                                        AITranslateWidget,
-                                        AIAssistWidget,
-                                        maxTokens,
-                                        defaultTranslationLanguage,
-                                        languagesForAITranslate,
                                         onError,
                                         disableAction = false,
-                                    }: MessageItemProps) {
-    const messageStates: Record<string, MessageStates> = {};
-
-    const [state, dispatch] = useReducer(reducer, messageStates);
+                                        canDeleteAnyMessage = false,
+                                    }: MyMessageItemProps) {
+    void messagesToView;
+    void onError;
 
     const senderName =
         message.sender?.full_name ||
@@ -102,22 +229,14 @@ export default function MessageItem({
         if (m.notification_type && m.notification_type.length > 0) {
             return TypeSystemMessage;
         }
-        if (
-            (m.sender && m.sender.id.toString() !== currentUserId?.toString()) ||
-            m.sender_id.toString() !== currentUserId?.toString()
-        ) {
+
+        const senderId = m.sender?.id ?? m.sender_id;
+
+        if (senderId != null && senderId.toString() !== currentUserId?.toString()) {
             return TypeIncomingMessage;
         }
 
         return TypeOutgoingMessage;
-    }
-
-    function translatedHandler(id: string, textTranslated: string) {
-        dispatch({ type: 'SET_TRANSLATED_TEXT', id, payload: textTranslated });
-    }
-
-    function fetchingHandler(isFetching: boolean, id: string) {
-        dispatch({ type: 'SET_LOADING', id, payload: isFetching });
     }
 
     function getStatusMessage(messageEntity: MessageEntity) {
@@ -144,41 +263,103 @@ export default function MessageItem({
         currentMessageType: 'incoming' | 'outgoing',
         item: MessageEntity,
     ) {
+        const isOwnMessage = item.sender_id?.toString() === currentUserId?.toString();
+        const canDeleteMessage = enableDeleting || canDeleteAnyMessage;
+        const messageBody = item.message || '';
+        const isPlainTextMessage =
+            !(item.attachments && item.attachments.length > 0) &&
+            !messageBody.includes(MessageDTOMapper.MEDIA_CONTENT_ENTITY_PREFIX) &&
+            !messageBody.includes(MessageDTOMapper.ATTACHMENT_PREFIX) &&
+            !messageBody.includes(MessageDTOMapper.FORWARD_MESSAGE_PREFIX) &&
+            !messageBody.includes(MessageDTOMapper.REPLY_MESSAGE_PREFIX);
+
+        const contextMenu = !item.isDeleted ? (
+            <SampleMessageContextMenu
+                isOwnMessage={isOwnMessage}
+                canDeleteMessage={canDeleteMessage}
+                onReply={() => onReply(item)}
+                onForward={() => onForward(item)}
+                onCopy={() => onCopy(item)}
+                onEdit={() => onEdit(item)}
+                onDelete={() => onDelete(item)}
+                enableReplying={enableReplying}
+                enableForwarding={enableForwarding}
+                enableCopying={enableCopying}
+                enableEditing={enableEditing}
+                disableActions={disableAction}
+                canCopy={enableCopying && isPlainTextMessage}
+                canEdit={enableEditing && isPlainTextMessage}
+            />
+        ) : null;
+        const reactionPicker = !item.isDeleted ? (
+            <MessageReactionPicker
+                message={item}
+                currentUserId={currentUserId}
+                reactionMode={reactionMode}
+                reactionPickerData={reactionPickerData}
+                disableAction={disableAction}
+                onToggleReaction={onToggleReaction}
+                onOpenReactionsList={onOpenReactionsList}
+                className={`message-item-reaction-actions message-item-reaction-actions--${currentMessageType}`}
+                showChips={false}
+                // Serializable picker options come from QBConfig.appConfig.reactions.picker.
+                emojiPickerPlacement={reactionPickerOptions?.placement}
+                showEmojiSearch={reactionPickerOptions?.showSearch}
+                showEmojiSelectorClose={reactionPickerOptions?.showClose}
+                emojiSelectorTitle={reactionPickerOptions?.title}
+                emojiSearchPlaceholder={reactionPickerOptions?.searchPlaceholder}
+                // React-only: stock MessageItem cannot pass a custom search icon.
+                emojiSearchIcon={<CustomEmojiSearchIcon />}
+            />
+        ) : null;
+        const actionControls =
+            currentMessageType === 'outgoing' ? (
+                <>
+                    {contextMenu}
+                    {reactionPicker}
+                </>
+            ) : (
+                <>
+                    {reactionPicker}
+                    {contextMenu}
+                </>
+            );
+
         return (
             <div className="message-item-additional-part__actions">
-                <MessageContextMenu
-                    message={message}
-                    onReply={() => onReply(item)}
-                    onForward={() => onForward(item)}
-                    enableReplying={enableReplying}
-                    enableForwarding={enableForwarding}
-                    disableActions={disableAction}
-                />
-                {currentMessageType === 'incoming' && state[item.id]?.loading && (
-                    <Loader size="sm" className="message-item-additional-part__loader" />
-                )}
-                {currentMessageType === 'incoming' &&
-                    !(item.attachments && item.attachments.length > 0) &&
-                    AIAssistWidget && (
-                        <AIAssist
-                            disableAction={disableAction}
-                            AIAssistWidget={AIAssistWidget}
-                            loading={
-                                state[item.id] && state[item.id].loading
-                                    ? state[item.id].loading
-                                    : false
-                            }
-                            onLoading={(isFetching: boolean, id: string) =>
-                                fetchingHandler(isFetching, id)
-                            }
-                            onError={onError}
-                            messageToAssist={item}
-                            messageHistory={messagesToView}
-                            currentUserId={currentUserId}
-                            maxTokens={maxTokens}
-                        />
-                    )}
+                {actionControls}
             </div>
+        );
+    }
+
+    function messageHasReactions(item: MessageEntity): boolean {
+        return (
+            !item.isDeleted &&
+            Array.isArray(item.reactions) &&
+            item.reactions.some((reaction) => Number(reaction?.count || 0) > 0)
+        );
+    }
+
+    function renderInlineReactions(
+        item: MessageEntity,
+        currentMessageType: 'incoming' | 'outgoing',
+    ) {
+        if (item.isDeleted) {
+            return null;
+        }
+
+        return (
+            <MessageReactionPicker
+                message={item}
+                currentUserId={currentUserId}
+                reactionMode={reactionMode}
+                reactionPickerData={reactionPickerData}
+                disableAction={disableAction}
+                onToggleReaction={onToggleReaction}
+                onOpenReactionsList={onOpenReactionsList}
+                className={`message-item-inline-reactions message-item-inline-reactions--${currentMessageType}`}
+                showToggle={false}
+            />
         );
     }
 
@@ -200,83 +381,37 @@ export default function MessageItem({
                                 time={getTimeShort24hFormat(message.date_sent)}
                                 type={currentMessageType}
                                 subtype={subTypeMessage}
-                                bottomPart={
-                                    !(
-                                        nestedMessage.attachments &&
-                                        nestedMessage.attachments.length > 0
-                                    ) && AITranslateWidget ? (
-                                        <AITranslate
-                                            disableAction={disableAction}
-                                            AITranslateWidget={AITranslateWidget}
-                                            defaultLanguage={defaultTranslationLanguage}
-                                            languages={languagesForAITranslate}
-                                            originalTextMessage={
-                                                state[nestedMessage.id] &&
-                                                state[nestedMessage.id].translatedText
-                                                    ? state[nestedMessage.id].translatedText.length === 0
-                                                    : true
-                                            }
-                                            loading={
-                                                state[nestedMessage.id] &&
-                                                state[nestedMessage.id].loading
-                                                    ? state[nestedMessage.id].loading
-                                                    : false
-                                            }
-                                            onLoading={(isFetching: boolean, id: string) =>
-                                                fetchingHandler(isFetching, id)
-                                            }
-                                            onError={onError}
-                                            messageToTranslate={nestedMessage}
-                                            messageHistory={messagesToView}
-                                            currentUserId={currentUserId}
-                                            maxTokens={maxTokens}
-                                            onTranslated={(id, textTranslated) =>
-                                                translatedHandler(id, textTranslated)
-                                            }
-                                        />
-                                    ) : undefined
-                                }
                                 additionalPart={
                                     <div className="message-item-additional-part">
                                         {renderAdditionalPart(currentMessageType, nestedMessage)}
                                     </div>
                                 }
                             >
-                                {nestedMessage.attachments &&
-                                nestedMessage.attachments.length > 0 ? (
-                                    <div>
-                                        {/* eslint-disable-next-line @typescript-eslint/no-shadow */}
-                                        {nestedMessage.attachments.map((attachment) => {
-                                            return (
-                                                <AttachmentBubble
-                                                    attachment={attachment}
-                                                    typeMessage={currentMessageType}
-                                                />
-                                            );
-                                        })}
+                                <div className="message-item-bubble-with-reactions">
+                                    {nestedMessage.attachments &&
+                                    nestedMessage.attachments.length > 0 ? (
+                                        <div>
+                                            {/* eslint-disable-next-line @typescript-eslint/no-shadow */}
+                                            {nestedMessage.attachments.map((attachment, index) => {
+                                                return (
+                                                    <AttachmentBubble
+                                                        key={attachment.id || `${nestedMessage.id}-${index}`}
+                                                        attachment={attachment}
+                                                        typeMessage={currentMessageType}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <TextBubble
+                                            text={nestedMessage.message}
+                                            type={currentMessageType}
+                                        />
+                                    )}
+                                    <div className="message-item-bubble-reactions">
+                                        {renderInlineReactions(nestedMessage, currentMessageType)}
                                     </div>
-                                ) : (
-                                    <TextBubble
-                                        // text={
-                                        //   state[nestedMessage.id] &&
-                                        //   state[nestedMessage.id].translatedText &&
-                                        //   state[nestedMessage.id].translatedText.length === 0
-                                        //     ? nestedMessage.message
-                                        //     : state[nestedMessage.id]?.translatedText ||
-                                        //       nestedMessage.message
-                                        // }
-                                        text={nestedMessage.message}
-                                        translatedText={
-                                            state[nestedMessage.id] &&
-                                            state[nestedMessage.id].translatedText &&
-                                            state[nestedMessage.id].translatedText.length === 0
-                                                ?
-                                                ''
-                                                :
-                                                state[nestedMessage.id]?.translatedText}
-                                        type={currentMessageType}
-                                    />
-                                )}
+                                </div>
                             </Message>
                         );
                     })}
@@ -298,9 +433,15 @@ export default function MessageItem({
         messageTypes === TypeOutgoingMessage
     ) {
         return (
-            <div>
+            <div
+                className={
+                    messageHasReactions(message)
+                        ? 'my-message-item message-item-with-reactions'
+                        : 'my-message-item'
+                }
+            >
                 {renderForwardedReplyMessageSegment(messageTypes)}
-                {!message.message.includes(MessageDTOMapper.FORWARD_MESSAGE_PREFIX) && (
+                {!String(message.message || '').includes(MessageDTOMapper.FORWARD_MESSAGE_PREFIX) && (
                     <Message
                         key={message.id}
                         avatar={
@@ -315,76 +456,38 @@ export default function MessageItem({
                         status={getStatusMessage(message)}
                         time={getTimeShort24hFormat(message.date_sent)}
                         type={messageTypes}
-                        bottomPart={
-                            !(message.attachments && message.attachments.length > 0) &&
-                            AITranslateWidget ? (
-                                <AITranslate
-                                    disableAction={disableAction}
-                                    AITranslateWidget={AITranslateWidget}
-                                    defaultLanguage={defaultTranslationLanguage}
-                                    languages={languagesForAITranslate}
-                                    originalTextMessage={
-                                        state[message.id] && state[message.id].translatedText
-                                            ? state[message.id].translatedText.length === 0
-                                            : true
-                                    }
-                                    loading={
-                                        state[message.id] && state[message.id].loading
-                                            ? state[message.id].loading
-                                            : false
-                                    }
-                                    onLoading={(isFetching: boolean, id: string) =>
-                                        fetchingHandler(isFetching, id)
-                                    }
-                                    onError={onError}
-                                    messageToTranslate={message}
-                                    messageHistory={messagesToView}
-                                    currentUserId={currentUserId}
-                                    maxTokens={maxTokens}
-                                    onTranslated={(id, textTranslated) =>
-                                        translatedHandler(id, textTranslated)
-                                    }
-                                />
-                            ) : undefined
-                        }
                         additionalPart={
                             <div className="message-item-additional-part">
                                 {renderAdditionalPart(messageTypes, message)}
                             </div>
                         }
                     >
-                        {message.attachments && message.attachments.length > 0 ? (
-                            <>
-                                {message.attachments.map((attachment) => {
-                                    return (
-                                        <AttachmentBubble
-                                            attachment={attachment}
-                                            typeMessage={messageTypes}
-                                        />
-                                    );
-                                })}
-                            </>
-                        ) : (
-                            <TextBubble
-                                // text={
-                                //   state[message.id] &&
-                                //   state[message.id].translatedText &&
-                                //   state[message.id].translatedText.length === 0
-                                //     ? message.message
-                                //     : state[message.id]?.translatedText || message.message
-                                // }
-                                text={message.message}
-                                translatedText={
-                                    state[message.id] &&
-                                    state[message.id].translatedText &&
-                                    state[message.id].translatedText.length === 0
-                                        ?
-                                        ''
-                                        :
-                                        state[message.id]?.translatedText}
-                                type={messageTypes}
-                            />
-                        )}
+                        <div className="message-item-bubble-with-reactions">
+                            {message.attachments && message.attachments.length > 0 ? (
+                                <>
+                                    {message.attachments.map((attachment, index) => {
+                                        return (
+                                            <AttachmentBubble
+                                                key={attachment.id || `${message.id}-${index}`}
+                                                attachment={attachment}
+                                                typeMessage={messageTypes}
+                                            />
+                                        );
+                                    })}
+                                </>
+                            ) : (
+                                <TextBubble
+                                    text={message.message}
+                                    type={messageTypes}
+                                />
+                            )}
+                            <div className="message-item-bubble-reactions">
+                                {renderInlineReactions(
+                                    message,
+                                    messageTypes as 'incoming' | 'outgoing',
+                                )}
+                            </div>
+                        </div>
                     </Message>
                 )}
             </div>

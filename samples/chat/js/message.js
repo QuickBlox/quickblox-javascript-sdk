@@ -253,10 +253,12 @@ Message.prototype.getMessages = function (dialogId) {
     QB.chat.message.list(params, function (err, messages) {
         if (messages) {
             var dialog = dialogModule._cache[dialogId];
+
+            messages.items.forEach(function (item) {
+                helpers.copyUiKitFields(item, item);
+            });
             dialog.messages = dialog.messages.concat(messages.items);
-            var userIds = (dialog.messages.length>0) ? Array.from(dialog.messages, function (message) {
-                return message.sender_id;
-            }) : [];
+            var userIds = helpers.collectSenderIds(dialog.messages);
             var displayMessages = function() {
                 if (messages.items.length < self.limit) {
                     dialog.full = true;
@@ -297,12 +299,10 @@ Message.prototype.checkUsersInPublicDialogMessages = function (items, skip) {
         userList = [];
 
     for (var i = 0; i < messages.length; i++) {
-        var id = messages[i].sender_id;
-
-        if (userList.indexOf(id) === -1) {
-            userList.push(id);
-        }
+        helpers.copyUiKitFields(messages[i], messages[i]);
     }
+
+    userList = helpers.collectSenderIds(messages);
 
     if (!userList.length) return false;
     userModule.getUsersByIds(userList).then(function(){
@@ -365,17 +365,8 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
             date_sent: message.date_sent
         });
     } else {
-        messageText = message.message ? helpers.fillMessageBody(message.message || '') : helpers.fillMessageBody(message.body || '');
         messagesHtml = helpers.fillTemplate('tpl_message', {
-            message: {
-                status: message.status,
-                id: message._id,
-                sender_id: message.sender_id,
-                message: messageText,
-                attachments: message.attachments,
-                date_sent: message.date_sent,
-                origin_sender_name: message.origin_sender_name || false
-            },
+            message: helpers.buildMessageViewModel(message),
             sender: sender,
             dialogType: dialogModule._cache[dialogId].type
         });
@@ -398,69 +389,88 @@ Message.prototype.renderMessage = function (message, setAsFirst) {
         });
     }
 
-    if (message.attachments.length) {
-        var images = elem.querySelectorAll('.message_attachment');
+    var images = elem.querySelectorAll('.message_attachment');
 
-        for (var i = 0; i < images.length; i++) {
-            images[i].addEventListener('load', async function (e) {
+    for (var i = 0; i < images.length; i++) {
+        images[i].addEventListener('load', async function (e) {
 
-                if(this.src !== this.getAttribute('data-src')) {
+            if(this.src !== this.getAttribute('data-src')) {
 
-                    var target = e.target;
-                    var imageSrc = this.getAttribute('data-src');
+                var target = e.target;
+                var imageSrc = this.getAttribute('data-src');
 
-                    var setBlob = function (response){
-                        Promise.all([response.url, response.blob()]).then(([resource, blob]) => {
-                            var bloburl = URL.createObjectURL(blob);
-                            target.src = bloburl;
-                            target.setAttribute('data-src',bloburl);
-                        });
-                    };
-
-                    fetch(imageSrc).catch(async function () {
-
-                        var imageId = target.getAttribute('data-id');
-                        imageSrc = helpers.getSrcFromAttachmentId(imageId);
-                        let response = await fetch(imageSrc);
-
-                        if (response.ok) {
-                            setBlob(response);
-                        }
-
-                    }).then(function (response) {
-                        setBlob(response);
+                var setBlob = function (response){
+                    Promise.all([response.url, response.blob()]).then(([resource, blob]) => {
+                        var bloburl = URL.createObjectURL(blob);
+                        target.src = bloburl;
+                        target.setAttribute('data-src',bloburl);
                     });
+                };
 
+                fetch(imageSrc).catch(async function () {
 
-                }else{
-                    this.style.width = '100%';
-                    this.style.height = 'auto';
-                    this.parentNode.style.width = 'auto';
-                    this.parentNode.style.height = 'auto';
-                }
+                    var imageId = target.getAttribute('data-id');
+                    imageSrc = helpers.getSrcFromAttachmentId(imageId);
+                    let response = await fetch(imageSrc);
 
-                var img = e.target;
-
-                if(img) {
-
-                    var imgPos = self.container.offsetHeight + self.container.scrollTop - img.offsetTop,
-                        scrollHeight = self.container.scrollTop + img.offsetHeight;
-
-                    img.classList.add('loaded');
-
-                    if (imgPos >= 0) {
-                        self.container.scrollTop = scrollHeight + 5;
+                    if (response.ok) {
+                        setBlob(response);
                     }
+
+                }).then(function (response) {
+                    setBlob(response);
+                });
+
+
+            }else{
+                this.style.width = '100%';
+                this.style.height = 'auto';
+                this.parentNode.style.width = 'auto';
+                this.parentNode.style.height = 'auto';
+            }
+
+            var img = e.target;
+
+            if(img) {
+
+                var imgPos = self.container.offsetHeight + self.container.scrollTop - img.offsetTop,
+                    scrollHeight = self.container.scrollTop + img.offsetHeight;
+
+                img.classList.add('loaded');
+
+                if (imgPos >= 0) {
+                    self.container.scrollTop = scrollHeight + 5;
+                }
+            }
+        });
+        images[i].addEventListener('error', function (e) {
+            var img = e.target,
+                errorMessageTpl = helpers.fillTemplate('tpl_attachmentLoadError'),
+                errorElem = helpers.toHtml(errorMessageTpl)[0];
+
+            img.parentElement.replaceChild(errorElem, img);
+        });
+    }
+
+    var nestedSenderIds = helpers.collectSenderIds(message.original_messages || []).filter(function (id) {
+        return id && !userModule._cache[id];
+    });
+
+    if (nestedSenderIds.length) {
+        userModule.getUsersByIds(nestedSenderIds).then(function () {
+            nestedSenderIds.forEach(function (id) {
+                var name = helpers.getCachedUserName(id);
+                var nodes = elem.querySelectorAll('[data-quote-sender-id="' + id + '"]');
+
+                if (!name) {
+                    return;
+                }
+
+                for (var n = 0; n < nodes.length; n++) {
+                    nodes[n].innerText = name;
                 }
             });
-            images[i].addEventListener('error', function (e) {
-                var img = e.target,
-                    errorMessageTpl = helpers.fillTemplate('tpl_attachmentLoadError'),
-                    errorElem = helpers.toHtml(errorMessageTpl)[0];
-
-                img.parentElement.replaceChild(errorElem, img);
-            });
-        }
+        }).catch(function () {});
     }
 
     if (setAsFirst) {

@@ -10,8 +10,8 @@
     "@types/node": "20.17.19",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
-    "quickblox": "2.22.0",
-    "quickblox-react-ui-kit": "0.5.2",
+    "quickblox": "2.24.0-beta.1",
+    "quickblox-react-ui-kit": "0.5.4-beta.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-router-dom": "6.29.0",
@@ -30,7 +30,7 @@
     "webpack-dev-server": "4.11.1"
   },
   "scripts": {
-    "start": "CHOKIDAR_USEPOLLING=true webpack serve --mode development --open",
+    "start": "webpack serve --mode development --open",
     "build": "webpack --mode production"
   },
   "browserslist": {

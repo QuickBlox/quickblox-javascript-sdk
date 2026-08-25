@@ -414,20 +414,52 @@
                         </p>
                     </div>
 
-                    <% if (message.origin_sender_name) { %>
-                        <div class="forwarded">Forwarded from <%= message.origin_sender_name %></div>
+                    <% if (message.banner) { %>
+                        <div class="forwarded"><%= message.banner %></div>
+                    <% } %>
+
+                    <% if (message.quote && message.quote.length) { %>
+                        <% _.each(message.quote, function(item){ %>
+                        <div class="message_quote">
+                            <% if (item.sender_name) { %>
+                                <div class="message_quote__sender" data-quote-sender-id="<%= item.sender_id %>"><%= item.sender_name %></div>
+                            <% } %>
+                            <% if (item.messageHtml) { %>
+                                <p class="message_quote__text"><%= item.messageHtml %></p>
+                            <% } %>
+                            <% if (item.attachments && item.attachments.length) { %>
+                                <% _.each(item.attachments, function(attachment){ %>
+                                    <% if (attachment.isImage) { %>
+                                    <div class="message__attachments_wtap">
+                                        <img loading="lazy" src="./img/image.svg" data-src="<%= attachment.src %>" data-id="<%= attachment.uid %>" alt="attachment" class="message_attachment">
+                                    </div>
+                                    <% } else if (attachment.src) { %>
+                                    <a class="message_file_attachment" href="<%= attachment.src %>" target="_blank" rel="noopener noreferrer"><%= attachment.name %></a>
+                                    <% } else { %>
+                                    <span class="message_file_attachment"><%= attachment.name %></span>
+                                    <% } %>
+                                <% }); %>
+                            <% } %>
+                        </div>
+                        <% }); %>
                     <% } %>
 
                     <% if (message.message) { %>
                         <p class="message__text <%= window.app.user.id === sender.id ? 'you' : '' %>"><%= message.message %></p>
                     <% } %>
 
-                    <% if (message.attachments.length) { %>
-                        <div class="message__attachments_wtap">
-                            <% _.each(message.attachments, function(attachment){ %>
-                            <img loading="lazy" src="./img/image.svg" data-src="<%= attachment.src %>" data-id="<%= attachment.id %>" alt="attachment" class="message_attachment">
-                            <% }); %>
-                        </div>
+                    <% if (message.attachments && message.attachments.length) { %>
+                        <% _.each(message.attachments, function(attachment){ %>
+                            <% if (attachment.isImage) { %>
+                            <div class="message__attachments_wtap">
+                                <img loading="lazy" src="./img/image.svg" data-src="<%= attachment.src %>" data-id="<%= attachment.uid || attachment.id %>" alt="attachment" class="message_attachment">
+                            </div>
+                            <% } else if (attachment.src) { %>
+                            <a class="message_file_attachment" href="<%= attachment.src %>" target="_blank" rel="noopener noreferrer"><%= attachment.name %></a>
+                            <% } else { %>
+                            <span class="message_file_attachment"><%= attachment.name %></span>
+                            <% } %>
+                        <% }); %>
                     <% } %>
                 </div>
                 <ul class="message-menu" data-message-id="<%= message.id %>">

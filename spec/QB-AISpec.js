@@ -1,7 +1,12 @@
 'use strict';
 
 var LOGIN_TIMEOUT = 10000;
-var REST_REQUESTS_TIMEOUT = 6000;
+// [2026-05-26] Raised from 6000 → 15000 because AI gateway calls
+// (translate, answerAssist) regularly exceed 6s under load. Flaky failures
+// for "translate to Dutch/Czech" and "answerAssist with valid history" were
+// directly caused by this timeout being too tight for the external service.
+// See the internal test-baseline known-issues notes (2026-05-26).
+var REST_REQUESTS_TIMEOUT = 15000;
 
 var isNodeEnv = typeof window === 'undefined' && typeof exports === 'object';
 
@@ -9,22 +14,13 @@ var QB = isNodeEnv ? require('../src/qbMain.js') : window.QB;
 var QB_SENDER = new QB.QuickBlox();
 
 var CONFIG = isNodeEnv ? require('./config').CONFIG : window.CONFIG;
-var CREDS =  {
-    appId: 75949,
-    authKey: 'DdS7zxMEm5Q7DaS',
-    authSecret: 'g88RhdOjnDOqFkv',
-    accountKey: 'uK_8uinNyz8-npTNB6tx',
-    sessionToken: '000'
-};
+var CREDS = isNodeEnv ? require('./config').CREDS : window.CREDS;
 
-var QBUser1 =  {
-    'id': 134804147,
-    'login': "artimed",
-    'password': "quickblox",
-    'email': "test1@test.com"
-};
+// The AI specs drive the second test account, which config.js exposes as QBUser2.
+var QBUser1 = isNodeEnv ? require('./config').QBUser2 : window.QBUser2;
 
-var smartChatAssistantId = '6633a1300fea600001bd6e71';
+var AI = isNodeEnv ? require('./config').AI : window.AI;
+var smartChatAssistantId = AI.smartChatAssistantId;
 var messageToTranslate = 'Hola!';
 var messageToAssist = 'Where is my order?';
 

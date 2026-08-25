@@ -6,7 +6,8 @@
 var chatUtils = require('./qbChatHelpers'),
     config = require('../../qbConfig'),
     Utils = require('../../qbUtils'),
-    StreamManagement = require('../../plugins/streamManagement');
+    StreamManagement = require('../../plugins/streamManagement'),
+    noticeConsts = require('./qbNoticeConsts');
 
 var unsupportedError = 'This function isn\'t supported outside of the browser (...yet)';
 
@@ -25,6 +26,508 @@ if (Utils.getEnv().browser) {
 } else if (Utils.getEnv().node) {
     XMPP = require('node-xmpp-client');
 }
+
+// ============================================================================
+// Notice Feature parsing helpers (CROS-1055, SDK 2.24.0)
+// ----------------------------------------------------------------------------
+// Module-private. Used by ChatProxy._onSystemMessageListener to detect/parse
+// urn:xmpp:notice:0 stanzas. Pure functions — no instance state, easy to test
+// indirectly via chatProxy._onSystemMessageListener(stanza) call paths.
+//
+// Server contract reference: QuickBlox Confluence "Notice Feature" page
+// (https://quickblox.atlassian.net/wiki/spaces/CHAT/pages/4126081033) and
+// Android tests in android-reference-2026-05-07/test/.
+// ============================================================================
+
+var NOTICE_KNOWN_MODULE_IDS = {};
+NOTICE_KNOWN_MODULE_IDS[noticeConsts.NOTICE_MODULE_IDENTIFIER.UPDATED_MESSAGE] = true;
+NOTICE_KNOWN_MODULE_IDS[noticeConsts.NOTICE_MODULE_IDENTIFIER.DELETED_MESSAGE] = true;
+NOTICE_KNOWN_MODULE_IDS[noticeConsts.NOTICE_MODULE_IDENTIFIER.UPDATED_DIALOG] = true;
+NOTICE_KNOWN_MODULE_IDS[noticeConsts.NOTICE_MODULE_IDENTIFIER.DELETED_DIALOG] = true;
+
+/**
+ * Cross-env: get all direct child elements of `parent` whose tag name equals
+ * `name`. Works for browser DOM, xmldom, and ltx (node-xmpp-client).
+ *
+ * @param {Element|Object} parent
+ * @param {String} name
+ * @return {Array<Element|Object>}
+ */
+function _getChildElements(parent, name) {
+    if (!parent) {
+        return [];
+    }
+    var out = [];
+
+    // Browser DOM / xmldom: walk childNodes filtering by nodeType and tagName.
+    if (parent.childNodes && parent.childNodes.length !== undefined && typeof parent.childNodes !== 'function') {
+        for (var i = 0; i < parent.childNodes.length; i++) {
+            var c = parent.childNodes[i];
+            if (!c || c.nodeType !== 1 /* ELEMENT_NODE */) {
+                continue;
+            }
+            var tag = c.tagName || c.nodeName || c.localName;
+            if (tag === name) {
+                out.push(c);
+            }
+        }
+        if (out.length > 0 || parent.childNodes.length > 0) {
+            // Used DOM path (even if no matches) — return what we have.
+            return out;
+        }
+    }
+
+    // ltx: `parent.children` is a mixed array of strings (text) and Element objects with `.name`.
+    if (parent.children && parent.children.length !== undefined) {
+        for (var j = 0; j < parent.children.length; j++) {
+            var ch = parent.children[j];
+            if (ch && typeof ch === 'object' && ch.name === name) {
+                out.push(ch);
+            }
+        }
+    }
+
+    return out;
+}
+
+/**
+ * Cross-env text reader for an Element node. In browser / xmldom uses
+ * `textContent`; in node-xmpp-client (ltx) uses `getText()` or descends
+ * into `.children` (mixed string/element children). Empty string treated
+ * as no text, returns ''. Returns '' if element has no text at all.
+ *
+ * This is needed because the existing `chatUtils.getElementText(parent, name)`
+ * resolves the child by name and reads its text, but we sometimes already have
+ * the element reference (from a previous lookup or namespace check) and need
+ * to read text from THAT element, not search again from a parent.
+ *
+ * @param {Element|Object} el
+ * @return {String}
+ */
+function _readElementText(el) {
+    if (!el) {
+        return '';
+    }
+    // Browser DOM and xmldom both expose textContent.
+    if (typeof el.textContent === 'string') {
+        return el.textContent;
+    }
+    // ltx / node-xmpp-client Element: getText() returns the concatenated
+    // text of all string children.
+    if (typeof el.getText === 'function') {
+        return el.getText();
+    }
+    // Last resort: walk .children if present.
+    if (el.children && el.children.length !== undefined) {
+        var out = '';
+        for (var i = 0; i < el.children.length; i++) {
+            var c = el.children[i];
+            if (typeof c === 'string') {
+                out += c;
+            }
+        }
+        return out;
+    }
+    return '';
+}
+
+/**
+ * Returns the moduleIdentifier value if and only if its xmlns attribute equals
+ * urn:xmpp:notice:0. Matching only by text without namespace check is unsafe
+ * (existing SystemNotifications stanzas use the same element name).
+ * @param {Element} extraParams
+ * @return {String|null} known notice moduleIdentifier value or null.
+ */
+function _getNoticeModuleIdentifier(extraParams) {
+    if (!extraParams) {
+        return null;
+    }
+
+    var moduleIdEl = chatUtils.getElement(extraParams, 'moduleIdentifier');
+    if (!moduleIdEl) {
+        return null;
+    }
+
+    // Namespace check: stanza is a Notice only when xmlns equals NOTICE_NAMESPACE.
+    var xmlns = chatUtils.getAttr(moduleIdEl, 'xmlns');
+    if (xmlns !== noticeConsts.NOTICE_NAMESPACE) {
+        return null;
+    }
+
+    var text = (_readElementText(moduleIdEl) || '').trim();
+    if (!NOTICE_KNOWN_MODULE_IDS[text]) {
+        return null;
+    }
+
+    return text;
+}
+
+/**
+ * Convert a CSV string of numeric ids ("10,11,13007") to Array<Number>.
+ * Empty or null input → empty array. Non-numeric items are dropped silently.
+ */
+function _parseNumericIdsCsv(value) {
+    if (value === null || value === undefined || value === '') {
+        return [];
+    }
+    var parts = String(value).split(',');
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+        var n = parseInt(parts[i], 10);
+        if (!isNaN(n)) {
+            out.push(n);
+        }
+    }
+    return out;
+}
+
+/**
+ * Parse <reactions><reaction>{name,count,<user_ids>...}...</reaction></reactions>
+ * aggregate snapshot used in NoticeUpdatedMessage text-update stanzas.
+ * Reference: Android QBReactionsPropertyParser.java.
+ *
+ * @param {Element} extraParams
+ * @return {Array<{name, count, user_ids: number[]}>|null} or null if absent.
+ */
+function _parseAggregateReactions(extraParams) {
+    var reactionsEl = chatUtils.getElement(extraParams, 'reactions');
+    if (!reactionsEl) {
+        return null;
+    }
+
+    var out = [];
+    var reactionChildren = _getChildElements(reactionsEl, 'reaction');
+    for (var i = 0; i < reactionChildren.length; i++) {
+        var child = reactionChildren[i];
+
+        try {
+            var name = chatUtils.getElementText(child, 'name');
+            var countText = chatUtils.getElementText(child, 'count');
+            var count = parseInt(countText, 10);
+            if (isNaN(count)) {
+                count = 0;
+            }
+
+            var userIds = [];
+            var userIdsEl = chatUtils.getElement(child, 'user_ids');
+            if (userIdsEl) {
+                var uidEls = _getChildElements(userIdsEl, 'user_id');
+                for (var j = 0; j < uidEls.length; j++) {
+                    var uid = parseInt((_readElementText(uidEls[j]) || '').trim(), 10);
+                    if (!isNaN(uid)) {
+                        userIds.push(uid);
+                    }
+                }
+            }
+
+            out.push({ name: name, count: count, user_ids: userIds });
+        } catch (err) {
+            // Malformed reaction child — skip silently per AC#9 (no exceptions).
+        }
+    }
+
+    return out;
+}
+
+/**
+ * Parse singular <reaction>{name,user_id,action}</reaction> incremental
+ * add/remove event used in NoticeUpdatedMessage stanzas. Reference: Android
+ * QBReactionPropertyParser.java.
+ *
+ * @param {Element} extraParams
+ * @return {Object|null} singular reaction descriptor or null if absent.
+ */
+function _parseSingularReaction(extraParams) {
+    var reactionEl = chatUtils.getElement(extraParams, 'reaction');
+    if (!reactionEl) {
+        return null;
+    }
+
+    try {
+        var name = chatUtils.getElementText(reactionEl, 'name');
+        var userIdText = chatUtils.getElementText(reactionEl, 'user_id');
+        var action = chatUtils.getElementText(reactionEl, 'action');
+
+        if (!action || (action !== 'add' && action !== 'remove')) {
+            return null;
+        }
+
+        var userId = parseInt(userIdText, 10);
+        if (isNaN(userId)) {
+            userId = userIdText;
+        }
+
+        return {
+            name: name,
+            userId: userId,
+            action: action
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+/**
+ * Parse custom_data element. Two server formats supported:
+ *   1) Nested XML: <custom_data><class_name>...</class_name>...</custom_data>
+ *   2) JSON string: <custom_data>{"class_name":"...",...}</custom_data>
+ * Returns plain object or undefined if custom_data is absent.
+ * Reference: Android QBDialogCustomDataNoticeParser.java.
+ */
+function _parseCustomData(extraParams) {
+    var customDataEl = chatUtils.getElement(extraParams, 'custom_data');
+    if (!customDataEl) {
+        return undefined;
+    }
+
+    var rawText = (_readElementText(customDataEl) || '').trim();
+    if (rawText && rawText.charAt(0) === '{') {
+        // JSON form.
+        try {
+            return JSON.parse(rawText);
+        } catch (err) {
+            // Fall through to nested-XML parsing.
+        }
+    }
+
+    // Nested XML: walk element children, build flat map of name → text.
+    // Cross-env: collect all element children regardless of name, then read
+    // their tag and text. _getChildElements expects a name filter, but here
+    // we want every child element, so do a one-off walk.
+    var out = {};
+    var hasChildEl = false;
+
+    // Browser DOM / xmldom path.
+    if (customDataEl.childNodes && customDataEl.childNodes.length !== undefined && typeof customDataEl.childNodes !== 'function') {
+        for (var i = 0; i < customDataEl.childNodes.length; i++) {
+            var child = customDataEl.childNodes[i];
+            if (!child || child.nodeType !== 1) {
+                continue;
+            }
+            hasChildEl = true;
+            var key = child.tagName || child.nodeName || child.localName;
+            out[key] = (_readElementText(child) || '').trim();
+        }
+    }
+
+    // ltx fallback: walk .children for Element-like objects.
+    if (!hasChildEl && customDataEl.children && customDataEl.children.length !== undefined) {
+        for (var k = 0; k < customDataEl.children.length; k++) {
+            var ch = customDataEl.children[k];
+            if (ch && typeof ch === 'object' && ch.name) {
+                hasChildEl = true;
+                out[ch.name] = (_readElementText(ch) || '').trim();
+            }
+        }
+    }
+
+    if (!hasChildEl) {
+        return undefined;
+    }
+    return out;
+}
+
+/**
+ * Parse a Notice headline stanza into {type, payload} ready for routing.
+ * Returns null if stanza is not a Notice (no urn:xmpp:notice:0 namespace, or
+ * unknown moduleIdentifier value).
+ *
+ * @param {Element} stanza - <message type="headline"> element from Strophe / xmpp-client.
+ * @return {{type: String, payload: Object}|null}
+ */
+function _parseNoticeStanza(stanza) {
+    if (!stanza) {
+        return null;
+    }
+    var extraParams = chatUtils.getElement(stanza, 'extraParams');
+    if (!extraParams) {
+        return null;
+    }
+
+    var type = _getNoticeModuleIdentifier(extraParams);
+    if (!type) {
+        return null;
+    }
+
+    // Common flat fields used across most notice variants.
+    var dialogId = chatUtils.getElementText(extraParams, 'dialog_id');
+    var messageId = chatUtils.getElementText(extraParams, 'message_id');
+    var dateSentText = chatUtils.getElementText(extraParams, 'date_sent');
+    var dateSent = parseInt(dateSentText, 10);
+    if (isNaN(dateSent)) {
+        dateSent = undefined;
+    }
+
+    var payload;
+    var IDS = noticeConsts.NOTICE_MODULE_IDENTIFIER;
+
+    if (type === IDS.DELETED_MESSAGE) {
+        payload = {
+            dialogId: dialogId,
+            messageId: messageId,
+            dateSent: dateSent
+        };
+    } else if (type === IDS.DELETED_DIALOG) {
+        payload = {
+            dialogId: dialogId,
+            dateSent: dateSent
+        };
+    } else if (type === IDS.UPDATED_MESSAGE) {
+        // Two variants: singular <reaction> (incremental) vs aggregate <reactions> (text update with snapshot).
+        var singular = _parseSingularReaction(extraParams);
+        if (singular) {
+            payload = {
+                kind: 'reaction',
+                event: {
+                    dialogId: dialogId,
+                    messageId: messageId,
+                    reactionName: singular.name,
+                    userId: singular.userId,
+                    action: singular.action,
+                    dateSent: dateSent
+                }
+            };
+        } else {
+            // Build a partial QBChatMessage object from extraParams.
+            // We read the well-known fields explicitly (no dependency on parseExtraParams,
+            // which has env-specific branches and can throw on non-standard stanza shapes).
+            var msg = {};
+            msg._id = messageId;
+            msg.chat_dialog_id = dialogId;
+            if (dateSent !== undefined) {
+                msg.date_sent = dateSent;
+            }
+            var msgText = chatUtils.getElementText(extraParams, 'message');
+            if (msgText) {
+                msg.message = msgText;
+            }
+            var senderIdText = chatUtils.getElementText(extraParams, 'sender_id');
+            var senderId = parseInt(senderIdText, 10);
+            if (!isNaN(senderId)) { msg.sender_id = senderId; }
+            var recipientIdText = chatUtils.getElementText(extraParams, 'recipient_id');
+            var recipientId = parseInt(recipientIdText, 10);
+            if (!isNaN(recipientId)) { msg.recipient_id = recipientId; }
+            var readIds = _parseNumericIdsCsv(chatUtils.getElementText(extraParams, 'read_ids'));
+            if (readIds.length > 0) { msg.read_ids = readIds; }
+            var deliveredIds = _parseNumericIdsCsv(chatUtils.getElementText(extraParams, 'delivered_ids'));
+            if (deliveredIds.length > 0) { msg.delivered_ids = deliveredIds; }
+            // Aggregate reactions (if any).
+            var aggregate = _parseAggregateReactions(extraParams);
+            if (aggregate !== null && aggregate.length > 0) {
+                msg.reactions = aggregate;
+            }
+            payload = {
+                kind: 'message',
+                dialogId: dialogId,
+                message: msg
+            };
+        }
+    } else if (type === IDS.UPDATED_DIALOG) {
+        // Build a partial QBChatDialog object from extraParams (full server snapshot).
+        var dlg = {};
+        dlg._id = dialogId;
+        var name = chatUtils.getElementText(extraParams, 'name');
+        if (name !== undefined && name !== null && name !== '') {
+            dlg.name = name;
+        }
+        var photo = chatUtils.getElementText(extraParams, 'photo');
+        if (photo !== undefined && photo !== null && photo !== '') {
+            dlg.photo = photo;
+        }
+        var typeText = chatUtils.getElementText(extraParams, 'type');
+        var typeNum = parseInt(typeText, 10);
+        if (!isNaN(typeNum)) {
+            dlg.type = typeNum;
+        }
+        var occupants = _parseNumericIdsCsv(chatUtils.getElementText(extraParams, 'occupants_ids'));
+        if (occupants.length > 0) {
+            dlg.occupants_ids = occupants;
+        }
+        var admins = _parseNumericIdsCsv(chatUtils.getElementText(extraParams, 'admin_ids'));
+        if (admins.length > 0) {
+            dlg.admin_ids = admins;
+        }
+        var isJoinReqText = chatUtils.getElementText(extraParams, 'is_join_required');
+        if (isJoinReqText !== undefined && isJoinReqText !== null && isJoinReqText !== '') {
+            var isJoinReq = parseInt(isJoinReqText, 10);
+            dlg.is_join_required = isNaN(isJoinReq) ? isJoinReqText : isJoinReq;
+        }
+        var roomJid = chatUtils.getElementText(extraParams, 'xmpp_room_jid');
+        if (roomJid !== undefined && roomJid !== null && roomJid !== '') {
+            dlg.xmpp_room_jid = roomJid;
+        }
+        var customData = _parseCustomData(extraParams);
+        if (customData !== undefined) {
+            dlg.custom_data = customData;
+        }
+        // Last message fields.
+        var lmText = chatUtils.getElementText(extraParams, 'last_message');
+        if (lmText) { dlg.last_message = lmText; }
+        var lmId = chatUtils.getElementText(extraParams, 'last_message_id');
+        if (lmId) { dlg.last_message_id = lmId; }
+        var lmDsText = chatUtils.getElementText(extraParams, 'last_message_date_sent');
+        var lmDs = parseInt(lmDsText, 10);
+        if (!isNaN(lmDs)) { dlg.last_message_date_sent = lmDs; }
+        var lmUidText = chatUtils.getElementText(extraParams, 'last_message_user_id');
+        var lmUid = parseInt(lmUidText, 10);
+        if (!isNaN(lmUid)) { dlg.last_message_user_id = lmUid; }
+
+        payload = {
+            kind: 'dialog',
+            dialog: dlg
+        };
+    } else {
+        return null;
+    }
+
+    return { type: type, payload: payload };
+}
+
+/**
+ * Route a parsed Notice event to the matching listener-property on chatProxy.
+ * No-op if the listener is null/undefined. Listener exceptions are caught by
+ * Utils.safeCallbackCall (existing SDK convention).
+ *
+ * @param {ChatProxy} chatProxy
+ * @param {{type: String, payload: Object}} parsed
+ */
+function _routeNoticeEvent(chatProxy, parsed) {
+    if (!chatProxy || !parsed) {
+        return;
+    }
+    var IDS = noticeConsts.NOTICE_MODULE_IDENTIFIER;
+    var type = parsed.type;
+    var p = parsed.payload || {};
+
+    if (type === IDS.DELETED_MESSAGE) {
+        if (typeof chatProxy.onMessageDeletedListener === 'function') {
+            Utils.safeCallbackCall(chatProxy.onMessageDeletedListener, p.dialogId, p.messageId, p.dateSent);
+        }
+    } else if (type === IDS.UPDATED_MESSAGE) {
+        if (p.kind === 'reaction') {
+            if (typeof chatProxy.onMessageReactionChangedListener === 'function') {
+                Utils.safeCallbackCall(chatProxy.onMessageReactionChangedListener, p.event);
+            }
+        } else if (p.kind === 'message') {
+            if (typeof chatProxy.onMessageUpdatedListener === 'function') {
+                Utils.safeCallbackCall(chatProxy.onMessageUpdatedListener, p.dialogId, p.message);
+            }
+        }
+    } else if (type === IDS.DELETED_DIALOG) {
+        if (typeof chatProxy.onDialogDeletedListener === 'function') {
+            Utils.safeCallbackCall(chatProxy.onDialogDeletedListener, p.dialogId, p.dateSent);
+        }
+    } else if (type === IDS.UPDATED_DIALOG) {
+        if (typeof chatProxy.onDialogUpdatedListener === 'function') {
+            Utils.safeCallbackCall(chatProxy.onDialogUpdatedListener, p.dialog);
+        }
+    }
+}
+
+// ============================================================================
+// End of Notice Feature parsing helpers
+// ============================================================================
+
 
 
 function ChatProxy(service) {
@@ -101,6 +604,23 @@ function ChatProxy(service) {
     this._checkExpiredSessionTimer = undefined;
     this._sessionHasExpired = false;
     this._pings = {};
+
+    /**
+     * Notice Feature local state (CROS-1055, SDK 2.24.0).
+     * Reflects the current XMPP session subscription only — reset to false on disconnect.
+     * Consumers must call enableNotices() again after reconnect to re-subscribe.
+     */
+    this._isNoticesEnabled = false;
+
+    /**
+     * Notice listener properties (CROS-1055). All initialized to null.
+     * Single-listener pattern matching existing onMessageListener / onSystemMessageListener style.
+     */
+    this.onMessageDeletedListener = null;
+    this.onMessageUpdatedListener = null;
+    this.onMessageReactionChangedListener = null;
+    this.onDialogDeletedListener = null;
+    this.onDialogUpdatedListener = null;
 
     // [QC-1550] XMPP connection is considered "verified" only after the first
     // successful pong response. Strophe emits Status.CONNECTED at the transport
@@ -683,8 +1203,22 @@ function ChatProxy(service) {
             delay = chatUtils.getElement(stanza, 'delay'),
             moduleIdentifier = chatUtils.getElementText(extraParams, 'moduleIdentifier'),
             bodyContent = chatUtils.getElementText(stanza, 'body'),
-            extraParamsParsed = chatUtils.parseExtraParams(extraParams),
+            extraParamsParsed,
             message;
+
+        // CROS-1055: parseExtraParams may throw on edge-case stanza shapes
+        // (e.g. test fixtures using xmldom which lacks .children). Catch
+        // defensively so a parsing failure doesn't kill the whole headline
+        // handler — Notice routing must still run.
+        try {
+            extraParamsParsed = chatUtils.parseExtraParams(extraParams);
+        } catch (parseErr) {
+            extraParamsParsed = {};
+            Utils.QBLog('[QBChat]', '[parseExtraParams] failed: ' + (parseErr && parseErr.message ? parseErr.message : parseErr));
+        }
+        if (!extraParamsParsed) {
+            extraParamsParsed = {};
+        }
 
         if (moduleIdentifier === 'SystemNotifications' && typeof self.onSystemMessageListener === 'function') {
             message = {
@@ -697,6 +1231,20 @@ function ChatProxy(service) {
             Utils.safeCallbackCall(self.onSystemMessageListener, message);
         } else if (self.webrtcSignalingProcessor && !delay && moduleIdentifier === 'WebRTCVideoChat') {
             self.webrtcSignalingProcessor._onMessage(from, extraParams, delay, userId, extraParamsParsed.extension);
+        } else {
+            // Notice Feature (CROS-1055, SDK 2.24.0). Sibling branch — only triggers
+            // when extraParams contains <moduleIdentifier xmlns="urn:xmpp:notice:0">.
+            // Non-notice headline stanzas (e.g. legacy SystemNotifications without
+            // matching xmlns) fall through to the parser which returns null.
+            try {
+                var noticeParsed = _parseNoticeStanza(stanza);
+                if (noticeParsed) {
+                    _routeNoticeEvent(self, noticeParsed);
+                }
+            } catch (err) {
+                // Per AC#9: never throw from headline handler.
+                Utils.QBLog('[QBChat]', '[Notice] handler error: ' + (err && err.message ? err.message : err));
+            }
         }
 
         /**
@@ -1262,6 +1810,7 @@ ChatProxy.prototype = {
             self._isConnectionVerified = true;
             self._isReconnectListenerPending = false;
 
+            // TODO(2.25.0): auto-enable Notice Feature here (see qbChat.js enableNotices JSDoc).
             self.roster.get(function (contacts) {
                 xmppClient.send(presence);
 
@@ -1895,6 +2444,10 @@ ChatProxy.prototype = {
         this._isLogout = true;
         this.helpers.setUserCurrentJid('');
 
+        // Notice Feature (CROS-1055): reset local subscription flag on disconnect.
+        // Consumers must call enableNotices() again after a new connection.
+        this._isNoticesEnabled = false;
+
         if (Utils.getEnv().browser) {
             this.connection.flush();
             this.connection.disconnect('call QB.chat.disconnect');//artik should add reason = 'disconnect from SDK'
@@ -1905,6 +2458,130 @@ ChatProxy.prototype = {
             }
         } else {
             this.Client.end();
+        }
+    },
+
+    /**
+     * Subscribe the current XMPP session to Notice Feature stanzas
+     * (urn:xmpp:notice:0). After a successful IQ result the server starts
+     * delivering NoticeUpdatedMessage / NoticeDeletedMessage /
+     * NoticeUpdatedDialog / NoticeDeletedDialog headline stanzas.
+     *
+     * The local enabled flag is reset to false on chat disconnect — consumers
+     * must call enableNotices() again after a reconnect (intentional divergence
+     * from the Android SDK, which auto-restores the subscription).
+     *
+     * TODO(2.25.0): make auto-enable SDK-internal — fire on initial connect and
+     * on relogin after session-expired, skip on Stream-Management reconnect.
+     * Spec & three-state matrix are tracked in the internal 2.25.0 backlog
+     * (auto-enable notices).
+     *
+     * Do not call enableNotices again before the previous callback fires —
+     * concurrent enable calls are not specified.
+     *
+     * @memberof QB.chat
+     * @param {enableNoticesCallback} callback - Called with (error, result) on IQ result.
+     * @since 2.24.0
+     */
+    enableNotices: function (callback) {
+        /**
+         * Callback for QB.chat.enableNotices().
+         * @callback enableNoticesCallback
+         * @param {Object|null} error - Error object on failure, null on success.
+         * @param {Object} [result] - IQ result element on success.
+         */
+        this._sendNoticeIQ('enable', callback);
+    },
+
+    /**
+     * Unsubscribe the current XMPP session from Notice Feature stanzas.
+     * Sends a <disable xmlns="urn:xmpp:notice:0"/> IQ. On success the local
+     * enabled flag becomes false; the server stops delivering notice stanzas.
+     *
+     * @memberof QB.chat
+     * @param {disableNoticesCallback} callback - Called with (error, result) on IQ result.
+     * @since 2.24.0
+     */
+    disableNotices: function (callback) {
+        /**
+         * Callback for QB.chat.disableNotices().
+         * @callback disableNoticesCallback
+         * @param {Object|null} error - Error object on failure, null on success.
+         * @param {Object} [result] - IQ result element on success.
+         */
+        this._sendNoticeIQ('disable', callback);
+    },
+
+    /**
+     * Returns the local Notice Feature subscription flag.
+     * @memberof QB.chat
+     * @return {Boolean} true after a successful enableNotices(), false otherwise.
+     *   Reset to false on chat disconnect; not synchronized with the server.
+     * @since 2.24.0
+     */
+    isNoticesEnabled: function () {
+        return this._isNoticesEnabled === true;
+    },
+
+    /**
+     * @private
+     * Internal IQ helper used by enableNotices/disableNotices. Implements the
+     * dual-env IQ pattern (browser/Strophe vs Node/NativeScript stanza-builder)
+     * used elsewhere in the SDK (see RosterProxy.get for the canonical reference).
+     *
+     * @param {String} action - 'enable' or 'disable'.
+     * @param {Function} callback
+     */
+    _sendNoticeIQ: function (action, callback) {
+        var self = this;
+        var iqParams = {
+            type: 'set',
+            from: self.helpers.getUserCurrentJid(),
+            id: chatUtils.getUniqueId('notice_' + action)
+        };
+        var builder = Utils.getEnv().browser ? $iq : XMPP.Stanza;
+        var iq = chatUtils.createStanza(builder, iqParams, 'iq');
+
+        // Append <enable xmlns="urn:xmpp:notice:0"/> or <disable xmlns="..."/>
+        iq.c(action, { xmlns: noticeConsts.NOTICE_NAMESPACE }).up();
+
+        function _onSuccess(stanza) {
+            self._isNoticesEnabled = (action === 'enable');
+            if (typeof callback === 'function') {
+                Utils.safeCallbackCall(callback, null, stanza);
+            }
+        }
+
+        function _onError(stanza) {
+            // Per AC#3/AC#4: on error keep the flag unchanged (do NOT flip to true on enable error).
+            if (typeof callback === 'function') {
+                var err;
+                try {
+                    err = stanza ? chatUtils.getErrorFromXMLNode(stanza) : null;
+                } catch (e) {
+                    err = null;
+                }
+                if (!err) {
+                    err = { type: 'cancel', message: 'Notice IQ error' };
+                }
+                Utils.safeCallbackCall(callback, err);
+            }
+        }
+
+        if (Utils.getEnv().browser) {
+            self.connection.sendIQ(iq, _onSuccess, _onError);
+        } else {
+            // Node/NativeScript path: register callback in nodeStanzasCallbacks map.
+            self.nodeStanzasCallbacks[iqParams.id] = function (stanza) {
+                // The map handler receives the result/error stanza. Inspect type to dispatch.
+                var iqType = chatUtils.getAttr(stanza, 'type');
+                if (iqType === 'result') {
+                    _onSuccess(stanza);
+                } else {
+                    _onError(stanza);
+                }
+            };
+            self.Client.send(iq);
         }
     },
 

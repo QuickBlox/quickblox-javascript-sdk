@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {AIMessageWidget, AISource, AIWidgetIcon, ErrorMessageIcon, IChatMessage} from "quickblox-react-ui-kit";
 
 interface MessageWidgetProps {
@@ -19,7 +19,7 @@ export default function useMyAIAssistAnswer({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
     const fileToWidget = (file: File, context: IChatMessage[]): void => {};
 
-    const renderWidget = (): JSX.Element => {
+    const renderWidget = (): React.JSX.Element => {
         if (errorMessage && errorMessage.length > 0) {
             const errorsDescriptions:
                 | { title: string; action: () => void }[]

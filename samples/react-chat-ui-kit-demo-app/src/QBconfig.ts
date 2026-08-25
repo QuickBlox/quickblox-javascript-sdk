@@ -1,10 +1,10 @@
 // @ts-ignore
 export const QBConfig: QBUIKitConfig = {
     credentials: {
-        appId: -1,
-        authKey: '',
-        authSecret: '',
-        accountKey: '',
+        appId: 0,
+        authKey: 'YOUR_AUTH_KEY',
+        authSecret: 'YOUR_AUTH_SECRET',
+        accountKey: 'YOUR_ACCOUNT_KEY',
         sessionToken: '',
     },
     configAIApi: {

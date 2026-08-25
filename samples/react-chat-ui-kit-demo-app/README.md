@@ -10,6 +10,7 @@
       + [2.1 Get application credentials](#21-get-application-credentials)
       + [2.2 Set application credentials](#22-set-application-credentials)
       + [2.3 Run the application](#23-run-the-application)
+- [Configure reactions](#configure-reactions)
 - [Documentation](#documentation)
 - [License](#license)
 
@@ -24,10 +25,10 @@ This is a code sample for [QuickBlox](http://quickblox.com/) platform. It is a g
 
 The minimum requirements for QuickBlox UIKit for React sample are:
 
-- JS QuickBlox SDK v2.15.5
-- QuickBlox React UIKit library v0.2.8
-- React JS v.18.0
-- TypeScript v.4.9.3
+- JS QuickBlox SDK v2.24.0-beta.1
+- QuickBlox React UIKit library v0.5.4-beta.2
+- React JS v19
+- TypeScript v5.3
 
 # Screenshots
 1. Sign In page;
@@ -55,6 +56,7 @@ The minimum requirements for QuickBlox UIKit for React sample are:
 * List and delete chats
 * Display chat history
 * Display a list with chat participants
+* Add and remove message reactions using the quick row or full emoji selector
 
 # How to launch
 ## 1. Install Node.js and NPM integration
@@ -109,6 +111,29 @@ Before run a code sample:
 ### 2.3 Run the application
 
 Run `npm start` for a dev server. Navigate to `http://localhost:3000/`. The app will automatically reload if you change any of the source files.
+
+# Configure reactions
+
+The stock `QuickBloxUIKitDesktopLayout` reads reaction settings from
+`QBConfig.appConfig.reactions` in `src/QBconfig.ts`:
+
+```ts
+reactions: {
+    enable: true,
+    mode: ReactionMode.Full,
+    picker: {
+        placement: 'bottom',
+        showSearch: true,
+        showClose: false,
+        title: 'QuickBlox reactions',
+        searchPlaceholder: 'Find an emoji',
+    },
+},
+```
+
+Open a dialog and select the reaction button next to a message. The quick row
+and full selector should be available. The selector opens below the button,
+uses the custom title and search placeholder, and has no close button.
 
 # Documentation
 [](#documentation)

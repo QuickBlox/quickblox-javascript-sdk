@@ -1,5 +1,6 @@
-// @ts-ignore
-export const QBConfig: QBUIKitConfig = {
+import { ReactionMode, type EmojiPickerPlacement } from 'quickblox-react-ui-kit';
+
+export const QBConfig = {
     credentials: {
         appId: -1,
         accountKey: '',
@@ -14,7 +15,7 @@ export const QBConfig: QBUIKitConfig = {
             smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
-            useDefault: true,
+            useDefault: false,
             proxyConfig: {
                 api: 'v1/chat/completions',
                 servername: 'https://api.openai.com/',
@@ -27,7 +28,7 @@ export const QBConfig: QBUIKitConfig = {
             smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
-            useDefault: true,
+            useDefault: false,
             defaultLanguage: 'Ukrainian',
             languages: ['Ukrainian', 'English', 'French', 'Portuguese', 'German'],
             proxyConfig: {
@@ -47,7 +48,7 @@ export const QBConfig: QBUIKitConfig = {
             smartChatAssistantId: '',
             apiKey: '',
             maxTokens: 3584,
-            useDefault: true,
+            useDefault: false,
             defaultTone: 'Professional',
             Tones: [
                 {
@@ -128,9 +129,24 @@ export const QBConfig: QBUIKitConfig = {
         pingDebug: true,
         enableForwarding: true,
         enableReplying: true,
+        enableCopying: true,
+        enableEditing: true,
+        enableDeleting: true,
         regexUserName: '^(?=[a-zA-Z])[-a-zA-Z_ ]{3,49}(?<! )$',
         showPublicDialogsInList: false,
         allowPublicDialogCreation: false,
+            reactions: {
+            enable: true,
+            mode: ReactionMode.Full,
+            quickReactions: ['👍', '❤️', '😂', '😮', '😢', '🔥'],
+            picker: {
+                placement: 'bottom' as EmojiPickerPlacement,
+                showSearch: true,
+                showClose: true,
+                title: 'Choose a reaction',
+                searchPlaceholder: 'Search emoji',
+            },
+        },
         endpoints: {
             api: 'api.quickblox.com',
             chat: 'chat.quickblox.com',

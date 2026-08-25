@@ -368,7 +368,7 @@ Dialog.prototype.renderMessages = function (dialogId) {
 Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
     var self = this,
         dialog = document.getElementById(dialogId),
-        message = msg.message;
+        message = helpers.getDialogLastMessagePreview(msg.message);
 
     if (message && message.indexOf('\n') !== -1) {
         message = message.slice(0, message.indexOf('\n'));
@@ -380,8 +380,12 @@ Dialog.prototype.changeLastMessagePreview = function (dialogId, msg) {
     if (dialog) {
         var messagePreview = dialog.querySelector('.j-dialog__last_message ');
 
-        if (msg.message) {
-            messagePreview.classList.remove('attachment');
+        if (message) {
+            if (message === 'Attachment') {
+                messagePreview.classList.add('attachment');
+            } else {
+                messagePreview.classList.remove('attachment');
+            }
             messagePreview.innerText = message;
         } else {
             messagePreview.classList.add('attachment');

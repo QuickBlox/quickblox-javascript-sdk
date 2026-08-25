@@ -1,0 +1,38 @@
+/*
+ * Modest sample-only tint for MyMessageItem.
+ * Kit defaults stay blue-gray; this only shifts the custom item toward a
+ * slightly cooler teal so the override is visible without a new theme.
+ */
+.my-message-item {
+  --my-message-accent: #5a8fb5;
+  --my-message-accent-soft: #eaf4f8;
+}
+
+.my-message-item .message-context-menu-actions__icon {
+  color: var(--my-message-accent);
+}
+
+.my-message-item .message-reaction-picker__toggle-icon {
+  color: var(--my-message-accent);
+  fill: var(--my-message-accent);
+}
+
+.my-message-item .message-reaction-picker__chip--active {
+  background: var(--my-message-accent-soft);
+  border-color: var(--my-message-accent);
+}
+
+/*
+ * The expanded selector is portaled to document.body, so it cannot be
+ * scoped under .my-message-item. This sample has no other picker.
+ */
+.message-reaction-picker__selector-title,
+.message-reaction-picker__selector-close-icon {
+  color: #5a8fb5;
+  fill: #5a8fb5;
+}
+
+.message-reaction-picker__selector-search svg {
+  color: #5a8fb5;
+  stroke: #5a8fb5;
+}

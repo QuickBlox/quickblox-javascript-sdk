@@ -10,6 +10,70 @@
     margin-top: -1px;
 }
 
+.message_quote {
+    margin: 8px 16px 4px 16px;
+    padding: 0 0 0 12px;
+    border-left: 2px solid #3978FC;
+}
+
+.message_quote__sender {
+    color: #687A97;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+}
+
+.message_quote__text {
+    margin: 4px 0 0 0;
+    color: #333333;
+    font-size: 14px;
+    line-height: 20px;
+    word-wrap: break-word;
+}
+
+.message_file_attachment {
+    display: inline-block;
+    margin: 8px 16px 8px 16px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(57, 120, 252, 0.12);
+    color: #3978FC;
+    font-size: 14px;
+    line-height: 20px;
+    word-break: break-all;
+    text-decoration: underline;
+}
+
+.message_quote .message_file_attachment {
+    margin: 8px 0 4px 0;
+}
+
+.message__text_wrap.you .message_quote {
+    border-left-color: rgba(255, 255, 255, 0.8);
+}
+
+.message__text_wrap.you .message_quote__sender,
+.message__text_wrap.you .message_quote__text,
+.message__text_wrap.you .message_quote__text a {
+    color: #FFFFFF;
+}
+
+.message__text_wrap.you .message_quote__sender {
+    opacity: 0.9;
+}
+
+.message__text_wrap.you .message_file_attachment {
+    background: rgba(255, 255, 255, 0.22);
+    color: #FFFFFF;
+}
+
+.message_quote .message__attachments_wtap {
+    width: 180px;
+    height: auto;
+    min-height: 80px;
+    margin-top: 8px;
+}
+
 .j-update_dialog_form, .j-update_chat__title_button, .j-back_to_dialog, .j-update_dialog_link {
     display: none;
     color: #3978FC;

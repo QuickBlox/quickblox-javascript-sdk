@@ -39,9 +39,11 @@ DialogProxy.prototype = {
     },
 
     /**
-     * Create new dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#create-dialog read more}).
+     * Create new dialog({@link https://docs.quickblox.com/reference/create-dialog read more}).
      * @memberof QB.chat.dialog
      * @param {Object} params - Object of parameters.
+     * @param {Number[]|String} [params.admin_ids] - IDs of dialog admins for public/group dialogs.
+     * Ignored by the backend for private dialogs.
      * @param {createDialogCallback} callback - The callback function.
      * */
     create: function(params, callback) {
@@ -54,6 +56,10 @@ DialogProxy.prototype = {
 
         if (params && params.occupants_ids && Utils.isArray(params.occupants_ids)) {
             params.occupants_ids = params.occupants_ids.join(', ');
+        }
+
+        if (params && params.admin_ids && Utils.isArray(params.admin_ids)) {
+            params.admin_ids = params.admin_ids.join(', ');
         }
 
         if (params && params.is_join_required !== undefined && params.is_join_required !== null) {
@@ -72,10 +78,13 @@ DialogProxy.prototype = {
     },
 
     /**
-     * Update group dialog({@link https://docs.quickblox.com/docs/js-chat-dialogs#update-dialog read more}).
+     * Update group dialog({@link https://docs.quickblox.com/reference/update-dialog read more}).
      * @memberof QB.chat.dialog
      * @param {String} id - The dialog ID.
      * @param {Object} params - Object of parameters.
+     * @param {Number[]|String} [params.admin_ids] - Full replacement list of dialog admins.
+     * @param {Object} [params.push_all] - Incremental fields to append, including admin_ids.
+     * @param {Object} [params.pull_all] - Incremental fields to remove, including admin_ids.
      * @param {updateDialogCallback} callback - The callback function.
      * */
     update: function(id, params, callback) {

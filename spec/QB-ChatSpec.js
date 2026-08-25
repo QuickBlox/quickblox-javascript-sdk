@@ -882,6 +882,267 @@ describe('Chat API', function() {
 
         });
 
+        // ========================MESSAGE REACTIONS (REST)=========================
+
+        describe('Message Reactions (REST):', function() {
+            function getErrorCode(err) {
+                if (!err) {
+                    return null;
+                }
+
+                if (err.status) {
+                    return typeof err.status === 'string' ? parseInt(err.status, 10) : err.status;
+                }
+
+                if (err.code) {
+                    return typeof err.code === 'string' ? parseInt(err.code, 10) : err.code;
+                }
+
+                return null;
+            }
+
+            function createMessageForDialog(dialogId, callback) {
+                var params = {
+                    chat_dialog_id: dialogId,
+                    message: 'Reaction test message ' + Math.floor((Math.random() * 100000) + 1)
+                };
+
+                QB_SENDER.chat.message.create(params, function(err, res) {
+                    expect(err).toBeNull();
+                    expect(res).toBeDefined();
+                    expect(res._id).toBeDefined();
+
+                    callback(res._id);
+                });
+            }
+
+            it('can add reaction to message in non-public dialog', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'like', function(err, res) {
+                        expect(err).toBeNull();
+                        expect(res).toBeDefined();
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+
+            it('can list reactions and find added reaction', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'love', function(addErr) {
+                        expect(addErr).toBeNull();
+
+                        QB_SENDER.chat.message.listReactions(messageId, function(listErr, listRes) {
+                            expect(listErr).toBeNull();
+                            expect(listRes).toBeDefined();
+                            expect(Array.isArray(listRes.items)).toBeTrue();
+
+                            var reaction = null;
+                            for (var i = 0; i < listRes.items.length; i++) {
+                                if (listRes.items[i].name === 'love') {
+                                    reaction = listRes.items[i];
+                                    break;
+                                }
+                            }
+
+                            expect(reaction).toBeDefined();
+                            expect(reaction.count).toBeGreaterThan(0);
+                            expect(Array.isArray(reaction.user_ids)).toBeTrue();
+                            expect(reaction.user_ids).toContain(QBUser1.id);
+
+                            done();
+                        });
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+
+            it('is idempotent when adding same reaction twice by same user', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'wow', function(err1) {
+                        expect(err1).toBeNull();
+
+                        QB_SENDER.chat.message.addReaction(messageId, 'wow', function(err2) {
+                            expect(err2).toBeNull();
+
+                            QB_SENDER.chat.message.listReactions(messageId, function(listErr, listRes) {
+                                expect(listErr).toBeNull();
+                                expect(listRes).toBeDefined();
+                                expect(Array.isArray(listRes.items)).toBeTrue();
+
+                                var reaction = null;
+                                for (var i = 0; i < listRes.items.length; i++) {
+                                    if (listRes.items[i].name === 'wow') {
+                                        reaction = listRes.items[i];
+                                        break;
+                                    }
+                                }
+
+                                expect(reaction).toBeDefined();
+                                expect(Array.isArray(reaction.user_ids)).toBeTrue();
+                                expect(reaction.user_ids.filter(function(userId) {
+                                    return userId === QBUser1.id;
+                                }).length).toEqual(1);
+
+                                done();
+                            });
+                        });
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 3);
+
+            it('can remove reaction from message', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'sad', function(addErr) {
+                        expect(addErr).toBeNull();
+
+                        QB_SENDER.chat.message.removeReaction(messageId, 'sad', function(removeErr) {
+                            expect(removeErr).toBeNull();
+
+                            QB_SENDER.chat.message.listReactions(messageId, function(listErr, listRes) {
+                                expect(listErr).toBeNull();
+                                expect(listRes).toBeDefined();
+                                expect(Array.isArray(listRes.items)).toBeTrue();
+
+                                var reaction = null;
+                                for (var i = 0; i < listRes.items.length; i++) {
+                                    if (listRes.items[i].name === 'sad') {
+                                        reaction = listRes.items[i];
+                                        break;
+                                    }
+                                }
+
+                                if (reaction) {
+                                    expect(reaction.user_ids).not.toContain(QBUser1.id);
+                                } else {
+                                    expect(reaction).toBeNull();
+                                }
+
+                                done();
+                            });
+                        });
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 3);
+
+            it('returns reactions in message.list when include_reactions=1', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'fire', function(addErr) {
+                        expect(addErr).toBeNull();
+
+                        QB_SENDER.chat.message.list({ chat_dialog_id: dialogId1Group, include_reactions: 1 }, function(err, res) {
+                            expect(err).toBeNull();
+                            expect(res).toBeDefined();
+                            expect(Array.isArray(res.items)).toBeTrue();
+
+                            var targetMessage = null;
+                            for (var i = 0; i < res.items.length; i++) {
+                                if (res.items[i]._id === messageId) {
+                                    targetMessage = res.items[i];
+                                    break;
+                                }
+                            }
+
+                            expect(targetMessage).toBeDefined();
+                            expect(Array.isArray(targetMessage.reactions)).toBeTrue();
+
+                            var fireReaction = null;
+                            for (var j = 0; j < targetMessage.reactions.length; j++) {
+                                if (targetMessage.reactions[j].name === 'fire') {
+                                    fireReaction = targetMessage.reactions[j];
+                                    break;
+                                }
+                            }
+                            expect(fireReaction).toBeDefined();
+                            expect(Array.isArray(fireReaction.user_ids)).toBeTrue();
+
+                            done();
+                        });
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 3);
+
+            it('returns 400 for addReaction with empty reaction name', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, '', function(err, res) {
+                        expect(res).toBeNull();
+                        expect(err).not.toBeNull();
+                        expect(getErrorCode(err)).toEqual(400);
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+
+            it('returns 404 when removing non-existing reaction', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId1Group, function(messageId) {
+                    QB_SENDER.chat.message.removeReaction(messageId, 'not_existing_reaction_name', function(err, res) {
+                        expect(res).toBeNull();
+                        expect(err).not.toBeNull();
+                        expect(getErrorCode(err)).toEqual(404);
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+
+            it('returns 422 when adding reaction in public dialog', function(done) {
+                if (isOldVersion) {
+                    done();
+                    return;
+                }
+
+                if (!dialogId3PublicGroup) {
+                    done();
+                    return;
+                }
+
+                createMessageForDialog(dialogId3PublicGroup, function(messageId) {
+                    QB_SENDER.chat.message.addReaction(messageId, 'like', function(err, res) {
+                        expect(res).toBeNull();
+                        expect(err).not.toBeNull();
+                        expect(getErrorCode(err)).toEqual(422);
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+        });
+
         // ============================DELETE MESSAGES==============================
 
         describe('Delete Messages:', function() {
@@ -895,6 +1156,70 @@ describe('Chat API', function() {
                     done();
                 });
             }, REST_REQUESTS_TIMEOUT);
+
+        });
+
+        // ============================GET MESSAGE BY ID============================
+
+        describe('Get Message By Id:', function() {
+
+            // I1: create message -> getById(messageId) returns the same message by _id
+            it('returns single message by id (2-args form, no params)', function(done) {
+                var createParams = {
+                    chat_dialog_id: dialogId1Group,
+                    message: 'getById test message ' + Math.floor((Math.random() * 100000) + 1)
+                };
+
+                QB_SENDER.chat.message.create(createParams, function(createErr, createRes) {
+                    expect(createErr).toBeNull();
+                    expect(createRes).toBeDefined();
+                    expect(createRes._id).toBeDefined();
+
+                    var createdId = createRes._id;
+
+                    QB_SENDER.chat.message.getById(createdId, function(err, msg) {
+                        expect(err).toBeNull();
+                        expect(msg).toBeDefined();
+                        expect(msg._id).toEqual(createdId);
+                        expect(msg.chat_dialog_id).toEqual(dialogId1Group);
+                        expect(msg.reactions).toBeUndefined();
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
+
+            // I2: create message -> getById(messageId, { include_reactions: 1 }) without prior reactions returns empty/absent reactions[]
+            //
+            // Note: addReaction is delivered separately in CROS-1054. To keep this integration
+            // test self-contained on this fundamental task branch, we verify only that
+            // include_reactions=1 is accepted by the server and the response shape is preserved.
+            // Verification of populated reactions[] after addReaction is covered in CROS-1054 integration suite.
+            it('returns single message with include_reactions=1 query (3-args form)', function(done) {
+                var createParams = {
+                    chat_dialog_id: dialogId1Group,
+                    message: 'getById include_reactions test ' + Math.floor((Math.random() * 100000) + 1)
+                };
+
+                QB_SENDER.chat.message.create(createParams, function(createErr, createRes) {
+                    expect(createErr).toBeNull();
+                    expect(createRes).toBeDefined();
+
+                    var createdId = createRes._id;
+
+                    QB_SENDER.chat.message.getById(createdId, { include_reactions: 1 }, function(err, msg) {
+                        expect(err).toBeNull();
+                        expect(msg).toBeDefined();
+                        expect(msg._id).toEqual(createdId);
+
+                        if (msg.reactions !== undefined) {
+                            expect(Array.isArray(msg.reactions)).toBeTrue();
+                        }
+
+                        done();
+                    });
+                });
+            }, REST_REQUESTS_TIMEOUT * 2);
 
         });
 

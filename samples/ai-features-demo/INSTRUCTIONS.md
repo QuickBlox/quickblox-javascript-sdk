@@ -73,9 +73,9 @@ Fill in the configuration form:
 | Field | Description | Example |
 |-------|-------------|---------|
 | App ID | Your application ID | `12345` |
-| Auth Key | Application auth key | `DdS7zxMEm5Q7DaS` |
-| Auth Secret | Application auth secret | `g88RhdOjnDOqFkv` |
-| Account Key | Your account key | `uK_8uinNyz8-npTNB6tx` |
+| Auth Key | Application auth key | `YOUR_AUTH_KEY` |
+| Auth Secret | Application auth secret | `YOUR_AUTH_SECRET` |
+| Account Key | Your account key | `YOUR_ACCOUNT_KEY` |
 | User Login | Test user login | `testuser` |
 | User Password | Test user password | `password123` |
 | Smart Chat Assistant ID | AI Assistant ID | `6633a1300fea600001bd6e71` |

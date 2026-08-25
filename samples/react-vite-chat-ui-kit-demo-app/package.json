@@ -1,0 +1,32 @@
+{
+  "name": "react-vite-chat-ui-kit-demo-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "QuickBlox React UI Kit demo app built with Vite",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "quickblox": "2.24.0-beta.1",
+    "quickblox-react-ui-kit": "0.5.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router-dom": "6.30.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.19",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "@vitejs/plugin-react": "4.3.4",
+    "sass": "1.85.1",
+    "typescript": "5.7.3",
+    "vite": "6.0.7"
+  },
+  "overrides": {
+    "quickblox": "$quickblox"
+  }
+}

@@ -345,6 +345,14 @@ export declare interface QBChatDialog {
   xmpp_room_jid: string | null
   /** Array of users' IDs - dialog occupants. Does not make sense if type=1 (PUBLIC_GROUP). */
   occupants_ids: number[]
+  /**
+   * Array of users' IDs with admin role in the dialog.
+   * Admins are a subset of `occupants_ids` with extended permissions
+   * (edit dialog metadata, moderate messages, manage occupants).
+   * Always `[]` for type=3 (`PRIVATE`) dialogs.
+   * Available since SDK 2.24.0.
+   */
+  admin_ids: number[]
   /** Last sent message in this dialog. */
   last_message: string | null
   /** Timestamp of last sent message in this dialog. */
@@ -404,11 +412,75 @@ export declare interface QBChatMessage {
    */
   attachments: ChatMessageAttachment[]
   /**
+   * Aggregated reactions on this message.
+   * Present in REST responses when fetched with `include_reactions=1`.
+   * Real-time updates are delivered via XMPP `NoticeUpdatedMessage`.
+   * Available since SDK 2.24.0.
+   */
+  reactions?: QBReaction[]
+  /**
    * Name of the custom field.
    * Chat message can be extended with additional fields and contain any other user key-value custom parameters.
    * Can be many 1..N.
    */
   [custom_field_N: string]: any
+}
+
+/**
+ * Aggregated reaction on a chat message — REST shape returned by
+ * `GET /chat/Message/{id}/reactions` and present in `QBChatMessage.reactions`
+ * when fetched with `include_reactions=1`.
+ *
+ * Field names mirror the REST response verbatim (`user_ids` is snake_case).
+ *
+ * Available since SDK 2.24.0.
+ */
+export declare interface QBReaction {
+  /** Reaction name (e.g. `'like'`, `'love'`). Up to 100 characters. */
+  name: string
+  /** Total number of users who added this reaction to the message. */
+  count: number
+  /** IDs of users who added this reaction. */
+  user_ids: Array<QBUser['id']>
+}
+
+/**
+ * Discriminator for an inbound notice stanza. Carried in the
+ * `<moduleIdentifier xmlns="urn:xmpp:notice:0">` element of an
+ * XMPP `<message type="headline">` stanza.
+ *
+ * Available since SDK 2.24.0.
+ */
+export declare type QBNoticeModuleIdentifier =
+  | 'NoticeUpdatedMessage'
+  | 'NoticeDeletedMessage'
+  | 'NoticeUpdatedDialog'
+  | 'NoticeDeletedDialog'
+
+/**
+ * Payload of an incremental reaction add/remove event.
+ *
+ * Delivered via XMPP `NoticeUpdatedMessage` carrying a singular
+ * `<reaction>` child element. Surfaced through
+ * `QB.chat.onMessageReactionChangedListener`.
+ *
+ * Field names use camelCase to match other listener payload conventions.
+ *
+ * Available since SDK 2.24.0.
+ */
+export declare interface QBReactionEvent {
+  /** ID of the dialog where the reaction was added/removed. */
+  dialogId: QBChatDialog['_id']
+  /** ID of the message the reaction was added to / removed from. */
+  messageId: QBChatMessage['_id']
+  /** Reaction name (e.g. `'like'`). */
+  reactionName: string
+  /** ID of the user who added or removed the reaction. */
+  userId: QBUser['id']
+  /** Whether the reaction was added or removed. */
+  action: 'add' | 'remove'
+  /** Server-side timestamp of the event. */
+  dateSent: number
 }
 
 export declare interface QBMessageStatusParams {
@@ -518,6 +590,18 @@ export interface AISummarizeResponse {
 
 export declare type QBDialogCreateParams = Dictionary<any> & {
     /**
+     * IDs of users with admin permissions in the dialog.
+     * Applies to public group (type=1) and group (type=2) dialogs.
+     * Private dialogs (type=3) accept the field, but the server ignores it and returns `[]`.
+     *
+     * Array values are sent as comma-separated strings, mirroring `occupants_ids`.
+     * String values are passed as-is.
+     *
+     * @see https://docs.quickblox.com/reference/create-dialog
+     */
+    admin_ids?: number[] | string
+
+    /**
      * Whether join is required for group dialog (type=2 only):
      * 0 – join not required (default)
      * 1 – join required
@@ -530,6 +614,31 @@ export declare type QBDialogCreateParams = Dictionary<any> & {
      * @see https://docs.quickblox.com/reference/create-dialog
      */
     is_join_required?: 0 | 1
+}
+
+export declare type QBDialogUpdateParams = Dictionary<any> & {
+    /**
+     * Full replacement list of dialog admins.
+     *
+     * @see https://docs.quickblox.com/reference/update-dialog
+     */
+    admin_ids?: number[] | string
+    /**
+     * Incremental append operations. `admin_ids` can be sent together with
+     * `occupants_ids` when promoting newly added occupants.
+     */
+    push_all?: Dictionary<any> & {
+        occupants_ids?: number[]
+        admin_ids?: number[]
+    }
+    /**
+     * Incremental remove operations. `admin_ids` can be sent together with
+     * `occupants_ids` when demoting/removing occupants.
+     */
+    pull_all?: Dictionary<any> & {
+        occupants_ids?: number[]
+        admin_ids?: number[]
+    }
 }
 
 interface QBAIModule{
@@ -572,6 +681,25 @@ interface QBChatModule {
   /** Disconnect from the Chat ([read more](https://docs.quickblox.com/docs/js-chat-connection#disconnect-from-chat-server)). */
   disconnect(): void
   /**
+   * Subscribe the current XMPP session to Notice Feature stanzas (urn:xmpp:notice:0).
+   * After a successful IQ result the server starts delivering NoticeUpdatedMessage /
+   * NoticeDeletedMessage / NoticeUpdatedDialog / NoticeDeletedDialog headline stanzas.
+   * The local enabled flag is reset on chat disconnect — call enableNotices() again after reconnect.
+   * @since 2.24.0
+   */
+  enableNotices(callback: QBCallback<any>): void
+  /**
+   * Unsubscribe the current XMPP session from Notice Feature stanzas.
+   * @since 2.24.0
+   */
+  disableNotices(callback: QBCallback<any>): void
+  /**
+   * Returns the local Notice Feature subscription flag. true after successful enableNotices(),
+   * false otherwise. Reset on chat disconnect; not synchronized with the server.
+   * @since 2.24.0
+   */
+  isNoticesEnabled(): boolean
+  /**
    * Send query to get last user activity by `QB.chat.onLastUserActivityListener(userId, seconds)`
    * ([read more](https://xmpp.org/extensions/xep-0012.html)).
    */
@@ -605,8 +733,53 @@ interface QBChatModule {
     dialogId: QBChatDialog['_id'],
     userId: QBUser['id'],
   ) => void
+  /**
+   * Notice Feature: a dialog was deleted.
+   * For private dialogs the event is delivered to BOTH participants.
+   * @since 2.24.0
+   */
+  onDialogDeletedListener?: (
+    dialogId: QBChatDialog['_id'],
+    dateSent: number,
+  ) => void
+  /**
+   * Notice Feature: a dialog was updated. The dialog object is a full server snapshot
+   * (preserves existing QBChatDialog snake_case shape), not a diff. For private dialogs
+   * the event is delivered to BOTH participants.
+   * @since 2.24.0
+   */
+  onDialogUpdatedListener?: (dialog: QBChatDialog) => void
   /** Blocked entities receive an error when try to chat with a user in a 1-1 chat and receivie nothing in a group chat. */
   onMessageErrorListener?: (messageId: QBChatMessage['_id'], error: any) => void
+  /**
+   * Notice Feature: a chat message was deleted in a dialog.
+   * Delivered via XMPP `NoticeDeletedMessage` headline stanza after `enableNotices()`.
+   * For private dialogs (type=3) the event is delivered to BOTH participants.
+   * @since 2.24.0
+   */
+  onMessageDeletedListener?: (
+    dialogId: QBChatDialog['_id'],
+    messageId: QBChatMessage['_id'],
+    dateSent: number,
+  ) => void
+  /**
+   * Notice Feature: a chat message text was updated.
+   * Message object preserves existing SDK/server snake_case shape (_id, chat_dialog_id, etc).
+   * If the stanza included an aggregate <reactions> snapshot, message.reactions is populated.
+   * For private dialogs the event is delivered to BOTH participants.
+   * @since 2.24.0
+   */
+  onMessageUpdatedListener?: (
+    dialogId: QBChatDialog['_id'],
+    message: QBChatMessage,
+  ) => void
+  /**
+   * Notice Feature: a reaction was added or removed on a chat message
+   * (singular <reaction> stanza, distinct from text updates which carry the aggregate snapshot).
+   * For private dialogs the event is delivered to BOTH participants.
+   * @since 2.24.0
+   */
+  onMessageReactionChangedListener?: (event: QBReactionEvent) => void
   /**
    * You need to set onMessageListener function, to get messages
    * ([read more](https://docs.quickblox.com/docs/js-chat-messaging#subscribe-message-events)).
@@ -738,16 +911,24 @@ interface QBChatModule {
     ): void
     /**
      * Update group dialog
-     * ([read more](https://docs.quickblox.com/docs/js-chat-dialogs#update-dialog)).
+     * ([read more](https://docs.quickblox.com/reference/update-dialog)).
+     *
+     * `admin_ids` can be sent as a full replacement list or inside `push_all` /
+     * `pull_all` for incremental admin changes.
      */
     update(
       id: QBChatDialog['_id'],
-      data: Dictionary<any>,
+      data: QBDialogUpdateParams,
       callback: QBCallback<QBChatDialog>,
     ): void
   }
 
   message: {
+    addReaction(
+      messageId: QBChatMessage['_id'],
+      name: string,
+      callback: QBCallback<QBReaction>,
+    ): void
     /** Create message. */
     create(params: Dictionary<any>, callback: QBCallback<QBChatMessage>): void
     /**
@@ -782,11 +963,32 @@ interface QBChatModule {
       }>,
     ): void
     /**
+     * Get a chat message by ID
+     * ([read more](https://docs.quickblox.com/reference/get-message-by-id)).
+     * @since 2.24.0
+     */
+    getById(
+      id: QBChatMessage['_id'],
+      callback: QBCallback<QBChatMessage>,
+    ): void
+    /**
+     * Get a chat message by ID with optional query parameters.
+     * Supports `include_reactions: 1` to fetch the message together with its
+     * aggregated reactions.
+     * @since 2.24.0
+     */
+    getById(
+      id: QBChatMessage['_id'],
+      params: { include_reactions?: 0 | 1 },
+      callback: QBCallback<QBChatMessage>,
+    ): void
+    /**
      * Get a chat history
      * ([read more](https://docs.quickblox.com/docs/js-chat-messaging#retrieve-chat-history)).
      */
     list(
       params: {
+        include_reactions?: 0 | 1
         limit?: number
         skip?: number
         sort_asc?: string
@@ -795,6 +997,18 @@ interface QBChatModule {
         [field: string]: any
       },
       callback: QBCallback<GetMessagesResult>,
+    ): void
+    listReactions(
+      messageId: QBChatMessage['_id'],
+      callback: QBCallback<{
+        total_entries: number
+        items: QBReaction[]
+      }>,
+    ): void
+    removeReaction(
+      messageId: QBChatMessage['_id'],
+      name: string,
+      callback: QBCallback<void>,
     ): void
     /**
      * Get unread messages counter for one or group of dialogs

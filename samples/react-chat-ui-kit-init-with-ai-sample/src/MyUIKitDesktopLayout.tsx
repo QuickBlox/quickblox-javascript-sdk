@@ -3,9 +3,8 @@ import cn from 'classnames';
 
 import { toast } from 'react-toastify';
 import {
-    AIRephraseWidget,
     Avatar,
-    BaseViewModel, Button, ChatSvg, CreateNewDialogFlow, DefaultConfigurations,
+    BaseViewModel, Button, ChatSvg, CreateNewDialogFlow,
     DesktopLayout, Dialog,
     DialogEntity, DialogInfo,
     DialogList,
@@ -15,7 +14,7 @@ import {
     GroupDialogEntity,
     Header, InformationSvg,
     Loader, MembersList,
-    MessageEntity, MessageInput, MessageItem, MessageSeparator,
+    MessageEntity, MessageInput, MessageSeparator,
     NewChatSvg, Placeholder,
     PreviewDialog,
     PreviewDialogViewModel,
@@ -29,6 +28,7 @@ import {
     ToastProvider, useQuickBloxUIKit,
     UserSvg
 } from 'quickblox-react-ui-kit';
+import MyMessageItem from './MyMessageItem';
 
 
 const MyUIKitDesktopLayout = ({
@@ -60,13 +60,15 @@ const MyUIKitDesktopLayout = ({
             messageText,
             isLeaving,
             waitAIWidget,
-            defaultAIRephraseWidget,
-            defaultAITranslateWidget,
-            defaultAIAssistWidget,
-            maxTokensForAIRephrase,
-            rephraseTones,
+            reactionMode,
+            reactionPickerData,
+            reactionPickerOptions,
+            messagesForView,
             enableForwarding,
             enableReplying,
+            enableCopying,
+            enableEditing,
+            enableDeleting,
             userName,
             currentUserId,
             forwardMessage,
@@ -77,6 +79,13 @@ const MyUIKitDesktopLayout = ({
             forwardMessageModal,
             showReplyMessage,
             messagesToReply,
+            showEditMessage,
+            isEditSubmitting,
+            canSendMessage,
+            messageToEdit,
+            showDeleteTypeModal,
+            showDeleteConfirmModal,
+            deleteForEveryone,
             isOpen,
             newModal,
         },
@@ -84,7 +93,6 @@ const MyUIKitDesktopLayout = ({
             dialogsViewModel,
             messagesViewModel,
             userViewModel,
-            currentContext,
         },
         handlers: {
             setSelectedDialog,
@@ -98,13 +106,21 @@ const MyUIKitDesktopLayout = ({
             sendTextMessageActions,
             ChangeFileHandler,
             handleOnReply,
+            handleOnCopy,
+            handleOnEdit,
+            handleOnDelete,
+            handleOnToggleReaction,
+            handleOnOpenReactionsModal,
             handleSendData,
             handleHeightChange,
             leaveDialogHandler,
             createDialogHandler,
             closeReplyMessageFlowHandler,
+            closeEditMessageFlowHandler,
+            closeDeleteMessageFlowHandler,
+            deleteMessageByTypeHandler,
+            confirmDeleteMessageHandler,
             setMessageText,
-            setWaitAIWidget,
             handleDialogOnClick,
         },
     } = useQuickBloxUIKit({
@@ -113,6 +129,8 @@ const MyUIKitDesktopLayout = ({
         AIAssist,
         uikitHeightOffset,
     });
+
+    const canCurrentUserDeleteAnyMessageInDialog = !!selectedDialog && !!currentUserId;
 
     // eslint-disable-next-line consistent-return
     const renderIconForTypeDialog = (dialogEntity: DialogEntity) => {
@@ -486,9 +504,7 @@ const MyUIKitDesktopLayout = ({
                                     </Header>
                                 }
                                 renderMessageList={
-                                    messagesViewModel &&
-                                    messagesViewModel.messages &&
-                                    messagesViewModel.messages.length > 0 && (
+                                    messagesForView.length > 0 && (
                                         <SectionList
                                             resetScroll={scrollUpToDown}
                                             className="messages-container"
@@ -514,13 +530,22 @@ const MyUIKitDesktopLayout = ({
                                             )}
                                             renderItem={([, groupMessages], listRef) =>
                                                 groupMessages.map((message) => (
-                                                    <MessageItem
+                                                    <MyMessageItem
                                                         disableAction={!isOnline}
-                                                        // defaultGetSenderName={defaultGetSenderName}
+                                                        avatar={
+                                                            <Avatar
+                                                                src={message?.sender?.photo || ''}
+                                                                icon={<UserSvg />}
+                                                                size="md"
+                                                            />
+                                                        }
                                                         message={message}
                                                         currentUserId={currentUserId || -1}
                                                         enableForwarding={enableForwarding}
                                                         enableReplying={enableReplying}
+                                                        enableCopying={enableCopying !== false}
+                                                        enableEditing={enableEditing !== false}
+                                                        enableDeleting={enableDeleting !== false}
                                                         onReply={(m: MessageEntity) => {
                                                             handleOnReply(m);
                                                         }}
@@ -530,36 +555,61 @@ const MyUIKitDesktopLayout = ({
                                                                 forwardMessageModal.toggleModal();
                                                             }
                                                         }}
+                                                        onCopy={(m: MessageEntity) => {
+                                                            handleOnCopy(m);
+                                                        }}
+                                                        onEdit={(m: MessageEntity) => {
+                                                            handleOnEdit(m);
+                                                        }}
+                                                        onDelete={(m: MessageEntity) => {
+                                                            handleOnDelete(m);
+                                                        }}
+                                                        onToggleReaction={handleOnToggleReaction}
+                                                        onOpenReactionsList={handleOnOpenReactionsModal}
+                                                        reactionMode={reactionMode}
+                                                        reactionPickerData={reactionPickerData}
+                                                        reactionPickerOptions={reactionPickerOptions}
+                                                        canDeleteAnyMessage={
+                                                            canCurrentUserDeleteAnyMessageInDialog
+                                                        }
                                                         listRef={listRef}
-                                                        AIAssistWidget={defaultAIAssistWidget}
-                                                        AITranslateWidget={defaultAITranslateWidget}
-                                                        languagesForAITranslate={DefaultConfigurations.getAdditionalLanguagesForAITranslate(
-                                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                                            currentContext.InitParams.qbConfig.configAIApi
-                                                                .AITranslateWidgetConfig,
-                                                        )}
-                                                        defaultTranslationLanguage={DefaultConfigurations.getDefaultLanguageForAITranslate(
-                                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                                                            currentContext.InitParams.qbConfig.configAIApi
-                                                                .AITranslateWidgetConfig,
-                                                        )}
                                                         onError={(messageError: string) => {
                                                             toast(messageError);
                                                         }}
                                                         messagesToView={messagesViewModel.messages}
-                                                        maxTokens={maxTokensForAIRephrase}
                                                     />
                                                 ))
                                             }
-                                            sections={getSectionData(messagesViewModel.messages)}
+                                            sections={getSectionData(messagesForView)}
                                         />
                                     )
                                 }
                                 renderMessageInput={
                                     <MessageInput
                                         disableActions={!isOnline}
+                                        disableAttachment={showEditMessage || isEditSubmitting}
                                         previewMessage={
-                                            showReplyMessage ? (
+                                            showEditMessage && messageToEdit ? (
+                                                <div className="edit-message-preview-row">
+                                                    <div className="edit-message-preview-row__content">
+                                                        <div className="edit-message-preview-row__text">
+                                                            {(messageToEdit.message || '').length <= 64
+                                                                ? messageToEdit.message
+                                                                : `${(messageToEdit.message || '').substring(0, 64)} ...`}
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        className="edit-message-preview-row__close"
+                                                        onClick={() => {
+                                                            if (!isEditSubmitting) {
+                                                                closeEditMessageFlowHandler();
+                                                            }
+                                                        }}
+                                                    >
+                                                        Close
+                                                    </div>
+                                                </div>
+                                            ) : showReplyMessage ? (
                                                 <ReplyMessagePreview
                                                     messages={[...messagesToReply]}
                                                     userNameSentMessage={
@@ -575,7 +625,13 @@ const MyUIKitDesktopLayout = ({
                                         }
                                         value={messageText}
                                         placeholder="Type message"
-                                        loading={waitAIWidget || messagesViewModel?.loading}
+                                        loading={
+                                            waitAIWidget ||
+                                            messagesViewModel?.loading ||
+                                            isEditSubmitting
+                                        }
+                                        canSend={canSendMessage}
+                                        clearOnSend={!showEditMessage}
                                         onChange={(text: string) => {
                                             setMessageText(text);
                                         }}
@@ -588,29 +644,15 @@ const MyUIKitDesktopLayout = ({
                                         onAttachment={ChangeFileHandler}
                                         enableVoice={isRecording}
                                         onVoice={() => {
-                                            if (messagesViewModel?.loading || !isOnline) return;
+                                            if (
+                                                messagesViewModel?.loading ||
+                                                isEditSubmitting ||
+                                                !isOnline
+                                            ) {
+                                                return;
+                                            }
                                             setIsRecording(!isRecording);
                                         }}
-                                        rephrase={
-                                            <AIRephraseWidget
-                                                disableActions={!isOnline}
-                                                waitAIWidget={waitAIWidget}
-                                                messageText={messageText}
-                                                theme={theme}
-                                                AIRephrase={defaultAIRephraseWidget}
-                                                setWaitAIWidget={setWaitAIWidget}
-                                                setPrevValueText={(prevValue) => {
-                                                    setMessageText(prevValue);
-                                                }}
-                                                setMessageErrorToast={(e: string) => {
-                                                    toast(e);
-                                                }}
-                                                messagesToView={messagesViewModel.messages}
-                                                currentUserId={currentUserId || -1}
-                                                maxTokensForAIRephrase={maxTokensForAIRephrase}
-                                                rephraseTones={rephraseTones}
-                                            />
-                                        }
                                     />
                                 }
                                 maxWidthToResize={maxWidthToResizing}
@@ -713,6 +755,53 @@ const MyUIKitDesktopLayout = ({
                         />
                     </DialogWindow>
                 )}
+                <DialogWindow
+                    open={showDeleteTypeModal}
+                    title={isMobile ? 'Delete message' : 'Delete message?'}
+                    onClose={closeDeleteMessageFlowHandler}
+                    className="delete-message-type-modal"
+                >
+                    <div className="delete-message-type-modal__actions">
+                        <Button
+                            variant="danger"
+                            className="delete-message-type-modal__button delete-message-type-modal__button--everyone"
+                            onClick={() => {
+                                deleteMessageByTypeHandler(true);
+                            }}
+                        >
+                            Delete for everyone
+                        </Button>
+                        <Button
+                            variant="danger"
+                            className="delete-message-type-modal__button delete-message-type-modal__button--me"
+                            onClick={() => {
+                                deleteMessageByTypeHandler(false);
+                            }}
+                        >
+                            Delete for me
+                        </Button>
+                    </div>
+                </DialogWindow>
+                <DialogWindow
+                    open={showDeleteConfirmModal}
+                    title="Are you sure you want to delete this message?"
+                    onClose={closeDeleteMessageFlowHandler}
+                    className="delete-message-confirm-modal"
+                >
+                    <div className="delete-message-confirm-modal__content">
+                        <div className="delete-message-confirm-modal__actions">
+                            <Button
+                                variant="danger"
+                                onClick={confirmDeleteMessageHandler}
+                            >
+                                {deleteForEveryone ? 'Delete' : 'Delete'}
+                            </Button>
+                            <Button variant="outlined" onClick={closeDeleteMessageFlowHandler}>
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </DialogWindow>
             </div>
         </ToastProvider>
     );
